@@ -464,7 +464,9 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
         }
         if (category == AVAudioSessionCategoryPlayback ||
             category == AVAudioSessionCategoryPlayAndRecord) {
-            options |= AVAudioSessionCategoryOptionDuckOthers;
+            if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DUCK_OTHERS, false)) {
+                options |= AVAudioSessionCategoryOptionDuckOthers;
+            }
         }
 
         if (![session.category isEqualToString:category] || session.categoryOptions != options) {

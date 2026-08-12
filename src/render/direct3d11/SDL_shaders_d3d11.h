@@ -26,8 +26,11 @@ typedef enum
 {
     SHADER_NONE,
     SHADER_SOLID,
+    SHADER_SOLID_PQ,
     SHADER_RGB,
     SHADER_ADVANCED,
+    SHADER_RGB_PQ,
+    SHADER_RGB_SIMPLE,
     NUM_SHADERS
 } D3D11_Shader;
 

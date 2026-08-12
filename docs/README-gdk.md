@@ -160,6 +160,32 @@ In general, the same process in the Windows GDK instructions work. There are jus
 * For some reason, if you make changes that require SDL3.dll to build, and you are running through the debugger (instead of a package), you have to rebuild your .exe target for the debugger to recognize the dll has changed and needs to be transferred to the console again
 * While there are successful releases of Xbox titles using this port, it is not as extensively tested as other targets
 
+Xbox Suspend/Resume Handling
+----------------------------
+Xbox certification requires that applications handle Suspend and Resume lifecycle events.
+Please read the official GDK documentation for all the details, but here's what you absolutely need to know:
+- When the operating system begins suspending an application, the app must complete all pending GPU operations and then signal to the OS that it is ready for suspension.
+- When the OS resumes the application, the app must explicitly resume GPU operations.
+- If any GPU API call happens in between suspension and resuming, the application will crash or hang.
+
+Unfortunately it's impossible for SDL to know for certain when your application is ready for suspension, so it cannot handle these events internally.
+Instead, SDL provides a few APIs you must use to handle these events yourself.
+
+On startup, your application should call `SDL_AddEventWatch` to register a callback function which will listen for the `SDL_EVENT_DID_ENTER_BACKGROUND` and `SDL_EVENT_WILL_ENTER_FOREGROUND` events.
+This callback function will be called from a background OS thread, so when one of these events occurs, you should notify your render thread about it rather than responding directly in the callback.
+A simple strategy for this is to make your callback function post custom `SDL_EVENT_USER` events that your main loop's event processor can respond to.
+
+When your render thread receives your notification of the `SDL_EVENT_DID_ENTER_BACKGROUND` event, it should do the following:
+- Set a flag to suppress the entire render loop until the application resumes.
+- Call `SDL_GDKSuspendRenderer` if you are using the Render API, or call `SDL_GDKSuspendGPU` if you are using the GPU API.
+- Finally, regardless of what graphics API you are using, call `SDL_GDKSuspendComplete`.
+
+When your render thread receives your notification of an `SDL_EVENT_WILL_ENTER_FOREGROUND` event, it should do the following:
+- Call `SDL_GDKResumeRenderer` if you are using the Render API, or call `SDL_GDKResumeGPU` if you are using the GPU API.
+- Unset the flag suppressing your render loop to allow drawing again.
+
+An example of this flow can be found in the testgdk project.
+
 Troubleshooting
 ---------------
 

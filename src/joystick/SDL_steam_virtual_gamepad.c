@@ -33,11 +33,11 @@
 #include <sys/stat.h>
 #endif
 
-static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
+static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_event_lock) = 0;
+static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_event_lock) = 0;
 
 
 static Uint64 GetFileModificationTime(const char *file)

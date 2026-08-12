@@ -115,7 +115,9 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 
     // allocate enough space for the validation layer + the user's api layers
     const char **apiLayerNames = SDL_stack_alloc(const char *, userApiLayerCount + 1);
-    SDL_memcpy((void *)apiLayerNames, userApiLayerNames, sizeof(const char *) * (userApiLayerCount));
+    if (userApiLayerCount > 0) {
+        SDL_memcpy((void *)apiLayerNames, userApiLayerNames, sizeof(const char *) * userApiLayerCount);
+    }
     apiLayerNames[userApiLayerCount] = VALIDATION_LAYER_API_NAME;
 
     // On Android, we need an extra extension for android_create_instance
@@ -126,7 +128,9 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
 #endif
 
     const char **extensionNames = SDL_stack_alloc(const char *, userExtensionCount + platformExtensionCount);
-    SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * (userExtensionCount));
+    if (userExtensionCount > 0) {
+        SDL_memcpy((void *)extensionNames, userExtensionNames, sizeof(const char *) * userExtensionCount);
+    }
     extensionNames[userExtensionCount] = gpuExtension.extensionName;
 #ifdef SDL_PLATFORM_ANDROID
     extensionNames[userExtensionCount + 1] = XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME;
@@ -157,8 +161,11 @@ XrResult SDL_OPENXR_INTERNAL_GPUInitOpenXR(
     xrInstanceCreateInfo.next = &instanceCreateInfoAndroid;
 #endif
 
-    const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, "SDL Application");
-    Uint32 applicationVersion = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 0);
+    const Uint32 applicationVersion = (Uint32)SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_VERSION_NUMBER, 0);
+    const char *applicationName = SDL_GetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_XR_APPLICATION_NAME_STRING, NULL);
+    if (!applicationName) {
+        applicationName = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+    }
 
     SDL_strlcpy(xrInstanceCreateInfo.applicationInfo.applicationName, applicationName, XR_MAX_APPLICATION_NAME_SIZE);
     xrInstanceCreateInfo.applicationInfo.applicationVersion = applicationVersion;

@@ -1447,7 +1447,7 @@ The following functions have been removed:
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
-* SDL_RenderTargetSupported() - render targets are always supported
+* SDL_RenderTargetSupported() - render targets are usually supported; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following enums have been renamed:
@@ -1461,7 +1461,7 @@ The following symbols have been removed:
 * SDL_RENDERER_ACCELERATED - all renderers except `SDL_SOFTWARE_RENDERER` are accelerated
 * SDL_RENDERER_PRESENTVSYNC - replaced with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER during renderer creation and SDL_PROP_RENDERER_VSYNC_NUMBER after renderer creation
 * SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
-* SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
+* SDL_RENDERER_TARGETTEXTURE - most renderers support target texture functionality; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_ScaleModeBest - use SDL_SCALEMODE_LINEAR instead
 
 ## SDL_rwops.h
@@ -1531,7 +1531,7 @@ typedef struct IOStreamStdioFPData
     bool autoclose;
 } IOStreamStdioFPData;
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     int stdiowhence;
@@ -1551,7 +1551,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
         return -1;
     }
 
-    if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
+    if (fseek(fp, (long)offset, stdiowhence) == 0) {
         const Sint64 pos = ftell(fp);
         if (pos < 0) {
             SDL_SetError("Couldn't get stream offset");
@@ -1585,7 +1585,7 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
 
 static bool SDLCALL stdio_close(void *userdata)
 {
-    IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
+    IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
     bool status = true;
     if (rwopsdata->autoclose) {
         if (fclose(rwopsdata->fp) != 0) {

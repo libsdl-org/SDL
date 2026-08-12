@@ -1,6 +1,21 @@
 name: 'Build (All)'
-
-on: [push, pull_request]
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+  schedule:
+    #        ┌────────────── minute (0 - 59)
+    #        │  ┌───────────── hour (0 - 23)
+    #        │  │ ┌───────────── day of the month (1 - 31)
+    #        │  │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #        │  │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #        │  │ │ │ │
+    - cron: '0 18 * * *'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -10,6 +25,7 @@ jobs:
   controller:
     name: 'Create test plan'
     runs-on: 'ubuntu-latest'
+    if: ${{ (github.event_name == 'schedule' && github.repository == 'libsdl-org/sdl') || github.event_name != 'schedule' }}
     outputs:
       platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
       platforms-others: ${{ steps.plan.outputs.platforms-others }}
@@ -22,15 +38,15 @@ jobs:
           sparse-checkout: '.github/workflows/create-test-plan.py'
       - name: 'Create plan'
         id: plan
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           # Adding [sdl-ci-filter GLOB] to the commit message will limit the jobs
           # e.g. [sdl-ci-filter msvc-*]
-          EOF=$(openssl rand -hex 32)
-          cat >/tmp/commit_message.txt <<$EOF
-          ${{ github.event.head_commit.message }}
-          $EOF
+          printf '%s\n' "$COMMIT_MESSAGE" >/tmp/commit_message.txt
 
           python .github/workflows/create-test-plan.py \
+            ${{ (github.event_name != 'schedule' && '--priority-only') || '' }} \
             --github-variable-prefix platforms \
             --github-ci \
             --verbose \

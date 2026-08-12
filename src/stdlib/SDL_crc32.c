@@ -29,6 +29,12 @@
 /* NOTE: DO NOT CHANGE THIS ALGORITHM
    There is code that relies on this in the joystick code
 */
+/* If you're looking for a faster CRC32 implementation,
+   the crc32() in zlib is a convenient option.
+
+   This is also Zlib licensed and extremely fast:
+       https://github.com/corsix/fast-crc32
+*/
 
 static Uint32 crc32_for_byte(Uint32 r)
 {

@@ -76,6 +76,11 @@ extern "C" {
 #pragma warning(disable:5287) /* operands are different enum types */
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wenum-enum-conversion"
+#endif
+
 /* Uncomment to enable the retrieval of Usage and Usage Page in
 hid_enumerate(). Warning, on platforms different from FreeBSD
 this is very invasive as it requires the detach
@@ -138,6 +143,10 @@ struct hid_device_ {
 #ifdef DETACH_KERNEL_DRIVER
 	int is_driver_detached;
 #endif
+#ifdef SDL_PLATFORM_MACOS
+	char *dev_path;
+	hid_device *next;
+#endif
 };
 
 static struct hid_api_version api_version = {
@@ -147,6 +156,45 @@ static struct hid_api_version api_version = {
 };
 
 static libusb_context *usb_context = NULL;
+
+#ifdef SDL_PLATFORM_MACOS
+
+static hid_device *open_devices;
+
+static void add_open_device(hid_device *dev)
+{
+	if (open_devices) {
+		dev->next = open_devices;
+	}
+    open_devices = dev;
+}
+
+static void remove_open_device(hid_device *dev)
+{
+	hid_device *prev = NULL;
+	for (hid_device *curr = open_devices; curr; prev = curr, curr = curr->next) {
+		if (curr == dev) {
+			if (prev) {
+				prev->next = dev->next;
+			} else {
+				open_devices = dev->next;
+			}
+			break;
+		}
+	}
+}
+
+static bool has_open_path(const char *path)
+{
+	for (hid_device *curr = open_devices; curr; curr = curr->next) {
+		if (curr->dev_path && strcmp(curr->dev_path, path) == 0) {
+			return true;
+		}
+	}
+	return false;
+}
+
+#endif /* SDL_PLATFORM_MACOS */
 
 uint16_t get_usb_code_for_current_locale(void);
 static int return_data(hid_device *dev, unsigned char *data, size_t length);
@@ -600,6 +648,66 @@ HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
 	return HID_API_VERSION_STR;
 }
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+static libusb_hotplug_callback_handle hotplug_callback_handle;
+static int shutdown_event_thread;
+static hidapi_thread_state event_thread_state;
+
+static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libusb_device *dev, libusb_hotplug_event event, void *user_data)
+{
+	switch (event) {
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
+		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		break;
+	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
+		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+
+static void *event_thread(void *param)
+{
+	while (!shutdown_event_thread) {
+		int res = libusb_handle_events(usb_context);
+		if (res < 0) {
+			/* There was an error. */
+			LOG("event_thread(): (%d) %s\n", res, libusb_error_name(res));
+		}
+	}
+	return NULL;
+}
+
+static void start_event_thread(void)
+{
+	if (libusb_has_capability(LIBUSB_CAP_HAS_HOTPLUG)) {
+		int res = libusb_hotplug_register_callback(usb_context, LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED | LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT, 0, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, LIBUSB_HOTPLUG_MATCH_ANY, hotplug_callback, NULL, &hotplug_callback_handle);
+		if (res < 0) {
+			LOG("Couldn't register hotplug: (%d) %s\n", res, libusb_error_name(res));
+		}
+	}
+
+	hidapi_thread_create(&event_thread_state, event_thread, NULL);
+}
+
+static void stop_event_thread(void)
+{
+	shutdown_event_thread = 1;
+	libusb_interrupt_event_handler(usb_context);
+	hidapi_thread_join(&event_thread_state);
+	shutdown_event_thread = 0;
+
+	if (hotplug_callback_handle) {
+		libusb_hotplug_deregister_callback(usb_context, hotplug_callback_handle);
+		hotplug_callback_handle = 0;
+	}
+}
+#endif /* HIDAPI_USING_SDL_RUNTIME */
+
+
 int HID_API_EXPORT hid_init(void)
 {
 	if (!usb_context) {
@@ -613,6 +721,10 @@ int HID_API_EXPORT hid_init(void)
 		locale = setlocale(LC_CTYPE, NULL);
 		if (!locale)
 			(void) setlocale(LC_CTYPE, "");
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+		start_event_thread();
+#endif
 	}
 
 	return 0;
@@ -621,6 +733,10 @@ int HID_API_EXPORT hid_init(void)
 int HID_API_EXPORT hid_exit(void)
 {
 	usb_string_cache_destroy();
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	stop_event_thread();
+#endif
 
 	if (usb_context) {
 		libusb_exit(usb_context);
@@ -829,6 +945,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb360w_iface_protocol = 129; /* Wireless */
 	static const int supported_vendors[] = {
 		0x0079, /* GPD Win 2 */
+		0x0351, /* CRKD */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
 		0x046d, /* Logitech */
@@ -840,6 +957,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x0f0d, /* Hori */
 		0x1038, /* SteelSeries */
 		0x11c9, /* Nacon */
+		0x1209, /* Generic */
 		0x12ab, /* Unknown */
 		0x1430, /* RedOctane */
 		0x146b, /* BigBen */
@@ -854,7 +972,9 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x2c22, /* Qanba */
 		0x2dc8, /* 8BitDo */
 		0x3537, /* GameSir */
+		0x3651, /* CRKD */
 		0x37d7, /* Flydigi */
+		0x3958, /* Red Octane Games */
 		0x9886, /* ASTRO Gaming */
 	};
 
@@ -877,6 +997,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb1_iface_subclass = 71;
 	static const int xb1_iface_protocol = 208;
 	static const int supported_vendors[] = {
+		0x0351, /* CRKD */
 		0x03f0, /* HP */
 		0x044f, /* Thrustmaster */
 		0x045e, /* Microsoft */
@@ -885,6 +1006,7 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x10f5, /* Turtle Beach */
+		0x1209, /* Generic */
 		0x1532, /* Razer Wildcat */
 		0x20d6, /* PowerA */
 		0x24c6, /* PowerA */
@@ -894,7 +1016,9 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 		0x2e95, /* SCUF */
 		0x3285, /* Nacon */
 		0x3537, /* GameSir */
+		0x3651, /* CRKD */
 		0x366c, /* ByoWave */
+		0x3958, /* Red Octane Games */
 	};
 
 	if (intf_desc->bInterfaceNumber == 0 &&
@@ -911,21 +1035,27 @@ static int is_xboxone(unsigned short vendor_id, const struct libusb_interface_de
 	return 0;
 }
 
-static int should_enumerate_interface(unsigned short vendor_id, const struct libusb_interface_descriptor *intf_desc)
+static int should_enumerate_interface(unsigned short vendor_id, unsigned short product_id, const struct libusb_interface_descriptor *intf_desc)
 {
+	int is_xbox = (is_xbox360(vendor_id, intf_desc) ||
+	               is_xboxone(vendor_id, intf_desc));
+
 #if 0
 	printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 #endif
 
+#ifdef HIDAPI_IGNORE_DEVICE
+	/* See if there are any devices we should skip in enumeration */
+	if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, vendor_id, product_id, 0, 0, true, is_xbox)) {
+		return 0;
+	}
+#endif
+
+	/* Enumerate Xbox 360 and Xbox One controllers */
+	if (is_xbox)
+		return 1;
+
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_HID)
-		return 1;
-
-	/* Also enumerate Xbox 360 controllers */
-	if (is_xbox360(vendor_id, intf_desc))
-		return 1;
-
-	/* Also enumerate Xbox One controllers */
-	if (is_xboxone(vendor_id, intf_desc))
 		return 1;
 
 	return 0;
@@ -982,13 +1112,6 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 			continue;
 		}
 
-#ifdef HIDAPI_IGNORE_DEVICE
-		/* See if there are any devices we should skip in enumeration */
-		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true)) {
-			continue;
-		}
-#endif
-
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)
 			libusb_get_config_descriptor(dev, 0, &conf_desc);
@@ -998,10 +1121,25 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 				for (k = 0; k < intf->num_altsetting; k++) {
 					const struct libusb_interface_descriptor *intf_desc;
 					intf_desc = &intf->altsetting[k];
-					if (should_enumerate_interface(dev_vid, intf_desc)) {
+					if (should_enumerate_interface(dev_vid, dev_pid, intf_desc)) {
 						struct hid_device_info *tmp;
 
 						res = libusb_open(dev, &handle);
+#ifdef SDL_PLATFORM_MACOS
+						if (res == 0) {
+							/* Do not enumerate XInput devices already owned by a kernel driver and not opened by us */
+							int is_xbox = is_xbox360(dev_vid, intf_desc) || is_xboxone(dev_vid, intf_desc);
+							if (is_xbox && libusb_kernel_driver_active(handle, intf_desc->bInterfaceNumber) == 1) {
+								char dev_path[64];
+								get_path(&dev_path, dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
+								if (!has_open_path(dev_path)) {
+									libusb_close(handle);
+									handle = NULL;
+									continue;
+								}
+							}
+						}
+#endif
 
 #ifdef __ANDROID__
 						if (handle) {
@@ -1187,10 +1325,9 @@ static void LIBUSB_CALL read_callback(struct libusb_transfer *transfer)
 }
 
 
-static void *read_thread(void *param)
+static void start_read_operations(hid_device *dev)
 {
 	int res;
-	hid_device *dev = param;
 	uint8_t *buf;
 	const size_t length = dev->input_ep_max_packet_size;
 
@@ -1210,10 +1347,37 @@ static void *read_thread(void *param)
 	   from inside read_callback() */
 	res = libusb_submit_transfer(dev->transfer);
 	if(res < 0) {
-                LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
-                dev->shutdown_thread = 1;
-                dev->transfer_loop_finished = 1;
+		LOG("libusb_submit_transfer failed: %d %s. Stopping read_thread from running\n", res, libusb_error_name(res));
+		dev->shutdown_thread = 1;
+		dev->transfer_loop_finished = 1;
 	}
+}
+
+
+static void stop_read_operations(hid_device *dev)
+{
+	while (!dev->transfer_loop_finished)
+		libusb_handle_events_completed(usb_context, &dev->transfer_loop_finished);
+
+	/* Now that the read operations are stopping, Wake any threads which are
+	   waiting on data (in hid_read_timeout()). Do this under a mutex to
+	   make sure that a thread which is about to go to sleep waiting on
+	   the condition actually will go to sleep before the condition is
+	   signaled. */
+	hidapi_thread_mutex_lock(&dev->thread_state);
+	hidapi_thread_cond_broadcast(&dev->thread_state);
+	hidapi_thread_mutex_unlock(&dev->thread_state);
+}
+
+
+#ifdef HIDAPI_USING_SDL_RUNTIME
+/* We have a separate thread handling all the events */
+#else
+static void *read_thread(void *param)
+{
+	hid_device *dev = param;
+
+	start_read_operations(dev);
 
 	/* Notify the main thread that the read thread is up and running. */
 	hidapi_thread_barrier_wait(&dev->thread_state);
@@ -1240,17 +1404,7 @@ static void *read_thread(void *param)
 	   if no transfers are pending, but that's OK. */
 	libusb_cancel_transfer(dev->transfer);
 
-	while (!dev->transfer_loop_finished)
-		libusb_handle_events_completed(usb_context, &dev->transfer_loop_finished);
-
-	/* Now that the read thread is stopping, Wake any threads which are
-	   waiting on data (in hid_read_timeout()). Do this under a mutex to
-	   make sure that a thread which is about to go to sleep waiting on
-	   the condition actually will go to sleep before the condition is
-	   signaled. */
-	hidapi_thread_mutex_lock(&dev->thread_state);
-	hidapi_thread_cond_broadcast(&dev->thread_state);
-	hidapi_thread_mutex_unlock(&dev->thread_state);
+	stop_read_operations(dev);
 
 	/* The dev->transfer->buffer and dev->transfer objects are cleaned up
 	   in hid_close(). They are not cleaned up here because this thread
@@ -1262,6 +1416,7 @@ static void *read_thread(void *param)
 
 	return NULL;
 }
+#endif /* HIDAPI_USING_SDL_RUNTIME */
 
 static void init_xbox360(libusb_device_handle *device_handle, unsigned short idVendor, unsigned short idProduct, const struct libusb_config_descriptor *conf_desc)
 {
@@ -1442,10 +1597,14 @@ static int hidapi_initialize_device(hid_device *dev, const struct libusb_interfa
 
 	calculate_device_quirks(dev, desc.idVendor, desc.idProduct);
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	start_read_operations(dev);
+#else
 	hidapi_thread_create(&dev->thread_state, read_thread, dev);
 
 	/* Wait here for the read thread to be initialized. */
 	hidapi_thread_barrier_wait(&dev->thread_state);
+#endif
 	return 1;
 }
 
@@ -1485,7 +1644,7 @@ HID_API_EXPORT hid_device *hid_open_path(const char *path)
 			const struct libusb_interface *intf = &conf_desc->interface[j];
 			for (k = 0; k < intf->num_altsetting && !good_open; k++) {
 				const struct libusb_interface_descriptor *intf_desc = &intf->altsetting[k];
-				if (should_enumerate_interface(desc.idVendor, intf_desc)) {
+				if (should_enumerate_interface(desc.idVendor, desc.idProduct, intf_desc)) {
 					char dev_path[64];
 					get_path(&dev_path, usb_dev, conf_desc->bConfigurationValue, intf_desc->bInterfaceNumber);
 					if (!strcmp(dev_path, path)) {
@@ -1511,6 +1670,10 @@ HID_API_EXPORT hid_device *hid_open_path(const char *path)
 
 	/* If we have a good handle, return it. */
 	if (good_open) {
+#ifdef SDL_PLATFORM_MACOS
+		dev->dev_path = strdup(path);
+		add_open_device(dev);
+#endif
 		return dev;
 	}
 	else {
@@ -1869,8 +2032,12 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 	dev->shutdown_thread = 1;
 	libusb_cancel_transfer(dev->transfer);
 
+#ifdef HIDAPI_USING_SDL_RUNTIME
+	stop_read_operations(dev);
+#else
 	/* Wait for read_thread() to end. */
 	hidapi_thread_join(&dev->thread_state);
+#endif
 
 	/* Clean up the Transfer objects allocated in read_thread(). */
 	free(dev->transfer->buffer);
@@ -1898,6 +2065,11 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 		return_data(dev, NULL, 0);
 	}
 	hidapi_thread_mutex_unlock(&dev->thread_state);
+
+#ifdef SDL_PLATFORM_MACOS
+	remove_open_device(dev);
+	free(dev->dev_path);
+#endif
 
 	free_hid_device(dev);
 }
@@ -2170,6 +2342,10 @@ uint16_t get_usb_code_for_current_locale(void)
 	/* Found nothing. */
 	return 0x0;
 }
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 #if defined(_MSC_VER)
 #pragma warning (pop)

@@ -103,6 +103,13 @@ struct SDL_WindowData
         WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM = 0x08
     } toplevel_constraints;
 
+    enum
+    {
+        WAYLAND_RESIZE_EDGE_LR = 0x01,
+        WAYLAND_RESIZE_EDGE_TB = 0x02,
+        WAYLAND_RESIZE_EDGE_CORNER = WAYLAND_RESIZE_EDGE_LR | WAYLAND_RESIZE_EDGE_TB,
+    } resize_edge;
+
     struct wl_egl_window *egl_window;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
@@ -118,6 +125,7 @@ struct SDL_WindowData
     struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
     struct frog_color_managed_surface *frog_color_managed_surface;
     struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback;
+    struct xdg_toplevel_session_v1 *xdg_toplevel_session;
 
     struct Wayland_ColorInfoState *color_info_state;
 
@@ -127,6 +135,7 @@ struct SDL_WindowData
     int num_outputs;
 
     char *app_id;
+    char *session_id;
     double scale_factor;
 
     struct wl_buffer **icon_buffers;
@@ -216,6 +225,7 @@ struct SDL_WindowData
     SDL_DisplayID last_displayID;
     int pending_state_deadline_count;
     Uint64 last_focus_event_time_ns;
+    Uint64 last_resize_event_time_ns;
     int icc_fd;
     Uint32 icc_size;
     bool floating;
@@ -234,6 +244,7 @@ struct SDL_WindowData
     bool scale_to_display;
     bool reparenting_required;
     bool double_buffer;
+    bool accepts_drag_and_drop;
 
     SDL_HitTestResult hit_test_result;
 
@@ -271,6 +282,7 @@ extern bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SD
 extern bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window);
 extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
+extern void Wayland_AcceptDragAndDrop(SDL_Window *window, bool accept);
 
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);

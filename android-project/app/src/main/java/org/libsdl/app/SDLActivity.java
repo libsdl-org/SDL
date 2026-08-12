@@ -24,6 +24,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.LocaleList;
+import android.os.Looper;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
@@ -39,6 +40,8 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
@@ -48,6 +51,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.window.OnBackInvokedCallback;
+import android.window.OnBackInvokedDispatcher;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -335,6 +340,20 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return new String[0];
     }
 
+    /**
+     * This method returns the SDL_INIT_* subsystems this activity should set up on the Java side.
+     * It can be overridden to skip the surface/layout creation, device listener and input event
+     * routing for unused subsystems. Manager JNI setup always follows the subsystems compiled
+     * into the native library, regardless of this mask. The native app must not SDL_Init() a
+     * subsystem excluded here: it would initialize without Java-side events (no window surface,
+     * no controller hotplug or input). Called from onCreate(); overrides must not depend on
+     * state the subclass assigns after super.onCreate().
+     * @return mask of SDL.SDL_INIT_* values.
+     */
+    protected int getInitSubsystems() {
+        return SDL.SDL_INIT_EVERYTHING;
+    }
+
     public static void initialize() {
         // The static nature of the singleton and Android quirkyness force us to initialize everything here
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
@@ -365,6 +384,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
+        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
 
         /* Control activity re-creation */
         if (mSDLMainFinished || mActivityCreated) {
@@ -456,7 +478,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         // Set up JNI
-        SDL.setupJNI();
+        SDL.setupJNI(getInitSubsystems());
 
         // Initialize state
         SDL.initialize();
@@ -465,20 +487,30 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSingleton = this;
         SDL.setContext(this);
 
-        mClipboardHandler = new SDLClipboardHandler();
+        if (SDL.isControllerManagerReady()) {
+            SDLControllerManager.initializeDeviceListener();
+        }
 
-        mHIDDeviceManager = HIDDeviceManager.acquire(this);
+        if (SDL.isSubsystemCompiled(SDL.SDL_INIT_VIDEO)) {
+            mClipboardHandler = new SDLClipboardHandler();
+        }
+
+        if (nativeIsHIDAPIEnabled()) {
+            mHIDDeviceManager = HIDDeviceManager.acquire(this);
+        }
 
         // Set up the surface
-        mSurface = createSDLSurface(this);
+        if (SDL.isSubsystemInitialized(SDL.SDL_INIT_VIDEO)) {
+            mSurface = createSDLSurface(this);
 
-        mLayout = new RelativeLayout(this);
-        mLayout.addView(mSurface);
+            mLayout = new RelativeLayout(this);
+            mLayout.addView(mSurface);
 
-        // Get our current screen orientation and pass it down.
-        SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
-        mCurrentRotation = SDLActivity.getCurrentRotation();
-        SDLActivity.onNativeRotationChanged(mCurrentRotation);
+            // Get our current screen orientation and pass it down.
+            SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
+            mCurrentRotation = SDLActivity.getCurrentRotation();
+            SDLActivity.onNativeRotationChanged(mCurrentRotation);
+        }
 
         try {
             if (Build.VERSION.SDK_INT < 24 /* Android 7.0 (N) */) {
@@ -498,19 +530,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             break;
         }
 
-        setContentView(mLayout);
-
-        setWindowStyle(false);
+        if (mLayout != null) {
+            setContentView(mLayout);
+            setWindowStyle(false);
+        }
 
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
 
         // Get filename from "Open with" of another application
-        Intent intent = getIntent();
-        if (intent != null && intent.getData() != null) {
-            String filename = intent.getData().getPath();
-            if (filename != null) {
-                Log.v(TAG, "Got filename: " + filename);
-                SDLActivity.onNativeDropFile(filename);
+        if (SDL.isSubsystemInitialized(SDL.SDL_INIT_VIDEO)) {
+            Intent intent = getIntent();
+            if (intent != null && intent.getData() != null) {
+                String filename = intent.getData().getPath();
+                if (filename != null) {
+                    Log.v(TAG, "Got filename: " + filename);
+                    SDLActivity.onNativeDropFile(filename);
+                }
             }
         }
     }
@@ -546,6 +581,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(true);
         }
+
         if (!mHasMultiWindow) {
             pauseNativeThread();
         }
@@ -559,6 +595,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mHIDDeviceManager != null) {
             mHIDDeviceManager.setFrozen(false);
         }
+
         if (!mHasMultiWindow) {
             resumeNativeThread();
         }
@@ -630,6 +667,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
         Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
+
+        // If we are gaining focus, we can always try to restore our USB devices. If we are losing focus,
+        // only try to relinquish them if we don't have background events allowed (for multi-window Android setups).
+        if (hasFocus || !SDLActivity.nativeGetHintBoolean("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", false)) {
+            if (mHIDDeviceManager != null) {
+                mHIDDeviceManager.setFrozen(!hasFocus);
+            }
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            return;
@@ -743,6 +788,50 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (!isFinishing()) {
             super.onBackPressed();
         }
+    }
+
+    static OnBackInvokedCallback backButtonCallback;
+    static boolean mBackKeyTrapEnabled = false;
+    public static void setBackButtonTrapEnabled(boolean enabled) {
+
+        if ( Build.VERSION.SDK_INT < 33 ) {
+            // We're old enough that we just use the old onBackPressed behavior.
+            return;
+        }
+
+        // Check so we don't register the same callback twice.
+        if (enabled == mBackKeyTrapEnabled) {
+            return;
+        }
+
+        if (backButtonCallback == null) {
+            backButtonCallback = new OnBackInvokedCallback() {
+                Handler mBackKeyHandler;
+
+                @Override
+                public void onBackInvoked() {
+                    if (mBackKeyHandler == null) {
+                        mBackKeyHandler = new Handler(Looper.getMainLooper());
+                    }
+
+                    onNativeKeyDown(KeyEvent.KEYCODE_BACK);
+                    mBackKeyHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            onNativeKeyUp(KeyEvent.KEYCODE_BACK);
+                        }
+                    }, 500);
+                }
+            };
+        }
+
+        if (enabled) {
+            mSingleton.getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backButtonCallback);
+        }
+        else {
+            mSingleton.getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backButtonCallback);
+        }
+        mBackKeyTrapEnabled = enabled;
     }
 
     // File dialog types
@@ -872,21 +961,27 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
-            if (mSurface.mIsSurfaceReady && (mHasFocus || mHasMultiWindow) && mIsResumedCalled) {
+            boolean readyToRun = (mSurface == null) ? mIsResumedCalled
+                    : (mSurface.mIsSurfaceReady && (mHasFocus || mHasMultiWindow) && mIsResumedCalled);
+            if (readyToRun) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
-                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    if (mSurface != null) {
+                        mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    }
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem
                 } else {
                     nativeResume();
                 }
-                mSurface.handleResume();
+                if (mSurface != null) {
+                    mSurface.handleResume();
+                }
 
                 mCurrentNativeState = mNextNativeState;
             }
@@ -940,29 +1035,52 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     Window window = ((Activity) context).getWindow();
                     if (window != null) {
                         if ((msg.obj instanceof Integer) && ((Integer) msg.obj != 0)) {
-                            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                                // The legacy setSystemUiVisibility() flags are ignored on
+                                // Android 15+ (API 35+), where edge-to-edge is enforced for
+                                // apps targeting that SDK, so the status/navigation bars
+                                // would never hide. Use WindowInsetsController instead.
+                                final WindowInsetsController controller = window.getInsetsController();
+                                if (controller != null) {
+                                    controller.hide(WindowInsets.Type.systemBars());
+                                    // Sticky-immersive (replaces SYSTEM_UI_FLAG_IMMERSIVE_STICKY):
+                                    // a swipe shows the bars transiently, then they auto-hide.
+                                    controller.setSystemBarsBehavior(
+                                            WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
+                                }
+                            } else {
+                                int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
+                                window.getDecorView().setSystemUiVisibility(flags);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            }
                             SDLActivity.mFullscreenModeActive = true;
                         } else {
-                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);
-                            window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                                // The legacy setSystemUiVisibility() flags are ignored on
+                                // API 30+, so the bars hidden by the modern enter path above
+                                // would never come back. Restore them via WindowInsetsController.
+                                final WindowInsetsController controller = window.getInsetsController();
+                                if (controller != null) {
+                                    controller.setSystemBarsBehavior(
+                                            WindowInsetsController.BEHAVIOR_DEFAULT);
+                                    controller.show(WindowInsets.Type.systemBars());
+                                }
+                            } else {
+                                int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
+                                window.getDecorView().setSystemUiVisibility(flags);
+                                window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            }
                             SDLActivity.mFullscreenModeActive = false;
                         }
                         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
                             window.getAttributes().layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
-                        }
-                        if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */ &&
-                            Build.VERSION.SDK_INT < 35 /* Android 15 */) {
-                            SDLActivity.onNativeInsetsChanged(0, 0, 0, 0);
                         }
                     }
                 } else {
@@ -1028,7 +1146,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 DisplayMetrics realMetrics = new DisplayMetrics();
                 display.getRealMetrics(realMetrics);
 
-                boolean bFullscreenLayout = ((realMetrics.widthPixels == mSurface.getWidth()) &&
+                boolean bFullscreenLayout = (mSurface != null) &&
+                        ((realMetrics.widthPixels == mSurface.getWidth()) &&
                         (realMetrics.heightPixels == mSurface.getHeight()));
 
                 if ((Integer) data == 1) {
@@ -1072,6 +1191,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // C functions we call
     public static native String nativeGetVersion();
     public static native void nativeSetupJNI();
+    public static native int nativeGetCompiledSubsystems();
+    public static native boolean nativeIsHIDAPIEnabled();
     public static native void nativeInitMainThread();
     public static native void nativeCleanupMainThread();
     public static native int nativeRunMain(String library, String function, Object arguments);
@@ -1093,7 +1214,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                             int action, float x,
                                             float y, float p);
     public static native void onNativePen(int penId, int device_type, int button, int action, float x, float y, float p);
-    public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceCreated();
     public static native void onNativeSurfaceChanged();
@@ -1113,8 +1233,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native boolean nativeAllowRecreateActivity();
     public static native int nativeCheckSDLThreadCounter();
     public static native void onNativeFileDialog(int requestCode, String[] filelist, int filter);
-    public static native void onNativePinchStart();
-    public static native void onNativePinchUpdate(float scale);
+    public static native void onNativePinchStart(float span_x, float span_y, float focus_x, float focus_y);
+    public static native void onNativePinchUpdate(float scale, float span_x, float span_y, float focus_x, float focus_y);
     public static native void onNativePinchEnd();
 
     /**
@@ -1316,6 +1436,25 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         return false;
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    static String getDeviceFormFactor()
+    {
+        // TODO: WearOS
+        if (isAndroidTV()) {
+            return "tv";
+        } else if (isVRHeadset()) {
+            return "headset";
+        } else if (isTablet()) {
+            return "tablet";
+        //} else if (isAndroidAutomotive()) {
+        //    return "car";
+        } else {
+            return "phone";
+        }
+    }
+
     public static double getDiagonal()
     {
         DisplayMetrics metrics = new DisplayMetrics();
@@ -1438,6 +1577,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         @Override
         public void run() {
+            if (mLayout == null) {
+                return;
+            }
+
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + HEIGHT_PADDING);
             params.leftMargin = x;
             params.topMargin = y;
@@ -1467,6 +1610,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean showTextInput(int input_type, int x, int y, int w, int h) {
+        if (mLayout == null) {
+            return false;
+        }
+
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(input_type, x, y, w, h));
     }
@@ -1484,9 +1631,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean handleKeyEvent(View v, int keyCode, KeyEvent event, InputConnection ic) {
         int deviceId = event.getDeviceId();
         int source = event.getSource();
+        InputDevice device = InputDevice.getDevice(deviceId);
 
         if (source == InputDevice.SOURCE_UNKNOWN) {
-            InputDevice device = InputDevice.getDevice(deviceId);
             if (device != null) {
                 source = device.getSources();
             }
@@ -1505,9 +1652,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // Furthermore, it's possible a game controller has SOURCE_KEYBOARD and
         // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
         // So, retrieve the device itself and check all of its sources
-        //
-        // Echo events (event.getRepeatCount() > 0) should be ignored
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId) && event.getRepeatCount() == 0) {
+        if (SDL.isControllerManagerReady() && SDLControllerManager.isDeviceSDLJoystick(device)) {
             // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 if (SDLControllerManager.onNativePadDown(deviceId, keyCode, event.getScanCode())) {
@@ -1790,14 +1935,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private final Runnable rehideSystemUi = new Runnable() {
         @Override
         public void run() {
-            int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
+            if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
+                final WindowInsetsController controller =
+                        SDLActivity.this.getWindow().getInsetsController();
+                if (controller != null) {
+                    controller.hide(WindowInsets.Type.systemBars());
+                }
+            } else {
+                int flags = View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
 
-            SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
+                SDLActivity.this.getWindow().getDecorView().setSystemUiVisibility(flags);
+            }
         }
     };
 
@@ -2198,6 +2351,19 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (initialPathUri != null) {
             intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, initialPathUri);
+        }
+
+        /* Handle a suggested filename when saving */
+        if (type == SDL_FILEDIALOG_SAVEFILE && initialPath != null && !initialPath.isEmpty() &&
+            !initialPath.endsWith("/") && !initialPath.endsWith("\\")) {
+            String title = initialPath;
+            int lastSeparator = Math.max(title.lastIndexOf('/'), title.lastIndexOf('\\'));
+            if (lastSeparator >= 0) {
+                title = title.substring(lastSeparator + 1);
+            }
+            if (!title.isEmpty()) {
+                intent.putExtra(Intent.EXTRA_TITLE, title);
+            }
         }
 
         /* Display the file/folder dialog */

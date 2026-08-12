@@ -33,53 +33,34 @@ extern "C" {
 #include <SDL3/SDL_filesystem.h>
 #include <XGameSaveFiles.h>
 
-char *
-SDL_SYS_GetBasePath(void)
+char *SDL_SYS_GetBasePath(void)
 {
-    /* NOTE: This function is a UTF8 version of the Win32 SDL_GetBasePath()!
-     * The GDK actually _recommends_ the 'A' functions over the 'W' functions :o
-     */
-    DWORD buflen = 128;
-    CHAR *path = NULL;
-    DWORD len = 0;
-    int i;
-
-    while (true) {
-        void *ptr = SDL_realloc(path, buflen * sizeof(CHAR));
-        if (!ptr) {
-            SDL_free(path);
-            return NULL;
-        }
-
-        path = (CHAR *)ptr;
-
-        len = GetModuleFileNameA(NULL, path, buflen);
-        // if it truncated, then len >= buflen - 1
-        // if there was enough room (or failure), len < buflen - 1
-        if (len < buflen - 1) {
-            break;
-        }
-
-        // buffer too small? Try again.
-        buflen *= 2;
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
     }
 
-    if (len == 0) {
-        SDL_free(path);
-        WIN_SetError("Couldn't locate our .exe");
-        return NULL;
+    char *ptr = SDL_strrchr(path, '\\');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+
+    ptr[1] = '\0'; // chop off filename, leave '\\'.
+
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
     }
 
-    for (i = len - 1; i > 0; i--) {
-        if (path[i] == '\\') {
-            break;
-        }
-    }
-
-    SDL_assert(i > 0);  // Should have been an absolute path.
-    path[i + 1] = '\0'; // chop off filename.
-
-    return path;
+    char *ptr = SDL_strrchr(path, '\\');
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

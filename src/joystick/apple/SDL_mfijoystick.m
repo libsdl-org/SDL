@@ -386,6 +386,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
              HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
         (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
         (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
+        (SDL_strcmp(name, "8BitDo Pro 3") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_3, 0, ""))) ||
         (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, ""))) {
         // The HIDAPI driver is taking care of this device
         return false;
@@ -946,8 +947,6 @@ static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
             GCMotion *motion = controller.motion;
             if (motion && motion.hasRotationRate) {
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 0.0f);
-            }
-            if (motion && motion.hasGravityAndUserAcceleration) {
                 SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 0.0f);
             }
         }
@@ -1198,20 +1197,17 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
             if (motion && motion.sensorsActive) {
                 float data[3];
 
-                if (motion.hasRotationRate) {
-                    GCRotationRate rate = motion.rotationRate;
-                    data[0] = rate.x;
-                    data[1] = rate.z;
-                    data[2] = -rate.y;
-                    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, data, 3);
-                }
-                if (motion.hasGravityAndUserAcceleration) {
-                    GCAcceleration accel = motion.acceleration;
-                    data[0] = -accel.x * SDL_STANDARD_GRAVITY;
-                    data[1] = -accel.y * SDL_STANDARD_GRAVITY;
-                    data[2] = -accel.z * SDL_STANDARD_GRAVITY;
-                    SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, data, 3);
-                }
+                GCRotationRate rate = motion.rotationRate;
+                data[0] = rate.x;
+                data[1] = rate.z;
+                data[2] = -rate.y;
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, timestamp, data, 3);
+
+                GCAcceleration accel = motion.acceleration;
+                data[0] = -accel.x * SDL_STANDARD_GRAVITY;
+                data[1] = -accel.y * SDL_STANDARD_GRAVITY;
+                data[2] = -accel.z * SDL_STANDARD_GRAVITY;
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, data, 3);
             }
         }
 
@@ -1774,6 +1770,11 @@ static bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *
 bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
+        return false;
+    }
+
+    if (IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVirtualHIDevice)) == kCFBooleanTrue) {
+        // Steam virtual gamepads always have kIOHIDVirtualHIDevice property unlike real devices, and are also not supported as GCController
         return false;
     }
 

@@ -68,6 +68,7 @@ extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client
 extern float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+extern void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy);
 extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);
 #endif
 

@@ -47,7 +47,7 @@ char *SDL_SYS_GetBasePath(void)
         } else if (SDL_strcasecmp(baseType, "parent") == 0) {
             base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
         } else {
-            // this returns the exedir for non-bundled  and the resourceDir for bundled apps
+            // this returns the exedir for non-bundled and the resourceDir for bundled apps
             base = [[bundle resourcePath] fileSystemRepresentation];
         }
 
@@ -60,6 +60,28 @@ char *SDL_SYS_GetBasePath(void)
         }
 
         return result;
+    }
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    @autoreleasepool {
+        NSBundle *bundle = [NSBundle mainBundle];
+        const char *name = [[[bundle infoDictionary] objectForKey:@"CFBundleIdentifier"] UTF8String];
+        if (!name) {
+            name = [[[bundle infoDictionary] objectForKey:@"CFBundleDisplayName"] UTF8String];
+            if (!name) {
+                name = [[[bundle infoDictionary] objectForKey:@"CFBundleName"] UTF8String];
+                if (!name) {
+                    name = [[[bundle infoDictionary] objectForKey:@"CFBundleExecutable"] UTF8String];
+                    if (!name) {
+                        name = [[[NSProcessInfo processInfo] processName] UTF8String];  // oh well.
+                    }
+                }
+            }
+        }
+
+        return name ? SDL_strdup(name) : NULL;
     }
 }
 

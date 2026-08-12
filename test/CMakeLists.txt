@@ -35,11 +35,18 @@ else()
 endif()
 set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}" PARENT_SCOPE)
 
+if(CYGWIN)
+# FindOpenGL from cmake >= 3.19 or cygwin-provided cmake versions don't
+# test for native windows opengl32, but we want native windows opengl32.
+    set(OPENGL_gl_LIBRARY opengl32)
+    set(OPENGL_FOUND TRUE)
+else()
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
 if(NOT (MSVC AND SDL_CPU_ARM64))
     # Prefer GLVND, if present
     set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
+endif()
 endif()
 
 add_library(sdltests_utils OBJECT
@@ -95,7 +102,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
 endif()
 
 if(DOS)
-    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_dual_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;sdl-test_round.png")
+    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_dual_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;gamepad_grip_sense.png;sdl-test_round.png")
     set(DOS83_SHORT "UNIFONT.HEX;UNIFONTL.TXT;PHYSADEV.PNG;LOGADEV.PNG;AUDIOFIL.PNG;SNDBRD.PNG;SNDLVL.PNG;TRASHCAN.PNG;MSDFFONT.PNG;MSDFFONT.CSV;GP_FRONT.PNG;GP_BACK.PNG;GP_FABXY.PNG;GP_FAXBY.PNG;GP_FBAYX.PNG;GP_FSONY.PNG;GP_BATT.PNG;GP_BATTX.PNG;GP_BATTW.PNG;GP_TOUCH.PNG;GP_BTN.PNG;GP_BTNSM.PNG;GP_BTNBG.PNG;GP_AXIS.PNG;GP_AXARW.PNG;GP_WIRED.PNG;GP_WLESS.PNG;SDLROUND.PNG")
 endif()
 
@@ -308,6 +315,7 @@ files2headers(gamepad_image_headers
     gamepad_face_bayx.png
     gamepad_face_sony.png
     gamepad_front.png
+    gamepad_grip_sense.png
     gamepad_touchpad.png
     gamepad_wired.png
     gamepad_wireless.png
@@ -373,6 +381,9 @@ set(build_options_dependent_tests )
 
 add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c NAME83 evdev)
 
+add_sdl_test_executable(testdescriptor BUILD_DEPENDENT SOURCES testdescriptor.c NAME83 descriptr)
+target_compile_definitions(testdescriptor PRIVATE DEBUG_DESCRIPTOR)
+
 if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
         SOURCES
@@ -433,6 +444,7 @@ add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c NAME83 lo
 add_sdl_test_executable(testlock SOURCES testlock.c NAME83 lock)
 add_sdl_test_executable(testrwlock SOURCES testrwlock.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 20 NAME83 rwlock)
 add_sdl_test_executable(testmouse SOURCES testmouse.c NAME83 mouse)
+add_sdl_test_executable(testnotification NEEDS_RESOURCES SOURCES testnotification.c NAME83 notify)
 
 add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c NAME83 overlay)
 add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c NAME83 platform)

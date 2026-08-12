@@ -626,8 +626,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             int x_ticks = 0, y_ticks = 0;
 
             if (xev->deviceid != videodata->xinput_master_pointer_device) {
-                // Ignore slave button events on non-focused windows, or focus can be incorrectly set while a grab is active.
-                if (SDL_GetMouseFocus() != windowdata->window) {
+                /* Ignore slave button events on non-focused windows, as they can arrive before FocusIn events,
+                 * or result in focus being incorrectly set while a grab is active.
+                 */
+                if (SDL_GetMouseFocus() != windowdata->window || SDL_GetKeyboardFocus() != windowdata->window) {
                     break;
                 }
 
@@ -646,7 +648,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
             if (down) {
                 X11_HandleButtonPress(_this, windowdata, (SDL_MouseID)xev->sourceid, button,
-                                      (float)xev->event_x, (float)xev->event_y, xev->time);
+                                      (float)xev->event_x, (float)xev->event_y, xev->time, xev->serial);
             } else {
                 X11_HandleButtonRelease(_this, windowdata, (SDL_MouseID)xev->sourceid, button, xev->time);
             }
@@ -758,11 +760,11 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
 
         if (cookie->evtype == XI_GesturePinchBegin) {
-            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, window, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, window, 0, -1.0f, -1.0f, -1.0f, -1.0f);
         } else if (cookie->evtype == XI_GesturePinchUpdate) {
-            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, window, (float)xev->scale);
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, window, (float)xev->scale, -1.0f, -1.0f, -1.0f, -1.0f);
         } else {
-            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, window, 0);
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, window, 0, -1.0f, -1.0f, -1.0f, -1.0f);
         }
     } break;
 

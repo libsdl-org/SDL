@@ -30,6 +30,7 @@
 #include "gamepad_button_background.h"
 #include "gamepad_wired.h"
 #include "gamepad_wireless.h"
+#include "gamepad_grip_sense.h"
 
 #include <limits.h>
 
@@ -305,6 +306,17 @@ static const struct
     { 355, 200 }, /* SDL_GAMEPAD_BUTTON_LEFT_PADDLE2 */
 };
 
+static const struct
+{
+    int x;
+    int y;
+} capsense_positions[] = {
+    {  97, 194 }, /* SDL_GAMEPAD_CAPSENSE_LEFT_STICK */
+    { 330, 270 }, /* SDL_GAMEPAD_CAPSENSE_RIGHT_STICK */
+    {  50, 260 }, /* SDL_GAMEPAD_CAPSENSE_LEFT_GRIP */
+    { 462, 260 }, /* SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP */
+};
+
 /* This is indexed by gamepad element */
 static const struct
 {
@@ -366,6 +378,7 @@ struct GamepadImage
     SDL_Texture *dual_touchpad_texture;
     SDL_Texture *button_texture;
     SDL_Texture *axis_texture;
+    SDL_Texture *grip_sense_texture;
     float gamepad_width;
     float gamepad_height;
     float face_width;
@@ -382,6 +395,8 @@ struct GamepadImage
     float button_height;
     float axis_width;
     float axis_height;
+    float grip_sense_width;
+    float grip_sense_height;
 
     float x;
     float y;
@@ -392,6 +407,7 @@ struct GamepadImage
     ControllerDisplayMode display_mode;
 
     bool elements[SDL_GAMEPAD_ELEMENT_MAX];
+    bool capsense_elements[SDL_GAMEPAD_CAPSENSE_ELEMENT_MAX];
 
     SDL_JoystickConnectionState connection_state;
     SDL_PowerState battery_state;
@@ -452,6 +468,10 @@ GamepadImage *CreateGamepadImage(SDL_Renderer *renderer)
         ctx->axis_texture = CreateTexture(renderer, gamepad_axis_png, gamepad_axis_png_len);
         SDL_GetTextureSize(ctx->axis_texture, &ctx->axis_width, &ctx->axis_height);
         SDL_SetTextureColorMod(ctx->axis_texture, 10, 255, 21);
+
+        ctx->grip_sense_texture = CreateTexture(renderer, gamepad_grip_sense_png, gamepad_grip_sense_png_len);
+        SDL_GetTextureSize(ctx->grip_sense_texture, &ctx->grip_sense_width, &ctx->grip_sense_height);
+        SDL_SetTextureColorMod(ctx->grip_sense_texture, 10, 255, 21);
 
         ctx->showing_front = true;
     }
@@ -680,6 +700,7 @@ void ClearGamepadImage(GamepadImage *ctx)
     }
 
     SDL_zeroa(ctx->elements);
+    SDL_zeroa(ctx->capsense_elements);
 }
 
 void SetGamepadImageElement(GamepadImage *ctx, int element, bool active)
@@ -689,6 +710,15 @@ void SetGamepadImageElement(GamepadImage *ctx, int element, bool active)
     }
 
     ctx->elements[element] = active;
+}
+
+static void SetGamepadCapSenseImageElement(GamepadImage *ctx, int capsense_element, bool active)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->capsense_elements[capsense_element] = active;
 }
 
 static void FreeTouchpads(GamepadImage *ctx)
@@ -706,6 +736,7 @@ static void FreeTouchpads(GamepadImage *ctx)
 void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
 {
     int i;
+    int num_touchpads;
 
     if (!ctx) {
         return;
@@ -726,6 +757,11 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
         const SDL_GamepadButton button = (SDL_GamepadButton)i;
 
         SetGamepadImageElement(ctx, button, SDL_GetGamepadButton(gamepad, button));
+    }
+
+    for (i = 0; i < SDL_GAMEPAD_CAPSENSE_COUNT; ++i) {
+        const SDL_GamepadCapSenseType capsense = (SDL_GamepadCapSenseType)i;
+        SetGamepadCapSenseImageElement(ctx, capsense, SDL_GetGamepadCapSense(gamepad, capsense));
     }
 
     for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
@@ -763,39 +799,45 @@ void UpdateGamepadImageFromGamepad(GamepadImage *ctx, SDL_Gamepad *gamepad)
     ctx->connection_state = SDL_GetGamepadConnectionState(gamepad);
     ctx->battery_state = SDL_GetGamepadPowerInfo(gamepad, &ctx->battery_percent);
 
-    FreeTouchpads(ctx);
-    ctx->num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
-    ctx->num_touchpads = SDL_min(ctx->num_touchpads, MAX_TOUCHPADS);
-    if (ctx->num_touchpads > 0) {
-        ctx->touchpads = (GamepadTouchpad *)SDL_malloc(sizeof(*ctx->touchpads) * ctx->num_touchpads);
-        if (ctx->touchpads) {
-            for (i = 0; i < ctx->num_touchpads; ++i) {
-                GamepadTouchpad *touchpad = &ctx->touchpads[i];
-                touchpad->num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, i);
-                touchpad->num_fingers = SDL_min(touchpad->num_fingers, MAX_FINGERS);
-                if (touchpad->num_fingers > 0) {
-                    touchpad->fingers = (GamepadTouchpadFinger *)SDL_malloc(sizeof(*touchpad->fingers) * touchpad->num_fingers);
-                    if (touchpad->fingers) {
-                        for (int j = 0; j < touchpad->num_fingers; ++j) {
-                            GamepadTouchpadFinger *finger = &touchpad->fingers[j];
-                            SDL_GetGamepadTouchpadFinger(gamepad, i, j, &finger->down, &finger->x, &finger->y, &finger->pressure);
+    num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
+    num_touchpads = SDL_min(num_touchpads, MAX_TOUCHPADS);
+    if (num_touchpads != ctx->num_touchpads) {
+        FreeTouchpads(ctx);
+        ctx->num_touchpads = num_touchpads;
+        if (ctx->num_touchpads > 0) {
+            ctx->touchpads = (GamepadTouchpad *)SDL_malloc(sizeof(*ctx->touchpads) * ctx->num_touchpads);
+            if (ctx->touchpads) {
+                for (i = 0; i < ctx->num_touchpads; ++i) {
+                    GamepadTouchpad *touchpad = &ctx->touchpads[i];
+                    touchpad->num_fingers = SDL_GetNumGamepadTouchpadFingers(gamepad, i);
+                    touchpad->num_fingers = SDL_min(touchpad->num_fingers, MAX_FINGERS);
+                    if (touchpad->num_fingers > 0) {
+                        touchpad->fingers = (GamepadTouchpadFinger *)SDL_malloc(sizeof(*touchpad->fingers) * touchpad->num_fingers);
+                        if (touchpad->fingers == NULL) {
+                            touchpad->num_fingers = 0;
                         }
-                    } else {
-                        touchpad->num_fingers = 0;
                     }
                 }
-            }
-            if (ctx->num_touchpads == 1) {
-                SDL_memcpy(&ctx->touchpads[0].area, &touchpad_area, sizeof(SDL_FRect));
+                if (ctx->num_touchpads == 1) {
+                    SDL_memcpy(&ctx->touchpads[0].area, &touchpad_area, sizeof(SDL_FRect));
+                } else {
+                    SDL_memcpy(&ctx->touchpads[0].area, &dual_touchpad_area[0], sizeof(SDL_FRect));
+                    SDL_memcpy(&ctx->touchpads[1].area, &dual_touchpad_area[1], sizeof(SDL_FRect));
+                }
             } else {
-                SDL_memcpy(&ctx->touchpads[0].area, &dual_touchpad_area[0], sizeof(SDL_FRect));
-                SDL_memcpy(&ctx->touchpads[1].area, &dual_touchpad_area[1], sizeof(SDL_FRect));
+                ctx->num_touchpads = 0;
             }
-        } else {
-            ctx->num_touchpads = 0;
+        }
+        ctx->showing_touchpad = (ctx->num_touchpads > 0);
+    }
+
+    for (i = 0; i < ctx->num_touchpads; ++i) {
+        GamepadTouchpad *touchpad = &ctx->touchpads[i];
+        for (int j = 0; j < touchpad->num_fingers; ++j) {
+            GamepadTouchpadFinger *finger = &touchpad->fingers[j];
+            SDL_GetGamepadTouchpadFinger(gamepad, i, j, &finger->down, &finger->x, &finger->y, &finger->pressure);
         }
     }
-    ctx->showing_touchpad = (ctx->num_touchpads > 0);
 }
 
 void RenderGamepadImage(GamepadImage *ctx)
@@ -957,12 +999,37 @@ void RenderGamepadImage(GamepadImage *ctx)
                     dst.y -= ctx->button_height / 2;
                     dst.w = ctx->button_width;
                     dst.h = ctx->button_height;
-                    SDL_SetTextureAlphaMod(ctx->button_texture, (Uint8)(finger->pressure * SDL_ALPHA_OPAQUE));
+                    SDL_SetTextureAlphaMod(ctx->button_texture, (Uint8)((0.1f + (finger->pressure * 0.9f)) * SDL_ALPHA_OPAQUE));
                     SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
                     SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
                 }
             }
         }
+    }
+
+    if (ctx->display_mode == CONTROLLER_MODE_TESTING && ctx->showing_front) {
+        SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE / 2);
+        for (i = 0; i < 2; ++i) {
+            if (ctx->capsense_elements[i]) {
+                dst.w = ctx->button_width / 2;
+                dst.h = ctx->button_height / 2;
+                dst.x = ctx->x + capsense_positions[i].x - dst.w / 2;
+                dst.y = ctx->y + capsense_positions[i].y - dst.h / 2;
+                SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+            }
+        }
+        SDL_SetTextureAlphaMod(ctx->button_texture, SDL_ALPHA_OPAQUE);
+        SDL_SetTextureAlphaMod(ctx->grip_sense_texture, SDL_ALPHA_OPAQUE / 2);
+        for (i = 2; i < SDL_arraysize(capsense_positions); ++i) {
+            if (ctx->capsense_elements[i]) {
+                dst.w = ctx->grip_sense_width;
+                dst.h = ctx->grip_sense_height;
+                dst.x = ctx->x + capsense_positions[i].x - dst.w / 2;
+                dst.y = ctx->y + capsense_positions[i].y - dst.h / 2;
+                SDL_RenderTexture(ctx->renderer, ctx->grip_sense_texture, NULL, &dst);
+            }
+        }
+        SDL_SetTextureAlphaMod(ctx->grip_sense_texture, SDL_ALPHA_OPAQUE);
     }
 }
 
@@ -1028,6 +1095,14 @@ static const char *gamepad_axis_names[] = {
     "Right Trigger",
 };
 SDL_COMPILE_TIME_ASSERT(gamepad_axis_names, SDL_arraysize(gamepad_axis_names) == SDL_GAMEPAD_AXIS_COUNT);
+
+static const char *capsense_names[] = {
+    "L.Stick Touch",
+    "R.Stick Touch",
+    "L.Grip Sense",
+    "R.Grip Sense",
+};
+SDL_COMPILE_TIME_ASSERT(capsense_names, SDL_arraysize(capsense_names) == SDL_GAMEPAD_CAPSENSE_COUNT);
 
 struct GamepadDisplay
 {
@@ -1708,6 +1783,28 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                     y += ctx->button_height + 2.0f;
                 }
             }
+        }
+
+        for (i = 0; i < SDL_GAMEPAD_CAPSENSE_COUNT; i++) {
+            const SDL_GamepadCapSenseType capsense = (SDL_GamepadCapSenseType)i;
+            if (SDL_GamepadHasCapSense(gamepad, capsense)) {
+                SDL_snprintf(text, sizeof(text), "%s:", capsense_names[i]);
+                SDLTest_DrawString(ctx->renderer, x + center - SDL_strlen(text) * FONT_CHARACTER_SIZE, y, text);
+
+                if (SDL_GetGamepadCapSense(gamepad, capsense)) {
+                    SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+                } else {
+                    SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+                }
+
+                dst.x = x + center + 2.0f;
+                dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+                dst.w = ctx->button_width;
+                dst.h = ctx->button_height;
+                SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+                y += ctx->button_height + 2.0f;
+            };
         }
 
         has_accel = SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL);
@@ -3549,6 +3646,8 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "Joy-Con Pair";
     case SDL_GAMEPAD_TYPE_GAMECUBE:
         return "GameCube";
+    case SDL_GAMEPAD_TYPE_STEAM:
+        return "Steam";
     default:
         return "";
     }

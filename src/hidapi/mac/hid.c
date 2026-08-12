@@ -598,21 +598,17 @@ static struct hid_device_info *create_device_info_with_usage(IOHIDDeviceRef dev,
 
 #ifdef HIDAPI_IGNORE_DEVICE
 	/* See if there are any devices we should skip in enumeration */
-	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false)) {
+	if (HIDAPI_IGNORE_DEVICE(get_bus_type(dev), dev_vid, dev_pid, usage_page, usage, false, false)) {
 		free(cur_dev);
 		return NULL;
 	}
 #endif
 
 #ifdef HIDAPI_USING_SDL_RUNTIME
-	if (IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDVirtualHIDevice)) == kCFBooleanTrue) {
-		/* Steam virtual gamepads always have kIOHIDVirtualHIDevice property unlike real devices */
-		if (SDL_IsJoystickSteamVirtualGamepad(dev_vid, dev_pid, dev_version)) {
-			const char *allow_steam_virtual_gamepad = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
-			if (!SDL_GetStringBoolean(allow_steam_virtual_gamepad, false)) {
-				free(cur_dev);
-				return NULL;
-			}
+	if (SDL_IsJoystickSteamVirtualGamepad(dev_vid, dev_pid, dev_version)) {
+		if (IOHIDDeviceGetProperty(dev, CFSTR(kIOHIDVirtualHIDevice)) != kCFBooleanTrue) {
+			/* This is a real Xbox 360 controller, adjust the version so it's not detected as a Steam virtual gamepad */
+			dev_version = 1;
 		}
 	}
 #endif

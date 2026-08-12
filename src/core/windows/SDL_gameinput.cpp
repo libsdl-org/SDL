@@ -25,6 +25,13 @@
 
 #ifdef HAVE_GAMEINPUT_H
 
+#define USE_GAMEINPUTCREATE
+#if defined(SDL_PLATFORM_GDK)
+#ifdef _MSC_VER
+#pragma comment(lib, "gameinput.lib")
+#endif
+#endif
+
 static SDL_SharedObject *g_hGameInputDLL;
 static IGameInput *g_pGameInput;
 static int g_nGameInputRefCount;
@@ -33,41 +40,12 @@ static int g_nGameInputRefCount;
 bool SDL_InitGameInput(IGameInput **ppGameInput)
 {
     if (g_nGameInputRefCount == 0) {
-        g_hGameInputDLL = SDL_LoadObject("gameinput.dll");
-        if (!g_hGameInputDLL) {
-            return false;
-        }
-
-        typedef HRESULT (WINAPI *pfnGameInputCreate)(IGameInput **gameInput);
-        pfnGameInputCreate pGameInputCreate = (pfnGameInputCreate)SDL_LoadFunction(g_hGameInputDLL, "GameInputCreate");
-        if (!pGameInputCreate) {
-            SDL_UnloadObject(g_hGameInputDLL);
-            return false;
-        }
-
-        IGameInput *pGameInput = NULL;
-        HRESULT hr = pGameInputCreate(&pGameInput);
+        // This is recommended, as Microsoft's GameInputCreate() is robust
+        // and better handles various GameInput installations
+        HRESULT hr = GameInputCreate(&g_pGameInput);
         if (FAILED(hr)) {
-            SDL_UnloadObject(g_hGameInputDLL);
             return WIN_SetErrorFromHRESULT("GameInputCreate failed", hr);
         }
-
-#ifdef SDL_PLATFORM_WIN32
-#if GAMEINPUT_API_VERSION >= 1
-        hr = pGameInput->QueryInterface(IID_IGameInput, (void **)&g_pGameInput);
-#else
-        // We require GameInput v1.1 or newer
-        hr = E_NOINTERFACE;
-#endif
-        pGameInput->Release();
-        if (FAILED(hr)) {
-            SDL_UnloadObject(g_hGameInputDLL);
-            return WIN_SetErrorFromHRESULT("GameInput QueryInterface failed", hr);
-        }
-#else
-        // Assume that the version we get is compatible with the current SDK
-        g_pGameInput = pGameInput;
-#endif
     }
     ++g_nGameInputRefCount;
 

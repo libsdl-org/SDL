@@ -45,7 +45,9 @@ bool SDL_SYS_EnumerateDirectory(const char *path, SDL_EnumerateDirectoryCallback
     char *apath = NULL;  // absolute path (for Android, iOS, etc). Overrides `path`.
 
 #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
-    if (*path != '/') {
+    if (*path == '\0') {
+        return SDL_SetError("No such file or directory");
+    } else if (*path != '/') {
         #ifdef SDL_PLATFORM_ANDROID
         if (SDL_strncmp(path, "assets://", 9) == 0) {
             char *pathwithsep = NULL;
@@ -348,7 +350,9 @@ bool SDL_SYS_GetPathInfo(const char *path, SDL_PathInfo *info)
     int rc;
 
 #ifdef SDL_PLATFORM_ANDROID
-    if (*path == '/') {
+    if (*path == '\0') {
+        return SDL_SetError("No such file or directory");
+    } else if (*path == '/') {
         rc = stat(path, &statbuf);
     } else if (SDL_strncmp(path, "assets://", 9) == 0) {
         return Android_JNI_GetAssetPathInfo(path, info);

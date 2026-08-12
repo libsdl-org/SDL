@@ -711,6 +711,7 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	for (size_t i = 0; i < len; i++) {
 		char devpath[USB_MAX_DEVNAMELEN];
 		int bus;
+		struct hid_device_info *prev_end;
 
 		strlcpy(devpath, "/dev/", sizeof(devpath));
 		strlcat(devpath, arr[i], sizeof(devpath));
@@ -719,7 +720,17 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		if (bus == -1)
 			continue;
 
+		/*
+		 * ehci/ohci/uhci/dwctwo etc. use 'addr 1' for root hubs
+		 * but xhci uses 'addr 0' on NetBSD.
+		 * Check addr 0 (that would be unused on other than xhci)
+		 * and then check addr 1 if there is no device at addr 0.
+		 */
+		prev_end = hed.end;
 		enumerate_usb_devices(bus, 0, hid_enumerate_callback, &hed);
+		if (hed.end == prev_end)
+			enumerate_usb_devices(bus, 1,
+			    hid_enumerate_callback, &hed);
 
 		close(bus);
 	}

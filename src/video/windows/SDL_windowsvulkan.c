@@ -115,9 +115,7 @@ char const * const *WIN_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uin
     static const char *const extensionsForWin32[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_WIN32_SURFACE_EXTENSION_NAME
     };
-    if (count) {
-        *count = SDL_arraysize(extensionsForWin32);
-    }
+    *count = SDL_arraysize(extensionsForWin32);
     return extensionsForWin32;
 }
 

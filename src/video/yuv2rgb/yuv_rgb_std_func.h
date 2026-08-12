@@ -74,6 +74,16 @@
 		(((Uint32)clamp10(y_tmp+r_tmp)) << 0); \
 	rgb_ptr += 4
 
+#elif RGB_FORMAT == RGB_FORMAT_RGB48
+
+#define PACK_PIXEL(rgb_ptr) \
+	*(Uint16 *)rgb_ptr = clamp16(y_tmp + r_tmp); \
+	rgb_ptr += sizeof(Uint16);				   \
+	*(Uint16 *)rgb_ptr = clamp16(y_tmp + g_tmp); \
+	rgb_ptr += sizeof(Uint16);				   \
+	*(Uint16 *)rgb_ptr = clamp16(y_tmp + b_tmp); \
+	rgb_ptr += sizeof(Uint16)
+
 #else
 #error PACK_PIXEL unimplemented
 #endif
@@ -116,6 +126,11 @@ void STD_FUNCTION_NAME(
 	#define y_pixel_stride 2
 	#define uv_pixel_stride 4
 	#define uv_x_sample_interval 2
+	#define uv_y_sample_interval 1
+#elif YUV_FORMAT == YUV_FORMAT_444
+	#define y_pixel_stride 1
+	#define uv_pixel_stride 1
+	#define uv_x_sample_interval 1
 	#define uv_y_sample_interval 1
 #elif YUV_FORMAT == YUV_FORMAT_NV12
 	#define y_pixel_stride 1
@@ -160,8 +175,10 @@ void STD_FUNCTION_NAME(
 			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 
+			#if uv_x_sample_interval > 1
 			y_tmp = (GET(y_ptr1[y_pixel_stride]-param->y_shift)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
+			#endif
 
 			#if uv_y_sample_interval > 1
 			y_tmp = (GET(y_ptr2[0]-param->y_shift)*param->y_factor);
@@ -171,12 +188,21 @@ void STD_FUNCTION_NAME(
 			PACK_PIXEL(rgb_ptr2);
 			#endif
 
+			#if uv_x_sample_interval > 1
 			y_ptr1+=2*y_pixel_stride;
+			#else
+			y_ptr1+=y_pixel_stride;
+			#endif
 			#if uv_y_sample_interval > 1
 			y_ptr2+=2*y_pixel_stride;
 			#endif
+			#if uv_x_sample_interval > 1
 			u_ptr+=2*uv_pixel_stride/uv_x_sample_interval;
 			v_ptr+=2*uv_pixel_stride/uv_x_sample_interval;
+			#else
+			u_ptr+=uv_pixel_stride/uv_x_sample_interval;
+			v_ptr+=uv_pixel_stride/uv_x_sample_interval;
+			#endif
 		}
 
 		/* Catch the last pixel, if needed */

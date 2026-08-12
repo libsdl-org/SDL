@@ -2213,6 +2213,16 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         }
         break;
 
+    case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+    case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+#ifdef VERBOSE_CAPSENSE
+        SDL_Log("Gamepad %" SDL_PRIu32 " capsense %u %s",
+                event->gcapsense.which,
+                event->gcapsense.capsense,
+                event->gcapsense.down ? "touch" : "release");
+#endif /* VERBOSE_CAPSENSE */
+        break;
+
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
             VirtualGamepadMouseDown(event->button.x, event->button.y);

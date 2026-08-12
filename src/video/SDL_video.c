@@ -657,6 +657,12 @@ bool SDL_VideoInit(const char *driver_name)
 
     // Select the proper video driver
     video = NULL;
+#ifdef SDL_PLATFORM_LINUX
+    // https://github.com/libsdl-org/SDL/issues/12247
+    if (SDL_IsUbuntuTouch()) {
+        driver_name = "wayland";
+    }
+#endif
     if (!driver_name) {
         driver_name = SDL_GetHint(SDL_HINT_VIDEO_DRIVER);
     }
@@ -1430,7 +1436,7 @@ bool SDL_GetClosestFullscreenDisplayMode(SDL_DisplayID displayID, int w, int h, 
                      * refresh rate target */
                     continue;
                 }
-                if (SDL_BYTESPERPIXEL(closest->format) >= SDL_BYTESPERPIXEL(mode->format)) {
+                if (SDL_BYTESPERPIXEL(closest->format) > SDL_BYTESPERPIXEL(mode->format)) {
                     // Prefer the highest color depth
                     continue;
                 }
@@ -1512,9 +1518,6 @@ const SDL_DisplayMode *SDL_GetCurrentDisplayMode(SDL_DisplayID displayID)
     SDL_VideoDisplay *display = SDL_GetVideoDisplay(displayID);
 
     CHECK_DISPLAY_MAGIC(display, NULL);
-
-    // Make sure our mode list is updated
-    SDL_UpdateFullscreenDisplayModes(display);
 
     return display->current_mode;
 }
@@ -2666,16 +2669,6 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
         return false;
     }
 
-    // Don't attempt to reconfigure external windows.
-    if (window->flags & SDL_WINDOW_EXTERNAL) {
-        return false;
-    }
-
-    // Only attempt to reconfigure if the window has no existing graphics flags.
-    if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
-        return false;
-    }
-
     const SDL_WindowFlags graphics_flags = flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     if (graphics_flags & (graphics_flags - 1)) {
         return SDL_SetError("Conflicting window flags specified");
@@ -2689,6 +2682,28 @@ static bool SDL_ReconfigureWindowInternal(SDL_Window *window, SDL_WindowFlags fl
     }
     if ((flags & SDL_WINDOW_METAL) && !_this->Metal_CreateView) {
         return SDL_ContextNotSupported("Metal");
+    }
+
+    if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+        // Only attempt to reconfigure if the window has no existing graphics flags.
+        if (window->flags & (SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN)) {
+            return false;
+        }
+    } else {
+        // Can't destroy and recreate an external window, so try our best to reconfigure it.
+        if (!_this->ReconfigureWindow(_this, window, 0)) {
+            return false;
+        }
+
+        // Reload the GL/Vulkan libraries in case the profile changed.
+        if (window->flags & SDL_WINDOW_OPENGL) {
+            SDL_GL_UnloadLibrary();
+        }
+        if (window->flags & SDL_WINDOW_VULKAN) {
+            SDL_Vulkan_UnloadLibrary();
+        }
+
+        window->flags &= ~(SDL_WINDOW_OPENGL | SDL_WINDOW_METAL | SDL_WINDOW_VULKAN);
     }
 
     SDL_DestroyWindowSurface(window);
@@ -3051,6 +3066,14 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
 
     window->pending.x = x;
     window->pending.y = y;
+
+    /* Windows are placed at the coordinates received while in fullscreen after leaving fullscreen.
+     * Asynchronous backends need special handling in this case.
+     */
+    if (!_this->SyncWindow && (window->flags & SDL_WINDOW_FULLSCREEN)) {
+        window->floating.x = window->windowed.x = x;
+        window->floating.y = window->windowed.y = y;
+    }
     window->undefined_x = false;
     window->undefined_y = false;
     window->last_position_pending = true;
@@ -4390,10 +4413,12 @@ void SDL_OnWindowEnter(SDL_Window *window)
     if (_this->OnWindowEnter) {
         _this->OnWindowEnter(_this, window);
     }
+    SDL_UpdateRelativeMouseMode();
 }
 
 void SDL_OnWindowLeave(SDL_Window *window)
 {
+    SDL_UpdateRelativeMouseMode();
 }
 
 void SDL_OnWindowFocusGained(SDL_Window *window)
@@ -5257,7 +5282,7 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
     }
     case SDL_GL_ACCELERATED_VISUAL:
     {
-        // FIXME: How do we get this information?
+        // Note that we can _not_ reasonably detect this once we have a context.
         *value = (_this->gl_config.accelerated != 0);
         return true;
     }
@@ -5767,8 +5792,10 @@ static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
     if (!hint) {
-        // Steam will eventually have smarts about whether a keyboard is active, so always request the on-screen keyboard on Steam Deck
-        hint = SDL_GetHint("SteamDeck");
+        // This hint is currently only used by the X11 video driver
+        if (SDL_strcmp(_this->name, "x11") == 0) {
+            hint = SDL_GetHint(SDL_HINT_ENABLE_STEAM_SCREEN_KEYBOARD);
+        }
     }
     if (((!hint || SDL_strcasecmp(hint, "auto") == 0) && !SDL_HasKeyboard()) ||
         SDL_GetStringBoolean(hint, false)) {
@@ -5806,21 +5833,21 @@ bool SDL_StartTextInputWithProperties(SDL_Window *window, SDL_PropertiesID props
         _this->SetTextInputProperties(_this, window, props);
     }
 
-    // Show the on-screen keyboard, if desired
-    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
-        if (_this->ShowScreenKeyboard) {
-            _this->ShowScreenKeyboard(_this, window, props);
-        }
-    }
-
     if (!window->text_input_active) {
-        // Finally start the text input system
+        // Start the text input system
         if (_this->StartTextInput) {
             if (!_this->StartTextInput(_this, window, props)) {
                 return false;
             }
         }
         window->text_input_active = true;
+    }
+
+    // Show the on-screen keyboard, if desired
+    if (AutoShowingScreenKeyboard() && !SDL_ScreenKeyboardShown(window)) {
+        if (_this->ShowScreenKeyboard) {
+            _this->ShowScreenKeyboard(_this, window, props);
+        }
     }
     return true;
 }
@@ -6288,6 +6315,17 @@ void SDL_Vulkan_UnloadLibrary(void)
 
 char const * const *SDL_Vulkan_GetInstanceExtensions(Uint32 *count)
 {
+    Uint32 tmpcount = 0;
+    if (!count) {
+        count = &tmpcount;
+    }
+
+    if (!_this->Vulkan_GetInstanceExtensions) {
+        *count = 0;
+        SDL_Unsupported();
+        return NULL;
+    }
+
     return _this->Vulkan_GetInstanceExtensions(_this, count);
 }
 

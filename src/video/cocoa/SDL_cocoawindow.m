@@ -1146,7 +1146,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
                                                       repeats:TRUE
                                                         block:^(NSTimer *unusedTimer)
     {
-        SDL_OnWindowLiveResizeUpdate(_data.window);
+        SDL_OnWindowLiveResizeUpdate(self->_data.window);
     }];
 
     [[NSRunLoop currentRunLoop] addTimer:liveResizeTimer forMode:NSRunLoopCommonModes];
@@ -1430,12 +1430,18 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 }
 
 /* This is usually sent after an unexpected windowDidExitFullscreen if the window
- * failed to become fullscreen.
+ * failed to become fullscreen, but not always, so ensure that the state variables
+ * are cleared.
  *
  * Since something went wrong and the current state is unknown, dump any pending events.
+ *
+ * For testing purposes, this error can usually be induced by starting something that
+ * immedately enters a fullscreen space from a terminal that is in a fullscreen space.
  */
 - (void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
 {
+    inFullscreenTransition = NO;
+    isFullscreenSpace = NO;
     [self clearAllPendingWindowOperations];
 }
 
@@ -1461,7 +1467,6 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         }
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_ENTER_FULLSCREEN, 0, 0);
 
-        _data.pending_position = NO;
         _data.pending_size = NO;
 
         /* Force the size change event in case it was delivered earlier
@@ -1567,7 +1572,10 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         } else {
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
         }
-        [NSMenu setMenuBarVisible:YES];
+
+        if (![NSMenu menuBarVisible]) {
+            [NSMenu setMenuBarVisible:YES];
+        }
 
         // Toggle zoom, if changed while fullscreen.
         if ([self windowOperationIsPending:PENDING_OPERATION_ZOOM]) {
@@ -1912,16 +1920,19 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     y = (window->h - point.y);
 
     // On macOS 26 if you move away from a space and then back, mouse motion events will have incorrect
-    // values at the top of the screen. The global mouse position query is still correct, so we'll fall
-    // back to that until this is fixed by Apple. Mouse button events are interestingly not affected.
+    // values at the top of the screen. Apparently non-fullscreen windows suffer from this from time
+    // to time when mouse leaves/enters a window and/or focus changes, too. The global mouse position query
+    // is still correct, so we'll fall back to that until this is fixed by Apple. Mouse button events are
+    // interestingly not affected.
     if (@available(macOS 26.0, *)) {
-        if ([_data.listener isInFullscreenSpace]) {
+        // do for all windows for now, not just fullscreen spaces. And hopefully remove this code entirely soon.
+        //if ([_data.listener isInFullscreenSpace]) {
             int posx = 0, posy = 0;
             SDL_GetWindowPosition(window, &posx, &posy);
             SDL_GetGlobalMouseState(&x, &y);
             x -= posx;
             y -= posy;
-        }
+        //}
     }
 
     if (NSAppKitVersionNumber >= NSAppKitVersionNumber10_13_2) {
@@ -2043,17 +2054,17 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 {
     switch ([theEvent phase]) {
     case NSEventPhaseBegan:
-        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0, -1.0f, -1.0f, -1.0f, -1.0f);
         break;
     case NSEventPhaseChanged:
         {
             CGFloat scale = 1.0f + [theEvent magnification];
-            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale);
+            SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, scale, -1.0f, -1.0f, -1.0f, -1.0f);
         }
         break;
     case NSEventPhaseEnded:
     case NSEventPhaseCancelled:
-        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, Cocoa_GetEventTimestamp([theEvent timestamp]), NULL, 0, -1.0f, -1.0f, -1.0f, -1.0f);
         break;
     default:
         break;
@@ -2242,7 +2253,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 }
 @end
 
-static void Cocoa_UpdateMouseFocus()
+static void Cocoa_UpdateMouseFocus(void)
 {
     const NSPoint mouseLocation = [NSEvent mouseLocation];
 
@@ -2605,7 +2616,7 @@ bool Cocoa_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         BOOL fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN) ? YES : NO;
         int x, y;
 
-        if ([windata.listener isInFullscreenSpaceTransition]) {
+        if (fullscreen || [windata.listener isInFullscreenSpaceTransition]) {
             windata.pending_position = YES;
             return true;
         }
@@ -3030,8 +3041,13 @@ SDL_FullscreenResult Cocoa_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Windo
 
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
 
-            rect.origin.x = data.was_zoomed ? window->windowed.x : window->floating.x;
-            rect.origin.y = data.was_zoomed ? window->windowed.y : window->floating.y;
+            if (data.pending_position) {
+                rect.origin.x = window->pending.x;
+                rect.origin.y = window->pending.y;
+            } else {
+                rect.origin.x = data.was_zoomed ? window->windowed.x : window->floating.x;
+                rect.origin.y = data.was_zoomed ? window->windowed.y : window->floating.y;
+            }
             rect.size.width = data.was_zoomed ? window->windowed.w : window->floating.w;
             rect.size.height = data.was_zoomed ? window->windowed.h : window->floating.h;
 

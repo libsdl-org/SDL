@@ -120,14 +120,75 @@ static int SDL_GetEmscriptenOSID()
     });
 }
 
+EM_JS_DEPS(sdljoystick, "$stringToUTF8");
+
+static void SDL_GetEmscriptenNormalizedName(int device_index, char *out, int length)
+{
+    MAIN_THREAD_EM_ASM({
+        let gamepad = navigator['getGamepads']()[$0];
+        if (!gamepad) {
+            stringToUTF8('\0', $1, $2); // Silence the compiler here, because '' is not valid
+            return;
+        }
+
+        let id = gamepad['id'];
+        let output = id;
+        // Chrome
+        if (id['indexOf'](' (STANDARD GAMEPAD') > 0) { // Wireless Controller (STANDARD GAMEPAD Vendor: 054c Product: 09cc)
+            output = id['substr'](0, id['indexOf'](' (STANDARD GAMEPAD'));
+        } else if (id['indexOf'](' (Vendor:') > 0) { // usb gamepad            (Vendor: 0810 Product: e501)
+            output = id['substr'](0, id['indexOf'](' (Vendor:'));
+        } else if (id['indexOf'](' (XInput') > 0) { // Xbox 360 Controller (XInput STANDARD GAMEPAD)
+            output = id['substr'](0, id['indexOf'](' (XInput'));
+        }
+
+        // Firefox, Safari: "046d-c216-Logitech Dual Action", "46d-c216-Logicool Dual Action", or "xinput"
+        let id_split = id['split']('-');
+        if (id_split['length'] > 1 && !isNaN(parseInt(id_split[0], 16))) {
+            // Let's not assume the length of the vendor/product IDs in the string
+            // and just find the second '-' using indexOf
+            let start = id['indexOf']('-', id['indexOf']('-')+1)+1;
+            output = id['substr'](start);
+        }
+
+        stringToUTF8(output.trim(), $1, $2);
+    }, device_index, out, length);
+}
+
+#define IS_EQUAL_APPROX(a, b) (((a)-(b)) < 0.00001 && ((a)-(b)) > -0.00001)
+static Uint8 SDL_GetHatFromEmscriptenAxis(float hat_axis)
+{
+    if (IS_EQUAL_APPROX(hat_axis, -7.0/7)) {
+        return SDL_HAT_UP;
+    } else if (IS_EQUAL_APPROX(hat_axis, -5.0/7)) {
+        return SDL_HAT_UP | SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, -3.0/7)) {
+        return SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, -1.0/7)) {
+        return SDL_HAT_DOWN | SDL_HAT_RIGHT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 1.0/7)) {
+        return SDL_HAT_DOWN;
+    } else if (IS_EQUAL_APPROX(hat_axis, 3.0/7)) {
+        return SDL_HAT_DOWN | SDL_HAT_LEFT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 5.0/7)) {
+        return SDL_HAT_LEFT;
+    } else if (IS_EQUAL_APPROX(hat_axis, 7.0/7)) {
+        return SDL_HAT_UP | SDL_HAT_LEFT;
+    } else {
+        return SDL_HAT_CENTERED;
+    }
+}
+#undef IS_EQUAL_APPROX
+
 static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepadEvent, void *userData)
 {
     SDL_joylist_item *item;
     int i;
     Uint16 bus;
     Uint16 vendor, product;
-    Uint8 os_id;
+    Uint8 os_id, subtype;
     bool is_xinput;
+    char name[128];
 
     SDL_LockJoysticks();
 
@@ -147,14 +208,18 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
     vendor = SDL_GetEmscriptenJoystickVendor(gamepadEvent->index);
     product = SDL_GetEmscriptenJoystickProduct(gamepadEvent->index);
     is_xinput = SDL_IsEmscriptenJoystickXInput(gamepadEvent->index);
-
-    // Use a generic VID/PID representing an XInput controller
-    if (!vendor && !product && is_xinput) {
-        vendor = USB_VENDOR_MICROSOFT;
-        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
-    }
     
     os_id = SDL_GetEmscriptenOSID();
+    subtype = os_id;
+
+    item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
+        let gamepad = navigator['getGamepads']()[$0];
+        // This effect is not supported in Safari, so it's okay for us to check the vibrationActuator.effects array here for the browsers that do support it
+        if (!gamepad || !gamepad['vibrationActuator'] || !gamepad['vibrationActuator']['effects'] || !gamepad['vibrationActuator']['effects']['includes']('trigger-rumble')) {
+            return false;
+        }
+        return true;
+        }, item->index);
 
     if (os_id != 0) {
         if (os_id == 1 || os_id == 3) { // Android or iOS (mobile)
@@ -164,26 +229,38 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         }
     }
 
-    if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
-        // We should differentiate between devices that are mapped or unmapped by the browser.
-        os_id += 0x80;
+    if (!vendor && !product && is_xinput) {
+        // Use a generic VID/PID representing an XInput controller
+        vendor = USB_VENDOR_MICROSOFT;
+        product = USB_PRODUCT_XBOX360_XUSB_CONTROLLER;
+
+        if (item->trigger_rumble_available) {
+            // Assume Xbox One S Controller
+            if (bus == SDL_HARDWARE_BUS_BLUETOOTH) {
+                product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
+            } else {
+                product = USB_PRODUCT_XBOX_ONE_S;
+            }            
+        }
     }
 
-    item->name = SDL_CreateJoystickName(vendor, product, NULL, gamepadEvent->id);
+    if (SDL_strcmp(gamepadEvent->mapping, "standard") == 0) {
+        // We should differentiate between devices that are mapped or unmapped by the browser.
+        subtype += 0x80;
+    }
+
+    SDL_GetEmscriptenNormalizedName(gamepadEvent->index, name, sizeof(name));
+    item->name = SDL_CreateJoystickName(vendor, product, NULL, name);
     if (!item->name) {
         SDL_free(item);
         goto done;
     }
 
     if (vendor && product) {
-        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, gamepadEvent->id, 0, os_id);
+        item->guid = SDL_CreateJoystickGUID(bus, vendor, product, 0, NULL, name, 0, subtype);
     } else {
         item->guid = SDL_CreateJoystickGUIDForName(item->name);
-        item->guid.data[15] = os_id;
-    }
-
-    if (is_xinput) {
-        item->guid.data[14] = 'x'; // See SDL_IsJoystickXInput
+        item->guid.data[15] = subtype;
     }
 
     item->mapping = SDL_strdup(gamepadEvent->mapping);
@@ -212,12 +289,16 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         // dump the digital trigger buttons in any case.
         first_trigger_button = 6;
         num_buttons -= 2;
+    } else if ((SDL_strcmp(gamepadEvent->mapping, "standard") != 0) && (num_axes >= 10) && (os_id == 5)) {
+        // The browsers (Chromium and Firefox) on Windows usually convert the hat on unmapped controllers to axis 9
+        // We can't know for sure that this axis is a hat, but most of the time it is
+        item->hat_is_axis = true;
     }
 
     item->first_hat_button = first_hat_button;
     item->first_trigger_button = first_trigger_button;
     item->triggers_are_buttons = triggers_are_buttons;
-    item->nhats = (first_hat_button >= 0) ? 1 : 0;
+    item->nhats = (first_hat_button >= 0 || item->hat_is_axis) ? 1 : 0;
     item->naxes = num_axes;
     item->nbuttons = num_buttons;
     item->device_instance = SDL_GetNextObjectID();
@@ -244,7 +325,7 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
         item->axis[real_axis_count+1] = (gamepadEvent->analogButton[first_trigger_button+1] * 2.0f) - 1.0f;
     }
 
-    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
+    SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons or the axis 9.
     if (first_hat_button != -1) {
         Uint8 value = SDL_HAT_CENTERED;
         // this currently expects the first button to be up, then down, then left, then right.
@@ -261,6 +342,9 @@ static EM_BOOL Emscripten_JoyStickConnected(int eventType, const EmscriptenGamep
             value |= SDL_HAT_RIGHT;
         }
         item->hat = value;
+    } else if (item->hat_is_axis) {
+        item->hat = SDL_GetHatFromEmscriptenAxis(gamepadEvent->axis[9]);
+        item->axis[9] = 0.0;
     }
 
     if (!SDL_joylist_tail) {
@@ -506,18 +590,18 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
     item->rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects']['includes']('dual-rumble');
+        // Don't check the vibrationActuator.effects array here, because it's not defined in Safari
+        if (!gamepad || !gamepad['vibrationActuator']) {
+            return false;
+        }
+        return true;
         }, item->index);
 
     if (item->rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
-    item->trigger_rumble_available = MAIN_THREAD_EM_ASM_INT({
-        let gamepad = navigator['getGamepads']()[$0];
-        return gamepad && gamepad['vibrationActuator'] && gamepad['vibrationActuator']['effects']['includes']('trigger-rumble');
-        }, item->index);
-
+    // item->trigger_rumble_available is set in Emscripten_JoyStickConnected
     if (item->trigger_rumble_available) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_TRIGGER_RUMBLE_BOOLEAN, true);
     }
@@ -566,6 +650,9 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 }
 
                 for (i = 0; i < real_axis_count; i++) {
+                    if (item->hat_is_axis && i == 9) {
+                        continue;  // this axis is a hat
+                    }
                     if (item->axis[i] != gamepadState.axis[i]) {
                         SDL_SendJoystickAxis(timestamp, item->joystick, i, (Sint16)(32767.0f * gamepadState.axis[i]));
                         item->axis[i] = gamepadState.axis[i];
@@ -584,23 +671,26 @@ static void EMSCRIPTEN_JoystickUpdate(SDL_Joystick *joystick)
                 SDL_assert(item->nhats <= 1);  // there is (currently) only ever one of these, faked from the d-pad buttons.
                 if (item->nhats) {
                     Uint8 value = SDL_HAT_CENTERED;
-                    // this currently expects the first button to be up, then down, then left, then right.
-                    if (gamepadState.digitalButton[first_hat_button + 0]) {
-                        value |= SDL_HAT_UP;
-                    } else if (gamepadState.digitalButton[first_hat_button + 1]) {
-                        value |= SDL_HAT_DOWN;
-                    }
-                    if (gamepadState.digitalButton[first_hat_button + 2]) {
-                        value |= SDL_HAT_LEFT;
-                    } else if (gamepadState.digitalButton[first_hat_button + 3]) {
-                        value |= SDL_HAT_RIGHT;
+                    if (first_hat_button >= 0) {
+                        // this currently expects the first button to be up, then down, then left, then right.
+                        if (gamepadState.digitalButton[first_hat_button + 0]) {
+                            value |= SDL_HAT_UP;
+                        } else if (gamepadState.digitalButton[first_hat_button + 1]) {
+                            value |= SDL_HAT_DOWN;
+                        }
+                        if (gamepadState.digitalButton[first_hat_button + 2]) {
+                            value |= SDL_HAT_LEFT;
+                        } else if (gamepadState.digitalButton[first_hat_button + 3]) {
+                            value |= SDL_HAT_RIGHT;
+                        }
+                    } else if (item->hat_is_axis) {
+                        value = SDL_GetHatFromEmscriptenAxis(gamepadState.axis[9]);
                     }
                     if (item->hat != value) {
                         item->hat = value;
                         SDL_SendJoystickHat(timestamp, item->joystick, 0, value);
                     }
                 }
-
 
                 item->timestamp = gamepadState.timestamp;
             }

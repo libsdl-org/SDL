@@ -82,6 +82,8 @@ def collect_jni_bindings_from_c() -> dict[str, set[JniMethodBinding]]:
                     if re.match(r"\};", line):
                         in_struct = False
                         break
+                    if re.match(r"\s*(#|//)", line):
+                        continue
                     n = re.match(r"""\s*\{\s*"(?P<method>[a-zA-Z0-9_]+)"\s*,\s*"(?P<spec>[()A-Za-z0-9_/;[]+)"\s*,\s*(\(void\*\))?(HID|SDL)[_A-Z]*_JAVA_[_A-Z]*INTERFACE[_A-Z]*\((?P=method)\)\s*\},?""", line)
                     assert n, f"'{line}' does not match regex"
                     methods.add(JniMethodBinding(name=n["method"], spec=n["spec"]))

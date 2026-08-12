@@ -25,6 +25,7 @@
 
 // This is the system specific header for the SDL joystick API
 #include "SDL_joystick_c.h"
+#include "../events/SDL_events_c.h"
 
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
@@ -72,7 +73,13 @@ typedef struct SDL_JoystickSensorInfo
     float data[3]; // If this needs to expand, update SDL_GamepadSensorEvent
 } SDL_JoystickSensorInfo;
 
-#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
+typedef struct SDL_JoystickCapSenseInfo
+{
+    SDL_GamepadCapSenseType type;
+    bool down;
+} SDL_JoystickCapSenseInfo;
+
+#define _guarded SDL_GUARDED_BY(SDL_event_lock)
 
 struct SDL_Joystick
 {
@@ -104,6 +111,9 @@ struct SDL_Joystick
     int nsensors _guarded; // Number of sensors on the joystick
     int nsensors_enabled _guarded;
     SDL_JoystickSensorInfo *sensors _guarded;
+
+    int ncapsenses _guarded;                      // Number of capsense sources on the joystick
+    SDL_JoystickCapSenseInfo *capsenses _guarded; // Current capsense states
 
     Uint16 low_frequency_rumble _guarded;
     Uint16 high_frequency_rumble _guarded;

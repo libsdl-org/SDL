@@ -135,7 +135,7 @@ static bool SW_ChangeTexturePalette(SDL_Renderer *renderer, SDL_Texture *texture
 
 static bool SW_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
-    SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
+    SDL_Surface *surface = SDL_CreateSurfaceUninitialized(texture->w, texture->h, texture->format);
     if (!surface) {
         return SDL_SetError("Can't create surface");
     }
@@ -438,7 +438,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      * to clear the pixels in the destination surface. The other steps are explained below.
      */
     if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
-        mask = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        mask = SDL_CreateSurfaceZeroed(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (!mask) {
             result = false;
         } else {
@@ -451,7 +451,7 @@ static bool SW_RenderCopyEx(SDL_Renderer *renderer, SDL_Surface *surface, SDL_Te
      */
     if (result && (blitRequired || applyModulation)) {
         SDL_Rect scale_rect = tmp_rect;
-        src_scaled = SDL_CreateSurface(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
+        src_scaled = SDL_CreateSurfaceUninitialized(final_rect->w, final_rect->h, SDL_PIXELFORMAT_ARGB8888);
         if (!src_scaled) {
             result = false;
         } else {
@@ -664,7 +664,7 @@ static bool SW_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL
     return true;
 }
 
-static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate)
+static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *drawstate, const SDL_Rect *srcrect)
 {
     const Uint8 r = drawstate->color.r;
     const Uint8 g = drawstate->color.g;
@@ -673,6 +673,14 @@ static void PrepTextureForCopy(const SDL_RenderCommand *cmd, SW_DrawStateCache *
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *)texture->internal;
+
+    if (SDL_SurfaceHasRLE(surface) &&
+        srcrect &&
+        texture->access == SDL_TEXTUREACCESS_STATIC &&
+        SDL_ISPIXELFORMAT_ALPHA(surface->format) &&
+        (srcrect->x != 0 || srcrect->y != 0 || srcrect->w != surface->w || srcrect->h != surface->h)) {
+        SDL_SetSurfaceRLE(surface, false);
+    }
 
     // !!! FIXME: we can probably avoid some of these calls.
     SDL_SetSurfaceColorMod(surface, r, g, b);
@@ -857,7 +865,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
             SetDrawState(surface, &drawstate);
 
-            PrepTextureForCopy(cmd, &drawstate);
+            PrepTextureForCopy(cmd, &drawstate, srcrect);
 
             // Apply viewport
             if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {
@@ -871,7 +879,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
                 // Prevent to do scaling + clipping on viewport boundaries as it may lose proportion
                 if (dstrect->x < 0 || dstrect->y < 0 || dstrect->x + dstrect->w > surface->w || dstrect->y + dstrect->h > surface->h) {
                     SDL_PixelFormat tmp_format = SDL_ISPIXELFORMAT_ALPHA(src->format) ? SDL_PIXELFORMAT_ARGB8888 : surface->format;
-                    SDL_Surface *tmp = SDL_CreateSurface(dstrect->w, dstrect->h, tmp_format);
+                    SDL_Surface *tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, tmp_format);
                     // Scale to an intermediate surface, then blit
                     if (tmp) {
                         SDL_Rect r;
@@ -912,7 +920,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
         {
             CopyExData *copydata = (CopyExData *)(((Uint8 *)vertices) + cmd->data.draw.first);
             SetDrawState(surface, &drawstate);
-            PrepTextureForCopy(cmd, &drawstate);
+            PrepTextureForCopy(cmd, &drawstate, &copydata->srcrect);
 
             // Apply viewport
             if (drawstate.viewport &&
@@ -943,7 +951,7 @@ static bool SW_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, v
 
                 GeometryCopyData *ptr = (GeometryCopyData *)verts;
 
-                PrepTextureForCopy(cmd, &drawstate);
+                PrepTextureForCopy(cmd, &drawstate, NULL);
 
                 // Apply viewport
                 if (drawstate.viewport && (drawstate.viewport->x || drawstate.viewport->y)) {

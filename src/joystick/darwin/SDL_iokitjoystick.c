@@ -516,13 +516,10 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         return false;
     }
 
-    if (IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVirtualHIDevice)) == kCFBooleanTrue) {
-        // Steam virtual gamepads always have kIOHIDVirtualHIDevice property unlike real devices
-        if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
-            const char *allow_steam_virtual_gamepad = SDL_getenv_unsafe("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD");
-            if (!SDL_GetStringBoolean(allow_steam_virtual_gamepad, false)) {
-                return false;
-            }
+    if (SDL_IsJoystickSteamVirtualGamepad(vendor, product, version)) {
+        if (IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVirtualHIDevice)) != kCFBooleanTrue) {
+            // This is a real Xbox 360 controller, adjust the version so it's not detected as a Steam virtual gamepad
+            version = 1;
         }
     }
 

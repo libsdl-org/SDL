@@ -374,6 +374,16 @@ BOOL WIN_IsWindows8OrGreater(void)
     CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN8), LOBYTE(_WIN32_WINNT_WIN8), 0));
 }
 
+BOOL WIN_IsWindows81OrGreater(void)
+{
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WINBLUE), LOBYTE(_WIN32_WINNT_WINBLUE), 0));
+}
+
+BOOL WIN_IsWindows10OrGreater(void)
+{
+    CHECKWINVER(TRUE, IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0));
+}
+
 BOOL WIN_IsWindows11OrGreater(void)
 {
     return IsWindowsBuildVersionAtLeast(22000);
@@ -595,7 +605,7 @@ HICON WIN_CreateIconFromSurface(SDL_Surface *surface)
         for (int x = 0; x < width; x++) {
             BYTE* pixel = (BYTE*)pBits + (y * width + x) * 4;
             BYTE alpha = pixel[3];
-            COLORREF maskColor = (alpha == 0) ? RGB(0, 0, 0) : RGB(255, 255, 255);
+            COLORREF maskColor = (alpha == 0) ? RGB(255, 255, 255) : RGB(0, 0, 0);
             SetPixel(hdcMem, x, y, maskColor);
         }
     }
@@ -723,6 +733,44 @@ const char *WIN_CheckDefaultArgcArgv(int *pargc, char ***pargv, void **pallocate
     *pargv = argv;
 
     return NULL;  // no error string.
+}
+
+char *WIN_GetModulePath(HMODULE handle)
+{
+    DWORD buflen = 128;
+    WCHAR *path = NULL;
+    DWORD len = 0;
+
+    while (true) {
+        void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
+        if (!ptr) {
+            SDL_free(path);
+            return NULL;
+        }
+
+        path = (WCHAR *)ptr;
+
+        len = GetModuleFileNameW(handle, path, buflen);
+        // if it truncated, then len >= buflen - 1
+        // if there was enough room (or failure), len < buflen - 1
+        if (len < (buflen - 1)) {
+            break;
+        }
+
+        // buffer too small? Try again.
+        buflen *= 2;
+    }
+
+    char *retval = NULL;
+    if (len == 0) {
+        WIN_SetError("Couldn't locate module");
+    } else {
+        retval = WIN_StringToUTF8W(path);
+    }
+
+    SDL_free(path);
+
+    return retval;
 }
 
 #endif // defined(SDL_PLATFORM_WINDOWS)

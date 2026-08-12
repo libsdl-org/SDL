@@ -52,7 +52,7 @@ bool SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    framebuffer = SDL_CreateSurface(w, h, mode->format);
+    framebuffer = SDL_CreateSurfaceZeroed(w, h, mode->format);
 
     if (!framebuffer) {
         return false;

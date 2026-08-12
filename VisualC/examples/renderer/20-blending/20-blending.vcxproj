@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B938A3C0-6C64-4734-B705-ED3642C01B47}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\renderer\20-blending\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\renderer\20-blending\blending.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

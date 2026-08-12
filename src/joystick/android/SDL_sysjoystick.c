@@ -344,7 +344,6 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
     SDL_SensorType sensor;
-    float data[3];
 
     if (sensor_type == 1) { // Sensor.TYPE_ACCELEROMETER
         sensor = SDL_SENSOR_ACCEL;
@@ -355,14 +354,29 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
         return;
     }
 
-    // The axes of sensor events and their signs are the same as SDL's, so no conversion required
-    data[0] = x;
-    data[1] = y;
-    data[2] = z;
-
     SDL_LockJoysticks();
     item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
+        float data[3];
+
+        if (item->vendor_id == USB_VENDOR_NINTENDO) {
+            // The Nintendo driver uses a different axis order than SDL
+            data[0] = -y;
+            data[1] = z;
+            data[2] = -x;
+
+            if (sensor == SDL_SENSOR_GYRO) {
+                // The values are experimentally 3x what they should be
+                data[0] /= 3;
+                data[1] /= 3;
+                data[2] /= 3;
+            }
+        } else {
+            // The axes of sensor events and their signs are the same as SDL's, so no conversion required
+            data[0] = x;
+            data[1] = y;
+            data[2] = z;
+        }
         SDL_SendJoystickSensor(timestamp, item->joystick, sensor, sensor_timestamp, data, 3);
     }
     SDL_UnlockJoysticks();
@@ -374,6 +388,13 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_joylist_item *item;
     SDL_GUID guid;
     int i;
+
+    // Java might notify us about joysticks being added before joysticks have
+    // been initialized. That's fine, we'll get called again with the full set
+    // in Android_JNI_DetectDevices()
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
 
     SDL_LockJoysticks();
 
@@ -427,6 +448,8 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     SDL_zerop(item);
     item->guid = guid;
     item->device_id = device_id;
+    item->vendor_id = vendor_id;
+    item->product_id = product_id;
     item->name = SDL_CreateJoystickName(vendor_id, product_id, NULL, name);
     if (!item->name) {
         SDL_free(item);
@@ -474,6 +497,12 @@ void Android_RemoveJoystick(int device_id)
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
 
+    // Java might notify us about joysticks being removed before joysticks have
+    // been initialized.
+    if (!SDL_JoysticksInitialized()) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     // Don't call JoystickByDeviceId here or there'll be an infinite loop!
@@ -519,11 +548,9 @@ done:
     SDL_UnlockJoysticks();
 }
 
-static void ANDROID_JoystickDetect(void);
-
 static bool ANDROID_JoystickInit(void)
 {
-    ANDROID_JoystickDetect();
+    Android_JNI_DetectDevices();
     return true;
 }
 
@@ -534,16 +561,9 @@ static int ANDROID_JoystickGetCount(void)
 
 static void ANDROID_JoystickDetect(void)
 {
-    /* Support for device connect/disconnect is API >= 16 only,
-     * so we poll every three seconds
+    /* Support for device connect/disconnect is implemented using InputDeviceListener
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    static Uint64 timeout = 0;
-    Uint64 now = SDL_GetTicks();
-    if (!timeout || now >= timeout) {
-        timeout = now + 3000;
-        Android_JNI_PollInputDevices();
-    }
 }
 
 static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -572,16 +592,6 @@ static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
 static SDL_joylist_item *JoystickByDeviceId(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
-
-    while (item) {
-        if (item->device_id == device_id) {
-            return item;
-        }
-        item = item->next;
-    }
-
-    // Joystick not found, try adding it
-    ANDROID_JoystickDetect();
 
     while (item) {
         if (item->device_id == device_id) {
@@ -665,6 +675,7 @@ static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
 
 static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
+#ifndef SDL_HAPTIC_DISABLED
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
     if (!item) {
         return SDL_SetError("Rumble failed, device disconnected");
@@ -677,6 +688,9 @@ static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     float high_frequency_intensity = (float)high_frequency_rumble / SDL_MAX_UINT16;
     Android_JNI_HapticRumble(item->device_id, low_frequency_intensity, high_frequency_intensity, 5000);
     return true;
+#else
+    return SDL_Unsupported();
+#endif
 }
 
 static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
@@ -729,10 +743,6 @@ static void ANDROID_JoystickClose(SDL_Joystick *joystick)
 
 static void ANDROID_JoystickQuit(void)
 {
-/* We don't have any way to scan for joysticks at init, so don't wipe the list
- * of joysticks here in case this is a reinit.
- */
-#if 0
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
@@ -745,7 +755,6 @@ static void ANDROID_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-#endif // 0
 }
 
 static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)

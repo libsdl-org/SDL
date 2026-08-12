@@ -81,7 +81,10 @@ static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_AudioStream *audio;
 static SDL_Texture *video_texture;
+static AVCodecContext *audio_context;
+static AVCodecContext *video_context;
 static Uint64 video_start;
+static bool nodelay;
 static bool software_only;
 static bool has_eglCreateImage;
 #ifdef HAVE_EGL
@@ -346,7 +349,8 @@ static bool SupportedPixelFormat(enum AVPixelFormat format)
             return true;
         }
 #endif
-        if (vulkan_context && format == AV_PIX_FMT_VULKAN) {
+        if (vulkan_context &&
+            (format == AV_PIX_FMT_VULKAN || format == AV_PIX_FMT_VAAPI || format == AV_PIX_FMT_DRM_PRIME)) {
             return true;
         }
     }
@@ -496,15 +500,28 @@ static SDL_Colorspace GetFrameColorspace(AVFrame *frame)
     SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 
     if (frame && frame->colorspace != AVCOL_SPC_RGB) {
+        if (frame->colorspace != AVCOL_SPC_UNSPECIFIED ||
+            video_context->colorspace == AVCOL_SPC_UNSPECIFIED) {
 #ifdef DEBUG_COLORSPACE
-        SDL_Log("Frame colorspace: range: %d, primaries: %d, trc: %d, colorspace: %d, chroma_location: %d", frame->color_range, frame->color_primaries, frame->color_trc, frame->colorspace, frame->chroma_location);
+            SDL_Log("Frame colorspace: range: %d, primaries: %d, trc: %d, colorspace: %d, chroma_location: %d", frame->color_range, frame->color_primaries, frame->color_trc, frame->colorspace, frame->chroma_location);
 #endif
-        colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
-                                           frame->color_range,
-                                           frame->color_primaries,
-                                           frame->color_trc,
-                                           frame->colorspace,
-                                           frame->chroma_location);
+            colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                               frame->color_range,
+                                               frame->color_primaries,
+                                               frame->color_trc,
+                                               frame->colorspace,
+                                               frame->chroma_location);
+        } else if (video_context->colorspace != AVCOL_SPC_UNSPECIFIED) {
+#ifdef DEBUG_COLORSPACE
+            SDL_Log("Video colorspace: range: %d, primaries: %d, trc: %d, colorspace: %d, chroma_location: %d", video_context->color_range, video_context->color_primaries, video_context->color_trc, video_context->colorspace, video_context->chroma_sample_location);
+#endif
+            colorspace = SDL_DEFINE_COLORSPACE(SDL_COLOR_TYPE_YCBCR,
+                                               video_context->color_range,
+                                               video_context->color_primaries,
+                                               video_context->color_trc,
+                                               video_context->colorspace,
+                                               video_context->chroma_sample_location);
+        }
     }
     return colorspace;
 }
@@ -653,9 +670,26 @@ static bool GetTextureForMemoryFrame(AVFrame *frame, SDL_Texture **texture)
     return true;
 }
 
+static bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
+{
+    SDL_PropertiesID props;
+
+    if (*texture) {
+        SDL_DestroyTexture(*texture);
+    }
+
+    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
+    *texture = CreateVulkanVideoTexture(vulkan_context, frame, renderer, props);
+    SDL_DestroyProperties(props);
+    if (!*texture) {
+        return false;
+    }
+    return true;
+}
+
 #ifdef HAVE_EGL
 
-static bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetEGLNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
@@ -745,7 +779,7 @@ static bool GetNV12TextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
     return true;
 }
 
-static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
+static bool GetEGLOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
     AVHWFramesContext *frames = (AVHWFramesContext *)(frame->hw_frames_ctx ? frame->hw_frames_ctx->data : NULL);
     const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
@@ -930,19 +964,24 @@ static bool GetOESTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 
 static bool GetTextureForDRMFrame(AVFrame *frame, SDL_Texture **texture)
 {
-#ifdef HAVE_EGL
-    const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
-
-    if (desc->nb_layers == 2 &&
-        desc->layers[0].format == DRM_FORMAT_R8 &&
-        desc->layers[1].format == DRM_FORMAT_GR88) {
-        return GetNV12TextureForDRMFrame(frame, texture);
+    if (vulkan_context) {
+        return GetTextureForVulkanFrame(frame, texture);
     } else {
-        return GetOESTextureForDRMFrame(frame, texture);
-    }
+#ifdef HAVE_EGL
+        const AVDRMFrameDescriptor *desc = (const AVDRMFrameDescriptor *)frame->data[0];
+
+        if (desc->nb_layers == 2 &&
+            desc->layers[0].format == DRM_FORMAT_R8 &&
+            desc->layers[1].format == DRM_FORMAT_GR88) {
+            return GetEGLNV12TextureForDRMFrame(frame, texture);
+        } else {
+            return GetEGLOESTextureForDRMFrame(frame, texture);
+        }
 #else
-    return false;
+        SDL_Log("Creating EGL textures is not supported");
+        return false;
 #endif
+    }
 }
 
 static bool GetTextureForVAAPIFrame(AVFrame *frame, SDL_Texture **texture)
@@ -1028,23 +1067,6 @@ static bool GetTextureForVideoToolboxFrame(AVFrame *frame, SDL_Texture **texture
 #endif
 }
 
-static bool GetTextureForVulkanFrame(AVFrame *frame, SDL_Texture **texture)
-{
-    SDL_PropertiesID props;
-
-    if (*texture) {
-        SDL_DestroyTexture(*texture);
-    }
-
-    props = CreateVideoTextureProperties(frame, SDL_PIXELFORMAT_UNKNOWN, SDL_TEXTUREACCESS_STATIC);
-    *texture = CreateVulkanVideoTexture(vulkan_context, frame, renderer, props);
-    SDL_DestroyProperties(props);
-    if (!*texture) {
-        return false;
-    }
-    return true;
-}
-
 static bool GetTextureForFrame(AVFrame *frame, SDL_Texture **texture)
 {
     switch (frame->format) {
@@ -1087,6 +1109,10 @@ static void DisplayVideoTexture(AVFrame *frame)
         return;
     }
 
+    if (BeginFrameRendering(frame) < 0) {
+        return;
+    }
+
     SDL_FRect src;
     src.x = 0.0f;
     src.y = 0.0f;
@@ -1097,6 +1123,9 @@ static void DisplayVideoTexture(AVFrame *frame)
     } else {
         SDL_RenderTexture(renderer, video_texture, &src, NULL);
     }
+    SDL_FlushRenderer(renderer);
+
+    FinishFrameRendering(frame);
 }
 
 static void DisplayVideoFrame(AVFrame *frame)
@@ -1106,17 +1135,15 @@ static void DisplayVideoFrame(AVFrame *frame)
 
 static void HandleVideoFrame(AVFrame *frame, double pts)
 {
-    /* Quick and dirty PTS handling */
-    if (!video_start) {
-        video_start = SDL_GetTicks();
-    }
-    double now = (double)(SDL_GetTicks() - video_start) / 1000.0;
-    if (now < pts) {
-        SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
-    }
-
-    if (BeginFrameRendering(frame) < 0) {
-        return;
+    if (!nodelay) {
+        /* Quick and dirty PTS handling */
+        if (!video_start) {
+            video_start = SDL_GetTicks();
+        }
+        double now = (double)(SDL_GetTicks() - video_start) / 1000.0;
+        if (now < pts) {
+            SDL_DelayPrecise((Uint64)((pts - now) * SDL_NS_PER_SECOND));
+        }
     }
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -1128,8 +1155,6 @@ static void HandleVideoFrame(AVFrame *frame, double pts)
     MoveSprite();
 
     SDL_RenderPresent(renderer);
-
-    FinishFrameRendering(frame);
 }
 
 static AVCodecContext *OpenAudioStream(AVFormatContext *ic, int stream, const AVCodec *codec)
@@ -1287,7 +1312,7 @@ static void av_log_callback(void *avcl, int level, const char *fmt, va_list vl)
 
 static void print_usage(SDLTest_CommonState *state, const char *argv0)
 {
-    static const char *options[] = { "[--verbose]", "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "video_file", NULL };
+    static const char *options[] = { "[--verbose]", "[--sprites N]", "[--audio-codec codec]", "[--video-codec codec]", "[--software]", "[--nodelay]", "video_file", NULL };
     SDLTest_CommonLogUsage(state, argv0, options);
 }
 
@@ -1301,8 +1326,6 @@ int main(int argc, char *argv[])
     const char *video_codec_name = NULL;
     const AVCodec *audio_codec = NULL;
     const AVCodec *video_codec = NULL;
-    AVCodecContext *audio_context = NULL;
-    AVCodecContext *video_context = NULL;
     AVPacket *pkt = NULL;
     AVFrame *frame = NULL;
     double first_pts = -1.0;
@@ -1344,6 +1367,9 @@ int main(int argc, char *argv[])
                 consumed = 2;
             } else if (SDL_strcmp(argv[i], "--software") == 0) {
                 software_only = true;
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--nodelay") == 0) {
+                nodelay = true;
                 consumed = 1;
             } else if (!file) {
                 /* We'll try to open this as a media file */
@@ -1566,7 +1592,7 @@ int main(int argc, char *argv[])
         }
 
         if (flushing && !decoded) {
-            if (SDL_GetAudioStreamQueued(audio) > 0) {
+            if (SDL_GetAudioStreamQueued(audio) > 0 && !nodelay) {
                 /* Wait a little bit for the audio to finish */
                 SDL_Delay(10);
             } else {

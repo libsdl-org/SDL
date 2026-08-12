@@ -114,22 +114,22 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -435,6 +435,7 @@
     <ClInclude Include="..\..\src\camera\SDL_camera_c.h" />
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h" />
     <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
+    <ClInclude Include="..\..\src\core\windows\gameinput\gameinput.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_gameinput.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_hid.h" />
@@ -466,6 +467,7 @@
     <ClInclude Include="..\..\src\events\SDL_keysym_to_keycode_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keysym_to_scancode_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_notificationevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_pen_c.h" />
     <ClInclude Include="..\..\src\events\SDL_scancode_tables_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
@@ -522,6 +524,7 @@
     <ClInclude Include="..\..\src\main\SDL_main_callbacks.h" />
     <ClInclude Include="..\..\src\misc\SDL_libusb.h" />
     <ClInclude Include="..\..\src\misc\SDL_sysurl.h" />
+    <ClInclude Include="..\..\src\notification\SDL_notification_c.h" />
     <ClInclude Include="..\..\src\power\SDL_syspower.h" />
     <ClInclude Include="..\..\src\process\SDL_sysprocess.h" />
     <ClInclude Include="..\..\src\render\direct3d11\D3D11_PixelShader_Advanced.h" />
@@ -589,8 +592,10 @@
     <ClInclude Include="..\..\src\render\software\SDL_triangle.h" />
     <ClInclude Include="..\..\src\render\vulkan\SDL_shaders_vulkan.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Advanced_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Colors.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures.h" />
+    <ClInclude Include="..\..\src\render\vulkan\VULKAN_PixelShader_Textures_YUV.h" />
     <ClInclude Include="..\..\src\render\vulkan\VULKAN_VertexShader.h" />
     <ClInclude Include="..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\src\SDL_error_c.h" />
@@ -624,6 +629,7 @@
     <ClCompile Include="..\..\src\events\imKStoUCS.c" />
     <ClCompile Include="..\..\src\events\SDL_keysym_to_keycode.c" />
     <ClCompile Include="..\..\src\events\SDL_keysym_to_scancode.c" />
+    <ClCompile Include="..\..\src\events\SDL_notificationevents.c" />
     <ClCompile Include="..\..\src\events\SDL_scancode_tables.c" />
     <ClCompile Include="..\..\src\filesystem\SDL_filesystem.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfsops.c" />
@@ -639,6 +645,8 @@
     <ClCompile Include="..\..\src\main\SDL_main_callbacks.c" />
     <ClCompile Include="..\..\src\main\SDL_runapp.c" />
     <ClCompile Include="..\..\src\main\windows\SDL_sysmain_runapp.c" />
+    <ClCompile Include="..\..\src\notification\SDL_notification.c" />
+    <ClCompile Include="..\..\src\notification\windows\SDL_windowsnotification.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_render_vulkan.c" />
     <ClCompile Include="..\..\src\render\vulkan\SDL_shaders_vulkan.c" />
     <ClCompile Include="..\..\src\SDL_guid.c" />
@@ -766,13 +774,11 @@
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
+    <ClCompile Include="..\..\src\core\windows\gameinput\gameinput.cpp">
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp">
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />

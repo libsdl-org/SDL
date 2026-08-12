@@ -352,6 +352,7 @@ API_AVAILABLE(ios(13.0))
 @implementation SDLUIKitSceneDelegate
 {
     UIWindow *launchWindow;
+    NSMutableArray<NSURL *> *launchURLs;
 }
 
 + (NSString *)getSceneDelegateClassName
@@ -411,15 +412,16 @@ API_AVAILABLE(ios(13.0))
     // Set working directory to resource path
     [[NSFileManager defaultManager] changeCurrentDirectoryPath:[bundle resourcePath]];
 
-    // Handle any connection options (like opening URLs)
+    launchURLs = [[NSMutableArray alloc] init];
+
     for (NSUserActivity *activity in connectionOptions.userActivities) {
         if (activity.webpageURL) {
-            [self handleURL:activity.webpageURL];
+            [launchURLs addObject:activity.webpageURL];
         }
     }
 
     for (UIOpenURLContext *urlContext in connectionOptions.URLContexts) {
-        [self handleURL:urlContext.URL];
+        [launchURLs addObject:urlContext.URL];
     }
 
     SDL_SetMainReady();
@@ -488,6 +490,7 @@ API_AVAILABLE(ios(13.0))
 - (void)postFinishLaunch
 {
     [self performSelector:@selector(hideLaunchScreen) withObject:nil afterDelay:0.0];
+    [self performSelector:@selector(processLaunchURLs) withObject:nil afterDelay:0.0];
 
     SDL_SetiOSEventPump(true);
     exit_status = SDL_CallMainFunction(forward_argc, forward_argv, forward_main);
@@ -497,6 +500,14 @@ API_AVAILABLE(ios(13.0))
         launchWindow.hidden = YES;
         launchWindow = nil;
     }
+}
+
+- (void)processLaunchURLs
+{
+    for (NSURL *url in launchURLs) {
+        [self handleURL:url];
+    }
+    launchURLs = nil;
 }
 
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options API_AVAILABLE(ios(13.0))

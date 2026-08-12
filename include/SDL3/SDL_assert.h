@@ -126,9 +126,12 @@ extern "C" {
  */
 #define SDL_TriggerBreakpoint() TriggerABreakpointInAPlatformSpecificManner
 
-#elif defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER >= 1310)
+#elif defined(_MSC_VER) && _MSC_VER >= 1310
     /* Don't include intrin.h here because it contains C++ code */
     extern void __cdecl __debugbreak(void);
+    #define SDL_TriggerBreakpoint() __debugbreak()
+#elif defined(__MINGW32__)
+    #include <intrin.h>
     #define SDL_TriggerBreakpoint() __debugbreak()
 #elif defined(_MSC_VER) && defined(_M_IX86)
     #define SDL_TriggerBreakpoint() { _asm { int 0x03 }  }
@@ -229,11 +232,16 @@ extern "C" {
 #define SDL_LINE    __LINE__
 
 /*
-sizeof (x) makes the compiler still parse the expression even without
-assertions enabled, so the code is always checked at compile time, but
+sizeof ((x) ? 1 : 0) makes the compiler still parse the expression even
+without assertions enabled, so the code is always checked at compile time, but
 doesn't actually generate code for it, so there are no side effects or
-expensive checks at run time, just the constant size of what x WOULD be,
+expensive checks at run time, just the constant size of what int would be,
 which presumably gets optimized out as unused.
+
+(The `? 1 : 0` is so this always dithers down to `sizeof (int)`...otherwise
+you'll have problems when bitfields are used as the condition, since the
+compiler will error out on the sizeof.)
+
 This also solves the problem of...
 
     int somevalue = blah();
@@ -265,7 +273,7 @@ disable assertions.
  */
 #define SDL_NULL_WHILE_LOOP_CONDITION (0)
 
-#elif defined(_MSC_VER)  /* Avoid /W4 warnings. */
+#elif defined(_MSC_VER) && !defined(__clang__)  /* Avoid /W4 warnings. */
 /* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
     this condition isn't constant. And looks like an owl's face! */
 #define SDL_NULL_WHILE_LOOP_CONDITION (0,0)
@@ -281,14 +289,14 @@ disable assertions.
  *
  * The code does nothing, but wraps `condition` in a sizeof operator, which
  * generates no code and has no side effects, but avoid compiler warnings
- * about unused variables.
+ * about unused variables, and still checks syntax even when disabled.
  *
  * \param condition the condition to assert (but not actually run here).
  *
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_disabled_assert(condition) \
-    do { (void) sizeof ((condition)); } while (SDL_NULL_WHILE_LOOP_CONDITION)
+    do { (void) sizeof ((condition) ? 1 : 0); } while (SDL_NULL_WHILE_LOOP_CONDITION)
 
 /**
  * Possible outcomes from a triggered assertion.

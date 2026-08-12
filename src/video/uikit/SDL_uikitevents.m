@@ -359,15 +359,18 @@ static void OnGCMouseConnected(GCMouse *mouse) API_AVAILABLE(macos(11.0), ios(14
     mouse.mouseInput.scroll.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
         Uint64 timestamp = SDL_GetTicksNS();
         
+#ifdef SDL_PLATFORM_VISIONOS
+        /* Mouse scroll values on visionOS have swapped axes compared to other platforms.
+         * There is also an acceleration ramp applied, so clamp to a single tick per event.
+         */
+        float vertical = yValue < 0 ? -1 : yValue > 0 ? 1 : 0;
+        float horizontal = xValue < 0 ? -1 : xValue > 0 ? 1 : 0;
+#else
         /* Raw scroll values come in here, vertical values in the first axis, horizontal values in the second axis.
          * The vertical values are negative moving the mouse wheel up and positive moving it down.
          * The horizontal values are negative moving the mouse wheel left and positive moving it right.
          * The vertical values are inverted compared to SDL, and the horizontal values are as expected.
          */
-#ifdef SDL_PLATFORM_VISIONOS
-        float vertical = -yValue;
-        float horizontal = xValue;
-#else
         float vertical = -xValue;
         float horizontal = yValue;
 #endif

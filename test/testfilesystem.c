@@ -94,6 +94,9 @@ int main(int argc, char *argv[])
     char *curdir;
     const char *base_path;
 
+    /* this will be SDL's best guess at the human-readable exe name (or bundle id, or whatever) by default. */
+    SDL_Log("Default app name: '%s'", SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING));
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
     if (!state) {

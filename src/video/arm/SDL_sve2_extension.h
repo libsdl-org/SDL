@@ -19,10 +19,33 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+ * IMPORTANT: Please do NOT include this header file directly or indirectly
+ *            outside the src/video/arm folder.
+ *
+ */
+
 #if !defined(SDL_SVE2_EXTENSION_H) //&& (defined(__ARM_FEATURE_SVE2) && __ARM_FEATURE_SVE2)
 #define SDL_SVE2_EXTENSION_H
 
 #include "SDL_sve2_util.h"
+
+/*
+ * NOTE: Some Android builds didn't attach '-march=armv8-a+sve2' to
+ *       SDL_sve2_*.c and hence the macro __ARM_FEATURE_SVE is not
+ *       defined by the compiler. This might not be a problem as the
+ *       SDL_TARGETING("arch=armv8-a+sve2") enables the feature for
+ *       individual functions, until some version of compilers
+ *       provides arm_sve.h raising errors then __ARM_FEATURE_SVE
+ *       is not defined. Although it should be avoided, as a
+ *       workaround, we have to define the __ARM_FEATURE_SVE here as
+ *       an ugly hack.
+ */
+#ifdef SDL_PLATFORM_ANDROID
+#ifndef __ARM_FEATURE_SVE
+#define __ARM_FEATURE_SVE 1
+#endif
+#endif
 #include <arm_sve.h>
 #include <stdint.h>
 
@@ -43,12 +66,12 @@
 #define svlens32() svlenu32()
 #define svlens64() svlenu64()
 
-#define sdl_sve_stride_loop_accc8888(ma_stride_size, ma_pred_name)       \
+#define sdl_sve_stride_loop_pixel(ma_stride_size, ma_pred_name)          \
     for (svbool_t ma_pred_name, *pTemp = &ma_pred_name;                  \
          pTemp != NULL;                                                  \
          pTemp = NULL)                                                   \
         for (size_t SVE_SAFE_NAME(n) = 0,                                \
-                    sve_iteration_advance = svlenu32() * 4;              \
+                    sve_iteration_advance = svlenu8();                   \
              ({                                                          \
                  ma_pred_name = svwhilelt_b8((int32_t)SVE_SAFE_NAME(n),  \
                                              (int32_t)(ma_stride_size)); \
@@ -56,15 +79,27 @@
              });                                                         \
              SVE_SAFE_NAME(n) += sve_iteration_advance)
 
-#define sdl_sve_stride_loop_rgb32(ma_stride_size, ma_pred_name) \
-    sdl_sve_stride_loop_accc8888(ma_stride_size, ma_pred_name)
+#define sdl_sve_stride_loop_u8 sdl_sve_stride_loop_pixel
 
-#define sdl_sve_stride_loop_rgb16(ma_stride_size, ma_pred_name)           \
+#define sdl_sve_stride_loop_u16(ma_stride_size, ma_pred_name)             \
     for (svbool_t ma_pred_name, *pTemp = &ma_pred_name;                   \
          pTemp != NULL;                                                   \
          pTemp = NULL)                                                    \
         for (size_t SVE_SAFE_NAME(n) = 0,                                 \
                     sve_iteration_advance = svlenu16();                   \
+             ({                                                           \
+                 ma_pred_name = svwhilelt_b16((int32_t)SVE_SAFE_NAME(n),  \
+                                              (int32_t)(ma_stride_size)); \
+                 SVE_SAFE_NAME(n) < (ma_stride_size);                     \
+             });                                                          \
+             SVE_SAFE_NAME(n) += sve_iteration_advance)
+
+#define sdl_sve_stride_loop_u32(ma_stride_size, ma_pred_name)             \
+    for (svbool_t ma_pred_name, *pTemp = &ma_pred_name;                   \
+         pTemp != NULL;                                                   \
+         pTemp = NULL)                                                    \
+        for (size_t SVE_SAFE_NAME(n) = 0,                                 \
+                    sve_iteration_advance = svlenu32();                   \
              ({                                                           \
                  ma_pred_name = svwhilelt_b16((int32_t)SVE_SAFE_NAME(n),  \
                                               (int32_t)(ma_stride_size)); \
@@ -902,7 +937,33 @@ static inline void svst4ub_u16(svbool_t vPredu8,
 /*! \note the Element range of vMask is [0, 0xFF]
  */
 SDL_TARGETING("arch=armv8-a+sve2")
-static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint16_t vTarget, svuint16_t vMask)
+static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource,
+                                                     svuint16_t vTarget,
+                                                     svuint16_t vMask)
+{
+    // vTarget = vSource * vMask + vTarget * (255 - vMask);
+    svuint16_t vTemp0 = svdup_u16(1);
+    vTemp0 = svmla_u16_m(svptrue_b16(), vTemp0, vSource, vMask);
+    vTemp0 = svmla_u16_m(svptrue_b16(),
+                         vTemp0,
+                         vTarget,
+                         svsub_u16_m(svptrue_b16(),
+                                     svdup_u16(255),
+                                     vMask));
+
+    /* x += x >> 8 */
+    return svreinterpret_u16_u8(
+        svaddhnb_u16(vTemp0,
+                     svlsr_n_u16_m(svptrue_b16(),
+                                   vTemp0,
+                                   8)));
+}
+/*! \note the Element range of vMask is [0, 0xFF]
+ */
+SDL_TARGETING("arch=armv8-a+sve2")
+static inline svuint16_t sdl_sve_chn_blend_with_mask_fast(svuint16_t vSource,
+                                                          svuint16_t vTarget,
+                                                          svuint16_t vMask)
 {
     // vTarget = vSource * vMask + vTarget * (255 - vMask);
     svuint16_t vTemp0 = svmul_u16_m(svptrue_b16(), vSource, vMask);
@@ -912,14 +973,6 @@ static inline svuint16_t sdl_sve_chn_blend_with_mask(svuint16_t vSource, svuint1
                          svsub_u16_m(svptrue_b16(),
                                      svdup_u16(255),
                                      vMask));
-
-    vTemp0 = svadd_n_u16_m(svptrue_b16(), vTemp0, 1);
-
-    svuint16_t vTemp1 = svlsr_n_u16_m(svptrue_b16(), vTemp0, 8);
-    /* x += x >> 8 */
-    vTemp0 = svadd_u16_m(svptrue_b16(),
-                         vTemp0,
-                         vTemp1);
 
     return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8); // vTarget >> 8;
 }
@@ -941,6 +994,23 @@ static inline svuint16_t sdl_sve_chn_blend_with_opacity(svuint16_t vSource,
     vTarget = svadd_u16_m(svptrue_b16(), vTemp0, vTemp1);
 
     return svlsr_n_u16_m(svptrue_b16(), vTarget, 8); // vTarget >> 8;
+}
+
+/*! \note the hwOpacity range [0, 0x100]
+ */
+SDL_TARGETING("arch=armv8-a+sve2")
+static inline svuint16_t sdl_sve_chn_blend_with_opacity_fast(svuint16_t vSource,
+                                                             svuint16_t vTarget,
+                                                             uint16_t hwOpacity)
+{
+    // vTarget = vSource * vMask + vTarget * (255 - vMask);
+    svuint16_t vTemp0 = svmul_n_u16_m(svptrue_b16(), vSource, hwOpacity);
+    vTemp0 = svmla_n_u16_m(svptrue_b16(),
+                           vTemp0,
+                           vTarget,
+                           256 - hwOpacity);
+
+    return svlsr_n_u16_m(svptrue_b16(), vTemp0, 8); // vTarget >> 8;
 }
 
 /*! \note the Element range of vMask is [0, 0xFF]

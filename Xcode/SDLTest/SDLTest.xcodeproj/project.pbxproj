@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -86,6 +86,7 @@
 		00794E6609D20865003FC8A1 /* sample.wav in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6209D20839003FC8A1 /* sample.wav */; };
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
+		303856A72F87F7650040E40E /* testnotification.c in Sources */ = {isa = PBXBuildFile; fileRef = 303856A62F87F7650040E40E /* testnotification.c */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
 		A1A8594E2BC72FC20045DD6C /* testautomation_properties.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859482BC72FC20045DD6C /* testautomation_properties.c */; };
 		A1A859502BC72FC20045DD6C /* testautomation_subsystems.c in Sources */ = {isa = PBXBuildFile; fileRef = A1A859492BC72FC20045DD6C /* testautomation_subsystems.c */; };
@@ -164,6 +165,7 @@
 		F399C6512A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
 		F399C6522A7892D800C86979 /* testautomation_intrinsics.c in Sources */ = {isa = PBXBuildFile; fileRef = F399C6502A7892D800C86979 /* testautomation_intrinsics.c */; };
 		F399C6552A78933100C86979 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F399C6542A78933000C86979 /* Cocoa.framework */; };
+		F3AF61102F9AA18800EAAC20 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3B7FD642D73FC630086D1D0 /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
 		F3B7FD662D73FC630086D1D0 /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		F3B7FD6C2D73FC9E0086D1D0 /* testpen.c in Sources */ = {isa = PBXBuildFile; fileRef = F3B7FD6B2D73FC9E0086D1D0 /* testpen.c */; };
@@ -279,6 +281,10 @@
 		F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */ = {isa = PBXBuildFile; fileRef = F3DB65ED2E9DA95D00568044 /* testyuv.png */; };
 		F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DB65EF2E9DA98E00568044 /* testyuv.c */; };
 		F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
+		F3E1CE612FF741BA00D25F4E /* SDL3.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; };
+		F3E1CE632FF741BA00D25F4E /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.png */; };
+		F3E1CE652FF741BA00D25F4E /* SDL3.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA643093FFD41000C53B3 /* SDL3.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F3E1CE6F2FF7421F00D25F4E /* testcolorspace.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E1CE6E2FF7421F00D25F4E /* testcolorspace.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1209,6 +1215,17 @@
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3E1CE642FF741BA00D25F4E /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				F3E1CE652FF741BA00D25F4E /* SDL3.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1267,6 +1284,8 @@
 		092D6D58FFB311A97F000001 /* testthread.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testthread.c; sourceTree = "<group>"; };
 		092D6D6CFFB313437F000001 /* testkeys.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testkeys.c; sourceTree = "<group>"; };
 		092D6D75FFB313BB7F000001 /* testlock.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = testlock.c; sourceTree = "<group>"; };
+		303856932F87F68F0040E40E /* testnotification.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testnotification.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		303856A62F87F7650040E40E /* testnotification.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testnotification.c; sourceTree = "<group>"; };
 		4537749212091504002F0F45 /* testshape.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testshape.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = testshape.c; sourceTree = "<group>"; };
 		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv_cvt.c; sourceTree = "<group>"; };
@@ -1364,6 +1383,8 @@
 		F3DB65ED2E9DA95D00568044 /* testyuv.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testyuv.png; sourceTree = "<group>"; };
 		F3DB65EF2E9DA98E00568044 /* testyuv.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testyuv.c; sourceTree = "<group>"; };
 		F3DB65F02E9DA98E00568044 /* testyuv_cvt.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = testyuv_cvt.h; sourceTree = "<group>"; };
+		F3E1CE692FF741BA00D25F4E /* testcolorspace.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testcolorspace.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3E1CE6E2FF7421F00D25F4E /* testcolorspace.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = testcolorspace.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1509,6 +1530,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3CB56DC2A7897E900766177 /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		303856902F87F68F0040E40E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3AF61102F9AA18800EAAC20 /* SDL3.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1751,6 +1780,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		F3E1CE602FF741BA00D25F4E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3E1CE612FF741BA00D25F4E /* SDL3.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1831,6 +1868,7 @@
 				F35E56BD2983130B00A43A5F /* testautomation_timer.c */,
 				F35E56C12983130C00A43A5F /* testautomation_video.c */,
 				F36C342C2C0F869B00991150 /* testcamera.c */,
+				F3E1CE6E2FF7421F00D25F4E /* testcolorspace.c */,
 				BBFC088E164C6820003E6A99 /* testcontroller.c */,
 				001797711074320D00F5D044 /* testdraw.c */,
 				DB0F48D717CA51D2008798C5 /* testdrawchessboard.c */,
@@ -1855,6 +1893,7 @@
 				0017985A107436ED00F5D044 /* testnative.c */,
 				0017985C107436ED00F5D044 /* testnativecocoa.m */,
 				00179872107438D000F5D044 /* testnativex11.c */,
+				303856A62F87F7650040E40E /* testnotification.c */,
 				002F345209CA201C00EBEB88 /* testoverlay.c */,
 				F3B7FD6B2D73FC9E0086D1D0 /* testpen.c */,
 				002F346F09CA20A600EBEB88 /* testplatform.c */,
@@ -1935,6 +1974,8 @@
 				F36C34272C0F85DB00991150 /* testcamera.app */,
 				F3B7FD6A2D73FC630086D1D0 /* testpen.app */,
 				F3DB65E92E9DA90000568044 /* testyuv.app */,
+				303856932F87F68F0040E40E /* testnotification.app */,
+				F3E1CE692FF741BA00D25F4E /* testcolorspace.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1991,6 +2032,7 @@
 			dependencies = (
 			);
 			name = testatomic;
+			productName = testatomic;
 			productReference = 0017958C10741F7900F5D044 /* testatomic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2007,6 +2049,7 @@
 			dependencies = (
 			);
 			name = testaudioinfo;
+			productName = testaudioinfo;
 			productReference = 001795AD107421BF00F5D044 /* testaudioinfo.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2023,6 +2066,7 @@
 			dependencies = (
 			);
 			name = testgl;
+			productName = testgl;
 			productReference = 0017972110742F3200F5D044 /* testgl.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2039,6 +2083,7 @@
 			dependencies = (
 			);
 			name = testhaptic;
+			productName = testhaptic;
 			productReference = 00179748107430D600F5D044 /* testhaptic.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2055,6 +2100,7 @@
 			dependencies = (
 			);
 			name = testdraw;
+			productName = testdraw;
 			productReference = 0017976E107431B300F5D044 /* testdraw.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2072,6 +2118,7 @@
 			dependencies = (
 			);
 			name = testime;
+			productName = testime;
 			productReference = 0017978E107432AE00F5D044 /* testime.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2088,6 +2135,7 @@
 			dependencies = (
 			);
 			name = testintersections;
+			productName = testintersections;
 			productReference = 001797AE1074334C00F5D044 /* testintersections.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2104,6 +2152,7 @@
 			dependencies = (
 			);
 			name = testloadso;
+			productName = testloadso;
 			productReference = 001797D0107433C600F5D044 /* testloadso.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2121,6 +2170,7 @@
 			dependencies = (
 			);
 			name = testmultiaudio;
+			productName = testmultiaudio;
 			productReference = 001798121074355200F5D044 /* testmultiaudio.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2138,6 +2188,7 @@
 			dependencies = (
 			);
 			name = testnative;
+			productName = testnative;
 			productReference = 001798941074392D00F5D044 /* testnative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2154,6 +2205,7 @@
 			dependencies = (
 			);
 			name = testpower;
+			productName = testpower;
 			productReference = 001798B5107439DF00F5D044 /* testpower.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2170,6 +2222,7 @@
 			dependencies = (
 			);
 			name = testresample;
+			productName = testresample;
 			productReference = 001798F210743BEC00F5D044 /* testresample.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2187,6 +2240,7 @@
 			dependencies = (
 			);
 			name = testsprite;
+			productName = testsprite;
 			productReference = 0017991610743F1000F5D044 /* testsprite.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2203,6 +2257,7 @@
 			dependencies = (
 			);
 			name = testwm;
+			productName = testwm;
 			productReference = 0017993810743FB700F5D044 /* testwm.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2219,6 +2274,7 @@
 			dependencies = (
 			);
 			name = testfile;
+			productName = testfile;
 			productReference = 002F341209CA1BFF00EBEB88 /* testfile.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2236,6 +2292,7 @@
 			dependencies = (
 			);
 			name = testiconv;
+			productName = testiconv;
 			productReference = 002F343109CA1F0300EBEB88 /* testiconv.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2253,6 +2310,7 @@
 			dependencies = (
 			);
 			name = testoverlay;
+			productName = testoverlay;
 			productReference = 002F344D09CA1FB300EBEB88 /* testoverlay.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2269,7 +2327,25 @@
 			dependencies = (
 			);
 			name = testplatform;
+			productName = testplatform;
 			productReference = 002F346A09CA204F00EBEB88 /* testplatform.app */;
+			productType = "com.apple.product-type.application";
+		};
+		303856922F87F68F0040E40E /* testnotification */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 303856A32F87F6920040E40E /* Build configuration list for PBXNativeTarget "testnotification" */;
+			buildPhases = (
+				3038568F2F87F68F0040E40E /* Sources */,
+				303856902F87F68F0040E40E /* Frameworks */,
+				303856912F87F68F0040E40E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testnotification;
+			productName = testnotification;
+			productReference = 303856932F87F68F0040E40E /* testnotification.app */;
 			productType = "com.apple.product-type.application";
 		};
 		4537749112091504002F0F45 /* testshape */ = {
@@ -2303,7 +2379,7 @@
 			dependencies = (
 			);
 			name = testcontroller;
-			productName = testjoystick;
+			productName = testcontroller;
 			productReference = BBFC08CD164C6862003E6A99 /* testcontroller.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2491,6 +2567,7 @@
 			dependencies = (
 			);
 			name = testdrawchessboard;
+			productName = testdrawchessboard;
 			productReference = DB0F48EC17CA51E5008798C5 /* testdrawchessboard.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2507,6 +2584,7 @@
 			dependencies = (
 			);
 			name = testfilesystem;
+			productName = testfilesystem;
 			productReference = DB0F490117CA5212008798C5 /* testfilesystem.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2540,6 +2618,7 @@
 			dependencies = (
 			);
 			name = testmessage;
+			productName = testmessage;
 			productReference = DB166DD516A1D36A00A1396C /* testmessage.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2556,6 +2635,7 @@
 			dependencies = (
 			);
 			name = testrelative;
+			productName = testrelative;
 			productReference = DB166DEE16A1D50C00A1396C /* testrelative.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2573,6 +2653,7 @@
 			dependencies = (
 			);
 			name = testrendercopyex;
+			productName = testrendercopyex;
 			productReference = DB166E0516A1D57C00A1396C /* testrendercopyex.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2590,6 +2671,7 @@
 			dependencies = (
 			);
 			name = testrendertarget;
+			productName = testrendertarget;
 			productReference = DB166E1C16A1D5AD00A1396C /* testrendertarget.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2606,6 +2688,7 @@
 			dependencies = (
 			);
 			name = testrumble;
+			productName = testrumble;
 			productReference = DB166E3816A1D64D00A1396C /* testrumble.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2623,6 +2706,7 @@
 			dependencies = (
 			);
 			name = testscale;
+			productName = testscale;
 			productReference = DB166E5216A1D69000A1396C /* testscale.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2639,7 +2723,7 @@
 			dependencies = (
 			);
 			name = testshader;
-			productName = testsem;
+			productName = testshader;
 			productReference = DB166E6816A1D6F300A1396C /* testshader.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2691,6 +2775,7 @@
 			dependencies = (
 			);
 			name = testhotplug;
+			productName = testhotplug;
 			productReference = DB89957E18A19ABA0092407C /* testhotplug.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2707,6 +2792,7 @@
 			dependencies = (
 			);
 			name = testautomation;
+			productName = testautomation;
 			productReference = F35E56AA298312CB00A43A5F /* testautomation.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2723,6 +2809,7 @@
 			dependencies = (
 			);
 			name = testcamera;
+			productName = testcamera;
 			productReference = F36C34272C0F85DB00991150 /* testcamera.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2739,6 +2826,7 @@
 			dependencies = (
 			);
 			name = testpen;
+			productName = testpen;
 			productReference = F3B7FD6A2D73FC630086D1D0 /* testpen.app */;
 			productType = "com.apple.product-type.application";
 		};
@@ -2773,7 +2861,26 @@
 			dependencies = (
 			);
 			name = testyuv;
+			productName = testyuv;
 			productReference = F3DB65E92E9DA90000568044 /* testyuv.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F3E1CE5C2FF741BA00D25F4E /* testcolorspace */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F3E1CE662FF741BA00D25F4E /* Build configuration list for PBXNativeTarget "testcolorspace" */;
+			buildPhases = (
+				F3E1CE5D2FF741BA00D25F4E /* Sources */,
+				F3E1CE602FF741BA00D25F4E /* Frameworks */,
+				F3E1CE622FF741BA00D25F4E /* Resources */,
+				F3E1CE642FF741BA00D25F4E /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testcolorspace;
+			productName = testcolorspace;
+			productReference = F3E1CE692FF741BA00D25F4E /* testcolorspace.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2991,6 +3098,8 @@
 				0017992010743FB700F5D044 /* testwm */,
 				F3DB65DC2E9DA90000568044 /* testyuv */,
 				BEC567EA0761D90600A33029 /* torturethread */,
+				303856922F87F68F0040E40E /* testnotification */,
+				F3E1CE5C2FF741BA00D25F4E /* testcolorspace */,
 			);
 		};
 /* End PBXProject section */
@@ -3006,6 +3115,13 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
+		303856912F87F68F0040E40E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F3C17D3828E424B100E1A26D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3036,6 +3152,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				F3DB65EE2E9DA95D00568044 /* testyuv.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3E1CE622FF741BA00D25F4E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3E1CE632FF741BA00D25F4E /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3190,6 +3314,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				002F347009CA20A600EBEB88 /* testplatform.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3038568F2F87F68F0040E40E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				303856A72F87F7650040E40E /* testnotification.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3479,6 +3611,14 @@
 				F3DB65DF2E9DA90000568044 /* testutils.c in Sources */,
 				F3DB65F22E9DA9B400568044 /* testyuv_cvt.c in Sources */,
 				F3DB65F12E9DA98E00568044 /* testyuv.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F3E1CE5D2FF741BA00D25F4E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F3E1CE6F2FF7421F00D25F4E /* testcolorspace.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4351,6 +4491,26 @@
 			};
 			name = Release;
 		};
+		303856A42F87F6920040E40E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = testnotification;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		303856A52F87F6920040E40E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = testnotification;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
 		4537749712091509002F0F45 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4756,6 +4916,26 @@
 			};
 			name = Release;
 		};
+		F3E1CE672FF741BA00D25F4E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Debug;
+		};
+		F3E1CE682FF741BA00D25F4E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -5029,6 +5209,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
+		303856A32F87F6920040E40E /* Build configuration list for PBXNativeTarget "testnotification" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				303856A42F87F6920040E40E /* Debug */,
+				303856A52F87F6920040E40E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		4537749A1209150C002F0F45 /* Build configuration list for PBXNativeTarget "testshape" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -5205,6 +5394,15 @@
 			buildConfigurations = (
 				F37E49E22EB5250B00E508F7 /* Debug */,
 				F37E49E32EB5250B00E508F7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F3E1CE662FF741BA00D25F4E /* Build configuration list for PBXNativeTarget "testcolorspace" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3E1CE672FF741BA00D25F4E /* Debug */,
+				F3E1CE682FF741BA00D25F4E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

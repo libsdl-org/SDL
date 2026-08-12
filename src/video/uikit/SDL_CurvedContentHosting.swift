@@ -93,7 +93,7 @@ internal class SDL_ClearHostingController<Content: View>: UIHostingController<Co
 @MainActor
 @objc(SDL_CurvedContentHosting)
 internal class SDL_CurvedContentHosting: NSObject {
-    private let settings = SDL_CurvedContentSettings()
+    private let settings = SDL_CurvedContentSettings.load()
 
     private let helper = SDL_RealityKitHelper()
 
@@ -127,7 +127,7 @@ internal class SDL_CurvedContentHosting: NSObject {
         // Spin up an async task to present / dismiss ornaments when there are updates to the scene state.
         let settings = self.settings
         let sceneStateObservations = Observations { [weak settings] in
-            guard let settings else { return nil as (SDL_CurvedContentSettings.SceneState, SDL_CurvedContentSettings.InputType, Bool, Bool)? }
+            guard let settings else { return nil as (SceneState, InputType, Bool, Bool)? }
             return (settings.sceneState, settings.inputType, settings.isSnapped, settings.settingsExpanded)
         }
         Task { [weak self] in
@@ -149,6 +149,16 @@ internal class SDL_CurvedContentHosting: NSObject {
         hc.didMove(toParent: viewController)
 
         //NSLog("SDL_CurvedContentHosting: Bootstrapping RealityView as hidden child")
+    }
+
+    @objc public func dismiss() {
+        guard let hc = self.hostingController else { return }
+
+        settings.dimmingReady = false
+
+        hc.dismiss(animated: false)
+
+        hostingController = nil
     }
 
     private func updateOrnaments() {
@@ -195,26 +205,84 @@ internal class SDL_CurvedContentHosting: NSObject {
 
 // MARK: - Settings Panel
 
+/// State of the app user interface, determined by the content view's state.
+enum SceneState: String, Codable {
+    /// A state which allows the user to configure the scene.  Ornaments should be visible.
+    case interactive
+
+    /// A state which hides all UI except for the game itself.  Ornaments should not be visible.
+    case cinematic
+}
+
+enum InputType: String, Codable {
+    case eyes
+    case pointer
+}
+
+internal class SDL_CurvedContentPersistentSettings: Codable {
+    var inputType: InputType?
+    var showHover: Bool?
+    var isDimmed: Bool?
+    var curvatureRadius: Float?
+    var headroom: Float?
+}
+
 @Observable
 internal class SDL_CurvedContentSettings {
-    /// State of the app user interface, determined by the content view's state.
-    enum SceneState {
-        /// A state which allows the user to configure the scene.  Ornaments should be visible.
-        case interactive
 
-        /// A state which hides all UI except for the game itself.  Ornaments should not be visible.
-        case cinematic
+    static func load() -> SDL_CurvedContentSettings {
+        let settings = SDL_CurvedContentSettings()
+        if let json = SDL_VisionOS_GetWindowSettings() {
+            if json != "", let data = json.data(using: .utf8) {
+                do {
+                    let values = try JSONDecoder().decode(SDL_CurvedContentPersistentSettings.self, from:data)
+                    if let inputType = values.inputType {
+                        settings.inputType = inputType
+                    }
+                    if let showHover = values.showHover {
+                        settings.showHover = showHover
+                    }
+                    if let isDimmed = values.isDimmed {
+                        settings.isDimmed = isDimmed
+                    }
+                    if let curvatureRadius = values.curvatureRadius {
+                        settings.curvatureRadius = curvatureRadius
+                    }
+                    if let headroom = values.headroom {
+                        settings.headroom = headroom
+                    }
+                } catch {
+                    NSLog("Couldn't parse window settings: %@", error.localizedDescription)
+                }
+            }
+        }
+        return settings
     }
 
-    enum InputType {
-        case eyes
-        case pointer
+    func save() {
+        let values = SDL_CurvedContentPersistentSettings()
+        values.inputType = inputType
+        values.showHover = showHover
+        values.isDimmed = isDimmed
+        values.curvatureRadius = curvatureRadius
+        values.headroom = headroom
+
+        do {
+            let data = try JSONEncoder().encode(values)
+            let json = String(data: data, encoding: String.Encoding.utf8)
+            SDL_VisionOS_SendWindowSettings(json)
+        } catch {
+            NSLog("Couldn't encode window settings: %@", error.localizedDescription)
+        }
     }
 
     var inputType: InputType = .eyes
     var showHover: Bool = true
     var isDimmed: Bool = false
-    var curvatureRadius: Float = SDL_VisionOS_GetCurvature()
+    var dimmingReady: Bool = false
+    var curvatureRadius: Float = 0.0
+    var headroom_enabled: Bool = SDL_VisionOS_ShouldShowHeadroomUI()
+    var headroom: Float = 2.0
     var sceneState: SceneState = .interactive
     var isSnapped: Bool = false
     var settingsExpanded: Bool = false
@@ -253,6 +321,16 @@ struct SDL_SettingsPanelView: View {
         }
     }
 
+    private var headroomLabel: String {
+        let formatter = NumberFormatter()
+        formatter.maximumFractionDigits = 2
+        if let label = formatter.string(for: settings.headroom) {
+            return label
+        } else {
+            return ""
+        }
+    }
+
     var body: some View {
         if settings.settingsExpanded {
             expandedPanel
@@ -271,6 +349,11 @@ struct SDL_SettingsPanelView: View {
 
                     Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                         .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+
+                    if settings.headroom_enabled {
+                        Text("HDR")
+                            .font(.caption)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -293,6 +376,11 @@ struct SDL_SettingsPanelView: View {
 
                     Image(systemName: settings.isDimmed ? "moon.fill" : "sun.max")
                         .foregroundStyle(settings.isDimmed ? .primary : .secondary)
+
+                    if settings.headroom_enabled {
+                        Text("HDR")
+                            .font(.caption)
+                    }
 
                     Divider().frame(height: 8)
 
@@ -330,6 +418,9 @@ struct SDL_SettingsPanelView: View {
 
                 Toggle(isOn: $settings.showHover) {
                 }
+                .onChange(of: settings.showHover) {
+                    settings.save()
+                }
                 .labelsHidden()
                 .tint(.secondary)
 
@@ -341,11 +432,36 @@ struct SDL_SettingsPanelView: View {
 
                 Toggle(isOn: $settings.isDimmed) {
                 }
+                .onChange(of: settings.isDimmed) {
+                    settings.save()
+                }
                 .labelsHidden()
                 .tint(.secondary)
 
                 Image(systemName: "moon.fill")
                 Spacer()
+            }
+
+            if settings.headroom_enabled {
+                // HDR slider
+                VStack(spacing: 4) {
+                    Text("HDR \(headroomLabel)")
+                        .font(.caption)
+
+                    HStack() {
+                        Image(systemName: "moon.fill")
+
+                        Slider(value: $settings.headroom, in: 1.1...4) {
+                        } currentValueLabel: {
+                            Text("\(headroomLabel)")
+                        }
+                        .onChange(of: settings.headroom) {
+                            settings.save()
+                        }
+
+                        Image(systemName: "sun.max")
+                    }
+                }
             }
 
             // Curvature slider
@@ -383,7 +499,7 @@ struct SDL_SettingsPanelView: View {
                                                 + (1.0 - curvatureSlider) * Self.maximumCurvatureRadius)
                             settings.curvatureRadius = radius
                         }
-                        SDL_VisionOS_SendCurvatureChanged(settings.curvatureRadius)
+                        settings.save()
                     }
 
                     CurviestButtonIcon()

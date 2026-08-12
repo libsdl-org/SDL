@@ -57,27 +57,27 @@ void SDL_VisionOS_SendSizeChanged(long width, long height)
     }
 }
 
-// Called from Swift scene delegates to get the initial curvature
-float SDL_VisionOS_GetCurvature()
+// Called from Swift scene delegates to get the initial window settings
+NSString *SDL_VisionOS_GetWindowSettings()
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        return data.curvature;
+        return data.settings;
     }
-    return 0.0f;
+    return nil;
 }
 
 // Called from Swift scene delegates when window curvature changes
-void SDL_VisionOS_SendCurvatureChanged(float curvature)
+void SDL_VisionOS_SendWindowSettings(NSString *settings)
 {
     SDL_Window *window = SDL_GetToplevelForKeyboardFocus();
     if (window) {
         SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
-        if (curvature != data.curvature) {
-            data.curvature = curvature;
-            SDL_SetFloatProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_CURVATURE_FLOAT, curvature);
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_CURVATURE_CHANGED, (int)curvature, 0);
+        if (![settings isEqualToString:data.settings]) {
+            data.settings = settings;
+            SDL_SetStringProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING, settings.UTF8String);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_SETTINGS_CHANGED, 0, 0);
         }
     }
 }
@@ -92,6 +92,21 @@ void SDL_VisionOS_SendPointerMode(bool enabled)
 bool SDL_VisionOS_PointerModeEnabled()
 {
     return SDL_pointer_mode;
+}
+
+bool SDL_VisionOS_ShouldShowHeadroomUI()
+{
+    return SDL_GetHintBoolean(SDL_HINT_VISIONOS_HDR_HEADROOM_UI, false);
+}
+
+void SDL_VisionOS_SendHeadroom(float headroom)
+{
+    SDL_VideoDisplay *display = SDL_GetVideoDisplay(SDL_GetPrimaryDisplay());
+    if (display) {
+        SDL_HDROutputProperties HDR = { 1.0f, headroom };
+
+        SDL_SetDisplayHDRProperties(display, &HDR);
+    }
 }
 
 // Called from Swift scene delegates when visionOS delivers a touch event
@@ -150,6 +165,28 @@ bool SDL_UIKit_IsCurvedWindow(SDL_Window *window)
 {
     SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
     return data && data.curvedContentHosting;
+}
+
+void SDL_UIKit_HideCurvedWindow(SDL_Window *window)
+{
+    SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+    if (!data || !data.curvedContentHosting) {
+        return nil;
+    }
+
+    id hosting = data.curvedContentHosting;
+    SEL dismissSelector = NSSelectorFromString(@"dismiss");
+    if (![hosting respondsToSelector:dismissSelector]) {
+        return nil;
+    }
+
+    NSMethodSignature *signature = [hosting methodSignatureForSelector:dismissSelector];
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:signature];
+    [invocation setSelector:dismissSelector];
+    [invocation setTarget:hosting];
+    [invocation invoke];
+
+    data.curvedContentHosting = nil;
 }
 
 id<MTLTexture> SDL_UIKit_GetCurvedDisplayTexture(SDL_Window *window, id<MTLCommandBuffer> commandBuffer, int width, int height, MTLPixelFormat pixelFormat)

@@ -298,6 +298,12 @@ static bool HIDAPI_DriverPS5_IsSupportedDevice(SDL_HIDAPI_Device *device, const 
     Uint8 data[USB_PACKET_LENGTH];
     int size;
 
+    if (vendor_id == USB_VENDOR_BACKBONE &&
+        product_id == USB_PRODUCT_BACKBONE_ONE_PS5_V2) {
+        // This product doesn't appear to use the DualSense protocol
+        return false;
+    }
+
     if (type == SDL_GAMEPAD_TYPE_PS5) {
         return true;
     }
@@ -352,7 +358,9 @@ static void SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index
         0x0A,
         0x15,
         0x1B,
-        0x1F
+        0x1F,
+        0x11,
+        0x0E
     };
 
     if (player_index >= 0) {
@@ -1358,7 +1366,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketCommon(SDL_Joystick *joystick, SDL
             Uint32 delta;
             Uint16 tick = LOAD16(packet->rgucSensorTimestamp[0],
                                  packet->rgucSensorTimestamp[1]);
-            if (ctx->last_tick < tick) {
+            if (ctx->last_tick <= tick) {
                 delta = (tick - ctx->last_tick);
             } else {
                 delta = (SDL_MAX_UINT16 - ctx->last_tick + tick + 1);

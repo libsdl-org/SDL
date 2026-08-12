@@ -41,7 +41,8 @@ const char *defaultPaths[] = {
     "libvulkan.1.dylib",
     "libvulkan.dylib",
     "MoltenVK.framework/MoltenVK",
-    "libMoltenVK.dylib"
+    "libMoltenVK.dylib",
+    "/usr/local/lib/libvulkan.dylib"
 };
 
 // Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
@@ -167,9 +168,7 @@ char const * const *Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, U
     static const char *const extensionsForCocoa[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if(count) {
-        *count = SDL_arraysize(extensionsForCocoa);
-    }
+    *count = SDL_arraysize(extensionsForCocoa);
     return extensionsForCocoa;
 }
 

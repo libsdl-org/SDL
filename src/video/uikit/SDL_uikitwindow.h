@@ -55,7 +55,7 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 #ifdef SDL_PLATFORM_VISIONOS
 // Hosting controller for curved content mode (UIHostingController-based)
 @property(nonatomic, strong) id curvedContentHosting;
-@property(nonatomic, assign) CGFloat curvature;
+@property(nonatomic, strong) NSString *settings;
 #endif
 
 @end

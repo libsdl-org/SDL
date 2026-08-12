@@ -23,6 +23,8 @@
 #include "../SDL_dialog.h"
 #include "../../core/android/SDL_android.h"
 
+#ifndef SDL_DIALOG_DISABLED
+
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
 {
     SDL_DialogFileFilter *filters = SDL_GetPointerProperty(props, SDL_PROP_FILE_DIALOG_FILTERS_POINTER, NULL);
@@ -41,3 +43,5 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         callback(userdata, NULL, -1);
     }
 }
+
+#endif // !SDL_DIALOG_DISABLED

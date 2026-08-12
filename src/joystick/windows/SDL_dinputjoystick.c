@@ -231,7 +231,7 @@ const DIDATAFORMAT SDL_c_dfDIJoystick2 = {
 // Convert a DirectInput return code to a text message
 static bool SetDIerror(const char *function, HRESULT code)
 {
-    return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
+    return SDL_SetError("%s() DirectX error 0x%8.8" SDL_PRIxSLONG, function, code);
 }
 
 static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
@@ -431,7 +431,7 @@ bool SDL_DINPUT_JoystickInit(void)
     if (!instance) {
         IDirectInput8_Release(dinput);
         dinput = NULL;
-        return SDL_SetError("GetModuleHandle() failed with error code %lu.", GetLastError());
+        return SDL_SetError("GetModuleHandle() failed with error code %" SDL_PRIuULONG ".", GetLastError());
     }
     result = IDirectInput8_Initialize(dinput, instance, DIRECTINPUT_VERSION);
 
@@ -646,6 +646,10 @@ static BOOL CALLBACK EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE pDeviceObj
         in->ofs = DIJOFS_BUTTON(in->num);
         joystick->nbuttons++;
     } else if (pDeviceObject->dwType & DIDFT_POV) {
+        // DIJOYSTATE2.rgdwPOV only has room for 4 POVs, ignore any beyond that.
+        if (joystick->nhats >= 4) {
+            return DIENUM_CONTINUE;
+        }
         in->type = HAT;
         in->num = (Uint8)joystick->nhats;
         in->ofs = DIJOFS_POV(in->num);
@@ -1070,7 +1074,7 @@ static void UpdateDINPUTJoystickState_Polled(SDL_Joystick *joystick)
             break;
         case HAT:
         {
-            Uint8 pos = TranslatePOV(state.rgdwPOV[in->ofs - DIJOFS_POV(0)]);
+            Uint8 pos = TranslatePOV(state.rgdwPOV[in->num]);
             SDL_SendJoystickHat(timestamp, joystick, in->num, pos);
             break;
         }

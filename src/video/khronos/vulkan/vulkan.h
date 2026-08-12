@@ -2,9 +2,8 @@
 #define VULKAN_H_ 1
 
 /*
-** Copyright 2015-2024 The Khronos Group Inc.
-**
-** SPDX-License-Identifier: Apache-2.0
+** Copyright 2015-2026 The Khronos Group Inc.
+** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
 
 #include "vk_platform.h"
@@ -94,6 +93,10 @@
 
 #ifdef VK_ENABLE_BETA_EXTENSIONS
 #include "vulkan_beta.h"
+#endif
+
+#ifdef VK_USE_PLATFORM_OHOS
+#include "vulkan_ohos.h"
 #endif
 
 #endif // VULKAN_H_

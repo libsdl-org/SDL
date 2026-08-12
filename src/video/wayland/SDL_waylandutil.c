@@ -26,6 +26,8 @@
 #include "SDL_waylandutil.h"
 #include "xdg-activation-v1-client-protocol.h"
 
+#include "../../notification/SDL_notification_c.h"
+
 #define WAYLAND_HANDLE_PREFIX "wayland:"
 
 typedef struct Wayland_ActivationParams
@@ -66,6 +68,9 @@ bool Wayland_GetActivationTokenForExport(SDL_VideoDevice *_this, char **token, c
     }
 
     const char *xdg_activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
+    if (!xdg_activation_token) {
+        xdg_activation_token = SDL_GetNotificationActivationToken();
+    }
     if (xdg_activation_token) {
         *token = SDL_strdup(xdg_activation_token);
         if (!*token) {

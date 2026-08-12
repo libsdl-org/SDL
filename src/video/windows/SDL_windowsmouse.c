@@ -470,7 +470,7 @@ static SDL_Cursor *WIN_CreateAnimatedCursor(SDL_CursorFrameInfo *frames, int fra
 static SDL_Cursor *WIN_CreateBlankCursor(void)
 {
     SDL_Cursor *cursor = NULL;
-    SDL_Surface *surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_ARGB8888);
+    SDL_Surface *surface = SDL_CreateSurfaceZeroed(32, 32, SDL_PIXELFORMAT_ARGB8888);
     if (surface) {
         cursor = WIN_CreateCursor(surface, 0, 0);
         SDL_DestroySurface(surface);

@@ -500,7 +500,8 @@ static int process_testStdinToStdout(void *arg)
             total_read += amount_read;
             SDL_WriteIO(stdout_stream, local_buffer, amount_read);
             stdout_stream_buf = SDL_GetPointerProperty(SDL_GetIOProperties(stdout_stream), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL);
-            if (SDL_strstr(stdout_stream_buf, "EOF")) {
+            Sint64 stdout_size = SDL_GetIOSize(stdout_stream);
+            if (SDL_strnstr(stdout_stream_buf, "EOF", (size_t)stdout_size)) {
                 SDLTest_Log("Found EOF in stdout");
                 break;
             }
@@ -789,6 +790,8 @@ static int process_testNonExistingExecutable(void *arg)
     char *random_stem;
     char *random_path;
     SDL_Process *process = NULL;
+    bool result;
+    int exit_code = 0;
 
     random_stem = SDLTest_RandomAsciiStringOfSize(STEM_LENGTH);
     random_path = SDL_malloc(STEM_LENGTH + SDL_strlen(EXE) + 1);
@@ -801,7 +804,15 @@ static int process_testNonExistingExecutable(void *arg)
 
     SDLTest_AssertPass("About to call SDL_CreateProcess");
     process = SDL_CreateProcess((const char * const *)process_args, false);
-    SDLTest_AssertCheck(process == NULL, "SDL_CreateProcess() should have failed (%s)", SDL_GetError());
+    if (process) {
+        SDLTest_AssertPass("SDL_CreateProcess() returned a process, waiting for exec failure");
+        result = SDL_WaitProcess(process, true, &exit_code);
+        SDLTest_AssertCheck(result, "SDL_WaitProcess()");
+        SDLTest_AssertCheck(exit_code != 0, "Exit code should be non-zero, is %d", exit_code);
+        SDL_DestroyProcess(process);
+    } else {
+        SDLTest_AssertPass("SDL_CreateProcess() failed synchronously (%s)", SDL_GetError());
+    }
 
     DestroyStringArray(process_args);
     return TEST_COMPLETED;
