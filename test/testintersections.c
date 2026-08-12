@@ -210,8 +210,12 @@ static void loop(void *arg)
 
     /* Check for events */
     while (SDL_PollEvent(&event)) {
+        SDL_Window *window;
         SDLTest_CommonEvent(state, &event, done);
-        SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(SDL_GetWindowFromEvent(&event)), &event);
+        window = SDL_GetWindowFromEvent(&event);
+        if (window) {
+            SDL_ConvertEventToRenderCoordinates(SDL_GetRenderer(window), &event);
+        }
         switch (event.type) {
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
             mouse_begin_x = event.button.x;
