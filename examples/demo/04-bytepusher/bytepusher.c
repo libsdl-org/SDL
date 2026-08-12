@@ -302,6 +302,10 @@ static Uint16 keycode_mask(SDL_Keycode key) {
     int index;
     if (key >= SDLK_0 && key <= SDLK_9) {
         index = key - SDLK_0;
+    } else if (key >= SDLK_KP_1 && key <= SDLK_KP_9) {
+        index = key - SDLK_KP_1 + 1;
+    } else if (key == SDLK_KP_0) {
+        index = 0;
     } else if (key >= SDLK_A && key <= SDLK_F) {
         index = key - SDLK_A + 10;
     } else {
