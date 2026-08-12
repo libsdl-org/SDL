@@ -674,9 +674,9 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
 
     for (int i = 0; i < SDL_GetNumRenderDrivers() && !quit; ++i) {
         const char *renderer_name = SDL_GetRenderDriver(i);
-		if (requested_renderer && SDL_strcmp(renderer_name, requested_renderer) != 0) {
-			continue;
-		}
+        if (requested_renderer && SDL_strcmp(renderer_name, requested_renderer) != 0) {
+            continue;
+        }
 
         SDL_Renderer *renderer = SDL_CreateRenderer(window, renderer_name);
         if (!renderer) {
@@ -1047,9 +1047,11 @@ int main(int argc, char **argv)
     }
 
 done:
-	SDL_free(filename);
+    SDL_free(filename);
     SDL_DestroySurface(original);
-    SDL_DestroyWindow(window);
+    if (window) {
+        SDL_DestroyWindow(window);
+    }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return result;

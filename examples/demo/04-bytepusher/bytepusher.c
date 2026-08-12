@@ -344,7 +344,7 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
         case SDL_EVENT_DROP_FILE:
             load_file(vm, event->drop.data);
             break;
-        
+
         case SDL_EVENT_KEY_DOWN:
 #ifndef __EMSCRIPTEN__
             if (event->key.key == SDLK_ESCAPE) {
@@ -366,8 +366,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
                 vm->keystate |= keycode_mask(event->key.key);
             }
             break;
-        
-        case SDL_EVENT_KEY_UP: 
+
+        case SDL_EVENT_KEY_UP:
             if (vm->positional_input) {
                 vm->keystate &= ~scancode_mask(event->key.scancode);
             } else {
