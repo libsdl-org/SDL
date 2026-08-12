@@ -703,7 +703,7 @@ __EOF__
                             if ( $flags eq "" ) {
                                 $flags = "0";
                             }
-                            print FILE "($flags), SDL_CPU_ANY,";
+                            print FILE "($flags),";
                             output_copyfuncname("", $src_formats[$i], $dst_formats[$j], $modulate, $blend, $scale, 0, " },\n");
                         }
                     }
@@ -712,7 +712,7 @@ __EOF__
         }
     }
     print FILE <<__EOF__;
-    { SDL_PIXELFORMAT_UNKNOWN, SDL_PIXELFORMAT_UNKNOWN, 0, 0, NULL }
+    { SDL_PIXELFORMAT_UNKNOWN, SDL_PIXELFORMAT_UNKNOWN, 0, NULL }
 };
 
 __EOF__
