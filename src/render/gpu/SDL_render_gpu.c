@@ -1747,7 +1747,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     GPU_RenderData *data = NULL;
 
     // Clear any OpenGL properties on the window to avoid potential driver conflicts.
-    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+    SDL_WindowFlags flags = window ? SDL_GetWindowFlags(window) : 0;
     if (flags & SDL_WINDOW_OPENGL) {
         flags &= ~SDL_WINDOW_OPENGL;
         SDL_ReconfigureWindow(window, flags);
