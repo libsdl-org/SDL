@@ -98,7 +98,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderViewport(renderer, NULL);  /* NULL means "use the whole window" */
     SDL_RenderTexture(renderer, texture, NULL, &dst_rect);
 
-    /* top right quarter of the window. */
+    /* bottom right quarter of the window. */
     viewport.x = WINDOW_WIDTH / 2;
     viewport.y = WINDOW_HEIGHT / 2;
     viewport.w = WINDOW_WIDTH / 2;
