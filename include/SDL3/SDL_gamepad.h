@@ -123,7 +123,12 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_PS4, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
     SDL_GAMEPAD_TYPE_PS5, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< At least B/A/Y/X, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
+    SDL_GAMEPAD_TYPE_XBOX360, /**< An Xbox 360 or compatible third party controller */
+    SDL_GAMEPAD_TYPE_XBOXONE, /**< An Xbox One, Xbox Series X/S, XBox Elite, or compatible third party controller */
+    SDL_GAMEPAD_TYPE_PS3, /**< A Sony Dualshock 3 or compatible third party controller */
+    SDL_GAMEPAD_TYPE_PS4, /**< A Sony Dualshock 4 or compatible third party controller */
+    SDL_GAMEPAD_TYPE_PS5, /**< A Sony DualSense or compatible third party controller */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third party controller */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
     SDL_GAMEPAD_TYPE_GAMECUBE, /**< A Nintendo GameCube or compatible third party controller. This has at least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, and start button, but may have more controls mapped. */
