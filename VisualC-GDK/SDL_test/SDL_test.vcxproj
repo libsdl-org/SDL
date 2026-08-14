@@ -102,7 +102,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <LibraryPath>$(Console_SdkLibPath);$(LibraryPath)</LibraryPath>
-    <IncludePath>$(Console_SdkIncludeRoot)$(IncludePath)</IncludePath>
+    <IncludePath>$(Console_SdkIncludeRoot);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Desktop.x64'">
     <Midl />

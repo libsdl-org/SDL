@@ -205,7 +205,7 @@ Existing projects using the "old layout" of GDK may need to add the following to
 ```
 <PropertyGroup>
   <LibraryPath>$(Console_SdkLibPath);$(LibraryPath)</LibraryPath>
-  <IncludePath>$(Console_SdkIncludeRoot)$(IncludePath)</IncludePath>
+  <IncludePath>$(Console_SdkIncludeRoot);$(IncludePath)</IncludePath>
 </PropertyGroup>
 ```
 See SDL.vcxproj for an example of this.
