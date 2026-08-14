@@ -112,6 +112,8 @@ typedef struct SDL_Gamepad SDL_Gamepad;
  * application developers should note that the gamepad type could be misreported; SDL
  * relies on various heuristics for gamepad type detection when it's not specified, and
  * not all physical gamepads can be reliably distinguished.
+ *
+ * Face buttons are listed in the description comments in South/East/West/North order where applicable.
  */
 typedef enum SDL_GamepadType
 {
@@ -122,25 +124,19 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_PS3, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
     SDL_GAMEPAD_TYPE_PS4, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
     SDL_GAMEPAD_TYPE_PS5, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< At least B/A/Y/X, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
-    SDL_GAMEPAD_TYPE_XBOX360, /**< An Xbox 360 or compatible third party controller */
-    SDL_GAMEPAD_TYPE_XBOXONE, /**< An Xbox One, Xbox Series X/S, XBox Elite, or compatible third party controller */
-    SDL_GAMEPAD_TYPE_PS3, /**< A Sony Dualshock 3 or compatible third party controller */
-    SDL_GAMEPAD_TYPE_PS4, /**< A Sony Dualshock 4 or compatible third party controller */
-    SDL_GAMEPAD_TYPE_PS5, /**< A Sony DualSense or compatible third party controller */
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third party controller */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third-party. At least B/A/Y/X face buttons, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
     SDL_GAMEPAD_TYPE_GAMECUBE, /**< A Nintendo GameCube or compatible third party controller. This has at least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, and start button, but may have more controls mapped. */
     SDL_GAMEPAD_TYPE_STEAM,
-    SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with B/A/Y/X face button layout */
-    SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with Nintendo GameCube style (A/X/B/Y) face button layout */
-    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Sony PlayStation style (Cross/Circle/Square/Triangle) face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with Nintendo-style (South=B/East=A/West=Y/North=X) face button layout. (Might not even have all 4 face buttons). */
+    SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with Nintendo GameCube style (South=A/East=X/West=B/North=Y) face button layout. (Might not even have all 4 face buttons). */
+    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Sony PlayStation style (Cross/Circle/Square/Triangle) face button layout. (Might not even have all 4 face buttons). */
     SDL_GAMEPAD_TYPE_NES, /**< At least B/A, d-pad, select, start */
     SDL_GAMEPAD_TYPE_SNES, /**< At least B/A/Y/X, two bumpers, d-pad, select, start */
-    SDL_GAMEPAD_TYPE_N64,
-    SDL_GAMEPAD_TYPE_WII,
-    SDL_GAMEPAD_TYPE_SEGA_GENESIS,
+    SDL_GAMEPAD_TYPE_N64, /* An official N64-style controller (such as N64 NSO gamepad) or third party equivalent, such as via an N64-to-usb adapter. */
+    SDL_GAMEPAD_TYPE_WII, /* An official Wii motion controller or third party equivalent. Has at least: A/B/1/2, d-pad, -/+, and guide. (If a nunchuk is attached, a left-stick and "C"/"Z" buttons (mapped to left button and left trigger)) */
+    SDL_GAMEPAD_TYPE_SEGA_GENESIS, /* An official Sega Genesis -styled controller, such as a Sega Nintendo Switch Online controller, or a third-party equivalent, such as via an adapter. At least d-pad, start button, A/B face buttons, and a "C" button (mapped to R trigger). The 6-button variant also exposes X/Y face buttons, "Z" button (mapped to R bumper), and "L" and "R" buttons (mapped to L bumper and L trigger), and a "mode" aka "select" button */
     SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 

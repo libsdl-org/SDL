@@ -3655,6 +3655,12 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "Sega Genesis";
     case SDL_GAMEPAD_TYPE_STANDARD:
         return "Standard";
+    case SDL_GAMEPAD_TYPE_STANDARD_BAYX:
+        return "Standard (BAYX)";
+    case SDL_GAMEPAD_TYPE_STANDARD_AXBY:
+        return "Standard (AXBY)";
+    case SDL_GAMEPAD_TYPE_STANDARD_SONY:
+        return "Standard (Sony)";
     default:
         return "(unknown)";
     }
