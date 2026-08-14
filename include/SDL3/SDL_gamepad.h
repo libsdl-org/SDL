@@ -135,7 +135,7 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_STEAM,
     SDL_GAMEPAD_TYPE_STANDARD_BAYX, /**< A non-specific gamepad with B/A/Y/X face button layout */
     SDL_GAMEPAD_TYPE_STANDARD_AXBY, /**< A non-specific gamepad with Nintendo GameCube style (A/X/B/Y) face button layout */
-    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Cross/Circle/Square/Triangle face button layout */
+    SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Sony PlayStation style (Cross/Circle/Square/Triangle) face button layout */
     SDL_GAMEPAD_TYPE_NES, /**< At least B/A, d-pad, select, start */
     SDL_GAMEPAD_TYPE_SNES, /**< At least B/A/Y/X, two bumpers, d-pad, select, start */
     SDL_GAMEPAD_TYPE_N64,
