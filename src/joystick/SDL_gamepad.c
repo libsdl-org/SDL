@@ -1046,6 +1046,7 @@ static inline void SDL_SInputStylesMapExtraction(SDL_SInputStyles_t* styles, cha
 static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 product, Uint8 sub_product, Uint16 version, Uint8 face_style, SDL_GamepadType gamepad_type, char *mapping_string, size_t mapping_string_len)
 {
     SDL_SInputStyles_t decoded = { 0 };
+    bool no_type_configured;
 
     // Interpret the mapping string
     // dynamically based on the feature responses
@@ -1069,7 +1070,7 @@ static void SDL_CreateMappingStringForSInputGamepad(Uint16 vendor, Uint16 produc
 
     decoded.analog_style = (SInput_AnalogStyleType)(version % SINPUT_ANALOGSTYLE_MAX);
 
-    const bool no_type_configured = (gamepad_type == SDL_GAMEPAD_TYPE_UNKNOWN || gamepad_type == SDL_GAMEPAD_TYPE_STANDARD);
+    no_type_configured = (gamepad_type == SDL_GAMEPAD_TYPE_UNKNOWN || gamepad_type == SDL_GAMEPAD_TYPE_STANDARD);
 
     /* Use a gamepad type with a matching face button style.
      * Try to find an actual matching gamepad type, otherwise fall
@@ -1641,7 +1642,9 @@ const char *SDL_GetGamepadStringForType(SDL_GamepadType type)
     return NULL;
 }
 
-/* find 'type:' field and marshalls to SDL_GamepadType */
+/* Find the 'type:' field and marshalls to SDL_GamepadType.
+ * Returns false if type not present or unknown.
+ */
 static bool SDL_GetGamepadTypeFromMappingString(const char *mapping, SDL_GamepadType *type)
 {
     const char *type_string = mapping;
@@ -1667,7 +1670,7 @@ static bool SDL_GetGamepadTypeFromMappingString(const char *mapping, SDL_Gamepad
     SDL_memcpy(type_name, type_string, len);
     type_name[len] = '\0';
     *type = SDL_GetGamepadTypeFromString(type_name);
-    return true;
+    return (*type != SDL_GAMEPAD_TYPE_UNKNOWN);
 }
 
 static const char *map_StringForGamepadAxis[] = {
@@ -1977,11 +1980,13 @@ static bool SDL_PrivateParseGamepadConfigString(SDL_Gamepad *gamepad, const char
 
 static void SDL_UpdateGamepadType(SDL_Gamepad *gamepad)
 {
+    bool has_type_field;
+
     SDL_AssertJoysticksLocked();
 
     gamepad->type = SDL_GAMEPAD_TYPE_UNKNOWN;
 
-    const bool has_type_field = SDL_GetGamepadTypeFromMappingString(gamepad->mapping->mapping, &gamepad->type);
+    has_type_field = SDL_GetGamepadTypeFromMappingString(gamepad->mapping->mapping, &gamepad->type);
     if (gamepad->type == SDL_GAMEPAD_TYPE_UNKNOWN) {
         gamepad->type = SDL_GetRealGamepadTypeForID(gamepad->joystick->instance_id);
     }
@@ -3662,7 +3667,6 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
     case SDL_GAMEPAD_TYPE_NES:
     case SDL_GAMEPAD_TYPE_SNES:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
-    // TODO: confirm joycon label conventions
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
@@ -3729,15 +3733,17 @@ SDL_GamepadButtonLabel SDL_GetGamepadButtonLabelForType(SDL_GamepadType type, SD
  */
 SDL_GamepadButtonLabel SDL_GetGamepadButtonLabel(SDL_Gamepad *gamepad, SDL_GamepadButton button)
 {
-    SDL_GamepadType t;
+    SDL_GamepadType type;
+
     SDL_LockJoysticks();
     {
         CHECK_GAMEPAD_MAGIC(gamepad, SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN);
-        t = gamepad->type;
+
+        type = gamepad->type;
     }
     SDL_UnlockJoysticks();
 
-    return SDL_GetGamepadButtonLabelForType(t, button);
+    return SDL_GetGamepadButtonLabelForType(type, button);
 }
 
 /**

@@ -119,12 +119,13 @@ typedef enum SDL_GamepadType
 {
     SDL_GAMEPAD_TYPE_UNKNOWN = 0, /**< Not a gamepad / error / etc. */
     SDL_GAMEPAD_TYPE_STANDARD, /**< A non-specific gamepad with no particular guarantees */
-    SDL_GAMEPAD_TYPE_XBOX360, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
-    SDL_GAMEPAD_TYPE_XBOXONE, /**< At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
-    SDL_GAMEPAD_TYPE_PS3, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
-    SDL_GAMEPAD_TYPE_PS4, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
-    SDL_GAMEPAD_TYPE_PS5, /**< At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
+    SDL_GAMEPAD_TYPE_XBOX360, /**< Official XBOX 360 gamepad or compatible third-party. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
+    SDL_GAMEPAD_TYPE_XBOXONE, /**< Official XBOX One gamepad or compatible third-party. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
+    SDL_GAMEPAD_TYPE_PS3, /**< Official DualShock 3 or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
+    SDL_GAMEPAD_TYPE_PS4, /**< Official DualShock 4 or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
+    SDL_GAMEPAD_TYPE_PS5, /**< Official DualSense or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third-party. At least B/A/Y/X face buttons, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
     SDL_GAMEPAD_TYPE_GAMECUBE, /**< A Nintendo GameCube or compatible third party controller. This has at least A/X/B/Y, d-pad, one bumper, two sticks, two analog triggers, and start button, but may have more controls mapped. */
@@ -134,9 +135,9 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_STANDARD_SONY, /**< A non-specific gamepad with Sony PlayStation style (Cross/Circle/Square/Triangle) face button layout. (Might not even have all 4 face buttons). */
     SDL_GAMEPAD_TYPE_NES, /**< At least B/A, d-pad, select, start */
     SDL_GAMEPAD_TYPE_SNES, /**< At least B/A/Y/X, two bumpers, d-pad, select, start */
-    SDL_GAMEPAD_TYPE_N64, /* An official N64-style controller (such as N64 NSO gamepad) or third party equivalent, such as via an N64-to-usb adapter. */
-    SDL_GAMEPAD_TYPE_WII, /* An official Wii motion controller or third party equivalent. Has at least: A/B/1/2, d-pad, -/+, and guide. (If a nunchuk is attached, a left-stick and "C"/"Z" buttons (mapped to left button and left trigger)) */
-    SDL_GAMEPAD_TYPE_SEGA_GENESIS, /* An official Sega Genesis -styled controller, such as a Sega Nintendo Switch Online controller, or a third-party equivalent, such as via an adapter. At least d-pad, start button, A/B face buttons, and a "C" button (mapped to R trigger). The 6-button variant also exposes X/Y face buttons, "Z" button (mapped to R bumper), and "L" and "R" buttons (mapped to L bumper and L trigger), and a "mode" aka "select" button */
+    SDL_GAMEPAD_TYPE_N64, /**< An official N64-style controller (such as N64 NSO gamepad) or third party equivalent, such as via an N64-to-usb adapter. */
+    SDL_GAMEPAD_TYPE_WII, /**< An official Wii Remote or third party equivalent. At least A/B/1/2, d-pad, -/+, and guide. (If a nunchuk is attached, a left stick and "C"/"Z" buttons, mapped to the left shoulder and left trigger) */
+    SDL_GAMEPAD_TYPE_SEGA_GENESIS, /**< An official Sega Genesis-styled or Saturn-styled controller, such as a Sega Nintendo Switch Online controller, or a third-party equivalent, such as via an adapter. At least d-pad, start, A/B face buttons, and a "C" button (mapped to the right trigger). The 6-button variant also exposes X/Y face buttons, a "Z" button (mapped to the right shoulder), and a "mode" aka "select" button. Sega Saturn gamepads also have "L" and "R" buttons (mapped to the left shoulder and left trigger) */
     SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 

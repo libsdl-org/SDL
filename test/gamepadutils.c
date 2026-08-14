@@ -3635,6 +3635,10 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "PS4";
     case SDL_GAMEPAD_TYPE_PS5:
         return "PS5";
+    case SDL_GAMEPAD_TYPE_NES:
+        return "NES";
+    case SDL_GAMEPAD_TYPE_SNES:
+        return "SNES";
     case SDL_GAMEPAD_TYPE_N64:
         return "N64";
     case SDL_GAMEPAD_TYPE_GAMECUBE:
