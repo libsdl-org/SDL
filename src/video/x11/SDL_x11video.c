@@ -367,7 +367,6 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
 #define GET_ATOM(X) data->atoms.X = X11_XInternAtom(data->display, #X, False)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
-    GET_ATOM(WM_TAKE_FOCUS);
     GET_ATOM(WM_NAME);
     GET_ATOM(WM_TRANSIENT_FOR);
     GET_ATOM(_NET_WM_STATE);
