@@ -715,8 +715,6 @@ static void Render(SDL_Window *window, const int windownum)
         color_target.store_op = SDL_GPU_STOREOP_RESOLVE;
         color_target.texture = winstate->tex_msaa;
         color_target.resolve_texture = winstate->tex_resolve;
-        color_target.cycle = true;
-        color_target.cycle_resolve_texture = true;
     } else {
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
@@ -752,6 +750,13 @@ static void Render(SDL_Window *window, const int windownum)
     if (sprite_render_state.renderer) {
         /* Load the existing color target so we can blend with it */
         color_target.load_op = SDL_GPU_LOADOP_LOAD;
+
+        if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
+            /* Use the resolve texture for the sprite overlay */
+            color_target.texture = winstate->tex_resolve;
+            color_target.resolve_texture = NULL;
+            color_target.store_op = SDL_GPU_STOREOP_STORE;
+        }
 
         pass = SDL_BeginGPURenderPass(cmd, &color_target, 1, NULL);
         RenderSpriteOverlay(pass, &sprite_render_state, &winstate->sprite_state);
