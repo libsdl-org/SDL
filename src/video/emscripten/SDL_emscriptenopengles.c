@@ -30,6 +30,8 @@
 #include "SDL_emscriptenopengles.h"
 #include "../../main/SDL_main_callbacks.h"
 
+static int pending_swap_interval = -1;
+
 bool Emscripten_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     return true;
@@ -50,6 +52,7 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
         return SDL_SetError("Late swap tearing currently unsupported");
     }
 
+    pending_swap_interval = -1;
     if (Emscripten_ShouldSetSwapInterval(interval)) {
         // don't change the mainloop timing if the app is also driving a main callback with this hint,
         //  as we assume that was the more deliberate action.
@@ -60,6 +63,10 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
                 emscripten_set_main_loop_timing(EM_TIMING_RAF, interval);
             }
         }
+    } else {
+        // Mirror what's happening on the video side to make sure Emscripten_GLES_GetSwapInterval
+        // returns a consistent view of the swap interval, to avoid enabling simulate_vsync.
+        pending_swap_interval = interval;
     }
 
     return true;
@@ -68,6 +75,11 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 bool Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
     int mode, value;
+
+    if (pending_swap_interval != -1) {
+        *interval = pending_swap_interval;
+        return true;
+    }
 
     emscripten_get_main_loop_timing(&mode, &value);
 
