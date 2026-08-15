@@ -26,7 +26,7 @@ WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
 
     source.hwnd = hwnd;
     source.hinstance = hinstance;
-    source.chain.sType = WGPUSType_SurfaceSourceXlibWindow;
+    source.chain.sType = WGPUSType_SurfaceSourceWindowsHWND;
     source.chain.next = NULL;
 
     desc.label = { NULL, WGPU_STRLEN };
