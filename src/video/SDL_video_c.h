@@ -37,7 +37,7 @@ struct SDL_VideoDevice;
  * either SDL_Init() or SDL_InitSubSystem(), you should call SDL_VideoQuit()
  * before calling SDL_Quit().
  *
- * It is safe to call this function multiple times. SDL_VideoInit() will call
+ * It is safe to call this function multiple times. SDL_InitVideo() will call
  * SDL_VideoQuit() itself if the video subsystem has already been initialized.
  *
  * You can use SDL_GetNumVideoDrivers() and SDL_GetVideoDriver() to find a
@@ -48,10 +48,10 @@ struct SDL_VideoDevice;
  * \returns true on success or false on failure; call
  *          SDL_GetError() for more information.
  */
-extern bool SDL_VideoInit(const char *driver_name);
+extern bool SDL_InitVideo(const char *driver_name);
 
 /**
- * Shut down the video subsystem, if initialized with SDL_VideoInit().
+ * Shut down the video subsystem, if initialized with SDL_InitVideo().
  *
  * This function closes all windows, and restores the original video mode.
  */

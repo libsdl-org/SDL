@@ -61,7 +61,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_CocoaVideoData *data;
 
         if (![NSThread isMainThread]) {
-            return NULL;  // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
+            return NULL;  // this doesn't SDL_SetError() because SDL_InitVideo is just going to overwrite it.
         }
 
         Cocoa_RegisterApp();
