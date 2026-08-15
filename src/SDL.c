@@ -565,7 +565,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             }
 
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
-            if (!SDL_CameraInit(NULL)) {
+            if (!SDL_InitCamera(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
