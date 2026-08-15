@@ -420,7 +420,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_assert(SDL_VideoThreadID == SDL_MainThreadID);
 #endif
 
-            if (!SDL_VideoInit(NULL)) {
+            if (!SDL_InitVideo(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);

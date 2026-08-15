@@ -616,7 +616,7 @@ const char *SDL_GetVideoDriver(int index)
 /*
  * Initialize the video and event subsystems -- determine native pixel format
  */
-bool SDL_VideoInit(const char *driver_name)
+bool SDL_InitVideo(const char *driver_name)
 {
     SDL_VideoDevice *video;
     bool init_events = false;
