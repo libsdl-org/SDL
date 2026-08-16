@@ -30,8 +30,9 @@ More information could be found in ps3toolchain for setup guide.
 
 ## Notes
 Use ps3loadx installed on PS3 and ps3load compiled from ps3toolchain to run and debug code on real PS3.
-## Getting PS2 Dev
-[Installing PS2 Dev](https://github.com/ps2dev/ps2dev)
+
+## Getting PS3 Dev
+[Installing PS3 Dev](https://github.com/ps3dev/ps3dev)
 
 ## Running on RPCS3 Emulator
 [RPCS3](https://github.com/RPCS3/rpcs3)
@@ -41,6 +42,3 @@ Use ps3loadx installed on PS3 and ps3load compiled from ps3toolchain to run and 
 - PS3 Screen Mouse
 - Handle video mode/resolution change.
 - Render target Ex.
-
-## Issues:
-- SDL_Quit() is not working.
