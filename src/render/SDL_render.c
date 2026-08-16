@@ -1471,7 +1471,7 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
         // We just want to match the first format that has the same channels
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
-                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
+                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) >= size &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == hasAlpha &&
                 SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == isIndexed) {
                 return renderer->texture_formats[i];
@@ -1856,7 +1856,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
 
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
-                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
+                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) >= size &&
                 SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha &&
                 SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == preferIndexed) {
                 format = renderer->texture_formats[i];
