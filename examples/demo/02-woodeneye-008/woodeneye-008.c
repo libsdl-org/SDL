@@ -434,7 +434,9 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         case SDL_EVENT_KEY_UP: {
             SDL_Scancode scancode = event->key.scancode;
             SDL_KeyboardID id = event->key.which;
+#ifndef SDL_PLATFORM_EMSCRIPTEN
             if (scancode == SDL_SCANCODE_ESCAPE) return SDL_APP_SUCCESS;
+#endif
             int index = whoseKeyboard(id, players, player_count);
             if (index >= 0) {
                 if (scancode == SDL_SCANCODE_W) players[index].wasd &= 30;
