@@ -411,15 +411,15 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             break;
         }
         case SDL_EVENT_KEY_DOWN: {
-            SDL_Keycode sym = event->key.key;
+            SDL_Scancode scancode = event->key.scancode;
             SDL_KeyboardID id = event->key.which;
             int index = whoseKeyboard(id, players, player_count);
             if (index >= 0) {
-                if (sym == SDLK_W) players[index].wasd |= 1;
-                if (sym == SDLK_A) players[index].wasd |= 2;
-                if (sym == SDLK_S) players[index].wasd |= 4;
-                if (sym == SDLK_D) players[index].wasd |= 8;
-                if (sym == SDLK_SPACE) players[index].wasd |= 16;
+                if (scancode == SDL_SCANCODE_W) players[index].wasd |= 1;
+                if (scancode == SDL_SCANCODE_A) players[index].wasd |= 2;
+                if (scancode == SDL_SCANCODE_S) players[index].wasd |= 4;
+                if (scancode == SDL_SCANCODE_D) players[index].wasd |= 8;
+                if (scancode == SDL_SCANCODE_SPACE) players[index].wasd |= 16;
             } else if (id) {
                 for (i = 0; i < MAX_PLAYER_COUNT; i++) {
                     if (players[i].keyboard == 0) {
@@ -432,16 +432,16 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
             break;
         }
         case SDL_EVENT_KEY_UP: {
-            SDL_Keycode sym = event->key.key;
+            SDL_Scancode scancode = event->key.scancode;
             SDL_KeyboardID id = event->key.which;
-            if (sym == SDLK_ESCAPE) return SDL_APP_SUCCESS;
+            if (scancode == SDL_SCANCODE_ESCAPE) return SDL_APP_SUCCESS;
             int index = whoseKeyboard(id, players, player_count);
             if (index >= 0) {
-                if (sym == SDLK_W) players[index].wasd &= 30;
-                if (sym == SDLK_A) players[index].wasd &= 29;
-                if (sym == SDLK_S) players[index].wasd &= 27;
-                if (sym == SDLK_D) players[index].wasd &= 23;
-                if (sym == SDLK_SPACE) players[index].wasd &= 15;
+                if (scancode == SDL_SCANCODE_W) players[index].wasd &= 30;
+                if (scancode == SDL_SCANCODE_A) players[index].wasd &= 29;
+                if (scancode == SDL_SCANCODE_S) players[index].wasd &= 27;
+                if (scancode == SDL_SCANCODE_D) players[index].wasd &= 23;
+                if (scancode == SDL_SCANCODE_SPACE) players[index].wasd &= 15;
             }
             break;
         }
