@@ -211,28 +211,28 @@ void snake_step(SnakeContext *ctx)
     }
 }
 
-static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Scancode key_code)
+static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Keycode key_code)
 {
     switch (key_code) {
     /* Quit. */
-    case SDL_SCANCODE_ESCAPE:
-    case SDL_SCANCODE_Q:
+    case SDLK_ESCAPE:
+    case SDLK_Q:
         return SDL_APP_SUCCESS;
     /* Restart the game as if the program was launched. */
-    case SDL_SCANCODE_R:
+    case SDLK_R:
         snake_initialize(ctx);
         break;
     /* Decide new direction of the snake. */
-    case SDL_SCANCODE_RIGHT:
+    case SDLK_RIGHT:
         snake_redir(ctx, SNAKE_DIR_RIGHT);
         break;
-    case SDL_SCANCODE_UP:
+    case SDLK_UP:
         snake_redir(ctx, SNAKE_DIR_UP);
         break;
-    case SDL_SCANCODE_LEFT:
+    case SDLK_LEFT:
         snake_redir(ctx, SNAKE_DIR_LEFT);
         break;
-    case SDL_SCANCODE_DOWN:
+    case SDLK_DOWN:
         snake_redir(ctx, SNAKE_DIR_DOWN);
         break;
     default:
@@ -375,7 +375,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     case SDL_EVENT_JOYSTICK_HAT_MOTION:
         return handle_hat_event_(ctx, event->jhat.value);
     case SDL_EVENT_KEY_DOWN:
-        return handle_key_event_(ctx, event->key.scancode);
+        return handle_key_event_(ctx, event->key.key);
     default:
         break;
     }
