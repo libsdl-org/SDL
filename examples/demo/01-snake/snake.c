@@ -214,10 +214,12 @@ void snake_step(SnakeContext *ctx)
 static SDL_AppResult handle_key_event_(SnakeContext *ctx, SDL_Keycode key_code)
 {
     switch (key_code) {
+#ifndef SDL_PLATFORM_EMSCRIPTEN
     /* Quit. */
     case SDLK_ESCAPE:
     case SDLK_Q:
         return SDL_APP_SUCCESS;
+#endif
     /* Restart the game as if the program was launched. */
     case SDLK_R:
         snake_initialize(ctx);
