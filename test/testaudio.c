@@ -718,7 +718,7 @@ static Texture *CreateTexture(const char *fname)
     if (!tex) {
         SDL_Log("Out of memory!");
     } else {
-        tex->texture = LoadTexture(state->renderers[0], fname, true);
+        tex->texture = LoadTexture(state->renderers[0], fname);
         if (!tex->texture) {
             SDL_Log("Failed to load '%s': %s", fname, SDL_GetError());
             SDL_free(tex);
