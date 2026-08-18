@@ -34,6 +34,20 @@
 #define ACTION_HOVER_ENTER  9
 #define ACTION_HOVER_EXIT   10
 
+/*
+* Helper function to map android pen buttons to SDL mouse buttons
+*/
+static inline Uint8 Android_PenToMouseButton(Uint8 pen_button)
+{
+    switch (pen_button)
+    {
+        case 1: return SDL_BUTTON_RIGHT;
+        case 2: return SDL_BUTTON_MIDDLE;
+        case 5: return 0;
+        default: return pen_button + 1;
+    }
+}
+
 void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_type, int button, int action, float x, float y, float p)
 {
     if (!window) {
@@ -69,7 +83,7 @@ void Android_OnPen(SDL_Window *window, int pen_id_in, SDL_PenDeviceType device_t
         for (Uint8 i = 1; i <= 5; ++i) {
             Uint8 mask = (1 << i);
             if (diff & mask) {
-                SDL_SendPenButton(0, pen, window, i, (button & mask) != 0);
+                SDL_SendPenButton(0, pen, window, i, Android_PenToMouseButton(i), (button & mask) != 0);
             }
         }
     }
