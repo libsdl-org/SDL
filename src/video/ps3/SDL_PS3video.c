@@ -79,23 +79,18 @@ void initializeGPU(SDL_VideoData *devdata)
 {
     deprintf(1, "initializeGPU()\n");
 
-    // Use system malloc with manual alignment instead of rsxMemalign
-    void *raw = malloc(32 * 1024 * 1024 + (1024 * 1024)); // extra for alignment
+    gcmInitDefaultFifoMode(GCM_DEFAULT_FIFO_MODE_CONDITIONAL);
 
-    if (!raw) {
-        deprintf(1, "initializeGPU: malloc FAILED\n");
-        return;
-    }
-
-    // Manually align to 1MB boundary
-    void *host_addr = (void *)(((uintptr_t)raw + (1024 * 1024 - 1)) & ~(uintptr_t)(1024 * 1024 - 1));
-    if (!host_addr) {
-        deprintf(1, "initializeGPU: rsxMemalign FAILED\n");
-        return;
-    }
-
+    u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_SIZE));
+    void *hostAddr = memalign(HOST_ADDR_ALIGNMENT, bufferSize);
     devdata->_CommandBuffer = NULL;
-    int ret = gcmInitBody(&devdata->_CommandBuffer, 0x200000, 32 * 1024 * 1024, host_addr);
+
+    s32 ret = rsxInit(
+        &devdata->_CommandBuffer,
+        DEFAULT_CB_SIZE,
+        bufferSize,
+        hostAddr
+    );
 
     if (ret != 0 || devdata->_CommandBuffer == NULL) {
         deprintf(1, "initializeGPU: gcmInitBody FAILED ret=%x\n", ret);

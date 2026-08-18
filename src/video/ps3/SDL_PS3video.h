@@ -48,6 +48,10 @@
 #define CELL_EPERM 0x80010001
 #endif
 
+#define DEFAULT_CB_SIZE                      0x80000        // 512Kb default command buffer size
+#define HOST_ADDR_ALIGNMENT                  (1024*1024)
+#define HOST_SIZE                            (32*1024*1024)
+
 /* Debugging
  * 0: No debug messages
  * 1: Video debug messages

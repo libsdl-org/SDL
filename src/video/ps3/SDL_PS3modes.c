@@ -61,7 +61,7 @@ void PS3_InitModes(SDL_VideoDevice *_this)
     modedata->vconfig.pitch = res.width * 4;
     mode.internal = modedata;
 
-    rv = videoOutConfigure(0, &modedata->vconfig, NULL, 1);
+    rv = videoOutConfigure(VIDEO_OUT_PRIMARY, &modedata->vconfig, NULL, 0);
     assert(rv == 0);
 
     // Wait until RSX is ready
