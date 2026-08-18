@@ -674,6 +674,7 @@ void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *w
         event.pproximity.timestamp = timestamp;
         event.pproximity.windowID = window ? window->id : 0;
         event.pproximity.which = instance_id;
+        event.pproximity.pen_state = input_state;
         SDL_PushEvent(&event);
     }
 }
