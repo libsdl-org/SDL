@@ -4,10 +4,10 @@ inputs:
   # Keep edition and ref in sync!
   edition:
     description: 'GDK edition'
-    default: '240601'  # YYMMUU (Year Month Update)
+    default: '260403'  # YYMMUU (Year Month Update)
   ref:
     description: 'Git reference'
-    default: 'June_2024_Update_1'
+    default: 'April-2026-Update-3-v2604.3.7874'
   folder:
     description: 'Folder where to create Directory.Build.props'
     required: true
