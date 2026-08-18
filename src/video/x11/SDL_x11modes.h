@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -68,6 +68,7 @@ extern float X11_GetGlobalContentScale(Display *display, XSettingsClient *client
 extern float X11_GetGlobalContentScaleForDevice(SDL_VideoDevice *_this);
 
 #ifdef SDL_VIDEO_DRIVER_X11_XRANDR
+extern void X11_CheckDisplaysMoved(SDL_VideoDevice *_this, Display *dpy);
 extern void X11_HandleXRandREvent(SDL_VideoDevice *_this, const XEvent *xevent);
 #endif
 

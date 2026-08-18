@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,6 +30,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../core/linux/SDL_dbus.h"
 #include "../../core/linux/SDL_ime.h"
+#include "SDL_waylandeventthread.h"
 
 struct xkb_context;
 struct SDL_WaylandSeat;
@@ -61,6 +62,7 @@ struct SDL_VideoData
         struct libdecor *libdecor;
 #endif
     } shell;
+    struct wl_subcompositor *subcompositor;
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wp_pointer_warp_v1 *wp_pointer_warp_v1;
@@ -85,13 +87,18 @@ struct SDL_VideoData
     struct zwp_tablet_manager_v2 *tablet_manager;
     struct wl_fixes *wl_fixes;
     struct zwp_pointer_gestures_v1 *zwp_pointer_gestures;
+    struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
+    struct xdg_session_manager_v1 *xdg_session_manager;
+    struct xdg_toplevel_tag_manager_v1 *xdg_toplevel_tag_manager;
 
+    struct xdg_session_v1 *xdg_session;
     struct xkb_context *xkb_context;
 
     struct wl_list seat_list;
     struct SDL_WaylandSeat *last_implicit_grab_seat;
-    struct SDL_WaylandSeat *last_incoming_data_offer_seat;
-    struct SDL_WaylandSeat *last_incoming_primary_selection_seat;
+    struct SDL_WaylandSeat *current_data_offer_seat;
+    struct SDL_WaylandSeat *current_primary_selection_seat;
+    Wayland_EventThreadContext *event_thread_context;
 
     SDL_DisplayData **output_list;
     int output_count;
@@ -109,20 +116,46 @@ struct SDL_DisplayData
     struct wl_output *output;
     struct zxdg_output_v1 *xdg_output;
     struct wp_color_management_output_v1 *wp_color_management_output;
+    struct Wayland_ColorInfoState *color_info_state;
     char *wl_output_name;
     double scale_factor;
-    uint32_t registry_id;
-    int logical_width, logical_height;
-    int pixel_width, pixel_height;
-    int x, y, refresh, transform;
+    Uint32 registry_id;
+
+    struct
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+    } logical;
+
+    struct
+    {
+        int x;
+        int y;
+        int width;
+        int height;
+    } pixel;
+
+    struct
+    {
+        int width_mm;  // Physical width in millimeters.
+        int height_mm; // Physical height in millimeters.
+    } physical;
+
+    int refresh;   // Refresh in mHz
+    int transform; // wl_output_transform enum
     SDL_DisplayOrientation orientation;
-    int physical_width_mm, physical_height_mm;
-    bool has_logical_position, has_logical_size;
+
     SDL_HDROutputProperties HDR;
+
     SDL_DisplayID display;
     SDL_VideoDisplay placeholder;
+
     int wl_output_done_count;
-    struct Wayland_ColorInfoState *color_info_state;
+    bool has_logical_position;
+    bool has_logical_size;
+    bool geometry_changed;
 };
 
 // Needed here to get wl_surface declaration, fixes GitHub#4594
@@ -134,9 +167,10 @@ extern bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
 extern bool SDL_WAYLAND_own_output(struct wl_output *output);
 
 extern SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface);
-void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
-void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
-struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name);
+extern void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
+extern void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
+extern struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name);
+extern void Wayland_CreateSession(SDL_VideoData *data);
 
 extern bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg);
 

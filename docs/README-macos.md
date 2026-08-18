@@ -6,6 +6,8 @@ From the developer's point of view, macOS is a sort of hybrid Mac and
 Unix system, and you have the option of using either traditional
 command line tools or Apple's IDE Xcode.
 
+SDL supports building with Xcode 12.2 and the macOS 11.0 SDK or newer, and deploying to macOS 10.13 and newer.
+
 # Command Line Build
 
 To build SDL using the command line, use the CMake build script:
@@ -30,7 +32,9 @@ cmake --build .
 sudo cmake --install .
 ```
 
-Please note that building SDL requires at least Xcode 12.2 and the macOS 11.0 SDK.
+If you are getting errors building SDL_mfijoystick.m with Xcode 12.2, find your SDKs
+directory and move MacOSX10.15.sdk out of the way so it isn't accidentally being used
+by the build environment.
 
 To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
@@ -245,6 +249,22 @@ which sets up the working directory and calls your main() method.
 You are free to modify your Cocoa app with generally no consequence
 to SDL. You cannot, however, easily change the SDL window itself.
 Functionality may be added in the future to help this.
+
+
+## Raw Mouse Input
+
+SDL uses the Game Controller framework's GCMouse API to provide raw,
+unaccelerated mouse input in relative mode. This is ideal for games
+and applications requiring precise 1:1 mouse movement.
+
+On versions older than macOS 11.0 (Big Sur), SDL would fall back to
+NSEvent-based mouse input, which includes system mouse acceleration.
+
+To use accelerated (system-scaled) mouse movement on macOS 14.0+, set the hint:
+
+```c
+SDL_SetHint(SDL_HINT_MOUSE_RELATIVE_SYSTEM_SCALE, "1");
+```
 
 # Bug reports
 

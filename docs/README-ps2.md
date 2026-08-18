@@ -45,10 +45,16 @@ Remember to do a clean compilation every time you enable or disable the `SDL_PS2
 ## Getting PS2 Dev
 [Installing PS2 Dev](https://github.com/ps2dev/ps2dev)
 
-## Running on PCSX2 Emulator
+## Running on Emulators
 [PCSX2](https://github.com/PCSX2/pcsx2)
 
 [More PCSX2 information](https://pcsx2.net/)
+
+[Iris](https://github.com/allkern/iris)
+
+[More Iris information](https://allkern.dev/iris)
+
+[Play!](https://github.com/jpd002/Play-)
 
 ## To Do
 - PS2 Screen Keyboard

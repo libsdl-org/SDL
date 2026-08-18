@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,51 +45,32 @@ DEFINE_GUID(SDL_FOLDERID_Videos, 0x18989B1D, 0x99B5, 0x455B, 0x84, 0x1C, 0xAB, 0
 
 char *SDL_SYS_GetBasePath(void)
 {
-    DWORD buflen = 128;
-    WCHAR *path = NULL;
-    char *result = NULL;
-    DWORD len = 0;
-    int i;
-
-    while (true) {
-        void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
-        if (!ptr) {
-            SDL_free(path);
-            return NULL;
-        }
-
-        path = (WCHAR *)ptr;
-
-        len = GetModuleFileNameW(NULL, path, buflen);
-        // if it truncated, then len >= buflen - 1
-        // if there was enough room (or failure), len < buflen - 1
-        if (len < buflen - 1) {
-            break;
-        }
-
-        // buffer too small? Try again.
-        buflen *= 2;
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
     }
 
-    if (len == 0) {
-        SDL_free(path);
-        WIN_SetError("Couldn't locate our .exe");
-        return NULL;
+    char *ptr = SDL_strrchr(path, '\\');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
+
+    ptr[1] = '\0'; // chop off filename, leave '\\'.
+
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
     }
 
-    for (i = len - 1; i > 0; i--) {
-        if (path[i] == '\\') {
-            break;
-        }
-    }
-
-    SDL_assert(i > 0);  // Should have been an absolute path.
-    path[i + 1] = '\0'; // chop off filename.
-
-    result = WIN_StringToUTF8W(path);
-    SDL_free(path);
-
-    return result;
+    char *ptr = SDL_strrchr(path, '\\');
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
@@ -234,7 +215,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
             goto done;
-        };
+        }
 
         hr = pSHGetKnownFolderPath(&type, 0x00008000 /* KF_FLAG_CREATE */, NULL, &path);
         if (SUCCEEDED(hr)) {
@@ -296,7 +277,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d", (int)folder);
             goto done;
-        };
+        }
 
         // Create the OS-specific folder if it doesn't already exist
         type |= CSIDL_FLAG_CREATE;

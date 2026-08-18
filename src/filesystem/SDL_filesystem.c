@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -203,7 +203,7 @@ static bool WildcardMatch(const char *pattern, const char *str, bool *matched_to
         pch = *(++pattern);
     }
 
-    *matched_to_dir = ((pch == '/') || (pch == '\0'));  // end of string and the pattern is complete or failed at a '/'? We should descend into this directory.
+    *matched_to_dir = (pch == '/');  // end of string and the pattern failed at a '/'? We should descend into this directory.
 
     return (pch == '\0');  // survived the whole pattern? That's a match!
 }
@@ -371,19 +371,28 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
         return NULL;
     }
 
-    // if path ends with any slash, chop them off, so we don't confuse the pattern matcher later.
     char *pathcpy = NULL;
     size_t pathlen = SDL_strlen(path);
-    if ((pathlen > 1) && ((path[pathlen-1] == '/') || (path[pathlen-1] == '\\'))) {
-        pathcpy = SDL_strdup(path);
-        if (!pathcpy) {
-            return NULL;
+
+    // if path ends with any slash, chop them off, so we don't confuse the pattern matcher later.
+    #ifdef SDL_PLATFORM_ANDROID
+    if (SDL_strcmp(path, "assets://") == 0) {  // don't chop '//' off this if we're looking for the root of the asset tree.
+        pathlen--;  // we'll add a 1 again later.
+    } else
+    #endif
+    {
+        if ((pathlen > 1) && ((path[pathlen-1] == '/') || (path[pathlen-1] == '\\'))) {
+            pathcpy = SDL_strdup(path);
+            if (!pathcpy) {
+                return NULL;
+            }
+            char *ptr = &pathcpy[pathlen-1];
+            while ((ptr > pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
+                *(ptr--) = '\0';
+                --pathlen;
+            }
+            path = pathcpy;
         }
-        char *ptr = &pathcpy[pathlen-1];
-        while ((ptr >= pathcpy) && ((*ptr == '/') || (*ptr == '\\'))) {
-            *(ptr--) = '\0';
-        }
-        path = pathcpy;
     }
 
     if (!pattern) {
@@ -425,8 +434,15 @@ char **SDL_InternalGlobDirectory(const char *path, const char *pattern, SDL_Glob
     data.enumerator = enumerator;
     data.getpathinfo = getpathinfo;
     data.fsuserdata = userdata;
-    data.basedirlen = *path ? (SDL_strlen(path) + 1) : 0;  // +1 for the '/' we'll be adding.
 
+    data.basedirlen = 0;
+    if (*path) {
+        if (SDL_strcmp(path, "/") == 0 || SDL_strcmp(path, "\\") == 0) {
+            data.basedirlen = 1;
+        } else {
+            data.basedirlen = pathlen + 1; // +1 for the '/' we'll be adding.
+        }
+    }
 
     char **result = NULL;
     if (data.enumerator(path, GlobDirectoryCallback, &data, data.fsuserdata)) {
@@ -502,6 +518,14 @@ const char *SDL_GetUserFolder(SDL_Folder folder)
     return CachedUserFolders[idx];
 }
 
+static char *CachedExeName = NULL;
+const char *SDL_GetExeName(void)
+{
+    if (!CachedExeName) {
+        CachedExeName = SDL_SYS_GetExeName();
+    }
+    return CachedExeName;
+}
 
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
@@ -529,10 +553,12 @@ void SDL_InitFilesystem(void)
 
 void SDL_QuitFilesystem(void)
 {
-    if (CachedBasePath) {
-        SDL_free(CachedBasePath);
-        CachedBasePath = NULL;
-    }
+    SDL_free(CachedBasePath);
+    CachedBasePath = NULL;
+
+    SDL_free(CachedExeName);
+    CachedExeName = NULL;
+
     for (int i = 0; i < SDL_arraysize(CachedUserFolders); i++) {
         if (CachedUserFolders[i]) {
             SDL_free(CachedUserFolders[i]);

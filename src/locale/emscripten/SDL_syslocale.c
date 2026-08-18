@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,7 +27,7 @@
 bool SDL_SYS_GetPreferredLocales(char *buf, size_t buflen)
 {
     /* *INDENT-OFF* */ // clang-format off
-    EM_ASM({
+    MAIN_THREAD_EM_ASM({
         var buf = $0;
         var buflen = $1;
         var list = undefined;

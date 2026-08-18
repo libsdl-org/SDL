@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,10 +23,6 @@
 #ifndef SDL_sensor_c_h_
 #define SDL_sensor_c_h_
 
-#ifdef SDL_THREAD_SAFETY_ANALYSIS
-extern SDL_Mutex *SDL_sensor_lock;
-#endif
-
 struct SDL_SensorDriver;
 
 // Useful functions and variables from SDL_sensor.c
@@ -42,10 +38,10 @@ extern bool SDL_SensorsInitialized(void);
 extern bool SDL_SensorsLocked(void);
 
 // Make sure we currently have the sensors locked
-extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_sensor_lock);
+extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
 
-extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_sensor_lock);
-extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_sensor_lock);
+extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_event_lock);
+extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_event_lock);
 
 // Function to return whether there are any sensors opened by the application
 extern bool SDL_SensorsOpened(void);

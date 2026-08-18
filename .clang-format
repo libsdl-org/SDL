@@ -77,6 +77,11 @@ SpaceInEmptyParentheses: false
 UseCRLF: false
 UseTab: Never
 
+IfMacros:
+  [
+    "CHECK_PARAM",
+  ]
+
 ForEachMacros:
   [
     "spa_list_for_each",

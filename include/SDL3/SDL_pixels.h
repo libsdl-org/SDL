@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -363,7 +363,8 @@ typedef enum SDL_PackedLayout
         ((((format) == SDL_PIXELFORMAT_YUY2) || \
           ((format) == SDL_PIXELFORMAT_UYVY) || \
           ((format) == SDL_PIXELFORMAT_YVYU) || \
-          ((format) == SDL_PIXELFORMAT_P010)) ? 2 : 1) : (((format) >> 0) & 0xFF))
+          ((format) == SDL_PIXELFORMAT_P010) || \
+          ((format) == SDL_PIXELFORMAT_P416)) ? 2 : 1) : (((format) >> 0) & 0xFF))
 
 
 /**
@@ -657,22 +658,26 @@ typedef enum SDL_PixelFormat
     SDL_PIXELFORMAT_ABGR128_FLOAT = 0x1b608010u,
         /* SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_ARRAYF32, SDL_ARRAYORDER_ABGR, 0, 128, 16), */
 
-    SDL_PIXELFORMAT_YV12 = 0x32315659u,      /**< Planar mode: Y + V + U  (3 planes) */
+    SDL_PIXELFORMAT_YV12 = 0x32315659u,      /**< YUV 4:2:0 8-bit planar mode: Y + V + U  (3 planes) */
         /* SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'), */
-    SDL_PIXELFORMAT_IYUV = 0x56555949u,      /**< Planar mode: Y + U + V  (3 planes) */
+    SDL_PIXELFORMAT_IYUV = 0x56555949u,      /**< YUV 4:2:0 8-bit planar mode: Y + U + V  (3 planes) */
         /* SDL_DEFINE_PIXELFOURCC('I', 'Y', 'U', 'V'), */
-    SDL_PIXELFORMAT_YUY2 = 0x32595559u,      /**< Packed mode: Y0+U0+Y1+V0 (1 plane) */
+    SDL_PIXELFORMAT_YUY2 = 0x32595559u,      /**< YUV 4:2:0 8-bit packed mode: Y0+U0+Y1+V0 (1 plane) */
         /* SDL_DEFINE_PIXELFOURCC('Y', 'U', 'Y', '2'), */
-    SDL_PIXELFORMAT_UYVY = 0x59565955u,      /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
+    SDL_PIXELFORMAT_UYVY = 0x59565955u,      /**< YUV 4:2:0 8-bit packed mode: U0+Y0+V0+Y1 (1 plane) */
         /* SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'), */
-    SDL_PIXELFORMAT_YVYU = 0x55595659u,      /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
+    SDL_PIXELFORMAT_YVYU = 0x55595659u,      /**< YUV 4:2:0 8-bit packed mode: Y0+V0+Y1+U0 (1 plane) */
         /* SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'), */
-    SDL_PIXELFORMAT_NV12 = 0x3231564eu,      /**< Planar mode: Y + U/V interleaved  (2 planes) */
+    SDL_PIXELFORMAT_NV12 = 0x3231564eu,      /**< YUV 4:2:0 8-bit planar mode: Y + U/V interleaved  (2 planes) */
         /* SDL_DEFINE_PIXELFOURCC('N', 'V', '1', '2'), */
-    SDL_PIXELFORMAT_NV21 = 0x3132564eu,      /**< Planar mode: Y + V/U interleaved  (2 planes) */
+    SDL_PIXELFORMAT_NV21 = 0x3132564eu,      /**< YUV 4:2:0 8-bit planar mode: Y + V/U interleaved  (2 planes) */
         /* SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'), */
-    SDL_PIXELFORMAT_P010 = 0x30313050u,      /**< Planar mode: Y + U/V interleaved  (2 planes) */
+    SDL_PIXELFORMAT_P010 = 0x30313050u,      /**< YUV 4:2:0 16-bit planar mode: Y + U/V interleaved  (2 planes) */
         /* SDL_DEFINE_PIXELFOURCC('P', '0', '1', '0'), */
+    SDL_PIXELFORMAT_P408 = 0x38303450u,      /**< YUV 4:4:4 8-bit planar mode: Y + U + V  (3 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('P', '4', '0', '8'), */
+    SDL_PIXELFORMAT_P416 = 0x36313450u,      /**< YUV 4:4:4 16-bit planar mode: Y + U + V  (3 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('P', '4', '0', '8'), */
     SDL_PIXELFORMAT_EXTERNAL_OES = 0x2053454fu,     /**< Android video texture format */
         /* SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ') */
 
@@ -1407,7 +1412,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetRGB(Uint32 pixelvalue, const SDL_PixelFo
  * (e.g., a completely white pixel in 16-bit RGB565 format would return [0xff,
  * 0xff, 0xff] not [0xf8, 0xfc, 0xf8]).
  *
- * If the surface has no alpha component, the alpha will be returned as 0xff
+ * If the format has no alpha component, the alpha will be returned as 0xff
  * (100% opaque).
  *
  * \param pixelvalue a pixel value.

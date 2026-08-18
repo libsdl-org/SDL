@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -112,6 +112,7 @@ static SDL_VideoDevice *VITA_Create(void)
 
     /*
         // Disabled, causes issues on high-framerate updates. SDL still emulates this.
+        // TODO: Is VIDEO_DEVICE_CAPS_SLOW_FRAMEBUFFER needed?
         device->CreateWindowFramebuffer = VITA_CreateWindowFramebuffer;
         device->UpdateWindowFramebuffer = VITA_UpdateWindowFramebuffer;
         device->DestroyWindowFramebuffer = VITA_DestroyWindowFramebuffer;
@@ -387,7 +388,7 @@ void VITA_ImeEventHandler(void *arg, const SceImeEventData *e)
             } else {
                 SDL_SendKeyboardText((const char *)utf8_buffer);
             }
-            SDL_memset(&caret_rev, 0, sizeof(SceImeCaret));
+            SDL_zero(caret_rev);
             SDL_memset(libime_out, 0, ((SCE_IME_MAX_PREEDIT_LENGTH + SCE_IME_MAX_TEXT_LENGTH + 1) * sizeof(SceWChar16)));
             caret_rev.index = 1;
             sceImeSetCaret(&caret_rev);
@@ -553,7 +554,7 @@ void VITA_PumpEvents(SDL_VideoDevice *_this)
             uint8_t utf8_buffer[SCE_IME_DIALOG_MAX_TEXT_LENGTH];
 
             SceImeDialogResult result;
-            SDL_memset(&result, 0, sizeof(SceImeDialogResult));
+            SDL_zero(result);
             sceImeDialogGetResult(&result);
 
             // Convert UTF16 to UTF8

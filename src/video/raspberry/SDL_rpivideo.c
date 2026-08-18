@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -124,7 +124,7 @@ static SDL_VideoDevice *RPI_Create(void)
     device->GL_GetSwapInterval = RPI_GLES_GetSwapInterval;
     device->GL_SwapWindow = RPI_GLES_SwapWindow;
     device->GL_DestroyContext = RPI_GLES_DestroyContext;
-    device->GL_DefaultProfileConfig = RPI_GLES_DefaultProfileConfig;
+    device->GL_SetDefaultProfileConfig = RPI_GLES_SetDefaultProfileConfig;
 
     device->PumpEvents = RPI_PumpEvents;
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,9 +28,12 @@ typedef struct SDL_ListNode
     struct SDL_ListNode *next;
 } SDL_ListNode;
 
+bool SDL_ListAppend(SDL_ListNode **head, void *ent);
+bool SDL_ListInsertAtPosition(SDL_ListNode **head, int pos, void *ent);
 bool SDL_ListAdd(SDL_ListNode **head, void *ent);
 void SDL_ListPop(SDL_ListNode **head, void **ent);
 void SDL_ListRemove(SDL_ListNode **head, void *ent);
 void SDL_ListClear(SDL_ListNode **head);
+int SDL_ListCountEntries(SDL_ListNode **head);
 
 #endif // SDL_list_h_

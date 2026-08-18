@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -151,7 +151,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         }
     }
 
-    return SDL_SetError("SDL_DateTime conversion failed (%lu)", GetLastError());
+    return SDL_SetError("SDL_DateTime conversion failed (%" SDL_PRIuULONG ")", GetLastError());
 }
 
 #endif // SDL_TIME_WINDOWS

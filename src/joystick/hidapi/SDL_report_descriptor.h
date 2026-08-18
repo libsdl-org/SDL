@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,9 @@
 */
 #include "SDL_internal.h"
 
+#ifndef SDL_report_descriptor_h_
+#define SDL_report_descriptor_h_
+
 typedef struct
 {
 	Uint8 report_id;
@@ -34,7 +37,9 @@ typedef struct
 	DescriptorInputField *fields;
 } SDL_ReportDescriptor;
 
-extern SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, int descriptor_size);
+extern SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, size_t descriptor_size);
 extern bool SDL_DescriptorHasUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page, Uint16 usage);
 extern void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor);
-extern bool SDL_ReadReportData(const Uint8 *data, int size, int bit_offset, int bit_size, Uint32 *value);
+extern bool SDL_ReadReportData(const Uint8 *data, size_t size, int bit_offset, int bit_size, Uint32 *value);
+
+#endif // SDL_report_descriptor_h_

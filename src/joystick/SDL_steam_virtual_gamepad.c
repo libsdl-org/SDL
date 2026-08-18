@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,11 +33,11 @@
 #include <sys/stat.h>
 #endif
 
-static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_joystick_lock) = 0;
-static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_joystick_lock) = 0;
+static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_event_lock) = 0;
+static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_event_lock) = 0;
 
 
 static Uint64 GetFileModificationTime(const char *file)

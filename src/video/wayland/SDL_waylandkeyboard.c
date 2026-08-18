@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -183,11 +183,12 @@ bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
                 Wayland_SeatUpdateTextInput(seat);
             }
         }
-
-        return true;
     }
 
-    return SDL_SetError("wayland: cannot enable text input; compositor lacks support for the required zwp_text_input_v3 protocol");
+    /* Always return true, even if the text input protocol isn't supported, as basic
+     * text can still be obtained from keysyms and the composition system.
+     */
+    return true;
 }
 
 bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)

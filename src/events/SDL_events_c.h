@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,15 @@
 #include "SDL_touch_c.h"
 #include "SDL_pen_c.h"
 #include "SDL_windowevents_c.h"
+
+// The event mutex
+//
+// This mutex prevents multiple threads from watching multiple events
+// simultaneously and also protects resources like joysticks that may
+// be accessed from multiple threads and also generate events.
+extern SDL_Mutex *SDL_event_lock;
+extern void SDL_CreateEventLock(void);
+extern void SDL_DestroyEventLock(void);
 
 // Start and stop the event processing loop
 extern bool SDL_StartEventLoop(void);

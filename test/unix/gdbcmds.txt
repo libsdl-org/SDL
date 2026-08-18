@@ -1,0 +1,36 @@
+# Script to run a headless gdb printing a stacktrace on a fatal signal
+# Use it as: `gdb -batch -nx -x gdbcmds.txt --args $PROGRAM_AND_ARGS`
+# Configure CMake with -DSDLTEST_GDB=ON to use with within CTest.
+
+set pagination off
+set confirm off
+set verbose off
+
+# Only stop on real crash signals
+handle SIGSEGV stop print nopass
+handle SIGABRT stop print nopass
+handle SIGILL  stop print nopass
+handle SIGFPE  stop print nopass
+handle SIGBUS  stop print nopass
+
+# Ignore SIGPIPE and SIGTERM signals
+# (SIGTERM is used by testthread)
+handle SIGPIPE nostop noprint pass
+handle SIGTERM nostop noprint pass
+
+define hook-stop
+  if !$_isvoid($_siginfo)
+    printf "\n=== Crash detected (signal %d) ===\n", $_siginfo.si_signo
+    bt full
+    quit 1
+  end
+end
+
+run
+
+# Normal exit path
+if !$_isvoid($_exitcode)
+  quit $_exitcode
+end
+
+quit 0

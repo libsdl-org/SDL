@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -238,7 +238,8 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
         for (NSPasteboardItem *item in [pasteboard pasteboardItems]) {
             NSData *itemData;
             CFStringRef utiType = GetUTIType(mime_type);
-            itemData = [item dataForType: (__bridge NSString *)utiType];
+            NSString *availableType = [pasteboard availableTypeFromArray:@[(__bridge NSString *) utiType]];
+            itemData = [item dataForType: availableType];
             CFRelease(utiType);
             if (itemData != nil) {
                 NSUInteger length = [itemData length];

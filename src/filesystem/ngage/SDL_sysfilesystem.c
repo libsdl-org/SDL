@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,7 @@
 #include "SDL_internal.h"
 
 extern void NGAGE_GetAppPath(char *path);
+extern void NGAGE_GetExeName(char *path);
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -28,6 +29,13 @@ char *SDL_SYS_GetBasePath(void)
     NGAGE_GetAppPath(app_path);
     char *base_path = SDL_strdup(app_path);
     return base_path;
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    char exe_name[512];
+    NGAGE_GetExeName(exe_name);
+    return SDL_strdup(exe_name);
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)

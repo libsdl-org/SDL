@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,8 +38,10 @@
 #define MAX_CONTROLLERS   (PS2_MAX_PORT * PS2_MAX_SLOT)
 #define PS2_ANALOG_STICKS 2
 #define PS2_ANALOG_AXIS   2
-#define PS2_BUTTONS       16
+#define PS2_BUTTONS       16  // this is total physical buttons, but we steal the 4 from the dpad for a hat switch.
 #define PS2_TOTAL_AXIS    (PS2_ANALOG_STICKS * PS2_ANALOG_AXIS)
+
+#define PS2_HAT_MASK 0xF0  // mask out bits 4-7 (that's the dpad, which we treat as a hat elsewhere).
 
 struct JoyInfo
 {
@@ -191,6 +193,66 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
     return device_index + 1;
 }
 
+static void PS2_WaitPadReady(int port, int slot)
+{
+    int state = padGetState(port, slot);
+    while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) {
+        SDL_Delay(1);
+        state = padGetState(port, slot);
+    }
+}
+
+static void PS2_InitializePad(int port, int slot)
+{
+    int modes;
+    int i;
+    char actAlign[6];
+
+    PS2_WaitPadReady(port, slot);
+
+    // How many different modes can this device operate in?
+    modes = padInfoMode(port, slot, PAD_MODETABLE, -1);
+
+    // Verify that the controller has a DUAL SHOCK mode
+    for (i = 0; i < modes; i++) {
+        if (padInfoMode(port, slot, PAD_MODETABLE, i) == PAD_TYPE_DUALSHOCK) {
+            break;
+        }
+    }
+    if (i >= modes) {
+        // This is no Dual Shock controller
+        return;
+    }
+    
+    // If ExId != 0x0 => This controller has actuator engines
+    // This check should always pass if the Dual Shock test above passed
+    if (!padInfoMode(port, slot, PAD_MODECUREXID, 0)) {
+        // This is no Dual Shock controller??
+        return;
+    }
+
+    // When using MMODE_LOCK, user cant change mode with Select button
+    padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+
+    PS2_WaitPadReady(port, slot);
+    padEnterPressMode(port, slot);
+
+    PS2_WaitPadReady(port, slot);
+    if (padInfoAct(port, slot, -1, 0)) {
+        actAlign[0] = 0;   // Enable small engine
+        actAlign[1] = 1;   // Enable big engine
+        actAlign[2] = 0xff;
+        actAlign[3] = 0xff;
+        actAlign[4] = 0xff;
+        actAlign[5] = 0xff;
+
+        PS2_WaitPadReady(port, slot);
+        padSetActAlign(port, slot, actAlign);
+    }
+
+    PS2_WaitPadReady(port, slot);
+}
+
 /*  Function to open a joystick for use.
     The joystick to open is specified by the device index.
     This should fill the nbuttons and naxes fields of the joystick structure.
@@ -198,8 +260,7 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
 */
 static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    int index = joystick->instance_id;
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = &joyInfo[device_index];
 
     if (!info->opened) {
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
@@ -208,9 +269,11 @@ static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
             return false;
         }
     }
-    joystick->nbuttons = PS2_BUTTONS;
+    PS2_InitializePad(info->port, info->slot);
+
+    joystick->nbuttons = PS2_BUTTONS - 4;  // we steal 4 (the d-pad) for a hat switch.
     joystick->naxes = PS2_TOTAL_AXIS;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // treat the dpad buttons as a hat.
 
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
@@ -222,7 +285,7 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     char actAlign[6];
     int res;
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
 
     if (!rumble_status(index)) {
@@ -277,7 +340,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     uint16_t mask, previous, current;
     struct padButtonStatus buttons;
     uint8_t all_axis[PS2_TOTAL_AXIS];
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     int state = padGetState(info->port, info->slot);
     Uint64 timestamp = SDL_GetTicksNS();
@@ -286,19 +349,48 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
         int ret = padRead(info->port, info->slot, &buttons); // port, slot, buttons
         if (ret != 0) {
             // Buttons
-            int32_t pressed_buttons = 0xffff ^ buttons.btns;
-            ;
-            if (info->btns != pressed_buttons) {
-                for (i = 0; i < PS2_BUTTONS; i++) {
-                    mask = (1 << i);
-                    previous = info->btns & mask;
-                    current = pressed_buttons & mask;
-                    if (previous != current) {
-                        SDL_SendJoystickButton(timestamp, joystick, i, (current != 0));
+            const int32_t current_buttons = (0xffff ^ buttons.btns);
+            const int32_t previous_buttons = info->btns;
+            if (previous_buttons != current_buttons) {  // did any buttons change?
+                if ((previous_buttons & ~PS2_HAT_MASK) != (current_buttons & ~PS2_HAT_MASK)) {  // did non-dpad buttons change?
+                    uint8_t buttonidx = 0;
+                    i = 0;
+                    while (i < PS2_BUTTONS-4) {
+                        if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
+                            mask = (1 << buttonidx);
+                            previous = previous_buttons & mask;
+                            current = current_buttons & mask;
+                            if (previous != current) {
+                                SDL_SendJoystickButton(timestamp, joystick, i, (current != 0));
+                            }
+                            i++;
+                        }
+                        buttonidx++;
                     }
                 }
+
+                if ((previous_buttons & PS2_HAT_MASK) != (current_buttons & PS2_HAT_MASK)) {  // did dpad buttons change?
+                    // The PS2 dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+                    // (but they should _really_ be using the gamepad API.)
+                    Uint8 hat = SDL_HAT_CENTERED;
+                    #define HATSTATE(ps2bit, sdlenum) if (current_buttons & (1 << ps2bit)) { hat |= SDL_HAT_##sdlenum; }
+                    HATSTATE(4, UP);
+                    HATSTATE(5, RIGHT);
+                    HATSTATE(6, DOWN);
+                    HATSTATE(7, LEFT);
+                    #undef HATSTATE
+                    // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+                    if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+                        hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+                    }
+                    if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+                        hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+                    }
+                    SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+                }
+
+                info->btns = current_buttons;
             }
-            info->btns = pressed_buttons;
 
             // Analog
             all_axis[0] = buttons.ljoy_h;
@@ -322,7 +414,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void PS2_JoystickClose(SDL_Joystick *joystick)
 {
-    int index = joystick->instance_id;
+    int index = (int)(joystick->instance_id - 1);
     struct JoyInfo *info = &joyInfo[index];
     padPortClose(info->port, info->slot);
     info->opened = 0;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,23 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>  // for strerror()
+#include <dlfcn.h>
+
+// ThreadSanitizer (TSan) doesn't understand that io_uring serializes access to SDL_AsyncIOTask objects,
+//  so if we see TSan is in use, we explicitly tell it when a thread is releasing or acquiring ownership,
+//  to avoid false positives.
+static void TsanNoOp(void *addr) { /* TSan isn't available, do nothing. */ }
+typedef void (*TsanAcquireReleaseFn)(void *addr);
+static TsanAcquireReleaseFn TsanAcquire = TsanNoOp;
+static TsanAcquireReleaseFn TsanRelease = TsanNoOp;
+static void InitTSanAnnotations(void)
+{
+    TsanAcquire = (TsanAcquireReleaseFn) dlsym(RTLD_DEFAULT, "__tsan_acquire");
+    TsanRelease = (TsanAcquireReleaseFn) dlsym(RTLD_DEFAULT, "__tsan_release");
+    if (!TsanAcquire || !TsanRelease) {
+        TsanAcquire = TsanRelease = TsanNoOp;
+    }
+}
 
 static SDL_InitState liburing_init;
 
@@ -190,6 +207,7 @@ static Sint64 liburing_asyncio_size(void *userdata)
 // you must hold sqe_lock when calling this!
 static bool liburing_asyncioqueue_queue_task(void *userdata, SDL_AsyncIOTask *task)
 {
+    TsanRelease(task);  // ThreadSanitizer doesn't know that io_uring is serializing access to `task`, so let it know this thread is done with it.
     LibUringAsyncIOQueueData *queuedata = (LibUringAsyncIOQueueData *) userdata;
     const int rc = liburing.io_uring_submit(&queuedata->ring);
     return (rc < 0) ? liburing_SetError("io_uring_submit", rc) : true;
@@ -222,19 +240,20 @@ static void liburing_asyncioqueue_cancel_task(void *userdata, SDL_AsyncIOTask *t
 
 static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct io_uring_cqe *cqe)
 {
-    if (!cqe) {
-        return NULL;
-    }
+    SDL_assert(cqe != NULL);  // this is always a stack copy.
 
     SDL_AsyncIOTask *task = (SDL_AsyncIOTask *) io_uring_cqe_get_data(cqe);
     if (task) {  // can be NULL if this was just a wakeup message, a NOP, etc.
+        TsanAcquire(task);  // ThreadSanitizer doesn't know that io_uring is serializing access to `task`, so let it know this thread owns it now.
         if (!task->queue) {  // We leave `queue` blank to signify this was a task cancellation.
             SDL_AsyncIOTask *cancel_task = task;
             task = (SDL_AsyncIOTask *) cancel_task->app_userdata;
+            TsanAcquire(task);  // ThreadSanitizer doesn't know that io_uring is serializing access to `task`, so let it know this thread owns it now.
             SDL_free(cancel_task);
             if (cqe->res >= 0) {  // cancel was successful?
                 task->result = SDL_ASYNCIO_CANCELED;
             } else {
+                TsanRelease(task);  // ThreadSanitizer doesn't know that io_uring is serializing access to `task`, so let it know this thread is done with it.
                 task = NULL; // it already finished or was too far along to cancel, so we'll pick up the actual results later.
             }
         } else if (cqe->res < 0) {
@@ -254,6 +273,7 @@ static SDL_AsyncIOTask *ProcessCQE(LibUringAsyncIOQueueData *queuedata, struct i
 
         if (task && (task->type == SDL_ASYNCIO_TASK_CLOSE) && task->flush) {
             task->flush = false;
+            TsanRelease(task);  // ThreadSanitizer doesn't know that io_uring is serializing access to `task`, so let it know this thread is done with it.
             task = NULL;  // don't return this one, it's a linked task, so it'll arrive in a later CQE.
         }
     }
@@ -521,6 +541,7 @@ static void MaybeInitializeLibUring(void)
     if (SDL_ShouldInit(&liburing_init)) {
         if (LoadLibUring()) {
             SDL_DebugLogBackend("asyncio", "liburing");
+            InitTSanAnnotations();
             CreateAsyncIOQueue = SDL_SYS_CreateAsyncIOQueue_liburing;
             QuitAsyncIO = SDL_SYS_QuitAsyncIO_liburing;
             AsyncIOFromFile = SDL_SYS_AsyncIOFromFile_liburing;

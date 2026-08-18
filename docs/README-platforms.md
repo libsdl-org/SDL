@@ -5,6 +5,7 @@
 SDL3 has been known to work on the following platforms at some point:
 
 - [Android](README-android.md)
+- [DOS](README-dos.md)
 - [Emscripten](README-emscripten.md) (Web browsers)
 - [FreeBSD](README-bsd.md)
 - [Haiku OS](README-haiku.md)
@@ -12,7 +13,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [Linux](README-linux.md)
 - [macOS](README-macos.md) (10.14 and later)
 - [NetBSD](README-bsd.md)
-- [Nintendo Switch](README-switch.md) (Separate NDA-only fork)
+- [Nintendo Switch and Switch 2](README-switch.md) (Separate NDA-only fork)
 - [Nintendo 3DS](README-n3ds.md) (Homebrew)
 - [Nokia N-Gage](README-ngage.md)
 - [OpenBSD](README-bsd.md)
@@ -21,6 +22,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [PlayStation 5](README-ps5.md) (Separate NDA-only fork)
 - [PlayStation Portable](README-psp.md) (Homebrew)
 - [PlayStation Vita](README-vita.md) (Homebrew)
+- [QNX](README-qnx.md)
 - [RISC OS](README-riscos.md)
 - [SteamOS](README-steamos.md)
 - [tvOS](README-ios.md)
@@ -39,12 +41,12 @@ If your favorite system is listed below, we aren't working on it. However, if yo
 
 All of these still work with [SDL2](/SDL2), which is an incompatible API, but an option if you need to support these platforms still.
 
-- QNX
 - Google Stadia
 - NaCL
 - OS/2
 - WinPhone
 - WinRT/UWP
+- Pandora
 
 ## General notes for Unix platforms
 

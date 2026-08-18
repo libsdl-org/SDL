@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -265,7 +265,7 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
 static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     if (hidden) {
         if (hidden->stream) {
@@ -282,6 +282,28 @@ static void AAUDIO_CloseDevice(SDL_AudioDevice *device)
         SDL_aligned_free(hidden->mixbuf);
         SDL_free(hidden);
         device->hidden = NULL;
+    }
+}
+
+static void SetOptionalStreamUsage(AAudioStreamBuilder *builder)
+{
+    if (ctx.AAudioStreamBuilder_setUsage) {    // optional API: requires Android 28
+        const char *hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_STREAM_ROLE);
+        if (hint) {
+            aaudio_usage_t usage = AAUDIO_USAGE_MEDIA;  // covers most things, and is the system default.
+            if ((SDL_strcasecmp(hint, "Communications") == 0) || (SDL_strcasecmp(hint, "GameChat") == 0)) {
+                usage = AAUDIO_USAGE_VOICE_COMMUNICATION;
+            } else if (SDL_strcasecmp(hint, "Game") == 0) {
+                usage = AAUDIO_USAGE_GAME;
+            }
+            ctx.AAudioStreamBuilder_setUsage(builder, usage);
+
+            // !!! FIXME: I _think_ this is okay with the current set of usages we support, but the docs
+            // !!! FIXME:  say you need to dip down into Java to call android.app.Activity.setVolumeControlStream(usage)
+            // !!! FIXME:  so the physical volume buttons control this stream, but that might be more for special cases
+            // !!! FIXME:  like notification sounds, etc, and it's possible you _don't_ want to override this for those
+            // !!! FIXME:  special cases, too! We'll revisit if there are bug reports.
+        }
     }
 }
 
@@ -321,11 +343,15 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 
-    // If no specific buffer size has been requested, the device will pick the optimal
-	if(SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
-	    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * device->sample_frames); // AAudio requires that the buffer capacity is at least
-	    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, device->sample_frames);      // twice the size of the data callback buffer size
-	}
+    int32_t sample_frames;
+    if (SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
+        sample_frames = device->sample_frames;
+    } else {
+        // Use 20 ms for the default audio buffer size
+        sample_frames = (device->spec.freq / 50);
+    }
+    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * sample_frames); // AAudio requires that the buffer capacity is at least
+    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, sample_frames);      // twice the size of the data callback buffer size
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
@@ -338,6 +364,8 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     } else {
         SDL_Log("Low latency audio disabled");
     }
+
+    SetOptionalStreamUsage(builder);
 
     if (recording && ctx.AAudioStreamBuilder_setInputPreset) {    // optional API: requires Android 28
         // try to use a microphone that is for recording external audio. Otherwise Android might choose the mic used for talking
@@ -353,7 +381,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStreamBuilder_openStream %d", res);
         ctx.AAudioStreamBuilder_delete(builder);
-        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        return SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
     }
     ctx.AAudioStreamBuilder_delete(builder);
 
@@ -403,7 +431,7 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     res = ctx.AAudioStream_requestStart(hidden->stream);
     if (res != AAUDIO_OK) {
         LOGI("SDL Failed AAudioStream_requestStart %d recording:%d", res, recording);
-        return SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+        return SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
     }
 
     LOGI("SDL AAudioStream_requestStart OK");
@@ -423,7 +451,7 @@ static bool AAUDIO_OpenDevice(SDL_AudioDevice *device)
     SDL_assert(device->handle);  // AAUDIO_UNSPECIFIED is zero, so legit devices should all be non-zero.
 #endif
 
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     if (device->recording) {
         // !!! FIXME: make this non-blocking!
@@ -467,7 +495,7 @@ static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
 
             if (res != AAUDIO_OK) {
                 LOGI("SDL Failed AAudioStream_requestPause %d", res);
-                SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+                SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
             }
         }
     }
@@ -491,7 +519,7 @@ static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
             aaudio_result_t res = ctx.AAudioStream_requestStart(hidden->stream);
             if (res != AAUDIO_OK) {
                 LOGI("SDL Failed AAudioStream_requestStart %d", res);
-                SDL_SetError("%s : %s", __func__, ctx.AAudio_convertResultToText(res));
+                SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
             }
         }
     }
@@ -509,7 +537,7 @@ static void AAUDIO_Deinitialize(void)
 {
     Android_StopAudioHotplug();
 
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
     if (ctx.handle) {
         SDL_UnloadObject(ctx.handle);
     }
@@ -520,7 +548,7 @@ static void AAUDIO_Deinitialize(void)
 
 static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
 {
-    LOGI(__func__);
+    LOGI(SDL_FUNCTION);
 
     /* AAudio was introduced in Android 8.0, but has reference counting crash issues in that release,
      * so don't use it until 8.1.

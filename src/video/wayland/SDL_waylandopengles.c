@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,14 +32,22 @@
 
 #include "xdg-shell-client-protocol.h"
 
+#ifndef EGL_PLATFORM_WAYLAND_KHR
+#define EGL_PLATFORM_WAYLAND_KHR 0x31D8
+#endif
+
 // EGL implementation of SDL OpenGL ES support
+
+void Wayland_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
+{
+    _this->gl_config.egl_platform = EGL_PLATFORM_WAYLAND_KHR;
+}
 
 bool Wayland_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    bool result;
     SDL_VideoData *data = _this->internal;
 
-    result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display, _this->gl_config.egl_platform);
+    const bool result = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType)data->display);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);

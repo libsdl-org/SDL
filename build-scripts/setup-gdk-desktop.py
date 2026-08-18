@@ -14,8 +14,9 @@ import urllib.request
 import zipfile
 
 # Update both variables when updating the GDK
-GIT_REF = "June_2024_Update_1"
-GDK_EDITION = "240601"  # YYMMUU
+GIT_REF = "April-2026-Update-3-v2604.3.7874"
+GDK_EDITION = "260403"  # YYMMUU
+ARCHIVE_NAME = "GDK_2604.3.7874"
 
 logger = logging.getLogger(__name__)
 
@@ -25,34 +26,33 @@ class GdDesktopConfigurator:
         self.gdk_edition = gdk_edition or GDK_EDITION
         self.gdk_path = gdk_path
         self.temp_folder = temp_folder or Path(tempfile.gettempdir())
-        self.dl_archive_path = Path(self.temp_folder) / f"{ self.git_ref }.zip"
-        self.gdk_extract_path = Path(self.temp_folder) / f"GDK-{ self.git_ref }"
+        self.dl_archive_path = Path(self.temp_folder) / f"{ ARCHIVE_NAME }.zip"
+        self.gdk_extract_path = Path(self.temp_folder) / f"{ ARCHIVE_NAME }"
         self.arch = arch
         self.vs_folder = vs_folder
         self._vs_version = vs_version
         self._vs_toolset = vs_toolset
 
     def download_archive(self) -> None:
-        gdk_url = f"https://github.com/microsoft/GDK/archive/refs/tags/{ GIT_REF }.zip"
+        gdk_url = f"https://github.com/microsoft/GDK/releases/downloads/{ GIT_REF }/{ ARCHIVE_NAME }.zip"
         logger.info("Downloading %s to %s", gdk_url, self.dl_archive_path)
         urllib.request.urlretrieve(gdk_url, self.dl_archive_path)
         assert self.dl_archive_path.is_file()
 
     def extract_zip_archive(self) -> None:
-        extract_path = self.gdk_extract_path.parent
         assert self.dl_archive_path.is_file()
-        logger.info("Extracting %s to %s", self.dl_archive_path, extract_path)
+        logger.info("Extracting %s to %s", self.dl_archive_path, self.gdk_extract_path)
         with zipfile.ZipFile(self.dl_archive_path) as zf:
-            zf.extractall(extract_path)
+            zf.extractall(self.gdk_extract_path)
         assert self.gdk_extract_path.is_dir(), f"{self.gdk_extract_path} must exist"
 
     def extract_development_kit(self) -> None:
-        extract_dks_cmd = self.gdk_extract_path / "SetupScripts/ExtractXboxOneDKs.cmd"
-        assert extract_dks_cmd.is_file()
-        logger.info("Extracting GDK Development Kit: running %s", extract_dks_cmd)
-        cmd = ["cmd.exe", "/C", str(extract_dks_cmd), str(self.gdk_extract_path), str(self.gdk_path)]
-        logger.debug("Running %r", cmd)
-        subprocess.check_call(cmd)
+        extract_dks_ps1 = self.gdk_extract_path / "SetupScripts/ExtractXboxOneDKs.ps1"
+        assert extract_dks_ps1.is_file()
+        logger.info("Extracting GDK Development Kit: running %s", extract_dks_ps1)
+        ps = ["powershell.exe", str(extract_dks_ps1), str(self.gdk_extract_path), str(self.gdk_path)]
+        logger.debug("Running %r", ps)
+        subprocess.check_call(ps)
 
     def detect_vs_version(self) -> str:
         vs_regex = re.compile("VS([0-9]{4})")
@@ -156,7 +156,7 @@ class GdDesktopConfigurator:
         return {
             "GRDKEDITION": f"{self.gdk_edition}",
             "GameDK": f"{game_dk}\\",
-            "GameDKLatest": f"{ game_dk_latest }\\",
+            "GameDKCoreLatest": f"{ game_dk_latest }\\",
             "WindowsSdkDir": f"{ windows_sdk_dir }\\",
             "GamingGRDKBuild": f"{ gaming_grdk_build }\\",
             "VSInstallDir": f"{ self.vs_folder }\\",
@@ -182,6 +182,7 @@ class GdDesktopConfigurator:
                     <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
                     <XdkEditionTarget>{ self.gdk_edition }</XdkEditionTarget>
                     <DurangoXdkInstallPath>{ durango_xdk_install_path }</DurangoXdkInstallPath>
+                    <GameDKCoreLatest>{ self.game_dk_latest_path }\\</GameDKCoreLatest>
 
                     <DefaultXdkEditionRootVS2019>$(DurangoXdkInstallPath)\\{self.gdk_edition}\\GRDK\\VS2019\\flatDeployment\\MSBuild\\Microsoft\\VC\\{self.vs_toolset}\\Platforms\\$(Platform)\\</DefaultXdkEditionRootVS2019>
                     <XdkEditionRootVS2019>$(DurangoXdkInstallPath)\\{self.gdk_edition}\\GRDK\\VS2019\\flatDeployment\\MSBuild\\Microsoft\\VC\\{self.vs_toolset}\\Platforms\\$(Platform)\\</XdkEditionRootVS2019>
@@ -206,13 +207,13 @@ class GdDesktopConfigurator:
     @property
     def gdk_include_paths(self) -> list[Path]:
         return [
-            self.gaming_grdk_build_path / "gamekit/include",
+            self.game_dk_latest_path / "windows/include",
         ]
 
     @property
     def gdk_library_paths(self) -> list[Path]:
         return [
-            self.gaming_grdk_build_path / f"gamekit/lib/{self.arch}",
+            self.game_dk_latest_path / f"windows/lib/{self.arch}",
         ]
 
     @property
@@ -248,7 +249,7 @@ class GdDesktopConfigurator:
 def main():
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(allow_abbrev=False)
-    parser.add_argument("--arch", choices=["amd64"], default="amd64", help="Architecture")
+    parser.add_argument("--arch", choices=["x64"], default="x64", help="Architecture")
     parser.add_argument("--download", action="store_true", help="Download GDK")
     parser.add_argument("--extract", action="store_true", help="Extract downloaded GDK")
     parser.add_argument("--copy-msbuild", action="store_true", help="Copy MSBuild files")
@@ -261,8 +262,6 @@ def main():
     parser.add_argument("--props-folder", required=False, type=Path, default=Path(), help="Visual Studio toolset (e.g. v150)")
     parser.add_argument("--no-user-props", required=False, dest="user_props", action="store_false", help="Don't ")
     args = parser.parse_args()
-
-    logging.basicConfig(level=logging.INFO)
 
     git_ref = None
     gdk_edition = None

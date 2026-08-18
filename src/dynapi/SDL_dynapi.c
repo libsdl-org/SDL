@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,7 @@
 #endif
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_openxr.h>
 #define SDL_MAIN_NOIMPL // don't drag in header-only implementation of SDL_main
 #include <SDL3/SDL_main.h>
 #include "../core/SDL_core_unsupported.h"
@@ -47,7 +48,7 @@
 // These headers have system specific definitions, so aren't included above
 #include <SDL3/SDL_vulkan.h>
 
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
@@ -447,17 +448,28 @@ Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 }
 #endif
 
+
 // Obviously we can't use SDL_LoadObject() to load SDL.  :)
-// Also obviously, we never close the loaded library.
-#if defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)
+// Also obviously, we never close the loaded library, once we accept it.
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+static HMODULE sdlapi_lib = NULL;  // The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
+
+static SDL_INLINE void unload_sdlapi_library(void)
+{
+    if (sdlapi_lib) {
+        FreeLibrary(sdlapi_lib);
+        sdlapi_lib = NULL;
+    }
+}
+
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    HMODULE lib = LoadLibraryA(fname);
+    sdlapi_lib = LoadLibraryA(fname);
     void *result = NULL;
-    if (lib) {
-        result = (void *) GetProcAddress(lib, sym);
+    if (sdlapi_lib) {
+        result = (void *) GetProcAddress(sdlapi_lib, sym);
         if (!result) {
-            FreeLibrary(lib);
+            unload_sdlapi_library();
         }
     }
     return result;
@@ -465,14 +477,24 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 
 #elif defined(SDL_PLATFORM_UNIX) || defined(SDL_PLATFORM_APPLE) || defined(SDL_PLATFORM_HAIKU)
 #include <dlfcn.h>
+static void *sdlapi_lib = NULL;  // The handle to the other SDL library, loaded with SDL_DYNAMIC_API_ENVVAR
+
+static SDL_INLINE void unload_sdlapi_library(void)
+{
+    if (sdlapi_lib) {
+        dlclose(sdlapi_lib);
+        sdlapi_lib = NULL;
+    }
+}
+
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
-    void *lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
+    sdlapi_lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
     void *result = NULL;
-    if (lib) {
-        result = dlsym(lib, sym);
+    if (sdlapi_lib) {
+        result = dlsym(sdlapi_lib, sym);
         if (!result) {
-            dlclose(lib);
+            unload_sdlapi_library();
         }
     }
     return result;
@@ -487,7 +509,7 @@ static void dynapi_warn(const char *msg)
     const char *caption = "SDL Dynamic API Failure!";
     (void)caption;
 // SDL_ShowSimpleMessageBox() is a too heavy for here.
-#if (defined(WIN32) || defined(_WIN32) || defined(SDL_PLATFORM_CYGWIN)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+#if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     MessageBoxA(NULL, msg, caption, MB_OK | MB_ICONERROR);
 #elif defined(HAVE_STDIO_H)
     fprintf(stderr, "\n\n%s\n%s\n\n", caption, msg);
@@ -547,6 +569,10 @@ static void SDL_InitDynamicAPILocked(void)
     if (entry) {
         if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof(jump_table)) < 0) {
             dynapi_warn("Couldn't override SDL library. Using a newer SDL build might help. Please fix or remove the " SDL_DYNAMIC_API_ENVVAR " environment variable. Using the default SDL.");
+
+            // unload the failed SDL library
+            unload_sdlapi_library();
+
             // Just fill in the function pointers from this library, later.
         } else {
             use_internal = false; // We overrode SDL! Don't use the internal version!
@@ -597,6 +623,7 @@ static void SDL_InitDynamicAPI(void)
 #else // SDL_DYNAMIC_API
 
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_openxr.h>
 
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize);
 Sint32 SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)

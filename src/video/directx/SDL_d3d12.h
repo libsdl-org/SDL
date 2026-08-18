@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,8 +37,15 @@
 #define WINAPI_PARTITION_GAMES 0
 #endif // WINAPI_PARTITION_GAMES
 
+#ifdef __CYGWIN__
+  // generated header d3d12.h wants to see _WIN32 defined in order to believe it's targeting windows
+  #define _WIN32 1
+#endif
 #define COBJMACROS
 #include "d3d12.h"
+#ifdef __CYGWIN__
+  #undef _WIN32
+#endif
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 

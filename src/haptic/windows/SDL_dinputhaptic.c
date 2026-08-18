@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -90,7 +90,7 @@ bool SDL_DINPUT_HapticInit(void)
     instance = GetModuleHandle(NULL);
     if (!instance) {
         SDL_SYS_HapticQuit();
-        return SDL_SetError("GetModuleHandle() failed with error code %lu.",
+        return SDL_SetError("GetModuleHandle() failed with error code %" SDL_PRIuULONG ".",
                             GetLastError());
     }
     ret = IDirectInput8_Initialize(dinput, instance, DIRECTINPUT_VERSION);
@@ -599,7 +599,7 @@ static bool SDL_SYS_ToDIEFFECT(SDL_Haptic *haptic, DIEFFECT *dest,
     DWORD *axes;
 
     // Set global stuff.
-    SDL_memset(dest, 0, sizeof(DIEFFECT));
+    SDL_zerop(dest);
     dest->dwSize = sizeof(DIEFFECT);     // Set the structure size.
     dest->dwSamplePeriod = 0;            // Not used by us.
     dest->dwGain = 10000;                // Gain is set globally, not locally.
@@ -1050,7 +1050,7 @@ bool SDL_DINPUT_HapticUpdateEffect(SDL_Haptic *haptic, struct haptic_effect *eff
     DIEFFECT temp;
 
     // Get the effect.
-    SDL_memset(&temp, 0, sizeof(DIEFFECT));
+    SDL_zero(temp);
     if (!SDL_SYS_ToDIEFFECT(haptic, &temp, data)) {
         goto err_update;
     }

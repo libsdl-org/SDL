@@ -20,7 +20,7 @@ Ubuntu 18.04, all available features enabled:
     libaudio-dev libfribidi-dev libjack-dev libsndio-dev libx11-dev libxext-dev \
     libxrandr-dev libxcursor-dev libxfixes-dev libxi-dev libxss-dev libxtst-dev \
     libxkbcommon-dev libdrm-dev libgbm-dev libgl1-mesa-dev libgles2-mesa-dev \
-    libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev
+    libegl1-mesa-dev libdbus-1-dev libibus-1.0-dev libudev-dev libthai-dev libusb-1.0-0-dev
 
 Ubuntu 22.04+ can also add `libpipewire-0.3-dev libwayland-dev libdecor-0-dev liburing-dev` to that command line.
 

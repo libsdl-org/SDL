@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -180,11 +180,15 @@ static void SDL_CheckInitLog(void)
 
 static void CleanupLogPriorities(void)
 {
+    SDL_LockMutex(SDL_log_lock);
+
     while (SDL_loglevels) {
         SDL_LogLevel *entry = SDL_loglevels;
         SDL_loglevels = entry->next;
         SDL_free(entry);
     }
+
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
 void SDL_SetLogPriorities(SDL_LogPriority priority)
@@ -339,6 +343,8 @@ static void ParseLogPriorities(const char *hint)
         return;
     }
 
+    SDL_LockMutex(SDL_log_lock);
+
     for (name = hint; name; name = next) {
         const char *sep = SDL_strchr(name, '=');
         if (!sep) {
@@ -371,6 +377,8 @@ static void ParseLogPriorities(const char *hint)
             }
         }
     }
+
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
 void SDL_ResetLogPriorities(void)
@@ -431,12 +439,16 @@ void SDL_ResetLogPriorities(void)
 
 static void CleanupLogPrefixes(void)
 {
+    SDL_LockMutex(SDL_log_function_lock);
+
     for (int i = 0; i < SDL_arraysize(SDL_priority_prefixes); ++i) {
         if (SDL_priority_prefixes[i]) {
             SDL_free(SDL_priority_prefixes[i]);
             SDL_priority_prefixes[i] = NULL;
         }
     }
+
+    SDL_UnlockMutex(SDL_log_function_lock);
 }
 
 static const char *GetLogPriorityPrefix(SDL_LogPriority priority)

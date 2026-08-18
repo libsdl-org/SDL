@@ -19,8 +19,12 @@ import android.os.*;
 
 import java.lang.Runnable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.UUID;
+
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDevice {
 
@@ -33,10 +37,19 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     private boolean mIsConnected = false;
     private boolean mIsChromebook = false;
     private boolean mIsReconnecting = false;
+    private boolean mHasEnabledNotifications = false;
+    private boolean mHasSeenInputUpdate = false;
     private boolean mFrozen = false;
     private LinkedList<GattOperation> mOperations;
     GattOperation mCurrentOperation = null;
     private Handler mHandler;
+    private int mProductId = -1;
+    private int mReportId = 0;
+    private UUID mInputCharacteristic;
+
+    private static final int D0G_BLE2_PID = 0x1106;
+    private static final int TRITON_BLE_PID = 0x1303;
+
 
     private static final int TRANSPORT_AUTO = 0;
     private static final int TRANSPORT_BREDR = 1;
@@ -45,9 +58,13 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     private static final int CHROMEBOOK_CONNECTION_CHECK_INTERVAL = 10000;
 
     static final UUID steamControllerService = UUID.fromString("100F6C32-1735-4313-B402-38567131E5F3");
-    static final UUID inputCharacteristic = UUID.fromString("100F6C33-1735-4313-B402-38567131E5F3");
+    static final UUID inputCharacteristicD0G = UUID.fromString("100F6C33-1735-4313-B402-38567131E5F3");
+    static final UUID inputCharacteristicTriton_0x45 = UUID.fromString("100F6C7A-1735-4313-B402-38567131E5F3");
+    static final UUID inputCharacteristicTriton_0x47 = UUID.fromString("100F6C7C-1735-4313-B402-38567131E5F3");
     static final UUID reportCharacteristic = UUID.fromString("100F6C34-1735-4313-B402-38567131E5F3");
     static private final byte[] enterValveMode = new byte[] { (byte)0xC0, (byte)0x87, 0x03, 0x08, 0x07, 0x00 };
+
+    private HashMap<Integer, BluetoothGattCharacteristic> mOutputReportChars = new HashMap<Integer, BluetoothGattCharacteristic>();
 
     static class GattOperation {
         private enum Operation {
@@ -61,6 +78,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         byte[] mValue;
         BluetoothGatt mGatt;
         boolean mResult = true;
+        int mDelayMs = 0;
 
         private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid) {
             mGatt = gatt;
@@ -68,11 +86,26 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             mUuid = uuid;
         }
 
+        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, int delayMs) {
+            mGatt = gatt;
+            mOp = operation;
+            mUuid = uuid;
+            mDelayMs = delayMs;
+        }        
+
         private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, byte[] value) {
             mGatt = gatt;
             mOp = operation;
             mUuid = uuid;
             mValue = value;
+        }
+
+        private GattOperation(BluetoothGatt gatt, GattOperation.Operation operation, UUID uuid, byte[] value, int delayMs) {
+            mGatt = gatt;
+            mOp = operation;
+            mUuid = uuid;
+            mValue = value;
+            mDelayMs = delayMs;
         }
 
         public void run() {
@@ -136,6 +169,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             return mResult;
         }
 
+        public int getDelayMs() { return mDelayMs; }
+
         private BluetoothGattCharacteristic getCharacteristic(UUID uuid) {
             BluetoothGattService valveService = mGatt.getService(steamControllerService);
             if (valveService == null)
@@ -154,6 +189,10 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         static public GattOperation enableNotification(BluetoothGatt gatt, UUID uuid) {
             return new GattOperation(gatt, Operation.ENABLE_NOTIFICATION, uuid);
         }
+
+        static public GattOperation enableNotification(BluetoothGatt gatt, UUID uuid, int delayMs) {
+            return new GattOperation(gatt, Operation.ENABLE_NOTIFICATION, uuid, delayMs);
+        }
     }
 
     HIDDeviceBLESteamController(HIDDeviceManager manager, BluetoothDevice device) {
@@ -166,6 +205,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         mHandler = new Handler(Looper.getMainLooper());
 
         mGatt = connectGatt();
+        mHasEnabledNotifications = false;
+        mHasSeenInputUpdate = false;
         // final HIDDeviceBLESteamController finalThis = this;
         // mHandler.postDelayed(new Runnable() {
         //     @Override
@@ -314,8 +355,45 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
                 Log.v(TAG, "Found Valve steam controller service " + service.getUuid());
 
                 for (BluetoothGattCharacteristic chr : service.getCharacteristics()) {
-                    if (chr.getUuid().equals(inputCharacteristic)) {
-                        Log.v(TAG, "Found input characteristic");
+                    if (chr.getUuid().equals(inputCharacteristicTriton_0x45)) {
+                        Log.v(TAG, "Found Triton input characteristic 0x45");
+                        mProductId = TRITON_BLE_PID;
+                        mReportId = 0x45;
+                        mInputCharacteristic = chr.getUuid();
+                    } else if (chr.getUuid().equals(inputCharacteristicTriton_0x47)) {
+                        Log.v(TAG, "Found Triton input characteristic 0x47");
+                        mProductId = TRITON_BLE_PID;
+                        mReportId = 0x47;
+                        mInputCharacteristic = chr.getUuid();
+                    } else if (chr.getUuid().equals(inputCharacteristicD0G)) {
+                        Log.v(TAG, "Found D0G input characteristic");
+                        mProductId = D0G_BLE2_PID;
+                        mReportId = 0x03;
+                        mInputCharacteristic = chr.getUuid();
+                    } else {
+                        Pattern reportPattern = Pattern.compile("100F6C([0-9A-Z]{2})", Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = reportPattern.matcher(chr.getUuid().toString());
+
+                        if (matcher.find()) {
+                            try {
+                                int reportId = Integer.parseInt(matcher.group(1), 16);
+
+                                reportId -= 0x35;
+                                if (reportId >= 0x80) {
+                                    // This is a Triton output report characteristic that we need to care about.
+                                    Log.v(TAG, "Found Triton output report 0x" + Integer.toString(reportId, 16));
+                                    mOutputReportChars.put(reportId, chr);
+                                }
+                            }
+                            catch (NumberFormatException nfe) {
+                                Log.w(TAG, "Could not parse report characteristic " + chr.getUuid().toString() + ": " + nfe.toString());
+                            }
+                        }
+                    }
+                }
+
+                for (BluetoothGattCharacteristic chr : service.getCharacteristics()) {
+                    if (chr.getUuid().equals(mInputCharacteristic)) {
                         // Start notifications
                         BluetoothGattDescriptor cccd = chr.getDescriptor(UUID.fromString("00002902-0000-1000-8000-00805f9b34fb"));
                         if (cccd != null) {
@@ -372,21 +450,30 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             mCurrentOperation = mOperations.removeFirst();
         }
 
-        // Run in main thread
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (mOperations) {
-                    if (mCurrentOperation == null) {
-                        Log.e(TAG, "Current operation null in executor?");
-                        return;
-                    }
+        Runnable gattOperationRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (mOperations) {
+                        if (mCurrentOperation == null) {
+                            Log.e(TAG, "Current operation null in executor?");
+                            return;
+                        }
 
-                    mCurrentOperation.run();
-                    // now wait for the GATT callback and when it comes, finish this operation
+                        mCurrentOperation.run();
+                        // now wait for the GATT callback and when it comes, finish this operation
+                    }
                 }
-            }
-        });
+            };
+
+        if (mCurrentOperation.getDelayMs() == 0) {
+            // Run in main thread
+            mHandler.post(gattOperationRunnable);
+        }
+        else {
+            // If we have a delay on this operation, wait before we post it.
+            mHandler.postDelayed(gattOperationRunnable, mCurrentOperation.getDelayMs());
+        }
+
     }
 
     private void queueGattOperation(GattOperation op) {
@@ -397,8 +484,39 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     }
 
     private void enableNotification(UUID chrUuid) {
-        GattOperation op = HIDDeviceBLESteamController.GattOperation.enableNotification(mGatt, chrUuid);
+        // Add a 500ms delay to notification write for Amazon Fire TV devices, as otherwise if we do this too quickly after connecting
+        // it will return success and then silently drop the operation on the floor.
+        GattOperation op = HIDDeviceBLESteamController.GattOperation.enableNotification(mGatt, chrUuid, 500);
         queueGattOperation(op);
+
+        // Amazon Fire devices can also silently timeout on writeDescriptor, so
+        // set up a little delayed check that will attempt to write a second time.
+        //
+        // While this only seems to be needed on Amazon Fire TV devices at present, it
+        // doesn't hurt to have a retry on other devices as well.
+        //
+        final HIDDeviceBLESteamController finalThis = this;
+        final UUID finalUuid = chrUuid;
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (!finalThis.mHasEnabledNotifications) {
+
+                    if (finalThis.mHasSeenInputUpdate) {
+                        // Amazon Five devices may have enabled notifications on the input characteristic and not given us a callback. If we've seen
+                        // input reports, though, somewhat by definition notifications are enabled.
+                        Log.w(TAG, "WriteDescriptor has never returned, but we've seen input reports. Moving on with controller initialization.");
+                        finalThis.mHasEnabledNotifications = true;
+                        finalThis.enableValveMode();
+                        return;
+                    }
+
+                    // Give one more try.
+                    GattOperation retry = HIDDeviceBLESteamController.GattOperation.enableNotification(finalThis.mGatt, finalUuid, 500);
+                    finalThis.queueGattOperation(retry);
+                }
+            }
+        }, 1000);            
     }
 
     void writeCharacteristic(UUID uuid, byte[] value) {
@@ -448,8 +566,16 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
                 mIsConnected = false;
                 gatt.disconnect();
                 mGatt = connectGatt(false);
-            }
-            else {
+            } else {
+                if (getProductId() == TRITON_BLE_PID) {
+                    // Android will not properly play well with Data Length Extensions without manually requesting a large MTU,
+                    // and Triton controllers require DLE support.
+                    //
+                    // 517 is basically a "magic number" as far as Android's bluetooth code is concerned, so do not change
+                    // this value. It is functionally "please enable data length extensions" on some Android builds.
+                    mGatt.requestMtu(517);
+                }
+
                 probeService(this);
             }
         }
@@ -474,7 +600,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             // Only register controller with the native side once it has been fully configured
             if (!isRegistered()) {
                 Log.v(TAG, "Registering Steam Controller with ID: " + getId());
-                mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true);
+                mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true, mReportId);
                 setRegistered();
             }
         }
@@ -487,7 +613,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     // Enable this for verbose logging of controller input reports
         //Log.v(TAG, "onCharacteristicChanged uuid=" + characteristic.getUuid() + " data=" + HexDump.dumpHexString(characteristic.getValue()));
 
-        if (characteristic.getUuid().equals(inputCharacteristic) && !mFrozen) {
+        if (characteristic.getUuid().equals(mInputCharacteristic) && !mFrozen) {
+            mHasSeenInputUpdate = true;
             mManager.HIDDeviceInputReport(getId(), characteristic.getValue());
         }
     }
@@ -497,19 +624,36 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         //Log.v(TAG, "onDescriptorRead status=" + status);
     }
 
+    private void enableValveMode()
+    {
+        BluetoothGattService valveService = mGatt.getService(steamControllerService);
+        if (valveService == null)
+            return;
+
+        BluetoothGattCharacteristic reportChr = valveService.getCharacteristic(reportCharacteristic);
+        if (reportChr != null) {
+            if (getProductId() == TRITON_BLE_PID) {
+                // For Triton we just mark things registered.
+                Log.v(TAG, "Registering Triton Steam Controller with ID: " + getId());
+                mManager.HIDDeviceConnected(getId(), getIdentifier(), getVendorId(), getProductId(), getSerialNumber(), getVersion(), getManufacturerName(), getProductName(), 0, 0, 0, 0, true, mReportId);
+                setRegistered();
+            } else {
+                // For the original controller, we need to manually enter Valve mode.
+                Log.v(TAG, "Writing report characteristic to enter valve mode");
+                reportChr.setValue(enterValveMode);
+                mGatt.writeCharacteristic(reportChr);
+            }
+        }
+    }
+
     @Override
     public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
         BluetoothGattCharacteristic chr = descriptor.getCharacteristic();
         //Log.v(TAG, "onDescriptorWrite status=" + status + " uuid=" + chr.getUuid() + " descriptor=" + descriptor.getUuid());
 
-        if (chr.getUuid().equals(inputCharacteristic)) {
-            boolean hasWrittenInputDescriptor = true;
-            BluetoothGattCharacteristic reportChr = chr.getService().getCharacteristic(reportCharacteristic);
-            if (reportChr != null) {
-                Log.v(TAG, "Writing report characteristic to enter valve mode");
-                reportChr.setValue(enterValveMode);
-                gatt.writeCharacteristic(reportChr);
-            }
+        if (chr.getUuid().equals(mInputCharacteristic)) {
+            mHasEnabledNotifications = true;
+            enableValveMode();
         }
 
         finishCurrentGattOperation();
@@ -548,9 +692,20 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
 
     @Override
     public int getProductId() {
-        // We don't have an easy way to query from the Bluetooth device, but we know what it is
-        final int D0G_BLE2_PID = 0x1106;
-        return D0G_BLE2_PID;
+        if (mProductId > 0) {
+            // We've already set a product ID.
+            return mProductId;
+        }
+
+        if (mDevice.getName().startsWith("Steam Ctrl")) {
+            // We're a newer Triton device
+            mProductId = TRITON_BLE_PID;
+        } else {
+            // We're an OG Steam Controller
+            mProductId = D0G_BLE2_PID;
+        }
+
+        return mProductId;
     }
 
     @Override
@@ -601,10 +756,29 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
             writeCharacteristic(reportCharacteristic, actual_report);
             return report.length;
         } else {
-            //Log.v(TAG, "writeOutputReport " + HexDump.dumpHexString(report));
-            writeCharacteristic(reportCharacteristic, report);
-            return report.length;
+            // If we're an original-recipe Steam Controller we just write to the characteristic directly.
+            if (getProductId() == D0G_BLE2_PID) {
+                //Log.v(TAG, "writeOutputReport " + HexDump.dumpHexString(report));
+                writeCharacteristic(reportCharacteristic, report);
+                return report.length;
+            }
+
+            // If we're a Triton, we need to find the correct report characteristic.
+            if (report.length > 0) {
+                int reportId = report[0] & 0xFF;
+                BluetoothGattCharacteristic targetedReportCharacteristic = mOutputReportChars.get(reportId);
+                if (targetedReportCharacteristic != null) {
+                    byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
+                    //Log.v(TAG, "writeOutputReport 0x" + Integer.toString(reportId, 16) + " " + HexDump.dumpHexString(report));
+                    writeCharacteristic(targetedReportCharacteristic.getUuid(), actual_report);
+                    return report.length;
+                } else {
+                    Log.w(TAG, "Got report write request for unknown report type 0x" + Integer.toString(reportId, 16));
+                }
+            }
         }
+
+        return -1;
     }
 
     @Override

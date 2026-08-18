@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,12 +28,12 @@
 typedef struct X11_ClipboardData {
     SDL_ClipboardDataCallback callback;
     void *userdata;
-    const char **mime_types;
+    const char *const *mime_types;
     size_t mime_count;
     Uint32 sequence;
 } SDLX11_ClipboardData;
 
-extern const char **X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
+extern const char *const *X11_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_mime_types);
 extern bool X11_SetClipboardData(SDL_VideoDevice *_this);
 extern void *X11_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length);
 extern bool X11_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type);

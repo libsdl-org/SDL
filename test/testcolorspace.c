@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -10,13 +10,13 @@
   freely.
 */
 
+#define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 #include <SDL3/SDL_main.h>
 
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-#include <emscripten/emscripten.h>
-#endif
+// The value, in nits, of scRGB 1.0
+#define SCRGB_NITS 80.0f
 
 #define WINDOW_WIDTH  640
 #define WINDOW_HEIGHT 480
@@ -28,12 +28,23 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static const char *renderer_name;
+static const char *colorspace_names[] = {
+       "sRGB",
+       "linear",
+       "HDR10"
+};
+static SDL_Colorspace colorspaces[] = {
+       SDL_COLORSPACE_SRGB,
+       SDL_COLORSPACE_SRGB_LINEAR,
+       SDL_COLORSPACE_HDR10
+};
+static int colorspace_count = SDL_arraysize(colorspaces);
+static int colorspace_index = 0;
 static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
 static int renderer_index = 0;
-static int stage_index = 0;
-static int done;
+static float SDR_white_level = 1.0f;
 static float HDR_headroom = 1.0f;
 
 enum
@@ -46,8 +57,10 @@ enum
     StageBlendTexture,
     StageGradientDrawing,
     StageGradientTexture,
+    StageHDR10Texture,
     StageCount
 };
+static int stage_index = StageClearBackground;
 
 static void FreeRenderer(void)
 {
@@ -68,10 +81,22 @@ static void UpdateHDRState(void)
 
     if (HDR_enabled) {
         props = SDL_GetRendererProperties(renderer);
-        if (SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB) != SDL_COLORSPACE_SRGB_LINEAR) {
+        colorspace = SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+        if (colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+            colorspace != SDL_COLORSPACE_HDR10) {
             SDL_Log("Run with --colorspace linear to display HDR colors");
         }
+        SDR_white_level = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT, 1.0f);
         HDR_headroom = SDL_GetFloatProperty(props, SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT, 1.0f);
+        if (((SDR_white_level * SCRGB_NITS) * HDR_headroom) == 10000.0f) {
+			// The system is advertising the PQ luminance range (10000 nits)
+			// and tone mapping into the actual display capabilities.
+			// Let's use a more reasonable range for the gradient test.
+			HDR_headroom = 5.0f;
+		}
+    } else {
+        SDR_white_level = 1.0f;
+        HDR_headroom = 1.0f;
     }
 }
 
@@ -102,10 +127,19 @@ static void NextRenderer( void )
         return;
     }
 
+#ifdef CYCLE_COLORSPACES
+    ++colorspace_index;
+    if (colorspace_index == colorspace_count) {
+        colorspace_index = 0;
+    }
+    colorspace = colorspaces[colorspace_index];
+    colorspace_name = colorspace_names[colorspace_index];
+#else
     ++renderer_index;
     if (renderer_index == renderer_count) {
         renderer_index = 0;
     }
+#endif
     FreeRenderer();
     CreateRenderer();
 }
@@ -116,10 +150,19 @@ static void PrevRenderer(void)
         return;
     }
 
+#ifdef CYCLE_COLORSPACES
+    --colorspace_index;
+    if (colorspace_index == -1) {
+        colorspace_index += colorspace_count;
+    }
+    colorspace = colorspaces[colorspace_index];
+    colorspace_name = colorspace_names[colorspace_index];
+#else
     --renderer_index;
     if (renderer_index == -1) {
         renderer_index += renderer_count;
     }
+#endif
     FreeRenderer();
     CreateRenderer();
 }
@@ -168,6 +211,41 @@ static bool ReadPixel(int x, int y, SDL_Color *c)
     return result;
 }
 
+typedef enum
+{
+    TextAlignLeft,
+    TextAlignRight,
+    TextAlignCenter
+} TextAlignment;
+
+static void DrawAlignedText(float x, float y, TextAlignment align, const char *fmt, ...)
+{
+    char *text;
+
+    va_list ap;
+    va_start(ap, fmt);
+    SDL_vasprintf(&text, fmt, ap);
+    va_end(ap);
+
+    size_t text_width = SDL_strlen(text) * SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE;
+    switch (align) {
+    case TextAlignLeft:
+        break;
+    case TextAlignRight:
+        x -= text_width;
+        break;
+    case TextAlignCenter:
+        x -= text_width / 2.0f;
+        break;
+    }
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDLTest_DrawString(renderer, x + 1.0f, y + 1.0f, text);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDLTest_DrawString(renderer, x, y, text);
+    SDL_free(text);
+}
+
 static void DrawText(float x, float y, const char *fmt, ...)
 {
     char *text;
@@ -192,7 +270,7 @@ static void RenderClearBackground(void)
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderClear(renderer);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -220,7 +298,7 @@ static void RenderDrawBackground(void)
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderFillRect(renderer, NULL);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -269,7 +347,7 @@ static void RenderTextureBackground(void)
     SDL_RenderTexture(renderer, texture, NULL, NULL);
     SDL_DestroyTexture(texture);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -307,7 +385,7 @@ static void RenderTargetBackground(void)
     SDL_RenderTexture(renderer, target, NULL, NULL);
     SDL_DestroyTexture(target);
 
-    /* Check the renderered pixels */
+    /* Check the rendered pixels */
     SDL_Color c;
     if (!ReadPixel(0, 0, &c)) {
         return;
@@ -369,15 +447,19 @@ static void RenderBlendDrawing(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw Blending");
     y += TEXT_LINE_ADVANCE;
-    if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
+    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
+        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if (cr.r == 214 && cr.g == 156 && cr.b == 113) {
-        DrawText(x, y, "Incorrect blend color, blending in PQ space");
+    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
+               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+        DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 }
@@ -429,13 +511,19 @@ static void RenderBlendTexture(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Texture Blending");
     y += TEXT_LINE_ADVANCE;
-    if (cr.r == 199 && cr.g == 193 && cr.b == 121) {
+    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
+        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
     } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
                (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
+    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
+               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
+               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+        DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
-        DrawText(x, y, "Incorrect blend color, unknown reason");
+        DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
     }
     y += TEXT_LINE_ADVANCE;
 
@@ -584,80 +672,168 @@ static void RenderGradientTexture(void)
     y += 64.0f;
 }
 
-static void loop(void)
+float PQfromNits(float v)
 {
-    SDL_Event event;
+    const float c1 = 0.8359375f;
+    const float c2 = 18.8515625f;
+    const float c3 = 18.6875f;
+    const float m1 = 0.1593017578125f;
+    const float m2 = 78.84375f;
 
+    float y = SDL_clamp(v / 10000.0f, 0.0f, 1.0f);
+    float num = c1 + c2 * SDL_powf(y, m1);
+    float den = 1.0f + c3 * SDL_powf(y, m1);
+    return SDL_powf(num / den, m2);
+}
+
+static SDL_Texture *CreateHDR10Texture(int width, float max_nits)
+{
+    SDL_Texture *texture;
+    Uint32 *pixels;
+
+    /* ABGR2101010 textures are in the HDR10 colorspace by default */
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_ABGR2101010);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
+    SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 1);
+    // The white point for HDR10 textures is the SDR white level in nits
+    if (SDR_white_level > 1.0f) {
+        // We'll match the current display SDR white level so we don't get any scaling here
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * SCRGB_NITS);
+    } else {
+        // ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
+        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, 203.0f);
+    }
+    texture = SDL_CreateTextureWithProperties(renderer, props);
+    SDL_DestroyProperties(props);
+    if (!texture) {
+        return NULL;
+    }
+
+    pixels = (Uint32 *)SDL_malloc(width * sizeof(Uint32));
+    if (pixels) {
+        int i;
+
+        for (i = 0; i < width; ++i) {
+            float nits = (max_nits * i) / width;
+            Uint32 v = (Uint32)SDL_roundf(PQfromNits(nits) * 1023.0f);
+            pixels[i] = 0xC0000000 | (v << 20) | (v << 10) | v;
+        }
+        SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(Uint32));
+        SDL_free(pixels);
+    }
+    return texture;
+}
+
+static void DrawHDR10Texture(float x, float y, float width, float height, float max_nits)
+{
+    SDL_FRect rect = { x, y, width, height };
+    SDL_Texture *texture = CreateHDR10Texture((int)width, max_nits);
+    SDL_RenderTexture(renderer, texture, NULL, &rect);
+    SDL_DestroyTexture(texture);
+}
+
+static void RenderHDR10Texture(void)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Texture HDR10 ramp");
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    DrawText(x, y, "HDR10");
+    y += TEXT_LINE_ADVANCE;
+
+    /* The gradient texture is in the linear colorspace, so we can use the HDR_headroom value directly */
+    const float max_nits = 1000.0f;
+    float gradient_width = WINDOW_WIDTH - 2 * x;
+    DrawHDR10Texture(x, y, gradient_width, 64.0f, max_nits);
+    y += 64.0f;
+    y += 4.0f;
+    DrawAlignedText(x, y, TextAlignLeft, "Nits:");
+    DrawAlignedText(x + gradient_width / 4, y, TextAlignCenter, "%g", max_nits / 4);
+    DrawAlignedText(x + gradient_width / 2, y, TextAlignCenter, "%g", max_nits / 2);
+    DrawAlignedText(x + gradient_width * 400 / max_nits, y, TextAlignCenter, "400");
+    DrawAlignedText(x + gradient_width * 3 / 4, y, TextAlignCenter, "%g", max_nits * 3 / 4);
+    DrawAlignedText(x + gradient_width, y, TextAlignRight, "%g", max_nits);
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+{
     /* Check for events */
-    while (SDL_PollEvent(&event)) {
-        if (event.type == SDL_EVENT_KEY_DOWN) {
-            switch (event.key.key) {
-            case SDLK_ESCAPE:
-                done = 1;
-                break;
-            case SDLK_SPACE:
-            case SDLK_RIGHT:
-                NextStage();
-                break;
-            case SDLK_LEFT:
-                PrevStage();
-                break;
-            case SDLK_DOWN:
-                NextRenderer();
-                break;
-            case SDLK_UP:
-                PrevRenderer();
-                break;
-            default:
-                break;
-            }
-        } else if (event.type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
-            UpdateHDRState();
-        } else if (event.type == SDL_EVENT_QUIT) {
-            done = 1;
-        }
-    }
-
-    if (renderer) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-
-        switch (stage_index) {
-        case StageClearBackground:
-            RenderClearBackground();
+    if (event->type == SDL_EVENT_KEY_DOWN) {
+        switch (event->key.key) {
+        case SDLK_ESCAPE:
+            return SDL_APP_SUCCESS;
+        case SDLK_SPACE:
+        case SDLK_RIGHT:
+            NextStage();
             break;
-        case StageDrawBackground:
-            RenderDrawBackground();
+        case SDLK_LEFT:
+            PrevStage();
             break;
-        case StageTextureBackground:
-            RenderTextureBackground();
+        case SDLK_DOWN:
+            NextRenderer();
             break;
-        case StageTargetBackground:
-            RenderTargetBackground();
+        case SDLK_UP:
+            PrevRenderer();
             break;
-        case StageBlendDrawing:
-            RenderBlendDrawing();
-            break;
-        case StageBlendTexture:
-            RenderBlendTexture();
-            break;
-        case StageGradientDrawing:
-            RenderGradientDrawing();
-            break;
-        case StageGradientTexture:
-            RenderGradientTexture();
+        default:
             break;
         }
-
-        SDL_RenderPresent(renderer);
+    } else if (event->type == SDL_EVENT_WINDOW_HDR_STATE_CHANGED) {
+        UpdateHDRState();
+    } else if (event->type == SDL_EVENT_QUIT) {
+        return SDL_APP_SUCCESS;
     }
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    switch (stage_index) {
+    case StageClearBackground:
+        RenderClearBackground();
+        break;
+    case StageDrawBackground:
+        RenderDrawBackground();
+        break;
+    case StageTextureBackground:
+        RenderTextureBackground();
+        break;
+    case StageTargetBackground:
+        RenderTargetBackground();
+        break;
+    case StageBlendDrawing:
+        RenderBlendDrawing();
+        break;
+    case StageBlendTexture:
+        RenderBlendTexture();
+        break;
+    case StageGradientDrawing:
+        RenderGradientDrawing();
+        break;
+    case StageGradientTexture:
+        RenderGradientTexture();
+        break;
+    case StageHDR10Texture:
+        RenderHDR10Texture();
+        break;
+    }
+
+    SDL_RenderPresent(renderer);
     SDL_Delay(100);
 
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-    if (done) {
-        emscripten_cancel_main_loop();
-    }
-#endif
+    return SDL_APP_CONTINUE;
 }
 
 static void LogUsage(const char *argv0)
@@ -665,9 +841,8 @@ static void LogUsage(const char *argv0)
     SDL_Log("Usage: %s [--renderer renderer] [--colorspace colorspace]", argv0);
 }
 
-int main(int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-    int return_code = 1;
     int i;
 
     for (i = 1; i < argc; ++i) {
@@ -677,39 +852,38 @@ int main(int argc, char *argv[])
                 ++i;
             } else {
                 LogUsage(argv[0]);
-                goto quit;
+                return SDL_APP_FAILURE;
             }
         } else if (SDL_strcmp(argv[i], "--colorspace") == 0) {
             if (argv[i + 1]) {
                 colorspace_name = argv[i + 1];
-                if (SDL_strcasecmp(colorspace_name, "sRGB") == 0) {
-                    colorspace = SDL_COLORSPACE_SRGB;
-                } else if (SDL_strcasecmp(colorspace_name, "linear") == 0) {
-                    colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-/* Not currently supported
-                } else if (SDL_strcasecmp(colorspace_name, "HDR10") == 0) {
-                    colorspace = SDL_COLORSPACE_HDR10;
-*/
-                } else {
+                colorspace = SDL_COLORSPACE_UNKNOWN;
+                for (int j = 0; j < colorspace_count; ++j) {
+                    if (SDL_strcasecmp(colorspace_name, colorspace_names[j]) == 0) {
+                        colorspace_index = j;
+                        colorspace = colorspaces[j];
+                        break;
+                    }
+                }
+                if (colorspace == SDL_COLORSPACE_UNKNOWN) {
                     SDL_Log("Unknown colorspace %s", argv[i + 1]);
-                    goto quit;
+                    return SDL_APP_FAILURE;
                 }
                 ++i;
             } else {
                 LogUsage(argv[0]);
-                goto quit;
+                return SDL_APP_FAILURE;
             }
         } else {
             LogUsage(argv[0]);
-            goto quit;
+            return SDL_APP_FAILURE;
         }
     }
 
     window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
-        return_code = 2;
-        goto quit;
+        return SDL_APP_FAILURE;
     }
 
     renderer_count = SDL_GetNumRenderDrivers();
@@ -724,20 +898,12 @@ int main(int argc, char *argv[])
     }
     CreateRenderer();
 
-    /* Main render loop */
-    done = 0;
+    return SDL_APP_CONTINUE;
+}
 
-#ifdef SDL_PLATFORM_EMSCRIPTEN
-    emscripten_set_main_loop(loop, 0, 1);
-#else
-    while (!done) {
-        loop();
-    }
-#endif
-    return_code = 0;
-quit:
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
+{
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
-    return return_code;
 }

@@ -1,10 +1,10 @@
 iOS
 ======
 
-Building the Simple DirectMedia Layer for iOS 11.0+
+Building the Simple DirectMedia Layer
 ==============================================================================
 
-Please note that building SDL requires at least Xcode 12.2 and the iOS 14.2 SDK.
+SDL supports building with Xcode 12.2 and the iOS 14.2 SDK or newer, and deploying to iOS 11.0, tvOS 11.0, visionOS 1.3, and newer.
 
 Instructions:
 
@@ -73,6 +73,7 @@ Embedding the SDL3 Xcode project makes SDL3.framework a target of your app, so i
     fi
 ```
 3. Below the script entry uncheck the "Run Script:" options "For install builds only" and "Based on dependency analysis"
+4. Edit the Build Settings and set "User Script Sandboxing" to "No".
 
 TODO: Add information regarding App Store requirements such as icons, etc.
 
@@ -100,6 +101,19 @@ Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
 sizes in points. When doing 2D rendering with OpenGL ES, an orthographic projection
 matrix using the size in points (SDL_GetWindowSize()) can be used in order to
 display content at the same scale no matter whether a Retina device is used or not.
+
+
+Notes -- Getting full screen resolution
+==============================================================================
+
+Make sure that you have a Launch Screen key in your Info.plist, e.g.
+```
+    <key>UILaunchScreen</key>
+    <dict/>
+```
+If you don't specify a launch screen, then the OS will assume that your
+application needs an older compatibility mode and will get a limited
+resolution screen.
 
 
 Notes -- Application events

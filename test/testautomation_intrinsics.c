@@ -256,11 +256,26 @@ SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) 
     Uint32 crc32c = ~0u;
     size_t len = SDL_strlen(text);
 
+    if (len >= 1 && ((uintptr_t)text & 0x1)) {
+        crc32c = (Uint32)_mm_crc32_u8(crc32c, *text);
+        len -= 1;
+        text += 1;
+    }
+    if (len >= 2 && ((uintptr_t)text & 0x2)) {
+        crc32c = (Uint32)_mm_crc32_u16(crc32c, *(Sint16*)text);
+        len -= 2;
+        text += 2;
+    }
 #if defined(__x86_64__) || defined(_M_X64)
+    if (len >= 4 && ((uintptr_t)text & 0x4)) {
+        crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
+        len -= 4;
+        text += 4;
+    }
     for (; len >= 8; len -= 8, text += 8) {
         crc32c = (Uint32)_mm_crc32_u64(crc32c, *(Sint64*)text);
     }
-    if (len >= 4) {
+    if (len & 0x4) {
         crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
         len -= 4;
         text += 4;
@@ -270,13 +285,15 @@ SDL_TARGETING("sse4.2") static Uint32 calculate_crc32c_sse4_2(const char *text) 
         crc32c = (Uint32)_mm_crc32_u32(crc32c, *(Sint32*)text);
     }
 #endif
-    if (len >= 2) {
+    if (len & 0x2) {
         crc32c = (Uint32)_mm_crc32_u16(crc32c, *(Sint16*)text);
         len -= 2;
         text += 2;
     }
-    if (len) {
+    if (len & 0x1) {
         crc32c = (Uint32)_mm_crc32_u8(crc32c, *text);
+        len -= 1;
+        text += 1;
     }
     return ~crc32c;
 }

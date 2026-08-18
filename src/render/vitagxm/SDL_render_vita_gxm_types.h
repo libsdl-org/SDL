@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -105,6 +105,7 @@ typedef struct
 {
     SDL_Rect viewport;
     bool viewport_dirty;
+    bool viewport_is_set;
     SDL_Texture *texture;
     SDL_Texture *target;
     SDL_FColor color;

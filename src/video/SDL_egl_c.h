@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -118,11 +118,8 @@ typedef enum SDL_EGL_ExtensionType
 extern bool SDL_EGL_HasExtension(SDL_VideoDevice *_this, SDL_EGL_ExtensionType type, const char *ext);
 
 extern bool SDL_EGL_GetAttribute(SDL_VideoDevice *_this, SDL_GLAttr attrib, int *value);
-/* SDL_EGL_LoadLibrary can get a display for a specific platform (EGL_PLATFORM_*)
- * or, if 0 is passed, let the implementation decide.
- */
 extern bool SDL_EGL_LoadLibraryOnly(SDL_VideoDevice *_this, const char *path);
-extern bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display, EGLenum platform);
+extern bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *path, NativeDisplayType native_display);
 extern SDL_FunctionPointer SDL_EGL_GetProcAddressInternal(SDL_VideoDevice *_this, const char *proc);
 extern void SDL_EGL_UnloadLibrary(SDL_VideoDevice *_this);
 extern void SDL_EGL_SetRequiredVisualId(SDL_VideoDevice *_this, int visual_id);

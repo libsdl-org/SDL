@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -311,7 +311,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     x = (output_width - text_width) / 2;
     y = (output_height - text_height) / 2;
     SDL_SetGPURenderState(renderer, render_state);
-    RenderText("Hello World!", text_height, x, y);
+    RenderText(text, text_height, x, y);
     SDL_SetGPURenderState(renderer, NULL);
 
     SDL_RenderPresent(renderer);

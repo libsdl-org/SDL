@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,12 @@
 */
 /* NOTE: DO NOT CHANGE THIS ALGORITHM
    There is code that relies on this in the joystick code
+*/
+/* If you're looking for a faster CRC32 implementation,
+   the crc32() in zlib is a convenient option.
+
+   This is also Zlib licensed and extremely fast:
+       https://github.com/corsix/fast-crc32
 */
 
 static Uint32 crc32_for_byte(Uint32 r)

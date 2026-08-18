@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -84,8 +84,8 @@ char *SDL_FriBidi_Process(SDL_FriBidi *fribidi, char *utf8, ssize_t utf8_len, bo
     char *result;
     FriBidiStrIndex len;
     FriBidiLevel max_level;
-    FriBidiLevel start;
-    FriBidiLevel end;
+    FriBidiStrIndex start;
+    FriBidiStrIndex end;
     FriBidiParType direction;
     FriBidiParType str_direction;
     unsigned int i;

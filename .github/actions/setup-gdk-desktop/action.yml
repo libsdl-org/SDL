@@ -4,10 +4,10 @@ inputs:
   # Keep edition and ref in sync!
   edition:
     description: 'GDK edition'
-    default: '240601'  # YYMMUU (Year Month Update)
+    default: '260403'  # YYMMUU (Year Month Update)
   ref:
     description: 'Git reference'
-    default: 'June_2024_Update_1'
+    default: 'April-2026-Update-3-v2604.3.7874'
   folder:
     description: 'Folder where to create Directory.Build.props'
     required: true
@@ -30,7 +30,7 @@ runs:
         echo "cache-key=gdk-${{ inputs.ref }}-${{ inputs.edition }}" >> $Env:GITHUB_OUTPUT
     - name: 'Restore cached GDK'
       id: cache-restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: '${{ steps.calc.outputs.gdk-path }}'
         key: ${{ steps.calc.outputs.cache-key }}
@@ -58,7 +58,7 @@ runs:
           --no-user-props
     - name: 'Cache GDK'
       if: ${{ !steps.cache-restore.outputs.cache-hit }}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: '${{ steps.calc.outputs.gdk-path }}'
         key: ${{ steps.calc.outputs.cache-key }}

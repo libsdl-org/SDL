@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,14 +28,23 @@
 #define SDL_USE_LIBDBUS 1
 #include <dbus/dbus.h>
 
+#include "../../SDL_list.h"
+#include "../../SDL_menu.h"
+
 #ifndef DBUS_TIMEOUT_USE_DEFAULT
 #define DBUS_TIMEOUT_USE_DEFAULT -1
 #endif
 #ifndef DBUS_TIMEOUT_INFINITE
-#define DBUS_TIMEOUT_INFINITE ((int) 0x7fffffff)
+#define DBUS_TIMEOUT_INFINITE ((int)0x7fffffff)
 #endif
 #ifndef DBUS_TYPE_UNIX_FD
-#define DBUS_TYPE_UNIX_FD ((int) 'h')
+#define DBUS_TYPE_UNIX_FD ((int)'h')
+#endif
+#ifndef DBUS_TYPE_UNIX_FD_AS_STRING
+#define DBUS_TYPE_UNIX_FD_AS_STRING "h"
+#endif
+#ifndef DBUS_ERROR_UNKNOWN_PROPERTY
+#define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
 #endif
 
 typedef struct SDL_DBusContext
@@ -64,10 +73,12 @@ typedef struct SDL_DBusContext
     dbus_bool_t (*connection_read_write)(DBusConnection *, int);
     dbus_bool_t (*connection_read_write_dispatch)(DBusConnection *, int);
     DBusDispatchStatus (*connection_dispatch)(DBusConnection *);
+    dbus_bool_t (*type_is_fixed)(int);
     dbus_bool_t (*message_is_signal)(DBusMessage *, const char *, const char *);
     dbus_bool_t (*message_has_path)(DBusMessage *, const char *);
     DBusMessage *(*message_new_method_call)(const char *, const char *, const char *, const char *);
     DBusMessage *(*message_new_signal)(const char *, const char *, const char *);
+    void (*message_set_no_reply)(DBusMessage *, dbus_bool_t);
     dbus_bool_t (*message_append_args)(DBusMessage *, int, ...);
     dbus_bool_t (*message_append_args_valist)(DBusMessage *, int, va_list);
     void (*message_iter_init_append)(DBusMessage *, DBusMessageIter *);
@@ -93,6 +104,15 @@ typedef struct SDL_DBusContext
     void (*free_string_array)(char **);
     void (*shutdown)(void);
 
+    /* New symbols for SNI and menu export */
+    int (*bus_request_name)(DBusConnection *, const char *, unsigned int, DBusError *);
+    dbus_bool_t (*message_is_method_call)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_error)(DBusMessage *, const char *, const char *);
+    DBusMessage *(*message_new_method_return)(DBusMessage *);
+    dbus_bool_t (*message_iter_append_fixed_array)(DBusMessageIter *, int, const void *, int);
+    void (*message_iter_get_fixed_array)(DBusMessageIter *, void *, int *);
+    dbus_bool_t (*connection_unregister_object_path)(DBusConnection *, const char *);
+    dbus_bool_t (*connection_get_object_path_data)(DBusConnection *, const char *, void **);
 } SDL_DBusContext;
 
 extern void SDL_DBus_Init(void);
@@ -100,17 +120,24 @@ extern void SDL_DBus_Quit(void);
 extern SDL_DBusContext *SDL_DBus_GetContext(void);
 
 // These use the built-in Session connection.
-extern bool SDL_DBus_CallMethod(const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethod(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethod(const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryProperty(const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryProperty(DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
 
 // These use whatever connection you like.
-extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
+extern bool SDL_DBus_CallMethodOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *method, ...);
 extern bool SDL_DBus_CallVoidMethodOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *method, ...);
-extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+// save_reply must be non-NULL if it's a string property
+extern bool SDL_DBus_QueryPropertyOnConnection(DBusConnection *conn, DBusMessage **save_reply, const char *node, const char *path, const char *interface, const char *property, int expectedtype, void *result);
+
+// Used to free any reply returned from SDL_DBus_CallMethod() and SDL_DBus_QueryProperty()
+extern void SDL_DBus_FreeReply(DBusMessage **saved_reply);
 
 extern void SDL_DBus_ScreensaverTickle(void);
 extern bool SDL_DBus_ScreensaverInhibit(bool inhibit);
+
+extern bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activation_token);
 
 extern void SDL_DBus_PumpEvents(void);
 extern char *SDL_DBus_GetLocalMachineId(void);
@@ -118,6 +145,15 @@ extern char *SDL_DBus_GetLocalMachineId(void);
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
 extern int SDL_DBus_CameraPortalRequestAccess(void);
+
+// Menu export functions
+#define SDL_DBUS_UPDATE_MENU_FLAGS_NONE 0
+extern SDL_MenuItem *SDL_DBus_CreateMenuItem(void);
+extern const char *SDL_DBus_ExportMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu);
+extern void SDL_DBus_UpdateMenu(SDL_DBusContext *ctx, DBusConnection *conn, SDL_ListNode *menu, const char *path, void (*cb)(SDL_ListNode *, const char *, void *), void *cbdata, unsigned char flags);
+extern void SDL_DBus_RegisterMenuOpenCallback(SDL_ListNode *menu, bool (*cb)(SDL_ListNode *, void *), void *cbdata);
+extern void SDL_DBus_TransferMenuItemProperties(SDL_MenuItem *src, SDL_MenuItem *dst);
+extern void SDL_DBus_RetractMenu(SDL_DBusContext *ctx, DBusConnection *conn, const char **path);
 
 #endif // HAVE_DBUS_DBUS_H
 

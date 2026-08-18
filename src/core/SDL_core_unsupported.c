@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -66,6 +66,14 @@ void SDL_GDKSuspendGPU(SDL_GPUDevice *device)
 }
 
 void SDL_GDKResumeGPU(SDL_GPUDevice *device)
+{
+}
+
+void SDL_GDKSuspendRenderer(SDL_Renderer *renderer)
+{
+}
+
+void SDL_GDKResumeRenderer(SDL_Renderer *renderer)
 {
 }
 
@@ -186,4 +194,13 @@ Sint32 JNI_OnLoad(JavaVM *vm, void *reserved)
     (void)reserved;
     return 0x00010004; // JNI_VERSION_1_4
 }
+#endif
+
+#ifndef SDL_PLATFORM_LINUX
+
+bool SDL_IsUbuntuTouch(void)
+{
+    return false;
+}
+
 #endif

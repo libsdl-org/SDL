@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -194,7 +194,10 @@ typedef enum SDL_ProcessIO
  * - `SDL_PROP_PROCESS_CREATE_BACKGROUND_BOOLEAN`: true if the process should
  *   run in the background. In this case the default input and output is
  *   `SDL_PROCESS_STDIO_NULL` and the exitcode of the process is not
- *   available, and will always be 0.
+ *   available, and will always be 0. This is not required to launch a program
+ *   asynchronously, this is for detaching a child process from its parent
+ *   completely (a so-called "double fork" on Unix). Created processes run
+ *   asynchronously by default, regardless of this property.
  * - `SDL_PROP_PROCESS_CREATE_CMDLINE_STRING`: a string containing the program
  *   to run and any parameters. This string is passed directly to
  *   `CreateProcess` on Windows, and does nothing on other platforms. This

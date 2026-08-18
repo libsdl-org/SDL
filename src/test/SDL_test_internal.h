@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #define SDL_test_internal_h
 
 extern bool SDLTest_Color;
+extern bool SDLTest_Time;
 
 #define COLOR_RAW_RED       "\033[0;31m"
 #define COLOR_RAW_GREEN     "\033[0;32m"

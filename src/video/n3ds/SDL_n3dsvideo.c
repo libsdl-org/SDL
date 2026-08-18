@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
 
 #define N3DSVID_DRIVER_NAME "n3ds"
 
-static bool AddN3DSDisplay(gfxScreen_t screen);
+static SDL_DisplayID AddN3DSDisplay(gfxScreen_t screen);
 
 static bool N3DS_VideoInit(SDL_VideoDevice *_this);
 static void N3DS_VideoQuit(SDL_VideoDevice *_this);
@@ -136,14 +136,14 @@ static bool N3DS_VideoInit(SDL_VideoDevice *_this)
     return true;
 }
 
-static bool AddN3DSDisplay(gfxScreen_t screen)
+static SDL_DisplayID AddN3DSDisplay(gfxScreen_t screen)
 {
     SDL_DisplayMode mode;
     SDL_DisplayModeData *modedata;
     SDL_VideoDisplay display;
     SDL_DisplayData *display_driver_data = SDL_calloc(1, sizeof(SDL_DisplayData));
     if (!display_driver_data) {
-        return false;
+        return 0;
     }
 
     SDL_zero(mode);
@@ -153,7 +153,7 @@ static bool AddN3DSDisplay(gfxScreen_t screen)
 
     modedata = SDL_malloc(sizeof(SDL_DisplayModeData));
     if (!modedata) {
-        return false;
+        return 0;
     }
 
     mode.w = (screen == GFX_TOP) ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_BOTTOM;
@@ -167,10 +167,7 @@ static bool AddN3DSDisplay(gfxScreen_t screen)
     display.desktop_mode = mode;
     display.internal = display_driver_data;
 
-    if (SDL_AddVideoDisplay(&display, false) == 0) {
-        return false;
-    }
-    return true;
+    return SDL_AddVideoDisplay(&display, false);
 }
 
 static void N3DS_VideoQuit(SDL_VideoDevice *_this)

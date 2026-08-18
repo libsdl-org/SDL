@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F4441527-0487-4743-ACF0-435D71C8DBE8}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\input\04-gamepad-events\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\input\04-gamepad-events\gamepad-events.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

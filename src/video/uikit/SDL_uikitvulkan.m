@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -172,9 +172,7 @@ char const * const *UIKit_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, U
     static const char *const extensionsForUIKit[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if(count) {
-        *count = SDL_arraysize(extensionsForUIKit);
-    }
+    *count = SDL_arraysize(extensionsForUIKit);
     return extensionsForUIKit;
 }
 

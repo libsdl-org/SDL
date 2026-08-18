@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright , (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright , (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSharingMode, (AAudioStreamBuilder *
 SDL_PROC(void, AAudioStreamBuilder_setDirection, (AAudioStreamBuilder * builder, aaudio_direction_t direction))
 SDL_PROC(void, AAudioStreamBuilder_setBufferCapacityInFrames, (AAudioStreamBuilder * builder, int32_t numFrames))
 SDL_PROC(void, AAudioStreamBuilder_setPerformanceMode, (AAudioStreamBuilder * builder, aaudio_performance_mode_t mode))
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         // API 28
+SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setContentType, (AAudioStreamBuilder * builder, aaudio_content_type_t contentType))                      // API 28
 SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset))                      // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setAllowedCapturePolicy, (AAudioStreamBuilder * builder, aaudio_allowed_capture_policy_t capturePolicy)) // API 29

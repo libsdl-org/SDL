@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -58,6 +58,8 @@ static bool SDLCALL EmscriptenMainCallbackEventWatcher(void *userdata, SDL_Event
 
 static void EmscriptenInternalMainloop(void)
 {
+    const bool force_iterate = callback_rate_changed && iterate_after_waitevent;
+
     // callback rate changed? Update emscripten's mainloop iteration speed.
     if (callback_rate_changed) {
         callback_rate_changed = false;
@@ -70,7 +72,7 @@ static void EmscriptenInternalMainloop(void)
 
     if (iterate_after_waitevent) {
         SDL_PumpEvents();
-        if (!saw_new_event) {
+        if (!saw_new_event && !force_iterate) {
             // do nothing yet. Note that we're still going to iterate here because we can't block,
             // but we can stop the app's iteration from progressing until there's an event.
             return;
@@ -94,7 +96,9 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
             rc = SDL_APP_FAILURE;
         } else {
             SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, NULL);
-            callback_rate_changed = false;
+            if (!iterate_after_waitevent) {  // if we're doing waitevent, we need callback_rate_changed to stay true for the next iteration.
+                callback_rate_changed = false;
+            }
             emscripten_set_main_loop(EmscriptenInternalMainloop, 0, 0);  // don't throw an exception since we do an orderly return.
             if (callback_rate_increment > 0.0) {
                 emscripten_set_main_loop_timing(EM_TIMING_SETTIMEOUT, callback_rate_increment);

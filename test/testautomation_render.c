@@ -1362,6 +1362,20 @@ static int SDLCALL render_testClipRect(void *arg)
     compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
 
     /*
+     * Verify that empty cliprect clips all drawing
+     */
+
+    /* Set the cliprect and do a fill operation */
+    cliprect.h = 0;
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, &cliprect))
+    CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 0, 0, SDL_ALPHA_OPAQUE))
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL))
+    CHECK_FUNC(SDL_SetRenderClipRect, (renderer, NULL))
+
+    /* Check to see if final image matches. */
+    compare(referenceSurface, ALLOWABLE_ERROR_OPAQUE);
+
+    /*
      * Verify that clear ignores the cliprect
      */
 

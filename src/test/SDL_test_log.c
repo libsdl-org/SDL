@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,6 +31,8 @@
 
 #include <time.h> /* Needed for localtime() */
 
+bool SDLTest_Time = true;
+
 /* work around compiler warning on older GCCs. */
 #if (defined(__GNUC__) && (__GNUC__ <= 2))
 static size_t strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *tm)
@@ -60,6 +62,10 @@ static const char *SDLTest_TimestampToString(const time_t timestamp)
     static char buffer[64];
     struct tm *local;
     size_t result = 0;
+
+    if (!SDLTest_Time) {
+        return "";
+    }
 
     SDL_memset(buffer, 0, sizeof(buffer));
     copy = timestamp;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -516,11 +516,10 @@ void SDL_EVDEV_Poll(void)
 
                         if (item->mouse_wheel != 0 || item->mouse_hwheel != 0) {
                             Uint64 timestamp = SDL_EVDEV_GetEventTimestamp(event);
-                            const float denom = (item->high_res_hwheel ? 120.0f : 1.0f);
                             SDL_SendMouseWheel(timestamp,
                                                mouse->focus, (SDL_MouseID)item->fd,
-                                               item->mouse_hwheel / denom,
-                                               item->mouse_wheel / denom,
+                                               item->mouse_hwheel / (item->high_res_hwheel ? 120.0f : 1.0f),
+                                               item->mouse_wheel / (item->high_res_wheel ? 120.0f : 1.0f),
                                                SDL_MOUSEWHEEL_NORMAL);
                             item->mouse_wheel = item->mouse_hwheel = 0;
                         }

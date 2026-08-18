@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,11 @@ static bool SAVERENDERING_SDL_RenderPresent(SDL_Renderer *renderer)
     if (!surface) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Failed to read pixels for frame #%u! (%s)", framenum, SDL_GetError());
     } else {
+        SDL_Surface *cvt = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBX32);
+        if (cvt) {
+            SDL_DestroySurface(surface);
+            surface = cvt;
+        }
         char fname[64];
         SDL_snprintf(fname, sizeof (fname), "frame%05u.png", framenum);
         if (!SDL_SavePNG(surface, fname)) {

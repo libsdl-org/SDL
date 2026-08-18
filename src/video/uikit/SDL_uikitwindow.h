@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,6 +51,12 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 
 // Array of SDL_uikitviews owned by this window.
 @property(nonatomic, copy) NSMutableArray *views;
+
+#ifdef SDL_PLATFORM_VISIONOS
+// Hosting controller for curved content mode (UIHostingController-based)
+@property(nonatomic, strong) id curvedContentHosting;
+@property(nonatomic, strong) NSString *settings;
+#endif
 
 @end
 

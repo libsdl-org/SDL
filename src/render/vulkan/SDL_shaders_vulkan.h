@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,13 @@ extern "C" {
 typedef enum
 {
     SHADER_SOLID,
+    SHADER_SOLID_PQ,
     SHADER_RGB,
+    SHADER_RGB_YUV,
     SHADER_ADVANCED,
+    SHADER_ADVANCED_YUV,
+    SHADER_RGB_PQ,
+    SHADER_RGB_SIMPLE,
     NUM_SHADERS
 } VULKAN_Shader;
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -65,6 +65,8 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
     if (thread->handle < 0) {
         return SDL_SetError("sceKernelCreateThread() failed");
     }
+
+    thread->threadid = (SDL_ThreadID) thread->handle;
 
     sceKernelStartThread(thread->handle, 4, &thread);
     return true;

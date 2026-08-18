@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,10 +28,10 @@
 
 EM_JS_DEPS(sdlrunapp, "$dynCall,$stringToNewUTF8");
 
-// even though we reference the C runtime's free() in other places, it appears
-// to be inlined more aggressively in Emscripten 4, so we need a reference to
-// it here, too, so the inlined Javascript doesn't fail to find it.
-EMSCRIPTEN_KEEPALIVE void force_free(void *ptr) { free(ptr); } // This should NOT be SDL_free()
+EMSCRIPTEN_KEEPALIVE int CallSDLEmscriptenMainFunction(int argc, char *argv[], SDL_main_func mainFunction)
+{
+    return SDL_CallMainFunction(argc, argv, mainFunction);
+}
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {
@@ -51,13 +51,36 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserv
                     //console.log("Setting SDL env var '" + key + "' to '" + value + "' ...");
                     dynCall('iiii', $0, [ckey, cvalue, 1]);
                 }
-                _force_free(ckey);  // these must use free(), not SDL_free()!
-                _force_free(cvalue);
+                _Emscripten_force_free(ckey);  // these must use free(), not SDL_free()!
+                _Emscripten_force_free(cvalue);
             }
         }
     }, SDL_setenv_unsafe);
 
-    return SDL_CallMainFunction(argc, argv, mainFunction);
+    #ifdef SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING
+    MAIN_THREAD_EM_ASM({
+        const persistent_path = UTF8ToString($0);
+        const argc = $1;
+        const argv = $2;
+        const mainFunction = $3;
+        //console.log("SDL is automounting persistent storage to '" + persistent_path + "' ...please wait.");
+        FS.mkdirTree(persistent_path);
+        FS.mount(IDBFS, { autoPersist: true }, persistent_path);
+        FS.syncfs(true, function(err) {
+            if (err) {
+                console.error(`WARNING: Failed to populate persistent store at '${persistent_path}' (${err.name}: ${err.message}). Save games likely lost?`);
+            }
+            _CallSDLEmscriptenMainFunction(argc, argv, mainFunction);   // error or not, start the actual SDL_main().
+        });
+    }, SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING, argc, argv, mainFunction);
+
+    // we need to stop running code until FS.syncfs() finishes, but we need the runtime to not clean up.
+    // The actual SDL_main/SDL_AppInit() will be called when the sync is done and things will pick back up where they were.
+    emscripten_exit_with_live_runtime();
+    return 0;
+    #else
+    return CallSDLEmscriptenMainFunction(argc, argv, mainFunction);
+    #endif
 }
 
 #endif

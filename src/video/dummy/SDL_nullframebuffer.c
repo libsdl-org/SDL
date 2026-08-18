@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ bool SDL_DUMMY_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *windo
 
     // Create a new framebuffer
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    surface = SDL_CreateSurface(w, h, surface_format);
+    surface = SDL_CreateSurfaceZeroed(w, h, surface_format);
     if (!surface) {
         return false;
     }

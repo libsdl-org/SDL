@@ -44,6 +44,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     } else if (devcount == 0) {
         SDL_Log("Couldn't find any camera devices! Please connect a camera and try again.");
+        SDL_free(devices);
         return SDL_APP_FAILURE;
     }
 
