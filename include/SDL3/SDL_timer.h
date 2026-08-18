@@ -234,7 +234,9 @@ extern SDL_DECLSPEC Uint64 SDLCALL SDL_GetPerformanceCounter(void);
 /**
  * Get the count per second of the high resolution counter.
  *
- * \returns a platform-specific count per second.
+ * \returns the frequency at which the result from SDL_GetPerformanceCounter
+ *          is adjusted, measured in counts per second. This value is
+ *          platform-dependent.
  *
  * \threadsafety It is safe to call this function from any thread.
  *

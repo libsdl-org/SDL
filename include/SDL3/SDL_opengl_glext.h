@@ -36,7 +36,7 @@ extern "C" {
 #define GLAPI extern
 #endif
 
-#define GL_GLEXT_VERSION 20260609
+#define GL_GLEXT_VERSION 20260803
 
 /*#include <KHR/khrplatform.h>*/
 #ifndef __khrplatform_h_
@@ -9822,11 +9822,21 @@ GLAPI void APIENTRY glGetFramebufferParameterivMESA (GLenum target, GLenum pname
 #define GL_MESA_map_buffer_client_pointer 1
 #define GL_MAP_CLIENT_POINTER_BIT_MESA    0x4000
 #define GL_BUFFER_CLIENT_POINTER_SIZE_MESA 0x9790
+#define GL_CLIENT_POINTER_RELEASE_ALL_MESA 0x00000001
+#define GL_CLIENT_POINTER_STREAM_DRAW_MESA 0x9791
+#define GL_CLIENT_POINTER_STREAM_READ_MESA 0x9792
+#define GL_CLIENT_POINTER_STREAM_COPY_MESA 0x9793
+#define GL_CLIENT_POINTER_STATIC_DRAW_MESA 0x9794
+#define GL_CLIENT_POINTER_STATIC_READ_MESA 0x9795
+#define GL_CLIENT_POINTER_STATIC_COPY_MESA 0x9796
+#define GL_CLIENT_POINTER_DYNAMIC_DRAW_MESA 0x9797
+#define GL_CLIENT_POINTER_DYNAMIC_READ_MESA 0x9798
+#define GL_CLIENT_POINTER_DYNAMIC_COPY_MESA 0x9799
 typedef void (APIENTRYP PFNGLADDCLIENTPOINTERRANGEMESAPROC) (void *addr, GLsizeiptr size);
-typedef void* (APIENTRYP PFNGLRELEASECLIENTPOINTERRANGEMESAPROC) (GLsizeiptr *size);
+typedef void* (APIENTRYP PFNGLRELEASECLIENTPOINTERRANGEMESAPROC) (GLbitfield flags, GLsizeiptr *size);
 #ifdef GL_GLEXT_PROTOTYPES
 GLAPI void APIENTRY glAddClientPointerRangeMESA (void *addr, GLsizeiptr size);
-GLAPI void* APIENTRY glReleaseClientPointerRangeMESA (GLsizeiptr *size);
+GLAPI void* APIENTRY glReleaseClientPointerRangeMESA (GLbitfield flags, GLsizeiptr *size);
 #endif
 #endif /* GL_MESA_map_buffer_client_pointer */
 

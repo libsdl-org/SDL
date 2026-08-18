@@ -774,8 +774,8 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_ENVIRONMENT_RAYCAST_FILTER_DISTANCE_META, 1000592005) \
     _(XR_TYPE_TILE_PROPERTIES_META, 1000609000) \
     _(XR_TYPE_TILE_PROPERTIES_HINT_META, 1000609001) \
-    _(XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_REQUEST_META, 1000683000) \
-    _(XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_META, 1000683001) \
+    _(XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_REQUEST_META, 1000693000) \
+    _(XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_META, 1000693001) \
     _(XR_TYPE_LIGHT_ESTIMATOR_CREATE_INFO_ANDROID, 1000700000) \
     _(XR_TYPE_LIGHT_ESTIMATE_GET_INFO_ANDROID, 1000700001) \
     _(XR_TYPE_LIGHT_ESTIMATE_ANDROID, 1000700002) \
@@ -857,6 +857,8 @@ XR_ENUM_STR(XrResult);
     _(XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT, 1000775000) \
     _(XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT, 1000775001) \
     _(XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT, 1000775002) \
+    _(XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY, 1000776000) \
+    _(XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY, 1000776001) \
     _(XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT, 1000781000) \
     _(XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT, 1000781001) \
     _(XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT, 1000781002) \
@@ -897,18 +899,18 @@ XR_ENUM_STR(XrResult);
     _(XR_FORM_FACTOR_HANDHELD_DISPLAY, 2) \
     _(XR_FORM_FACTOR_MAX_ENUM, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrEnvironmentBlendMode(_) \
+    _(XR_ENVIRONMENT_BLEND_MODE_OPAQUE, 1) \
+    _(XR_ENVIRONMENT_BLEND_MODE_ADDITIVE, 2) \
+    _(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND, 3) \
+    _(XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrViewConfigurationType(_) \
     _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO, 1) \
     _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO, 2) \
     _(XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO_WITH_FOVEATED_INSET, 1000037000) \
     _(XR_VIEW_CONFIGURATION_TYPE_SECONDARY_MONO_FIRST_PERSON_OBSERVER_MSFT, 1000054000) \
     _(XR_VIEW_CONFIGURATION_TYPE_MAX_ENUM, 0x7FFFFFFF)
-
-#define XR_LIST_ENUM_XrEnvironmentBlendMode(_) \
-    _(XR_ENVIRONMENT_BLEND_MODE_OPAQUE, 1) \
-    _(XR_ENVIRONMENT_BLEND_MODE_ADDITIVE, 2) \
-    _(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND, 3) \
-    _(XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrReferenceSpaceType(_) \
     _(XR_REFERENCE_SPACE_TYPE_VIEW, 1) \
@@ -922,6 +924,12 @@ XR_ENUM_STR(XrResult);
     _(XR_REFERENCE_SPACE_TYPE_STATIONARY_EXT, 1000742000) \
     _(XR_REFERENCE_SPACE_TYPE_MAX_ENUM, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrEyeVisibility(_) \
+    _(XR_EYE_VISIBILITY_BOTH, 0) \
+    _(XR_EYE_VISIBILITY_LEFT, 1) \
+    _(XR_EYE_VISIBILITY_RIGHT, 2) \
+    _(XR_EYE_VISIBILITY_MAX_ENUM, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrActionType(_) \
     _(XR_ACTION_TYPE_BOOLEAN_INPUT, 1) \
     _(XR_ACTION_TYPE_FLOAT_INPUT, 2) \
@@ -929,12 +937,6 @@ XR_ENUM_STR(XrResult);
     _(XR_ACTION_TYPE_POSE_INPUT, 4) \
     _(XR_ACTION_TYPE_VIBRATION_OUTPUT, 100) \
     _(XR_ACTION_TYPE_MAX_ENUM, 0x7FFFFFFF)
-
-#define XR_LIST_ENUM_XrEyeVisibility(_) \
-    _(XR_EYE_VISIBILITY_BOTH, 0) \
-    _(XR_EYE_VISIBILITY_LEFT, 1) \
-    _(XR_EYE_VISIBILITY_RIGHT, 2) \
-    _(XR_EYE_VISIBILITY_MAX_ENUM, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrSessionState(_) \
     _(XR_SESSION_STATE_UNKNOWN, 0) \
@@ -2270,7 +2272,7 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_ENUM_XrHandTrackingDataSourceEXT(_) \
     _(XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT, 1) \
     _(XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT, 2) \
-    _(XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_WIDE_MOTION_META, 1000686000) \
+    _(XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_WIDE_MOTION_META, 1000695000) \
     _(XR_HAND_TRACKING_DATA_SOURCE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
 #define XR_LIST_ENUM_XrPlaneDetectorOrientationEXT(_) \
@@ -2793,6 +2795,20 @@ XR_ENUM_STR(XrResult);
     _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_LAST_FRAME_EXT, 3) \
     _(XR_HAPTIC_PARAMETRIC_STREAM_FRAME_TYPE_MAX_ENUM_EXT, 0x7FFFFFFF)
 
+#define XR_LIST_ENUM_XrColorSpaceSONY(_) \
+    _(XR_COLOR_SPACE_SRGB_NONLINEAR_SONY, 0) \
+    _(XR_COLOR_SPACE_DISPLAY_P3_LINEAR_SONY, 1) \
+    _(XR_COLOR_SPACE_DISPLAY_P3_NONLINEAR_SONY, 2) \
+    _(XR_COLOR_SPACE_DCI_P3_LINEAR_SONY, 3) \
+    _(XR_COLOR_SPACE_DCI_P3_NONLINEAR_SONY, 4) \
+    _(XR_COLOR_SPACE_EXTENDED_SRGB_LINEAR_SONY, 5) \
+    _(XR_COLOR_SPACE_BT709_LINEAR_SONY, 6) \
+    _(XR_COLOR_SPACE_BT709_NONLINEAR_SONY, 7) \
+    _(XR_COLOR_SPACE_BT2020_LINEAR_SONY, 8) \
+    _(XR_COLOR_SPACE_BT2020_PQ_SONY, 9) \
+    _(XR_COLOR_SPACE_BT2020_HLG_SONY, 10) \
+    _(XR_COLOR_SPACE_MAX_ENUM_SONY, 0x7FFFFFFF)
+
 #define XR_LIST_ENUM_XrSpatialObjectSemanticLabelANDROID(_) \
     _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_UNCATEGORIZED_ANDROID, 0) \
     _(XR_SPATIAL_OBJECT_SEMANTIC_LABEL_KEYBOARD_ANDROID, 1) \
@@ -2827,15 +2843,15 @@ XR_ENUM_STR(XrResult);
 
 #define XR_LIST_BITS_XrSessionCreateFlags(_)
 
-#define XR_LIST_BITS_XrSpaceVelocityFlags(_) \
-    _(XR_SPACE_VELOCITY_LINEAR_VALID_BIT, 0x00000001) \
-    _(XR_SPACE_VELOCITY_ANGULAR_VALID_BIT, 0x00000002) \
-
 #define XR_LIST_BITS_XrSpaceLocationFlags(_) \
     _(XR_SPACE_LOCATION_ORIENTATION_VALID_BIT, 0x00000001) \
     _(XR_SPACE_LOCATION_POSITION_VALID_BIT, 0x00000002) \
     _(XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT, 0x00000004) \
     _(XR_SPACE_LOCATION_POSITION_TRACKED_BIT, 0x00000008) \
+
+#define XR_LIST_BITS_XrSpaceVelocityFlags(_) \
+    _(XR_SPACE_VELOCITY_LINEAR_VALID_BIT, 0x00000001) \
+    _(XR_SPACE_VELOCITY_ANGULAR_VALID_BIT, 0x00000002) \
 
 #define XR_LIST_BITS_XrSwapchainCreateFlags(_) \
     _(XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT, 0x00000001) \
@@ -2893,13 +2909,13 @@ XR_ENUM_STR(XrResult);
 #define XR_LIST_BITS_XrCompositionLayerImageLayoutFlagsFB(_) \
     _(XR_COMPOSITION_LAYER_IMAGE_LAYOUT_VERTICAL_FLIP_BIT_FB, 0x00000001) \
 
-#define XR_LIST_BITS_XrAndroidSurfaceSwapchainFlagsFB(_) \
-    _(XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB, 0x00000001) \
-    _(XR_ANDROID_SURFACE_SWAPCHAIN_USE_TIMESTAMPS_BIT_FB, 0x00000002) \
-
 #define XR_LIST_BITS_XrCompositionLayerSecureContentFlagsFB(_) \
     _(XR_COMPOSITION_LAYER_SECURE_CONTENT_EXCLUDE_LAYER_BIT_FB, 0x00000001) \
     _(XR_COMPOSITION_LAYER_SECURE_CONTENT_REPLACE_LAYER_BIT_FB, 0x00000002) \
+
+#define XR_LIST_BITS_XrAndroidSurfaceSwapchainFlagsFB(_) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_SYNCHRONOUS_BIT_FB, 0x00000001) \
+    _(XR_ANDROID_SURFACE_SWAPCHAIN_USE_TIMESTAMPS_BIT_FB, 0x00000002) \
 
 #define XR_LIST_BITS_XrHandTrackingAimFlagsFB(_) \
     _(XR_HAND_TRACKING_AIM_COMPUTED_BIT_FB, 0x00000001) \
@@ -3171,26 +3187,18 @@ XR_ENUM_STR(XrResult);
     _(createFlags) \
     _(systemId) \
 
-/// Calls your macro with the name of each member of XrVector3f, in order.
-#define XR_LIST_STRUCT_XrVector3f(_) \
-    _(x) \
-    _(y) \
-    _(z) \
-
-/// Calls your macro with the name of each member of XrSpaceVelocity, in order.
-#define XR_LIST_STRUCT_XrSpaceVelocity(_) \
-    _(type) \
-    _(next) \
-    _(velocityFlags) \
-    _(linearVelocity) \
-    _(angularVelocity) \
-
 /// Calls your macro with the name of each member of XrQuaternionf, in order.
 #define XR_LIST_STRUCT_XrQuaternionf(_) \
     _(x) \
     _(y) \
     _(z) \
     _(w) \
+
+/// Calls your macro with the name of each member of XrVector3f, in order.
+#define XR_LIST_STRUCT_XrVector3f(_) \
+    _(x) \
+    _(y) \
+    _(z) \
 
 /// Calls your macro with the name of each member of XrPosef, in order.
 #define XR_LIST_STRUCT_XrPosef(_) \
@@ -3203,11 +3211,6 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(referenceSpaceType) \
     _(poseInReferenceSpace) \
-
-/// Calls your macro with the name of each member of XrExtent2Df, in order.
-#define XR_LIST_STRUCT_XrExtent2Df(_) \
-    _(width) \
-    _(height) \
 
 /// Calls your macro with the name of each member of XrActionSpaceCreateInfo, in order.
 #define XR_LIST_STRUCT_XrActionSpaceCreateInfo(_) \
@@ -3223,6 +3226,19 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(locationFlags) \
     _(pose) \
+
+/// Calls your macro with the name of each member of XrSpaceVelocity, in order.
+#define XR_LIST_STRUCT_XrSpaceVelocity(_) \
+    _(type) \
+    _(next) \
+    _(velocityFlags) \
+    _(linearVelocity) \
+    _(angularVelocity) \
+
+/// Calls your macro with the name of each member of XrExtent2Df, in order.
+#define XR_LIST_STRUCT_XrExtent2Df(_) \
+    _(width) \
+    _(height) \
 
 /// Calls your macro with the name of each member of XrViewConfigurationProperties, in order.
 #define XR_LIST_STRUCT_XrViewConfigurationProperties(_) \
@@ -3283,11 +3299,6 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(primaryViewConfigurationType) \
 
-/// Calls your macro with the name of each member of XrFrameWaitInfo, in order.
-#define XR_LIST_STRUCT_XrFrameWaitInfo(_) \
-    _(type) \
-    _(next) \
-
 /// Calls your macro with the name of each member of XrFrameState, in order.
 #define XR_LIST_STRUCT_XrFrameState(_) \
     _(type) \
@@ -3295,6 +3306,11 @@ XR_ENUM_STR(XrResult);
     _(predictedDisplayTime) \
     _(predictedDisplayPeriod) \
     _(shouldRender) \
+
+/// Calls your macro with the name of each member of XrFrameWaitInfo, in order.
+#define XR_LIST_STRUCT_XrFrameWaitInfo(_) \
+    _(type) \
+    _(next) \
 
 /// Calls your macro with the name of each member of XrFrameBeginInfo, in order.
 #define XR_LIST_STRUCT_XrFrameBeginInfo(_) \
@@ -3317,6 +3333,12 @@ XR_ENUM_STR(XrResult);
     _(layerCount) \
     _(layers) \
 
+/// Calls your macro with the name of each member of XrViewState, in order.
+#define XR_LIST_STRUCT_XrViewState(_) \
+    _(type) \
+    _(next) \
+    _(viewStateFlags) \
+
 /// Calls your macro with the name of each member of XrViewLocateInfo, in order.
 #define XR_LIST_STRUCT_XrViewLocateInfo(_) \
     _(type) \
@@ -3324,12 +3346,6 @@ XR_ENUM_STR(XrResult);
     _(viewConfigurationType) \
     _(displayTime) \
     _(space) \
-
-/// Calls your macro with the name of each member of XrViewState, in order.
-#define XR_LIST_STRUCT_XrViewState(_) \
-    _(type) \
-    _(next) \
-    _(viewStateFlags) \
 
 /// Calls your macro with the name of each member of XrFovf, in order.
 #define XR_LIST_STRUCT_XrFovf(_) \
@@ -3459,17 +3475,17 @@ XR_ENUM_STR(XrResult);
     _(sourcePath) \
     _(whichComponents) \
 
+/// Calls your macro with the name of each member of XrHapticBaseHeader, in order.
+#define XR_LIST_STRUCT_XrHapticBaseHeader(_) \
+    _(type) \
+    _(next) \
+
 /// Calls your macro with the name of each member of XrHapticActionInfo, in order.
 #define XR_LIST_STRUCT_XrHapticActionInfo(_) \
     _(type) \
     _(next) \
     _(action) \
     _(subactionPath) \
-
-/// Calls your macro with the name of each member of XrHapticBaseHeader, in order.
-#define XR_LIST_STRUCT_XrHapticBaseHeader(_) \
-    _(type) \
-    _(next) \
 
 /// Calls your macro with the name of each member of XrBaseInStructure, in order.
 #define XR_LIST_STRUCT_XrBaseInStructure(_) \
@@ -3622,6 +3638,16 @@ XR_ENUM_STR(XrResult);
     _(settings_file_location) \
     _(nextInfo) \
 
+/// Calls your macro with the name of each member of XrNegotiateApiLayerRequest, in order.
+#define XR_LIST_STRUCT_XrNegotiateApiLayerRequest(_) \
+    _(structType) \
+    _(structVersion) \
+    _(structSize) \
+    _(layerInterfaceVersion) \
+    _(layerApiVersion) \
+    _(getInstanceProcAddr) \
+    _(createApiLayerInstance) \
+
 /// Calls your macro with the name of each member of XrNegotiateLoaderInfo, in order.
 #define XR_LIST_STRUCT_XrNegotiateLoaderInfo(_) \
     _(structType) \
@@ -3640,16 +3666,6 @@ XR_ENUM_STR(XrResult);
     _(runtimeInterfaceVersion) \
     _(runtimeApiVersion) \
     _(getInstanceProcAddr) \
-
-/// Calls your macro with the name of each member of XrNegotiateApiLayerRequest, in order.
-#define XR_LIST_STRUCT_XrNegotiateApiLayerRequest(_) \
-    _(structType) \
-    _(structVersion) \
-    _(structSize) \
-    _(layerInterfaceVersion) \
-    _(layerApiVersion) \
-    _(getInstanceProcAddr) \
-    _(createApiLayerInstance) \
 
 /// Calls your macro with the name of each member of XrColor3f, in order.
 #define XR_LIST_STRUCT_XrColor3f(_) \
@@ -8489,6 +8505,18 @@ XR_ENUM_STR(XrResult);
     _(next) \
     _(supportsParametricHaptics) \
 
+/// Calls your macro with the name of each member of XrColorSpacesEnumerateInfoSONY, in order.
+#define XR_LIST_STRUCT_XrColorSpacesEnumerateInfoSONY(_) \
+    _(type) \
+    _(next) \
+    _(format) \
+
+/// Calls your macro with the name of each member of XrSwapchainCreateInfoColorSpaceSONY, in order.
+#define XR_LIST_STRUCT_XrSwapchainCreateInfoColorSpaceSONY(_) \
+    _(type) \
+    _(next) \
+    _(colorSpace) \
+
 /// Calls your macro with the name of each member of XrSpatialEntityPersistInfoEXT, in order.
 #define XR_LIST_STRUCT_XrSpatialEntityPersistInfoEXT(_) \
     _(type) \
@@ -8780,10 +8808,10 @@ XR_ENUM_STR(XrResult);
     _(XrSystemGetInfo, XR_TYPE_SYSTEM_GET_INFO) \
     _(XrSystemProperties, XR_TYPE_SYSTEM_PROPERTIES) \
     _(XrSessionCreateInfo, XR_TYPE_SESSION_CREATE_INFO) \
-    _(XrSpaceVelocity, XR_TYPE_SPACE_VELOCITY) \
     _(XrReferenceSpaceCreateInfo, XR_TYPE_REFERENCE_SPACE_CREATE_INFO) \
     _(XrActionSpaceCreateInfo, XR_TYPE_ACTION_SPACE_CREATE_INFO) \
     _(XrSpaceLocation, XR_TYPE_SPACE_LOCATION) \
+    _(XrSpaceVelocity, XR_TYPE_SPACE_VELOCITY) \
     _(XrViewConfigurationProperties, XR_TYPE_VIEW_CONFIGURATION_PROPERTIES) \
     _(XrViewConfigurationView, XR_TYPE_VIEW_CONFIGURATION_VIEW) \
     _(XrSwapchainCreateInfo, XR_TYPE_SWAPCHAIN_CREATE_INFO) \
@@ -8791,12 +8819,12 @@ XR_ENUM_STR(XrResult);
     _(XrSwapchainImageWaitInfo, XR_TYPE_SWAPCHAIN_IMAGE_WAIT_INFO) \
     _(XrSwapchainImageReleaseInfo, XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO) \
     _(XrSessionBeginInfo, XR_TYPE_SESSION_BEGIN_INFO) \
-    _(XrFrameWaitInfo, XR_TYPE_FRAME_WAIT_INFO) \
     _(XrFrameState, XR_TYPE_FRAME_STATE) \
+    _(XrFrameWaitInfo, XR_TYPE_FRAME_WAIT_INFO) \
     _(XrFrameBeginInfo, XR_TYPE_FRAME_BEGIN_INFO) \
     _(XrFrameEndInfo, XR_TYPE_FRAME_END_INFO) \
-    _(XrViewLocateInfo, XR_TYPE_VIEW_LOCATE_INFO) \
     _(XrViewState, XR_TYPE_VIEW_STATE) \
+    _(XrViewLocateInfo, XR_TYPE_VIEW_LOCATE_INFO) \
     _(XrView, XR_TYPE_VIEW) \
     _(XrActionSetCreateInfo, XR_TYPE_ACTION_SET_CREATE_INFO) \
     _(XrActionCreateInfo, XR_TYPE_ACTION_CREATE_INFO) \
@@ -9378,6 +9406,8 @@ XR_ENUM_STR(XrResult);
     _(XrHapticParametricPropertiesEXT, XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
     _(XrHapticParametricVibrationEXT, XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT) \
     _(XrSystemHapticParametricPropertiesEXT, XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
+    _(XrColorSpacesEnumerateInfoSONY, XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY) \
+    _(XrSwapchainCreateInfoColorSpaceSONY, XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY) \
     _(XrSpatialEntityPersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT) \
     _(XrPersistSpatialEntityCompletionEXT, XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
     _(XrSpatialEntityUnpersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT) \
@@ -9801,9 +9831,9 @@ XR_ENUM_STR(XrResult);
     _(XR_META_spatial_entity_group_sharing, 573) \
     _(XR_META_environment_raycast, 593) \
     _(XR_META_tile_properties_hint, 610) \
-    _(XR_META_hand_tracking_unextrapolated_poses, 684) \
-    _(XR_META_hand_tracking_frequency_hint, 686) \
-    _(XR_META_hand_tracking_wide_motion_mode2, 687) \
+    _(XR_META_hand_tracking_unextrapolated_poses, 694) \
+    _(XR_META_hand_tracking_frequency_hint, 695) \
+    _(XR_META_hand_tracking_wide_motion_mode2, 696) \
     _(XR_ANDROID_light_estimation, 701) \
     _(XR_ANDROID_anchor_sharing_export, 702) \
     _(XR_ANDROID_mouse_interaction, 705) \
@@ -9825,6 +9855,7 @@ XR_ENUM_STR(XrResult);
     _(XR_EXT_spatial_anchor, 763) \
     _(XR_EXT_spatial_persistence, 764) \
     _(XR_EXT_haptic_parametric, 776) \
+    _(XR_SONY_swapchain_color_space, 777) \
     _(XR_EXT_spatial_persistence_operations, 782) \
     _(XR_ANDROID_spatial_object_tracking, 786) \
     _(XR_ANDROID_spatial_discovery_raycast, 787) \
@@ -11985,6 +12016,14 @@ XR_ENUM_STR(XrResult);
 /// because it is easy to add back but impossible to remove with the preprocessor.
 #define XR_LIST_FUNCTIONS_XR_EXT_haptic_parametric(_) \
     _(HapticParametricGetPropertiesEXT, EXT_haptic_parametric) \
+
+
+/// For every function defined by XR_SONY_swapchain_color_space in this version of the spec,
+/// calls your macro with the function name and extension name.
+/// Trims the leading `xr` from the function name and the leading `XR_` from the feature name,
+/// because it is easy to add back but impossible to remove with the preprocessor.
+#define XR_LIST_FUNCTIONS_XR_SONY_swapchain_color_space(_) \
+    _(EnumerateColorSpacesSONY, SONY_swapchain_color_space) \
 
 
 /// For every function defined by XR_EXT_spatial_persistence_operations in this version of the spec,

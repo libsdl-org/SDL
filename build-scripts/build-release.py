@@ -1200,7 +1200,7 @@ class Releaser:
             shutil.rmtree(deps_path, ignore_errors=True)
             dep_roots = []
             dep_includes = []
-            for dep in self.release_info.get("dependencies"):
+            for dep in self.release_info.get("dependencies", []):
                 if "command" in self.release_info["dependencies"][dep]:
                     dep_includes.append(self.deps_path / dep / "include")
                     continue

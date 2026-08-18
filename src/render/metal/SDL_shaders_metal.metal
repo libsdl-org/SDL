@@ -337,13 +337,14 @@ fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
                                  constant ShaderConstants &c [[buffer(0)]],
                                  constant YUVDecode &decode [[buffer(1)]],
                                  texture2d<float> texY [[texture(0)]],
-                                 texture2d_array<float> texUV [[texture(1)]],
+                                 texture2d<float> texU [[texture(1)]],
+                                 texture2d<float> texV [[texture(2)]],
                                  sampler s [[sampler(0)]])
 {
     float3 yuv;
     yuv.x = texY.sample(s, vert.texcoord).r;
-    yuv.y = texUV.sample(s, vert.texcoord, 0).r;
-    yuv.z = texUV.sample(s, vert.texcoord, 1).r;
+    yuv.y = texU.sample(s, vert.texcoord).r;
+    yuv.z = texV.sample(s, vert.texcoord).r;
 
     float4 rgba;
     rgba.rgb = (yuv + decode.offset) * decode.matrix;

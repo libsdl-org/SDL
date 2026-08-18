@@ -95,6 +95,7 @@
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
 #define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
 #define USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K             0x10B8 // Wired/2.4G/Bluetooth 8K mode
+#define USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K          0x103C // Wired/2.4G/Bluetooth Tarantula 8K
 #define USB_PRODUCT_HARMONIX_WII_RB1_GUITAR               0x0004
 #define USB_PRODUCT_HARMONIX_WII_RB1_DRUMS                0x0005
 #define USB_PRODUCT_HARMONIX_WII_RB2_GUITAR               0x3010
@@ -213,6 +214,7 @@
 #define USB_PRODUCT_ZUIKI_EVOTOP_UWB_DINPUT               0X001c
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT                0X001d
 #define USB_PRODUCT_ZUIKI_EVOTOP_PC_BT                    0X0017
+#define USB_PRODUCT_ZUIKI_EVOTOP_AXIS_DINPUT              0X0020
 #define USB_PRODUCT_VOIDGAMING_PS4FIREBIRD                0x10e5
 #define USB_PRODUCT_VOIDGAMING_GENESIS_SINPUT             0x1014
 

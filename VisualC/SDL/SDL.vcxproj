@@ -114,22 +114,22 @@
     <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files %28x86%29\Microsoft DirectX SDK %28June 2010%29\Lib\x86;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)/../../src;$(ProjectDir)/../../src/core/windows;$(ProjectDir)/../../src/core/windows/gameinput;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <PreBuildEvent>
@@ -435,6 +435,7 @@
     <ClInclude Include="..\..\src\camera\SDL_camera_c.h" />
     <ClInclude Include="..\..\src\camera\SDL_syscamera.h" />
     <ClInclude Include="..\..\src\core\SDL_core_unsupported.h" />
+    <ClInclude Include="..\..\src\core\windows\gameinput\gameinput.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_gameinput.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_hid.h" />
@@ -773,13 +774,11 @@
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\core\SDL_core_unsupported.c" />
+    <ClCompile Include="..\..\src\core\windows\gameinput\gameinput.cpp">
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+    </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_gameinput.cpp">
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
-      <PrecompiledHeaderOutputFile Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName)_cpp.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_hid.c" />
     <ClCompile Include="..\..\src\core\windows\SDL_immdevice.c" />

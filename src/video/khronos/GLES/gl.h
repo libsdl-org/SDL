@@ -17,7 +17,7 @@ extern "C" {
 
 #include <GLES/glplatform.h>
 
-/* Generated on date 20260319 */
+/* Generated on date 20260803 */
 
 /* Generated C header for:
  * API: gles1

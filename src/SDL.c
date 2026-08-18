@@ -420,7 +420,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_assert(SDL_VideoThreadID == SDL_MainThreadID);
 #endif
 
-            if (!SDL_VideoInit(NULL)) {
+            if (!SDL_InitVideo(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -565,7 +565,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             }
 
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
-            if (!SDL_CameraInit(NULL)) {
+            if (!SDL_InitCamera(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -668,7 +668,7 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
     if (flags & SDL_INIT_VIDEO) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_VIDEO)) {
             SDL_QuitRender();
-            SDL_VideoQuit();
+            SDL_QuitVideo();
             SDL_VideoThreadID = 0;
             // video implies events
             SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -848,13 +848,7 @@ const char *SDL_GetPlatform(void)
 
 bool SDL_IsPhone(void)
 {
-#if defined(SDL_PLATFORM_ANDROID) || \
-    (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_VISIONOS))
-    if (!SDL_IsTablet() && !SDL_IsTV()) {
-        return true;
-    }
-#endif
-    return false;
+    return SDL_GetDeviceFormFactor() == SDL_FORMFACTOR_PHONE;
 }
 
 bool SDL_IsTablet(void)
@@ -874,7 +868,7 @@ SDL_FormFactor SDL_GetDeviceFormFactor(void)
 #elif defined(SDL_PLATFORM_ANDROID)
     return SDL_GetAndroidDeviceFormFactor();
 #elif defined(SDL_PLATFORM_IOS)
-    extern bool SDL_GetUIKitDeviceFormFactor(void);
+    extern SDL_FormFactor SDL_GetUIKitDeviceFormFactor(void);
     return SDL_GetUIKitDeviceFormFactor();
 #elif defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES) || defined(SDL_PLATFORM_PS2)
     return SDL_FORMFACTOR_CONSOLE;

@@ -3392,7 +3392,8 @@ bool SDL_IsJoystickGameSirController(Uint16 vendor_id, Uint16 product_id)
         return false;
     }
 
-    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K);
+    return (product_id == USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K ||
+            product_id == USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K);
 }
 
 bool SDL_IsJoystickSteamDeck(Uint16 vendor_id, Uint16 product_id)
