@@ -42,8 +42,9 @@
 #include "../SDL_sysgpu.h"
 #include "webgpu.h"
 
-#define WINDOW_PROPERTY_DATA     "SDL.internal.gpu.webgpu.data"
-#define DEFAULT_BINDGROUP_EXPIRY 10000
+#define WINDOW_PROPERTY_DATA                           "SDL.internal.gpu.webgpu.data"
+#define DEFAULT_BINDGROUP_EXPIRY                       10000
+#define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
 
 // map states
 #define MAP_STATE_UNMAPPED 0
@@ -2647,6 +2648,7 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
             WebGPUQueuedDestroy *current = renderer->queuedDestroys[i];
 
             int currentRefCount = 0;
+            bool forciblyDestroy = false;
             bool wasReleased = false;
 
             if (current == NULL) {
@@ -2655,6 +2657,11 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
 
             if (current->destroysAttempted >= 100 && current->destroysAttempted % 100 == 0) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Queued destroy has been attempted %i times!", current->destroysAttempted);
+            }
+
+            if (current->destroysAttempted >= FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Queued destroy has been attempted %i times! Forcibly destroying.", current->destroysAttempted);
+                forciblyDestroy = true;
             }
 
             switch (current->type) {
@@ -2668,21 +2675,21 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                     currentRefCount += refCount;
                 }
 
-                if (currentRefCount == 0) {
+                if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseTextureContainer(renderer, current->resource.textureContainer);
                     wasReleased = true;
                 }
                 break;
             case WEBGPU_QUEUED_DESTROY_TEXTURE:
                 currentRefCount = SDL_GetAtomicInt(&current->resource.texture->referenceCount);
-                if (currentRefCount == 0) {
+                if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseTexture(renderer, current->resource.texture);
                     wasReleased = true;
                 }
                 break;
             case WEBGPU_QUEUED_DESTROY_SAMPLER:
                 currentRefCount = current->resource.sampler->numDependants;
-                if (currentRefCount == 0) {
+                if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseSampler(renderer, current->resource.sampler);
                     wasReleased = true;
                 }
@@ -2693,14 +2700,14 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                     int refCount = SDL_GetAtomicInt(&current->resource.bufferContainer->buffers[j]->referenceCount);
                     currentRefCount += refCount;
                 }
-                if (currentRefCount == 0) {
+                if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, current->resource.bufferContainer);
                     wasReleased = true;
                 }
                 break;
             case WEBGPU_QUEUED_DESTROY_BUFFER:
                 currentRefCount = SDL_GetAtomicInt(&current->resource.buffer->referenceCount);
-                if (currentRefCount == 0) {
+                if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseBuffer(renderer, current->resource.buffer);
                     wasReleased = true;
                 }
