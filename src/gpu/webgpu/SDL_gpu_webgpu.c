@@ -667,110 +667,6 @@ static WGPUStorageTextureAccess WGSLStorageTextureAccessIdentifiersIndexWowISuck
     WGPUStorageTextureAccess_ReadOnly,
 };
 
-static const char *WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(WGPUTextureFormat format)
-{
-    switch (format) {
-    case WGPUTextureFormat_RGBA8Unorm:
-        return "rgba8unorm";
-    case WGPUTextureFormat_RGBA8Snorm:
-        return "rgba8snorm";
-    case WGPUTextureFormat_RGBA8Uint:
-        return "rgba8uint";
-    case WGPUTextureFormat_RGBA8Sint:
-        return "rgba8sint";
-    case WGPUTextureFormat_RGBA16Unorm:
-        return "rgba16unorm";
-    case WGPUTextureFormat_RGBA16Snorm:
-        return "rgba16snorm";
-    case WGPUTextureFormat_RGBA16Uint:
-        return "rgba16uint";
-    case WGPUTextureFormat_RGBA16Sint:
-        return "rgba16sint";
-    case WGPUTextureFormat_RGBA16Float:
-        return "rgba16float";
-    case WGPUTextureFormat_RG8Unorm:
-        return "rg8unorm";
-    case WGPUTextureFormat_RG8Snorm:
-        return "rg8snorm";
-    case WGPUTextureFormat_RG8Uint:
-        return "rg8uint";
-    case WGPUTextureFormat_RG8Sint:
-        return "rg8sint";
-    case WGPUTextureFormat_RG16Unorm:
-        return "rg16unorm";
-    case WGPUTextureFormat_RG16Snorm:
-        return "rg16snorm";
-    case WGPUTextureFormat_RG16Uint:
-        return "rg16uint";
-    case WGPUTextureFormat_RG16Sint:
-        return "rg16sint";
-    case WGPUTextureFormat_RG16Float:
-        return "rg16float";
-    case WGPUTextureFormat_R32Uint:
-        return "r32uint";
-    case WGPUTextureFormat_R32Sint:
-        return "r32sint";
-    case WGPUTextureFormat_R32Float:
-        return "r32float";
-    case WGPUTextureFormat_RG32Uint:
-        return "rg32uint";
-    case WGPUTextureFormat_RG32Sint:
-        return "rg32sint";
-    case WGPUTextureFormat_RG32Float:
-        return "rg32float";
-    case WGPUTextureFormat_RGBA32Uint:
-        return "rgba32uint";
-    case WGPUTextureFormat_RGBA32Sint:
-        return "rgba32sint";
-    case WGPUTextureFormat_RGBA32Float:
-        return "rgba32float";
-    case WGPUTextureFormat_BGRA8Unorm:
-        return "bgra8unorm";
-    case WGPUTextureFormat_R8Unorm:
-        return "r8unorm";
-    case WGPUTextureFormat_R8Snorm:
-        return "r8snorm";
-    case WGPUTextureFormat_R8Uint:
-        return "r8uint";
-    case WGPUTextureFormat_R8Sint:
-        return "r8sint";
-    case WGPUTextureFormat_R16Unorm:
-        return "r16unorm";
-    case WGPUTextureFormat_R16Snorm:
-        return "r16snorm";
-    case WGPUTextureFormat_R16Uint:
-        return "r16uint";
-    case WGPUTextureFormat_R16Sint:
-        return "r16sint";
-    case WGPUTextureFormat_R16Float:
-        return "r16float";
-    case WGPUTextureFormat_RGB10A2Unorm:
-        return "rgb10a2unorm";
-    case WGPUTextureFormat_RGB10A2Uint:
-        return "rgb10a2uint";
-    case WGPUTextureFormat_RG11B10Ufloat:
-        return "rg11b10ufloat";
-    default:
-        return NULL;
-    }
-}
-
-const char *mipmapComp = "\n\
-@group(0) @binding(0) var lastMip: texture_2d<f32>;\n\
-@group(1) @binding(0) var generatedMip: texture_storage_2d<%s, write>;\n\
-@compute @workgroup_size(8, 8, 1)\n\
-fn main(@builtin(global_invocation_id) id: vec3<u32>) {\n\
-    let lastDimensions = textureDimensions(lastMip);\n\
-    let genDimensions = textureDimensions(generatedMip);\n\
-    let ratio = lastDimensions.x / genDimensions.x;\n\
-    let offset = vec2<u32>(0, ratio - 1);\n\
-    let averageColour = (textureLoad(lastMip, ratio * id.xy + offset.xx, 0) +\n\
-        textureLoad(lastMip, ratio * id.xy + offset.xy, 0) +\n\
-        textureLoad(lastMip, ratio * id.xy + offset.yx, 0) +\n\
-        textureLoad(lastMip, ratio * id.xy + offset.yy, 0)) * 0.25;\n\
-    textureStore(generatedMip, id.xy, averageColour);\n\
-}";
-
 // Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
 // Thank you very much, I hate writing shaders. -- TheStickmahn
 // https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
@@ -1096,7 +992,6 @@ typedef struct WebGPURenderer
 
     SDL_PropertiesID props;
     SDL_PropertiesID bindGroups; // Cache of the renderer's bind groups.
-    SDL_PropertiesID mipmapPipelines;
 
     SDL_Mutex *queryingFenceLock;
     SDL_Mutex *destroyingSelfLock;
@@ -1288,7 +1183,6 @@ struct WebGPUTexture
     WGPUTextureAspect aspect;
     WebGPUTextureView *fullTextureView;
     WebGPUTextureView **textureViews;
-    WebGPUTextureView **mipLevelViews;
 
     SDL_GPUTextureType type;
     SDL_GPUTextureFormat format;
@@ -1296,9 +1190,6 @@ struct WebGPUTexture
 
     Uint32 textureViewCount;
     Uint32 textureViewCapacity;
-
-    Uint32 mipLevelViewCount;
-    Uint32 mipLevelViewCapacity;
 
     bool markedForDestroy;  // so that defrag doesn't double-free
     bool externallyManaged; // true for XR swapchain images
@@ -1484,14 +1375,6 @@ typedef struct WebGPUComputePipeline
 
 } WebGPUComputePipeline;
 
-typedef struct WebGPUMipmapPipeline
-{
-    WGPUShaderModule mipmapComputeShader;
-    WGPUComputePipeline pipeline;
-
-    WebGPUComputeShaderBindGroupLayouts *bindGroupLayouts;
-} WebGPUMipmapPipeline;
-
 typedef struct WebGPUOffsetBufferBinding
 {
     WebGPUBuffer *buffer;
@@ -1619,6 +1502,11 @@ WEBGPU_INTERNAL_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType 
     }
 }
 
+static inline Uint32 WEBGPU_INTERNAL_GetTextureViewIndex(Uint32 layer, Uint32 level, Uint32 numMips)
+{
+    return (layer * numMips) + level;
+}
+
 static SDL_PropertiesID WEBGPU_GetDeviceProperties(
     SDL_GPUDevice *device)
 {
@@ -1717,19 +1605,19 @@ static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *rend
     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
 }
 
-static void WEBGPU_INTERNAL_QueueTextureForRelease(WebGPURenderer *renderer, WebGPUTexture *texture)
-{
-    WebGPUQueuedDestroy *destroy = NULL;
-    if (texture == NULL) {
-        return;
-    }
-
-    destroy = SDL_calloc(1, sizeof(*destroy));
-    destroy->type = WEBGPU_QUEUED_DESTROY_TEXTURE;
-    destroy->resource.texture = texture;
-
-    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
-}
+// static void WEBGPU_INTERNAL_QueueTextureForRelease(WebGPURenderer *renderer, WebGPUTexture *texture)
+// {
+//     WebGPUQueuedDestroy *destroy = NULL;
+//     if (texture == NULL) {
+//         return;
+//     }
+//
+//     destroy = SDL_calloc(1, sizeof(*destroy));
+//     destroy->type = WEBGPU_QUEUED_DESTROY_TEXTURE;
+//     destroy->resource.texture = texture;
+//
+//     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+// }
 
 static void WEBGPU_INTERNAL_QueueSamplerForRelease(WebGPURenderer *renderer, WebGPUSampler *sampler)
 {
@@ -3317,8 +3205,6 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
     }
 
     WGPUTextureViewDescriptor desc = {
-        .baseMipLevel = mipLevel,
-        .mipLevelCount = SDL_min(mipLevelCount, 1),
         .aspect = texture->aspect,
         .dimension = dimension,
         .format = format,
@@ -3331,9 +3217,12 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
         desc.arrayLayerCount = dimension == WGPUTextureViewDimension_2D || dimension == WGPUTextureViewDimension_3D ? 1 : arrayLayerCount;
         desc.baseArrayLayer = 0;
         desc.mipLevelCount = mipLevelCount;
+        desc.baseMipLevel = 0;
     } else {
         desc.arrayLayerCount = 1;
         desc.baseArrayLayer = depth;
+        desc.mipLevelCount = 1;
+        desc.baseMipLevel = mipLevel;
     }
 
     result = SDL_calloc(1, sizeof(*result));
@@ -3426,18 +3315,13 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
                                                texture->textureViewCount, WebGPUTextureView *, textureView);
     } else {
         for (int i = 0; i < desc.size.depthOrArrayLayers; i++) {
-            WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, i, 0);
+            for (int j = 0; j < desc.mipLevelCount; j++) {
+                WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, i, j);
 
-            WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
-                                                   texture->textureViewCount, WebGPUTextureView *, textureView);
+                WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
+                                                       texture->textureViewCount, WebGPUTextureView *, textureView);
+            }
         }
-    }
-
-    for (int i = 0; i < createInfo->num_levels; i++) {
-        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, i);
-
-        WEBGPU_INTERNAL_InsertElementIntoArray(texture->mipLevelViews, texture->mipLevelViewCapacity,
-                                               texture->mipLevelViewCount, WebGPUTextureView *, textureView);
     }
 
     return texture;
@@ -3915,9 +3799,9 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     pipeline->vertexBindGroupLayouts = *vertexShader->bindGroupLayouts;
     pipeline->fragmentBindGroupLayouts = *fragmentShader->bindGroupLayouts;
 
-    for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
-        SDL_free((void *)colorTargets[i].blend);
-    }
+    // for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
+    //     SDL_free((void *)colorTargets[i].blend);
+    // }
 
     for (int i = 0; i < createInfo->vertex_input_state.num_vertex_buffers; i++) {
         SDL_free((void *)vertexBufferLayouts[i].attributes);
@@ -4147,31 +4031,6 @@ static void WEBGPU_INTERNAL_ReleaseBlitResources(WebGPURenderer *renderer)
     }
 }
 
-static void WEBGPU_INTERNAL_MipmapPipelineEnumeratorCallback(void *userdata, SDL_PropertiesID props, const char *name)
-{
-    WebGPUMipmapPipeline *pipeline = SDL_GetPointerProperty(props, name, NULL);
-    if (pipeline) {
-        wgpuComputePipelineRelease(pipeline->pipeline);
-        wgpuShaderModuleRelease(pipeline->mipmapComputeShader);
-
-        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts->samplerStorageBindGroupLayout);
-        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts->readWriteStorageBindGroupLayout);
-        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts->uniformBindGroupLayout);
-
-        SDL_free(pipeline->bindGroupLayouts->readWriteStorageEntries);
-        SDL_free(pipeline->bindGroupLayouts->samplerStorageEntries);
-        SDL_free(pipeline->bindGroupLayouts->uniformEntries);
-        SDL_free(pipeline->bindGroupLayouts);
-        SDL_free(pipeline);
-    }
-}
-
-static void WEBGPU_INTERNAL_ReleaseMipmapPipelines(WebGPURenderer *renderer)
-{
-    SDL_EnumerateProperties(renderer->mipmapPipelines, WEBGPU_INTERNAL_MipmapPipelineEnumeratorCallback, renderer);
-    SDL_DestroyProperties(renderer->mipmapPipelines);
-}
-
 static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, Uint64 size, SDL_GPUBufferUsageFlags usageFlags, WebGPUBufferType bufferType, const char *debugName)
 {
     WGPUBufferUsage usages = 0;
@@ -4320,15 +4179,10 @@ static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTextu
         WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->textureViews[i]);
     }
 
-    for (int i = 0; i < texture->mipLevelViewCount; i++) {
-        WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->mipLevelViews[i]);
-    }
-
     WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->fullTextureView);
 
     wgpuTextureRelease(texture->texture);
     SDL_free(texture->textureViews);
-    SDL_free(texture->mipLevelViews);
     SDL_free(texture);
     texture = NULL;
 }
@@ -4422,87 +4276,8 @@ static void WEBGPU_INTERNAL_CycleTextureContainer(WebGPURenderer *renderer, WebG
 finish:
     return;
 }
-
-static WebGPUMipmapPipeline *WEBGPU_INTERNAL_CreateMipmapPipelineForFormat(WebGPURenderer *renderer, WGPUTextureFormat format)
-{
-    WGPUShaderModule module;
-    WGPUComputePipeline computePipeline;
-    WebGPUMipmapPipeline *pipeline;
-    char *jankHorribleHack = SDL_calloc(SDL_strlen(mipmapComp) * 2, sizeof(char));
-
-    SDL_snprintf(jankHorribleHack, SDL_strlen(mipmapComp) * 2, mipmapComp, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format));
-
-    WGPUShaderSourceWGSL source = {
-        .code = { jankHorribleHack, SDL_strlen(jankHorribleHack) },
-        .chain = {
-            .next = NULL,
-            .sType = WGPUSType_ShaderSourceWGSL,
-        },
-    };
-    // TODO: Change shader code based on texture type and dimension
-    WGPUShaderModuleDescriptor moduleDesc = {
-        .label = NULL,
-        .nextInChain = &source.chain,
-    };
-
-    module = wgpuDeviceCreateShaderModule(renderer->device, &moduleDesc);
-
-    WGPUPipelineLayout layout;
-    WebGPUComputeShaderBindGroupLayouts *bindGroupLayouts = WEBGPU_INTERNAL_GenerateBindGroupLayoutsForComputeShader(jankHorribleHack, renderer);
-    WGPUBindGroupLayout *pipelineBindGroupLayouts = SDL_calloc(3, sizeof(WGPUBindGroupLayout));
-
-    pipelineBindGroupLayouts[0] = bindGroupLayouts->samplerStorageBindGroupLayout;
-    pipelineBindGroupLayouts[1] = bindGroupLayouts->readWriteStorageBindGroupLayout;
-    pipelineBindGroupLayouts[2] = bindGroupLayouts->uniformBindGroupLayout;
-
-    WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {
-        .bindGroupLayoutCount = 3,
-        .bindGroupLayouts = pipelineBindGroupLayouts,
-        .immediateSize = 0,
-        .label = WGPU_STRING_VIEW_INIT,
-        .nextInChain = NULL,
-    };
-
-    layout = wgpuDeviceCreatePipelineLayout(renderer->device, &pipelineLayoutDesc);
-
-    WGPUComputePipelineDescriptor pipelineDesc = {
-        .compute = (WGPUComputeState){
-            .constantCount = 0,
-            .constants = NULL,
-            .entryPoint = { "main", 4 },
-            .module = module,
-            .nextInChain = NULL,
-        },
-        .layout = layout,
-        .label = WGPU_STRING_VIEW_INIT,
-        .nextInChain = NULL,
-    };
-
-    computePipeline = wgpuDeviceCreateComputePipeline(renderer->device, &pipelineDesc);
-
-    pipeline = SDL_calloc(1, sizeof(*pipeline));
-    pipeline->pipeline = computePipeline;
-    pipeline->mipmapComputeShader = module;
-    pipeline->bindGroupLayouts = bindGroupLayouts;
-
-    SDL_SetPointerProperty(renderer->mipmapPipelines, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format), pipeline);
-
-    SDL_free(pipelineBindGroupLayouts);
-    SDL_free(jankHorribleHack);
-    return pipeline;
-}
-
-static WebGPUMipmapPipeline *WEBGPU_INTERNAL_GetMipmapPipeline(WebGPURenderer *renderer, WGPUTextureFormat format)
-{
-    WebGPUMipmapPipeline *pipeline = SDL_GetPointerProperty(renderer->mipmapPipelines, WEBGPU_INTERNAL_WebGPUTextureFormatToWGSLQualifier(format), NULL);
-
-    if (pipeline == NULL) {
-        pipeline = WEBGPU_INTERNAL_CreateMipmapPipelineForFormat(renderer, format);
-    }
-
-    return pipeline;
-}
-
+static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info);
+static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureLocation *source, const SDL_GPUTextureLocation *destination, Uint32 w, Uint32 h, Uint32 d, bool cycle);
 static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *_texture)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
@@ -4513,98 +4288,64 @@ static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUT
         return;
     }
 
-    WebGPUMipmapPipeline *pipeline = WEBGPU_INTERNAL_GetMipmapPipeline(cmdBuf->renderer, SDLToWebGPU_TextureFormat[texture->format]);
-    WGPUComputePassEncoder pass = wgpuCommandEncoderBeginComputePass(cmdBuf->encoder, &WGPU_COMPUTE_PASS_DESCRIPTOR_INIT);
-
-    WebGPUTexture *storageTexture = WEBGPU_INTERNAL_CreateTexture(cmdBuf->renderer, &(SDL_GPUTextureCreateInfo){
-                                                                                        .format = texture->format,
-                                                                                        .height = wgpuTextureGetHeight(texture->texture),
-                                                                                        .width = wgpuTextureGetWidth(texture->texture),
-                                                                                        .layer_count_or_depth = 1,
-                                                                                        .type = texture->type,
-                                                                                        .num_levels = texture->mipLevelViewCount,
-                                                                                        .usage = SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE,
-                                                                                    });
-    wgpuComputePassEncoderSetPipeline(pass, pipeline->pipeline);
-
-    WGPUBindGroup bindGroup0 = wgpuDeviceCreateBindGroup(cmdBuf->device, &(WGPUBindGroupDescriptor){
-                                                                             .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = texture->fullTextureView->view, .nextInChain = NULL },
-                                                                             .entryCount = 1,
-                                                                             .nextInChain = NULL,
-                                                                             .label = WGPU_STRING_VIEW_INIT,
-                                                                             .layout = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout,
-                                                                         });
-
-    Uint32 offsets[4] = { 0 };
-    wgpuComputePassEncoderSetBindGroup(pass, 2, cmdBuf->renderer->uniformBufferBindGroups[2], 4, offsets);
-
+    SDL_GPUTexture *renderTexture = WEBGPU_CreateTexture((SDL_GPURenderer *)cmdBuf->renderer, &(SDL_GPUTextureCreateInfo){
+                                                                                                  .format = texture->format,
+                                                                                                  .height = wgpuTextureGetHeight(texture->texture),
+                                                                                                  .width = wgpuTextureGetWidth(texture->texture),
+                                                                                                  .layer_count_or_depth = wgpuTextureGetDepthOrArrayLayers(texture->texture),
+                                                                                                  .type = texture->type,
+                                                                                                  .num_levels = wgpuTextureGetMipLevelCount(texture->texture),
+                                                                                                  .usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
+                                                                                              });
     Uint32 currentSizeX = wgpuTextureGetWidth(texture->texture);
     Uint32 currentSizeY = wgpuTextureGetHeight(texture->texture);
-    for (int i = 0; i < texture->mipLevelViewCount; i++) {
-        if (i > 0) {
-            bindGroup0 = wgpuDeviceCreateBindGroup(cmdBuf->device, &(WGPUBindGroupDescriptor){
-                                                                       .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = storageTexture->mipLevelViews[i - 1]->view, .nextInChain = NULL },
-                                                                       .entryCount = 1,
-                                                                       .nextInChain = NULL,
-                                                                       .label = WGPU_STRING_VIEW_INIT,
-                                                                       .layout = pipeline->bindGroupLayouts->samplerStorageBindGroupLayout,
-                                                                   });
+    for (int i = 0; i < wgpuTextureGetDepthOrArrayLayers(texture->texture); i++) {
+        for (int j = 1; j < wgpuTextureGetMipLevelCount(texture->texture); j++) {
+            SDL_GPUBlitRegion source = {
+                .texture = _texture,
+                .layer_or_depth_plane = i,
+                .mip_level = j - 1,
+                .w = currentSizeX,
+                .h = currentSizeY,
+            };
+
+            currentSizeX /= 2;
+            currentSizeY /= 2;
+
+            SDL_GPUBlitRegion destination = {
+                .texture = renderTexture,
+                .layer_or_depth_plane = i,
+                .mip_level = j,
+                .w = currentSizeX,
+                .h = currentSizeY,
+            };
+
+            WEBGPU_Blit(commandBuffer, &(SDL_GPUBlitInfo){
+                                           .filter = SDL_GPU_FILTER_LINEAR,
+                                           .load_op = SDL_GPU_LOADOP_DONT_CARE,
+                                           .source = source,
+                                           .destination = destination,
+                                       });
+
+            WEBGPU_BeginCopyPass(commandBuffer);
+            WEBGPU_CopyTextureToTexture(
+                commandBuffer,
+                &(SDL_GPUTextureLocation){
+                    .texture = renderTexture,
+                    .layer = i,
+                    .mip_level = j,
+                },
+                &(SDL_GPUTextureLocation){
+                    .texture = _texture,
+                    .layer = i,
+                    .mip_level = j,
+                },
+                currentSizeX, currentSizeY, 1, false);
+            WEBGPU_EndCopyPass(commandBuffer);
         }
-
-        WGPUBindGroup bindGroup1 =
-            wgpuDeviceCreateBindGroup(cmdBuf->device,
-                                      &(WGPUBindGroupDescriptor){
-                                          .entries = &(WGPUBindGroupEntry){ .binding = 0, .textureView = storageTexture->mipLevelViews[i]->view, .nextInChain = NULL },
-                                          .entryCount = 1,
-                                          .nextInChain = NULL,
-                                          .label = WGPU_STRING_VIEW_INIT,
-                                          .layout = pipeline->bindGroupLayouts->readWriteStorageBindGroupLayout,
-                                      });
-
-        wgpuComputePassEncoderSetBindGroup(pass, 0, bindGroup0, 0, NULL);
-        wgpuComputePassEncoderSetBindGroup(pass, 1, bindGroup1, 0, NULL);
-
-        wgpuComputePassEncoderDispatchWorkgroups(pass, currentSizeX / 8, currentSizeY / 8, 1);
-        currentSizeX /= 2;
-        currentSizeY /= 2;
-
-        wgpuBindGroupRelease(bindGroup0);
-        wgpuBindGroupRelease(bindGroup1);
     }
 
-    wgpuComputePassEncoderEnd(pass);
-
-    currentSizeX = wgpuTextureGetWidth(texture->texture);
-    currentSizeY = wgpuTextureGetHeight(texture->texture);
-    for (int i = 0; i < texture->mipLevelViewCount; i++) {
-        wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder,
-                                               &(WGPUTexelCopyTextureInfo){
-                                                   .mipLevel = i,
-                                                   .texture = storageTexture->texture,
-                                                   .aspect = storageTexture->aspect,
-                                                   .origin = WGPU_ORIGIN_3D_INIT,
-                                               },
-                                               &(WGPUTexelCopyTextureInfo){
-                                                   .mipLevel = i,
-                                                   .texture = texture->texture,
-                                                   .aspect = texture->aspect,
-                                                   .origin = WGPU_ORIGIN_3D_INIT,
-                                               },
-                                               &(WGPUExtent3D){
-                                                   .width = currentSizeX,
-                                                   .height = currentSizeY,
-                                                   .depthOrArrayLayers = 1,
-                                               });
-        currentSizeX /= 2;
-        currentSizeY /= 2;
-    }
-
-    // Add the storage texture to the command buffer's usedTextures array since we can't destoy it instantly
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                           WebGPUTexture *, storageTexture);
-
-    SDL_AtomicIncRef(&storageTexture->referenceCount);
-    WEBGPU_INTERNAL_QueueTextureForRelease(cmdBuf->renderer, storageTexture);
+    WEBGPU_INTERNAL_ReleaseTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)renderTexture);
 }
 
 static SDL_GPUBuffer *WEBGPU_CreateBuffer(
@@ -4994,28 +4735,39 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
     colorAttachments = (WGPURenderPassColorAttachment *)SDL_calloc(numColorTargets, sizeof(*colorAttachments));
 
     for (int i = 0; i < numColorTargets; i++) {
+        WebGPUTexture *texture = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture;
         colorAttachments[i].clearValue.a = colorTargetInfos[i].clear_color.a;
         colorAttachments[i].clearValue.r = colorTargetInfos[i].clear_color.r;
         colorAttachments[i].clearValue.g = colorTargetInfos[i].clear_color.g;
         colorAttachments[i].clearValue.b = colorTargetInfos[i].clear_color.b;
         colorAttachments[i].loadOp = SDLToWebGPU_LoadOp[colorTargetInfos[i].load_op];
         colorAttachments[i].storeOp = SDLToWebGPU_StoreOp[colorTargetInfos[i].store_op];
-        colorAttachments[i].depthSlice = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : WGPU_DEPTH_SLICE_UNDEFINED;
+        colorAttachments[i].depthSlice = texture->type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : WGPU_DEPTH_SLICE_UNDEFINED;
 
         switch (((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->type) {
-        case SDL_GPU_TEXTURETYPE_2D:
         case SDL_GPU_TEXTURETYPE_3D:
-            colorAttachments[i].view = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->fullTextureView->view;
+            colorAttachments[i].view = texture->fullTextureView->view;
             break;
+        case SDL_GPU_TEXTURETYPE_2D:
         case SDL_GPU_TEXTURETYPE_2D_ARRAY:
         case SDL_GPU_TEXTURETYPE_CUBE:
         case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
-            colorAttachments[i].view = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->textureViews[colorTargetInfos[i].layer_or_depth_plane]->view;
+            colorAttachments[i].view = texture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
+                                                                 colorTargetInfos[i].layer_or_depth_plane,
+                                                                 colorTargetInfos[i].mip_level,
+                                                                 wgpuTextureGetMipLevelCount(texture->texture))]
+                                           ->view;
             break;
         }
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
-            colorAttachments[i].resolveTarget = ((WebGPUTextureContainer *)colorTargetInfos[i].resolve_texture)->activeTexture->textureViews[colorTargetInfos[i].resolve_layer]->view;
+            WebGPUTexture *resolveTexture = ((WebGPUTextureContainer *)colorTargetInfos[i].resolve_texture)->activeTexture;
+
+            colorAttachments[i].view = resolveTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
+                                                                        colorTargetInfos[i].resolve_layer,
+                                                                        colorTargetInfos[i].resolve_mip_level,
+                                                                        wgpuTextureGetMipLevelCount(resolveTexture->texture))]
+                                           ->view;
         }
     }
 
@@ -5029,7 +4781,8 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
         depthStencilAttachment->stencilClearValue = IsStencilFormat(textureFormat) ? depthStencilTargetInfo->clear_stencil : 0;
         depthStencilAttachment->stencilLoadOp = IsStencilFormat(textureFormat) ? SDLToWebGPU_LoadOp[depthStencilTargetInfo->stencil_load_op] : WGPULoadOp_Undefined;
         depthStencilAttachment->stencilStoreOp = IsStencilFormat(textureFormat) ? SDLToWebGPU_StoreOp[depthStencilTargetInfo->stencil_store_op] : WGPUStoreOp_Undefined;
-        depthStencilAttachment->view = ((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->activeTexture->textureViews[depthStencilTargetInfo->layer]->view;
+        depthStencilAttachment->view =
+            ((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->activeTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(depthStencilTargetInfo->layer, depthStencilTargetInfo->mip_level, wgpuTextureGetMipLevelCount(((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->activeTexture->texture))]->view;
     }
 
     desc.colorAttachments = colorAttachments;
@@ -5818,7 +5571,6 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     }
 
     WEBGPU_INTERNAL_ReleaseBlitResources(renderer);
-    WEBGPU_INTERNAL_ReleaseMipmapPipelines(renderer);
     WEBGPU_INTERNAL_TrimBindGroupCache(renderer);
 
     while (renderer->queuedDestroyCount > 0 || renderer->submittedCommandBufferCount > 0) {
@@ -5839,7 +5591,6 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
 
     SDL_DestroyProperties(renderer->props);
     SDL_DestroyProperties(renderer->bindGroups);
-    SDL_DestroyProperties(renderer->mipmapPipelines);
     SDL_UnlockMutex(renderer->destroyingSelfLock);
     SDL_DestroyMutex(renderer->destroyingSelfLock);
     SDL_free(renderer->blitPipelines);
@@ -6394,7 +6145,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
     renderer->bindGroups = SDL_CreateProperties();
-    renderer->mipmapPipelines = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
     renderer->maxFramesInFlight = 2; // Default
 
