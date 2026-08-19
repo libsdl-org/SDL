@@ -27,7 +27,7 @@
 #include "../SDL_sysvideo.h"
 
 #include <rsx/gcm_sys.h>
-#include <sysutil/video_out.h>
+#include <sysutil/video.h>
 
 #ifndef CELL_OK
 #define CELL_OK 0
@@ -91,7 +91,7 @@ typedef struct SDL_VideoData
 
 typedef struct SDL_DisplayModeData
 {
-    videoOutConfiguration vconfig;
+    videoConfiguration vconfig;
 } PS3_DisplayModeData;
 
 typedef struct SDL_WindowData
@@ -100,5 +100,3 @@ typedef struct SDL_WindowData
 } SDL_WindowData;
 
 #endif // _SDL_PS3video_h
-
-/* vi: set ts=4 sw=4 expandtab: */

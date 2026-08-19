@@ -897,7 +897,6 @@ static void PS3_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
-    // TODO: Wait for the DMA transfer to complete
     rsxFinish(data->context, 1);
     rsxFree(surface->pixels);
     SDL_DestroySurface(surface);
@@ -907,9 +906,7 @@ static void PS3_DestroyRenderer(SDL_Renderer *renderer)
 {
     PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
-    deprintf(1, "SDL_PS3_DestroyRenderer()\n");
-
-    // stop RSX before exit
+    // Stop RSX before exit
     gcmSetWaitFlip(data->context);
     rsxFinish(data->context, 1);
 

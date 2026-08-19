@@ -27,58 +27,57 @@
 
 #include <assert.h>
 
-void PS3_InitModes(SDL_VideoDevice *_this)
+bool PS3_InitModes(SDL_VideoDevice *_this)
 {
-    int rv = 0;
-    (void)rv;
-    deprintf(1, "+PS3_InitModes()\n");
     SDL_DisplayMode mode;
     PS3_DisplayModeData *modedata;
-    videoOutState state;
+    videoState state;
 
     modedata = (PS3_DisplayModeData *)SDL_malloc(sizeof(*modedata));
     if (!modedata) {
-        return;
+        return false;
+    }
+    s32 res = videoGetState(0, 0, &state);
+    // Make sure display is enabled
+    if (res != 0 || state.state != 0) {
+        return SDL_SetError("PS3 video state setup");
     }
 
-    rv = videoOutGetState(0, 0, &state);
-    assert(rv == 0);          // Get the state of the display
-    assert(state.state == 0); // Make sure display is enabled
-
     // Get the current resolution
-    videoOutResolution res;
-    rv = videoOutGetResolution(state.displayMode.resolution, &res);
-    assert(rv == 0);
+    videoResolution resolution;
+    res = videoGetResolution(state.displayMode.resolution, &resolution);
+    if (res != 0) {
+        return SDL_SetError("PS3 video resolution setup");
+    }
 
     // Setting up the DisplayMode based on current settings
     mode.format = SDL_PIXELFORMAT_ARGB8888;
     mode.refresh_rate = 0;
-    mode.w = res.width;
-    mode.h = res.height;
+    mode.w = resolution.width;
+    mode.h = resolution.height;
 
     modedata->vconfig.resolution = state.displayMode.resolution;
-    modedata->vconfig.format = VIDEO_OUT_BUFFER_FORMAT_XRGB;
-    modedata->vconfig.pitch = res.width * 4;
+    modedata->vconfig.format = VIDEO_BUFFER_FORMAT_XRGB;
+    modedata->vconfig.pitch = resolution.width * 4;
     mode.internal = modedata;
 
-    rv = videoOutConfigure(VIDEO_OUT_PRIMARY, &modedata->vconfig, NULL, 0);
-    assert(rv == 0);
+    res = videoConfigure(VIDEO_PRIMARY, &modedata->vconfig, NULL, 0);
+    if (res != 0) {
+        return SDL_SetError("PS3 video configure setup");
+    }
 
     // Wait until RSX is ready
     do {
         SDL_Delay(10);
-        rv = videoOutGetState(0, 0, &state);
-        assert(rv == 0);
+        videoGetState(0, 0, &state);
     } while (state.state == 3);
 
     SDL_AddBasicVideoDisplay(&mode);
-
-    deprintf(1, "-PS3_InitModes()\n");
 }
 
-/* DisplayModes available on the PS3 */
+// DisplayModes available on the PS3
 static SDL_DisplayMode ps3fb_modedb[] = {
-    /* Native resolutions (progressive, "fullscreen") */
+    // Native resolutions (progressive, "fullscreen")
     { SDL_PIXELFORMAT_ARGB8888, 1920, 1080, 0, 0 }, // 1080p
     { SDL_PIXELFORMAT_ARGB8888, 1280, 720, 0, 0 },  // 720p
     { SDL_PIXELFORMAT_ARGB8888, 720, 480, 0, 0 },   // 480p
@@ -87,72 +86,60 @@ static SDL_DisplayMode ps3fb_modedb[] = {
 
 static PS3_DisplayModeData ps3fb_data[] = {
     // { resolution, format, aspect, padding, pitch }
-    { { VIDEO_OUT_RESOLUTION_1080,
-        VIDEO_OUT_BUFFER_FORMAT_XRGB,
-        VIDEO_OUT_ASPECT_16_9,
+    { { VIDEO_RESOLUTION_1080,
+        VIDEO_BUFFER_FORMAT_XRGB,
+        VIDEO_ASPECT_16_9,
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         1920 * 4 } },
-    { { VIDEO_OUT_RESOLUTION_720,
-        VIDEO_OUT_BUFFER_FORMAT_XRGB,
-        VIDEO_OUT_ASPECT_16_9,
+    { { VIDEO_RESOLUTION_720,
+        VIDEO_BUFFER_FORMAT_XRGB,
+        VIDEO_ASPECT_16_9,
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         1280 * 4 } },
-    { { VIDEO_OUT_RESOLUTION_480,
-        VIDEO_OUT_BUFFER_FORMAT_XRGB,
-        VIDEO_OUT_ASPECT_16_9,
+    { { VIDEO_RESOLUTION_480,
+        VIDEO_BUFFER_FORMAT_XRGB,
+        VIDEO_ASPECT_16_9,
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         720 * 4 } },
-    { { VIDEO_OUT_RESOLUTION_576,
-        VIDEO_OUT_BUFFER_FORMAT_XRGB,
-        VIDEO_OUT_ASPECT_16_9,
+    { { VIDEO_RESOLUTION_576,
+        VIDEO_BUFFER_FORMAT_XRGB,
+        VIDEO_ASPECT_16_9,
         { 0, 0, 0, 0, 0, 0, 0, 0, 0 },
         720 * 4 } },
 };
 
 bool PS3_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
-    deprintf(1, "+PS3_GetDisplayModes()\n");
-    unsigned int nummodes;
+    unsigned int nummodes = sizeof(ps3fb_modedb) / sizeof(SDL_DisplayMode);
 
-    nummodes = sizeof(ps3fb_modedb) / sizeof(SDL_DisplayMode);
-
-    int n;
-    for (n = 0; n < nummodes; ++n) {
+    for (int n = 0; n < nummodes; ++n) {
         PS3_DisplayModeData *data = (PS3_DisplayModeData *)malloc(sizeof(PS3_DisplayModeData));
         *data = ps3fb_data[n];
         // Get driver specific mode data
         ps3fb_modedb[n].internal = data;
 
-        // Add DisplayMode to list
-        deprintf(2, "Adding resolution %u x %u\n", ps3fb_modedb[n].w, ps3fb_modedb[n].h);
+        // Add DisplayMode to the list
         SDL_AddFullscreenDisplayMode(display, &ps3fb_modedb[n]);
     }
-    deprintf(1, "-PS3_GetDisplayModes()\n");
     return true;
 }
 
 bool PS3_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    deprintf(1, "+PS3_SetDisplayMode()\n");
     PS3_DisplayModeData *dispdata = (PS3_DisplayModeData *)mode->internal;
-    videoOutState state;
+    videoState state;
 
-    /* Set the new DisplayMode */
-    deprintf(2, "Setting PS3_MODE to %u\n", dispdata->vconfig.resolution);
-    if (videoOutConfigure(0, &dispdata->vconfig, NULL, 0) != 0) {
-        deprintf(2, "Could not set PS3FB_MODE\n");
-        SDL_SetError("Could not set PS3FB_MODE\n");
-        return false;
+    // Set the new DisplayMode
+    if (videoConfigure(0, &dispdata->vconfig, NULL, 0) != 0) {
+        return SDL_SetError("PS3 video configure display");
     }
 
     // Wait until RSX is ready
     do {
         SDL_Delay(10);
-        int rv = videoOutGetState(0, 0, &state);
-        assert(rv == 0);
+        videoGetState(0, 0, &state);
     } while (state.state == 3);
 
-    deprintf(1, "-PS3_SetDisplayMode()\n");
     return true;
 }
 
@@ -163,5 +150,3 @@ void PS3_QuitModes(SDL_VideoDevice *_this)
 }
 
 #endif // SDL_VIDEO_DRIVER_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

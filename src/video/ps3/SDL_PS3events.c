@@ -66,7 +66,7 @@ static void sysWindowCallback(u64 event, u64 param, void *userdata)
     }
 }
 
-static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoOutDeviceInfo *info, void *userData)
+static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoDeviceInfo *info, void *userData)
 {
     // SDL_VideoDevice *_this = (SDL_VideoDevice*)userData;
 
@@ -101,11 +101,9 @@ void PS3_QuitSysEvent(SDL_VideoDevice *_this)
 {
     sysUtilUnregisterCallback(SYSUTIL_EVENT_SLOT1);
     // videoOutUnregisterCallback(0);
-    videoOutConfigure(0, NULL, NULL, 0); // reset video output
+    videoConfigure(0, NULL, NULL, 0); // reset video output
     // PS3_QuitKeyboard(_this);
     // PS3_QuitMouse();
 }
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

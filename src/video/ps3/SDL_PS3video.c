@@ -39,7 +39,6 @@
 #include "SDL_PS3modes_c.h"
 #include "SDL_PS3video.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include <rsx/gcm_sys.h>
@@ -52,15 +51,14 @@
 #define CB_SIZE         0x200000  // 2MB command buffer
 #define RSX_BUFFER_SIZE 0x1000000 // 16MB — must be power of 2
 
-static bool PS3_VideoInit(SDL_VideoDevice *_this);
-static void PS3_VideoQuit(SDL_VideoDevice *_this);
-static void initializeGPU(SDL_VideoData *devdata);
-
 bool PS3_VideoInit(SDL_VideoDevice *_this)
 {
     PS3_InitSysEvent(_this);
 
-    PS3_InitModes(_this);
+    bool ret = PS3_InitModes(_this);
+    if (!ret) {
+        return SDL_SetError("PS3 video init");
+    }
 
     // Wait for VSYNC to flip
     gcmSetFlipMode(RESC_DISPLAY_VSYNC);
@@ -75,34 +73,8 @@ void PS3_VideoQuit(SDL_VideoDevice *_this)
     SDL_free(_this->internal);
 }
 
-void initializeGPU(SDL_VideoData *devdata)
-{
-    deprintf(1, "initializeGPU()\n");
-
-    gcmInitDefaultFifoMode(GCM_DEFAULT_FIFO_MODE_CONDITIONAL);
-
-    u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_SIZE));
-    void *hostAddr = memalign(HOST_ADDR_ALIGNMENT, bufferSize);
-    devdata->_CommandBuffer = NULL;
-
-    s32 ret = rsxInit(
-        &devdata->_CommandBuffer,
-        DEFAULT_CB_SIZE,
-        bufferSize,
-        hostAddr
-    );
-
-    if (ret != 0 || devdata->_CommandBuffer == NULL) {
-        deprintf(1, "initializeGPU: gcmInitBody FAILED ret=%x\n", ret);
-        return;
-    }
-
-    assert(devdata->_CommandBuffer != NULL);
-}
-
 static void PS3_DeleteDevice(SDL_VideoDevice *device)
 {
-    deprintf(1, "PS3_DeleteDevice( %p)\n", device);
     SDL_free(device);
 }
 
@@ -185,7 +157,6 @@ void PS3_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
 static SDL_VideoDevice *PS3_CreateDevice(void)
 {
     SDL_VideoDevice *device;
-    deprintf(1, "PS3_CreateDevice( %s )\n", device->name);
 
     // Initialize all variables that we clean on shutdown
     device = (SDL_VideoDevice *)SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -204,7 +175,22 @@ static SDL_VideoDevice *PS3_CreateDevice(void)
     }
 
     // Initialize GPU before any videoOut calls
-    initializeGPU(devdata);
+    gcmInitDefaultFifoMode(GCM_DEFAULT_FIFO_MODE_CONDITIONAL);
+
+    u32 bufferSize = rsxAlign(HOST_ADDR_ALIGNMENT, (DEFAULT_CB_SIZE + HOST_SIZE));
+    void *hostAddr = memalign(HOST_ADDR_ALIGNMENT, bufferSize);
+    devdata->_CommandBuffer = NULL;
+
+    s32 ret = rsxInit(
+        &devdata->_CommandBuffer,
+        DEFAULT_CB_SIZE,
+        bufferSize,
+        hostAddr
+    );
+
+    if (ret != 0 || devdata->_CommandBuffer == NULL) {
+        return false;
+    }
 
     device->internal = (SDL_VideoData *)devdata;
     device->VideoInit = PS3_VideoInit;
@@ -240,5 +226,3 @@ VideoBootStrap PS3_bootstrap = {
 };
 
 #endif // SDL_VIDEO_DRIVER_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

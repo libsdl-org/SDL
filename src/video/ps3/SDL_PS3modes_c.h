@@ -23,11 +23,9 @@
 #ifndef _SDL_ps3modes_h
 #define _SDL_ps3modes_h
 
-extern void PS3_InitModes(SDL_VideoDevice *_this);
+extern bool PS3_InitModes(SDL_VideoDevice *_this);
 extern bool PS3_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
 extern bool PS3_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 extern void PS3_QuitModes(SDL_VideoDevice *_this);
 
 #endif // SDL_ps3modes_h
-
-/* vi: set ts=4 sw=4 expandtab: */
