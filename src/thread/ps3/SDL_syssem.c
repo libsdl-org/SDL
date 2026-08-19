@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,16 +22,16 @@
 
 #ifdef SDL_THREAD_PS3
 
-/* Semaphores in the PS3 environment */
+// Semaphores in the PS3 environment
 
 #include "SDL3/SDL_mutex.h"
 #include <ppu-types.h>
 #include <sys/sem.h>
 #include <sys/systime.h>
 
-/* PS3 LV2 timeout error code */
+// PS3 LV2 timeout error code
 #ifndef ETIMEDOUT
-#define ETIMEDOUT 0x80010006 /* LV2_ETIMEDOUT */
+#define ETIMEDOUT 0x80010006
 #endif
 
 #ifndef SYS_SEM_NAME_MAX
@@ -47,7 +47,7 @@ struct SDL_Semaphore
     sys_sem_t id;
 };
 
-/* Create a counting semaphore */
+// Create a counting semaphore
 SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
 {
     SDL_Semaphore *sem = (SDL_Semaphore *)SDL_malloc(sizeof(*sem));
@@ -73,7 +73,7 @@ SDL_Semaphore *SDL_CreateSemaphore(Uint32 initial_value)
     return sem;
 }
 
-/* Free the semaphore */
+// Free the semaphore
 void SDL_DestroySemaphore(SDL_Semaphore *sem)
 {
     if (sem) {
@@ -88,21 +88,21 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
         return false;
     }
 
-    /* No timeout — block forever */
+    // No timeout — block forever
     if (timeoutNS < 0) {
         sysSemWait(sem->id, 0);
         return true;
     }
 
-    /* Try without blocking */
+    // Try without blocking
     if (timeoutNS == 0) {
         return sysSemTryWait(sem->id) == 0;
     }
 
-    /* PS3 sys_sem_wait timeout is in microseconds */
+    // PS3 sys_sem_wait timeout is in microseconds
     u64 timeoutUS = (u64)(timeoutNS / 1000);
 
-    /* Clamp to at least 1us to avoid accidental non-blocking call */
+    // Clamp to at least 1us to avoid accidental non-blocking call
     if (timeoutUS == 0) {
         timeoutUS = 1;
     }
@@ -111,16 +111,16 @@ bool SDL_WaitSemaphoreTimeoutNS(SDL_Semaphore *sem, Sint64 timeoutNS)
 
     switch (ret) {
     case 0:
-        return true; /* acquired */
+        return true; // acquired
     case ETIMEDOUT:
-        return false; /* timed out */
+        return false; // timed out
     default:
         SDL_SetError("sys_sem_wait() failed: %d", ret);
         return false;
     }
 }
 
-/* Returns the current count of the semaphore */
+// Returns the current count of the semaphore
 Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
 {
     s32 val = 0;
@@ -128,7 +128,7 @@ Uint32 SDL_GetSemaphoreValue(SDL_Semaphore *sem)
     return (Uint32)val;
 }
 
-/* Atomically increases the semaphore's count (not blocking) */
+// Atomically increases the semaphore's count (not blocking)
 void SDL_SignalSemaphore(SDL_Semaphore *sem)
 {
     if (!sem) {
@@ -152,5 +152,3 @@ void SDL_PostSemaphore(SDL_Semaphore *sem)
 }
 
 #endif // SDL_THREAD_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

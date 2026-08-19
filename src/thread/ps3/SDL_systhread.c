@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
 #include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 
-/* PS3 thread management routines for SDL */
+// PS3 thread management routines for SDL
 
 #include <ppu-lv2.h>
 #include <signal.h>
@@ -67,12 +67,10 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread, SDL_FunctionPointer pfnBeginThread
     size_t stack_size = 0x4000;
     u64 priority = 1500;
 
-    /* Create the thread and go! */
     int ret = sysThreadCreate(&thread->handle, RunThread, (void *)thread, priority, stack_size, THREAD_JOINABLE, thread->name);
 
     if (ret != 0) {
-        SDL_SetError("Not enough resources to create thread");
-        return false;
+        return SDL_SetError("Not enough resources to create thread");
     }
 
     return true;
@@ -87,7 +85,7 @@ SDL_ThreadID SDL_GetCurrentThreadID(void)
 
 void SDL_SYS_SetupThread(const char *name)
 {
-    /* Mask asynchronous signals for this thread */
+    // Mask asynchronous signals for this thread
     SDL_MaskSignals(NULL);
     (void)name;
 }
@@ -135,5 +133,3 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 }
 
 #endif // SDL_THREAD_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,6 @@ typedef sys_ppu_thread_t SYS_ThreadHandle;
 
 #include <signal.h>
 
-/* Functions needed to work with system threads in other portions of SDL */
+// Functions needed to work with system threads in other portions of SDL
 extern void SDL_MaskSignals(sigset_t *omask);
 extern void SDL_UnmaskSignals(sigset_t *omask);
-
-/* vi: set ts=4 sw=4 expandtab: */
