@@ -22,13 +22,11 @@
 
 #ifdef SDL_VIDEO_DRIVER_PS3
 
-/* Video driver implementation for PS3 */
-
 #include "../../events/SDL_events_c.h"
-#include "SDL_PS3events_c.h"
-#include "SDL_PS3keyboard_c.h"
-#include "SDL_PS3mouse_c.h"
-#include "SDL_PS3video.h"
+#include "SDL_ps3events_c.h"
+#include "SDL_ps3keyboard_c.h"
+#include "SDL_ps3mouse_c.h"
+#include "SDL_ps3video.h"
 
 #include <sysutil/sysutil.h>
 
@@ -66,8 +64,8 @@ static void sysWindowCallback(u64 event, u64 param, void *userdata)
     }
 }
 
-static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoDeviceInfo *info, void *userData)
-{
+// static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, videoDeviceInfo *info, void *userData)
+// {
     // SDL_VideoDevice *_this = (SDL_VideoDevice*)userData;
 
     // // Process event
@@ -75,7 +73,7 @@ static void videoOutHandler(u32 slot, u32 videoOut, u32 deviceIndex, u32 event, 
     //     default:
     //         break;
     // }
-}
+// }
 
 void PS3_PumpEvents(SDL_VideoDevice *_this)
 {
@@ -106,4 +104,4 @@ void PS3_QuitSysEvent(SDL_VideoDevice *_this)
     // PS3_QuitMouse();
 }
 
-#endif
+#endif // SDL_VIDEO_DRIVER_PS3

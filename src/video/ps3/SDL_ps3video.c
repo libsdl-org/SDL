@@ -35,9 +35,9 @@
 #include "../SDL_pixels_c.h"
 #include "../SDL_sysvideo.h"
 
-#include "SDL_PS3events_c.h"
-#include "SDL_PS3modes_c.h"
-#include "SDL_PS3video.h"
+#include "SDL_ps3events_c.h"
+#include "SDL_ps3modes_c.h"
+#include "SDL_ps3video.h"
 
 #include <stdlib.h>
 

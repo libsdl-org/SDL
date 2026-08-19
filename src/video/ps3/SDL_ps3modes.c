@@ -23,9 +23,8 @@
 #ifdef SDL_VIDEO_DRIVER_PS3
 
 #include "../SDL_sysvideo.h"
-#include "SDL_PS3video.h"
+#include "SDL_ps3video.h"
 
-#include <assert.h>
 
 bool PS3_InitModes(SDL_VideoDevice *_this)
 {
@@ -73,6 +72,8 @@ bool PS3_InitModes(SDL_VideoDevice *_this)
     } while (state.state == 3);
 
     SDL_AddBasicVideoDisplay(&mode);
+
+    return true;
 }
 
 // DisplayModes available on the PS3

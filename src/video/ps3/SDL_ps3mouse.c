@@ -26,7 +26,7 @@
 
 #include <io/mouse.h>
 
-#include "SDL_PS3mouse_c.h"
+#include "SDL_ps3mouse_c.h"
 
 // void checkMouseConnected(_THIS) {
 //     SDL_DeviceData *data =
@@ -143,5 +143,3 @@ void PS3_QuitMouse(void)
 }
 
 #endif // SDL_VIDEO_DRIVER_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

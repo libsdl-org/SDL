@@ -20,15 +20,13 @@
 */
 #include "SDL_internal.h"
 
-#ifndef _SDL_ps3mouse_h
-#define _SDL_ps3mouse_h
+#ifndef _SDL_ps3keyboard_h
+#define _SDL_ps3keyboard_h
 
-#include "SDL_PS3video.h"
+#include "SDL_ps3video.h"
 
-extern void PS3_PumpMouse(void);
-extern void PS3_InitMouse(void);
-extern void PS3_QuitMouse(void);
+extern void PS3_PumpKeyboard(SDL_VideoDevice *_this);
+extern void PS3_InitKeyboard(SDL_VideoDevice *_this);
+extern void PS3_QuitKeyboard(SDL_VideoDevice *_this);
 
 #endif
-
-/* vi: set ts=4 sw=4 expandtab: */

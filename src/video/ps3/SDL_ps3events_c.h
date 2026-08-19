@@ -23,7 +23,7 @@
 #ifndef _SDL_ps3events_h
 #define _SDL_ps3events_h
 
-#include "SDL_PS3video.h"
+#include "SDL_ps3video.h"
 
 extern void PS3_PumpEvents(SDL_VideoDevice *_this);
 extern void PS3_InitSysEvent(SDL_VideoDevice *_this);

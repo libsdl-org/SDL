@@ -21,8 +21,8 @@
 */
 #include "SDL_internal.h"
 
-#ifndef _SDL_PS3video_h
-#define _SDL_PS3video_h
+#ifndef _SDL_ps3video_h
+#define _SDL_ps3video_h
 
 #include "../SDL_sysvideo.h"
 
@@ -99,4 +99,4 @@ typedef struct SDL_WindowData
 
 } SDL_WindowData;
 
-#endif // _SDL_PS3video_h
+#endif // _SDL_ps3video_h

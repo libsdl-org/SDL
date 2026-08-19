@@ -24,8 +24,8 @@
 
 #include <io/kb.h>
 
-#include "SDL_PS3keyboard_c.h"
-#include "SDL_PS3video.h"
+#include "SDL_ps3keyboard_c.h"
+#include "SDL_ps3video.h"
 
 static void unicodeToUtf8(Uint16 w, char *utf8buf)
 {
@@ -227,5 +227,3 @@ void PS3_QuitKeyboard(SDL_VideoDevice *_this)
 }
 
 #endif // SDL_VIDEO_DRIVER_PS3
-
-/* vi: set ts=4 sw=4 expandtab: */

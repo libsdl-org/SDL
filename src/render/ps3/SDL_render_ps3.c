@@ -23,7 +23,7 @@
 #ifdef SDL_VIDEO_RENDER_PS3
 
 #include "../../video/SDL_sysvideo.h"
-#include "../../video/ps3/SDL_PS3video.h"
+#include "../../video/ps3/SDL_ps3video.h"
 #include "../SDL_sysrender.h"
 #include "./ps3_texture_vpo.h"
 #include "./ps3_texture_fpo.h"
@@ -1151,6 +1151,4 @@ SDL_RenderDriver PS3_RenderDriver = {
     PS3_CreateRenderer, "PS3"
 };
 
-#endif /* SDL_VIDEO_RENDER_PS3 */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // SDL_VIDEO_RENDER_PS3
