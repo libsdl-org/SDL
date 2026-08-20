@@ -1844,6 +1844,9 @@ typedef struct SDL_GPUTransferBufferCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUFillMode
+ * \sa SDL_GPUCullMode
+ * \sa SDL_GPUFrontFace
  */
 typedef struct SDL_GPURasterizerState
 {
