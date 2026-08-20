@@ -29,6 +29,8 @@
 //
 // I'm leaning towards option one, mostly because being able to bind arrays into arbitrary structs is a stupid idea.
 
+#include "SDL_internal.h"
+
 #ifdef SDL_GPU_WEBGPU
 
 #include "../SDL_sysgpu.h"
@@ -135,6 +137,9 @@ static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
         return "WGPUFeatureName_SubgroupSizeControl";
     case WGPUFeatureName_Force32:
         return "WGPUFeatureName_Force32";
+    default:
+        SDL_assert(!"Unsupported WGPUFeatureName");
+        return "Unknown WGPUFeatureName";
     }
 }
 
@@ -3207,7 +3212,7 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
         .aspect = texture->aspect,
         .dimension = dimension,
         .format = format,
-        .label = NULL,
+        .label = { 0 },
         .usage = usages,
     };
 
@@ -6057,6 +6062,9 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
         return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
+    default:
+        SDL_assert(!"Unsupported SDL_GPUTextureFormat");
+        return false;
     }
 }
 

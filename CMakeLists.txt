@@ -388,8 +388,8 @@ dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_REND
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
-dep_option(SDL_WEBGPU              "Enable experimental WebGPU support" "${SDL_WGPU_DEFAULT}" "SDL_VIDEO;LINUX OR WINDOWS OR EMSCRIPTEN" OFF)
-dep_option(SDL_WEBGPU_USE_PORTS    "Allow SDL to automatically link with Emscripten's WebGPU implementation" "${SDL_WGPU_DEFAULT}" "SDL_WEBGPU" OFF)
+dep_option(SDL_WEBGPU              "Enable experimental WebGPU support" "${SDL_WGPU_DEFAULT}" "SDL_GPU;WINDOWS OR UNIX OR EMSCRIPTEN;NOT APPLE" OFF)
+dep_option(SDL_WEBGPU_EMSCRIPTEN   "Allow SDL to automatically link with Emscripten's WebGPU implementation" "TRUE" "SDL_WEBGPU;EMSCRIPTEN" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -414,18 +414,6 @@ set_option(SDL_LEAN_AND_MEAN       "Build a lean SDL library with reduced graphi
 
 if(EMSCRIPTEN)
   option_string(SDL_EMSCRIPTEN_PERSISTENT_PATH  "Path to mount Emscripten IDBFS at startup or '' to disable" "")
-endif()
-
-# TODO: I'm firing blind here, I have no idea what the SDL convensions on static linking or finding libraries is.
-if(APPLE OR LINUX OR FREEBSD OR OPENBSD)
-  # unix-style, default search path should be /usr/lib/
-  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH "/usr/lib/")
-elseif(WINDOWS)
-  # Windows has no real analogue to Unix's /usr/lib, so we're just gonna search the source dir.
-  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
-else()
-  # Same as Windows, we're searching the source path.
-  set(DEFAULT_WEBGPU_LIB_SEARCH_PATH ${CMAKE_SOURCE_DIR})
 endif()
 
 set(SDL_VENDOR_INFO "" CACHE STRING "Vendor name and/or version to add to SDL_REVISION")
@@ -3612,35 +3600,6 @@ elseif(NGAGE)
       scdv
       gdi
   )
-endif()
-
-if(SDL_VIDEO_WEBGPU)
-  if(EMSCRIPTEN AND SDL_WEBGPU_USE_PORTS)
-    message("-- Using Emdawnwebgpu (remote) as WebGPU implementation")
-    
-    # NOTE: Since the Emdawnwebgpu port is the official Emscripten provided
-    # way to link WebGPU, I thought it would be okay to just have SDL do it.
-    # There's an option to disable this, and since the port is just a python script
-    # we could use our own if supply-chain attacks are an issue.
-    # (Although, if somebody's breached the Emscripten repo there's probably bigger issues.)
-    # https://github.com/emscripten-core/emscripten/blob/main/tools/ports/emdawnwebgpu.py
-    target_link_options(SDL3-static PUBLIC "--use-port=emdawnwebgpu")
-  else()
-    find_library(
-      WEBGPU_LIB NAMES libwebgpu_dawn webgpu_dawn
-      HINTS ${DEFAULT_WEBGPU_LIB_SEARCH_PATH} ${CMAKE_SOURCE_DIR}
-      REQUIRED
-    )
-   
-    message("-- Using Dawn as WebGPU implementation")
-
-    # FIXME: Almost certainly, 100% NOT how you're supposed to do this.
-    if (SDL_STATIC)
-      target_link_libraries(SDL3-static PRIVATE ${WEBGPU_LIB})
-    elseif (SDL_SHARED)
-      target_link_libraries(SDL3-shared PRIVATE ${WEBGPU_LIB})
-    endif()
-  endif()
 endif()
 
 sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog.c)
