@@ -714,8 +714,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
         case SdlPlatform.Vita:
             job.ccache = True
             job.sudo = ""
-            job.apt_packages = []
-            job.apk_packages = ["ccache", "cmake", "ninja", "pkgconf", "bash", "tar"]
+            job.apt_packages.extend(["ccache", "cmake", "unzip"])
             job.cmake_toolchain_file = "${VITASDK}/share/vita.toolchain.cmake"
             assert spec.vita_gles is not None
             job.setup_vita_gles_type = {
