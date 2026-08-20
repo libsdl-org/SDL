@@ -3164,7 +3164,7 @@ extern SDL_DECLSPEC SDL_GPUTexture * SDLCALL SDL_CreateGPUTexture(
  * Note that certain combinations of usage flags are invalid. For example, a
  * buffer cannot have both the VERTEX and INDEX flags.
  *
- * If you use a STORAGE flag, the data in the buffer must respect std140
+ * If you use a STORAGE flag, the data in the buffer must respect std430
  * layout conventions. In practical terms this means you must ensure that vec3
  * and vec4 fields are 16-byte aligned.
  *
