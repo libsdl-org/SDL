@@ -239,13 +239,13 @@ extern "C" {
  * control panel that lets the user adjust the volume on specific audio
  * streams instead of using one giant master volume slider.
  *
- * This hint lets you transmit that information to the OS. The contents of
+ * This hints lets you transmit that information to the OS. The contents of
  * this hint are used while opening an audio device. You should use a string
  * that describes your program ("My Game 2: The Revenge")
  *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
  * default: this will be the name set with SDL_HINT_APP_NAME, if that hint is
- * set. Otherwise, it'll probably be the application's name or "SDL Application"
+ * set. Otherwise, it'll probably the application's name or "SDL Application"
  * if SDL doesn't have any better information.
  *
  * On targets where this is not supported, this hint does nothing.
@@ -260,9 +260,9 @@ extern "C" {
  * control panel that lets the user adjust the volume on specific audio
  * streams instead of using one giant master volume slider.
  *
- * This hint lets you transmit that information to the OS. The contents of
+ * This hints lets you transmit that information to the OS. The contents of
  * this hint are used while opening an audio device. You should use a string
- * that describes what your program is playing ("audio stream" is
+ * that describes your what your program is playing ("audio stream" is
  * probably sufficient in many cases, but this could be useful for something
  * like "team chat" if you have a headset playing VoIP audio separately).
  *
@@ -281,9 +281,9 @@ extern "C" {
  * system control panel or software for displaying and manipulating media
  * playback/capture graphs.
  *
- * This hint lets you transmit that information to the OS. The contents of
+ * This hints lets you transmit that information to the OS. The contents of
  * this hint are used while opening an audio device. You should use a string
- * that describes what your program is playing (Game, Music, Movie,
+ * that describes your what your program is playing (Game, Music, Movie,
  * etc...).
  *
  * Setting this to "" or leaving it unset will have SDL use a reasonable
