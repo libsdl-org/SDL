@@ -43,6 +43,9 @@ extern CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 
 extern API_AVAILABLE(ios(13.0)) UIWindowScene *UIKit_GetActiveWindowScene(void);
 
+// AirPlay Screen Mirroring and other non-interactive external displays.
+extern API_AVAILABLE(ios(13.0)) bool UIKit_IsExternalDisplayScene(UIScene *scene);
+
 extern void UIKit_SetGameControllerInteraction(bool enabled);
 extern void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled);
 

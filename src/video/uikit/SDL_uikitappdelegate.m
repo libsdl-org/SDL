@@ -39,6 +39,7 @@ static SDL_main_func forward_main;
 static int forward_argc;
 static char **forward_argv;
 static int exit_status;
+static bool sdl_main_started = false;
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserved)
 {
@@ -366,6 +367,18 @@ API_AVAILABLE(ios(13.0))
         return;
     }
 
+    // Attaching a window here turns off system Screen Mirroring and leaves
+    // the TV on a launch screen / black. Leave the scene empty so iOS mirrors.
+    if (UIKit_IsExternalDisplayScene(scene)) {
+        return;
+    }
+
+    // Only the first (device) scene should start the app.
+    if (sdl_main_started) {
+        return;
+    }
+    sdl_main_started = true;
+
     UIWindowScene *windowScene = (UIWindowScene *)scene;
     windowScene.delegate = self;
 
@@ -437,21 +450,33 @@ API_AVAILABLE(ios(13.0))
 
 - (void)sceneDidBecomeActive:(UIScene *)scene
 {
+    if (UIKit_IsExternalDisplayScene(scene)) {
+        return;
+    }
     SDL_OnApplicationDidEnterForeground();
 }
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
+    if (UIKit_IsExternalDisplayScene(scene)) {
+        return;
+    }
     SDL_OnApplicationWillEnterBackground();
 }
 
 - (void)sceneWillEnterForeground:(UIScene *)scene
 {
+    if (UIKit_IsExternalDisplayScene(scene)) {
+        return;
+    }
     SDL_OnApplicationWillEnterForeground();
 }
 
 - (void)sceneDidEnterBackground:(UIScene *)scene
 {
+    if (UIKit_IsExternalDisplayScene(scene)) {
+        return;
+    }
     SDL_OnApplicationDidEnterBackground();
 }
 

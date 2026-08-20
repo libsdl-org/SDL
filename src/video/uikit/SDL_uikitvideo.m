@@ -260,6 +260,38 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 }
 #endif // SDL_PLATFORM_VISIONOS
 
+bool UIKit_IsExternalDisplayScene(UIScene *scene)
+{
+    if (![scene isKindOfClass:[UIWindowScene class]]) {
+        return false;
+    }
+
+    UISceneSessionRole role = scene.session.role;
+
+    // iOS 16 renamed the AirPlay / Screen Mirroring role.
+#if (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 160000) || \
+    (defined(__TV_OS_VERSION_MAX_ALLOWED) && __TV_OS_VERSION_MAX_ALLOWED >= 160000)
+    if (@available(iOS 16.0, tvOS 16.0, *)) {
+        if (role == UIWindowSceneSessionRoleExternalDisplayNonInteractive) {
+            return true;
+        }
+    }
+#endif
+    // iOS 13-15 name (deprecated in 16, still sent by some configurations)
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    if (role == UIWindowSceneSessionRoleExternalDisplay) {
+        return true;
+    }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+    return false;
+}
+
 UIWindowScene *UIKit_GetActiveWindowScene(void)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
@@ -269,6 +301,9 @@ UIWindowScene *UIKit_GetActiveWindowScene(void)
         for (UIScene *scene in connectedScenes) {
             if ([scene isKindOfClass:[UIWindowScene class]]) {
                 UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (UIKit_IsExternalDisplayScene(windowScene)) {
+                    continue;
+                }
                 if (windowScene.activationState == UISceneActivationStateForegroundActive) {
                     return windowScene;
                 }
@@ -279,6 +314,9 @@ UIWindowScene *UIKit_GetActiveWindowScene(void)
         for (UIScene *scene in connectedScenes) {
             if ([scene isKindOfClass:[UIWindowScene class]]) {
                 UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (UIKit_IsExternalDisplayScene(windowScene)) {
+                    continue;
+                }
                 if (windowScene.activationState == UISceneActivationStateForegroundInactive) {
                     return windowScene;
                 }
@@ -288,7 +326,11 @@ UIWindowScene *UIKit_GetActiveWindowScene(void)
         // Last resort: return first window scene
         for (UIScene *scene in connectedScenes) {
             if ([scene isKindOfClass:[UIWindowScene class]]) {
-                return (UIWindowScene *)scene;
+                UIWindowScene *windowScene = (UIWindowScene *)scene;
+                if (UIKit_IsExternalDisplayScene(windowScene)) {
+                    continue;
+                }
+                return windowScene;
             }
         }
     }
