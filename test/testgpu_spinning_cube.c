@@ -126,9 +126,6 @@ static SDL_Texture *CreateSpriteTexture(SDL_Renderer *renderer, unsigned char *d
     if (src) {
         surface = SDL_LoadPNG_IO(src, true);
         if (surface) {
-            /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
-
             texture = SDL_CreateTextureFromSurface(renderer, surface);
             SDL_DestroySurface(surface);
         }
