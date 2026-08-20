@@ -1887,6 +1887,7 @@ typedef struct SDL_GPUMultisampleState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUCompareOp
  * \sa SDL_GPUStencilOpState
  */
 typedef struct SDL_GPUDepthStencilState
@@ -1911,6 +1912,8 @@ typedef struct SDL_GPUDepthStencilState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineTargetInfo
+ * \sa SDL_GPUTextureFormat
+ * \sa SDL_GPUColorTargetBlendState
  */
 typedef struct SDL_GPUColorTargetDescription
 {
