@@ -1702,6 +1702,8 @@ typedef struct SDL_GPUVertexInputState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUDepthStencilState
+ * \sa SDL_GPUStencilOp
+ * \sa SDL_GPUCompareOp
  */
 typedef struct SDL_GPUStencilOpState
 {
