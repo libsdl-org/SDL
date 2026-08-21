@@ -391,8 +391,12 @@ if(MACOS)
             testnativecocoa.m
             testnativex11.c
     )
-elseif(WINDOWS OR CYGWIN)
+elseif(WINDOWS OR CYGWIN AND NOT HAVE_X11)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
+elseif(CYGWIN AND HAVE_X11)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
+    target_sources(testnative PRIVATE testnativex11.c)
+    target_link_libraries(testnative PRIVATE X11::X11)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
     if(HAVE_X11)
