@@ -291,7 +291,11 @@ static bool io_list_check_add(struct io_node *node)
     spa_list_append(&hotplug_io_list, &node->link);
 
     if (hotplug_events_enabled) {
-        SDL_AddAudioDevice(node->recording, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
+        SDL_AudioDevice *device = SDL_AddAudioDevice(node->recording, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
+        const char *default_path = node->recording ? pipewire_default_source_id : pipewire_default_sink_id;
+        if (default_path && SDL_strcmp(node->path, default_path) == 0) {
+            SDL_DefaultAudioDeviceChanged(device);
+        }
     }
 
     return true;
