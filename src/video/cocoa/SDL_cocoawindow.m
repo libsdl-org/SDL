@@ -1927,11 +1927,18 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     if (@available(macOS 26.0, *)) {
         // do for all windows for now, not just fullscreen spaces. And hopefully remove this code entirely soon.
         //if ([_data.listener isInFullscreenSpace]) {
-            int posx = 0, posy = 0;
-            SDL_GetWindowPosition(window, &posx, &posy);
-            SDL_GetGlobalMouseState(&x, &y);
-            x -= posx;
-            y -= posy;
+            int windowRelativePosX = 0, windowRelativePosY = 0;
+            // If window is a popup, these coordinates are relative to the parent window.
+            SDL_GetWindowPosition(window, &windowRelativePosX, &windowRelativePosY);
+
+            int windowGlobalPosX = 0, windowGlobalPosY = 0;
+            // For the popup case
+            SDL_RelativeToGlobalForWindow(window, windowRelativePosX, windowRelativePosY, &windowGlobalPosX, &windowGlobalPosY);
+
+            float globalMouseX = 0.0f, globalMouseY = 0.0f;
+            SDL_GetGlobalMouseState(&globalMouseX, &globalMouseY);
+            x = globalMouseX - windowGlobalPosX;
+            y = globalMouseY - windowGlobalPosY;
         //}
     }
 
