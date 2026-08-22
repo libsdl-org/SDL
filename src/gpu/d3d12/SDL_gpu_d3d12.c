@@ -3226,6 +3226,9 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     psoDesc.SampleMask = 0xFFFFFFFF;
     psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
+    // Selects the quadrilateral line-rendering algorithm, which resolves against the
+    // target's samples. Without it, line primitives stay aliased on an MSAA target.
+    psoDesc.RasterizerState.MultisampleEnable = (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) ? TRUE : FALSE;
 
     if (createinfo->target_info.has_depth_stencil_target) {
         psoDesc.DSVFormat = SDLToD3D12_DepthFormat[createinfo->target_info.depth_stencil_format];
