@@ -3316,6 +3316,8 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
          * no internal structures are left pointing to the destroyed window.
          */
         if (wind->show_hide_sync_required) {
+            /* Make sure hit test isn't executed during roundtrip */
+            window->hit_test = NULL;
             WAYLAND_wl_display_roundtrip(data->display);
         }
 
