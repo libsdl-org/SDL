@@ -36,8 +36,7 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
     device->hidden = (struct SDL_PrivateAudioData *)
         SDL_calloc(1, sizeof(*device->hidden));
     if (!device->hidden) {
-        SDL_OutOfMemory();
-        return false;
+        return SDL_OutOfMemory();
     }
 
     // PS3 Libaudio only handles floats

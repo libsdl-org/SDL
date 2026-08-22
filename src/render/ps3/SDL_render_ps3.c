@@ -39,7 +39,6 @@
 #include <sys/event_queue.h>
 
 #define FRAME_BUFFER_COUNT              2
-
 #define GCM_PREPARED_BUFFER_INDEX       5
 #define GCM_BUFFER_STATUS_INDEX         66
 #define GCM_WAIT_LABEL_INDEX            255
@@ -49,8 +48,10 @@
 #define BUFFER_IDLE                     0
 #define BUFFER_BUSY                     1
 
+// Max sprites to be displayed on the screen.
+#define QUAD_RING_SIZE 1024
 
-typedef struct
+typedef struct PS3_DrawStateCache
 {
     const SDL_Rect *viewport;
     SDL_Rect cliprect;
@@ -60,7 +61,37 @@ typedef struct
     SDL_Color color;
 } PS3_DrawStateCache;
 
-typedef struct
+typedef struct PS3_CopyData
+{
+    SDL_FRect srcRect;
+    SDL_FRect dstRect;
+} PS3_CopyData;
+
+typedef struct TexVertex
+{
+    float x, y, z;
+    float u, v;
+} TexVertex;
+
+typedef struct ColorVertex
+{
+    float x, y, z;
+    float r, g, b, a;
+} ColorVertex;
+
+typedef struct {
+    TexVertex *vbo;
+    u32 offset;
+} QuadSlot;
+
+typedef struct PS3_TextureData
+{
+    SDL_Surface *surface;
+    gcmTexture   rsx_texture;
+    u32          offset;
+} PS3_TextureData;
+
+typedef struct PS3_RenderData
 {
     gcmSurface surface;
     u32 fbOnDisplay;
@@ -72,16 +103,17 @@ typedef struct
     u32 color_offset[FRAME_BUFFER_COUNT];
     u32 *color_buffer[FRAME_BUFFER_COUNT];
 
-    int current_screen;
-    SDL_Surface *screens[FRAME_BUFFER_COUNT];
-    u32 screen_offset[FRAME_BUFFER_COUNT];  // one offset per back buffer
     u32 color_pitch;
     u32 depth_offset;
     u32 depth_pitch;
     u32 screenw, screenh;
-    void *textures[FRAME_BUFFER_COUNT];
     gcmContextData *context; // Context to keep track of the RSX buffer
     PS3_DrawStateCache drawstate;
+
+    // Use quads array to handle drawing of
+    // the same texture multiple times.
+    QuadSlot quad_ring[QUAD_RING_SIZE];
+    u32 quad_ring_index;
 
     // texture
     rsxVertexProgram   *vpo;
@@ -89,6 +121,7 @@ typedef struct
     void *vp_ucode;
     u32   vp_ucode_size;
     u32 fp_ucode_size;
+    void *fp_ucode_rsx;
     void *fp_ucode_cpu;
     u32 fp_offset;
 
@@ -100,31 +133,10 @@ typedef struct
     u32 fp_ucode_size_color;
     void *fp_ucode_cpu_color;
     u32 fp_offset_color;
+    void *fp_ucode_rsx_color;
 
     f32 ortho_matrix[16];
 } PS3_RenderData;
-
-typedef struct
-{
-    SDL_FRect srcRect;
-    SDL_FRect dstRect;
-} PS3_CopyData;
-
-typedef struct {
-    SDL_Surface *surface;
-    gcmTexture   rsx_texture;
-    u32          offset;
-} PS3_TextureData;
-
-typedef struct {
-    float x, y, z;
-    float u, v;
-} TexVertex;
-
-typedef struct {
-    float x, y, z;
-    float r, g, b, a;
-} ColorVertex;
 
 static PS3_RenderData *g_ps3_data;
 
@@ -136,7 +148,7 @@ static void PS3_DrawColoredPrimitive(PS3_RenderData *data, u8 primitive_type,
                                ColorVertex *verts, u32 count,
                                Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
-                               void build_ortho_matrix(float *m, float left, float right, float bottom, float top, float near, float far)
+void build_ortho_matrix(float *m, float left, float right, float bottom, float top, float near, float far)
 {
     memset(m, 0, sizeof(float) * 16);
     m[0]  = 2.0f / (right - left);
@@ -184,13 +196,6 @@ static void vblankHandler(const u32 head)
             g_ps3_data->fbOnFlip = true;
         }
     }
-}
-
-static SDL_Surface *PS3_ActivateRenderer(SDL_Renderer *renderer)
-{
-    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
-
-    return data->screens[data->current_screen];
 }
 
 void setDrawEnv(SDL_Renderer *renderer)
@@ -296,14 +301,12 @@ static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
 
     PS3_TextureData *tdata = (PS3_TextureData *)SDL_calloc(1, sizeof(PS3_TextureData));
     if (!tdata) {
-        return SDL_SetError("out of memory");
+        return SDL_OutOfMemory();
     }
 
     tdata->surface = SDL_CreateSurfaceFrom(texture->w, texture->h, texture->format, pixels, pitch);
 
-    u32 offset;
-    rsxAddressToOffset(pixels, &offset);
-    tdata->offset = offset;
+    rsxAddressToOffset(pixels, &tdata->offset);
 
     tdata->rsx_texture.format    = GCM_TEXTURE_FORMAT_A8R8G8B8 | GCM_TEXTURE_FORMAT_LIN;
     tdata->rsx_texture.mipmap    = 1;
@@ -321,7 +324,7 @@ static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     tdata->rsx_texture.height = texture->h;
     tdata->rsx_texture.depth  = 1;
     tdata->rsx_texture.pitch  = pitch;
-    tdata->rsx_texture.offset = offset;
+    tdata->rsx_texture.offset = tdata->offset;
 
     texture->internal = (void *)tdata;
 
@@ -388,8 +391,6 @@ void PS3_DrawTexturedQuad(PS3_RenderData *data, PS3_TextureData *tdata,
                            float dstx, float dsty, float dstw, float dsth,
                            float srcx, float srcy, float srcw, float srch)
 {
-    TexVertex *quad = (TexVertex *)rsxMemalign(16, 4 * sizeof(TexVertex));
-
     float x0 = dstx,        y0 = dsty;
     float x1 = dstx + dstw, y1 = dsty + dsth;
 
@@ -398,23 +399,23 @@ void PS3_DrawTexturedQuad(PS3_RenderData *data, PS3_TextureData *tdata,
     float u1 = (srcx + srcw) / (float)tdata->rsx_texture.width;
     float v1 = (srcy + srch) / (float)tdata->rsx_texture.height;
 
-    quad[0] = (TexVertex){ x0, y0, 0.0f, u0, v0 };
-    quad[1] = (TexVertex){ x1, y0, 0.0f, u1, v0 };
-    quad[2] = (TexVertex){ x0, y1, 0.0f, u0, v1 };
-    quad[3] = (TexVertex){ x1, y1, 0.0f, u1, v1 };
+    QuadSlot *slot = &data->quad_ring[data->quad_ring_index];
+    data->quad_ring_index = (data->quad_ring_index + 1) % QUAD_RING_SIZE;
 
-    u32 quad_offset;
-    rsxAddressToOffset(quad, &quad_offset);
+    slot->vbo[0] = (TexVertex){ x0, y0, 0.0f, u0, v0 };
+    slot->vbo[1] = (TexVertex){ x1, y0, 0.0f, u1, v0 };
+    slot->vbo[2] = (TexVertex){ x0, y1, 0.0f, u0, v1 };
+    slot->vbo[3] = (TexVertex){ x1, y1, 0.0f, u1, v1 };
 
     rsxLoadVertexProgram(data->context, data->vpo, data->vp_ucode);
     rsxLoadFragmentProgramLocation(data->context, data->fpo, data->fp_offset, GCM_LOCATION_RSX);
 
     rsxBindVertexArrayAttrib(data->context, 0, 0,
-        quad_offset + offsetof(TexVertex, x),
+        slot->offset + offsetof(TexVertex, x),
         sizeof(TexVertex), 3, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 
     rsxBindVertexArrayAttrib(data->context, 8, 0,
-        quad_offset + offsetof(TexVertex, u),
+        slot->offset + offsetof(TexVertex, u),
         sizeof(TexVertex), 2, GCM_VERTEX_DATA_TYPE_F32, GCM_LOCATION_RSX);
 
     const rsxProgramConst *mvp_const = rsxVertexProgramGetConst(data->vpo, "modelViewProj");
@@ -817,7 +818,10 @@ static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
 static SDL_Surface *PS3_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
-    SDL_Surface *surface = PS3_ActivateRenderer(renderer);
+    return NULL;
+
+    // SDL_Surface *surface = PS3_ActivateRenderer(renderer);
+    SDL_Surface *surface = NULL;
     SDL_Rect final_rect;
 
     if (!surface) {
@@ -892,8 +896,9 @@ static void PS3_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     PS3_TextureData *tdata = (PS3_TextureData*)texture->internal;
     SDL_Surface *surface = (SDL_Surface *)tdata->surface;
 
-    if (!surface)
+    if (!surface) {
         return;
+    }
 
     PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
@@ -917,15 +922,8 @@ static void PS3_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     if (data) {
-        for (int i = 0; i < SDL_arraysize(data->textures); ++i) {
-            if (data->screens[i]) {
-                SDL_DestroySurface(data->screens[i]);
-            }
-            if (data->textures[i]) {
-                rsxFinish(data->context, 1);
-                rsxFree(data->textures[i]);
-            }
-        }
+        rsxFree(data->fp_ucode_rsx);
+        rsxFree(data->fp_ucode_rsx_color);
         SDL_free(data);
     }
     SDL_free(renderer);
@@ -983,8 +981,6 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     // Get a copy of the command buffer
     data->context = devdata->_CommandBuffer;
-    data->current_screen = 0;
-
     data->color_pitch = displayMode->w * SDL_BYTESPERPIXEL(displayMode->format);
     data->screenw = displayMode->w;
     data->screenh = displayMode->h;
@@ -1019,13 +1015,13 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     void *buffer;
     for (u32 i=0;i < FRAME_BUFFER_COUNT;i++) {
-        buffer = rsxMemalign(64,(data->screenh*data->color_pitch));
-        rsxAddressToOffset(buffer,&data->color_offset[i]);
+        buffer = rsxMemalign(64, data->screenh*data->color_pitch);
+        rsxAddressToOffset(buffer, &data->color_offset[i]);
         printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, buffer, data->color_offset[i], data->screenw, data->screenh, data->color_pitch);
-        gcmSetDisplayBuffer(i,data->color_offset[i],data->color_pitch,data->screenw,data->screenh);
+        gcmSetDisplayBuffer(i, data->color_offset[i], data->color_pitch, data->screenw, data->screenh);
     }
 
-    buffer = rsxMemalign(64,(data->screenh*data->depth_pitch)*2);
+    buffer = rsxMemalign(64, (data->screenh*data->depth_pitch) * 2);
     rsxAddressToOffset(buffer, &data->depth_offset);
 
     for (u32 i=0;i < FRAME_BUFFER_COUNT;i++) {
@@ -1085,13 +1081,12 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     rsxFragmentProgramGetUCode(data->fpo, &data->fp_ucode_cpu, &data->fp_ucode_size);
 
-    void *fp_ucode_rsx = rsxMemalign(64, data->fp_ucode_size);
-    memcpy(fp_ucode_rsx, data->fp_ucode_cpu, data->fp_ucode_size);
+    data->fp_ucode_rsx = rsxMemalign(64, data->fp_ucode_size);
+    memcpy(data->fp_ucode_rsx, data->fp_ucode_cpu, data->fp_ucode_size);
 
-    rsxAddressToOffset(fp_ucode_rsx, &data->fp_offset);
+    rsxAddressToOffset(data->fp_ucode_rsx, &data->fp_offset);
 
     rsxLoadFragmentProgramLocation(data->context, data->fpo, data->fp_offset, GCM_LOCATION_RSX);
-
 
     // VPO / FPO COLOR
     data->vpo_color = (rsxVertexProgram *)ps3_color_vpo;
@@ -1102,12 +1097,19 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     rsxFragmentProgramGetUCode(data->fpo_color, &data->fp_ucode_cpu_color, &data->fp_ucode_size_color);
 
-    void *fp_ucode_rsx_color = rsxMemalign(64, data->fp_ucode_size_color);
-    memcpy(fp_ucode_rsx_color, data->fp_ucode_cpu_color, data->fp_ucode_size_color);
+    data->fp_ucode_rsx_color = rsxMemalign(64, data->fp_ucode_size_color);
+    memcpy(data->fp_ucode_rsx_color, data->fp_ucode_cpu_color, data->fp_ucode_size_color);
 
-    rsxAddressToOffset(fp_ucode_rsx_color, &data->fp_offset_color);
+    rsxAddressToOffset(data->fp_ucode_rsx_color, &data->fp_offset_color);
 
     rsxLoadFragmentProgramLocation(data->context, data->fpo_color, data->fp_offset_color, GCM_LOCATION_RSX);
+
+    // Init quad
+    for (int i = 0; i < QUAD_RING_SIZE; i++) {
+        data->quad_ring[i].vbo = (TexVertex *)rsxMemalign(16, 4 * sizeof(TexVertex));
+        rsxAddressToOffset(data->quad_ring[i].vbo, &data->quad_ring[i].offset);
+    }
+    data->quad_ring_index = 0;
 
     // Build matrix for textures
     build_ortho_matrix(data->ortho_matrix, 0.0f, data->screenw, data->screenh, 0.0f, -1.0f, 1.0f);

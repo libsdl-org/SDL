@@ -459,7 +459,7 @@
  * A preprocessor macro that is only defined if compiling for Sony PlayStation
  * 3.
  *
- * \since This macro is available since SDL 3.2.0.
+ * \since This macro is available since SDL 3.4.0.
  */
 #define SDL_PLATFORM_PS3 1
 #endif
