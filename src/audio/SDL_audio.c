@@ -68,6 +68,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #ifdef SDL_AUDIO_DRIVER_PS2
     &PS2AUDIO_bootstrap,
 #endif
+#ifdef SDL_AUDIO_DRIVER_PS3
+    &PS3AUDIO_bootstrap,
+#endif
 #ifdef SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
 #endif
