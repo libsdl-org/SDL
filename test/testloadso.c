@@ -104,7 +104,11 @@ int main(int argc, char *argv[])
                 SDL_Log("Unloading library...");
             }
         }
-        SDL_UnloadObject(lib);
+        bool close_success = SDL_UnloadObject(lib);
+        if (!close_success) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_UnloadObject('%s') failed: %s",
+                         libname, SDL_GetError());
+        }
     }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
