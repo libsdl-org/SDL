@@ -944,6 +944,60 @@ macro(CheckVulkan)
   endif()
 endmacro()
 
+macro(CheckWebGPU)
+  set(HAVE_WEBGPU FALSE)
+  if(SDL_WEBGPU)
+    if(SDL_WEBGPU_EMSCRIPTEN)
+      message(STATUS "Using Emdawnwebgpu (remote) as WebGPU implementation")
+      # NOTE: Since the Emdawnwebgpu port is the official Emscripten provided
+      # way to link WebGPU, I thought it would be okay to just have SDL do it.
+      # There's an option to disable this, and since the port is just a python script
+      # we could use our own if supply-chain attacks are an issue.
+      # (Although, if somebody's breached the Emscripten repo there's probably bigger issues.)
+      # https://github.com/emscripten-core/emscripten/blob/main/tools/ports/emdawnwebgpu.py
+      sdl_link_dependency(sdlgpu-emdawnwebgpu LINK_OPTIONS "--use-port=emdawnwebgpu")
+      message("-- Using emdawnwgpu as WebGPU implementation")
+      set(HAVE_WEBGPU_EMSCRIPTEN TRUE)
+      set(HAVE_WEBGPU FALSE)
+    else()
+      check_language(CXX)
+      find_package(Dawn)
+      if(CMAKE_CXX_COMPILER AND Dawn_FOUND)
+        find_package(Threads)
+        set(HAVE_WEBGPU TRUE)
+        sdl_link_dependency(sdlgpu-dawn-threads CMAKE_MODULE Threads)
+        sdl_link_dependency(sdlgpu-dawn LIBS dawn::webgpu_dawn CMAKE_MODULE Dawn)
+        message("-- Using Dawn as WebGPU implementation")
+      endif()
+    endif()
+    if(HAVE_WEBGPU)
+      set(SDL_VIDEO_WEBGPU 1)
+
+      # Dawn's a C++ library, so we'll have to enable C++
+      enable_language(CXX)
+
+      # Dawn includes
+      if(HAVE_WAYLAND)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/wayland/SDL_waylandwgpu_dawn.cpp")
+      endif()
+
+      if(HAVE_X11)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/x11/SDL_x11wgpu_dawn.cpp")
+      endif()
+
+      if(WINDOWS)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/windows/SDL_windowswgpu_dawn.cpp")
+      endif()
+
+      if(EMSCRIPTEN)
+        sdl_sources("${SDL3_SOURCE_DIR}/src/video/emscripten/SDL_emscriptenwgpu_dawn.cpp")
+      endif()
+
+      set(WEBGPU_STATIC 1)
+    endif()
+  endif()
+endmacro()
+
 # Requires:
 # - EGL
 macro(CheckQNXScreen)

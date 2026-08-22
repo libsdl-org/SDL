@@ -293,6 +293,8 @@ endif()
 
 set(SDL_VULKAN_DEFAULT ON)
 
+set(SDL_WGPU_DEFAULT ON)
+
 set(SDL_X11_XRANDR_DEFAULT ON)
 if(SOLARIS)
   set(SDL_VULKAN_DEFAULT OFF)
@@ -386,6 +388,8 @@ dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_REND
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
 dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
+dep_option(SDL_WEBGPU              "Enable experimental WebGPU support" "${SDL_WGPU_DEFAULT}" "SDL_GPU;WINDOWS OR UNIX OR EMSCRIPTEN;NOT APPLE" OFF)
+dep_option(SDL_WEBGPU_EMSCRIPTEN   "Allow SDL to automatically link with Emscripten's WebGPU implementation" "TRUE" "SDL_WEBGPU;EMSCRIPTEN" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -1728,6 +1732,7 @@ elseif(EMSCRIPTEN)
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   sdl_compile_options(PRIVATE "-Wno-warn-absolute-paths")
 
+  CheckWebGPU()
   if(NOT SDL_EMSCRIPTEN_PERSISTENT_PATH STREQUAL "")
     set(SDL_EMSCRIPTEN_PERSISTENT_PATH_STRING "${SDL_EMSCRIPTEN_PERSISTENT_PATH}")
     sdl_link_dependency(idbfs LIBS idbfs.js)
@@ -1925,6 +1930,7 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     CheckVivante()
     CheckVulkan()
     CheckQNXScreen()
+    CheckWebGPU()
   endif()
 
   if(SDL_TRAY)
@@ -2533,6 +2539,10 @@ elseif(WINDOWS OR CYGWIN)
         set(SDL_VIDEO_RENDER_VULKAN 1)
         set(HAVE_RENDER_VULKAN TRUE)
       endif()
+    endif()
+
+    if(SDL_WEBGPU)
+      CheckWebGPU()
     endif()
   endif()
 
@@ -3710,6 +3720,14 @@ if(SDL_GPU)
       "${SDL3_SOURCE_DIR}/src/gpu/vulkan/*.h"
     )
     set(SDL_GPU_VULKAN 1)
+    set(HAVE_SDL_GPU TRUE)
+  endif()
+  if(SDL_VIDEO_WEBGPU)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.c"
+      "${SDL3_SOURCE_DIR}/src/gpu/webgpu/*.h"
+    )
+    set(SDL_GPU_WEBGPU 1)
     set(HAVE_SDL_GPU TRUE)
   endif()
   if(SDL_VIDEO_METAL)

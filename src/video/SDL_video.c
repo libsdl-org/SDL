@@ -6454,6 +6454,11 @@ void *SDL_Metal_GetLayer(SDL_MetalView view)
     }
 }
 
+WGPUSurface SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance)
+{
+    return _this->WGPU_CreateSurface(_this, window, instance);
+}
+
 #if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)
 const char *SDL_GetCSSCursorName(SDL_SystemCursor id, const char **fallback_name)
 {

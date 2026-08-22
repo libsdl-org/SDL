@@ -1046,6 +1046,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL SM6_0 shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_WGSL     (1u << 6) /**< WGSL shaders for WebGPU. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -2365,6 +2366,25 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  * not support indirect command buffers, MSAA depth resolve, and stencil
  * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
+ * TODO: This is gigantic and confusing, we need to polish this up
+ * With the WebGPU backend:
+ *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS`:
+ *   This property controls how aggressive the bind group cache pruning is.
+ *   If this is set to 100, any bind groups that haven't been used in the last
+ *   100 command buffer submissions will be automatically freed.
+ *   A proper explanation of this would take about a million years, but TLDR:
+ *   Every render & compute pass has multiple bind groups. Those bind groups are
+ *   only valid for the specific textures, samplers, and buffers you bound during
+ *   that pass. This means that for every new resource that gets bound, we must
+ *   create an entirely new bind group. SDLGPU automatically caches these groups
+ *   for better performance. However, every cached bind group takes up a small
+ *   amount of VRAM (a couple hundred bytes), so, SDLGPU will automatically free
+ *   any unused bind groups. This property is generally unimportant, but there
+ *   are usecases for when you want to disable caching (if so, set this to 0)
+ *   or if you want to disable cache pruning. (if so, set this to -1)
+ *   TLDR: Don't touch this if you don't know EXACTLY what it does.
+ *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2393,6 +2413,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN                         "SDL.gpu.device.create.shaders.dxil"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN                          "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN                         "SDL.gpu.device.create.shaders.wgsl"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER             "SDL.gpu.device.create.d3d12.agility_sdk_version"
@@ -2401,6 +2422,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
 
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
@@ -2814,6 +2836,12 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  * ```
  *
  * ---
+ *
+ * For WGSL, use the following order:
+ * - 0: Sampled textures, followed by read-only storage textures, followed by
+ *   read-only storage buffers
+ * - 1: Read-write storage textures, followed by read-write storage buffers
+ * - 2: Uniform buffers
  *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
