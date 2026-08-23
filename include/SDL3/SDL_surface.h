@@ -192,6 +192,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int heigh
  *
  * And this one.
  *
+ * Me too.
+ *
  * \param width the width of the surface.
  * \param height the height of the surface.
  * \param format the SDL_PixelFormat for the new surface's pixel format.
