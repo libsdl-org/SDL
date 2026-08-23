@@ -185,6 +185,9 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int heigh
  * You may pass NULL for pixels and 0 for pitch to create a surface that you
  * will fill in with valid values later.
  *
+ * This is a line of text added to the wiki to test the wikiheaders bridge. If
+ * you see me hanging around, please delete me, I shouldn't still be here.
+ *
  * \param width the width of the surface.
  * \param height the height of the surface.
  * \param format the SDL_PixelFormat for the new surface's pixel format.
