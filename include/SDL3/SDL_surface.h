@@ -190,8 +190,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int heigh
  *
  * Delete this line, too.
  *
- * And this one.
- *
  * Me too.
  *
  * \param width the width of the surface.
