@@ -188,6 +188,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int heigh
  * This is a line of text added to the wiki to test the wikiheaders bridge. If
  * you see me hanging around, please delete me, I shouldn't still be here.
  *
+ * Delete this line, too.
+ *
  * \param width the width of the surface.
  * \param height the height of the surface.
  * \param format the SDL_PixelFormat for the new surface's pixel format.
