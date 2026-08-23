@@ -2000,25 +2000,25 @@ static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
 
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         states |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         states |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         states |= D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         states |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
     }
-    
+
     // If no read flags are set, read-write can be the default.
     if (!states && buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    } 
-    
+    }
+
     if (!states) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
@@ -3226,6 +3226,9 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     psoDesc.SampleMask = 0xFFFFFFFF;
     psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
+    if (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
+        psoDesc.RasterizerState.MultisampleEnable = TRUE;
+    }
 
     if (createinfo->target_info.has_depth_stencil_target) {
         psoDesc.DSVFormat = SDLToD3D12_DepthFormat[createinfo->target_info.depth_stencil_format];
