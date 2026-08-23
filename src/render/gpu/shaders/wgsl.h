@@ -1,0 +1,7 @@
+#include "color.frag.wgsl.h"
+#include "linepoint.vert.wgsl.h"
+#include "texture_advanced.frag.wgsl.h"
+#include "texture_rgb.frag.wgsl.h"
+#include "texture_rgba.frag.wgsl.h"
+#include "tri_color.vert.wgsl.h"
+#include "tri_texture.vert.wgsl.h"
