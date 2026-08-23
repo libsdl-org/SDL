@@ -166,8 +166,8 @@ macro(CheckPipewire)
         sdl_link_dependency(pipewire LIBS PkgConfig::PC_PIPEWIRE PKG_CONFIG_PREFIX PC_PIPEWIRE PKG_CONFIG_SPECS ${PipeWire_PKG_CONFIG_SPEC})
       endif()
       set(HAVE_SDL_AUDIO TRUE)
-      endif()
     endif()
+  endif()
 endmacro()
 
 # Requires:
@@ -620,24 +620,24 @@ macro(CheckLibThai)
 endmacro()
 
 macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
-    set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
-    set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
+  set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
+  set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")
 
-    add_custom_command(
+  add_custom_command(
         OUTPUT "${_WAYLAND_PROT_H_CODE}"
         DEPENDS "${_XML}"
         COMMAND "${_SCANNER}"
         ARGS client-header "${_XML}" "${_WAYLAND_PROT_H_CODE}"
     )
 
-    add_custom_command(
+  add_custom_command(
         OUTPUT "${_WAYLAND_PROT_C_CODE}"
         DEPENDS "${_WAYLAND_PROT_H_CODE}"
         COMMAND "${_SCANNER}"
         ARGS "${_CODE_MODE}" "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
-    sdl_sources("${_WAYLAND_PROT_C_CODE}")
+  sdl_sources("${_WAYLAND_PROT_C_CODE}")
 endmacro()
 
 # Requires:
@@ -958,7 +958,7 @@ macro(CheckWebGPU)
       sdl_link_dependency(sdlgpu-emdawnwebgpu LINK_OPTIONS "--use-port=emdawnwebgpu")
       message("-- Using emdawnwgpu as WebGPU implementation")
       set(HAVE_WEBGPU_EMSCRIPTEN TRUE)
-      set(HAVE_WEBGPU FALSE)
+      set(HAVE_WEBGPU TRUE)
     else()
       check_language(CXX)
       find_package(Dawn)

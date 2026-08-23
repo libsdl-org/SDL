@@ -4765,11 +4765,11 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             WebGPUTexture *resolveTexture = ((WebGPUTextureContainer *)colorTargetInfos[i].resolve_texture)->activeTexture;
 
-            colorAttachments[i].view = resolveTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
-                                                                        colorTargetInfos[i].resolve_layer,
-                                                                        colorTargetInfos[i].resolve_mip_level,
-                                                                        wgpuTextureGetMipLevelCount(resolveTexture->texture))]
-                                           ->view;
+            colorAttachments[i].resolveTarget = resolveTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
+                                                                                 colorTargetInfos[i].resolve_layer,
+                                                                                 colorTargetInfos[i].resolve_mip_level,
+                                                                                 wgpuTextureGetMipLevelCount(resolveTexture->texture))]
+                                                    ->view;
         }
     }
 
