@@ -80,6 +80,10 @@
 #include <sys/auxv.h>
 #endif
 
+#ifndef PPC_FEATURE_HAS_ALTIVEC
+#define PPC_FEATURE_HAS_ALTIVEC 0x10000000
+#endif
+
 #ifdef SDL_PLATFORM_RISCOS
 #include <kernel.h>
 #include <swis.h>
