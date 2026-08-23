@@ -366,7 +366,7 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
                 goto posix_spawn_fail_all;
             }
             if (status != 0) {
-                SDL_SetError("posix_spawn() failed: %s", strerror(status));
+                SDL_SetError("posix_spawn() failed: %d", status);
                 goto posix_spawn_fail_all;
             }
             break;
