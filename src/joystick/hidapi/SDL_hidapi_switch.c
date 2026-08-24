@@ -978,14 +978,14 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
 
 static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 *pLeftStickCal = NULL;
-    Uint8 *pRightStickCal = NULL;
+    Uint8 pLeftStickCal[9];
+    Uint8 pRightStickCal[9];
+    bool have_left_stick_cal = false, have_right_stick_cal = false;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
     SwitchSPIOpData_t readUserParams;
     SwitchSPIOpData_t readFactoryParams;
-    Uint8 userParamsReadSuccessCount = 0;
 
     // Read User Calibration Info
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
@@ -1000,17 +1000,17 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
     // Automatically select the user calibration if magic bytes are set
     if (user_reply && user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
-        userParamsReadSuccessCount += 1;
-        pLeftStickCal = user_reply->stickUserCalibration.rgucLeftCalibration;
+        have_left_stick_cal = true;
+        SDL_memcpy(pLeftStickCal, user_reply->stickUserCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
     }
 
     if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
-        userParamsReadSuccessCount += 1;
-        pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
+        have_right_stick_cal = true;
+        SDL_memcpy(pRightStickCal, user_reply->stickUserCalibration.rgucRightCalibration, sizeof(pRightStickCal));
     }
 
     // Only read the factory calibration info if we failed to receive the correct magic bytes
-    if (userParamsReadSuccessCount < 2) {
+    if (!have_left_stick_cal || !have_right_stick_cal) {
         // Read Factory Calibration Info
         readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
         readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
@@ -1023,8 +1023,17 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
             if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
                 // We successfully read the calibration data
-                pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
-                pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
+                // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
+                if (!have_left_stick_cal) {
+                    have_left_stick_cal = true;
+                    SDL_memcpy(pLeftStickCal, user_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
+                }
+
+                if (!have_right_stick_cal) {
+                    have_right_stick_cal = true;
+                    SDL_memcpy(pRightStickCal, user_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
+                }
+
                 break;
             }
 
@@ -1035,7 +1044,7 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
     }
 
     // If we still don't have calibration data, return false
-    if (pLeftStickCal == NULL || pRightStickCal == NULL)
+    if (!have_left_stick_cal || !have_right_stick_cal)
     {
         return false;
     }
