@@ -398,7 +398,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             viewport_height = data->requested.pixel_height;
         }
 
-        if (data->viewport && data->waylandData->subcompositor && !data->floating && !data->is_fullscreen) {
+        if (data->shell_surface_status != WAYLAND_SHELL_SURFACE_STATUS_HIDDEN &&
+            data->viewport && data->waylandData->subcompositor && !data->floating && !data->is_fullscreen) {
             int min_width, min_height, max_width, max_height;
             if (window->flags & SDL_WINDOW_RESIZABLE) {
                 min_width = window->min_w;
