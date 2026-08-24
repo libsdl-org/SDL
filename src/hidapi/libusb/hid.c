@@ -951,6 +951,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x1038, /* SteelSeries */
+		0x10f5, /* Turtle Beach */
 		0x11c9, /* Nacon */
 		0x1209, /* Generic */
 		0x12ab, /* Unknown */
