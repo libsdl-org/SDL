@@ -1002,7 +1002,6 @@ typedef struct WebGPURenderer
     // Since wgpuQueueWriteBuffer isn't thread-safe, we can't use pseudo-mapping
     // and instead have to fall back to regular (slow) maps and unmaps
     Uint64 createdByThreadID;
-
     Uint64 numSubmissions;
 
     Uint32 maxFramesInFlight;
