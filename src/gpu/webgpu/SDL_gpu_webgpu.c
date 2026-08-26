@@ -989,7 +989,7 @@ typedef struct WebGPURenderer
     struct blitResources blitResourcesRGBA32;
 
     SDL_PropertiesID props;
-    SDL_PropertiesID bindGroups; // Cache of the renderer's bind groups.
+    SDL_HashTable *bindGroupHashTable; // A cache of the renderer's bind groups.
 
     SDL_Mutex *queryingFenceLock;
     SDL_Mutex *destroyingSelfLock;
@@ -1006,9 +1006,10 @@ typedef struct WebGPURenderer
     Uint64 numSubmissions;
 
     Uint32 maxFramesInFlight;
-
     Uint32 blitPipelineCount;
     Uint32 blitPipelineCapacity;
+
+    Uint32 nextBindableResourceID;
 
     // For how many submissions can a bind group be unused until it's automatically freed?
     // Set to -1 to disable pruning, and 0 to instantly free it.
@@ -1088,20 +1089,24 @@ typedef enum WebGPUQueuedDestroyType
     WEBGPU_QUEUED_DESTROY_BIND_GROUP,
 } WebGPUQueuedDestroyType;
 
+typedef struct WebGPUBindGroupCacheKey
+{
+    Uint64 boundSamplersIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    Uint64 boundTexturesIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+
+    // Storage textures/buffers in a render pass are always read-only, so they don't need their own fields.
+    Uint64 boundReadWriteStorageTexturesIDs[MAX_STORAGE_TEXTURES_PER_STAGE];
+    Uint64 boundReadOnlyStorageTexturesIDs[MAX_STORAGE_TEXTURES_PER_STAGE];
+
+    Uint64 boundReadWriteStorageBuffersIDs[MAX_STORAGE_BUFFERS_PER_STAGE];
+    Uint64 boundReadOnlyStorageBuffersIDs[MAX_STORAGE_BUFFERS_PER_STAGE];
+} WebGPUBindGroupCacheKey;
+
 typedef struct WebGPUBindGroup
 {
     WGPUBindGroup bindGroup;
 
-    // The bind group's identifier.
-    // This is a combination of all the individual bound resource identifiers.
-    // Each identifier is split by a dash.
-    //
-    // Example identifier:
-    // "V0-deadbeef-beepboop-bingbong"
-    //
-    // NOTE: Since each resource identifier is just a random uint64_t directly memcopied to a char array,
-    // it often isn't actual valid text. So, if you're gonna print it make sure to print it as hex or something.
-    char *stringIdentifier;
+    WebGPUBindGroupCacheKey key;
 
     // The renderer's numSubmissions when this bind groups was last bound.
     // This is used to automatically send old, redunant bind groups to the shadow realm.
@@ -1565,7 +1570,44 @@ static void WEBGPU_INTERNAL_RequestAdapterCallback(WGPURequestAdapterStatus stat
     }
 }
 
-static void WEBGPU_INTERNAL_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDevice device, WGPUStringView message, void *renderer, void *success)
+// Bind group hashmap functions
+
+// This hash function is based on Landon Curt Noll's hash_32a.c FNV-1a implementation.
+// https://github.com/lcn2/fnv/blob/master/hash_32a.c
+static Uint32 WEBGPU_INTERNAL_HashBindGroupKey(void *unused, const void *key)
+{
+    Uint32 bufferSize = sizeof(WebGPUBindGroupCacheKey);
+    Uint32 hash = 0xAAA1ABEE; // There are no rules forcing this to be any specific number so I will take this rare opportunity to shitpost
+
+    char *keyDataBuf = (char *)key; // Is this void* -> char* cast a bad idea? Probably.
+    char *endOfBuf = keyDataBuf + bufferSize;
+
+    while (keyDataBuf < endOfBuf) {
+        hash *= 0x01000193;
+        hash ^= (Uint32)*keyDataBuf++;
+    }
+
+    return hash;
+}
+
+static void WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey(void *unused, const void *key, const void *value)
+{
+    WebGPUBindGroup *bindGroup = (WebGPUBindGroup *)value; // "Bu-bu-but that's a const pointe-" shh my child, segmentation faults don't happen if you're pure of heart
+    if (bindGroup == NULL) {
+        return;
+    }
+
+    wgpuBindGroupRelease(bindGroup->bindGroup);
+    SDL_free(bindGroup);
+}
+
+static bool WEBGPU_INTERNAL_MatchHashedBindGroupKey(void *unused, const void *a, const void *b)
+{
+    return SDL_memcmp(a, b, sizeof(WebGPUBindGroupCacheKey)) == 0;
+}
+
+static void
+WEBGPU_INTERNAL_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDevice device, WGPUStringView message, void *renderer, void *success)
 {
     if (status == WGPURequestDeviceStatus_Success) {
         ((WebGPURenderer *)renderer)->device = device;
@@ -1843,18 +1885,6 @@ static void WEBGPU_EndCopyPass(SDL_GPUCommandBuffer *copyPass)
     // to do the incredibly computationally expensive task, called "doing nothing"
 }
 
-// Each bindable resource in the WebGPU backend gets a random number assigned to it during creation.
-// That number is called the "identifier". It's used to cache bind groups and such. (Keep on binding, Denji)
-static inline Uint64 WEBGPU_INTERNAL_GenerateRandomIdentifier(void)
-{
-    Uint32 lower = (uint32_t)SDL_rand_bits();
-    Uint64 upper = ((uint64_t)SDL_rand_bits() << 32);
-
-    Uint64 combined = lower + upper;
-
-    return combined;
-}
-
 static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device)
 {
     // HACK:
@@ -1888,6 +1918,68 @@ static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device
     wrapper->swapchainTextureCapacity = 2;
 
     return (SDL_GPUCommandBuffer *)wrapper;
+}
+
+/**
+ * Set all of the render pass's bound resources to NULL.
+ */
+static void WEBGPU_INTERNAL_ClearRenderPassBindings(WebGPUCommandBuffer *cmdBuf)
+{
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundTextures[i] = NULL;
+        cmdBuf->vertexStageBinds.boundSamplers[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundTextures[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundSamplers[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundStorageTextures[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundStorageTextures[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundStorageBuffers[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundStorageBuffers[i] = NULL;
+    }
+
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->vertexStageBinds.uniformBindGroupOutdated = true;
+
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->fragmentStageBinds.uniformBindGroupOutdated = true;
+
+    cmdBuf->vertexStageBinds.shouldBindVertexBuffers = true;
+    cmdBuf->vertexStageBinds.shouldBindIndexBuffer = true;
+}
+
+/**
+ * Set all of the compute pass's bound resources to NULL.
+ * clearReadWriteBindings prevents... clearing read write bindings. Since they're set at the beginning of the compute pass, clearing them when the pipeline's bound is A Bad Thing!
+ */
+static void WEBGPU_INTERNAL_ClearComputePassBindings(WebGPUCommandBuffer *cmdBuf, bool clearReadWriteBindings)
+{
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundSamplers[i] = NULL;
+        cmdBuf->computeStageBinds.boundTextures[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i] = NULL;
+        if (clearReadWriteBindings) {
+            cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = NULL;
+        }
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] = NULL;
+        if (clearReadWriteBindings) {
+            cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] = NULL;
+        }
+    }
+
+    cmdBuf->computeStageBinds.uniformBindGroupOutdated = true;
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
 }
 
 static void WEBGPU_INTERNAL_FreeCommandBuffer(WebGPUCommandBuffer *cmdBuf)
@@ -2244,7 +2336,7 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
         uniformEntries[i].nextInChain = NULL;
         uniformEntries[i].binding = i;
         uniformEntries[i].buffer = (WGPUBufferBindingLayout){
-            .minBindingSize = 256,
+            .minBindingSize = 0,
             .nextInChain = NULL,
             .hasDynamicOffset = true,
             .type = WGPUBufferBindingType_Uniform,
@@ -2500,7 +2592,7 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
         uniformEntries[i].nextInChain = NULL;
         uniformEntries[i].binding = i;
         uniformEntries[i].buffer = (WGPUBufferBindingLayout){
-            .minBindingSize = 256,
+            .minBindingSize = 0,
             .nextInChain = NULL,
             .hasDynamicOffset = true,
             .type = WGPUBufferBindingType_Uniform,
@@ -2542,48 +2634,33 @@ static WebGPUComputeShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLay
     return result;
 }
 
-static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroupFromIdentifier(WebGPURenderer *renderer, char *identifier)
+static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroupFromIdentifier(WebGPURenderer *renderer, WebGPUBindGroupCacheKey key)
 {
-    WebGPUBindGroup *result = SDL_GetPointerProperty(renderer->bindGroups, identifier, NULL);
-    if (result != NULL && result->invalid) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Retrieved invalid bind group from bind group identifier! This is a Bad Thing!");
-        return NULL;
-    }
+    WebGPUBindGroup *result = NULL;
+    SDL_FindInHashTable(renderer->bindGroupHashTable, &key, (const void **)&result);
 
     return result;
 }
 
-static void WEBGPU_INTERNAL_ReleaseBindGroup(WebGPURenderer *renderer, WebGPUBindGroup *bindGroup)
-{
-    if (bindGroup == NULL) {
-        return;
-    }
-
-    SDL_ClearProperty(renderer->bindGroups, bindGroup->stringIdentifier);
-
-    wgpuBindGroupRelease(bindGroup->bindGroup);
-
-    SDL_free(bindGroup->stringIdentifier);
-    SDL_free(bindGroup);
-}
-
-static void WEBGPU_INTERNAL_BindGroupEnumeratorCallback(void *userdata, SDL_PropertiesID props, const char *name)
+static bool WEBGPU_INTERNAL_BindGroupCacheIteratorCallback(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
 {
     WebGPURenderer *renderer = userdata;
-    WebGPUBindGroup *bindGroup = SDL_GetPointerProperty(renderer->bindGroups, name, NULL);
+    WebGPUBindGroup *bindGroup = (WebGPUBindGroup *)value;
 
     if (bindGroup) {
-        if (((renderer->numSubmissions - bindGroup->lastUsedAtSubmission > renderer->bindGroupsExpireAfter) || (renderer->destroyingSelf)) && !bindGroup->invalid) {
+        if (renderer->numSubmissions - bindGroup->lastUsedAtSubmission > renderer->bindGroupsExpireAfter) {
             WEBGPU_INTERNAL_QueueBindGroupForRelease(renderer, bindGroup);
             bindGroup->invalid = true;
         }
     }
+
+    return true;
 }
 
 // This function checks all of the bind groups and releases any that haven't been used in a while.
 static void WEBGPU_INTERNAL_TrimBindGroupCache(WebGPURenderer *renderer)
 {
-    SDL_EnumerateProperties(renderer->bindGroups, WEBGPU_INTERNAL_BindGroupEnumeratorCallback, renderer);
+    SDL_IterateHashTable(renderer->bindGroupHashTable, WEBGPU_INTERNAL_BindGroupCacheIteratorCallback, renderer);
 }
 
 static void WEBGPU_INTERNAL_CheckSubmittedCommandBuffers(WebGPURenderer *renderer)
@@ -2737,7 +2814,7 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 break;
             case WEBGPU_QUEUED_DESTROY_BIND_GROUP:
                 // FIXME: Bind groups don't have any reference counts, so there might be some issues with in-flight usages?
-                WEBGPU_INTERNAL_ReleaseBindGroup(renderer, current->resource.bindGroup);
+                SDL_RemoveFromHashTable(renderer->bindGroupHashTable, &current->resource.bindGroup->key); // The key value destruction function also releases the bind group.
                 wasReleased = true;
 
                 break;
@@ -2760,51 +2837,24 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
     }
 }
 
-static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType desiredGroup)
+static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType desiredGroup)
 {
-    char *identifier = NULL;
-    Uint32 offset = 0;
-
-    // A bind group can at most contain 48 resources (16 textures, 16 samplers, 8 storage textures, 8 storage buffers)
-    // Each char is 8 bits, each identifier is 64 bits, 8 * 48 = 385 chars, (+1 for NULL terminator since C SUCKS)
-    //
-    // We'll then loop through the string and remove any NULL terminators that might have popped up.
-    // This does make the hashing *slightly* worse, but I think it'll be fine. It's also not very optimized but I don't care.
-    identifier = SDL_malloc(385 * sizeof(char));
-
-    SDL_memset(identifier, '0', 384);
-    identifier[384] = '\0';
+    WebGPUBindGroupCacheKey result = { 0 };
 
     switch (desiredGroup) {
     case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
     {
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
-            // 0x3030... is just the 64bit representation of "00000000" in ASCII
-            Uint64 textureID = cmdBuf->vertexStageBinds.boundTextures[i] ? cmdBuf->vertexStageBinds.boundTextures[i]->identifier : 0x3030303030303030;
-            Uint64 samplerID = cmdBuf->vertexStageBinds.boundSamplers[i] ? cmdBuf->vertexStageBinds.boundSamplers[i]->identifier : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &textureID, 8);
-            SDL_memcpy(identifier + offset + 8, &samplerID, 8);
-
-            offset += 16;
+            result.boundTexturesIDs[i] = cmdBuf->vertexStageBinds.boundTextures[i] ? cmdBuf->vertexStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->vertexStageBinds.boundSamplers[i] ? cmdBuf->vertexStageBinds.boundSamplers[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-            Uint64 storageTextureID = cmdBuf->vertexStageBinds.boundStorageTextures[i]
-                                          ? cmdBuf->vertexStageBinds.boundStorageTextures[i]->identifier
-                                          : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageTextureID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->vertexStageBinds.boundStorageTextures[i] ? cmdBuf->vertexStageBinds.boundStorageTextures[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-            Uint64 storageBufferID = cmdBuf->vertexStageBinds.boundStorageBuffers[i]
-                                         ? cmdBuf->vertexStageBinds.boundStorageBuffers[i]->identifier
-                                         : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageBufferID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->vertexStageBinds.boundStorageBuffers[i] ? cmdBuf->vertexStageBinds.boundStorageBuffers[i]->identifier : 0;
         }
         break;
     }
@@ -2816,31 +2866,16 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
     case WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE:
     {
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
-            Uint64 textureID = cmdBuf->fragmentStageBinds.boundTextures[i] ? cmdBuf->fragmentStageBinds.boundTextures[i]->identifier : 0x3030303030303030;
-            Uint64 samplerID = cmdBuf->fragmentStageBinds.boundSamplers[i] ? cmdBuf->fragmentStageBinds.boundSamplers[i]->identifier : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &textureID, 8);
-            SDL_memcpy(identifier + offset + 8, &samplerID, 8);
-
-            offset += 16;
+            result.boundTexturesIDs[i] = cmdBuf->fragmentStageBinds.boundTextures[i] ? cmdBuf->fragmentStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->fragmentStageBinds.boundSamplers[i] ? cmdBuf->fragmentStageBinds.boundSamplers[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-            Uint64 storageTextureID = cmdBuf->fragmentStageBinds.boundStorageTextures[i]
-                                          ? cmdBuf->fragmentStageBinds.boundStorageTextures[i]->identifier
-                                          : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageTextureID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->fragmentStageBinds.boundStorageTextures[i] ? cmdBuf->fragmentStageBinds.boundStorageTextures[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-            Uint64 storageBufferID = cmdBuf->fragmentStageBinds.boundStorageBuffers[i]
-                                         ? cmdBuf->fragmentStageBinds.boundStorageBuffers[i]->identifier
-                                         : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageBufferID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->fragmentStageBinds.boundStorageBuffers[i] ? cmdBuf->fragmentStageBinds.boundStorageBuffers[i]->identifier : 0;
         }
         break;
     }
@@ -2852,52 +2887,27 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
     case WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE:
     {
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
-            Uint64 textureID = cmdBuf->computeStageBinds.boundTextures[i] ? cmdBuf->computeStageBinds.boundTextures[i]->identifier : 0x3030303030303030;
-            Uint64 samplerID = cmdBuf->computeStageBinds.boundSamplers[i] ? cmdBuf->computeStageBinds.boundSamplers[i]->identifier : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &textureID, 8);
-            SDL_memcpy(identifier + offset + 8, &samplerID, 8);
-
-            offset += 16;
+            result.boundTexturesIDs[i] = cmdBuf->computeStageBinds.boundTextures[i] ? cmdBuf->computeStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->computeStageBinds.boundSamplers[i] ? cmdBuf->computeStageBinds.boundSamplers[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-            Uint64 storageTextureID = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i]
-                                          ? cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i]->identifier
-                                          : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageTextureID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i] ? cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-            Uint64 storageBufferID = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i]
-                                         ? cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i]->identifier
-                                         : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageBufferID, 8);
-            offset += 8;
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i]->identifier : 0;
         }
         break;
     }
     case WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE:
     {
         for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-            Uint64 storageTextureID = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i]
-                                          ? cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i]->identifier
-                                          : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageTextureID, 8);
-            offset += 8;
+            result.boundReadWriteStorageTexturesIDs[i] = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] ? cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i]->identifier : 0;
         }
 
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-            Uint64 storageBufferID = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i]
-                                         ? cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i]->identifier
-                                         : 0x3030303030303030;
-
-            SDL_memcpy(identifier + offset, &storageBufferID, 8);
-            offset += 8;
+            result.boundReadWriteStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i]->identifier : 0;
         }
         break;
     }
@@ -2908,18 +2918,10 @@ static char *WEBGPU_INTERNAL_GenerateBindGroupIdentifier(WebGPUCommandBuffer *cm
     }
     }
 
-    for (int i = 0; i < 384; i++) {
-        // SDL_HashString uses strlen, so we'll have to remove any null terminators that aren't at the end.
-        // This is really slow but I don't really care that much
-        if (identifier[i] == '\0') {
-            identifier[i] = '0';
-        }
-    }
-
-    return identifier;
+    return result;
 }
 
-static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType type, char *identifier)
+static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType type, WebGPUBindGroupCacheKey key)
 {
     WebGPUBindGroup *result = NULL;
 
@@ -3144,10 +3146,10 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     result = SDL_calloc(1, sizeof(*result));
 
     result->bindGroup = bindGroup;
-    result->stringIdentifier = SDL_strdup(identifier);
+    result->key = key;
     result->invalid = false;
 
-    SDL_SetPointerProperty(cmdBuf->renderer->bindGroups, identifier, result);
+    SDL_InsertIntoHashTable(cmdBuf->renderer->bindGroupHashTable, &result->key, result, true);
 
     SDL_free(entries);
     return result;
@@ -3165,20 +3167,19 @@ static WGPUBindGroup WEBGPU_INTERNAL_GetBindGroup(WebGPUCommandBuffer *cmdBuf, W
         return cmdBuf->renderer->uniformBufferBindGroups[2];
     }
 
-    char *identifier = WEBGPU_INTERNAL_GenerateBindGroupIdentifier(cmdBuf, type);
-    WebGPUBindGroup *result = WEBGPU_INTERNAL_GetBindGroupFromIdentifier(cmdBuf->renderer, identifier);
+    WebGPUBindGroupCacheKey key = WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(cmdBuf, type);
+    WebGPUBindGroup *result = WEBGPU_INTERNAL_GetBindGroupFromIdentifier(cmdBuf->renderer, key);
 
     if (result == NULL) {
-        result = WEBGPU_INTERNAL_CreateBindGroup(cmdBuf, type, identifier);
+        result = WEBGPU_INTERNAL_CreateBindGroup(cmdBuf, type, key);
     }
 
     result->lastUsedAtSubmission = cmdBuf->renderer->numSubmissions + 1;
-    SDL_free(identifier);
 
     return result->bindGroup;
 }
 
-static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *texture, int depth, int mipLevel)
+static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPURenderer *renderer, WebGPUTexture *texture, int depth, int mipLevel)
 {
     WebGPUTextureView *result = NULL;
 
@@ -3231,7 +3232,7 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPUTexture *textu
 
     result = SDL_calloc(1, sizeof(*result));
 
-    result->identifier = WEBGPU_INTERNAL_GenerateRandomIdentifier();
+    result->identifier = renderer->nextBindableResourceID++;
     result->view = wgpuTextureCreateView(texture->texture, &desc);
 
     return result;
@@ -3310,17 +3311,17 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     SDL_SetAtomicInt(&texture->referenceCount, 0);
     texture->texture = wgpuDeviceCreateTexture(renderer->device, &desc);
     // -1 signals that we want a texture view for all of the layers
-    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1, 0);
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, -1, 0);
 
     if (createInfo->type == SDL_GPU_TEXTURETYPE_3D) {
         // manually create view
-        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, 0);
+        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, 0, 0);
         WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                                texture->textureViewCount, WebGPUTextureView *, textureView);
     } else {
         for (int i = 0; i < desc.size.depthOrArrayLayers; i++) {
             for (int j = 0; j < desc.mipLevelCount; j++) {
-                WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, i, j);
+                WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, i, j);
 
                 WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                                        texture->textureViewCount, WebGPUTextureView *, textureView);
@@ -3394,7 +3395,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
     desc.maxAnisotropy = createInfo->max_anisotropy >= 1 ? (Uint16)createInfo->max_anisotropy : 1;
 
     sampler->sampler = wgpuDeviceCreateSampler(((WebGPURenderer *)device)->device, &desc);
-    sampler->identifier = WEBGPU_INTERNAL_GenerateRandomIdentifier();
+    sampler->identifier = ((WebGPURenderer *)device)->nextBindableResourceID++;
 
     return (SDL_GPUSampler *)sampler;
 }
@@ -3446,7 +3447,7 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *device, SDL_Window *window)
 
     windowData->surfaceConfig = (WGPUSurfaceConfiguration){
         .device = windowData->renderer->device,
-        .usage = WGPUTextureUsage_RenderAttachment,
+        .usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopyDst,
         .format = SDLToWebGPU_TextureFormat[WEBGPU_GetSwapchainTextureFormat(device, window)],
         .presentMode = WGPUPresentMode_Fifo,
         .alphaMode = WGPUCompositeAlphaMode_Auto,
@@ -3507,9 +3508,9 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     texture->aspect = WGPUTextureAspect_All;
     SDL_SetAtomicInt(&texture->referenceCount, 0);
     texture->format = SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat);
-    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(texture, -1, 0);
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(cmdBuf->renderer, texture, -1, 0);
 
-    WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(texture, 0, 0);
+    WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(cmdBuf->renderer, texture, 0, 0);
     WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
                                            texture->textureViewCount, WebGPUTextureView *, textureView);
 
@@ -3630,12 +3631,12 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     };
 
     WGPUColorTargetState *colorTargets = SDL_calloc(createInfo->target_info.num_color_targets, sizeof(WGPUColorTargetState));
+    WGPUBlendState *colorTargetBlendStates = SDL_calloc(createInfo->target_info.num_color_targets, sizeof(WGPUBlendState));
     for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
         const SDL_GPUColorTargetDescription *targetDesc = &createInfo->target_info.color_target_descriptions[i];
 
         bool float32Filterable = wgpuDeviceHasFeature(((WebGPURenderer *)driverData)->device, WGPUFeatureName_Float32Filterable);
         if (WebGPUTextureFormatIsBlendable(SDLToWebGPU_TextureFormat[targetDesc->format], float32Filterable)) {
-            WGPUBlendState *colorTargetBlendStates = SDL_calloc(createInfo->target_info.num_color_targets, sizeof(WGPUBlendState));
             colorTargetBlendStates[i].color = (WGPUBlendComponent){
                 .dstFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.dst_color_blendfactor],
                 .srcFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.src_color_blendfactor],
@@ -3803,15 +3804,11 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     pipeline->vertexBindGroupLayouts = *vertexShader->bindGroupLayouts;
     pipeline->fragmentBindGroupLayouts = *fragmentShader->bindGroupLayouts;
 
-    // FIXME: This is fine on all of the examples, but it segfaults on Jsoulier's "blocks" repo,
-    // claiming that it's non-allocated (stack?) memory, despite the fact that we very clearly call calloc?
-    // for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
-    //     SDL_free((void *)colorTargets[i].blend);
-    // }
-
     for (int i = 0; i < createInfo->vertex_input_state.num_vertex_buffers; i++) {
         SDL_free((void *)vertexBufferLayouts[i].attributes);
     }
+
+    SDL_free(colorTargetBlendStates);
 
     SDL_free(vertexBufferLayouts);
     SDL_free(colorTargets);
@@ -4083,7 +4080,7 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, Uint
     buf->size = ALIGN_VALUE(size, 4);
     buf->usage = usages;
     buf->type = bufferType;
-    buf->identifier = WEBGPU_INTERNAL_GenerateRandomIdentifier();
+    buf->identifier = renderer->nextBindableResourceID++;
 
     WGPUBufferDescriptor desc = {
         .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 },
@@ -4798,32 +4795,6 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
     wrapper->boundGraphicsPipeline = NULL;
     wrapper->hasBoundGraphicsPipeline = false;
 
-    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
-        wrapper->vertexStageBinds.boundTextures[i] = NULL;
-        wrapper->vertexStageBinds.boundSamplers[i] = NULL;
-        wrapper->fragmentStageBinds.boundTextures[i] = NULL;
-        wrapper->fragmentStageBinds.boundSamplers[i] = NULL;
-    }
-
-    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-        wrapper->vertexStageBinds.boundStorageTextures[i] = NULL;
-        wrapper->fragmentStageBinds.boundStorageTextures[i] = NULL;
-    }
-
-    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-        wrapper->vertexStageBinds.boundStorageBuffers[i] = NULL;
-        wrapper->fragmentStageBinds.boundStorageBuffers[i] = NULL;
-    }
-
-    wrapper->vertexStageBinds.samplerStorageBindGroupOutdated = true;
-    wrapper->vertexStageBinds.uniformBindGroupOutdated = true;
-
-    wrapper->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
-    wrapper->fragmentStageBinds.uniformBindGroupOutdated = true;
-
-    wrapper->vertexStageBinds.shouldBindVertexBuffers = true;
-    wrapper->vertexStageBinds.shouldBindIndexBuffer = true;
-
     SDL_free(colorAttachments);
     SDL_free(depthStencilAttachment);
 }
@@ -4838,8 +4809,8 @@ static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, Ui
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
     WebGPUQueuedUniformDataUpload upload = {
-        .data = SDL_malloc(((length + 255) & ~255)),
-        .length = (length + 255) & ~255,
+        .data = SDL_malloc(ALIGN_VALUE(length, 256)),
+        .length = ALIGN_VALUE(length, 256),
         .offset = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex],
         .slot = slotIndex,
     };
@@ -4850,7 +4821,7 @@ static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, Ui
 
     // jank and gross but it works
     cmdBuf->vertexStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex];
-    cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
+    cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
     cmdBuf->vertexStageBinds.uniformBindGroupOutdated = true;
 }
 
@@ -4859,8 +4830,8 @@ static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, 
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
     WebGPUQueuedUniformDataUpload upload = {
-        .data = SDL_malloc(((length + 255) & ~255)),
-        .length = (length + 255) & ~255,
+        .data = SDL_malloc(ALIGN_VALUE(length, 256)),
+        .length = ALIGN_VALUE(length, 256),
         .offset = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex],
         .slot = 4 + slotIndex,
     };
@@ -4870,7 +4841,7 @@ static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, 
                                            cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
 
     cmdBuf->fragmentStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex];
-    cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
+    cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
     cmdBuf->fragmentStageBinds.uniformBindGroupOutdated = true;
 }
 
@@ -4879,8 +4850,8 @@ static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, U
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
 
     WebGPUQueuedUniformDataUpload upload = {
-        .data = SDL_malloc(((length + 255) & ~255)),
-        .length = (length + 255) & ~255,
+        .data = SDL_malloc(ALIGN_VALUE(length, 256)),
+        .length = ALIGN_VALUE(length, 256),
         .offset = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex],
         .slot = 8 + slotIndex,
     };
@@ -4890,7 +4861,7 @@ static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, U
                                            cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
 
     cmdBuf->computeStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex];
-    cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex] += ((length + 255) & ~255);
+    cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
     cmdBuf->computeStageBinds.uniformBindGroupOutdated = true;
 }
 
@@ -4927,6 +4898,8 @@ static void WEBGPU_BindGraphicsPipeline(SDL_GPUCommandBuffer *renderPass, SDL_GP
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
     wgpuRenderPassEncoderSetPipeline(cmdBuf->renderPassEncoder, ((WebGPUGraphicsPipeline *)graphicsPipeline)->pipeline);
+
+    WEBGPU_INTERNAL_ClearRenderPassBindings(cmdBuf);
 
     cmdBuf->boundGraphicsPipeline = ((WebGPUGraphicsPipeline *)graphicsPipeline);
     cmdBuf->hasBoundGraphicsPipeline = true;
@@ -5409,24 +5382,7 @@ static void WEBGPU_BeginComputePass(SDL_GPUCommandBuffer *commandBuffer, const S
         return;
     }
 
-    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
-        cmdBuf->computeStageBinds.boundSamplers[i] = NULL;
-        cmdBuf->computeStageBinds.boundTextures[i] = NULL;
-    }
-
-    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i] = NULL;
-        cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = NULL;
-    }
-
-    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-        cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] = NULL;
-        cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] = NULL;
-    }
-
-    cmdBuf->computeStageBinds.uniformBindGroupOutdated = true;
-    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
-    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
+    WEBGPU_INTERNAL_ClearComputePassBindings(cmdBuf, true);
 
     WEBGPU_INTERNAL_BindComputeReadWriteStorageTextures(cmdBuf, storageTextureBindings, numStorageTextureBindings);
     WEBGPU_INTERNAL_BindComputeReadWriteStorageBuffers(cmdBuf, storageBufferBindings, numStorageBufferBindings);
@@ -5446,6 +5402,7 @@ static void WEBGPU_BindComputePipeline(SDL_GPUCommandBuffer *commandBuffer, SDL_
     WebGPUComputePipeline *pipeline = (WebGPUComputePipeline *)computePipeline;
 
     wgpuComputePassEncoderSetPipeline(cmdBuf->computePassEncoder, pipeline->pipeline);
+    WEBGPU_INTERNAL_ClearComputePassBindings(cmdBuf, false);
 
     cmdBuf->boundComputePipeline = (WebGPUComputePipeline *)computePipeline;
     cmdBuf->hasBoundComputePipeline = true;
@@ -5573,7 +5530,6 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     }
 
     WEBGPU_INTERNAL_ReleaseBlitResources(renderer);
-    WEBGPU_INTERNAL_TrimBindGroupCache(renderer);
 
     while (renderer->queuedDestroyCount > 0 || renderer->submittedCommandBufferCount > 0) {
         WEBGPU_INTERNAL_HandlePendingDestroys(renderer);
@@ -5591,8 +5547,9 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     wgpuAdapterRelease(renderer->adapter);
     wgpuInstanceRelease(renderer->instance);
 
+    SDL_DestroyHashTable(renderer->bindGroupHashTable);
+
     SDL_DestroyProperties(renderer->props);
-    SDL_DestroyProperties(renderer->bindGroups);
     SDL_UnlockMutex(renderer->destroyingSelfLock);
     SDL_DestroyMutex(renderer->destroyingSelfLock);
     SDL_free(renderer->blitPipelines);
@@ -5854,7 +5811,7 @@ static void WEBGPU_INTERNAL_InitUniformBuffers(WebGPURenderer *renderer)
             layoutEntries[j].nextInChain = NULL;
             layoutEntries[j].binding = j;
             layoutEntries[j].buffer = (WGPUBufferBindingLayout){
-                .minBindingSize = 256,
+                .minBindingSize = 0,
                 .nextInChain = NULL,
                 .hasDynamicOffset = true,
                 .type = WGPUBufferBindingType_Uniform,
@@ -6148,9 +6105,10 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->preferLowPower = preferLowPower;
     renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
-    renderer->bindGroups = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
     renderer->maxFramesInFlight = 2; // Default
+
+    renderer->bindGroupHashTable = SDL_CreateHashTable(512, true, WEBGPU_INTERNAL_HashBindGroupKey, WEBGPU_INTERNAL_MatchHashedBindGroupKey, WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey, NULL);
 
     renderer->queryingFenceLock = SDL_CreateMutex();
     renderer->destroyingSelfLock = SDL_CreateMutex();
