@@ -1411,6 +1411,7 @@ typedef struct SDL_GPUViewport
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_GPUTransferBuffer
  */
 typedef struct SDL_GPUTextureTransferInfo
 {
@@ -1429,6 +1430,7 @@ typedef struct SDL_GPUTextureTransferInfo
  *
  * \sa SDL_UploadToGPUBuffer
  * \sa SDL_DownloadFromGPUBuffer
+ * \sa SDL_GPUTransferBuffer
  */
 typedef struct SDL_GPUTransferBufferLocation
 {
@@ -1444,6 +1446,7 @@ typedef struct SDL_GPUTransferBufferLocation
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CopyGPUTextureToTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUTextureLocation
 {
@@ -1465,6 +1468,7 @@ typedef struct SDL_GPUTextureLocation
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
  * \sa SDL_CreateGPUTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUTextureRegion
 {
@@ -1485,6 +1489,7 @@ typedef struct SDL_GPUTextureRegion
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUBlitRegion
 {
@@ -1709,6 +1714,7 @@ typedef struct SDL_GPUStencilOpState
  *
  * \since This struct is available since SDL 3.2.0.
  *
+ * \sa SDL_SetGPUBlendConstants
  * \sa SDL_GPUColorTargetDescription
  * \sa SDL_GPUBlendFactor
  * \sa SDL_GPUBlendOp
@@ -2100,6 +2106,11 @@ typedef struct SDL_GPUDepthStencilTargetInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
+ * \sa SDL_GPUBlitRegion
+ * \sa SDL_GPULoadOp
+ * \sa SDL_FColor
+ * \sa SDL_FlipMode
+ * \sa SDL_GPUFilter
  */
 typedef struct SDL_GPUBlitInfo {
     SDL_GPUBlitRegion source;       /**< The source region for the blit. */
