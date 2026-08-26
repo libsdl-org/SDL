@@ -136,6 +136,25 @@ typedef struct SDL_WaylandSeat
         struct zwp_input_timestamps_v1 *timestamps;
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
+
+        /* The window the application was told holds this seat's keyboard focus. It can
+         * differ from 'focus' above when the compositor focuses a window that declined
+         * focus, in which case the application keeps the focus it already had.
+         */
+        SDL_Window *sdl_focus;
+
+        /* The last window of this application that legitimately held this seat's keyboard
+         * focus. Used as the destination when the compositor focuses a window that
+         * declines focus: the client is focused as far as the compositor is concerned, so
+         * key events will arrive and have to be delivered somewhere sensible.
+         */
+        SDL_Window *last_focusable;
+
+        /* Set when this seat's keyboard focus was withdrawn, and resolved at the end of
+         * the event batch: focus moving between two windows arrives as a leave followed
+         * by an enter, and the application should not see a focus change in between.
+         */
+        bool focus_lost_pending;
         SDL_Keymap **sdl_keymap;
         char *current_locale;
 

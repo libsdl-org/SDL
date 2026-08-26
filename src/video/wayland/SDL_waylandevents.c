@@ -556,6 +556,24 @@ int Wayland_WaitEventTimeout(SDL_VideoDevice *_this, Sint64 timeoutNS)
     return 1;
 }
 
+/* Apply a keyboard focus withdrawal that keyboard_handle_leave deferred. Called once the
+ * whole event batch has been processed, so that a focus handover between two windows is
+ * not visible to the application as a focus loss.
+ */
+static void Wayland_SeatResolvePendingKeyboardFocus(SDL_WaylandSeat *seat)
+{
+    if (seat->keyboard.focus_lost_pending) {
+        seat->keyboard.focus_lost_pending = false;
+
+        if (seat->keyboard.sdl_focus) {
+            if (SDL_GetKeyboardFocus() == seat->keyboard.sdl_focus) {
+                SDL_SetKeyboardFocus(NULL);
+            }
+            seat->keyboard.sdl_focus = NULL;
+        }
+    }
+}
+
 void Wayland_PumpEvents(SDL_VideoDevice *_this)
 {
     SDL_VideoData *d = _this->internal;
@@ -623,8 +641,10 @@ void Wayland_PumpEvents(SDL_VideoDevice *_this)
     }
 
     if (ret >= 0) {
-        // Synthesize key repeat events.
         wl_list_for_each (seat, &d->seat_list, link) {
+            Wayland_SeatResolvePendingKeyboardFocus(seat);
+
+            // Synthesize key repeat events.
             if (seat->keyboard.repeat.key) {
                 Wayland_SeatSetKeymap(seat);
 
@@ -2094,7 +2114,32 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.focus = window;
 
     // Restore the keyboard focus to the child popup that was holding it
-    SDL_SetKeyboardFocus(window->sdlwindow->keyboard_focus ? window->sdlwindow->keyboard_focus : window->sdlwindow);
+    SDL_Window *keyboard_focus = window->sdlwindow->keyboard_focus ? window->sdlwindow->keyboard_focus : window->sdlwindow;
+
+    /* A window flagged as not focusable can't decline keyboard focus at the protocol level:
+     * xdg-shell gives a client no way to refuse it, and compositors hand it to whichever
+     * toplevel of the active application was mapped last. Honor the flag where SDL can, by
+     * leaving the application's focus where it was. The compositor's idea of focus is
+     * untouched, and key events still go to whichever window holds SDL focus, so an output
+     * only window revealed late no longer steals focus from the window in use.
+     */
+    seat->keyboard.focus_lost_pending = false;
+    if (keyboard_focus->flags & SDL_WINDOW_NOT_FOCUSABLE) {
+        /* Keep the focus the application already had. If it had none -- the compositor
+         * came back to this client through the window that declines focus -- fall back to
+         * the last window that did hold it, so that the key events which are about to
+         * arrive are not delivered to a window the application declared output only.
+         */
+        if (!seat->keyboard.sdl_focus && seat->keyboard.last_focusable &&
+            !(seat->keyboard.last_focusable->flags & (SDL_WINDOW_HIDDEN | SDL_WINDOW_NOT_FOCUSABLE))) {
+            seat->keyboard.sdl_focus = seat->keyboard.last_focusable;
+            SDL_SetKeyboardFocus(seat->keyboard.sdl_focus);
+        }
+    } else {
+        seat->keyboard.sdl_focus = keyboard_focus;
+        seat->keyboard.last_focusable = keyboard_focus;
+        SDL_SetKeyboardFocus(keyboard_focus);
+    }
 
     // Update the keyboard grab and any relative pointer grabs related to this keyboard focus.
     Wayland_SeatUpdateKeyboardGrab(seat);
@@ -2159,20 +2204,17 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     // Stop key repeat before clearing keyboard focus
     seat->keyboard.repeat.key = 0;
 
-    SDL_Window *keyboard_focus = SDL_GetKeyboardFocus();
-
-    // The keyboard focus may be a child popup
-    while (keyboard_focus && SDL_WINDOW_IS_POPUP(keyboard_focus)) {
-        keyboard_focus = keyboard_focus->parent;
-    }
-
-    const bool had_focus = keyboard_focus && window->sdlwindow == keyboard_focus;
+    const bool had_focus = seat->keyboard.sdl_focus != NULL;
     seat->keyboard.focus = NULL;
     --window->keyboard_focus_count;
 
-    // Only relinquish focus if this window has the active focus, and no other keyboards have focus on the window.
+    /* Only relinquish focus if this seat granted it, and no other keyboards have focus on
+     * the window. The actual withdrawal is deferred to the end of the event batch, because
+     * focus moving from one window to another arrives as a leave followed by an enter, and
+     * the destination may be a window that declines focus.
+     */
     if (!window->keyboard_focus_count && had_focus) {
-        SDL_SetKeyboardFocus(NULL);
+        seat->keyboard.focus_lost_pending = true;
     }
 
     // Release the keyboard grab and any relative pointer grabs related to this keyboard focus.
@@ -2447,6 +2489,7 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat)
     // Make sure focus is removed from a surface before the keyboard is destroyed.
     if (seat->keyboard.focus) {
         keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, seat->keyboard.focus->surface);
+        Wayland_SeatResolvePendingKeyboardFocus(seat);
     }
 
     SDL_RemoveKeyboard(seat->keyboard.sdl_id);
@@ -3569,8 +3612,17 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
     SDL_WaylandSeat *seat;
     wl_list_for_each (seat, &display->seat_list, link)
     {
+        // These can point at a window that never had, or no longer has, the seat's focus.
+        if (seat->keyboard.sdl_focus == window->sdlwindow) {
+            seat->keyboard.sdl_focus = NULL;
+        }
+        if (seat->keyboard.last_focusable == window->sdlwindow) {
+            seat->keyboard.last_focusable = NULL;
+        }
+
         if (seat->keyboard.focus == window) {
             keyboard_handle_leave(seat, seat->keyboard.wl_keyboard, 0, window->surface);
+            Wayland_SeatResolvePendingKeyboardFocus(seat);
         }
 
         if (seat->pointer.focus == window) {

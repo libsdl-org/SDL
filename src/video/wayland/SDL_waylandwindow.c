@@ -3656,7 +3656,22 @@ bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool
         return true;
     }
 
-    return SDL_SetError("wayland: focus can only be toggled on popup menu windows");
+    /* Regular toplevels: the compositor decides who holds keyboard focus and the protocol
+     * offers no way to decline it, so the flag is honored inside SDL when focus arrives
+     * (see keyboard_handle_enter). All that is left here is to bring the current state in
+     * line, in case the compositor has already given this window focus.
+     */
+    if (!(window->flags & SDL_WINDOW_HIDDEN)) {
+        if (!focusable) {
+            if (SDL_GetKeyboardFocus() == window) {
+                SDL_SetKeyboardFocus(NULL);
+            }
+        } else if (window->internal->keyboard_focus_count) {
+            SDL_SetKeyboardFocus(window);
+        }
+    }
+
+    return true;
 }
 
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
