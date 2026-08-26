@@ -1302,3 +1302,8 @@ _SDL_GetDeviceFormFactor
 _SDL_GetDeviceFormFactorName
 _SDL_IsUbuntuTouch
 _SDL_GetNumProperties
+_SDL_JoystickHasSensor
+_SDL_SetJoystickSensorEnabled
+_SDL_JoystickSensorEnabled
+_SDL_GetJoystickSensorDataRate
+_SDL_GetJoystickSensorData

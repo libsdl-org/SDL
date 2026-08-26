@@ -3745,6 +3745,162 @@ Uint16 SDL_GetJoystickFirmwareVersion(SDL_Joystick *joystick)
     return result;
 }
 
+bool SDL_JoystickHasSensor(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    bool result = false;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                result = true;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+bool SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, bool enabled)
+{
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                if (sensor->enabled == (enabled != false)) {
+                    SDL_UnlockJoysticks();
+                    return true;
+                }
+
+                if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
+                    if (enabled) {
+                        joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
+                        if (!joystick->accel) {
+                            SDL_UnlockJoysticks();
+                            return false;
+                        }
+                    } else {
+                        if (joystick->accel) {
+                            SDL_CloseSensor(joystick->accel);
+                            joystick->accel = NULL;
+                        }
+                    }
+                } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
+                    if (enabled) {
+                        joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
+                        if (!joystick->gyro) {
+                            SDL_UnlockJoysticks();
+                            return false;
+                        }
+                    } else {
+                        if (joystick->gyro) {
+                            SDL_CloseSensor(joystick->gyro);
+                            joystick->gyro = NULL;
+                        }
+                    }
+                } else {
+                    if (enabled) {
+                        if (joystick->nsensors_enabled == 0) {
+                            if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
+                                SDL_UnlockJoysticks();
+                                return false;
+                            }
+                        }
+                        ++joystick->nsensors_enabled;
+                    } else {
+                        if (joystick->nsensors_enabled == 1) {
+                            if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
+                                SDL_UnlockJoysticks();
+                                return false;
+                            }
+                        }
+                        --joystick->nsensors_enabled;
+                    }
+                }
+
+                sensor->enabled = enabled;
+                SDL_UnlockJoysticks();
+                return true;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return SDL_Unsupported();
+}
+
+bool SDL_JoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    bool result = false;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            if (joystick->sensors[i].type == type) {
+                result = joystick->sensors[i].enabled;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+float SDL_GetJoystickSensorDataRate(SDL_Joystick *joystick, SDL_SensorType type)
+{
+    float result = 0.0f;
+
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, 0.0f);
+
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                result = sensor->rate;
+                break;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+bool SDL_GetJoystickSensorData(SDL_Joystick *joystick, SDL_SensorType type, float *data, int num_values)
+{
+    SDL_LockJoysticks();
+    {
+        CHECK_JOYSTICK_MAGIC(joystick, false);
+
+        for (int i = 0; i < joystick->nsensors; ++i) {
+            SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
+
+            if (sensor->type == type) {
+                num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
+                SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
+                SDL_UnlockJoysticks();
+                return true;
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return SDL_Unsupported();
+}
+
 const char *SDL_GetJoystickSerial(SDL_Joystick *joystick)
 {
     const char *result;
