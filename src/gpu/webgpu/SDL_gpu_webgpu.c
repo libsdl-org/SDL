@@ -2807,11 +2807,15 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 // WEBGPU_INTERNAL_WaitForFences(renderer, true, &current->resource.submittedCommandBuffer->fence, 1);
 
                 for (int j = 0; j < current->resource.submittedCommandBuffer->usedBufferCount; j++) {
-                    SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedBuffers[j]->referenceCount);
+                    if (!SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedBuffers[j]->referenceCount)) {
+                        // This is just here to appease -Werror=unused-value.
+                    }
                 }
 
                 for (int j = 0; j < current->resource.submittedCommandBuffer->usedTextureCount; j++) {
-                    SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedTextures[j]->referenceCount);
+                    if (!SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedTextures[j]->referenceCount)) {
+                        // This is just here to appease -Werror=unused-value.
+                    }
                 }
 
                 SDL_free(current->resource.submittedCommandBuffer->usedTextures);
