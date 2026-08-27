@@ -358,6 +358,11 @@ static WGPUIndexFormat SDLToWebGPU_IndexFormat[] = {
     WGPUIndexFormat_Uint32,
 };
 
+static WGPUVertexStepMode SDLToWebGPU_VertexInputRate[] = {
+    WGPUVertexStepMode_Vertex,
+    WGPUVertexStepMode_Instance,
+};
+
 static WGPUPrimitiveTopology SDLToWebGPU_PrimitiveType[] = {
     WGPUPrimitiveTopology_TriangleList,
     WGPUPrimitiveTopology_TriangleStrip,
@@ -1941,6 +1946,11 @@ static void WEBGPU_INTERNAL_ClearRenderPassBindings(WebGPUCommandBuffer *cmdBuf)
         cmdBuf->fragmentStageBinds.boundStorageBuffers[i] = NULL;
     }
 
+    for (int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i].buffer = NULL;
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i].offset = 0;
+    }
+
     cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
     cmdBuf->vertexStageBinds.uniformBindGroupOutdated = true;
 
@@ -3237,12 +3247,18 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPURenderer *rend
     return result;
 }
 
+// Forward decl
+static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage);
 static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, const SDL_GPUTextureCreateInfo *createInfo)
 {
     WebGPUTexture *texture;
 
     texture = (WebGPUTexture *)SDL_calloc(1, sizeof(*texture));
     WGPUTextureDescriptor desc = { 0 };
+
+    if (!WEBGPU_SupportsTextureFormat((SDL_GPURenderer *)renderer, createInfo->format, createInfo->type, createInfo->usage)) {
+        SDL_assert_release(!"Texture format is not supported!");
+    }
 
     switch (createInfo->type) {
     case SDL_GPU_TEXTURETYPE_2D:
@@ -3685,7 +3701,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     WGPUVertexBufferLayout *vertexBufferLayouts = SDL_calloc(createInfo->vertex_input_state.num_vertex_buffers, sizeof(WGPUVertexBufferLayout));
 
     for (int i = 0; i < createInfo->vertex_input_state.num_vertex_buffers; i++) {
-        vertexBufferLayouts[i].stepMode = WGPUVertexStepMode_Vertex;
+        vertexBufferLayouts[i].stepMode = SDLToWebGPU_VertexInputRate[createInfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
         vertexBufferLayouts[i].nextInChain = NULL;
 
         Uint32 attributeCount = 0;
@@ -4634,7 +4650,7 @@ static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPU
 
             for (int i = 0; i < blocksPerLayer; i++) {
                 wgpuCommandEncoderCopyBufferToBuffer(cmdBuf->encoder, userSourceBuffer->buffer, source->offset + i * bytesPerRowSource,
-                                                     babysittingSourceBuffer->buffer, i * paddedBytesPerRow, bytesPerRowSource);
+                                                     babysittingSourceBuffer->buffer, i * paddedBytesPerRow, ALIGN_VALUE(bytesPerRowSource, 4));
             }
 
             finalSourceBuffer = babysittingSourceBuffer;
@@ -4909,8 +4925,8 @@ static void WEBGPU_BindVertexBuffers(SDL_GPUCommandBuffer *renderPass, Uint32 fi
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
 
     for (int i = 0; i < numBindings; i++) {
-        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].buffer = ((WebGPUBufferContainer *)binding->buffer)->activeBuffer;
-        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].offset = binding->offset;
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].buffer = ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer;
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].offset = binding[i].offset;
 
         WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
                                                WebGPUBuffer *, ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer);
@@ -5604,6 +5620,9 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
 
 static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info)
 {
+#ifndef _NDEBUG
+    WEBGPU_InsertDebugLabel(commandBuffer, "blitting");
+#endif
     WebGPURenderer *renderer = ((WebGPUCommandBuffer *)commandBuffer)->renderer;
 
     // HACK: God I hate WebGPU.
@@ -5871,6 +5890,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     bool hasReadWriteStorageUsage = (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) || usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
     bool hasDepthUsage = usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     bool hasColorTargetUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    bool hasRenderUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     // TODO: Check the type
 
     WebGPURenderer *renderer = (WebGPURenderer *)driverData;
@@ -5956,7 +5976,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
-        return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionBC);
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionBC);
     case SDL_GPU_TEXTUREFORMAT_R32_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_R32_UINT:
     case SDL_GPU_TEXTUREFORMAT_R32_INT:
@@ -6017,7 +6037,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
-        return !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
     default:
         SDL_assert(!"Unsupported SDL_GPUTextureFormat");
         return false;
