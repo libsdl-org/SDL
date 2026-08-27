@@ -1008,12 +1008,12 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
                 // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
                 if (!have_left_stick_cal) {
                     have_left_stick_cal = true;
-                    SDL_memcpy(pLeftStickCal, user_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
+                    SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
                 }
 
                 if (!have_right_stick_cal) {
                     have_right_stick_cal = true;
-                    SDL_memcpy(pRightStickCal, user_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
+                    SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
                 }
 
                 break;
