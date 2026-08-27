@@ -1262,7 +1262,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, i
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_GetJoystickSensorData
  * \sa SDL_GetJoystickSensorDataRate
@@ -1283,7 +1283,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_JoystickHasSensor(SDL_Joystick *joystick, S
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_JoystickHasSensor
  * \sa SDL_JoystickSensorEnabled
@@ -1299,7 +1299,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickSensorEnabled(SDL_Joystick *joys
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.6.0.
  *
  * \sa SDL_SetJoystickSensorEnabled
  */
@@ -1314,7 +1314,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_JoystickSensorEnabled(SDL_Joystick *joystic
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC float SDLCALL SDL_GetJoystickSensorDataRate(SDL_Joystick *joystick, SDL_SensorType type);
 
@@ -1333,7 +1333,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetJoystickSensorDataRate(SDL_Joystick *jo
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetJoystickSensorData(SDL_Joystick *joystick, SDL_SensorType type, float *data, int num_values);
 
