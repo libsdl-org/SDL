@@ -5877,6 +5877,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     bool hasDepthUsage = usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
     bool hasColorTargetUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     bool hasRenderUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    book hasSamplerUsage = usage & SDL_GPU_TEXTUREUSAGE_SAMPLER;
     // TODO: Check the type
 
     WebGPURenderer *renderer = (WebGPURenderer *)driverData;
