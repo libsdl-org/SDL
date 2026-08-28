@@ -3709,43 +3709,28 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
 
     for (int i = 0; i < createInfo->vertex_input_state.num_vertex_buffers; i++) {
         vertexBufferLayouts[i].stepMode = SDLToWebGPU_VertexInputRate[createInfo->vertex_input_state.vertex_buffer_descriptions[i].input_rate];
+        vertexBufferLayouts[i].arrayStride = createInfo->vertex_input_state.vertex_buffer_descriptions[i].pitch;
         vertexBufferLayouts[i].nextInChain = NULL;
 
+        WGPUVertexAttribute *attributes = SDL_calloc(MAX_VERTEX_ATTRIBUTES, sizeof(WGPUVertexAttribute));
         Uint32 attributeCount = 0;
+        Uint32 currentOffset = 0;
 
-        size_t arrayStride = 0;
         for (int j = 0; j < createInfo->vertex_input_state.num_vertex_attributes; j++) {
             const SDL_GPUVertexAttribute *attr = &createInfo->vertex_input_state.vertex_attributes[j];
-            if (attr->buffer_slot == createInfo->vertex_input_state.vertex_buffer_descriptions[i].slot) {
-                arrayStride = attr->offset + SizeOfSDLVertexFormat[attr->format];
 
+            if (createInfo->vertex_input_state.vertex_attributes[j].buffer_slot == i) {
+                attributes[currentOffset].offset = attr->offset;
+                attributes[currentOffset].format = SDLToWebGPU_VertexFormat[attr->format];
+                attributes[currentOffset].nextInChain = NULL;
+                attributes[currentOffset].shaderLocation = attr->location;
                 attributeCount++;
+                currentOffset++;
             }
         }
 
-        vertexBufferLayouts[i].arrayStride = arrayStride;
-
-        if (attributeCount != 0) {
-            WGPUVertexAttribute *attributes = SDL_calloc(attributeCount, sizeof(WGPUVertexAttribute));
-            Uint32 currentOffset = 0;
-
-            for (int j = 0; j < createInfo->vertex_input_state.num_vertex_attributes; j++) {
-                const SDL_GPUVertexAttribute *attr = &createInfo->vertex_input_state.vertex_attributes[j];
-
-                if (createInfo->vertex_input_state.vertex_attributes[j].buffer_slot == i) {
-                    attributes[currentOffset].offset = attr->offset;
-                    attributes[currentOffset].format = SDLToWebGPU_VertexFormat[attr->format];
-                    attributes[currentOffset].nextInChain = NULL;
-                    attributes[currentOffset].shaderLocation = attr->location;
-                    currentOffset++;
-                }
-            }
-            vertexBufferLayouts[i].attributeCount = attributeCount;
-            vertexBufferLayouts[i].attributes = attributes;
-        } else {
-            vertexBufferLayouts[i].attributeCount = 0;
-            vertexBufferLayouts[i].attributes = NULL;
-        }
+        vertexBufferLayouts[i].attributeCount = attributeCount;
+        vertexBufferLayouts[i].attributes = attributes;
     }
 
     WGPUVertexState vertexState = {
