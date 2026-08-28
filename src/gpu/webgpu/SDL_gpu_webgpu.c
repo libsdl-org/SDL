@@ -40,6 +40,9 @@
 #define DEFAULT_BINDGROUP_EXPIRY                       10000
 #define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
 
+// Disable pseudo-mapping. Useful for debugging upload errors.
+#define DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING true
+
 // map states
 #define MAP_STATE_UNMAPPED 0
 // This means that the buffer was mapped from the GPU.
@@ -58,7 +61,7 @@ static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
 // I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
 
 #define WEBGPU_INTERNAL_RequiredFeaturesCount 4
-#define WEBGPU_INTERNAL_OptionalFeaturesCount 7
+#define WEBGPU_INTERNAL_OptionalFeaturesCount 9
 
 const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[WEBGPU_INTERNAL_RequiredFeaturesCount] = {
     // These three all have 99.98% coverage on WebGPU devices.
@@ -84,6 +87,10 @@ const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[WEBGPU_INTERNAL_OptionalF
     WGPUFeatureName_TextureCompressionASTCSliced3D,
     WGPUFeatureName_TextureCompressionBC,
     WGPUFeatureName_TextureCompressionBCSliced3D,
+
+    // I have no idea what the support for these looks like.
+    WGPUFeatureName_TextureFormatsTier1,
+    WGPUFeatureName_TextureFormatsTier2,
 };
 
 static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
@@ -2807,15 +2814,11 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 // WEBGPU_INTERNAL_WaitForFences(renderer, true, &current->resource.submittedCommandBuffer->fence, 1);
 
                 for (int j = 0; j < current->resource.submittedCommandBuffer->usedBufferCount; j++) {
-                    if (!SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedBuffers[j]->referenceCount)) {
-                        // This is just here to appease -Werror=unused-value.
-                    }
+                    (void)SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedBuffers[j]->referenceCount);
                 }
 
                 for (int j = 0; j < current->resource.submittedCommandBuffer->usedTextureCount; j++) {
-                    if (!SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedTextures[j]->referenceCount)) {
-                        // This is just here to appease -Werror=unused-value.
-                    }
+                    (void)SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedTextures[j]->referenceCount);
                 }
 
                 SDL_free(current->resource.submittedCommandBuffer->usedTextures);
@@ -3411,7 +3414,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
     desc.minFilter = SDLToWebGPU_FilterMode[createInfo->min_filter];
     desc.mipmapFilter = SDLToWebGPU_MipmapFilterMode[createInfo->mipmap_mode];
     // Again; gross float -> int cast, blame WebGPU.
-    desc.maxAnisotropy = createInfo->max_anisotropy >= 1 ? (Uint16)createInfo->max_anisotropy : 1;
+    desc.maxAnisotropy = (createInfo->enable_anisotropy && (createInfo->max_anisotropy >= 1)) ? (Uint16)createInfo->max_anisotropy : 1;
 
     sampler->sampler = wgpuDeviceCreateSampler(((WebGPURenderer *)device)->device, &desc);
     sampler->identifier = ((WebGPURenderer *)device)->nextBindableResourceID++;
@@ -3710,23 +3713,17 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
 
         Uint32 attributeCount = 0;
 
-        size_t arrayStrideFromAttributeFormats = 0;
-        size_t arrayStrideFromLastEntryOffsetPlusSize = createInfo->vertex_input_state.vertex_attributes[createInfo->vertex_input_state.num_vertex_attributes - 1].offset +
-                                                        SizeOfSDLVertexFormat[createInfo->vertex_input_state.vertex_attributes[createInfo->vertex_input_state.num_vertex_attributes - 1].format];
+        size_t arrayStride = 0;
         for (int j = 0; j < createInfo->vertex_input_state.num_vertex_attributes; j++) {
-            if (createInfo->vertex_input_state.vertex_attributes[j].buffer_slot == i) {
+            const SDL_GPUVertexAttribute *attr = &createInfo->vertex_input_state.vertex_attributes[j];
+            if (attr->buffer_slot == createInfo->vertex_input_state.vertex_buffer_descriptions[i].slot) {
+                arrayStride = attr->offset + SizeOfSDLVertexFormat[attr->format];
+
                 attributeCount++;
-                arrayStrideFromAttributeFormats += SizeOfSDLVertexFormat[createInfo->vertex_input_state.vertex_attributes[j].format];
             }
         }
 
-        if (arrayStrideFromAttributeFormats != arrayStrideFromLastEntryOffsetPlusSize) {
-            // SDL_LogVerbose(SDL_LOG_CATEGORY_GPU, "arrayStrideFromAttributeFormats (%zu) != arrayStrideFromCombinedOffsets (%zu)", arrayStrideFromAttributeFormats, arrayStrideFromCombinedOffsets);
-            vertexBufferLayouts[i].arrayStride = SDL_max(arrayStrideFromAttributeFormats, arrayStrideFromLastEntryOffsetPlusSize);
-        } else {
-            // Just pick a random one they're the same anyways
-            vertexBufferLayouts[i].arrayStride = arrayStrideFromAttributeFormats;
-        }
+        vertexBufferLayouts[i].arrayStride = arrayStride;
 
         if (attributeCount != 0) {
             WGPUVertexAttribute *attributes = SDL_calloc(attributeCount, sizeof(WGPUVertexAttribute));
@@ -4473,7 +4470,7 @@ static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBu
         WEBGPU_INTERNAL_CycleBufferContainer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer);
     }
 
-    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && isMainThread) {
+    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && isMainThread && !DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING) {
         // Time to do our magic tricks.
         if (cycle) {
             SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
@@ -5924,13 +5921,14 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
         return false;
-    case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
-    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        return !hasDepthUsage && !hasReadWriteStorageUsage && !hasSamplerUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureFormatsTier1);
+    case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8_SNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:

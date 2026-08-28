@@ -28,6 +28,8 @@ struct Constants {
 
 @group(2u) @binding(4u) var texture2: texture_2d<f32>;
 
+@group(2u) @binding(5u) var sampler2: sampler;
+
 var<private> v_1: vec4<f32>;
 
 fn main_inner(v_2: vec4<f32>, v_3: vec2<f32>) {
