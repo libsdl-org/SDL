@@ -7920,8 +7920,9 @@ static bool D3D12_INTERNAL_CleanCommandBuffer(
     return true;
 }
 
-static bool D3D12_Submit(
-    SDL_GPUCommandBuffer *commandBuffer)
+static bool D3D12_INTERNAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUFence **fence)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
@@ -7997,6 +7998,12 @@ static bool D3D12_Submit(
     if (!d3d12CommandBuffer->inFlightFence) {
         SDL_UnlockMutex(renderer->submitLock);
         return false;
+    }
+
+    // Return the fence while submitLock is held, another thread could
+    // recycle this command buffer as soon as the lock is released.
+    if (fence) {
+        *fence = (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
     }
 
     // Mark that a fence should be signaled after command list execution
@@ -8097,15 +8104,22 @@ static bool D3D12_Submit(
     return result;
 }
 
+static bool D3D12_Submit(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    return D3D12_INTERNAL_Submit(commandBuffer, NULL);
+}
+
 static SDL_GPUFence *D3D12_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    SDL_GPUFence *fence = NULL;
     d3d12CommandBuffer->autoReleaseFence = false;
-    if (!D3D12_Submit(commandBuffer)) {
+    if (!D3D12_INTERNAL_Submit(commandBuffer, &fence)) {
         return NULL;
     }
-    return (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
+    return fence;
 }
 
 static bool D3D12_Cancel(
