@@ -4063,8 +4063,9 @@ static bool METAL_SetAllowedFramesInFlight(
 
 // Submission
 
-static bool METAL_Submit(
-    SDL_GPUCommandBuffer *commandBuffer)
+static bool METAL_INTERNAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUFence **fence)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -4075,6 +4076,12 @@ static bool METAL_Submit(
         if (!METAL_INTERNAL_AcquireFence(renderer, metalCommandBuffer)) {
             SDL_UnlockMutex(renderer->submitLock);
             return false;
+        }
+
+        // Return the fence while submitLock is held, another thread could
+        // recycle this command buffer as soon as the lock is released.
+        if (fence) {
+            *fence = (SDL_GPUFence *)metalCommandBuffer->fence;
         }
 
         // Enqueue present requests, if applicable
@@ -4123,15 +4130,22 @@ static bool METAL_Submit(
     }
 }
 
+static bool METAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    return METAL_INTERNAL_Submit(commandBuffer, NULL);
+}
+
 static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+    SDL_GPUFence *fence = NULL;
     metalCommandBuffer->autoReleaseFence = false;
-    if (!METAL_Submit(commandBuffer)) {
+    if (!METAL_INTERNAL_Submit(commandBuffer, &fence)) {
         return NULL;
     }
-    return (SDL_GPUFence *)metalCommandBuffer->fence;
+    return fence;
 }
 
 static bool METAL_Cancel(
