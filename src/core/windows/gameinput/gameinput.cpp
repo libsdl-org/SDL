@@ -132,7 +132,7 @@ public:
         {
             const size_t capacity = (m_capacity + count) * 2;
 
-            T* const data = static_cast<T*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Capacity * sizeof(T)));
+            T* const data = static_cast<T*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Capacity * sizeof(T))));
             RETURN_IF_NULL_ALLOC(data);
 
             if (m_data != nullptr)
