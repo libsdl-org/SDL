@@ -1407,7 +1407,6 @@ extern SDL_DECLSPEC SDL_GamepadButtonLabel SDLCALL SDL_GetGamepadButtonLabelForT
 /**
  * Get the label of a button on a gamepad.
  *
- *
  * \param gamepad a gamepad.
  * \param button a button index (one of the SDL_GamepadButton values).
  * \returns the SDL_GamepadButtonLabel enum corresponding to the button label, or SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN.
