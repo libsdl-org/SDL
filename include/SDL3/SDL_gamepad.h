@@ -119,12 +119,12 @@ typedef enum SDL_GamepadType
 {
     SDL_GAMEPAD_TYPE_UNKNOWN = 0, /**< Not a gamepad / error / etc. */
     SDL_GAMEPAD_TYPE_STANDARD, /**< A non-specific gamepad with no particular guarantees */
-    SDL_GAMEPAD_TYPE_XBOX360, /**< Official XBOX 360 gamepad or compatible third-party. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
-    SDL_GAMEPAD_TYPE_XBOXONE, /**< Official XBOX One gamepad or compatible third-party. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
-    SDL_GAMEPAD_TYPE_PS3, /**< Official DualShock 3 or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
-    SDL_GAMEPAD_TYPE_PS4, /**< Official DualShock 4 or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
-    SDL_GAMEPAD_TYPE_PS5, /**< Official DualSense or compatible third-party. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
-    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third-party. At least B/A/Y/X face buttons, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
+    SDL_GAMEPAD_TYPE_XBOX360, /**< Official XBox 360 gamepad or compatible third-party controller. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, back, start, and guide */
+    SDL_GAMEPAD_TYPE_XBOXONE, /**< Official XBox One gamepad or compatible third-party controller. At least A/B/X/Y, d-pad, two bumpers, two clickable sticks, two analog triggers, view, menu, and guide */
+    SDL_GAMEPAD_TYPE_PS3, /**< Official DualShock 3 or compatible third-party controller. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, select, start, guide */
+    SDL_GAMEPAD_TYPE_PS4, /**< Official DualShock 4 or compatible third-party controller. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two analog triggers, share, start, touchpad, guide */
+    SDL_GAMEPAD_TYPE_PS5, /**< Official DualSense or compatible third-party controller. At least Cross/Circle/Square/Triangle, d-pad, two bumpers, two clickable sticks, two adaptive triggers, create, start, touchpad, guide, mic */
+    SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO, /**< A Nintendo Switch Pro controller or compatible third-party controller. At least B/A/Y/X face buttons, d-pad, two bumpers, two clickable sticks, two triggers (digital or better), -, +, and guide */
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
