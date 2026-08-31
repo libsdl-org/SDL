@@ -2228,6 +2228,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsShaderFormats(
 extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
     SDL_PropertiesID props);
 
+// FIXME: I don't know how to make a CategoryGPU#webgpu so I didn't link
+// WebGPU to anything
+// I actually made it link to the wikipedia page for Hell but I don't
+// think that's very professional (It is funny though.)
+
 /**
  * Creates a GPU context.
  *
@@ -2236,6 +2241,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  * - "vulkan": [Vulkan](CategoryGPU#vulkan)
  * - "direct3d12": [D3D12](CategoryGPU#d3d12)
  * - "metal": [Metal](CategoryGPU#metal)
+ * - "webgpu": WebGPU
  * - NULL: let SDL pick the optimal driver
  *
  * \param format_flags a bitflag indicating which shader formats the app is
@@ -2488,8 +2494,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * checked during initialization.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "vulkan",
- * "metal" or "direct3d12". These never have Unicode characters, and are not
- * meant to be proper names.
+ * "metal", "direct3d12", or "webgpu". These never have Unicode characters, 
+ * and are not meant to be proper names.
  *
  * \param index the index of a GPU driver.
  * \returns the name of the GPU driver with the given **index** or NULL when
@@ -2831,6 +2837,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ---
  *
+ * // TODO: Add WGSL example here!
+ *
  * For WGSL, use the following order:
  * - 0: Sampled textures, followed by read-only storage textures, followed by
  *   read-only storage buffers
@@ -3074,6 +3082,83 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *     device SomeBufferStruct& storageBufferBoundToSlot1 [[buffer(3)]]);
  *
  * ```
+ *
+ * ---
+ *
+ * **WGSL (WebGPU Shading Language)**
+ *
+ * For vertex shaders, use: - Group 0 for samplers, storage textures, and
+ * storage buffers - Group 1 for uniform data
+ *
+ * For fragment shaders, use: - Group 2 for samplers, storage textures, and
+ * storage buffers - Group 3 for uniform data
+ *
+ * The first resource in a given set must have a `binding` of 0. Additional
+ * resources must appear at consecutive bindings (1, 2, etc), leaving no gaps
+ * in the set.
+ *
+ * All sampled textures must come first in the binding order, followed by their
+ * associated sampler, in order of how they are bound via `SDL_BindGPU*Samplers()`.
+ *
+ * All storage textures must come after all samplers and sampled textures
+ * in the binding order, in order of how they are bound via `SDL_Bind*StorageTextures()`.
+ *
+ * All storage buffers must come after all storage textures in the binding
+ * order, in order of how they are bound via `SDL_Bind*StorageBuffers()`.
+ *
+ * **Example**
+ *
+ * If a vertex shader binds 2 samplers, 2 storage textures, 2 storage buffers,
+ * and 2 uniform buffers, its binding layout should look like this:
+ *
+ * ```wgsl
+ * // Sampled textures come first, followed by the sampler, in SDL slot order.
+ * @group(0) @binding(0) var sampledTextureBoundToSlot0: ...
+ * @group(0) @binding(1) var samplerBoundToSlot0: sampler
+ * @group(0) @binding(2) var sampledTextureBoundToSlot1: ...
+ * @group(0) @binding(3) var samplerBoundToSlot1: sampler
+ * // Any storage textures come next, in SDL slot order.
+ * @group(0) @binding(4) var storageTextureBoundToSlot0: ...
+ * @group(0) @binding(5) var storageTextureBoundToSlot1: ...
+ * // Any storage buffers come next, in SDL slot order.
+ * @group(0) @binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
+ * @group(0) @binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
+ * // Any uniform buffers are in their own set, in SDL slot order.
+ * @group(1) @binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * @group(1) @binding(1) var<uniform> uniformBufferBoundToSlot0: ...
+ * ```
+ *
+ * WebGPU has stricter rules regarding sampling certain texture types, so some
+ * formats do require additional work to sample.
+ * 
+ * The default sampling type for all textures is `WGPUTextureSampleType_Float`,
+ * however some formats do not support float filtering. 
+ * (See the [WebGPU spec](https://www.w3.org/TR/webgpu/#texture-format-caps)).
+ *
+ * The most common unsupported format is any depth format. Attempting to sample
+ * a depth format will fail unless you're either using a comparison sampler, or
+ * you forced `WGPUTextureSampleType_Float` through the macro-ish comment
+ * `//SDLGPU_ForceAllowSamplingForTexture(group, binding)`
+ *
+ * This is an SDLGPU specific hint, which forces a binding and its corresponding
+ * sampler to be unfilterable. This allows the shader to (e.g) sample depth textures
+ * as if they were regular `f32` textures.
+ *
+ * **Example**
+ * 
+ * ```wgsl
+ * // BAD! This will throw an error when bound, since the backend expects a 
+ * // texture format which supports float filtering!
+ * @group(0) @binding(0) var depthTexture: texture_2d<f32>; 
+ *
+ * // However, if you were to add this comment to your WGSL source, it will 
+ * // tell the backend to expect an unfilterable texture format.
+ * // SDLGPU_ForceAllowSamplingForTexture(0, 0)
+ *
+ * ```
+ * 
+ * The "macro" is forced to be a comment, since WGSL does not currently have a system
+ * for implementing custom functions.
  *
  * ---
  *
@@ -4255,6 +4340,11 @@ extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
  *
  * You must align the data in the transfer buffer to a multiple of the texel
  * size of the texture format.
+ *
+ * Note that if using the WebGPU backend, the data uploaded to the texture
+ * may differ from the given transfer buffer's data. WebGPU has stricter rules 
+ * regarding texture data alignment, which often times forces the backend to
+ * pad any data before it gets uploaded.
  *
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with image layout information.
