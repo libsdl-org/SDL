@@ -1383,7 +1383,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                     SDL_strlcat(mapping_string, "paddle1:b11,paddle2:b13,paddle3:b12,paddle4:b14,type:xboxone,", sizeof(mapping_string));
                 } else if (SDL_IsJoystickXboxSeriesX(vendor, product)) {
                     // XBox Series X Controllers have a share button under the guide button
-                    SDL_strlcat(mapping_string, "misc1:b11,type:xboxone,", sizeof(mapping_string));
+                    SDL_strlcat(mapping_string, "misc1:b11,type:xboxsx,", sizeof(mapping_string));
                 }
                 break;
             default:
