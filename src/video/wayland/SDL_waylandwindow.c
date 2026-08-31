@@ -398,18 +398,33 @@ static void ConfigureWindowGeometry(SDL_Window *window)
             viewport_height = data->requested.pixel_height;
         }
 
-        if (data->viewport && data->waylandData->subcompositor && !data->floating && !data->is_fullscreen) {
-            if (window->min_w) {
-                viewport_width = SDL_max(viewport_width, window->min_w);
+        if (data->shell_surface_status != WAYLAND_SHELL_SURFACE_STATUS_HIDDEN &&
+            data->viewport && data->waylandData->subcompositor && !data->floating && !data->is_fullscreen) {
+            int min_width, min_height, max_width, max_height;
+            if (window->flags & SDL_WINDOW_RESIZABLE) {
+                min_width = window->min_w;
+                min_height = window->min_h;
+                max_width = window->max_w;
+                max_height = window->max_h;
+            } else {
+                // Use the fixed size in the odd case where a non-resizable window somehow wound up tiled or maximized.
+                min_width = window->floating.w;
+                min_height = window->floating.h;
+                max_width = window->floating.w;
+                max_height = window->floating.h;
             }
-            if (window->min_h) {
-                viewport_height = SDL_max(viewport_height, window->min_h);
+
+            if (min_width) {
+                viewport_width = SDL_max(viewport_width, min_width);
             }
-            if (window->max_w) {
-                viewport_width = SDL_min(viewport_width, window->max_w);
+            if (min_height) {
+                viewport_height = SDL_max(viewport_height, min_height);
             }
-            if (window->max_h) {
-                viewport_height = SDL_min(viewport_height, window->max_h);
+            if (max_width) {
+                viewport_width = SDL_min(viewport_width, max_width);
+            }
+            if (max_height) {
+                viewport_height = SDL_min(viewport_height, max_height);
             }
 
             float aspect = (float)viewport_width / (float)viewport_height;
@@ -2435,8 +2450,11 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
 
     // We're finally done putting the window together, raise if possible
-    if (c->activation_manager) {
-        /* Note that we don't check for empty strings, as that is still
+    if (c->activation_manager && SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true)) {
+        /* if the process was passed an activation token, use it when showing
+         * the initial window.
+         *
+         * Note that we don't check for empty strings, as that is still
          * considered a valid activation token!
          */
         const char *activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
@@ -2447,7 +2465,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
             // Clear this variable, per the protocol's request
             SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
+        } else {
+            // Try to generate an activation token for this window.
+            Wayland_RaiseWindow(_this, window);
         }
+    } else {
+        // Clear the ignored activation token, as it won't be used.
+        SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
     }
 
     // No frame callback on an external surface, as it may already have one attached.
@@ -2685,9 +2709,6 @@ void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
             xdg_activation_v1_activate(viddata->activation_manager,
                                        activation_token,
                                        wind->surface);
-
-            // Clear this variable, per the protocol's request.
-            SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
             return;
         }
     }
@@ -3290,21 +3311,41 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
      */
     FlushPendingEvents(window);
 
-    const bool resizable_state = !(window->flags & (SDL_WINDOW_MAXIMIZED || SDL_WINDOW_FULLSCREEN));
+    const bool maximized = (window->flags & SDL_WINDOW_MAXIMIZED) != 0;
+    const bool resizable_state = !(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN));
 
     /* Maximized and fullscreen windows don't get resized, and the new size is ignored
      * if this is just to recalculate the min/max or aspect limits on a tiled window.
+     *
+     * Some compositors will mark tiled windows as maximized. In these cases, the content
+     * size is recalculated, but window size itself is left alone, as the spec states that
+     * the configure size of a maximized window must be obeyed.
      */
     if (resizable_state || (window->tiled && !wind->limits_changed) ||
         wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
-        if (!wind->scale_to_display) {
-            wind->requested.logical_width = window->pending.w;
-            wind->requested.logical_height = window->pending.h;
-        } else {
-            wind->requested.logical_width = PixelToPoint(window, window->pending.w);
-            wind->requested.logical_height = PixelToPoint(window, window->pending.h);
-            wind->requested.pixel_width = window->pending.w;
-            wind->requested.pixel_height = window->pending.h;
+
+        // Don't change the window size if maximized and tiled.
+        if (!maximized) {
+            if (!wind->scale_to_display) {
+                wind->requested.logical_width = window->pending.w;
+                wind->requested.logical_height = window->pending.h;
+            } else {
+                wind->requested.logical_width = PixelToPoint(window, window->pending.w);
+                wind->requested.logical_height = PixelToPoint(window, window->pending.h);
+                wind->requested.pixel_width = window->pending.w;
+                wind->requested.pixel_height = window->pending.h;
+            }
+        }
+
+        /* If a non-resizable window somehow wound up in the tiled state, store the new
+         * size in the floating parameters so the size will be preserved for future
+         * configure events.
+         *
+         * This shouldn't happen, but apparently it can on at least one compositor...
+         */
+        if (window->tiled && !(window->flags & SDL_WINDOW_RESIZABLE)) {
+            window->floating.w = window->pending.w;
+            window->floating.h = window->pending.h;
         }
     } else {
         // Can't resize the window.
@@ -3695,6 +3736,8 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
          * no internal structures are left pointing to the destroyed window.
          */
         if (wind->show_hide_sync_required) {
+            /* Make sure hit test isn't executed during roundtrip */
+            window->hit_test = NULL;
             WAYLAND_wl_display_roundtrip(data->display);
         }
 

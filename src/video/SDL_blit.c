@@ -108,55 +108,10 @@ static bool SDLCALL SDL_SoftBlit(SDL_Surface *src, const SDL_Rect *srcrect,
 
 #ifdef SDL_HAVE_BLIT_AUTO
 
-#ifdef SDL_PLATFORM_MACOS
-#include <sys/sysctl.h>
-
-static bool SDL_UseAltivecPrefetch(void)
-{
-    const char key[] = "hw.l3cachesize";
-    u_int64_t result = 0;
-    size_t typeSize = sizeof(result);
-
-    if (sysctlbyname(key, &result, &typeSize, NULL, 0) == 0 && result > 0) {
-        return true;
-    } else {
-        return false;
-    }
-}
-#else
-static bool SDL_UseAltivecPrefetch(void)
-{
-    // Just guess G4
-    return true;
-}
-#endif // SDL_PLATFORM_MACOS
-
 static SDL_BlitFunc SDL_ChooseBlitFunc(SDL_PixelFormat src_format, SDL_PixelFormat dst_format, int flags,
                                        SDL_BlitFuncEntry *entries)
 {
     int i, flagcheck = (flags & (SDL_COPY_MODULATE_MASK | SDL_COPY_BLEND_MASK | SDL_COPY_COLORKEY | SDL_COPY_NEAREST));
-    static unsigned int features = 0x7fffffff;
-
-    // Get the available CPU features
-    if (features == 0x7fffffff) {
-        features = SDL_CPU_ANY;
-        if (SDL_HasMMX()) {
-            features |= SDL_CPU_MMX;
-        }
-        if (SDL_HasSSE()) {
-            features |= SDL_CPU_SSE;
-        }
-        if (SDL_HasSSE2()) {
-            features |= SDL_CPU_SSE2;
-        }
-        if (SDL_HasAltiVec()) {
-            if (SDL_UseAltivecPrefetch()) {
-                features |= SDL_CPU_ALTIVEC_PREFETCH;
-            } else {
-                features |= SDL_CPU_ALTIVEC_NOPREFETCH;
-            }
-        }
-    }
 
     for (i = 0; entries[i].func; ++i) {
         // Check for matching pixel formats
@@ -169,11 +124,6 @@ static SDL_BlitFunc SDL_ChooseBlitFunc(SDL_PixelFormat src_format, SDL_PixelForm
 
         // Check flags
         if ((flagcheck & entries[i].flags) != flagcheck) {
-            continue;
-        }
-
-        // Check CPU features
-        if ((entries[i].cpu & features) != entries[i].cpu) {
             continue;
         }
 

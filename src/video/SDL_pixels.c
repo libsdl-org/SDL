@@ -1040,66 +1040,66 @@ const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w,
     return NULL;
 }
 
+/* Conversion matrices generated using gamescope color helpers and the primaries definitions at:
+    * https://www.itu.int/rec/T-REC-H.273-201612-S/en
+    *
+    * You can also generate these online using the RGB-XYZ matrix calculator, and then multiplying
+    * XYZ_to_dst * src_to_XYZ to get the combined conversion matrix:
+    * https://www.russellcottrell.com/photo/matrixCalculator.htm
+    */
+static const float mat601to709[] = {
+    0.939542f, 0.050181f, 0.010277f,
+    0.017772f, 0.965793f, 0.016435f,
+    -0.001622f, -0.004370f, 1.005991f,
+};
+static const float mat601to2020[] = {
+    0.595254f, 0.349314f, 0.055432f,
+    0.081244f, 0.891503f, 0.027253f,
+    0.015512f, 0.081912f, 0.902576f,
+};
+static const float mat709to601[] = {
+    1.065379f, -0.055401f, -0.009978f,
+    -0.019633f, 1.036363f, -0.016731f,
+    0.001632f, 0.004412f, 0.993956f,
+};
+static const float mat709to2020[] = {
+    0.627404f, 0.329283f, 0.043313f,
+    0.069097f, 0.919541f, 0.011362f,
+    0.016391f, 0.088013f, 0.895595f,
+};
+static const float mat2020to601[] = {
+    1.776133f, -0.687820f, -0.088313f,
+    -0.161376f, 1.187315f, -0.025940f,
+    -0.015881f, -0.095931f, 1.111812f,
+};
+static const float mat2020to709[] = {
+    1.660496f, -0.587656f, -0.072840f,
+    -0.124547f, 1.132895f, -0.008348f,
+    -0.018154f, -0.100597f, 1.118751f
+};
+static const float matSMPTE431to709[] = {
+    1.120713f, -0.234649f, 0.000000f,
+    -0.038478f, 1.087034f, 0.000000f,
+    -0.017967f, -0.082030f, 0.954576f,
+};
+static const float matSMPTE431to2020[] = {
+    0.689691f, 0.207169f, 0.041346f,
+    0.041852f, 0.982426f, 0.010846f,
+    -0.001107f, 0.018362f, 0.854914f,
+};
+static const float matSMPTE432to709[] = {
+    1.224940f, -0.224940f, -0.000000f,
+    -0.042057f, 1.042057f, 0.000000f,
+    -0.019638f, -0.078636f, 1.098273f,
+};
+static const float matSMPTE432to2020[] = {
+    0.753833f, 0.198597f, 0.047570f,
+    0.045744f, 0.941777f, 0.012479f,
+    -0.001210f, 0.017602f, 0.983609f,
+};
+
 const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst)
 {
-    /* Conversion matrices generated using gamescope color helpers and the primaries definitions at:
-     * https://www.itu.int/rec/T-REC-H.273-201612-S/en
-     *
-     * You can also generate these online using the RGB-XYZ matrix calculator, and then multiplying
-     * XYZ_to_dst * src_to_XYZ to get the combined conversion matrix:
-     * https://www.russellcottrell.com/photo/matrixCalculator.htm
-     */
-    static const float mat601to709[] = {
-        0.939542f, 0.050181f, 0.010277f,
-        0.017772f, 0.965793f, 0.016435f,
-        -0.001622f, -0.004370f, 1.005991f,
-    };
-    static const float mat601to2020[] = {
-        0.595254f, 0.349314f, 0.055432f,
-        0.081244f, 0.891503f, 0.027253f,
-        0.015512f, 0.081912f, 0.902576f,
-    };
-    static const float mat709to601[] = {
-        1.065379f, -0.055401f, -0.009978f,
-        -0.019633f, 1.036363f, -0.016731f,
-        0.001632f, 0.004412f, 0.993956f,
-    };
-    static const float mat709to2020[] = {
-        0.627404f, 0.329283f, 0.043313f,
-        0.069097f, 0.919541f, 0.011362f,
-        0.016391f, 0.088013f, 0.895595f,
-    };
-    static const float mat2020to601[] = {
-        1.776133f, -0.687820f, -0.088313f,
-        -0.161376f, 1.187315f, -0.025940f,
-        -0.015881f, -0.095931f, 1.111812f,
-    };
-    static const float mat2020to709[] = {
-        1.660496f, -0.587656f, -0.072840f,
-        -0.124547f, 1.132895f, -0.008348f,
-        -0.018154f, -0.100597f, 1.118751f
-    };
-    static const float matSMPTE431to709[] = {
-        1.120713f, -0.234649f, 0.000000f,
-        -0.038478f, 1.087034f, 0.000000f,
-        -0.017967f, -0.082030f, 0.954576f,
-    };
-    static const float matSMPTE431to2020[] = {
-        0.689691f, 0.207169f, 0.041346f,
-        0.041852f, 0.982426f, 0.010846f,
-        -0.001107f, 0.018362f, 0.854914f,
-    };
-    static const float matSMPTE432to709[] = {
-        1.224940f, -0.224940f, -0.000000f,
-        -0.042057f, 1.042057f, 0.000000f,
-        -0.019638f, -0.078636f, 1.098273f,
-    };
-    static const float matSMPTE432to2020[] = {
-        0.753833f, 0.198597f, 0.047570f,
-        0.045744f, 0.941777f, 0.012479f,
-        -0.001210f, 0.017602f, 0.983609f,
-    };
-
     switch (dst) {
     case SDL_COLOR_PRIMARIES_BT601:
     case SDL_COLOR_PRIMARIES_SMPTE240:
@@ -1159,6 +1159,11 @@ void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *mat
     *fR = matrix[0 * 3 + 0] * v[0] + matrix[0 * 3 + 1] * v[1] + matrix[0 * 3 + 2] * v[2];
     *fG = matrix[1 * 3 + 0] * v[0] + matrix[1 * 3 + 1] * v[1] + matrix[1 * 3 + 2] * v[2];
     *fB = matrix[2 * 3 + 0] * v[0] + matrix[2 * 3 + 1] * v[1] + matrix[2 * 3 + 2] * v[2];
+}
+
+void SDL_ConvertColor709to2020(float *fR, float *fG, float *fB)
+{
+    SDL_ConvertColorPrimaries(fR, fG, fB, mat709to2020);
 }
 
 SDL_Palette *SDL_CreatePalette(int ncolors)

@@ -19,7 +19,7 @@ extern "C" {
 #define GL_APIENTRYP GL_APIENTRY*
 #endif
 
-#define GL_GLEXT_VERSION 20260319
+#define GL_GLEXT_VERSION 20260803
 
 /* Generated C header for:
  * API: gles2

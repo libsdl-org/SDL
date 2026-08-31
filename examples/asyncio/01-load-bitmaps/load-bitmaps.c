@@ -102,7 +102,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_RenderClear(renderer);
 
     for (i = 0; i < SDL_arraysize(textures); i++) {
-        SDL_RenderTexture(renderer, textures[i], NULL, &texture_rects[i]);
+        if (textures[i]) {
+            SDL_RenderTexture(renderer, textures[i], NULL, &texture_rects[i]);
+        }
     }
 
     SDL_RenderPresent(renderer);

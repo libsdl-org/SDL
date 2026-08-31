@@ -1904,6 +1904,10 @@ static int SDLCALL surface_testClearSurface(void *arg)
 
         surface = SDL_CreateSurface(1, 1, format);
         SDLTest_AssertCheck(surface != NULL, "SDL_CreateSurface()");
+        if (SDL_ISPIXELFORMAT_10BIT(format)) {
+            // SDL_ReadSurfacePixelFloat() returns values in the sRGB colorspace
+            SDL_SetSurfaceColorspace(surface, SDL_COLORSPACE_SRGB);
+        }
         ret = SDL_ClearSurface(surface, srcR, srcG, srcB, srcA);
         SDLTest_AssertCheck(ret == true, "SDL_ClearSurface()");
         ret = SDL_ReadSurfacePixelFloat(surface, 0, 0, &actualR, &actualG, &actualB, &actualA);

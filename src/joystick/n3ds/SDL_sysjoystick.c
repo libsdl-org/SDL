@@ -57,7 +57,7 @@ static inline int Correct_Axis_Y(int Y) {
 
 static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
 static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
-static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_down_state, u32 current_down_state, u32 previous_up_state, u32 current_up_state);
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_held_state, u32 current_held_state);
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
@@ -107,18 +107,21 @@ static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
     static u32 previous_down_state = 0;
     static u32 previous_up_state = 0;
+    static u32 previous_held_state = 0;
     const Uint64 timestamp = SDL_GetTicksNS();
     const u32 current_down_state = hidKeysDown();
     const u32 current_up_state = hidKeysUp();
+    const u32 current_held_state = hidKeysHeld();
 
     UpdateN3DSPressedButtons(timestamp, joystick, previous_down_state, current_down_state);
     UpdateN3DSReleasedButtons(timestamp, joystick, previous_up_state, current_up_state);
-    UpdateN3DSHat(timestamp, joystick, previous_down_state, current_down_state, previous_up_state, current_up_state);
+    UpdateN3DSHat(timestamp, joystick, previous_held_state, current_held_state);
     UpdateN3DSCircle(timestamp, joystick);
     UpdateN3DSCStick(timestamp, joystick);
 
     previous_down_state = current_down_state;
     previous_up_state = current_up_state;
+    previous_held_state = current_held_state;
 }
 
 static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state)
@@ -157,15 +160,15 @@ static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, 
     }
 }
 
-static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_down_state, u32 current_down_state, u32 previous_up_state, u32 current_up_state)
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_held_state, u32 current_held_state)
 {
     // The 3DS dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
     // (but they should _really_ be using the gamepad API.)
-    const u32 updated_hat = (((previous_up_state ^ current_up_state) | (previous_down_state ^ current_down_state)) & N3DS_HAT_MASK);  // did bits 4 through 7 change?
+    const u32 updated_hat = ((previous_held_state ^ current_held_state) & N3DS_HAT_MASK);  // did bits 4 through 7 change?
     if (updated_hat) {
         Uint8 hat = SDL_HAT_CENTERED;
 
-        #define HATSTATE(n3dsbit, sdlenum) if (current_down_state & BIT(n3dsbit)) { hat |= SDL_HAT_##sdlenum; }
+        #define HATSTATE(n3dsbit, sdlenum) if (current_held_state & BIT(n3dsbit)) { hat |= SDL_HAT_##sdlenum; }
         HATSTATE(4, RIGHT);
         HATSTATE(5, LEFT);
         HATSTATE(6, UP);

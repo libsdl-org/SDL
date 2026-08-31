@@ -666,7 +666,7 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
-    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER) {
+    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETRO_CONTROLLER) {
         ctx->has_analog_buttons = false;
     } else {
         ctx->has_analog_buttons = true;
@@ -743,7 +743,7 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     }
     joystick->nhats = 1;
 
-    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER) {
+    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETRO_CONTROLLER) {
         // This is a wireless controller using a USB dongle
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     }

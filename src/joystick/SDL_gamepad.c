@@ -1358,8 +1358,11 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             }
         } else if (SDL_IsJoystickGameSirController(vendor, product) &&
                    guid.data[0] == SDL_HARDWARE_BUS_USB) {
-            // The GameSir-G7 Pro 8K has a set of paddles and shoulder macro buttons
-            SDL_strlcat(mapping_string, "misc1:b11,paddle1:b13,paddle2:b12,misc2:b14,misc3:b15,", sizeof(mapping_string));
+            // The GameSir controllers have a set of paddles and shoulder macro buttons
+            SDL_strlcat(mapping_string, "misc1:b11,paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,", sizeof(mapping_string));
+            if (product == USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K) {
+                SDL_strlcat(mapping_string, "misc2:b16,misc3:b17,misc4:b18,misc5:b19,misc6:b20,", sizeof(mapping_string));
+            }
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
         } else {
@@ -3828,185 +3831,29 @@ bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger
     return result;
 }
 
-/**
- *  Return whether a gamepad has a particular sensor.
- */
 bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    bool result = false;
-
-    SDL_LockJoysticks();
-    {
-        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-        if (joystick) {
-            int i;
-            for (i = 0; i < joystick->nsensors; ++i) {
-                if (joystick->sensors[i].type == type) {
-                    result = true;
-                    break;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
+    return SDL_JoystickHasSensor(SDL_GetGamepadJoystick(gamepad), type);
 }
 
-/*
- *  Set whether data reporting for a gamepad sensor is enabled
- */
 bool SDL_SetGamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type, bool enabled)
 {
-    SDL_LockJoysticks();
-    {
-        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-        if (joystick) {
-            int i;
-            for (i = 0; i < joystick->nsensors; ++i) {
-                SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
-
-                if (sensor->type == type) {
-                    if (sensor->enabled == (enabled != false)) {
-                        SDL_UnlockJoysticks();
-                        return true;
-                    }
-
-                    if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
-                        if (enabled) {
-                            joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
-                            if (!joystick->accel) {
-                                SDL_UnlockJoysticks();
-                                return false;
-                            }
-                        } else {
-                            if (joystick->accel) {
-                                SDL_CloseSensor(joystick->accel);
-                                joystick->accel = NULL;
-                            }
-                        }
-                    } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
-                        if (enabled) {
-                            joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
-                            if (!joystick->gyro) {
-                                SDL_UnlockJoysticks();
-                                return false;
-                            }
-                        } else {
-                            if (joystick->gyro) {
-                                SDL_CloseSensor(joystick->gyro);
-                                joystick->gyro = NULL;
-                            }
-                        }
-                    } else {
-                        if (enabled) {
-                            if (joystick->nsensors_enabled == 0) {
-                                if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
-                                    SDL_UnlockJoysticks();
-                                    return false;
-                                }
-                            }
-                            ++joystick->nsensors_enabled;
-                        } else {
-                            if (joystick->nsensors_enabled == 1) {
-                                if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
-                                    SDL_UnlockJoysticks();
-                                    return false;
-                                }
-                            }
-                            --joystick->nsensors_enabled;
-                        }
-                    }
-
-                    sensor->enabled = enabled;
-                    SDL_UnlockJoysticks();
-                    return true;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return SDL_Unsupported();
+    return SDL_SetJoystickSensorEnabled(SDL_GetGamepadJoystick(gamepad), type, enabled);
 }
 
-/*
- *  Query whether sensor data reporting is enabled for a gamepad
- */
 bool SDL_GamepadSensorEnabled(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    bool result = false;
-
-    SDL_LockJoysticks();
-    {
-        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-        if (joystick) {
-            int i;
-            for (i = 0; i < joystick->nsensors; ++i) {
-                if (joystick->sensors[i].type == type) {
-                    result = joystick->sensors[i].enabled;
-                    break;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
+    return SDL_JoystickSensorEnabled(SDL_GetGamepadJoystick(gamepad), type);
 }
 
-/*
- *  Get the data rate of a gamepad sensor.
- */
 float SDL_GetGamepadSensorDataRate(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
-    float result = 0.0f;
-
-    SDL_LockJoysticks();
-    {
-        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-        if (joystick) {
-            int i;
-            for (i = 0; i < joystick->nsensors; ++i) {
-                SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
-
-                if (sensor->type == type) {
-                    result = sensor->rate;
-                    break;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
+    return SDL_GetJoystickSensorDataRate(SDL_GetGamepadJoystick(gamepad), type);
 }
 
-/*
- *  Get the current state of a gamepad sensor.
- */
 bool SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values)
 {
-    SDL_LockJoysticks();
-    {
-        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
-        if (joystick) {
-            int i;
-            for (i = 0; i < joystick->nsensors; ++i) {
-                SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
-
-                if (sensor->type == type) {
-                    num_values = SDL_min(num_values, SDL_arraysize(sensor->data));
-                    SDL_memcpy(data, sensor->data, num_values * sizeof(*data));
-                    SDL_UnlockJoysticks();
-                    return true;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return SDL_Unsupported();
+    return SDL_GetJoystickSensorData(SDL_GetGamepadJoystick(gamepad), type, data, num_values);
 }
 
 bool SDL_GamepadHasCapSense(SDL_Gamepad *gamepad, SDL_GamepadCapSenseType type)

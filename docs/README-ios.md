@@ -1,10 +1,10 @@
 iOS
 ======
 
-Building the Simple DirectMedia Layer for iOS 11.0+
+Building the Simple DirectMedia Layer
 ==============================================================================
 
-Please note that building SDL requires at least Xcode 12.2 and the iOS 14.2 SDK.
+SDL supports building with Xcode 12.2 and the iOS 14.2 SDK or newer, and deploying to iOS 11.0, tvOS 11.0, visionOS 1.3, and newer.
 
 Instructions:
 

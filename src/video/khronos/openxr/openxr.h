@@ -26,7 +26,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 61)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 62)
 
 // OpenXR 1.0 version number
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
@@ -891,8 +891,8 @@ typedef enum XrStructureType {
     XR_TYPE_ENVIRONMENT_RAYCAST_FILTER_DISTANCE_META = 1000592005,
     XR_TYPE_TILE_PROPERTIES_META = 1000609000,
     XR_TYPE_TILE_PROPERTIES_HINT_META = 1000609001,
-    XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_REQUEST_META = 1000683000,
-    XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_META = 1000683001,
+    XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_REQUEST_META = 1000693000,
+    XR_TYPE_HAND_TRACKING_UNEXTRAPOLATED_POSES_META = 1000693001,
     XR_TYPE_LIGHT_ESTIMATOR_CREATE_INFO_ANDROID = 1000700000,
     XR_TYPE_LIGHT_ESTIMATE_GET_INFO_ANDROID = 1000700001,
     XR_TYPE_LIGHT_ESTIMATE_ANDROID = 1000700002,
@@ -974,6 +974,8 @@ typedef enum XrStructureType {
     XR_TYPE_HAPTIC_PARAMETRIC_VIBRATION_EXT = 1000775000,
     XR_TYPE_HAPTIC_PARAMETRIC_PROPERTIES_EXT = 1000775001,
     XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT = 1000775002,
+    XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY = 1000776000,
+    XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY = 1000776001,
     XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT = 1000781000,
     XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT = 1000781001,
     XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT = 1000781002,
@@ -1023,6 +1025,13 @@ typedef enum XrFormFactor {
     XR_FORM_FACTOR_MAX_ENUM = 0x7FFFFFFF
 } XrFormFactor;
 
+typedef enum XrEnvironmentBlendMode {
+    XR_ENVIRONMENT_BLEND_MODE_OPAQUE = 1,
+    XR_ENVIRONMENT_BLEND_MODE_ADDITIVE = 2,
+    XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND = 3,
+    XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM = 0x7FFFFFFF
+} XrEnvironmentBlendMode;
+
 typedef enum XrViewConfigurationType {
     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO = 1,
     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO = 2,
@@ -1031,13 +1040,6 @@ typedef enum XrViewConfigurationType {
     XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO_WITH_FOVEATED_INSET,
     XR_VIEW_CONFIGURATION_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrViewConfigurationType;
-
-typedef enum XrEnvironmentBlendMode {
-    XR_ENVIRONMENT_BLEND_MODE_OPAQUE = 1,
-    XR_ENVIRONMENT_BLEND_MODE_ADDITIVE = 2,
-    XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND = 3,
-    XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM = 0x7FFFFFFF
-} XrEnvironmentBlendMode;
 
 typedef enum XrReferenceSpaceType {
     XR_REFERENCE_SPACE_TYPE_VIEW = 1,
@@ -1053,6 +1055,13 @@ typedef enum XrReferenceSpaceType {
     XR_REFERENCE_SPACE_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrReferenceSpaceType;
 
+typedef enum XrEyeVisibility {
+    XR_EYE_VISIBILITY_BOTH = 0,
+    XR_EYE_VISIBILITY_LEFT = 1,
+    XR_EYE_VISIBILITY_RIGHT = 2,
+    XR_EYE_VISIBILITY_MAX_ENUM = 0x7FFFFFFF
+} XrEyeVisibility;
+
 typedef enum XrActionType {
     XR_ACTION_TYPE_BOOLEAN_INPUT = 1,
     XR_ACTION_TYPE_FLOAT_INPUT = 2,
@@ -1061,13 +1070,6 @@ typedef enum XrActionType {
     XR_ACTION_TYPE_VIBRATION_OUTPUT = 100,
     XR_ACTION_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrActionType;
-
-typedef enum XrEyeVisibility {
-    XR_EYE_VISIBILITY_BOTH = 0,
-    XR_EYE_VISIBILITY_LEFT = 1,
-    XR_EYE_VISIBILITY_RIGHT = 2,
-    XR_EYE_VISIBILITY_MAX_ENUM = 0x7FFFFFFF
-} XrEyeVisibility;
 
 typedef enum XrSessionState {
     XR_SESSION_STATE_UNKNOWN = 0,
@@ -1157,12 +1159,6 @@ typedef XrFlags64 XrSessionCreateFlags;
 
 // Flag bits for XrSessionCreateFlags
 
-typedef XrFlags64 XrSpaceVelocityFlags;
-
-// Flag bits for XrSpaceVelocityFlags
-static const XrSpaceVelocityFlags XR_SPACE_VELOCITY_LINEAR_VALID_BIT = 0x00000001;
-static const XrSpaceVelocityFlags XR_SPACE_VELOCITY_ANGULAR_VALID_BIT = 0x00000002;
-
 typedef XrFlags64 XrSpaceLocationFlags;
 
 // Flag bits for XrSpaceLocationFlags
@@ -1170,6 +1166,12 @@ static const XrSpaceLocationFlags XR_SPACE_LOCATION_ORIENTATION_VALID_BIT = 0x00
 static const XrSpaceLocationFlags XR_SPACE_LOCATION_POSITION_VALID_BIT = 0x00000002;
 static const XrSpaceLocationFlags XR_SPACE_LOCATION_ORIENTATION_TRACKED_BIT = 0x00000004;
 static const XrSpaceLocationFlags XR_SPACE_LOCATION_POSITION_TRACKED_BIT = 0x00000008;
+
+typedef XrFlags64 XrSpaceVelocityFlags;
+
+// Flag bits for XrSpaceVelocityFlags
+static const XrSpaceVelocityFlags XR_SPACE_VELOCITY_LINEAR_VALID_BIT = 0x00000001;
+static const XrSpaceVelocityFlags XR_SPACE_VELOCITY_ANGULAR_VALID_BIT = 0x00000002;
 
 typedef XrFlags64 XrSwapchainCreateFlags;
 
@@ -1297,27 +1299,18 @@ typedef struct XrSessionCreateInfo {
     XrSystemId                  systemId;
 } XrSessionCreateInfo;
 
-typedef struct XrVector3f {
-    float    x;
-    float    y;
-    float    z;
-} XrVector3f;
-
-// XrSpaceVelocity extends XrSpaceLocation
-typedef struct XrSpaceVelocity {
-    XrStructureType         type;
-    void* XR_MAY_ALIAS      next;
-    XrSpaceVelocityFlags    velocityFlags;
-    XrVector3f              linearVelocity;
-    XrVector3f              angularVelocity;
-} XrSpaceVelocity;
-
 typedef struct XrQuaternionf {
     float    x;
     float    y;
     float    z;
     float    w;
 } XrQuaternionf;
+
+typedef struct XrVector3f {
+    float    x;
+    float    y;
+    float    z;
+} XrVector3f;
 
 typedef struct XrPosef {
     XrQuaternionf    orientation;
@@ -1330,11 +1323,6 @@ typedef struct XrReferenceSpaceCreateInfo {
     XrReferenceSpaceType        referenceSpaceType;
     XrPosef                     poseInReferenceSpace;
 } XrReferenceSpaceCreateInfo;
-
-typedef struct XrExtent2Df {
-    float    width;
-    float    height;
-} XrExtent2Df;
 
 typedef struct XrActionSpaceCreateInfo {
     XrStructureType             type;
@@ -1350,6 +1338,20 @@ typedef struct XrSpaceLocation {
     XrSpaceLocationFlags    locationFlags;
     XrPosef                 pose;
 } XrSpaceLocation;
+
+// XrSpaceVelocity extends XrSpaceLocation
+typedef struct XrSpaceVelocity {
+    XrStructureType         type;
+    void* XR_MAY_ALIAS      next;
+    XrSpaceVelocityFlags    velocityFlags;
+    XrVector3f              linearVelocity;
+    XrVector3f              angularVelocity;
+} XrSpaceVelocity;
+
+typedef struct XrExtent2Df {
+    float    width;
+    float    height;
+} XrExtent2Df;
 
 typedef struct XrViewConfigurationProperties {
     XrStructureType            type;
@@ -1410,11 +1412,6 @@ typedef struct XrSessionBeginInfo {
     XrViewConfigurationType     primaryViewConfigurationType;
 } XrSessionBeginInfo;
 
-typedef struct XrFrameWaitInfo {
-    XrStructureType             type;
-    const void* XR_MAY_ALIAS    next;
-} XrFrameWaitInfo;
-
 typedef struct XrFrameState {
     XrStructureType       type;
     void* XR_MAY_ALIAS    next;
@@ -1422,6 +1419,11 @@ typedef struct XrFrameState {
     XrDuration            predictedDisplayPeriod;
     XrBool32              shouldRender;
 } XrFrameState;
+
+typedef struct XrFrameWaitInfo {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrFrameWaitInfo;
 
 typedef struct XrFrameBeginInfo {
     XrStructureType             type;
@@ -1444,6 +1446,12 @@ typedef struct XrFrameEndInfo {
     const XrCompositionLayerBaseHeader* const*    layers;
 } XrFrameEndInfo;
 
+typedef struct XrViewState {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrViewStateFlags      viewStateFlags;
+} XrViewState;
+
 typedef struct XrViewLocateInfo {
     XrStructureType             type;
     const void* XR_MAY_ALIAS    next;
@@ -1451,12 +1459,6 @@ typedef struct XrViewLocateInfo {
     XrTime                      displayTime;
     XrSpace                     space;
 } XrViewLocateInfo;
-
-typedef struct XrViewState {
-    XrStructureType       type;
-    void* XR_MAY_ALIAS    next;
-    XrViewStateFlags      viewStateFlags;
-} XrViewState;
 
 typedef struct XrFovf {
     float    angleLeft;
@@ -1586,17 +1588,17 @@ typedef struct XrInputSourceLocalizedNameGetInfo {
     XrInputSourceLocalizedNameFlags    whichComponents;
 } XrInputSourceLocalizedNameGetInfo;
 
+typedef struct XR_MAY_ALIAS XrHapticBaseHeader {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrHapticBaseHeader;
+
 typedef struct XrHapticActionInfo {
     XrStructureType             type;
     const void* XR_MAY_ALIAS    next;
     XrAction                    action;
     XrPath                      subactionPath;
 } XrHapticActionInfo;
-
-typedef struct XR_MAY_ALIAS XrHapticBaseHeader {
-    XrStructureType             type;
-    const void* XR_MAY_ALIAS    next;
-} XrHapticBaseHeader;
 
 typedef struct XR_MAY_ALIAS XrBaseInStructure {
     XrStructureType                    type;
@@ -2715,6 +2717,12 @@ typedef enum XrBlendFactorFB {
     XR_BLEND_FACTOR_ONE_MINUS_DST_ALPHA_FB = 5,
     XR_BLEND_FACTOR_MAX_ENUM_FB = 0x7FFFFFFF
 } XrBlendFactorFB;
+typedef XrFlags64 XrCompositionLayerSecureContentFlagsFB;
+
+// Flag bits for XrCompositionLayerSecureContentFlagsFB
+static const XrCompositionLayerSecureContentFlagsFB XR_COMPOSITION_LAYER_SECURE_CONTENT_EXCLUDE_LAYER_BIT_FB = 0x00000001;
+static const XrCompositionLayerSecureContentFlagsFB XR_COMPOSITION_LAYER_SECURE_CONTENT_REPLACE_LAYER_BIT_FB = 0x00000002;
+
 // XrCompositionLayerAlphaBlendFB extends XrCompositionLayerBaseHeader
 typedef struct XrCompositionLayerAlphaBlendFB {
     XrStructureType       type;
@@ -3316,12 +3324,6 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSwapchainStateFB(
 #define XR_FB_composition_layer_secure_content 1
 #define XR_FB_composition_layer_secure_content_SPEC_VERSION 1
 #define XR_FB_COMPOSITION_LAYER_SECURE_CONTENT_EXTENSION_NAME "XR_FB_composition_layer_secure_content"
-typedef XrFlags64 XrCompositionLayerSecureContentFlagsFB;
-
-// Flag bits for XrCompositionLayerSecureContentFlagsFB
-static const XrCompositionLayerSecureContentFlagsFB XR_COMPOSITION_LAYER_SECURE_CONTENT_EXCLUDE_LAYER_BIT_FB = 0x00000001;
-static const XrCompositionLayerSecureContentFlagsFB XR_COMPOSITION_LAYER_SECURE_CONTENT_REPLACE_LAYER_BIT_FB = 0x00000002;
-
 // XrCompositionLayerSecureContentFB extends XrCompositionLayerBaseHeader
 typedef struct XrCompositionLayerSecureContentFB {
     XrStructureType                           type;
@@ -3571,10 +3573,10 @@ typedef struct XrHandJointsMotionRangeInfoEXT {
 // XR_MSFT_scene_understanding is a preprocessor guard. Do not pass it to API calls.
 #define XR_MSFT_scene_understanding 1
 
-            XR_DEFINE_HANDLE(XrSceneObserverMSFT)
-
-
             XR_DEFINE_HANDLE(XrSceneMSFT)
+
+
+            XR_DEFINE_HANDLE(XrSceneObserverMSFT)
 
 #define XR_MSFT_scene_understanding_SPEC_VERSION 2
 #define XR_MSFT_SCENE_UNDERSTANDING_EXTENSION_NAME "XR_MSFT_scene_understanding"
@@ -9993,7 +9995,7 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEndAudioPeriodBD(
 typedef enum XrHandTrackingDataSourceEXT {
     XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_EXT = 1,
     XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT = 2,
-    XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_WIDE_MOTION_META = 1000686000,
+    XR_HAND_TRACKING_DATA_SOURCE_UNOBSTRUCTED_WIDE_MOTION_META = 1000695000,
     XR_HAND_TRACKING_DATA_SOURCE_MAX_ENUM_EXT = 0x7FFFFFFF
 } XrHandTrackingDataSourceEXT;
 // XrHandTrackingDataSourceInfoEXT extends XrHandTrackerCreateInfoEXT
@@ -13252,6 +13254,52 @@ XRAPI_ATTR XrResult XRAPI_CALL xrHapticParametricGetPropertiesEXT(
     XrSession                                   session,
     const XrHapticActionInfo*                   hapticActionInfo,
     XrHapticParametricPropertiesEXT*            parametricProperties);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_SONY_swapchain_color_space is a preprocessor guard. Do not pass it to API calls.
+#define XR_SONY_swapchain_color_space 1
+#define XR_SONY_swapchain_color_space_SPEC_VERSION 1
+#define XR_SONY_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME "XR_SONY_swapchain_color_space"
+
+typedef enum XrColorSpaceSONY {
+    XR_COLOR_SPACE_SRGB_NONLINEAR_SONY = 0,
+    XR_COLOR_SPACE_DISPLAY_P3_LINEAR_SONY = 1,
+    XR_COLOR_SPACE_DISPLAY_P3_NONLINEAR_SONY = 2,
+    XR_COLOR_SPACE_DCI_P3_LINEAR_SONY = 3,
+    XR_COLOR_SPACE_DCI_P3_NONLINEAR_SONY = 4,
+    XR_COLOR_SPACE_EXTENDED_SRGB_LINEAR_SONY = 5,
+    XR_COLOR_SPACE_BT709_LINEAR_SONY = 6,
+    XR_COLOR_SPACE_BT709_NONLINEAR_SONY = 7,
+    XR_COLOR_SPACE_BT2020_LINEAR_SONY = 8,
+    XR_COLOR_SPACE_BT2020_PQ_SONY = 9,
+    XR_COLOR_SPACE_BT2020_HLG_SONY = 10,
+    XR_COLOR_SPACE_MAX_ENUM_SONY = 0x7FFFFFFF
+} XrColorSpaceSONY;
+typedef struct XrColorSpacesEnumerateInfoSONY {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    int64_t                     format;
+} XrColorSpacesEnumerateInfoSONY;
+
+// XrSwapchainCreateInfoColorSpaceSONY extends XrSwapchainCreateInfo
+typedef struct XrSwapchainCreateInfoColorSpaceSONY {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrColorSpaceSONY            colorSpace;
+} XrSwapchainCreateInfoColorSpaceSONY;
+
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateColorSpacesSONY)(XrSession session, const XrColorSpacesEnumerateInfoSONY* enumerateInfo, uint32_t colorSpaceCapacityInput, uint32_t* colorSpaceCountOutput, XrColorSpaceSONY* colorSpaces);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateColorSpacesSONY(
+    XrSession                                   session,
+    const XrColorSpacesEnumerateInfoSONY*       enumerateInfo,
+    uint32_t                                    colorSpaceCapacityInput,
+    uint32_t*                                   colorSpaceCountOutput,
+    XrColorSpaceSONY*                           colorSpaces);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
 

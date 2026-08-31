@@ -86,7 +86,9 @@
 #define SDL_WL_COMPOSITOR_VERSION 4
 #endif
 
-#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#if SDL_WAYLAND_CHECK_VERSION(1, 26, 0)
+#define SDL_WL_SEAT_VERSION 11
+#elif SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
 #define SDL_WL_SEAT_VERSION 10
 #elif SDL_WAYLAND_CHECK_VERSION(1, 22, 0)
 #define SDL_WL_SEAT_VERSION 9
@@ -112,7 +114,9 @@
 #define SDL_WL_DATA_DEVICE_VERSION 3
 
 // wl_fixes was introduced in 1.24.0
-#if SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
+#if SDL_WAYLAND_CHECK_VERSION(1, 26, 0)
+#define SDL_WL_FIXES_VERSION 2
+#elif SDL_WAYLAND_CHECK_VERSION(1, 24, 0)
 #define SDL_WL_FIXES_VERSION 1
 #endif
 
@@ -561,7 +565,11 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 
 static void wayland_preferred_check_remove_global(void *data, struct wl_registry *registry, uint32_t id)
 {
-    // No need to do anything here.
+    SDL_WaylandPreferredData *d = (SDL_WaylandPreferredData *)data;
+
+    if (d->wl_fixes && wl_fixes_get_version(d->wl_fixes) >= WL_FIXES_ACK_GLOBAL_REMOVE_SINCE_VERSION) {
+        wl_fixes_ack_global_remove(d->wl_fixes, registry, id);
+    }
 }
 
 static const struct wl_registry_listener preferred_registry_listener = {
@@ -1472,7 +1480,7 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         d->primary_selection_device_manager = wl_registry_bind(d->registry, id, &zwp_primary_selection_device_manager_v1_interface, 1);
         Wayland_DisplayInitPrimarySelectionDeviceManager(d);
     } else if (SDL_strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
-        d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
+        d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, SDL_min(2, version));
     } else if (SDL_strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
         d->tablet_manager = wl_registry_bind(d->registry, id, &zwp_tablet_manager_v2_interface, 1);
         Wayland_DisplayInitTabletManager(d);
@@ -1537,17 +1545,21 @@ static void handle_registry_remove_global(void *data, struct wl_registry *regist
             }
 
             d->output_count--;
-            return;
+            goto ack_remove;
         }
     }
 
     SDL_WaylandSeat *seat, *temp;
-    wl_list_for_each_safe (seat, temp, &d->seat_list, link)
-    {
+    wl_list_for_each_safe (seat, temp, &d->seat_list, link) {
         if (seat->registry_id == id) {
             Wayland_SeatDestroy(seat, false);
-            return;
+            goto ack_remove;
         }
+    }
+
+ack_remove:
+    if (d->wl_fixes && wl_fixes_get_version(d->wl_fixes) >= WL_FIXES_ACK_GLOBAL_REMOVE_SINCE_VERSION) {
+        wl_fixes_ack_global_remove(d->wl_fixes, registry, id);
     }
 }
 
@@ -1592,19 +1604,23 @@ static int SDLCALL LibdecorNewInThread(void *data)
 }
 #endif
 
-#ifndef HAVE_GETRESUID
+#ifdef HAVE_GETRESUID
+#define SDL_getresuid getresuid
+#else
 // Non-POSIX, but Linux and some BSDs have it.
 // To reduce the number of code paths, if getresuid() isn't available at
 // compile-time, we behave as though it existed but failed at runtime.
-static inline int getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int SDL_getresuid(uid_t *ruid, uid_t *euid, uid_t *suid) {
     errno = ENOSYS;
     return -1;
 }
 #endif
 
-#ifndef HAVE_GETRESGID
+#ifdef HAVE_GETRESGID
+#define SDL_getresgid getresgid
+#else
 // Same as getresuid() but for the primary group
-static inline int getresgid(uid_t *ruid, uid_t *euid, uid_t *suid) {
+static inline int SDL_getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid) {
     errno = ENOSYS;
     return -1;
 }
@@ -1626,12 +1642,12 @@ bool CanUseGtk(void)
     // we don't use Linux getauxval() or prctl PR_GET_DUMPABLE,
     // BSD issetugid(), or similar OS-specific detection
 
-    if (getresuid(&ruid, &euid, &suid) != 0) {
+    if (SDL_getresuid(&ruid, &euid, &suid) != 0) {
         ruid = suid = getuid();
         euid = geteuid();
     }
 
-    if (getresgid(&rgid, &egid, &sgid) != 0) {
+    if (SDL_getresgid(&rgid, &egid, &sgid) != 0) {
         rgid = sgid = getgid();
         egid = getegid();
     }

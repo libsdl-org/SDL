@@ -252,8 +252,8 @@ int main(int argc, char *argv[])
 
         drawstate->window = state->windows[i];
         drawstate->renderer = state->renderers[i];
-        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.png", true);
-        drawstate->background = LoadTexture(drawstate->renderer, "sample.png", false);
+        drawstate->sprite = LoadTexture(drawstate->renderer, "icon.png");
+        drawstate->background = LoadTexture(drawstate->renderer, "sample.png");
         if (!drawstate->sprite || !drawstate->background) {
             quit(2);
         }

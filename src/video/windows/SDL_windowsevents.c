@@ -2499,7 +2499,19 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             WIN_UpdateDisplayUsableBounds(SDL_GetVideoDevice());
         }
         break;
+#else
+    // Xbox does not support WM_WINDOWPOSCHANGED, so use WM_SIZE instead to detect window resizes
+    case WM_SIZE:
+    {
+        RECT rect;
+        int w, h;
 
+        if (GetClientRect(hwnd, &rect) && WIN_WindowRectValid(&rect)) {
+            w = rect.right;
+            h = rect.bottom;
+            SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, w, h);
+        }
+    } break;
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
     default:

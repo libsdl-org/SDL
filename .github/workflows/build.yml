@@ -24,7 +24,7 @@ concurrency:
 jobs:
   controller:
     name: 'Create test plan'
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-slim'
     if: ${{ (github.event_name == 'schedule' && github.repository == 'libsdl-org/sdl') || github.event_name != 'schedule' }}
     outputs:
       platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
@@ -38,13 +38,12 @@ jobs:
           sparse-checkout: '.github/workflows/create-test-plan.py'
       - name: 'Create plan'
         id: plan
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           # Adding [sdl-ci-filter GLOB] to the commit message will limit the jobs
           # e.g. [sdl-ci-filter msvc-*]
-          EOF=$(openssl rand -hex 32)
-          cat >/tmp/commit_message.txt <<$EOF
-          ${{ github.event.head_commit.message }}
-          $EOF
+          printf '%s\n' "$COMMIT_MESSAGE" >/tmp/commit_message.txt
 
           python .github/workflows/create-test-plan.py \
             ${{ (github.event_name != 'schedule' && '--priority-only') || '' }} \

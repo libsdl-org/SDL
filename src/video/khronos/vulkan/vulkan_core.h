@@ -66,7 +66,7 @@ extern "C" {
 //#define VK_API_VERSION VK_MAKE_API_VERSION(0, 1, 0, 0) // Patch version should always be set to 0
 
 // Version of this file
-#define VK_HEADER_VERSION 356
+#define VK_HEADER_VERSION 358
 
 // Complete version of this file
 #define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)
@@ -1487,6 +1487,8 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_DATA_GRAPH_PIPELINE_SESSION_NEURAL_STATISTICS_CREATE_INFO_ARM = 1000676001,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DATA_GRAPH_NEURAL_ACCELERATOR_STATISTICS_FEATURES_ARM = 1000676002,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PRIMITIVE_RESTART_INDEX_FEATURES_EXT = 1000678000,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_TILING_CONTROL_FEATURES_EXT = 1000687000,
+    VK_STRUCTURE_TYPE_IMAGE_TILING_CONTROL_CREATE_INFO_EXT = 1000687001,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_DECODE_VECTOR_FEATURES_NV = 1000689000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
@@ -20332,7 +20334,7 @@ VKAPI_ATTR void VKAPI_CALL vkCmdEndPerTileExecutionQCOM(
 
 // VK_NV_low_latency is a preprocessor guard. Do not pass it to API calls.
 #define VK_NV_low_latency 1
-#define VK_NV_LOW_LATENCY_SPEC_VERSION    1
+#define VK_NV_LOW_LATENCY_SPEC_VERSION    2
 #define VK_NV_LOW_LATENCY_EXTENSION_NAME  "VK_NV_low_latency"
 typedef struct VkQueryLowLatencySupportNV {
     VkStructureType    sType;
@@ -20340,6 +20342,60 @@ typedef struct VkQueryLowLatencySupportNV {
     void*              pQueriedLowLatencyData;
 } VkQueryLowLatencySupportNV;
 
+typedef void (VKAPI_PTR *PFN_vkSetLatencySleepModeLegacyNV)(VkDevice device, VkBool32 lowLatencyMode, VkBool32 lowLatencyBoost, uint32_t minimumIntervalUs);
+typedef void (VKAPI_PTR *PFN_vkLatencySleepLegacyNV)(VkDevice device, VkSemaphore signalSemaphore, uint64_t value);
+typedef void (VKAPI_PTR *PFN_vkSetLatencyMarkerLegacyNV)(VkDevice device, uint64_t frameID, uint32_t marker);
+typedef void (VKAPI_PTR *PFN_vkGetLatencyTimingsLegacyNV)(VkDevice device, void* pTimings);
+typedef void (VKAPI_PTR *PFN_vkQueueNotifyOutOfBandLegacyNV)(VkQueue queue, uint32_t queueType);
+typedef void (VKAPI_PTR *PFN_vkGetSleepStatusLegacyNV)(VkDevice device, VkBool32* pLowLatencyMode);
+typedef void (VKAPI_PTR *PFN_vkShutdownLatencyDeviceLegacyNV)(VkDevice device);
+
+#ifndef VK_NO_PROTOTYPES
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkSetLatencySleepModeLegacyNV(
+    VkDevice                                    device,
+    VkBool32                                    lowLatencyMode,
+    VkBool32                                    lowLatencyBoost,
+    uint32_t                                    minimumIntervalUs);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkLatencySleepLegacyNV(
+    VkDevice                                    device,
+    VkSemaphore                                 signalSemaphore,
+    uint64_t                                    value);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkSetLatencyMarkerLegacyNV(
+    VkDevice                                    device,
+    uint64_t                                    frameID,
+    uint32_t                                    marker);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkGetLatencyTimingsLegacyNV(
+    VkDevice                                    device,
+    void*                                       pTimings);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkQueueNotifyOutOfBandLegacyNV(
+    VkQueue                                     queue,
+    uint32_t                                    queueType);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkGetSleepStatusLegacyNV(
+    VkDevice                                    device,
+    VkBool32*                                   pLowLatencyMode);
+#endif
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR void VKAPI_CALL vkShutdownLatencyDeviceLegacyNV(
+    VkDevice                                    device);
+#endif
+#endif
 
 
 // VK_EXT_descriptor_buffer is a preprocessor guard. Do not pass it to API calls.
@@ -26435,6 +26491,31 @@ VKAPI_ATTR void VKAPI_CALL vkCmdSetPrimitiveRestartIndexEXT(
     uint32_t                                    primitiveRestartIndex);
 #endif
 #endif
+
+
+// VK_EXT_image_tiling_control is a preprocessor guard. Do not pass it to API calls.
+#define VK_EXT_image_tiling_control 1
+#define VK_EXT_IMAGE_TILING_CONTROL_SPEC_VERSION 1
+#define VK_EXT_IMAGE_TILING_CONTROL_EXTENSION_NAME "VK_EXT_image_tiling_control"
+
+typedef enum VkImageTilingControlEXT {
+    VK_IMAGE_TILING_CONTROL_DEFAULT_EXT = 0,
+    VK_IMAGE_TILING_CONTROL_MIN_SIZE_EXT = 1,
+    VK_IMAGE_TILING_CONTROL_MAX_PERFORMANCE_EXT = 2,
+    VK_IMAGE_TILING_CONTROL_MAX_ENUM_EXT = 0x7FFFFFFF
+} VkImageTilingControlEXT;
+typedef struct VkPhysicalDeviceImageTilingControlFeaturesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           imageTilingControl;
+} VkPhysicalDeviceImageTilingControlFeaturesEXT;
+
+typedef struct VkImageTilingControlCreateInfoEXT {
+    VkStructureType            sType;
+    const void*                pNext;
+    VkImageTilingControlEXT    tilingControl;
+} VkImageTilingControlCreateInfoEXT;
+
 
 
 // VK_NV_cooperative_matrix_decode_vector is a preprocessor guard. Do not pass it to API calls.

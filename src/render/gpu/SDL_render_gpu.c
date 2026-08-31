@@ -709,7 +709,7 @@ static bool GPU_QueueDrawPoints(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
     }
 
     if (convert_color) {
-        SDL_ConvertToLinear(&color);
+        SDL_ConvertToLinear(renderer, &color);
     }
 
     cmd->data.draw.count = count;
@@ -765,7 +765,7 @@ static bool GPU_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
         col_ = *(SDL_FColor *)((char *)color + j * color_stride);
         if (convert_color) {
-            SDL_ConvertToLinear(&col_);
+            SDL_ConvertToLinear(renderer, &col_);
         }
 
         *(verts++) = col_.r;
@@ -1294,7 +1294,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             bool convert_color = SDL_RenderingLinearSpace(renderer);
             SDL_FColor color = cmd->data.color.color;
             if (convert_color) {
-                SDL_ConvertToLinear(&color);
+                SDL_ConvertToLinear(renderer, &color);
             }
             color.r *= cmd->data.color.color_scale;
             color.g *= cmd->data.color.color_scale;
@@ -1747,7 +1747,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     GPU_RenderData *data = NULL;
 
     // Clear any OpenGL properties on the window to avoid potential driver conflicts.
-    SDL_WindowFlags flags = SDL_GetWindowFlags(window);
+    SDL_WindowFlags flags = window ? SDL_GetWindowFlags(window) : 0;
     if (flags & SDL_WINDOW_OPENGL) {
         flags &= ~SDL_WINDOW_OPENGL;
         SDL_ReconfigureWindow(window, flags);

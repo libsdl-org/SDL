@@ -92,7 +92,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0x576d ), k_eControllerType_PS3Controller, NULL },	// Power A PS3
 	{ MAKE_CONTROLLER_ID( 0x20d6, 0xca6d ), k_eControllerType_PS3Controller, NULL },	// BDA Pro Ex
 	{ MAKE_CONTROLLER_ID( 0x2563, 0x0523 ), k_eControllerType_PS3Controller, NULL },	// Digiflip GP006
-	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, "Retro-bit Controller" },	// SWITCH CO., LTD. Retro-bit Controller
+	{ MAKE_CONTROLLER_ID( 0x2563, 0x0575 ), k_eControllerType_PS3Controller, "Retro Controller" },	// SWITCH CO., LTD. Retro-bit, Retro Fighters Controllers
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0x83c3 ), k_eControllerType_PS3Controller, NULL },	// gioteck vx2
 	{ MAKE_CONTROLLER_ID( 0x25f0, 0xc121 ), k_eControllerType_PS3Controller, NULL },	//
 	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2003 ), k_eControllerType_PS3Controller, NULL },	// Qanba Drone
@@ -182,8 +182,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1012 ), k_eControllerType_PS5Controller, NULL },	// Razer Kitsune
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1024 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode wired)
-	{ MAKE_CONTROLLER_ID( 0x1532, 0x1026 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V5 Pro (PS5 mode with dongle)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1024 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V3 Pro (PS5 mode wired)
+	{ MAKE_CONTROLLER_ID( 0x1532, 0x1026 ), k_eControllerType_PS5Controller, NULL },	// Razer Raiju V3 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d18 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode with dongle)
 	{ MAKE_CONTROLLER_ID( 0x3285, 0x0d19 ), k_eControllerType_PS5Controller, NULL },	// NACON Revolution 5 Pro (PS5 mode wired)
 	{ MAKE_CONTROLLER_ID( 0x358a, 0x0104 ), k_eControllerType_PS5Controller, NULL },	// Backbone One PlayStation Edition for iOS

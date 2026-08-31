@@ -949,7 +949,6 @@ static Uint32 SDLCALL HashAudioDeviceID(void *userdata, const void *key)
     return ((Uint32) ((uintptr_t) key)) >> 2;
 }
 
-// !!! FIXME: the video subsystem does SDL_VideoInit, not SDL_InitVideo. Make this match.
 bool SDL_InitAudio(const char *driver_name)
 {
     if (SDL_GetCurrentAudioDriver()) {
@@ -2478,6 +2477,9 @@ void SDL_DefaultAudioDeviceChanged(SDL_AudioDevice *new_default_device)
                 logdev->physical_device = new_default_device;
                 logdev->prev = NULL;
                 logdev->next = new_default_device->logical_devices;
+                if (new_default_device->logical_devices) {
+                    new_default_device->logical_devices->prev = logdev;
+                }
                 new_default_device->logical_devices = logdev;
                 SDL_UnlockRWLock(current_audio.subsystem_rwlock);
 

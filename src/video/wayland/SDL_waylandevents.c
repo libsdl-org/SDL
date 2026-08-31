@@ -640,7 +640,7 @@ connection_error:
     }
 }
 
-static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
+static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat, bool warp)
 {
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data ? window_data->sdlwindow : NULL;
@@ -656,7 +656,11 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
 
         sx *= window_data->pointer_scale.x;
         sy *= window_data->pointer_scale.y;
-        SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        if (!warp) {
+            SDL_SendMouseMotion(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, false, (float)sx, (float)sy);
+        } else {
+            SDL_SendMouseWarp(seat->pointer.pending_frame.timestamp_ns, window_data->sdlwindow, seat->pointer.sdl_id, (float)sx, (float)sy);
+        }
 
         seat->pointer.last_motion.x = (int)SDL_floor(sx);
         seat->pointer.last_motion.y = (int)SDL_floor(sy);
@@ -666,7 +670,8 @@ static void pointer_dispatch_absolute_motion(SDL_WaylandSeat *seat)
             Wayland_SeatUpdatePointerGrab(seat);
         }
 
-        if (window->hit_test) {
+        // Don't perform hit testing if an implicit grab is active.
+        if (!(window->flags & SDL_WINDOW_MOUSE_CAPTURE) && window->hit_test) {
             SDL_HitTestResult rc = window->hit_test(window, &seat->pointer.last_motion, window->hit_test_data);
 
             // Apply the toplevel constraints if the window isn't resizable from those directions.
@@ -763,7 +768,7 @@ static void pointer_handle_motion(void *data, struct wl_pointer *pointer,
         }
     } else {
         seat->pointer.pending_frame.timestamp_ns = timestamp;
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, false);
     }
 }
 
@@ -790,7 +795,7 @@ static void pointer_dispatch_enter(SDL_WaylandSeat *seat)
     SDL_SetMouseFocus(window->sdlwindow);
 
     // Send the initial position.
-    pointer_dispatch_absolute_motion(seat);
+    pointer_dispatch_absolute_motion(seat, false);
 
     // Update the pointer grab state.
     Wayland_SeatUpdatePointerGrab(seat);
@@ -980,12 +985,12 @@ static void pointer_dispatch_button(SDL_WaylandSeat *seat, Uint8 sdl_button, boo
 
         if (down) {
             seat->pointer.buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
+
+            if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat, seat->last_implicit_grab_serial)) {
+                return; // don't pass this event on to app.
+            }
         } else {
             seat->pointer.buttons_pressed &= ~SDL_BUTTON_MASK(sdl_button);
-        }
-
-        if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat, seat->last_implicit_grab_serial)) {
-            return; // don't pass this event on to app.
         }
 
         // Possibly ignore this click if it was to gain focus.
@@ -1280,7 +1285,7 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     }
 
     if (seat->pointer.pending_frame.have_absolute) {
-        pointer_dispatch_absolute_motion(seat);
+        pointer_dispatch_absolute_motion(seat, seat->pointer.pending_frame.have_warp);
     }
 
     if (seat->pointer.pending_frame.have_relative) {
@@ -1336,18 +1341,29 @@ static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
 }
 
+static void pointer_handle_warp(void *data, struct wl_pointer *wl_pointer, wl_fixed_t surface_x, wl_fixed_t surface_y)
+{
+    SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+
+    seat->pointer.pending_frame.have_absolute = true;
+    seat->pointer.pending_frame.have_warp = true;
+    seat->pointer.pending_frame.absolute.sx = surface_x;
+    seat->pointer.pending_frame.absolute.sy = surface_y;
+}
+
 static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_enter,
     pointer_handle_leave,
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
-    pointer_handle_frame,                  // Version 5
-    pointer_handle_axis_source,            // Version 5
-    pointer_handle_axis_stop,              // Version 5
-    pointer_handle_axis_discrete,          // Version 5
-    pointer_handle_axis_value120,          // Version 8
-    pointer_handle_axis_relative_direction // Version 9
+    pointer_handle_frame,                   // Version 5
+    pointer_handle_axis_source,             // Version 5
+    pointer_handle_axis_stop,               // Version 5
+    pointer_handle_axis_discrete,           // Version 5
+    pointer_handle_axis_value120,           // Version 8
+    pointer_handle_axis_relative_direction, // Version 9
+    pointer_handle_warp                     // Version 11
 };
 
 static void relative_pointer_handle_relative_motion(void *data,
@@ -2510,7 +2526,7 @@ static void Wayland_SeatDestroyTouch(SDL_WaylandSeat *seat)
     WAYLAND_wl_list_init(&seat->touch.points);
 }
 
-static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, enum wl_seat_capability capabilities)
+static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
 {
     SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
     char name_fmt[256];
@@ -2591,134 +2607,11 @@ static const struct wl_seat_listener seat_listener = {
     seat_handle_name, // Version 2
 };
 
-static void data_source_handle_target(void *data, struct wl_data_source *wl_data_source,
-                                      const char *mime_type)
-{
-}
-
-static void data_source_handle_send(void *data, struct wl_data_source *wl_data_source,
-                                    const char *mime_type, int32_t fd)
-{
-    Wayland_data_source_send((SDL_WaylandDataSource *)data, mime_type, fd);
-}
-
-static void data_source_handle_cancelled(void *data, struct wl_data_source *wl_data_source)
-{
-    SDL_WaylandDataSource *source = data;
-    if (source) {
-        Wayland_data_source_destroy(source);
-    }
-}
-
-static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_source *wl_data_source)
-{
-}
-
-static void data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
-{
-}
-
-static void data_source_handle_action(void *data, struct wl_data_source *wl_data_source,
-                                      uint32_t dnd_action)
-{
-}
-
-static const struct wl_data_source_listener data_source_listener = {
-    data_source_handle_target,
-    data_source_handle_send,
-    data_source_handle_cancelled,
-    data_source_handle_dnd_drop_performed, // Version 3
-    data_source_handle_dnd_finished,       // Version 3
-    data_source_handle_action,             // Version 3
-};
-
-static void primary_selection_source_send(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1,
-                                          const char *mime_type, int32_t fd)
-{
-    Wayland_primary_selection_source_send((SDL_WaylandPrimarySelectionSource *)data,
-                                          mime_type, fd);
-}
-
-static void primary_selection_source_cancelled(void *data, struct zwp_primary_selection_source_v1 *zwp_primary_selection_source_v1)
-{
-    Wayland_primary_selection_source_destroy(data);
-}
-
-static const struct zwp_primary_selection_source_v1_listener primary_selection_source_listener = {
-    primary_selection_source_send,
-    primary_selection_source_cancelled,
-};
-
-SDL_WaylandDataSource *Wayland_data_source_create(SDL_VideoDevice *_this)
-{
-    SDL_WaylandDataSource *data_source = NULL;
-    SDL_VideoData *driver_data = NULL;
-    struct wl_data_source *id = NULL;
-
-    if (!_this || !_this->internal) {
-        SDL_SetError("Video driver uninitialized");
-    } else {
-        driver_data = _this->internal;
-
-        if (driver_data->data_device_manager) {
-            id = wl_data_device_manager_create_data_source(
-                driver_data->data_device_manager);
-        }
-
-        if (!id) {
-            SDL_SetError("Wayland unable to create data source");
-        } else {
-            data_source = SDL_calloc(1, sizeof(*data_source));
-            if (!data_source) {
-                wl_data_source_destroy(id);
-            } else {
-                data_source->source = id;
-                wl_data_source_set_user_data(id, data_source);
-                wl_data_source_add_listener(id, &data_source_listener,
-                                            data_source);
-            }
-        }
-    }
-    return data_source;
-}
-
-SDL_WaylandPrimarySelectionSource *Wayland_primary_selection_source_create(SDL_VideoDevice *_this)
-{
-    SDL_WaylandPrimarySelectionSource *primary_selection_source = NULL;
-    SDL_VideoData *driver_data = NULL;
-    struct zwp_primary_selection_source_v1 *id = NULL;
-
-    if (!_this || !_this->internal) {
-        SDL_SetError("Video driver uninitialized");
-    } else {
-        driver_data = _this->internal;
-
-        if (driver_data->primary_selection_device_manager) {
-            id = zwp_primary_selection_device_manager_v1_create_source(
-                driver_data->primary_selection_device_manager);
-        }
-
-        if (!id) {
-            SDL_SetError("Wayland unable to create primary selection source");
-        } else {
-            primary_selection_source = SDL_calloc(1, sizeof(*primary_selection_source));
-            if (!primary_selection_source) {
-                zwp_primary_selection_source_v1_destroy(id);
-            } else {
-                primary_selection_source->source = id;
-                zwp_primary_selection_source_v1_add_listener(id, &primary_selection_source_listener,
-                                                             primary_selection_source);
-            }
-        }
-    }
-    return primary_selection_source;
-}
-
 static void data_offer_handle_offer(void *data, struct wl_data_offer *wl_data_offer,
                                     const char *mime_type)
 {
     SDL_WaylandDataOffer *offer = data;
-    Wayland_data_offer_add_mime(offer, mime_type);
+    Wayland_DataOfferAddMIME(offer, mime_type);
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In wl_data_offer_listener . data_offer_handle_offer on data_offer 0x%08x for MIME '%s'",
                  (wl_data_offer ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)wl_data_offer) : -1),
@@ -2753,7 +2646,7 @@ static void primary_selection_offer_handle_offer(void *data, struct zwp_primary_
                                                  const char *mime_type)
 {
     SDL_WaylandPrimarySelectionOffer *offer = data;
-    Wayland_primary_selection_offer_add_mime(offer, mime_type);
+    Wayland_PrimarySelectionOfferAddMIME(offer, mime_type);
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In zwp_primary_selection_offer_v1_listener . primary_selection_offer_handle_offer on primary_selection_offer 0x%08x for MIME '%s'",
                  (zwp_primary_selection_offer_v1 ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)zwp_primary_selection_offer_v1) : -1),
@@ -2770,7 +2663,6 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
     SDL_WaylandDataOffer *data_offer = SDL_calloc(1, sizeof(*data_offer));
     if (data_offer) {
         SDL_WaylandDataDevice *data_device = (SDL_WaylandDataDevice *)data;
-        data_device->seat->display->last_incoming_data_offer_seat = data_device->seat;
         data_offer->offer = id;
         data_offer->data_device = data_device;
         data_offer->read_fd = -1;
@@ -2802,13 +2694,13 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
     if (data_device->drag_offer && window && window->accepts_drag_and_drop) {
         // TODO: SDL Support more mime types
 #ifdef SDL_USE_LIBDBUS
-        if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
+        if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_PORTAL_MIME)) {
             data_device->has_mime_file = true;
             data_device->mime_type = FILE_PORTAL_MIME;
             wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
         }
 #endif
-        if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_MIME)) {
+        if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_MIME)) {
             data_device->has_mime_file = true;
             data_device->mime_type = FILE_MIME;
             wl_data_offer_accept(id, serial, FILE_MIME);
@@ -2817,7 +2709,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
         size_t mime_count = 0;
         const char *const *text_mime_types = Wayland_GetTextMimeTypes(SDL_GetVideoDevice(), &mime_count);
         for (size_t i = 0; i < mime_count; ++i) {
-            if (Wayland_data_offer_has_mime(data_device->drag_offer, text_mime_types[i])) {
+            if (Wayland_DataOfferHasMIME(data_device->drag_offer, text_mime_types[i])) {
                 data_device->has_mime_text = true;
                 data_device->mime_type = text_mime_types[i];
                 wl_data_offer_accept(id, serial, text_mime_types[i]);
@@ -2897,7 +2789,7 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
                          WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
                          data_device->drag_serial);
         }
-        Wayland_data_offer_destroy(data_device->drag_offer);
+        Wayland_DataOfferDestroy(data_device->drag_offer);
         data_device->drag_offer = NULL;
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -2957,8 +2849,8 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
         size_t length;
         bool drop_handled = false;
 #ifdef SDL_USE_LIBDBUS
-        if (Wayland_data_offer_has_mime(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, FILE_PORTAL_MIME, &length, false);
+        if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_PORTAL_MIME)) {
+            void *buffer = Wayland_DataOfferReceive(data_device->drag_offer, FILE_PORTAL_MIME, &length, false);
             if (buffer) {
                 SDL_DBusContext *dbus = SDL_DBus_GetContext();
                 if (dbus) {
@@ -2984,7 +2876,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
          * non paths that are not visible to the application
          */
         if (!drop_handled) {
-            void *buffer = Wayland_data_offer_receive(data_device->drag_offer, data_device->mime_type, &length, false);
+            void *buffer = Wayland_DataOfferReceive(data_device->drag_offer, data_device->mime_type, &length, false);
             if (data_device->has_mime_file) {
                 if (buffer) {
                     char *saveptr = NULL;
@@ -3033,7 +2925,7 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                      -1, -1);
     }
 
-    Wayland_data_offer_destroy(data_device->drag_offer);
+    Wayland_DataOfferDestroy(data_device->drag_offer);
     data_device->drag_offer = NULL;
 }
 
@@ -3050,12 +2942,14 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                  ". In data_device_listener . data_device_handle_selection on data_offer 0x%08x",
                  (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)id) : -1));
-    if (data_device->selection_offer != offer) {
-        Wayland_data_offer_destroy(data_device->selection_offer);
-        data_device->selection_offer = offer;
-    }
 
-    Wayland_data_offer_notify_from_mimes(offer, true);
+    // Don't notify when clearing the old selection offer if doing so will inadvertently clear the selection source.
+    const bool notify = offer || (!offer && data_device->selection_offer && (!data_device->selection_offer->callback || !data_device->selection_source));
+    Wayland_DataOfferDestroy(data_device->selection_offer);
+    data_device->selection_offer = offer;
+    if (notify) {
+        Wayland_DataOfferNotifyFromMIMEs(offer, true);
+    }
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -3073,7 +2967,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
     SDL_WaylandPrimarySelectionOffer *primary_selection_offer = SDL_calloc(1, sizeof(*primary_selection_offer));
     if (primary_selection_offer) {
         SDL_WaylandPrimarySelectionDevice *primary_selection_device = (SDL_WaylandPrimarySelectionDevice *)data;
-        primary_selection_device->seat->display->last_incoming_primary_selection_seat = primary_selection_device->seat;
+        primary_selection_device->seat->display->current_primary_selection_seat = primary_selection_device->seat;
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
         WAYLAND_wl_list_init(&(primary_selection_offer->mimes));
@@ -3096,7 +2990,7 @@ static void primary_selection_device_handle_selection(void *data, struct zwp_pri
     }
 
     if (primary_selection_device->selection_offer != offer) {
-        Wayland_primary_selection_offer_destroy(primary_selection_device->selection_offer);
+        Wayland_PrimarySelectionOfferDestroy(primary_selection_device->selection_offer);
         primary_selection_device->selection_offer = offer;
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -3717,12 +3611,14 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down)
     SDL_free(seat->name);
 
     if (seat->data_device) {
-        Wayland_data_device_clear_selection(seat->data_device);
         if (seat->data_device->selection_offer) {
-            Wayland_data_offer_destroy(seat->data_device->selection_offer);
+            Wayland_DataOfferDestroy(seat->data_device->selection_offer);
+        }
+        if (seat->data_device->selection_source) {
+            Wayland_DataSourceDestroy(seat->data_device->selection_source);
         }
         if (seat->data_device->drag_offer) {
-            Wayland_data_offer_destroy(seat->data_device->drag_offer);
+            Wayland_DataOfferDestroy(seat->data_device->drag_offer);
         }
         if (seat->data_device->data_device) {
             if (wl_data_device_get_version(seat->data_device->data_device) >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
@@ -3737,10 +3633,10 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down)
 
     if (seat->primary_selection_device) {
         if (seat->primary_selection_device->selection_offer) {
-            Wayland_primary_selection_offer_destroy(seat->primary_selection_device->selection_offer);
+            Wayland_PrimarySelectionOfferDestroy(seat->primary_selection_device->selection_offer);
         }
         if (seat->primary_selection_device->selection_source) {
-            Wayland_primary_selection_source_destroy(seat->primary_selection_device->selection_source);
+            Wayland_PrimarySelectionSourceDestroy(seat->primary_selection_device->selection_source);
         }
         if (seat->primary_selection_device->primary_selection_device) {
             zwp_primary_selection_device_v1_destroy(seat->primary_selection_device->primary_selection_device);
@@ -3984,8 +3880,8 @@ void Wayland_UpdateImplicitGrabSerial(SDL_WaylandSeat *seat, Uint32 serial)
     if (serial > seat->last_implicit_grab_serial) {
         seat->last_implicit_grab_serial = serial;
         seat->display->last_implicit_grab_seat = seat;
-        Wayland_data_device_set_serial(seat->data_device, serial);
-        Wayland_primary_selection_device_set_serial(seat->primary_selection_device, serial);
+        Wayland_DataDeviceSetSerial(seat->data_device, serial);
+        Wayland_PrimarySelectionDeviceSetSerial(seat->primary_selection_device, serial);
     }
 }
 

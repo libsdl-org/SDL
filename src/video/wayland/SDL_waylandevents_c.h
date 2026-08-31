@@ -205,6 +205,7 @@ typedef struct SDL_WaylandSeat
         {
             bool have_absolute;
             bool have_relative;
+            bool have_warp;
             bool have_axis;
 
             Uint32 buttons_pressed;

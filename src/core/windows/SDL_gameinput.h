@@ -30,7 +30,7 @@
 #pragma GCC diagnostic ignored "-Wundef"
 #endif
 
-#include <gameinput.h>
+#include "gameinput.h"
 
 #ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
 #pragma GCC diagnostic pop
