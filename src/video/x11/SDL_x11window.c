@@ -1909,8 +1909,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
             data->expected.w = _display->current_mode->w;
             data->expected.h = _display->current_mode->h;
 
-            // Only move the window if it isn't fullscreen or already on the target display.
-            if (!(window->flags & SDL_WINDOW_FULLSCREEN) || (!current || current != _display->id)) {
+            // Only move the window if it isn't already on the target display.
+            if (!current || current != _display->id) {
                 X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
                 data->pending_operation |= X11_PENDING_OP_MOVE;
             }
