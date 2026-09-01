@@ -638,6 +638,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0001 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Black
 	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0002 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch ??
 	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0003 ), k_eControllerType_SwitchInputOnlyController, NULL },  // ZUIKI MasCon for Nintendo Switch Red
+	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0018 ), k_eControllerType_SwitchProController, NULL },  // ZUIKI Evotop Switch Wireless
+	{ MAKE_CONTROLLER_ID( 0x33dd, 0x0021 ), k_eControllerType_Switch2ProController, NULL },  // ZUIKI Evotop Axis Switch Wireless
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00f0 ), k_eControllerType_SwitchInputOnlyController, NULL },  // HORI Taiko Controller For Switch
 
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x0df2 ), k_eControllerType_PS5EdgeController, NULL },    // Sony DualSense Edge Controller
