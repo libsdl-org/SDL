@@ -913,6 +913,7 @@ typedef struct SDL_PenProximityEvent
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_WindowID windowID; /**< The window with pen focus, if any */
     SDL_PenID which;        /**< The pen instance id */
+    SDL_PenInputFlags pen_state;   /**< Complete pen input state at time of event (added in 3.4.16). */
 } SDL_PenProximityEvent;
 
 /**

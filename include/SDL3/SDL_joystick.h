@@ -1251,6 +1251,93 @@ extern SDL_DECLSPEC Uint8 SDLCALL SDL_GetJoystickHat(SDL_Joystick *joystick, int
 extern SDL_DECLSPEC bool SDLCALL SDL_GetJoystickButton(SDL_Joystick *joystick, int button);
 
 /**
+ * Return whether a joystick has a particular sensor.
+ *
+ * Sensors are disabled by default and SDL_SetJoystickSensorEnabled() is used
+ * to enable them.
+ *
+ * \param joystick the joystick to query.
+ * \param type the type of sensor to query.
+ * \returns true if the sensor exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetJoystickSensorData
+ * \sa SDL_GetJoystickSensorDataRate
+ * \sa SDL_SetJoystickSensorEnabled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_JoystickHasSensor(SDL_Joystick *joystick, SDL_SensorType type);
+
+/**
+ * Set whether data reporting for a joystick sensor is enabled.
+ *
+ * Sensors are disabled by default and this function is used to enable them.
+ *
+ * \param joystick the joystick to update.
+ * \param type the type of sensor to enable/disable.
+ * \param enabled whether data reporting should be enabled.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_JoystickHasSensor
+ * \sa SDL_JoystickSensorEnabled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, bool enabled);
+
+/**
+ * Query whether sensor data reporting is enabled for a joystick.
+ *
+ * \param joystick the joystick to query.
+ * \param type the type of sensor to query.
+ * \returns true if the sensor is enabled, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetJoystickSensorEnabled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_JoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type);
+
+/**
+ * Get the data rate (number of events per second) of a joystick sensor.
+ *
+ * \param joystick the joystick to query.
+ * \param type the type of sensor to query.
+ * \returns the data rate, or 0.0f if the data rate is not available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetJoystickSensorDataRate(SDL_Joystick *joystick, SDL_SensorType type);
+
+/**
+ * Get the current state of a joystick sensor.
+ *
+ * The number of values and interpretation of the data is sensor dependent.
+ * See the remarks in SDL_SensorType for details for each type of sensor.
+ *
+ * \param joystick the joystick to query.
+ * \param type the type of sensor to query.
+ * \param data a pointer filled with the current sensor state.
+ * \param num_values the number of values to write to data.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetJoystickSensorData(SDL_Joystick *joystick, SDL_SensorType type, float *data, int num_values);
+
+/**
  * Start a rumble effect.
  *
  * Each call to this function cancels any previous rumble effect, and calling

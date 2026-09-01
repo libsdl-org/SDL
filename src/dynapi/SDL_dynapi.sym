@@ -1303,6 +1303,11 @@ SDL3_0.0.0 {
     SDL_GetDeviceFormFactorName;
     SDL_IsUbuntuTouch;
     SDL_GetNumProperties;
+    SDL_JoystickHasSensor;
+    SDL_SetJoystickSensorEnabled;
+    SDL_JoystickSensorEnabled;
+    SDL_GetJoystickSensorDataRate;
+    SDL_GetJoystickSensorData;
     # extra symbols go here (don't modify this line)
   local: *;
 };

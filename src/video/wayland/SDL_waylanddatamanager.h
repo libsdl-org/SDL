@@ -20,7 +20,6 @@
 */
 
 #include "SDL_internal.h"
-#include "SDL_waylandevents_c.h"
 
 #ifndef SDL_waylanddatamanager_h_
 #define SDL_waylanddatamanager_h_

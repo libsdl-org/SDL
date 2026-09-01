@@ -514,6 +514,7 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_lsx_func.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_sse.h" />
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb_std.h" />
+    <ClInclude Include="..\..\src\gpu\xr\SDL_gpu_openxr_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\core\windows\version.rc" />

@@ -616,7 +616,7 @@ const char *SDL_GetVideoDriver(int index)
 /*
  * Initialize the video and event subsystems -- determine native pixel format
  */
-bool SDL_VideoInit(const char *driver_name)
+bool SDL_InitVideo(const char *driver_name)
 {
     SDL_VideoDevice *video;
     bool init_events = false;
@@ -628,7 +628,7 @@ bool SDL_VideoInit(const char *driver_name)
 
     // Check to make sure we don't overwrite '_this'
     if (_this) {
-        SDL_VideoQuit();
+        SDL_QuitVideo();
     }
 
     SDL_InitTicks();
@@ -705,7 +705,7 @@ bool SDL_VideoInit(const char *driver_name)
         goto pre_driver_error;
     }
 
-    /* From this point on, use SDL_VideoQuit to cleanup on error, rather than
+    /* From this point on, use SDL_QuitVideo to cleanup on error, rather than
     pre_driver_error. */
     _this = video;
     _this->name = bootstrap[i]->name;
@@ -718,13 +718,13 @@ bool SDL_VideoInit(const char *driver_name)
 
     // Initialize the video subsystem
     if (!_this->VideoInit(_this)) {
-        SDL_VideoQuit();
+        SDL_QuitVideo();
         return false;
     }
 
     // Make sure some displays were added
     if (_this->num_displays == 0) {
-        SDL_VideoQuit();
+        SDL_QuitVideo();
         return SDL_SetError("The video driver did not add any displays");
     }
 
@@ -4673,7 +4673,7 @@ bool SDL_DisableScreenSaver(void)
     return SDL_Unsupported();
 }
 
-void SDL_VideoQuit(void)
+void SDL_QuitVideo(void)
 {
     int i;
 

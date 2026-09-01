@@ -303,8 +303,9 @@ static void ALSA_guess_device_prefix(void)
 
 typedef struct ALSA_Device
 {
-    // the unicity key is the couple (id,recording)
+    // the unicity key is the triple (id,device_index,recording)
     char *id; // empty means canonical default
+    int device_index;
     char *name;
     bool recording;
     struct ALSA_Device *next;
@@ -312,6 +313,7 @@ typedef struct ALSA_Device
 
 static const ALSA_Device default_playback_handle = {
     "",
+    0,
     "default",
     false,
     NULL
@@ -319,6 +321,7 @@ static const ALSA_Device default_playback_handle = {
 
 static const ALSA_Device default_recording_handle = {
     "",
+    0,
     "default",
     true,
     NULL
@@ -349,7 +352,7 @@ static char *get_pcm_str(void *handle)
         }
         pcm_str = SDL_strdup(devname);
     } else {
-        SDL_asprintf(&pcm_str, "%sCARD=%s", ALSA_device_prefix, dev->id);
+        SDL_asprintf(&pcm_str, "%sCARD=%s,DEV=%d", ALSA_device_prefix, dev->id, dev->device_index);
     }
     return pcm_str;
 }
@@ -1263,8 +1266,8 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
         ALSA_Device *unseen_prev_adev = NULL;
         ALSA_Device *adev;
         for (adev = *unseen; adev; adev = adev->next) {
-            // the unicity key is the couple (id,recording)
-            if ((SDL_strcmp(adev->id, ALSA_snd_ctl_card_info_get_id(ctl_card_info)) == 0) && (adev->recording == recording)) {
+            // the unicity key is the triple (id,device_index,recording)
+            if ((SDL_strcmp(adev->id, ALSA_snd_ctl_card_info_get_id(ctl_card_info)) == 0) && (adev->device_index == dev_idx) && (adev->recording == recording)) {
                 // unchain from unseen
                 if (*unseen == adev) { // head
                     *unseen = adev->next;
@@ -1300,11 +1303,8 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
                 return -1;
             }
 
-            if (direction == SND_PCM_STREAM_CAPTURE) {
-                adev->recording = true;
-            } else {
-                adev->recording = false;
-            }
+            adev->device_index = dev_idx;
+            adev->recording = (direction == SND_PCM_STREAM_CAPTURE);
 
             if (SDL_AddAudioDevice(recording, adev->name, NULL, adev) == NULL) {
                 SDL_small_free(pcm_info, isstack);

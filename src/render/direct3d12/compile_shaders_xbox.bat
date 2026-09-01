@@ -1,11 +1,11 @@
 if %2.==one. goto setxboxone
 rem Xbox Series compile
-set DXC="%GameDKLatest%\GXDK\bin\Scarlett\DXC.exe"
+set DXC="%GameDKCoreLatest%xbox\bin\gen9\DXC.exe"
 set SUFFIX=_Series.h
 goto startbuild
 
 :setxboxone
-set DXC="%GameDKLatest%\GXDK\bin\XboxOne\DXC.exe"
+set DXC="%GameDKCoreLatest%xbox\bin\gen8\DXC.exe"
 set SUFFIX=_One.h
 
 :startbuild

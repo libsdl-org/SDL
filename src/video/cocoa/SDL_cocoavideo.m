@@ -61,7 +61,7 @@ static SDL_VideoDevice *Cocoa_CreateDevice(void)
         SDL_CocoaVideoData *data;
 
         if (![NSThread isMainThread]) {
-            return NULL;  // this doesn't SDL_SetError() because SDL_VideoInit is just going to overwrite it.
+            return NULL;  // this doesn't SDL_SetError() because SDL_InitVideo is just going to overwrite it.
         }
 
         Cocoa_RegisterApp();
@@ -235,6 +235,14 @@ void Cocoa_VideoQuit(SDL_VideoDevice *_this)
 {
     @autoreleasepool {
         SDL_CocoaVideoData *data = (__bridge SDL_CocoaVideoData *)_this->internal;
+
+        // Run the CFRunLoop a little, so last-minute window animations can run, etc, but we hopefully don't change any significant state.
+        // This needs to run multiple times over a time period, it's not enough to give it a longer timeout and use "false" for returnAfterSourceHandled.
+        const Uint64 start = SDL_GetTicks();
+        do {
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.0, false);
+        } while ((SDL_GetTicks() - start) <= 20);
+
         Cocoa_QuitModes(_this);
         Cocoa_QuitKeyboard(_this);
         Cocoa_QuitGCMouse();

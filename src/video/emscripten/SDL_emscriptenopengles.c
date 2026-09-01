@@ -67,6 +67,12 @@ bool Emscripten_GLES_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 
 bool Emscripten_GLES_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
 {
+    const int pending = Emscripten_GetPendingSwapInterval();
+    if (pending >= 0) {
+        *interval = pending;
+        return true;  // we're planning to set it to this once the system settles down.
+    }
+
     int mode, value;
 
     emscripten_get_main_loop_timing(&mode, &value);

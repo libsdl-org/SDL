@@ -367,6 +367,7 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         if (SDL_HIDAPI_JoystickIsHaptic(joystick)) {
             if (!SDL_HIDAPI_HapticOpenFromJoystick(haptic, joystick)) {
                 SDL_SetError("Haptic: SDL_HIDAPI_HapticOpenFromJoystick failed.");
+                SDL_SetObjectValid(haptic, SDL_OBJECT_TYPE_HAPTIC, false);
                 SDL_free(haptic);
                 SDL_UnlockJoysticks();
                 return NULL;

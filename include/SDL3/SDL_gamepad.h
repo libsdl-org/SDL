@@ -1450,6 +1450,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamep
 /**
  * Return whether a gamepad has a particular sensor.
  *
+ * Sensors are disabled by default and SDL_SetGamepadSensorEnabled() is used
+ * to enable them.
+ *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
  * \returns true if the sensor exists, false otherwise.
@@ -1466,6 +1469,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_
 
 /**
  * Set whether data reporting for a gamepad sensor is enabled.
+ *
+ * Sensors are disabled by default and this function is used to enable them.
  *
  * \param gamepad the gamepad to update.
  * \param type the type of sensor to enable/disable.

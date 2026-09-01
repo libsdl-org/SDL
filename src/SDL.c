@@ -420,7 +420,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             SDL_assert(SDL_VideoThreadID == SDL_MainThreadID);
 #endif
 
-            if (!SDL_VideoInit(NULL)) {
+            if (!SDL_InitVideo(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_VIDEO);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -565,7 +565,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
             }
 
             SDL_IncrementSubsystemRefCount(SDL_INIT_CAMERA);
-            if (!SDL_CameraInit(NULL)) {
+            if (!SDL_InitCamera(NULL)) {
                 SDL_DecrementSubsystemRefCount(SDL_INIT_CAMERA);
                 SDL_PushError();
                 SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -668,7 +668,7 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
     if (flags & SDL_INIT_VIDEO) {
         if (SDL_ShouldQuitSubsystem(SDL_INIT_VIDEO)) {
             SDL_QuitRender();
-            SDL_VideoQuit();
+            SDL_QuitVideo();
             SDL_VideoThreadID = 0;
             // video implies events
             SDL_QuitSubSystem(SDL_INIT_EVENTS);

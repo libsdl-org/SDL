@@ -34,11 +34,11 @@ struct SDL_VideoDevice;
  * pixel formats, but does not initialize a window or graphics mode.
  *
  * If you use this function and you haven't used the SDL_INIT_VIDEO flag with
- * either SDL_Init() or SDL_InitSubSystem(), you should call SDL_VideoQuit()
+ * either SDL_Init() or SDL_InitSubSystem(), you should call SDL_QuitVideo()
  * before calling SDL_Quit().
  *
- * It is safe to call this function multiple times. SDL_VideoInit() will call
- * SDL_VideoQuit() itself if the video subsystem has already been initialized.
+ * It is safe to call this function multiple times. SDL_InitVideo() will call
+ * SDL_QuitVideo() itself if the video subsystem has already been initialized.
  *
  * You can use SDL_GetNumVideoDrivers() and SDL_GetVideoDriver() to find a
  * specific `driver_name`.
@@ -48,14 +48,14 @@ struct SDL_VideoDevice;
  * \returns true on success or false on failure; call
  *          SDL_GetError() for more information.
  */
-extern bool SDL_VideoInit(const char *driver_name);
+extern bool SDL_InitVideo(const char *driver_name);
 
 /**
- * Shut down the video subsystem, if initialized with SDL_VideoInit().
+ * Shut down the video subsystem, if initialized with SDL_InitVideo().
  *
  * This function closes all windows, and restores the original video mode.
  */
-extern void SDL_VideoQuit(void);
+extern void SDL_QuitVideo(void);
 
 extern bool SDL_SetWindowTextureVSync(struct SDL_VideoDevice *_this, SDL_Window *window, int vsync);
 
