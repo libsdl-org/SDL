@@ -2090,6 +2090,10 @@ void SDL_BindGPUVertexSamplers(
         }
     }
 
+    if (num_bindings == 0) {
+        return;
+    }
+
     RENDERPASS_DEVICE->BindVertexSamplers(
         RENDERPASS_COMMAND_BUFFER,
         first_slot,
@@ -2195,6 +2199,10 @@ void SDL_BindGPUFragmentSamplers(
         for (Uint32 i = 0; i < num_bindings; i += 1) {
             ((RenderPass *)render_pass)->fragment_sampler_bound[first_slot + i] = true;
         }
+    }
+
+    if (num_bindings == 0) {
+        return;
     }
 
     RENDERPASS_DEVICE->BindFragmentSamplers(
