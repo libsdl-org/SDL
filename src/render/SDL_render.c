@@ -1509,7 +1509,6 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
             }
         }
     }
-
     return renderer->texture_formats[0];
 }
 
@@ -1776,8 +1775,9 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
         SDL_Palette *palette;
 
         palette = SDL_GetTexturePalette(texture);
-        if (!palette || !SDL_GetSurfaceColorKey(surface, &key) || (Uint32)palette->ncolors <= key)
+        if (!palette || !SDL_GetSurfaceColorKey(surface, &key) || key >= (Uint32)palette->ncolors) {
             return false;
+        }
 
         col = palette->colors[key];
         col.a = SDL_ALPHA_TRANSPARENT;
