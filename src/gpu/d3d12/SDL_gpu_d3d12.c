@@ -8335,6 +8335,13 @@ static bool D3D12_SupportsSampleCount(
     featureData.Flags = (D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS)0;
 #endif
     featureData.Format = SDLToD3D12_TextureFormat[format];
+
+    if (IsDepthFormat(format)) {
+        featureData.Format = SDLToD3D12_DepthFormat[format];
+    } else {
+        featureData.Format = SDLToD3D12_TextureFormat[format];
+    }
+
     featureData.SampleCount = SDLToD3D12_SampleCount[sampleCount];
     res = ID3D12Device_CheckFeatureSupport(
         renderer->device,
