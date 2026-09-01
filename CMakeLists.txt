@@ -1225,6 +1225,7 @@ if(SDL_LIBC)
 
   if(NOT WINDOWS)
     check_symbol_exists(fdatasync "unistd.h" HAVE_FDATASYNC)
+    check_symbol_exists(getexecpath "unistd.h" HAVE_GETEXECPATH)
     check_symbol_exists(gethostname "unistd.h" HAVE_GETHOSTNAME)
     check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
     check_symbol_exists(getresgid "unistd.h" HAVE_GETRESGID)
