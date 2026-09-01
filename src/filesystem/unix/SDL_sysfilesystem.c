@@ -138,6 +138,15 @@ static char *GetExePath(void)
     }
 #endif
 #ifdef SDL_PLATFORM_OPENBSD
+#ifdef HAVE_GETEXECPATH
+    char fullpath[PATH_MAX];
+    if (getexecpath(fullpath, sizeof(fullpath)) == 0) {
+        result = SDL_strdup(fullpath);
+        if (!result) {
+            return NULL;
+        }
+    }
+#else
     // Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD.
     char **cmdline;
     size_t len;
@@ -193,6 +202,7 @@ static char *GetExePath(void)
 
         SDL_free(cmdline);
     }
+#endif
 #endif
 
     // is a Linux-style /proc filesystem available?
