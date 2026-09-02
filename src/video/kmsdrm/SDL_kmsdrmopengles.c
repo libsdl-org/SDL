@@ -123,7 +123,11 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
-    bool modesetting = false;
+    const bool modesetting = windata->egl_surface_dirty;
+
+    if (modesetting) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
 
     SDL_zero(info);
 
@@ -230,10 +234,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
  
     /* Do we have a pending modesetting? If so, set the necessary
        props so it's included in the incoming atomic commit. */
-    if (windata->egl_surface_dirty) {
-        // !!! FIXME: this CreateSurfaces call is what the legacy path does; it's not clear to me if the atomic paths need to do it too.
-        KMSDRM_CreateSurfaces(_this, window);
-
+    if (modesetting) {
         uint32_t blob_id;
         SDL_VideoData *viddata = (SDL_VideoData *)_this->internal;
 
@@ -241,7 +242,6 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "active", 1);
-        modesetting = true;
     }
 
     /*****************************************************************/
@@ -292,7 +292,11 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
-    bool modesetting = false;
+    const bool modesetting = windata->egl_surface_dirty;
+
+    if (modesetting) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
 
     SDL_zero(info);
 
@@ -350,10 +354,7 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
 
     /* Do we have a pending modesetting? If so, set the necessary
        props so it's included in the incoming atomic commit. */
-    if (windata->egl_surface_dirty) {
-        // !!! FIXME: this CreateSurfaces call is what the legacy path does; it's not clear to me if the atomic paths need to do it too.
-        KMSDRM_CreateSurfaces(_this, window);
-
+    if (modesetting) {
         uint32_t blob_id;
 
         SDL_VideoData *viddata = (SDL_VideoData *)_this->internal;
@@ -362,7 +363,6 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "active", 1);
-        modesetting = true;
     }
  
     /* Issue the one and only atomic commit where all changes will be requested!
