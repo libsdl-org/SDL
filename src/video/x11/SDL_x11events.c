@@ -792,6 +792,17 @@ static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
     }
 }
 
+static int SelectionRequestErrorHandler(Display *d, XErrorEvent *e)
+{
+    // Ignore BadWindow, as it can happen during XChangeProperty if the target window was already destroyed.
+    if (e->error_code != BadWindow) {
+        char err_msg[128];
+        X11_XGetErrorText(d, e->error_code, err_msg, sizeof(err_msg));
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to handle SelectionRequest: %hhu (%s)", e->error_code, err_msg);
+    }
+    return 0;
+}
+
 static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xevent)
 {
     int i;
@@ -805,6 +816,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         // Copy the selection from our own CUTBUFFER to the requested property
     case SelectionRequest:
     {
+        int (*prev_handler)(Display *, XErrorEvent *);
         const XSelectionRequestEvent *req = &xevent->xselectionrequest;
         XEvent sevent;
         int mime_formats;
@@ -822,6 +834,11 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             X11_XFree(atom_name);
         }
 #endif
+
+        /* If the requesting window was already destroyed, XChangeProperty can generate a BadWindow
+         * error. Register an error handler to catch this, and prevent it from being fatal.
+         */
+        prev_handler = X11_XSetErrorHandler(SelectionRequestErrorHandler);
 
         if (req->selection == XA_PRIMARY) {
             clipboard = &videodata->primary_selection;
@@ -880,6 +897,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         }
         X11_XSendEvent(display, req->requestor, False, 0, &sevent);
         X11_XSync(display, False);
+
+        X11_XSetErrorHandler(prev_handler);
     } break;
 
     case SelectionNotify:
