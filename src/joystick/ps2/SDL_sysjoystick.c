@@ -56,6 +56,7 @@ struct JoyInfo
 
 static uint8_t enabled_pads = 0;
 static struct JoyInfo joyInfo[MAX_CONTROLLERS];
+static struct JoyInfo *joyInfoByIndex[MAX_CONTROLLERS];
 
 static inline int16_t convert_u8_to_s16(uint8_t val)
 {
@@ -86,6 +87,32 @@ static inline uint8_t rumble_status(uint8_t index)
     return info->rumble_ready == 1;
 }
 
+static int PS2_GetPadIndex(int port, int slot)
+{
+    return port * PS2_MAX_SLOT + slot;
+}
+
+static int PS2_WaitPadReady(int port, int slot)
+{
+    int state = padGetState(port, slot);
+    while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1) && (state != PAD_STATE_DISCONN)) {
+        SDL_Delay(1);
+        state = padGetState(port, slot);
+    }
+
+    return state;
+}
+
+static void PS2_AddJoystick(struct JoyInfo *info, int port, int slot)
+{
+    info->opened = 1;
+    info->port = port;
+    info->slot = slot;
+    joyInfoByIndex[enabled_pads] = info;
+    enabled_pads++;
+    SDL_PrivateJoystickAdded(enabled_pads);
+}
+
 // Function to scan the system for joysticks.
 static bool PS2_JoystickInit(void)
 {
@@ -114,13 +141,13 @@ static bool PS2_JoystickInit(void)
             Port 1,3 -> Connector 8
             */
 
-            struct JoyInfo *info = &joyInfo[enabled_pads];
+            int index = PS2_GetPadIndex(port, slot);
+            struct JoyInfo *info = &joyInfo[index];
             if (padPortOpen(port, slot, (void *)info->padBuf) > 0) {
-                info->port = (uint8_t)port;
-                info->slot = (uint8_t)slot;
-                info->opened = 1;
-                enabled_pads++;
-                SDL_PrivateJoystickAdded(enabled_pads);
+                int state = PS2_WaitPadReady(port, slot);
+                if (state != PAD_STATE_DISCONN) {
+                    PS2_AddJoystick(info, port, slot);
+                }
             }
         }
     }
@@ -137,6 +164,22 @@ static int PS2_JoystickGetCount(void)
 // Function to cause any queued joystick insertions to be processed
 static void PS2_JoystickDetect(void)
 {
+    uint32_t port = 0;
+    uint32_t slot = 0;
+
+    for (port = 0; port < PS2_MAX_PORT; port++) {
+        for (slot = 0; slot < PS2_MAX_SLOT; slot++) {
+            int index = PS2_GetPadIndex(port, slot);
+            struct JoyInfo *info = &joyInfo[index];
+
+            if (!info->opened) {
+                int state = padGetState(port, slot);
+                if (state == PAD_STATE_STABLE) {
+                    PS2_AddJoystick(info, port, slot);
+                }
+            }
+        }
+    }
 }
 
 static bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -193,15 +236,6 @@ static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
     return device_index + 1;
 }
 
-static void PS2_WaitPadReady(int port, int slot)
-{
-    int state = padGetState(port, slot);
-    while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) {
-        SDL_Delay(1);
-        state = padGetState(port, slot);
-    }
-}
-
 static void PS2_InitializePad(int port, int slot)
 {
     int modes;
@@ -223,7 +257,7 @@ static void PS2_InitializePad(int port, int slot)
         // This is no Dual Shock controller
         return;
     }
-    
+
     // If ExId != 0x0 => This controller has actuator engines
     // This check should always pass if the Dual Shock test above passed
     if (!padInfoMode(port, slot, PAD_MODECUREXID, 0)) {
@@ -260,7 +294,7 @@ static void PS2_InitializePad(int port, int slot)
 */
 static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    struct JoyInfo *info = &joyInfo[device_index];
+    struct JoyInfo *info = joyInfoByIndex[device_index];
 
     if (!info->opened) {
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
@@ -286,7 +320,7 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     char actAlign[6];
     int res;
     int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = joyInfoByIndex[index];
 
     if (!rumble_status(index)) {
         return false;
@@ -341,7 +375,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     struct padButtonStatus buttons;
     uint8_t all_axis[PS2_TOTAL_AXIS];
     int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = joyInfoByIndex[index];
     int state = padGetState(info->port, info->slot);
     Uint64 timestamp = SDL_GetTicksNS();
 
@@ -415,7 +449,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
 static void PS2_JoystickClose(SDL_Joystick *joystick)
 {
     int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = &joyInfo[index];
+    struct JoyInfo *info = joyInfoByIndex[index];
     padPortClose(info->port, info->slot);
     info->opened = 0;
 }
