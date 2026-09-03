@@ -265,7 +265,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /*  82, 0x052 */   SDL_SCANCODE_KP_0,               // KP_Insert
     /*  83, 0x053 */   SDL_SCANCODE_KP_PERIOD,          // KP_Delete
     /*  84, 0x054 */   SDL_SCANCODE_RALT,               // ISO_Level3_Shift
-    /*  85, 0x055 */   SDL_SCANCODE_MODE,               // ????
+    /*  85, 0x055 */   SDL_SCANCODE_LANG5,              // ????
     /*  86, 0x056 */   SDL_SCANCODE_NONUSBACKSLASH,     // less
     /*  87, 0x057 */   SDL_SCANCODE_F11,                // F11
     /*  88, 0x058 */   SDL_SCANCODE_F12,                // F12
@@ -275,7 +275,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /*  92, 0x05c */   SDL_SCANCODE_INTERNATIONAL4,     // Henkan_Mode
     /*  93, 0x05d */   SDL_SCANCODE_INTERNATIONAL2,     // Hiragana_Katakana
     /*  94, 0x05e */   SDL_SCANCODE_INTERNATIONAL5,     // Muhenkan
-    /*  95, 0x05f */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
+    /*  95, 0x05f */   SDL_SCANCODE_INTERNATIONAL6,     // NoSymbol
     /*  96, 0x060 */   SDL_SCANCODE_KP_ENTER,           // KP_Enter
     /*  97, 0x061 */   SDL_SCANCODE_RCTRL,              // Control_R
     /*  98, 0x062 */   SDL_SCANCODE_KP_DIVIDE,          // KP_Divide
@@ -301,20 +301,20 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 118, 0x076 */   SDL_SCANCODE_KP_PLUSMINUS,       // plusminus
     /* 119, 0x077 */   SDL_SCANCODE_PAUSE,              // Pause
     /* 120, 0x078 */   SDL_SCANCODE_UNKNOWN,            // XF86LaunchA
-    /* 121, 0x079 */   SDL_SCANCODE_KP_PERIOD,          // KP_Decimal
+    /* 121, 0x079 */   SDL_SCANCODE_KP_COMMA,           // KP_Decimal
     /* 122, 0x07a */   SDL_SCANCODE_LANG1,              // Hangul
     /* 123, 0x07b */   SDL_SCANCODE_LANG2,              // Hangul_Hanja
     /* 124, 0x07c */   SDL_SCANCODE_INTERNATIONAL3,     // Yen
     /* 125, 0x07d */   SDL_SCANCODE_LGUI,               // Super_L
     /* 126, 0x07e */   SDL_SCANCODE_RGUI,               // Super_R
     /* 127, 0x07f */   SDL_SCANCODE_APPLICATION,        // Menu
-    /* 128, 0x080 */   SDL_SCANCODE_CANCEL,             // Cancel
+    /* 128, 0x080 */   SDL_SCANCODE_STOP,               // Cancel
     /* 129, 0x081 */   SDL_SCANCODE_AGAIN,              // Redo
-    /* 130, 0x082 */   SDL_SCANCODE_UNKNOWN,            // SunProps
+    /* 130, 0x082 */   SDL_SCANCODE_AC_PROPERTIES,      // SunProps
     /* 131, 0x083 */   SDL_SCANCODE_UNDO,               // Undo
     /* 132, 0x084 */   SDL_SCANCODE_UNKNOWN,            // SunFront
     /* 133, 0x085 */   SDL_SCANCODE_COPY,               // XF86Copy
-    /* 134, 0x086 */   SDL_SCANCODE_UNKNOWN,            // SunOpen, XF86Open
+    /* 134, 0x086 */   SDL_SCANCODE_AC_OPEN,            // SunOpen, XF86Open
     /* 135, 0x087 */   SDL_SCANCODE_PASTE,              // XF86Paste
     /* 136, 0x088 */   SDL_SCANCODE_FIND,               // Find
     /* 137, 0x089 */   SDL_SCANCODE_CUT,                // XF86Cut
@@ -323,7 +323,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 140, 0x08c */   SDL_SCANCODE_UNKNOWN,            // XF86Calculator
     /* 141, 0x08d */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 142, 0x08e */   SDL_SCANCODE_SLEEP,              // XF86Sleep
-    /* 143, 0x08f */   SDL_SCANCODE_UNKNOWN,            // XF86WakeUp
+    /* 143, 0x08f */   SDL_SCANCODE_WAKE,               // XF86WakeUp
     /* 144, 0x090 */   SDL_SCANCODE_UNKNOWN,            // XF86Explorer
     /* 145, 0x091 */   SDL_SCANCODE_UNKNOWN,            // XF86Send
     /* 146, 0x092 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
@@ -351,10 +351,10 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 168, 0x0a8 */   SDL_SCANCODE_MEDIA_REWIND,       // XF86AudioRewind
     /* 169, 0x0a9 */   SDL_SCANCODE_UNKNOWN,            // XF86Phone
     /* 170, 0x0aa */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
-    /* 171, 0x0ab */   SDL_SCANCODE_F13,                // XF86Tools
+    /* 171, 0x0ab */   SDL_SCANCODE_UNKNOWN,            // XF86Tools
     /* 172, 0x0ac */   SDL_SCANCODE_AC_HOME,            // XF86HomePage
     /* 173, 0x0ad */   SDL_SCANCODE_AC_REFRESH,         // XF86Reload
-    /* 174, 0x0ae */   SDL_SCANCODE_UNKNOWN,            // XF86Close
+    /* 174, 0x0ae */   SDL_SCANCODE_AC_EXIT,            // XF86Close
     /* 175, 0x0af */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 176, 0x0b0 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 177, 0x0b1 */   SDL_SCANCODE_UNKNOWN,            // XF86ScrollUp
@@ -375,7 +375,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 192, 0x0c0 */   SDL_SCANCODE_F22,                // XF86TouchpadOn
     /* 193, 0x0c1 */   SDL_SCANCODE_F23,                // XF86TouchpadOff
     /* 194, 0x0c2 */   SDL_SCANCODE_F24,                // NoSymbol
-    /* 195, 0x0c3 */   SDL_SCANCODE_MODE,               // Mode_switch
+    /* 195, 0x0c3 */   SDL_SCANCODE_UNKNOWN,            // Mode_switch
     /* 196, 0x0c4 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 197, 0x0c5 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 198, 0x0c6 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
@@ -402,7 +402,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 219, 0x0db */   SDL_SCANCODE_UNKNOWN,            // XF86Finance
     /* 220, 0x0dc */   SDL_SCANCODE_UNKNOWN,            // XF86Game
     /* 221, 0x0dd */   SDL_SCANCODE_UNKNOWN,            // XF86Shop
-    /* 222, 0x0de */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
+    /* 222, 0x0de */   SDL_SCANCODE_ALTERASE,           // NoSymbol
     /* 223, 0x0df */   SDL_SCANCODE_CANCEL,             // Cancel
     /* 224, 0x0e0 */   SDL_SCANCODE_UNKNOWN,            // XF86MonBrightnessDown
     /* 225, 0x0e1 */   SDL_SCANCODE_UNKNOWN,            // XF86MonBrightnessUp
