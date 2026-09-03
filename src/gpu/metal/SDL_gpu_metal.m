@@ -291,6 +291,10 @@ static MTLBlendFactor SDLToMetal_BlendFactor[] = {
     MTLBlendFactorBlendColor,               // CONSTANT_COLOR
     MTLBlendFactorOneMinusBlendColor,       // ONE_MINUS_CONSTANT_COLOR
     MTLBlendFactorSourceAlphaSaturated,     // SRC_ALPHA_SATURATE
+    MTLBlendFactorSource1Color,             // SRC1_COLOR
+    MTLBlendFactorOneMinusSource1Color,     // ONE_MINUS_SRC1_COLOR
+    MTLBlendFactorSource1Alpha,             // SRC1_ALPHA
+    MTLBlendFactorOneMinusSource1Alpha,     // ONE_MINUS_SRC1_ALPHA
 };
 SDL_COMPILE_TIME_ASSERT(SDLToMetal_BlendFactor, SDL_arraysize(SDLToMetal_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
