@@ -328,15 +328,10 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     int ret;
     const char *sampleFilename = "testSaveLoad.tmp";
     SDL_Surface *face;
-    SDL_Surface *indexed_surface;
     SDL_Surface *rface;
-    SDL_Palette *palette;
-    SDL_Color colors[] = {
-        { 255, 0, 0, SDL_ALPHA_OPAQUE },    /* Red */
-        { 0, 255, 0, SDL_ALPHA_OPAQUE }     /* Green */
-    };
     SDL_IOStream *stream;
     Uint8 r, g, b, a;
+    Uint8 ref_r, ref_g, ref_b, ref_a;
 
     /* Create sample surface */
     face = SDLTest_ImageFace();
@@ -344,18 +339,6 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     if (face == NULL) {
         return TEST_ABORTED;
     }
-
-    indexed_surface = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX8);
-    SDLTest_AssertCheck(indexed_surface != NULL, "SDL_CreateSurface(SDL_PIXELFORMAT_INDEX8)");
-
-    /* Delete test file; ignore errors */
-    SDL_RemovePath(sampleFilename);
-
-    /* Saving an indexed surface without palette as BMP fails */
-    ret = SDL_SaveBMP(indexed_surface, sampleFilename);
-    SDLTest_AssertPass("Call to SDL_SaveBMP() using an indexed surface without palette");
-    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SaveBMP(indexed_surface without palette), expected: false, got: %i", ret);
-    SDLTest_AssertCheck(!SDL_GetPathInfo(sampleFilename, NULL), "No file is created after trying to save a indexed surface without palette");
 
     /* Delete test file; ignore errors */
     SDL_RemovePath(sampleFilename);
@@ -366,25 +349,25 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
     AssertFileExist(sampleFilename);
 
-    /* Load a BMP surface */
+    /* Load a indexed BMP surface */
     rface = SDL_LoadBMP(sampleFilename);
     SDLTest_AssertPass("Call to SDL_LoadBMP()");
     SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
     if (rface != NULL) {
         SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
         SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDL_ReadSurfacePixel(face, 0, 0, &ref_r, &ref_g, &ref_b, &ref_a);
+        SDLTest_AssertCheck(r == ref_r &&
+                            g == ref_g &&
+                            b == ref_b &&
+                            a == ref_a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            ref_r, ref_g, ref_b, ref_a,
+                            r, g, b, a);
         SDL_DestroySurface(rface);
         rface = NULL;
     }
-
-    /* Delete test file; ignore errors */
-    SDL_RemovePath(sampleFilename);
-
-    /* Saving an indexed surface as PNG fails */
-    ret = SDL_SavePNG(indexed_surface, sampleFilename);
-    SDLTest_AssertPass("Call to SDL_SavePNG() using an indexed surface without palette");
-    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SavePNG(indexed surface without palette), expected: false, got: %i", ret);
-    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SavePNG(indexed surface without palette), expected: false, got: %i", ret);
 
     /* Delete test file; ignore errors */
     SDL_RemovePath(sampleFilename);
@@ -395,13 +378,145 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
     AssertFileExist(sampleFilename);
 
-    /* Load a PNG surface */
-    rface = SDL_LoadPNG(sampleFilename);
-    SDLTest_AssertPass("Call to SDL_LoadPNG()");
-    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Save a BMP surface */
+    ret = SDL_SaveBMP_IO(face, stream, false);
+    SDLTest_AssertPass("Call to SDL_SaveBMP_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP_IO, expected: true, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Load a indexed BMP surface */
+    rface = SDL_LoadBMP_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadBMP_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP_IO is not NULL");
     if (rface != NULL) {
         SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
         SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDL_ReadSurfacePixel(face, 0, 0, &ref_r, &ref_g, &ref_b, &ref_a);
+        SDLTest_AssertCheck(r == ref_r &&
+                            g == ref_g &&
+                            b == ref_b &&
+                            a == ref_a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            ref_r, ref_g, ref_b, ref_a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Save a PNG surface */
+    ret = SDL_SavePNG_IO(face, stream, false);
+    SDLTest_AssertPass("Call to SDL_SavePNG_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG_IO, expected: true, got: %i", ret);
+
+    SDL_CloseIO(stream);
+    SDL_DestroySurface(face);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * Tests 8-bit sprite saving and loading
+ */
+static int SDLCALL surface_testIndexed8SaveLoad(void *arg)
+{
+    int ret;
+    const char *sampleFilename = "testSaveLoad.tmp";
+    SDL_Surface *indexed_surface_nopal = NULL;
+    SDL_Surface *indexed_surface_pal = NULL;
+    SDL_Surface *rface;
+    SDL_Palette *palette;
+    const SDL_Color palette_colors[] = {
+        { 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE },    /* Black */
+        { 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE },    /* Red */
+        { 0x00, 0xff, 0x00, SDL_ALPHA_OPAQUE },    /* Green */
+        { 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE }     /* Blue */
+    };
+    SDL_IOStream *stream;
+    Uint8 r, g, b, a;
+
+    /* Create a 8-bit surface without palette */
+    indexed_surface_nopal = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(indexed_surface_nopal != NULL, "SDL_CreateSurface(SDL_PIXELFORMAT_INDEX8)");
+    if (!indexed_surface_nopal) {
+        return TEST_ABORTED;
+    }
+
+    /* Create a 8-bit surface with palette */
+    indexed_surface_pal = SDL_CreateSurface(3, 3, SDL_PIXELFORMAT_INDEX8);
+    SDLTest_AssertCheck(indexed_surface_pal != NULL, "Verify 8-bit surface is not NULL");
+    if (indexed_surface_pal == NULL) {
+        return TEST_ABORTED;
+    }
+    palette = SDL_CreatePalette(SDL_arraysize(palette_colors));
+    SDLTest_AssertCheck(palette != NULL, "Verify palette is not NULL");
+    if (palette == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_SetPaletteColors(palette, palette_colors, 0, SDL_arraysize(palette_colors));
+    SDL_SetSurfacePalette(indexed_surface_pal, palette);
+    SDL_DestroyPalette(palette);
+    /* Set a few pixels */
+    if (indexed_surface_pal) {
+        Uint8 *pixels = indexed_surface_pal->pixels;
+        pixels[0] = 2; /* Green */
+        pixels[(indexed_surface_pal->h - 1) * indexed_surface_pal->pitch + indexed_surface_pal->w - 1] = 3; /* Blue */
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface without palette as BMP: should fail */
+    ret = SDL_SaveBMP(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SaveBMP(indexed surface without palette), expected: false, got: %i", ret);
+    SDLTest_AssertCheck(!SDL_GetPathInfo(sampleFilename, NULL), "No file is created after trying to save a indexed surface without palette");
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as BMP: should succeed */
+    ret = SDL_SaveBMP(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed BMP surface */
+    rface = SDL_LoadBMP(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadBMP()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
         SDL_DestroySurface(rface);
         rface = NULL;
     }
@@ -409,60 +524,81 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     /* Delete test file; ignore errors */
     SDL_RemovePath(sampleFilename);
 
-    /* Clean up */
-    SDL_DestroySurface(face);
-    face = NULL;
+    /* Test saving an indexed surface without palette as PNG: should fail */
+    ret = SDL_SavePNG(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SavePNG(indexed surface without palette), expected: false, got: %i", ret);
 
-    /* Create an 8-bit image */
-    face = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_INDEX8);
-    SDLTest_AssertCheck(face != NULL, "Verify 8-bit surface is not NULL");
-    if (face == NULL) {
-        return TEST_ABORTED;
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as PNG: should succeed */
+    ret = SDL_SavePNG(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed PNG surface */
+    rface = SDL_LoadPNG(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadPNG()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDL_DestroySurface(rface);
+        rface = NULL;
     }
 
-    palette = SDL_CreatePalette(2);
-    SDLTest_AssertCheck(palette != NULL, "Verify palette is not NULL");
-    if (palette == NULL) {
-        return TEST_ABORTED;
-    }
-    SDL_SetPaletteColors(palette, colors, 0, SDL_arraysize(colors));
-    SDL_SetSurfacePalette(face, palette);
-    SDL_DestroyPalette(palette);
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
 
-    /* Set a green pixel */
-    *(Uint8 *)face->pixels = 1;
-
-    /* Save and reload as a BMP */
     stream = SDL_IOFromDynamicMem();
     SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
     if (stream == NULL) {
         return TEST_ABORTED;
     }
-    ret = SDL_SaveBMP_IO(indexed_surface, stream, false);
-    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SaveBMP (indexed surface without palette), expected: false, got: %i", ret);
+
+    /* Cannot save a indexed surface without palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_nopal, stream, false);
+    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SaveBMP_IO(indexed surface without palette), expected: false, got: %i", ret);
+
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
-    ret = SDL_SaveBMP_IO(face, stream, false);
-    SDLTest_AssertPass("Call to SDL_SaveBMP()");
-    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
+
+    /* Test saving a indexed surface with palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SaveBMP_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP_IO, expected: true, got: %i", ret);
+
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test reloading the indexed BMP */
     rface = SDL_LoadBMP_IO(stream, false);
-    SDLTest_AssertPass("Call to SDL_LoadBMP()");
-    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
+    SDLTest_AssertPass("Call to SDL_LoadBMP_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP_IO is not NULL");
     if (rface != NULL) {
-        SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
-        SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
-        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(face->format), SDL_GetPixelFormatName(rface->format));
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
         SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
-        SDLTest_AssertCheck(r == colors[1].r &&
-                            g == colors[1].g &&
-                            b == colors[1].b &&
-                            a == colors[1].a,
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
                             "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
-                            r, g, b, a,
-                            colors[1].r, colors[1].g, colors[1].b, colors[1].a);
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
         SDL_DestroySurface(rface);
         rface = NULL;
     }
+
     SDL_CloseIO(stream);
     stream = NULL;
 
@@ -472,36 +608,647 @@ static int SDLCALL surface_testSaveLoad(void *arg)
     if (stream == NULL) {
         return TEST_ABORTED;
     }
-    ret = SDL_SavePNG_IO(indexed_surface, stream, false);
+
+    /* Test saving a indexed surface without palette as a PNG: should fail */
+    ret = SDL_SavePNG_IO(indexed_surface_nopal, stream, false);
     SDLTest_AssertCheck(ret == false, "Verify result from SDL_SavePNG_IO (indexed surface without palette), expected: false, got: %i", ret);
+
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
-    ret = SDL_SavePNG_IO(face, stream, false);
-    SDLTest_AssertPass("Call to SDL_SavePNG()");
-    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+
+    /* Test saving a indexed surface with palette as a PNG: should succeed */
+    ret = SDL_SavePNG_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SavePNG_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG_IO, expected: true, got: %i", ret);
+
     SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
     rface = SDL_LoadPNG_IO(stream, false);
-    SDLTest_AssertPass("Call to SDL_LoadPNG()");
-    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    SDLTest_AssertPass("Call to SDL_LoadPNG_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG_IO is not NULL");
     if (rface != NULL) {
-        SDLTest_AssertCheck(face->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", face->w, rface->w);
-        SDLTest_AssertCheck(face->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", face->h, rface->h);
-        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(face->format), SDL_GetPixelFormatName(rface->format));
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
         SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
-        SDLTest_AssertCheck(r == colors[1].r &&
-                            g == colors[1].g &&
-                            b == colors[1].b &&
-                            a == colors[1].a,
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
                             "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
-                            r, g, b, a,
-                            colors[1].r, colors[1].g, colors[1].b, colors[1].a);
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
         SDL_DestroySurface(rface);
         rface = NULL;
     }
+
     SDL_CloseIO(stream);
     stream = NULL;
 
-    SDL_DestroySurface(indexed_surface);
-    SDL_DestroySurface(face);
+    SDL_DestroySurface(indexed_surface_nopal);
+    SDL_DestroySurface(indexed_surface_pal);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * Tests 4-bit sprite saving and loading
+ */
+static int SDLCALL surface_testIndexed4SaveLoad(void *arg)
+{
+    int ret;
+    const char *sampleFilename = "testSaveLoad.tmp";
+    SDL_Surface *indexed_surface_nopal = NULL;
+    SDL_Surface *indexed_surface_pal = NULL;
+    SDL_Surface *rface;
+    SDL_Palette *palette;
+    const SDL_Color palette_colors[] = {
+        { 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE },    /* Black */
+        { 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE },    /* Red */
+        { 0x00, 0xff, 0x00, SDL_ALPHA_OPAQUE },    /* Green */
+        { 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE }     /* Blue */
+    };
+    SDL_IOStream *stream;
+    Uint8 r, g, b, a;
+
+    /* Create a 4-bit MSB surface without palette */
+    indexed_surface_nopal = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX4MSB);
+    SDLTest_AssertCheck(indexed_surface_nopal != NULL, "SDL_CreateSurface(SDL_PIXELFORMAT_INDEX4MSB)");
+    if (!indexed_surface_nopal) {
+        return TEST_ABORTED;
+    }
+
+    /* Create a 4-bit MSB surface with palette */
+    indexed_surface_pal = SDL_CreateSurface(4, 4, SDL_PIXELFORMAT_INDEX4MSB);
+    SDLTest_AssertCheck(indexed_surface_pal != NULL, "Verify 4-bit surface is not NULL");
+    if (indexed_surface_pal == NULL) {
+        return TEST_ABORTED;
+    }
+    palette = SDL_CreatePalette(SDL_arraysize(palette_colors));
+    SDLTest_AssertCheck(palette != NULL, "Verify palette is not NULL");
+    if (palette == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_SetPaletteColors(palette, palette_colors, 0, SDL_arraysize(palette_colors));
+    SDL_SetSurfacePalette(indexed_surface_pal, palette);
+    SDL_DestroyPalette(palette);
+    /* Set a few pixels */
+    if (indexed_surface_pal) {
+        Uint8 *pixels = indexed_surface_pal->pixels;
+        /* (0,0) => Green, (1,0) => Red */
+        pixels[0] = (2 << 4) | (1 << 0);
+
+        /* (w-2,h-1) => Blue, (w-1,h-1) => Red */
+        pixels[(indexed_surface_pal->h - 1) * indexed_surface_pal->pitch + (indexed_surface_pal->w - 1) / 2] = (3 << 4) | (1 << 0);
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface without palette as BMP: should fail */
+    ret = SDL_SaveBMP(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SaveBMP(indexed surface without palette), expected: false, got: %i", ret);
+    SDLTest_AssertCheck(!SDL_GetPathInfo(sampleFilename, NULL), "No file is created after trying to save a indexed surface without palette");
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as BMP: should succeed */
+    ret = SDL_SaveBMP(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed BMP surface */
+    rface = SDL_LoadBMP(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadBMP() (%s)", SDL_GetError());
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX4MSB, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface without palette as PNG: should fail */
+    ret = SDL_SavePNG(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SavePNG(indexed surface without palette), expected: false, got: %i", ret);
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as PNG: should succeed */
+    ret = SDL_SavePNG(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed PNG surface */
+    rface = SDL_LoadPNG(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadPNG()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Cannot save a indexed surface without palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_nopal, stream, false);
+    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SaveBMP_IO(indexed surface without palette), expected: false, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test saving a indexed surface with palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SaveBMP_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP_IO, expected: true, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test reloading the indexed BMP */
+    rface = SDL_LoadBMP_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadBMP_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP_IO is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX4MSB, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    /* Save and reload as a PNG */
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Test saving a indexed surface without palette as a PNG: should fail */
+    ret = SDL_SavePNG_IO(indexed_surface_nopal, stream, false);
+    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SavePNG_IO (indexed surface without palette), expected: false, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test saving a indexed surface with palette as a PNG: should succeed */
+    ret = SDL_SavePNG_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SavePNG_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG_IO, expected: true, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    rface = SDL_LoadPNG_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadPNG_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG_IO is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[2].r &&
+                            g == palette_colors[2].g &&
+                            b == palette_colors[2].b &&
+                            a == palette_colors[2].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[2].r, palette_colors[2].g, palette_colors[2].b, palette_colors[2].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[3].r &&
+                            g == palette_colors[3].g &&
+                            b == palette_colors[3].b &&
+                            a == palette_colors[3].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[3].r, palette_colors[3].g, palette_colors[3].b, palette_colors[3].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    SDL_DestroySurface(indexed_surface_nopal);
+    SDL_DestroySurface(indexed_surface_pal);
+
+    return TEST_COMPLETED;
+}
+
+/**
+ * Tests 1-bit sprite saving and loading
+ */
+static int SDLCALL surface_testIndexed1SaveLoad(void *arg)
+{
+    int ret;
+    const char *sampleFilename = "testSaveLoad.tmp";
+    SDL_Surface *indexed_surface_nopal = NULL;
+    SDL_Surface *indexed_surface_pal = NULL;
+    SDL_Surface *rface;
+    SDL_Palette *palette;
+    const SDL_Color palette_colors[] = {
+        { 0x00, 0x00, 0xff, SDL_ALPHA_OPAQUE },    /* Blue */
+        { 0xff, 0x00, 0x00, SDL_ALPHA_OPAQUE },    /* Red */
+    };
+    SDL_IOStream *stream;
+    Uint8 r, g, b, a;
+
+    /* Create a 1-bit MSB surface without palette */
+    indexed_surface_nopal = SDL_CreateSurface(32, 32, SDL_PIXELFORMAT_INDEX1MSB);
+    SDLTest_AssertCheck(indexed_surface_nopal != NULL, "SDL_CreateSurface(SDL_PIXELFORMAT_INDEX1MSB)");
+    if (!indexed_surface_nopal) {
+        return TEST_ABORTED;
+    }
+
+    /* Create a 1-bit MSB surface with palette */
+    indexed_surface_pal = SDL_CreateSurface(16, 16, SDL_PIXELFORMAT_INDEX1MSB);
+    SDLTest_AssertCheck(indexed_surface_pal != NULL, "Verify 1-bit surface is not NULL");
+    if (indexed_surface_pal == NULL) {
+        return TEST_ABORTED;
+    }
+    palette = SDL_CreatePalette(SDL_arraysize(palette_colors));
+    SDLTest_AssertCheck(palette != NULL, "Verify palette is not NULL");
+    if (palette == NULL) {
+        return TEST_ABORTED;
+    }
+    SDL_SetPaletteColors(palette, palette_colors, 0, SDL_arraysize(palette_colors));
+    SDL_SetSurfacePalette(indexed_surface_pal, palette);
+    SDL_DestroyPalette(palette);
+    /* Set a few pixels */
+    if (indexed_surface_pal) {
+        Uint8 *pixels = indexed_surface_pal->pixels;
+        /* (0,0) => Red, (1,0) => Blue, (2,0) => Blue, (3,0) => Red, (4,0) => Blue, (5,0) => Blue, (6,0) => Red, (7,0) => Red */
+        pixels[0] = (1 << 7) | (0 << 6) | (0 << 5) | (1 << 4) | (0 << 3) | (0 << 2) | (1 << 1) | (1 << 0);
+
+        /* (w-8,h-1) => Red, (w-7,h-1) => Blue, (w-6,h-1) => Blue, (w-5,h-1) => Red, (w-4,h-1) => Blue, (w-3,h-1) => Blue, (w-2,h-1) => Red, (w-1,h-1) => Blue */
+        pixels[(indexed_surface_pal->h - 1) * indexed_surface_pal->pitch + (indexed_surface_pal->w - 1) / 8] = (1 << 7) | (0 << 6) | (0 << 5) | (1 << 4) | (0 << 3) | (0 << 2) | (1 << 1) | (0 << 1);
+    }
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 0, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[0,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 1, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[1,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 2, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[2,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 3, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[3,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 4, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[4,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 5, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[5,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 6, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[6,0], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, 7, 0, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[7,0], got (%d,%d,%d,%d)", r, g, b, a);
+
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 8, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[w-8,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 7, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[w-7,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 6, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[w-6,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 5, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[w-5,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 4, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[w-4,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 3, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[w-3,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 2, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[1].r && g == palette_colors[1].g && b == palette_colors[1].b && a == palette_colors[1].a, "Check input color[w-2,h-1], got (%d,%d,%d,%d)", r, g, b, a);;
+    ret = SDL_ReadSurfacePixel(indexed_surface_pal, indexed_surface_pal->w - 1, indexed_surface_pal->h - 1, &r, &g, &b, &a);
+    SDLTest_AssertCheck(r == palette_colors[0].r && g == palette_colors[0].g && b == palette_colors[0].b && a == palette_colors[0].a, "Check input color[w-1,h-1], got (%d,%d,%d,%d)", r, g, b, a);
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface without palette as BMP: should fail */
+    ret = SDL_SaveBMP(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SaveBMP(indexed surface without palette), expected: false, got: %i", ret);
+    SDLTest_AssertCheck(!SDL_GetPathInfo(sampleFilename, NULL), "No file is created after trying to save a indexed surface without palette");
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as BMP: should succeed */
+    ret = SDL_SaveBMP(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SaveBMP()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed BMP surface */
+    rface = SDL_LoadBMP(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadBMP() (%s)", SDL_GetError());
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX1MSB, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface without palette as PNG: should fail */
+    ret = SDL_SavePNG(indexed_surface_nopal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG() using an indexed surface without palette");
+    SDLTest_AssertCheck(ret == false, "Verify result of SDL_SavePNG(indexed surface without palette), expected: false, got: %i", ret);
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    /* Test saving an indexed surface with palette as PNG: should succeed */
+    ret = SDL_SavePNG(indexed_surface_pal, sampleFilename);
+    SDLTest_AssertPass("Call to SDL_SavePNG()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG, expected: true, got: %i", ret);
+    AssertFileExist(sampleFilename);
+
+    /* Load a indexed PNG surface */
+    rface = SDL_LoadPNG(sampleFilename);
+    SDLTest_AssertPass("Call to SDL_LoadPNG()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    /* Delete test file; ignore errors */
+    SDL_RemovePath(sampleFilename);
+
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Cannot save a indexed surface without palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_nopal, stream, false);
+    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SaveBMP_IO(indexed surface without palette), expected: false, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test saving a indexed surface with palette as a BMP */
+    ret = SDL_SaveBMP_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SaveBMP_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SaveBMP_IO, expected: true, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test reloading the indexed BMP */
+    rface = SDL_LoadBMP_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadBMP_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadBMP_IO is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX1MSB, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    /* Save and reload as a PNG */
+    stream = SDL_IOFromDynamicMem();
+    SDLTest_AssertCheck(stream != NULL, "Verify iostream is not NULL");
+    if (stream == NULL) {
+        return TEST_ABORTED;
+    }
+
+    /* Test saving a indexed surface without palette as a PNG: should fail */
+    ret = SDL_SavePNG_IO(indexed_surface_nopal, stream, false);
+    SDLTest_AssertCheck(ret == false, "Verify result from SDL_SavePNG_IO (indexed surface without palette), expected: false, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    /* Test saving a indexed surface with palette as a PNG: should succeed */
+    ret = SDL_SavePNG_IO(indexed_surface_pal, stream, false);
+    SDLTest_AssertPass("Call to SDL_SavePNG_IO()");
+    SDLTest_AssertCheck(ret == true, "Verify result from SDL_SavePNG_IO, expected: true, got: %i", ret);
+
+    SDL_SeekIO(stream, 0, SDL_IO_SEEK_SET);
+
+    rface = SDL_LoadPNG_IO(stream, false);
+    SDLTest_AssertPass("Call to SDL_LoadPNG_IO()");
+    SDLTest_AssertCheck(rface != NULL, "Verify result from SDL_LoadPNG_IO is not NULL");
+    if (rface != NULL) {
+        SDLTest_AssertCheck(indexed_surface_pal->w == rface->w, "Verify width of loaded surface, expected: %i, got: %i", indexed_surface_pal->w, rface->w);
+        SDLTest_AssertCheck(indexed_surface_pal->h == rface->h, "Verify height of loaded surface, expected: %i, got: %i", indexed_surface_pal->h, rface->h);
+        SDLTest_AssertCheck(rface->format == SDL_PIXELFORMAT_INDEX8, "Verify format of loaded surface, expected: %s, got: %s", SDL_GetPixelFormatName(indexed_surface_pal->format), SDL_GetPixelFormatName(rface->format));
+        SDL_ReadSurfacePixel(rface, 0, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, 1, 0, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 2, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[1].r &&
+                            g == palette_colors[1].g &&
+                            b == palette_colors[1].b &&
+                            a == palette_colors[1].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[1].r, palette_colors[1].g, palette_colors[1].b, palette_colors[1].a,
+                            r, g, b, a);
+        SDL_ReadSurfacePixel(rface, rface->w - 1, rface->h - 1, &r, &g, &b, &a);
+        SDLTest_AssertCheck(r == palette_colors[0].r &&
+                            g == palette_colors[0].g &&
+                            b == palette_colors[0].b &&
+                            a == palette_colors[0].a,
+                            "Verify color of loaded surface, expected: %d,%d,%d,%d, got: %d,%d,%d,%d",
+                            palette_colors[0].r, palette_colors[0].g, palette_colors[0].b, palette_colors[0].a,
+                            r, g, b, a);
+        SDL_DestroySurface(rface);
+        rface = NULL;
+    }
+
+    SDL_CloseIO(stream);
+    stream = NULL;
+
+    SDL_DestroySurface(indexed_surface_nopal);
+    SDL_DestroySurface(indexed_surface_pal);
 
     return TEST_COMPLETED;
 }
@@ -2141,7 +2888,19 @@ static const SDLTest_TestCaseReference surfaceTestInvalidFormat = {
 };
 
 static const SDLTest_TestCaseReference surfaceTestSaveLoad = {
-    surface_testSaveLoad, "surface_testSaveLoad", "Tests sprite saving and loading.", TEST_ENABLED
+    surface_testSaveLoad, "surface_testSaveLoad", "Test saving and loading RGBA sprites as BMP and PNG.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestIndex8SaveLoad = {
+    surface_testIndexed8SaveLoad, "surface_testIndexed8SaveLoad", "Test saving and loading 8-bit indexed sprites as BMP and PNG.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestIndex4SaveLoad = {
+    surface_testIndexed4SaveLoad, "surface_testIndexed4SaveLoad", "Test saving and loading 4-bit indexed sprites as BMP.", TEST_ENABLED
+};
+
+static const SDLTest_TestCaseReference surfaceTestIndex1SaveLoad = {
+    surface_testIndexed1SaveLoad, "surface_testIndexed1SaveLoad", "Test saving and loading 1-bit indexed sprites as BMP.", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference surfaceTestBlitZeroSource = {
@@ -2268,6 +3027,9 @@ static const SDLTest_TestCaseReference surfaceTest16BitTo32Bit = {
 static const SDLTest_TestCaseReference *surfaceTests[] = {
     &surfaceTestInvalidFormat,
     &surfaceTestSaveLoad,
+    &surfaceTestIndex8SaveLoad,
+    &surfaceTestIndex4SaveLoad,
+    &surfaceTestIndex1SaveLoad,
     &surfaceTestBlitZeroSource,
     &surfaceTestBlit,
     &surfaceTestBlitTiled,
