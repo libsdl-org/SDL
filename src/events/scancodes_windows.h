@@ -208,7 +208,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe033*/ SDL_SCANCODE_UNKNOWN,
     /*0xe034*/ SDL_SCANCODE_UNKNOWN,
     /*0xe035*/ SDL_SCANCODE_KP_DIVIDE,
-    /*0xe036*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe036*/ SDL_SCANCODE_RSHIFT, // see https://mojira.dev/MC-311424
     /*0xe037*/ SDL_SCANCODE_PRINTSCREEN,
     /*0xe038*/ SDL_SCANCODE_RALT,
     /*0xe039*/ SDL_SCANCODE_UNKNOWN,
