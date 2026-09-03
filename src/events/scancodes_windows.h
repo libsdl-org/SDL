@@ -197,7 +197,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe028*/ SDL_SCANCODE_UNKNOWN,
     /*0xe029*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02a*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe02b*/ SDL_SCANCODE_UNKNOWN, // Brightness up & brughtness down on HP 250 G7 Notebook PC and HP Laptop 14-cm0xxx keyboards
+    /*0xe02b*/ SDL_SCANCODE_UNKNOWN, // Brightness up & brightness down on HP 250 G7 Notebook PC and HP Laptop 14-cm0xxx keyboards
     /*0xe02c*/ SDL_SCANCODE_MEDIA_EJECT,
     /*0xe02d*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02e*/ SDL_SCANCODE_VOLUMEDOWN,
