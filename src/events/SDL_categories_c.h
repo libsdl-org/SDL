@@ -66,6 +66,7 @@ typedef enum SDL_EventCategory
     SDL_EVENTCATEGORY_RENDER,
     SDL_EVENTCATEGORY_NOTIFICATION,
     SDL_EVENTCATEGORY_PINCH,
+    SDL_EVENTCATEGORY_HOLD,
 } SDL_EventCategory;
 
 extern SDL_EventCategory SDL_GetEventCategory(Uint32 type);
