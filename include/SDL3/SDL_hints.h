@@ -124,8 +124,8 @@ extern "C" {
  *
  * Some devices choose the wrong microphone by default (between the one meant
  * to be spoken in when the phone is held to the user's ear for a phone call,
- * or an external microphone that's meant to be used when recording video),
- * or have DSP effects applied to the recorded audio, and changing the input
+ * or an external microphone that's meant to be used when recording video), or
+ * have DSP effects applied to the recorded audio, and changing the input
  * preset can help control this.
  *
  * This can be any number that maps to an `AAUDIO_INPUT_PRESET_*` enum from
@@ -135,8 +135,8 @@ extern "C" {
  * might also be a useful choice.
  *
  * If unset (the default), SDL will not specify an input preset at all, which
- * lets the system choose. This is usually the correct thing to do unless
- * your app is having problems.
+ * lets the system choose. This is usually the correct thing to do unless your
+ * app is having problems.
  *
  * This hint should be set before a recording audio device is opened.
  *
