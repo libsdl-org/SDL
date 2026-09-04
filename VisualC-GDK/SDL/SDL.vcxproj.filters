@@ -92,6 +92,7 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch2.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_wii.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360bb.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_lg4ff.c" />
