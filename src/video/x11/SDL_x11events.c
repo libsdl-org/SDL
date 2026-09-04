@@ -947,6 +947,9 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
                 new_mime_types[length] = NULL;
 
                 SDL_SendClipboardUpdate(false, new_mime_types, length);
+
+                // Clear the internal selection source data, as it was invalided after updating the clipboard.
+                SDL_zero(videodata->clipboard);
             }
 
             if (data) {
