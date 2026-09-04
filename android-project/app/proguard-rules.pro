@@ -53,6 +53,16 @@
     boolean showFileDialog(java.lang.String[], boolean, int, java.lang.String, int);
     java.lang.String getPreferredLocales();
     java.lang.String formatLocale(java.util.Locale);
+    # Keep initial values accessed by name from native code
+    public static int mAndroid_SurfaceWidth;
+    public static int mAndroid_SurfaceHeight;
+    public static int mAndroid_DeviceWidth;
+    public static int mAndroid_DeviceHeight;
+    public static float mAndroid_ScreenDensity;
+    public static float mAndroid_ScreenRate;
+    public static int mInit_CurrentRotation;
+    public static int mInit_NaturalOrientation;
+    public static boolean mInit_DarkModeEnabled;
 }
 
 -keep,includedescriptorclasses,allowoptimization class org.libsdl.app.HIDDeviceManager {
