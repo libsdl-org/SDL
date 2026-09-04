@@ -155,7 +155,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0x7e*/ SDL_SCANCODE_KP_COMMA,
     /*0x7f*/ SDL_SCANCODE_UNKNOWN,
     /*0xe000*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe001*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe001*/ SDL_SCANCODE_UNKNOWN, // Fn+Esc on HP 250 G7 Notebook PC and HP Laptop 14-cm0xxx keyboards
     /*0xe002*/ SDL_SCANCODE_UNKNOWN,
     /*0xe003*/ SDL_SCANCODE_UNKNOWN,
     /*0xe004*/ SDL_SCANCODE_UNKNOWN,
@@ -197,7 +197,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe028*/ SDL_SCANCODE_UNKNOWN,
     /*0xe029*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02a*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe02b*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe02b*/ SDL_SCANCODE_UNKNOWN, // Brightness up & brightness down on HP 250 G7 Notebook PC and HP Laptop 14-cm0xxx keyboards
     /*0xe02c*/ SDL_SCANCODE_MEDIA_EJECT,
     /*0xe02d*/ SDL_SCANCODE_UNKNOWN,
     /*0xe02e*/ SDL_SCANCODE_VOLUMEDOWN,
@@ -208,7 +208,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe033*/ SDL_SCANCODE_UNKNOWN,
     /*0xe034*/ SDL_SCANCODE_UNKNOWN,
     /*0xe035*/ SDL_SCANCODE_KP_DIVIDE,
-    /*0xe036*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe036*/ SDL_SCANCODE_RSHIFT, // see https://mojira.dev/MC-311424
     /*0xe037*/ SDL_SCANCODE_PRINTSCREEN,
     /*0xe038*/ SDL_SCANCODE_RALT,
     /*0xe039*/ SDL_SCANCODE_UNKNOWN,
