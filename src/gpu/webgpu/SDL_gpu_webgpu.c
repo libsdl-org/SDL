@@ -1224,6 +1224,7 @@ typedef struct WebGPUShaderBindGroupLayouts
 {
     WGPUBindGroupLayout samplerStorageBindGroupLayout;
     WGPUBindGroupLayout uniformBindGroupLayout;
+    Uint32 numSamplerStorageEntries; // Hack fix to prevent binding resources to groups with 0 binds
 } WebGPUShaderBindGroupLayouts;
 
 typedef struct WebGPUComputeShaderBindGroupLayouts
