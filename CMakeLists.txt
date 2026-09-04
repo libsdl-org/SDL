@@ -215,7 +215,7 @@ if(EMSCRIPTEN)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
-if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE OR DOS)
+if(VITA OR PSP OR PS2 OR PS3 OR N3DS OR RISCOS OR NGAGE OR DOS)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
@@ -3380,6 +3380,48 @@ elseif(PS2)
       ps2_drivers
       atomic
   )
+elseif(PS3)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/ps3/*.c")
+
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_PS3 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/audio/ps3/*.c"
+      "${SDL3_SOURCE_DIR}/src/audio/ps3/*.h"
+    )
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_PS3 1)
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/ps3/*.c")
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+
+  set(SDL_THREAD_PS3 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond.c"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_syscond_c.h"
+    "${SDL3_SOURCE_DIR}/src/thread/generic/SDL_systls.c"
+    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.c"
+    "${SDL3_SOURCE_DIR}/src/thread/ps3/*.h"
+  )
+  set(HAVE_SDL_THREADS TRUE)
+
+  set(SDL_TIMER_PS3 1)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/timer/ps3/*.c")
+  set(HAVE_SDL_TIMERS TRUE)
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_PS3 1)
+    set(SDL_VIDEO_RENDER_PS3 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/video/ps3/*.c"
+      "${SDL3_SOURCE_DIR}/src/render/ps3/*.c"
+    )
+    set(SDL_VIDEO_OPENGL 0)
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
 elseif(N3DS)
   sdl_glob_sources("${SDL3_SOURCE_DIR}/src/main/n3ds/*.c")
 
