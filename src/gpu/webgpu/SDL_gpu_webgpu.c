@@ -1374,6 +1374,12 @@ typedef struct WebGPUCommandBuffer
     Uint32 swapchainTextureCount;
     Uint32 swapchainTextureCapacity;
     WebGPUTextureContainer **acquiredSwapchainTextures;
+
+    // These are used to ensure that the end-user doesn't use a scissor
+    // that's larger than the smallest color target's, since WebGPU disallows
+    // that and will die a horrible, painful death from even considering it
+    Uint32 smallestColorTargetW;
+    Uint32 smallestColorTargetH;
 } WebGPUCommandBuffer;
 
 static void
@@ -2385,6 +2391,8 @@ static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsFor
 
     result->uniformBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &uniformLayoutDesc);
     result->samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(renderer->device, &samplerLayoutDesc);
+
+    result->numSamplerStorageEntries = samplerEntryCount;
 
     SDL_free(samplerEntries);
     SDL_free(uniformEntries);
@@ -4516,6 +4524,11 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
 
     colorAttachments = (WGPURenderPassColorAttachment *)SDL_calloc(numColorTargets, sizeof(*colorAttachments));
 
+    // these are by default 0, so SDL_min would always favour
+    // them over the texture's dimensions if we didn't do this
+    wrapper->smallestColorTargetW = SDL_MAX_UINT32;
+    wrapper->smallestColorTargetH = SDL_MAX_UINT32;
+
     for (int i = 0; i < numColorTargets; i++) {
         WebGPUTexture *texture = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture;
         colorAttachments[i].clearValue.a = colorTargetInfos[i].clear_color.a;
@@ -4525,6 +4538,9 @@ static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SD
         colorAttachments[i].loadOp = SDLToWebGPU_LoadOp[colorTargetInfos[i].load_op];
         colorAttachments[i].storeOp = SDLToWebGPU_StoreOp[colorTargetInfos[i].store_op];
         colorAttachments[i].depthSlice = texture->type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : WGPU_DEPTH_SLICE_UNDEFINED;
+
+        wrapper->smallestColorTargetW = SDL_min(wrapper->smallestColorTargetW, wgpuTextureGetWidth(((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->texture));
+        wrapper->smallestColorTargetH = SDL_min(wrapper->smallestColorTargetH, wgpuTextureGetHeight(((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->texture));
 
         switch (((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->type) {
         case SDL_GPU_TEXTURETYPE_3D:
@@ -4655,7 +4671,14 @@ static void WEBGPU_SetBlendConstants(SDL_GPUCommandBuffer *commandBuffer, SDL_FC
 
 static void WEBGPU_SetScissor(SDL_GPUCommandBuffer *commandBuffer, const SDL_Rect *scissor)
 {
-    wgpuRenderPassEncoderSetScissorRect(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, scissor->x, scissor->y, scissor->w, scissor->h);
+    if ((scissor->w <= ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetW) &&
+        (scissor->h <= ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetH)) {
+        wgpuRenderPassEncoderSetScissorRect(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, scissor->x, scissor->y, scissor->w, scissor->h);
+    } else if (((WebGPUCommandBuffer *)commandBuffer)->renderer->debugMode) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to use a scissor of size (%u, %u) with a "
+                                           "smaller render target of size (%u, %u)! This is disallowed by the WebGPU spec.",
+                     scissor->w, scissor->h, ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetW, ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetH);
+    }
 }
 
 static bool WEBGPU_WaitAndAcquireSwapchainTexture(SDL_GPUCommandBuffer *command_buffer, SDL_Window *window, SDL_GPUTexture **swapchain_texture, Uint32 *swapchain_texture_width, Uint32 *swapchain_texture_height)
@@ -4727,7 +4750,10 @@ static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 f
         // Hack fix for FNA
         if (cmdBuf->hasBoundGraphicsPipeline) {
             if (cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.numSamplerStorageEntries == 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to vertex shader with no binds!");
+                if (cmdBuf->renderer->debugMode) {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to vertex shader with no binds!");
+                }
+
                 return;
             }
         }
@@ -4777,7 +4803,9 @@ static void WEBGPU_BindFragmentSamplers(SDL_GPUCommandBuffer *renderPass, Uint32
     for (int i = 0; i < numBindings; i++) {
         if (cmdBuf->hasBoundGraphicsPipeline) {
             if (cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.numSamplerStorageEntries == 0) {
-                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to fragment shader with no binds!");
+                if (cmdBuf->renderer->debugMode) {
+                    SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to fragment shader with no binds!");
+                }
                 return;
             }
         }
