@@ -1725,10 +1725,11 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
 static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL_Window *window, Uint8 button, bool down)
 {
-    // GCMouse handles button events directly, skip NSEvent path to avoid duplicates
-    if (Cocoa_HasGCMouse()) {
-        return;
-    }
+    // NSEvent button events are always delivered here. GCMouse no longer sends
+    // its own button events (see SDL_cocoamouse.m), so there is nothing to
+    // deduplicate against, and skipping this path would drop synthetic clicks
+    // from remote-control / accessibility tools, which never go through
+    // GCMouse at all.
 
     SDL_MouseID mouseID = SDL_DEFAULT_MOUSE_ID;
     //const int clicks = (int)[theEvent clickCount];
