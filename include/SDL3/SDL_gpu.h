@@ -4314,6 +4314,26 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToTexture(
     bool cycle);
 
 /**
+ * Performs a texture-to-buffer copy.
+ *
+ * This copy occurs on the GPU timeline. You may assume the copy has finished
+ * in subsequent commands.
+ *
+ * \param copy_pass a copy pass handle.
+ * \param source a source texture region.
+ * \param destination a destination buffer location.
+ * \param cycle if true, cycles the destination buffer if the destination
+ *              buffer is bound, otherwise overwrites the data.
+ *
+ * \since This function is available since SDL 3.4.18.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUTextureToBuffer(
+    SDL_GPUCopyPass *copy_pass,
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUBufferLocation *destination,
+    bool cycle);
+
+/**
  * Performs a buffer-to-buffer copy.
  *
  * This copy occurs on the GPU timeline. You may assume the copy has finished
@@ -4333,6 +4353,26 @@ extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUBufferToBuffer(
     const SDL_GPUBufferLocation *source,
     const SDL_GPUBufferLocation *destination,
     Uint32 size,
+    bool cycle);
+
+/**
+ * Performs a buffer-to-texture copy.
+ *
+ * This copy occurs on the GPU timeline. You may assume the copy has finished
+ * in subsequent commands.
+ *
+ * \param copy_pass a copy pass handle.
+ * \param source a source buffer region.
+ * \param destination a destination texture region.
+ * \param cycle if true, cycles the destination texture if it is already bound,
+ *              otherwise overwrites the data.
+ *
+ * \since This function is available since SDL 3.4.18.
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_CopyGPUBufferToTexture(
+    SDL_GPUCopyPass *copy_pass,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUTextureRegion *destination,
     bool cycle);
 
 /**

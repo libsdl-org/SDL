@@ -1334,3 +1334,5 @@
 #define SDL_JoystickSensorEnabled SDL_JoystickSensorEnabled_REAL
 #define SDL_GetJoystickSensorDataRate SDL_GetJoystickSensorDataRate_REAL
 #define SDL_GetJoystickSensorData SDL_GetJoystickSensorData_REAL
+#define SDL_CopyGPUTextureToBuffer SDL_CopyGPUTextureToBuffer_REAL
+#define SDL_CopyGPUBufferToTexture SDL_CopyGPUBufferToTexture_REAL

@@ -988,11 +988,23 @@ struct SDL_GPUDevice
         Uint32 d,
         bool cycle);
 
+    void (*CopyTextureToBuffer)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        const SDL_GPUTextureRegion *source,
+        const SDL_GPUBufferLocation *destination,
+        bool cycle);
+
     void (*CopyBufferToBuffer)(
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUBufferLocation *source,
         const SDL_GPUBufferLocation *destination,
         Uint32 size,
+        bool cycle);
+
+    void (*CopyBufferToTexture)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        const SDL_GPUBufferLocation *source,
+        const SDL_GPUTextureRegion *destination,
         bool cycle);
 
     void (*GenerateMipmaps)(
@@ -1192,7 +1204,9 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DownloadFromTexture, name)           \
     ASSIGN_DRIVER_FUNC(DownloadFromBuffer, name)            \
     ASSIGN_DRIVER_FUNC(CopyTextureToTexture, name)          \
+    ASSIGN_DRIVER_FUNC(CopyTextureToBuffer, name)           \
     ASSIGN_DRIVER_FUNC(CopyBufferToBuffer, name)            \
+    ASSIGN_DRIVER_FUNC(CopyBufferToTexture, name)           \
     ASSIGN_DRIVER_FUNC(GenerateMipmaps, name)               \
     ASSIGN_DRIVER_FUNC(EndCopyPass, name)                   \
     ASSIGN_DRIVER_FUNC(Blit, name)                          \
