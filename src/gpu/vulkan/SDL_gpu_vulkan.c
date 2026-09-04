@@ -2608,9 +2608,9 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
  * These indicate the current usage of that resource on the command buffer.
  * The transition from one usage mode to another indicates how the barrier should be constructed.
  *
- * For buffer reads, read usage modes can be combined. 
+ * For buffer reads, read usage modes can be combined.
  * This can be a useful shortcut in certain cases, like when reading GLTF data.
- * 
+ *
  * Pipeline barriers cannot be inserted during a render pass, but they can be inserted
  * during a compute or copy pass.
  *
@@ -2913,13 +2913,13 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
 
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_VERTEX_READ;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDEX_READ;
     }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDIRECT;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         flags |= VULKAN_BUFFER_USAGE_MODE_GRAPHICS_STORAGE_READ;
     }
@@ -2930,7 +2930,7 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
     // If no read flags are set, read-write can be the default.
     if (!flags && buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         flags = VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
-    } 
+    }
 
     if (!flags) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -9214,6 +9214,74 @@ static void VULKAN_CopyTextureToTexture(
     SDL_UnlockRWLock(renderer->defragLock);
 }
 
+static void VULKAN_CopyTextureToBuffer(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUBufferLocation *destination,
+    bool cycle)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
+    VulkanTextureSubresource *srcSubresource;
+    VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
+    VkBufferImageCopy copyDetails;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
+
+    srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+        (VulkanTextureContainer *)source->texture,
+        source->layer,
+        source->mip_level);
+
+    VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
+        renderer,
+        vulkanCommandBuffer,
+        dstContainer,
+        cycle,
+        VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION);
+
+    VULKAN_INTERNAL_TextureTransitionFromDefaultUsage(
+        renderer,
+        vulkanCommandBuffer,
+        VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+        srcSubresource->parent);
+
+    copyDetails.imageOffset.x = source->x;
+    copyDetails.imageOffset.y = source->y;
+    copyDetails.imageOffset.z = source->z;
+    copyDetails.imageExtent.width = source->w;
+    copyDetails.imageExtent.height = source->h;
+    copyDetails.imageExtent.depth = source->d;
+    copyDetails.imageSubresource.aspectMask = srcSubresource->parent->aspectFlags;
+    copyDetails.imageSubresource.baseArrayLayer = source->layer;
+    copyDetails.imageSubresource.layerCount = 1;
+    copyDetails.imageSubresource.mipLevel = source->mip_level;
+    copyDetails.bufferOffset = destination->offset;
+    copyDetails.bufferRowLength = 0;    // assume tightly packed
+    copyDetails.bufferImageHeight = 0;  // assume tightly packed
+
+    renderer->vkCmdCopyImageToBuffer(
+        vulkanCommandBuffer->commandBuffer,
+        srcSubresource->parent->image,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        dstBuffer->buffer,
+        1,
+        &copyDetails);
+
+    VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        renderer,
+        vulkanCommandBuffer,
+        VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+        srcSubresource);
+
+    VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, srcSubresource->parent);
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcSubresource->parent);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
+
+    SDL_UnlockRWLock(renderer->defragLock);
+}
+
 static void VULKAN_CopyBufferToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBufferLocation *source,
@@ -9269,6 +9337,78 @@ static void VULKAN_CopyBufferToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
+
+    SDL_UnlockRWLock(renderer->defragLock);
+}
+
+static void VULKAN_CopyBufferToTexture(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUTextureRegion *destination,
+    bool cycle)
+{
+    VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
+    VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
+    VulkanTextureSubresource *dstSubresource;
+    VkBufferImageCopy copyDetails;
+
+    SDL_LockRWLockForReading(renderer->defragLock);
+
+    VulkanBuffer *srcBuffer = ((VulkanBufferContainer *)source->buffer)->activeBuffer;
+
+    VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
+        renderer,
+        vulkanCommandBuffer,
+        VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
+        srcBuffer);
+
+    dstSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
+        renderer,
+        vulkanCommandBuffer,
+        (VulkanTextureContainer *)destination->texture,
+        destination->layer,
+        destination->mip_level,
+        cycle,
+        VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION);
+
+    copyDetails.imageExtent.width = destination->w;
+    copyDetails.imageExtent.height = destination->h;
+    copyDetails.imageExtent.depth = destination->d;
+    copyDetails.imageOffset.x = destination->x;
+    copyDetails.imageOffset.y = destination->y;
+    copyDetails.imageOffset.z = destination->z;
+    copyDetails.imageSubresource.aspectMask = dstSubresource->parent->aspectFlags;
+    copyDetails.imageSubresource.baseArrayLayer = destination->layer;
+    copyDetails.imageSubresource.layerCount = 1;
+    copyDetails.imageSubresource.mipLevel = destination->mip_level;
+    copyDetails.bufferOffset = source->offset;
+    copyDetails.bufferRowLength = 0;   // assume tightly packed
+    copyDetails.bufferImageHeight = 0; // assume tightly packed
+
+    renderer->vkCmdCopyBufferToImage(
+        vulkanCommandBuffer->commandBuffer,
+        srcBuffer->buffer,
+        dstSubresource->parent->image,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1,
+        &copyDetails);
+
+    VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+        renderer,
+        vulkanCommandBuffer,
+        VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
+        srcBuffer);
+
+    VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+        renderer,
+        vulkanCommandBuffer,
+        VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
+        dstSubresource->parent);
+
+    VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, srcBuffer);
+    VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, dstSubresource->parent);
+    VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcBuffer);
+    VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstSubresource->parent);
 
     SDL_UnlockRWLock(renderer->defragLock);
 }
