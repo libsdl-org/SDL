@@ -87,6 +87,7 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
     &SDL_HIDAPI_DriverXbox360,
     &SDL_HIDAPI_DriverXbox360W,
+    &SDL_HIDAPI_DriverXbox360BB,
 #endif
 #ifdef SDL_JOYSTICK_HIDAPI_GIP
     &SDL_HIDAPI_DriverGIP,
