@@ -1049,6 +1049,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL SM6_0 shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_WGSL     (1u << 6) /**< WGSL shaders for WebGPU. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -2248,6 +2249,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsShaderFormats(
 extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
     SDL_PropertiesID props);
 
+// FIXME: I don't know how to make a CategoryGPU#webgpu so I didn't link
+// WebGPU to anything
+// I actually made it link to the wikipedia page for Hell but I don't
+// think that's very professional (It is funny though.)
+
 /**
  * Creates a GPU context.
  *
@@ -2256,6 +2262,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  * - "vulkan": [Vulkan](CategoryGPU#vulkan)
  * - "direct3d12": [D3D12](CategoryGPU#d3d12)
  * - "metal": [Metal](CategoryGPU#metal)
+ * - "webgpu": WebGPU
  * - NULL: let SDL pick the optimal driver
  *
  * \param format_flags a bitflag indicating which shader formats the app is
@@ -2380,6 +2387,25 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  * not support indirect command buffers, MSAA depth resolve, and stencil
  * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
+ * TODO: This is gigantic and confusing, we need to polish this up
+ * With the WebGPU backend:
+ *
+ * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS`:
+ *   This property controls how aggressive the bind group cache pruning is.
+ *   If this is set to 100, any bind groups that haven't been used in the last
+ *   100 command buffer submissions will be automatically freed.
+ *   A proper explanation of this would take about a million years, but TLDR:
+ *   Every render & compute pass has multiple bind groups. Those bind groups are
+ *   only valid for the specific textures, samplers, and buffers you bound during
+ *   that pass. This means that for every new resource that gets bound, we must
+ *   create an entirely new bind group. SDLGPU automatically caches these groups
+ *   for better performance. However, every cached bind group takes up a small
+ *   amount of VRAM (a couple hundred bytes), so, SDLGPU will automatically free
+ *   any unused bind groups. This property is generally unimportant, but there
+ *   are usecases for when you want to disable caching (if so, set this to 0)
+ *   or if you want to disable cache pruning. (if so, set this to -1)
+ *   TLDR: Don't touch this if you don't know EXACTLY what it does.
+ *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2408,6 +2434,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN                         "SDL.gpu.device.create.shaders.dxil"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN                          "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN                         "SDL.gpu.device.create.shaders.wgsl"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER             "SDL.gpu.device.create.d3d12.agility_sdk_version"
@@ -2416,6 +2443,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
 
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
@@ -2487,8 +2515,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * checked during initialization.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "vulkan",
- * "metal" or "direct3d12". These never have Unicode characters, and are not
- * meant to be proper names.
+ * "metal", "direct3d12", or "webgpu". These never have Unicode characters, 
+ * and are not meant to be proper names.
  *
  * \param index the index of a GPU driver.
  * \returns the name of the GPU driver with the given **index** or NULL when
@@ -2830,6 +2858,14 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ---
  *
+ * // TODO: Add WGSL example here!
+ *
+ * For WGSL, use the following order:
+ * - 0: Sampled textures, followed by read-only storage textures, followed by
+ *   read-only storage buffers
+ * - 1: Read-write storage textures, followed by read-write storage buffers
+ * - 2: Uniform buffers
+ *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
  *
@@ -3067,6 +3103,83 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *     device SomeBufferStruct& storageBufferBoundToSlot1 [[buffer(3)]]);
  *
  * ```
+ *
+ * ---
+ *
+ * **WGSL (WebGPU Shading Language)**
+ *
+ * For vertex shaders, use: - Group 0 for samplers, storage textures, and
+ * storage buffers - Group 1 for uniform data
+ *
+ * For fragment shaders, use: - Group 2 for samplers, storage textures, and
+ * storage buffers - Group 3 for uniform data
+ *
+ * The first resource in a given set must have a `binding` of 0. Additional
+ * resources must appear at consecutive bindings (1, 2, etc), leaving no gaps
+ * in the set.
+ *
+ * All sampled textures must come first in the binding order, followed by their
+ * associated sampler, in order of how they are bound via `SDL_BindGPU*Samplers()`.
+ *
+ * All storage textures must come after all samplers and sampled textures
+ * in the binding order, in order of how they are bound via `SDL_Bind*StorageTextures()`.
+ *
+ * All storage buffers must come after all storage textures in the binding
+ * order, in order of how they are bound via `SDL_Bind*StorageBuffers()`.
+ *
+ * **Example**
+ *
+ * If a vertex shader binds 2 samplers, 2 storage textures, 2 storage buffers,
+ * and 2 uniform buffers, its binding layout should look like this:
+ *
+ * ```wgsl
+ * // Sampled textures come first, followed by the sampler, in SDL slot order.
+ * @group(0) @binding(0) var sampledTextureBoundToSlot0: ...
+ * @group(0) @binding(1) var samplerBoundToSlot0: sampler
+ * @group(0) @binding(2) var sampledTextureBoundToSlot1: ...
+ * @group(0) @binding(3) var samplerBoundToSlot1: sampler
+ * // Any storage textures come next, in SDL slot order.
+ * @group(0) @binding(4) var storageTextureBoundToSlot0: ...
+ * @group(0) @binding(5) var storageTextureBoundToSlot1: ...
+ * // Any storage buffers come next, in SDL slot order.
+ * @group(0) @binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
+ * @group(0) @binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
+ * // Any uniform buffers are in their own set, in SDL slot order.
+ * @group(1) @binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * @group(1) @binding(1) var<uniform> uniformBufferBoundToSlot0: ...
+ * ```
+ *
+ * WebGPU has stricter rules regarding sampling certain texture types, so some
+ * formats do require additional work to sample.
+ * 
+ * The default sampling type for all textures is `WGPUTextureSampleType_Float`,
+ * however some formats do not support float filtering. 
+ * (See the [WebGPU spec](https://www.w3.org/TR/webgpu/#texture-format-caps)).
+ *
+ * The most common unsupported format is any depth format. Attempting to sample
+ * a depth format will fail unless you're either using a comparison sampler, or
+ * you forced `WGPUTextureSampleType_Float` through the macro-ish comment
+ * `//SDLGPU_ForceAllowSamplingForTexture(group, binding)`
+ *
+ * This is an SDLGPU specific hint, which forces a binding and its corresponding
+ * sampler to be unfilterable. This allows the shader to (e.g) sample depth textures
+ * as if they were regular `f32` textures.
+ *
+ * **Example**
+ * 
+ * ```wgsl
+ * // BAD! This will throw an error when bound, since the backend expects a 
+ * // texture format which supports float filtering!
+ * @group(0) @binding(0) var depthTexture: texture_2d<f32>; 
+ *
+ * // However, if you were to add this comment to your WGSL source, it will 
+ * // tell the backend to expect an unfilterable texture format.
+ * // SDLGPU_ForceAllowSamplingForTexture(0, 0)
+ *
+ * ```
+ * 
+ * The "macro" is forced to be a comment, since WGSL does not currently have a system
+ * for implementing custom functions.
  *
  * ---
  *
@@ -4248,6 +4361,11 @@ extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
  *
  * You must align the data in the transfer buffer to a multiple of the texel
  * size of the texture format.
+ *
+ * Note that if using the WebGPU backend, the data uploaded to the texture
+ * may differ from the given transfer buffer's data. WebGPU has stricter rules 
+ * regarding texture data alignment, which often times forces the backend to
+ * pad any data before it gets uploaded.
  *
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with image layout information.

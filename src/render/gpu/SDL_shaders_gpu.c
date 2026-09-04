@@ -69,12 +69,22 @@ typedef struct GPU_ShaderModuleSource
 #define HAVE_METAL_SHADERS 0
 #endif
 
+#ifdef SDL_GPU_WEBGPU
+#define IF_WEBGPU(...)      __VA_ARGS__
+#define HAVE_WGSL_SHADERS 1
+#include "shaders/wgsl.h"
+#else
+#define IF_WEBGPU(...)
+#define HAVE_WGSL_SHADERS 0
+#endif
+
 typedef struct GPU_ShaderSources
 {
     IF_PRIVATE(GPU_ShaderModuleSource private;)
     IF_VULKAN(GPU_ShaderModuleSource spirv;)
     IF_D3D12(GPU_ShaderModuleSource dxil60;)
     IF_METAL(GPU_ShaderModuleSource msl;)
+    IF_WEBGPU(GPU_ShaderModuleSource wgsl;)
     unsigned int num_samplers;
     unsigned int num_uniform_buffers;
 } GPU_ShaderSources;
@@ -91,6 +101,9 @@ typedef struct GPU_ShaderSources
 #define SHADER_METAL(code) \
     IF_METAL(.msl = { code, sizeof(code), SDL_GPU_SHADERFORMAT_MSL }, )
 
+#define SHADER_WGSL(code) \
+    IF_WEBGPU(.wgsl = { code, sizeof(code), SDL_GPU_SHADERFORMAT_WGSL }, )
+
 // clang-format off
 static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
     [VERT_SHADER_LINEPOINT] = {
@@ -100,6 +113,7 @@ static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
         SHADER_SPIRV(linepoint_vert_spv)
         SHADER_DXIL60(linepoint_vert_dxil)
         SHADER_METAL(linepoint_vert_msl)
+        SHADER_WGSL(linepoint_vert_wgsl)
     },
     [VERT_SHADER_TRI_COLOR] = {
         .num_samplers = 0,
@@ -108,6 +122,7 @@ static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
         SHADER_SPIRV(tri_color_vert_spv)
         SHADER_DXIL60(tri_color_vert_dxil)
         SHADER_METAL(tri_color_vert_msl)
+        SHADER_WGSL(tri_color_vert_wgsl)
     },
     [VERT_SHADER_TRI_TEXTURE] = {
         .num_samplers = 0,
@@ -116,6 +131,7 @@ static const GPU_ShaderSources vert_shader_sources[NUM_VERT_SHADERS] = {
         SHADER_SPIRV(tri_texture_vert_spv)
         SHADER_DXIL60(tri_texture_vert_dxil)
         SHADER_METAL(tri_texture_vert_msl)
+        SHADER_WGSL(tri_texture_vert_wgsl)
     },
 };
 
@@ -127,6 +143,7 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(color_frag_spv)
         SHADER_DXIL60(color_frag_dxil)
         SHADER_METAL(color_frag_msl)
+        SHADER_WGSL(color_frag_wgsl)
     },
     [FRAG_SHADER_TEXTURE_RGB] = {
         .num_samplers = 1,
@@ -135,6 +152,7 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(texture_rgb_frag_spv)
         SHADER_DXIL60(texture_rgb_frag_dxil)
         SHADER_METAL(texture_rgb_frag_msl)
+        SHADER_WGSL(texture_rgb_frag_wgsl)
     },
     [FRAG_SHADER_TEXTURE_RGBA] = {
         .num_samplers = 1,
@@ -143,6 +161,7 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(texture_rgba_frag_spv)
         SHADER_DXIL60(texture_rgba_frag_dxil)
         SHADER_METAL(texture_rgba_frag_msl)
+        SHADER_WGSL(texture_rgba_frag_wgsl)
     },
     [FRAG_SHADER_TEXTURE_ADVANCED] = {
         .num_samplers = 3,
@@ -151,6 +170,7 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_SPIRV(texture_advanced_frag_spv)
         SHADER_DXIL60(texture_advanced_frag_dxil)
         SHADER_METAL(texture_advanced_frag_msl)
+        SHADER_WGSL(texture_advanced_frag_wgsl)
     },
 };
 // clang-format on
@@ -179,6 +199,10 @@ static SDL_GPUShader *CompileShader(const GPU_ShaderSources *sources, SDL_GPUDev
     } else if (formats & SDL_GPU_SHADERFORMAT_MSL) {
         sms = &sources->msl;
 #endif // HAVE_METAL_SHADERS
+#if HAVE_WGSL_SHADERS
+    } else if (formats & SDL_GPU_SHADERFORMAT_WGSL) {
+        sms = &sources->wgsl;
+#endif // HAVE_WGSL_SHADERS   
     } else {
         SDL_SetError("Unsupported GPU backend");
         return NULL;
