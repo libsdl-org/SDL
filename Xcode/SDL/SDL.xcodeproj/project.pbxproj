@@ -572,6 +572,7 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
+		000076D3980E0431F8620000 /* SDL_hidapi_xbox360bb.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1182,6 +1183,7 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_hidapi_xbox360bb.c; path = SDL_hidapi_xbox360bb.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2058,6 +2060,7 @@
 				A7D8A7C723E2513E00DCD162 /* SDL_hidapijoystick_c.h */,
 				F3E6C3912EE9F20000A6B39E /* SDL_report_descriptor.h */,
 				F3E6C3922EE9F20000A6B39E /* SDL_report_descriptor.c */,
+				0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */,
 			);
 			path = hidapi;
 			sourceTree = "<group>";
@@ -3243,6 +3246,7 @@
 				00009183ED11C92F23FC0000 /* SDL_notification.c in Sources */,
 				0000FB5C9B8CE5929A250000 /* SDL_cocoanotification.m in Sources */,
 				0000AF1D2CED20010C2D0000 /* SDL_notificationevents.c in Sources */,
+				000076D3980E0431F8620000 /* SDL_hidapi_xbox360bb.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

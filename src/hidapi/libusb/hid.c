@@ -943,6 +943,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb360_iface_subclass = 93;
 	static const int xb360_iface_protocol = 1; /* Wired */
 	static const int xb360w_iface_protocol = 129; /* Wireless */
+	static const int xb360bb_iface_protocol = 4; /* Wireless */
 	static const int supported_vendors[] = {
 		0x0079, /* GPD Win 2 */
 		0x0351, /* CRKD */
@@ -982,7 +983,8 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == xb360_iface_subclass &&
 	    (intf_desc->bInterfaceProtocol == xb360_iface_protocol ||
-	     intf_desc->bInterfaceProtocol == xb360w_iface_protocol)) {
+	     intf_desc->bInterfaceProtocol == xb360w_iface_protocol ||
+	     intf_desc->bInterfaceProtocol == xb360bb_iface_protocol)) {
 		size_t i;
 		for (i = 0; i < sizeof(supported_vendors)/sizeof(supported_vendors[0]); ++i) {
 			if (vendor_id == supported_vendors[i]) {

@@ -1244,6 +1244,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
         Uint8 sub_product  = guid.data[15] & 0x1F;
 
         SDL_CreateMappingStringForSInputGamepad(vendor, product, sub_product, version, face_style, mapping_string, sizeof(mapping_string));
+    } else if ((vendor == USB_VENDOR_MICROSOFT) && (product == USB_PRODUCT_XBOX360_BIGBUTTON_RECEIVER)) {
+        SDL_strlcat(mapping_string, "dpup:b0,dpdown:b1,dpleft:b2,dpright:b3,start:b4,back:b5,guide:b6,misc1:b7,a:b8,b:b9,x:b10,y:b11", sizeof(mapping_string));
     } else {
         // All other gamepads have the standard set of 19 buttons and 6 axes
         if (SDL_IsJoystickGameCube(vendor, product)) {

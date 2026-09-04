@@ -1651,6 +1651,9 @@
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360bb.c">
+      <Filter>joystick\hidapi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360w.c">
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
