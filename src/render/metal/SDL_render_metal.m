@@ -483,6 +483,8 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
             }
         }
 
+        data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
+
         /* mtltexture can be nil here if macOS refused to give us a drawable,
            which apparently can happen for minimized windows, etc. */
         if (mtltexture == nil) {
@@ -495,7 +497,6 @@ static bool METAL_ActivateRenderCommandEncoder(SDL_Renderer *renderer, MTLLoadAc
         }
 
         data.mtlpassdesc.colorAttachments[0].loadAction = load;
-        data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
 
         data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
         data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
