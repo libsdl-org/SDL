@@ -1386,8 +1386,9 @@ WEBGPU_INTERNAL_FenceCallback(WGPUQueueWorkDoneStatus status, WGPUStringView mes
 static void
 WEBGPU_INTERNAL_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType type, WGPUStringView message, void *renderer, void *unused)
 {
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n%s", message.data);
+
     if (((WebGPURenderer *)renderer)->debugMode) {
-        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n%s", message.data);
         SDL_assert_release(!"Uncaptured WebGPU error! SDL won't let me format this message though so check the console or smth");
     }
 }
@@ -4722,6 +4723,13 @@ static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 f
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
 
     for (int i = 0; i < numBindings; i++) {
+        // Hack fix for FNA
+        if (cmdBuf->hasBoundGraphicsPipeline) {
+            if (cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.numSamplerStorageEntries == 0) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to vertex shader with no binds!");
+                return;
+            }
+        }
         cmdBuf->vertexStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
         cmdBuf->vertexStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
 
@@ -4766,6 +4774,12 @@ static void WEBGPU_BindFragmentSamplers(SDL_GPUCommandBuffer *renderPass, Uint32
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
 
     for (int i = 0; i < numBindings; i++) {
+        if (cmdBuf->hasBoundGraphicsPipeline) {
+            if (cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.numSamplerStorageEntries == 0) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Attempting to bind samplers to fragment shader with no binds!");
+                return;
+            }
+        }
         // Bounds-checking is for cowards too afraid to accept the inherent randomness of the universe, and the innate beauty that it creates.
         cmdBuf->fragmentStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
         cmdBuf->fragmentStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
