@@ -626,10 +626,12 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             int x_ticks = 0, y_ticks = 0;
 
             if (xev->deviceid != videodata->xinput_master_pointer_device) {
-                /* Ignore slave button events on non-focused windows, as they can arrive before FocusIn events,
+                /* Ignore slave button events on windows that don't have mouse focus, as they can arrive before FocusIn events,
                  * or result in focus being incorrectly set while a grab is active.
+                 * Keyboard focus is not required here: remote control tools inject clicks via virtual slave devices
+                 * (XTEST/uinput) while the window may not have keyboard focus, and requiring it drops those clicks.
                  */
-                if (SDL_GetMouseFocus() != windowdata->window || SDL_GetKeyboardFocus() != windowdata->window) {
+                if (SDL_GetMouseFocus() != windowdata->window) {
                     break;
                 }
 
