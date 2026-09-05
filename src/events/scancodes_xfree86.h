@@ -279,7 +279,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /*  96, 0x060 */   SDL_SCANCODE_KP_ENTER,           // KP_Enter
     /*  97, 0x061 */   SDL_SCANCODE_RCTRL,              // Control_R
     /*  98, 0x062 */   SDL_SCANCODE_KP_DIVIDE,          // KP_Divide
-    /*  99, 0x063 */   SDL_SCANCODE_PRINTSCREEN,        // Print
+    /*  99, 0x063 */   SDL_SCANCODE_SYSREQ,             // Print
     /* 100, 0x064 */   SDL_SCANCODE_RALT,               // ISO_Level3_Shift, ALTGR, RALT
     /* 101, 0x065 */   SDL_SCANCODE_UNKNOWN,            // Linefeed
     /* 102, 0x066 */   SDL_SCANCODE_HOME,               // Home
