@@ -332,14 +332,6 @@ static bool Cocoa_SetGCMouseRelativeMode(bool enabled)
     return true;
 }
 
-static void Cocoa_OnGCMouseButtonChanged(SDL_MouseID mouseID, Uint8 button,
-                                         BOOL pressed)
-{
-    Uint64 timestamp = SDL_GetTicksNS();
-    SDL_SendMouseButton(timestamp, SDL_GetMouseFocus(), mouseID, button,
-                        pressed);
-}
-
 static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
     API_AVAILABLE(macos(11.0))
 {
@@ -355,29 +347,11 @@ static void Cocoa_OnGCMouseConnected(GCMouse *mouse)
         SDL_SetAtomicInt(&cocoa_gcmouse_relative_mode, 1);
     }
 
-    mouse.mouseInput.leftButton.pressedChangedHandler =
-        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_LEFT, pressed);
-        };
-    mouse.mouseInput.middleButton.pressedChangedHandler =
-        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_MIDDLE, pressed);
-        };
-    mouse.mouseInput.rightButton.pressedChangedHandler =
-        ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-            Cocoa_OnGCMouseButtonChanged(mouseID, SDL_BUTTON_RIGHT, pressed);
-        };
-
-    int auxiliary_button = SDL_BUTTON_X1;
-    for (GCControllerButtonInput *btn in mouse.mouseInput.auxiliaryButtons) {
-        const int current_button = auxiliary_button;
-        btn.pressedChangedHandler =
-            ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-                Cocoa_OnGCMouseButtonChanged(mouseID, current_button, pressed);
-            };
-        ++auxiliary_button;
-    }
-
+    /* GCMouse is used for raw motion only. Button events are deliberately
+     * left to the NSEvent path in SDL_cocoawindow.m: wiring the GCMouse button
+     * callbacks here would require skipping NSEvent buttons when a GCMouse is
+     * present, which also silently drops synthetic clicks from remote-control
+     * and accessibility tools (they never reach GCMouse). */
     mouse.mouseInput.mouseMovedHandler =
         ^(GCMouseInput *mouseInput, float deltaX, float deltaY) {
             if (Cocoa_GCMouseRelativeMode()) {
