@@ -599,7 +599,9 @@ void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_or
         new_mime_types[nformats] = NULL;
     }
 
-    SetCurrentClipboardOffer(offer);
+    if (offer) {
+        SetCurrentClipboardOffer(offer);
+    }
     SDL_SendClipboardUpdate(false, new_mime_types, nformats);
 }
 
