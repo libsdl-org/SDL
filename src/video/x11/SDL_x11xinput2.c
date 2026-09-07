@@ -101,8 +101,12 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
                 if (devinfo->relative[j]) {
                     processed_coords[j] = current_val;
                 } else {
-                    processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    // The first absolute value is meaningless by itself and must be ignored, as it only establishes a baseline for future deltas.
+                    if (devinfo->prev_coord_valid[j]) {
+                        processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    }
                     devinfo->prev_coords[j] = current_val;
+                    devinfo->prev_coord_valid[j] = true;
                 }
                 ++found;
 
@@ -384,40 +388,19 @@ static void xinput2_remove_device_info(SDL_VideoData *videodata, const int devic
     }
 }
 
-static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
+static void xinput2_reset_relative_valuators(SDL_VideoData *videodata)
 {
-    // cache device info as we see new devices.
-    SDL_XInput2DeviceInfo *prev = NULL;
-    SDL_XInput2DeviceInfo *devinfo;
-    XIDeviceInfo *xidevinfo;
-    int i;
-
-    for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
-        if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
-            if (prev) { // move this to the front of the list, assuming we'll get more from this one.
-                prev->next = devinfo->next;
-                devinfo->next = videodata->mouse_device_info;
-                videodata->mouse_device_info = devinfo;
-            }
-            return devinfo;
-        }
-        prev = devinfo;
+    for (SDL_XInput2DeviceInfo *devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
+        devinfo->prev_coord_valid[0] = false;
+        devinfo->prev_coord_valid[1] = false;
     }
+}
 
-    // don't know about this device yet, query and cache it.
-    devinfo = (SDL_XInput2DeviceInfo *)SDL_calloc(1, sizeof(SDL_XInput2DeviceInfo));
+static void xinput2_update_relative_valuators(SDL_XInput2DeviceInfo *devinfo, XIAnyClassInfo **classes, int num_classes)
+{
     if (!devinfo) {
-        return NULL;
+        return;
     }
-
-    xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
-    if (!xidevinfo) {
-        SDL_free(devinfo);
-        return NULL;
-    }
-
-    devinfo->device_id = device_id;
 
     /* Search for relative axes with the following priority:
      *  - Labelled 'Rel X'/'Rel Y'
@@ -427,8 +410,8 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     bool have_rel_x = false, have_rel_y = false;
     bool have_abs_x = false, have_abs_y = false;
     int axis_index = 0;
-    for (i = 0; i < xidevinfo->num_classes; i++) {
-        const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)xidevinfo->classes[i];
+    for (int i = 0; i < num_classes; ++i) {
+        const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)classes[i];
         if (v->type == XIValuatorClass) {
             if (v->label == xinput2_rel_x_atom || (v->label == xinput2_abs_x_atom && !have_rel_x) ||
                 (axis_index == 0 && !have_rel_x && !have_abs_x)) {
@@ -464,9 +447,51 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
             ++axis_index;
         }
     }
+}
 
+static SDL_XInput2DeviceInfo *xinput2_get_cached_device_info(SDL_VideoData *videodata, const int device_id)
+{
+    for (SDL_XInput2DeviceInfo *devinfo = videodata->mouse_device_info, *prev = NULL; devinfo; devinfo = devinfo->next) {
+        if (devinfo->device_id == device_id) {
+            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
+            if (prev) { // move this to the front of the list, assuming we'll get more from this one.
+                prev->next = devinfo->next;
+                devinfo->next = videodata->mouse_device_info;
+                videodata->mouse_device_info = devinfo;
+            }
+            return devinfo;
+        }
+        prev = devinfo;
+    }
+
+    return NULL;
+}
+
+static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
+{
+    // Cache device info as we see new devices.
+    SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(videodata, device_id);
+    if (devinfo) {
+        return devinfo;
+    }
+
+    // Don't know about this device yet, query and cache it.
+    devinfo = (SDL_XInput2DeviceInfo *)SDL_calloc(1, sizeof(SDL_XInput2DeviceInfo));
+    if (!devinfo) {
+        return NULL;
+    }
+
+    int i;
+    XIDeviceInfo *xidevinfo = X11_XIQueryDevice(videodata->display, device_id, &i);
+    if (!xidevinfo) {
+        SDL_free(devinfo);
+        return NULL;
+    }
+
+    xinput2_update_relative_valuators(devinfo, xidevinfo->classes, xidevinfo->num_classes);
     X11_XIFreeDeviceInfo(xidevinfo);
 
+    devinfo->device_id = device_id;
     devinfo->next = videodata->mouse_device_info;
     videodata->mouse_device_info = devinfo;
 
@@ -487,8 +512,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_HierarchyChanged:
     {
         const XIHierarchyEvent *hierev = (const XIHierarchyEvent *)cookie->data;
-        int i;
-        for (i = 0; i < hierev->num_info; i++) {
+        for (int i = 0; i < hierev->num_info; ++i) {
             // pen stuff...
             if ((hierev->info[i].flags & (XISlaveRemoved | XIDeviceDisabled)) != 0) {
                 X11_RemovePenByDeviceID(hierev->info[i].deviceid);  // it's okay if this thing isn't actually a pen, it'll handle it.
@@ -504,9 +528,18 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         videodata->xinput_hierarchy_changed = true;
     } break;
 
-    // !!! FIXME: the pen code used to rescan all devices here, but we can do this device-by-device with XI_HierarchyChanged. When do these events fire and why?
-    //case XI_PropertyEvent:
-    //case XI_DeviceChanged:
+    // !!! FIXME: XI_DeviceChanged fires when device valuator mappings need to be updated. Is XI_PropertyEvent needed for anything?
+    // case XI_PropertyEvent:
+    case XI_DeviceChanged:
+    {
+        const XIDeviceChangedEvent *dcev = (const XIDeviceChangedEvent *)cookie->data;
+        if (dcev->reason == XISlaveSwitch) {
+            SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(videodata, dcev->deviceid);
+            if (devinfo) {
+                xinput2_update_relative_valuators(devinfo, dcev->classes, dcev->num_classes);
+            }
+        }
+    } break;
 
     case XI_PropertyEvent:
     {
@@ -658,6 +691,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     case XI_Enter:
         xinput2_reset_scrollable_valuators();
+        xinput2_reset_relative_valuators(videodata);
         break;
 #endif
 
