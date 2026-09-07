@@ -1317,3 +1317,4 @@ _SDL_RequestOpenHarmonyPermission
 _SDL_GetAudioDeviceProperties
 _SDL_SetSoftwareRendererWindow
 _SDL_SetSoftwareRendererSurface
+_SDL_EncodeURL
