@@ -529,7 +529,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             break; // Pens check for XI_Motion instead
         }
 
-        SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, rawev->deviceid);
+        SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, rawev->sourceid);
         if (!devinfo) {
             break; // oh well.
         }
