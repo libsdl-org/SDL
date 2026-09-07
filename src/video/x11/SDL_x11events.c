@@ -792,13 +792,16 @@ static void X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
     }
 }
 
-static int SelectionRequestErrorHandler(Display *d, XErrorEvent *e)
+static unsigned char x11_last_error;
+static int BadWindowErrorHandler(Display *d, XErrorEvent *e)
 {
-    // Ignore BadWindow, as it can happen during XChangeProperty if the target window was already destroyed.
+    x11_last_error = e->error_code;
+
+    // Ignore BadWindow in cases where it's not fatal.
     if (e->error_code != BadWindow) {
         char err_msg[128];
         X11_XGetErrorText(d, e->error_code, err_msg, sizeof(err_msg));
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Failed to handle SelectionRequest: %hhu (%s)", e->error_code, err_msg);
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "X failed request: %hhu (%s), major opcode: %hhu", e->error_code, err_msg, e->request_code);
     }
     return 0;
 }
@@ -816,7 +819,6 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         // Copy the selection from our own CUTBUFFER to the requested property
     case SelectionRequest:
     {
-        int (*prev_handler)(Display *, XErrorEvent *);
         const XSelectionRequestEvent *req = &xevent->xselectionrequest;
         XEvent sevent;
         int mime_formats;
@@ -838,7 +840,8 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         /* If the requesting window was already destroyed, XChangeProperty can generate a BadWindow
          * error. Register an error handler to catch this, and prevent it from being fatal.
          */
-        prev_handler = X11_XSetErrorHandler(SelectionRequestErrorHandler);
+        x11_last_error = 0;
+        XErrorHandler prev_handler = X11_XSetErrorHandler(BadWindowErrorHandler);
 
         if (req->selection == XA_PRIMARY) {
             clipboard = &videodata->primary_selection;
@@ -1686,13 +1689,29 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             unsigned int NumChildren;
             Window ChildReturn, Root, Parent;
             Window *Children;
-            // Translate these coordinates back to relative to root
+            /* Translate these coordinates back to relative to root.
+             *
+             * XTranslateCoordinates can generate a BadWindow error if called during a racy
+             * reparenting operation, so a non-fatal error handler is required.
+             */
+            x11_last_error = 0;
+            XErrorHandler prev_handler = X11_XSetErrorHandler(BadWindowErrorHandler);
+
             X11_XQueryTree(data->videodata->display, xevent->xconfigure.window, &Root, &Parent, &Children, &NumChildren);
             X11_XTranslateCoordinates(xevent->xconfigure.display,
                                       Parent, DefaultRootWindow(xevent->xconfigure.display),
                                       xevent->xconfigure.x, xevent->xconfigure.y,
                                       &xevent->xconfigure.x, &xevent->xconfigure.y,
                                       &ChildReturn);
+
+            // Make sure the error callback was called if XTranslateCoordinates() failed.
+            X11_XSync(display, False);
+            X11_XSetErrorHandler(prev_handler);
+
+            // If XTranslateCoordinates failed due to a BadWindow error, nothing more to do here.
+            if (x11_last_error == BadWindow) {
+                break;
+            }
         }
 
         /* Some window managers send ConfigureNotify before PropertyNotify when changing state (Xfce and
