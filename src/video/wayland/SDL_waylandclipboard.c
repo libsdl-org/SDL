@@ -65,7 +65,7 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
             SDL_WaylandDataSource *source = Wayland_DataSourceCreate(video_data);
             Wayland_DataSourceSetCallback(source, _this->clipboard_callback, _this->clipboard_userdata, _this->clipboard_sequence);
 
-            result = Wayland_DataDeviceSetSelection(data_device, source, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types);
+            result = Wayland_DataDeviceSetSelectionSource(data_device, source, (const char **)_this->clipboard_mime_types, _this->num_clipboard_mime_types);
             if (!result) {
                 Wayland_DataSourceDestroy(source);
             }

@@ -463,6 +463,8 @@ void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSource *so
     }
 }
 
+static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bool check_origin);
+
 static void offer_source_done_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
 {
     if (!callback) {
@@ -485,7 +487,7 @@ static void offer_source_done_handler(void *data, struct wl_callback *callback, 
         const bool source_is_external = SDL_strncmp(offer->data_device->id_str, id, length) != 0;
         SDL_free(id);
         if (source_is_external) {
-            Wayland_DataOfferNotifyFromMIMEs(offer, false);
+            SelectionOfferNotifyFromMIMEs(offer->data_device, false);
         } else {
             // Recursive data offer; just destroy it.
             SDL_WaylandDataDevice *data_device = offer->data_device;
@@ -528,9 +530,9 @@ static void DataOfferCheckSource(SDL_WaylandDataOffer *offer, const char *mime_t
     }
 }
 
-static void SetCurrentClipboardOffer(SDL_WaylandDataOffer *offer)
+static void UpdateSeatOffers(SDL_WaylandDataDevice *data_device)
 {
-    SDL_WaylandSeat *offer_seat = offer->data_device->seat;
+    SDL_WaylandSeat *offer_seat = data_device->seat;
     SDL_VideoData *video_data = offer_seat->display;
 
     // Clear any existing references to the existing clipboard data before replacing the current offer.
@@ -551,10 +553,12 @@ static void SetCurrentClipboardOffer(SDL_WaylandDataOffer *offer)
     video_data->current_data_offer_seat = offer_seat;
 }
 
-void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_origin)
+static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bool check_origin)
 {
-    int nformats = 0;
+    SDL_WaylandDataOffer *offer = data_device->selection_offer;
     char **new_mime_types = NULL;
+    size_t num_formats = 0;
+
     if (offer) {
         size_t alloc_size = 0;
 
@@ -571,11 +575,11 @@ void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_or
                 return;
             }
 
-            ++nformats;
+            ++num_formats;
             alloc_size += SDL_strlen(item->mime_type) + 1;
         }
 
-        alloc_size += (nformats + 1) * sizeof(char *);
+        alloc_size += (num_formats + 1) * sizeof(char *);
 
         new_mime_types = SDL_AllocateTemporaryMemory(alloc_size);
         if (!new_mime_types) {
@@ -584,7 +588,7 @@ void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_or
         }
 
         // Second pass to fill.
-        char *strPtr = (char *)(new_mime_types + nformats + 1);
+        char *strPtr = (char *)(new_mime_types + num_formats + 1);
         item = NULL;
         int i = 0;
         wl_list_for_each(item, &offer->mimes, link) {
@@ -596,11 +600,22 @@ void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_or
             strPtr = stpcpy(strPtr, item->mime_type) + 1;
             i++;
         }
-        new_mime_types[nformats] = NULL;
+        new_mime_types[num_formats] = NULL;
     }
 
-    SetCurrentClipboardOffer(offer);
-    SDL_SendClipboardUpdate(false, new_mime_types, nformats);
+    UpdateSeatOffers(data_device);
+    SDL_SendClipboardUpdate(false, new_mime_types, num_formats);
+}
+
+void Wayland_DataDeviceSetSelectionOffer(SDL_WaylandDataDevice *data_device, SDL_WaylandDataOffer *offer)
+{
+    // Don't notify when clearing the old selection offer if doing so will inadvertently clear the selection source.
+    const bool notify = offer || (!offer && data_device->selection_offer && (!data_device->selection_offer->callback || !data_device->selection_source));
+    Wayland_DataOfferDestroy(data_device->selection_offer);
+    data_device->selection_offer = offer;
+    if (notify) {
+        SelectionOfferNotifyFromMIMEs(data_device, true);
+    }
 }
 
 void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout)
@@ -726,7 +741,7 @@ void Wayland_PrimarySelectionOfferDestroy(SDL_WaylandPrimarySelectionOffer *offe
     }
 }
 
-bool Wayland_DataDeviceSetSelection(SDL_WaylandDataDevice *data_device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count)
+bool Wayland_DataDeviceSetSelectionSource(SDL_WaylandDataDevice *data_device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count)
 {
     if (!data_device) {
         return SDL_SetError("Invalid Data Device");

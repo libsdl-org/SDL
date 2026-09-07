@@ -130,7 +130,7 @@ extern void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSou
 extern void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout);
 extern void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type, size_t *length);
 extern bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type);
-extern void Wayland_DataOfferNotifyFromMIMEs(SDL_WaylandDataOffer *offer, bool check_origin);
+extern void Wayland_DataDeviceSetSelectionOffer(SDL_WaylandDataDevice *data_device, SDL_WaylandDataOffer *offer);
 extern bool Wayland_PrimarySelectionOfferHasMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type);
 extern bool Wayland_DataOfferAddMIME(SDL_WaylandDataOffer *offer, const char *mime_type);
 extern bool Wayland_PrimarySelectionOfferAddMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type);
@@ -138,7 +138,7 @@ extern void Wayland_DataOfferDestroy(SDL_WaylandDataOffer *offer);
 extern void Wayland_PrimarySelectionOfferDestroy(SDL_WaylandPrimarySelectionOffer *offer);
 
 // Clipboard / Primary Selection
-extern bool Wayland_DataDeviceSetSelection(SDL_WaylandDataDevice *device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count);
+extern bool Wayland_DataDeviceSetSelectionSource(SDL_WaylandDataDevice *device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count);
 extern bool Wayland_PrimarySelectionDeviceSetSelection(SDL_WaylandPrimarySelectionDevice *device, SDL_WaylandPrimarySelectionSource *source, const char *const *mime_types, size_t mime_count);
 extern void Wayland_DataDeviceSetSerial(SDL_WaylandDataDevice *device, uint32_t serial);
 extern void Wayland_PrimarySelectionDeviceSetSerial(SDL_WaylandPrimarySelectionDevice *device, uint32_t serial);
