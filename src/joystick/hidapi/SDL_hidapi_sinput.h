@@ -90,3 +90,15 @@ typedef struct
     Uint16 touch_style;
     Uint16 misc_style;
 } SDL_SInputStyles_t;
+
+/* Pack SInput style values into a single Uint16
+ * (can fit in the version field of the GUID) */
+#define SINPUT_PACK_VERSION(misc, touch, meta, paddle, trigger, bumper, analog) \
+    ((Uint16)(((((((                                                            \
+        (analog)) * SINPUT_BUMPERSTYLE_MAX +                                    \
+        (bumper)) * SINPUT_TRIGGERSTYLE_MAX +                                   \
+        (trigger)) * SINPUT_PADDLESTYLE_MAX +                                   \
+        (paddle)) * SINPUT_METASTYLE_MAX +                                      \
+        (meta)) * SINPUT_TOUCHSTYLE_MAX +                                       \
+        (touch)) * SINPUT_MISCSTYLE_MAX +                                       \
+        (misc)))

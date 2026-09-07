@@ -411,13 +411,7 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
         break;
     }
 
-    int version = analogStyle;
-    version = (version * (int)SINPUT_BUMPERSTYLE_MAX) + bumperStyle;
-    version = (version * (int)SINPUT_TRIGGERSTYLE_MAX) + triggerStyle;
-    version = (version * (int)SINPUT_PADDLESTYLE_MAX) + paddleStyle;
-    version = (version * (int)SINPUT_METASTYLE_MAX) + metaStyle;
-    version = (version * (int)SINPUT_TOUCHSTYLE_MAX) + touchStyle;
-    version = (version * (int)SINPUT_MISCSTYLE_MAX) + miscStyle;
+    Uint16 version = SINPUT_PACK_VERSION(miscStyle, touchStyle, metaStyle, paddleStyle, triggerStyle, bumperStyle, analogStyle);
 
     // Overwrite our button usage masks
     // with our sanitized masks
@@ -425,8 +419,6 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
     ctx->usage_masks[1] = mask[1];
     ctx->usage_masks[2] = mask[2];
     ctx->usage_masks[3] = mask[3];
-
-    version = SDL_clamp(version, 0, UINT16_MAX);
 
     // Overwrite 'Version' field of the GUID data
     device->guid.data[12] = (Uint8)(version & 0xFF);
@@ -460,10 +452,12 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
     // The gamepad type represents a style of gamepad that most closely
     // resembles the gamepad in question (Button style, button layout)
     SDL_GamepadType type = SDL_GAMEPAD_TYPE_UNKNOWN;
-    type = (SDL_GamepadType)SDL_clamp(data[4], SDL_GAMEPAD_TYPE_UNKNOWN, SDL_GAMEPAD_TYPE_COUNT);
+    if (data[4] < SDL_GAMEPAD_TYPE_COUNT) {
+        type = (SDL_GamepadType)data[4];
+    }
     device->type = type;
 
-    // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
+    // The 3 MSB represent a face button layout style
     // The 5 LSB represent a device sub-type
     device->guid.data[15] = data[5];
 

@@ -3622,7 +3622,6 @@ char *SetMappingName(char *mapping, const char *name)
     return RecreateMapping(&parts, mapping);
 }
 
-
 const char *GetGamepadTypeString(SDL_GamepadType type)
 {
     switch (type) {
@@ -3636,6 +3635,16 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "PS4";
     case SDL_GAMEPAD_TYPE_PS5:
         return "PS5";
+    case SDL_GAMEPAD_TYPE_NES:
+        return "NES";
+    case SDL_GAMEPAD_TYPE_SNES:
+        return "SNES";
+    case SDL_GAMEPAD_TYPE_N64:
+        return "N64";
+    case SDL_GAMEPAD_TYPE_GAMECUBE:
+        return "GameCube";
+    case SDL_GAMEPAD_TYPE_WII:
+        return "Wii";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
         return "Nintendo Switch";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
@@ -3644,12 +3653,20 @@ const char *GetGamepadTypeString(SDL_GamepadType type)
         return "Joy-Con (R)";
     case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
         return "Joy-Con Pair";
-    case SDL_GAMEPAD_TYPE_GAMECUBE:
-        return "GameCube";
     case SDL_GAMEPAD_TYPE_STEAM:
         return "Steam";
+    case SDL_GAMEPAD_TYPE_SEGA_GENESIS:
+        return "Sega Genesis";
+    case SDL_GAMEPAD_TYPE_STANDARD:
+        return "Standard";
+    case SDL_GAMEPAD_TYPE_STANDARD_BAYX:
+        return "Standard (BAYX)";
+    case SDL_GAMEPAD_TYPE_STANDARD_AXBY:
+        return "Standard (AXBY)";
+    case SDL_GAMEPAD_TYPE_STANDARD_SONY:
+        return "Standard (Sony)";
     default:
-        return "";
+        return "(unknown)";
     }
 }
 
