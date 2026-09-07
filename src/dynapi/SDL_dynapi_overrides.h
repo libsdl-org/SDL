@@ -1334,3 +1334,4 @@
 #define SDL_JoystickSensorEnabled SDL_JoystickSensorEnabled_REAL
 #define SDL_GetJoystickSensorDataRate SDL_GetJoystickSensorDataRate_REAL
 #define SDL_GetJoystickSensorData SDL_GetJoystickSensorData_REAL
+#define SDL_EncodeURL SDL_EncodeURL_REAL

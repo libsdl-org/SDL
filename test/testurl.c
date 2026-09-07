@@ -13,14 +13,25 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_test.h>
 
-static void tryOpenURL(const char *url)
+static void tryOpenURL(const char *url, bool urlencode, const char *no_encode_chars)
 {
+    char *encoded = NULL;
+    if (urlencode) {
+        encoded = SDL_EncodeURL(url, no_encode_chars);
+        if (!encoded) {
+            SDL_Log("URL encoding failed! %s", SDL_GetError());
+        }
+        url = encoded;
+    }
+
     SDL_Log("Opening '%s' ...", url);
     if (SDL_OpenURL(url)) {
         SDL_Log("  success!");
     } else {
         SDL_Log("  failed! %s", SDL_GetError());
     }
+
+    SDL_free(encoded);
 }
 
 int main(int argc, char **argv)
@@ -28,6 +39,8 @@ int main(int argc, char **argv)
     const char *url = NULL;
     SDLTest_CommonState *state = SDLTest_CommonCreateState(argv, 0);
     bool use_gui = false;
+    bool urlencode = false;
+    const char *no_encode_chars = NULL;
 
     /* Parse commandline */
     for (int i = 1; i < argc;) {
@@ -41,11 +54,19 @@ int main(int argc, char **argv)
             } else if (SDL_strcasecmp(argv[i], "--gui") == 0) {
                 use_gui = true;
                 consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--urlencode") == 0) {
+                urlencode = true;
+                consumed = 1;
+            } else if (SDL_strcasecmp(argv[i], "--no-encode-chars") == 0) {
+                no_encode_chars = argv[i + 1];
+                consumed = 2;
             }
         }
         if (consumed <= 0) {
             static const char *options[] = {
-                "[--gui]"
+                "[--gui]",
+                "[--urlencode]",
+                "[--no-encode-chars ...]",
                 "[URL [...]]",
                 NULL,
             };
@@ -61,7 +82,7 @@ int main(int argc, char **argv)
     }
 
     if (!use_gui) {
-        tryOpenURL(url);
+        tryOpenURL(url, urlencode, no_encode_chars);
     } else {
         SDL_Event event;
         bool quit = false;
@@ -70,7 +91,7 @@ int main(int argc, char **argv)
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_EVENT_KEY_DOWN) {
                     if (event.key.key == SDLK_SPACE) {
-                        tryOpenURL(url);
+                        tryOpenURL(url, urlencode, no_encode_chars);
                     } else if (event.key.key == SDLK_ESCAPE) {
                         quit = true;
                     }
