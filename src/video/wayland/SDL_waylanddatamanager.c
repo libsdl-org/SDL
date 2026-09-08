@@ -589,6 +589,8 @@ static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bo
 
         // Second pass to fill.
         char *strPtr = (char *)(new_mime_types + num_formats + 1);
+        alloc_size -= (uintptr_t)strPtr - (uintptr_t)new_mime_types;
+
         item = NULL;
         int i = 0;
         wl_list_for_each(item, &offer->mimes, link) {
@@ -596,9 +598,10 @@ static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bo
                 continue;
             }
 
-            new_mime_types[i] = strPtr;
-            strPtr = stpcpy(strPtr, item->mime_type) + 1;
-            i++;
+            new_mime_types[i++] = strPtr;
+            const size_t len = SDL_strlcpy(strPtr, item->mime_type, alloc_size) + 1;
+            strPtr += len;
+            alloc_size -= len;
         }
         new_mime_types[num_formats] = NULL;
     }

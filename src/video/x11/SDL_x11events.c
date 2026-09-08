@@ -937,11 +937,14 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
             char **new_mime_types = SDL_AllocateTemporaryMemory(allocationsize);
             if (new_mime_types) {
                 char *strPtr = (char *)(new_mime_types + length + 1);
+                allocationsize -= (uintptr_t)strPtr - (uintptr_t)new_mime_types;
 
                 for (j = 0, patom = (Atom *)data; j < length; j++, patom++) {
                     char *atomStr = X11_XGetAtomName(display, *patom);
                     new_mime_types[j] = strPtr;
-                    strPtr = stpcpy(strPtr, atomStr) + 1;
+                    const size_t len = SDL_strlcpy(strPtr, atomStr, allocationsize) + 1;
+                    strPtr += len;
+                    allocationsize -= len;
                     X11_XFree(atomStr);
                 }
                 new_mime_types[length] = NULL;
