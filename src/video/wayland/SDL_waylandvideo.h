@@ -111,6 +111,7 @@ struct SDL_DisplayData
     struct wp_color_management_output_v1 *wp_color_management_output;
     char *wl_output_name;
     double scale_factor;
+    int integer_scale_factor; // The integer scale factor set by wl_output.
     uint32_t registry_id;
     int logical_width, logical_height;
     int pixel_width, pixel_height;
