@@ -1245,7 +1245,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, v
 #ifdef SDL_HAVE_YUV
             case SDL_PIXELFORMAT_IYUV:
             case SDL_PIXELFORMAT_YV12:
-            case SDL_PIXELFORMAT_P408:
+            case SDL_PIXELFORMAT_I444:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_YUV;
                 break;
             case SDL_PIXELFORMAT_NV12:
@@ -1284,7 +1284,7 @@ static bool SetCopyState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, v
 #ifdef SDL_HAVE_YUV
         case SDL_PIXELFORMAT_IYUV:
         case SDL_PIXELFORMAT_YV12:
-        case SDL_PIXELFORMAT_P408:
+        case SDL_PIXELFORMAT_I444:
             sourceType = GLES2_IMAGESOURCE_TEXTURE_YUV;
             break;
         case SDL_PIXELFORMAT_NV12:
@@ -1747,7 +1747,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 #ifdef SDL_HAVE_YUV
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
 #endif
@@ -1786,7 +1786,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     data->pixel_format = format;
     data->pixel_type = type;
 #ifdef SDL_HAVE_YUV
-    data->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12) || (texture->format == SDL_PIXELFORMAT_P408));
+    data->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12) || (texture->format == SDL_PIXELFORMAT_I444));
     data->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
 #endif
     data->texture_scale_mode = texture->scaleMode;
@@ -1801,7 +1801,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 #ifdef SDL_HAVE_YUV
         if (data->yuv) {
             // Need to add size for the U and V planes
-            if (texture->format == SDL_PIXELFORMAT_P408) {
+            if (texture->format == SDL_PIXELFORMAT_I444) {
                 size += 2 * texture->h * data->pitch;
             } else {
                 size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
@@ -1829,7 +1829,7 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
 #ifdef SDL_HAVE_YUV
     if (data->yuv) {
         int yuv_texture_w, yuv_texture_h;
-        if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (texture->format == SDL_PIXELFORMAT_I444) {
             yuv_texture_w = texture->w;
             yuv_texture_h = texture->h;
         } else {
@@ -2031,7 +2031,7 @@ static bool GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 
 #ifdef SDL_HAVE_YUV
     if (tdata->yuv) {
-        if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (texture->format == SDL_PIXELFORMAT_I444) {
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
             data->glBindTexture(tdata->texture_type, tdata->texture_u);
@@ -2121,7 +2121,7 @@ static bool GLES2_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
 
     data->drawstate.texture = NULL; // we trash this state.
 
-    if (texture->format == SDL_PIXELFORMAT_P408) {
+    if (texture->format == SDL_PIXELFORMAT_I444) {
         data->glBindTexture(tdata->texture_type, tdata->texture_v);
         GLES2_TexSubImage2D(data, tdata->texture_type,
                             rect->x, rect->y,
@@ -2468,7 +2468,7 @@ static bool GLES2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 #ifdef SDL_HAVE_YUV
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I444);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
 #endif

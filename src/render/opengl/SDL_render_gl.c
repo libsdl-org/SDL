@@ -435,7 +435,7 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
     case SDL_PIXELFORMAT_INDEX8:
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         *internalFormat = GL_LUMINANCE;
@@ -594,7 +594,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
             // Need to add size for the U and V planes
             size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
         }
-        if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (texture->format == SDL_PIXELFORMAT_I444) {
             // Need to add size for the U and V planes
             size += 2 * texture->h * data->pitch;
         }
@@ -729,7 +729,7 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_V_NUMBER, data->vtexture);
     }
 
-    if (texture->format == SDL_PIXELFORMAT_P408) {
+    if (texture->format == SDL_PIXELFORMAT_I444) {
         data->yuv = true;
 
         data->utexture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_U_NUMBER, 0);
@@ -841,7 +841,7 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 pixels);
 #ifdef SDL_HAVE_YUV
     if (data->yuv) {
-        if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (texture->format == SDL_PIXELFORMAT_I444) {
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
             renderdata->glBindTexture(textype, data->utexture);
@@ -916,7 +916,7 @@ static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                 rect->h, data->format, data->formattype,
                                 Yplane);
 
-    if (texture->format == SDL_PIXELFORMAT_P408) {
+    if (texture->format == SDL_PIXELFORMAT_I444) {
         renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w, rect->h,
@@ -2037,7 +2037,7 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         data->num_texture_units >= 3) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I444);
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL YUV not supported");
     }

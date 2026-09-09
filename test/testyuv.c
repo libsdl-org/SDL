@@ -15,7 +15,7 @@
 #include "testyuv_cvt.h"
 #include "testutils.h"
 
-/* 422 (YUY2, etc) and P416 formats are the largest */
+/* 422 (YUY2, etc) and I4FL formats are the largest */
 #define MAX_YUV_SURFACE_SIZE(W, H, P) ((H + 1) * ((W + 1) + P) * 3 * 2)
 
 /* Return true if the YUV format is packed pixels */
@@ -109,7 +109,7 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
     const Uint32 formats[] = {
         SDL_PIXELFORMAT_YV12,
         SDL_PIXELFORMAT_IYUV,
-        SDL_PIXELFORMAT_P408,
+        SDL_PIXELFORMAT_I444,
         SDL_PIXELFORMAT_NV12,
         SDL_PIXELFORMAT_NV21,
         SDL_PIXELFORMAT_YUY2,
@@ -165,7 +165,7 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
     /* Verify conversion between YUV formats */
     for (i = 0; i < SDL_arraysize(formats); ++i) {
         for (j = 0; j < SDL_arraysize(formats); ++j) {
-            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_P408 || formats[j] == SDL_PIXELFORMAT_P408)) {
+            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_I444 || formats[j] == SDL_PIXELFORMAT_I444)) {
                 // Converting between 444 and 420 formats is lossy and not currently supported
                 continue;
             }
@@ -195,7 +195,7 @@ static bool run_automated_tests(int pattern_size, int extra_pitch)
                 continue;
             }
 
-            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_P408 || formats[j] == SDL_PIXELFORMAT_P408)) {
+            if (formats[i] != formats[j] && (formats[i] == SDL_PIXELFORMAT_I444 || formats[j] == SDL_PIXELFORMAT_I444)) {
                 // Converting between 444 and 420 formats is lossy and not currently supported
                 continue;
             }
@@ -469,7 +469,7 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         SDL_free(plane0);
         SDL_free(plane1);
         SDL_free(plane2);
-    } else if (planar && (yuv_format == SDL_PIXELFORMAT_P408 || yuv_format == SDL_PIXELFORMAT_P416)) {
+    } else if (planar && (yuv_format == SDL_PIXELFORMAT_I444 || yuv_format == SDL_PIXELFORMAT_I4FL)) {
         const int rows = original->h;
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + rows * pitch;
@@ -644,7 +644,7 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
     const SDL_PixelFormat yuv_formats[] = {
         SDL_PIXELFORMAT_YV12,
         SDL_PIXELFORMAT_IYUV,
-        SDL_PIXELFORMAT_P408,
+        SDL_PIXELFORMAT_I444,
         SDL_PIXELFORMAT_YUY2,
         SDL_PIXELFORMAT_UYVY,
         SDL_PIXELFORMAT_YVYU,
@@ -906,8 +906,8 @@ int main(int argc, char **argv)
             } else if (SDL_strcmp(argv[i], "--iyuv") == 0) {
                 yuv_format = SDL_PIXELFORMAT_IYUV;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--p408") == 0) {
-                yuv_format = SDL_PIXELFORMAT_P408;
+            } else if (SDL_strcmp(argv[i], "--i444") == 0) {
+                yuv_format = SDL_PIXELFORMAT_I444;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--yuy2") == 0) {
                 yuv_format = SDL_PIXELFORMAT_YUY2;
@@ -929,8 +929,8 @@ int main(int argc, char **argv)
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--p416") == 0) {
-                yuv_format = SDL_PIXELFORMAT_P416;
+            } else if (SDL_strcmp(argv[i], "--i4fl") == 0) {
+                yuv_format = SDL_PIXELFORMAT_I4FL;
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
@@ -981,7 +981,7 @@ int main(int argc, char **argv)
         if (consumed <= 0) {
             static const char *options[] = {
                 "[--jpeg|--bt601|--bt709|--auto]",
-                "[--yv12|--iyuv|--p408|--yuy2|--uyvy|--yvyu|--nv12|--nv21|--p010|--p416]",
+                "[--yv12|--iyuv|--i444|--yuy2|--uyvy|--yvyu|--nv12|--nv21|--p010|--i4fl]",
                 "[--rgb555|--rgb565|--rgb24|--argb|--abgr|--rgba|--bgra]",
                 "[--monochrome] [--luminance N%] [--planar]",
                 "[--automated] [--colorspace-test] [--renderer NAME]",

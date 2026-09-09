@@ -35,8 +35,8 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
     case SDL_PIXELFORMAT_YUY2:
     case SDL_PIXELFORMAT_UYVY:
     case SDL_PIXELFORMAT_YVYU:
@@ -82,8 +82,8 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
         swdata->planes[1] = swdata->planes[0] + swdata->pitches[0] * h;
         swdata->planes[2] = swdata->planes[1] + swdata->pitches[1] * ((h + 1) / 2);
         break;
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
         swdata->pitches[0] = w * SDL_BYTESPERPIXEL(format);
         swdata->pitches[1] = swdata->pitches[0];
         swdata->pitches[2] = swdata->pitches[1];
@@ -171,8 +171,8 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
             }
         }
         break;
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
         if (rect->x == 0 && rect->y == 0 &&
             rect->w == swdata->w && rect->h == swdata->h && pitch == swdata->pitches[0]) {
             SDL_memcpy(swdata->pixels, pixels, (size_t)(swdata->h * pitch * 3));
@@ -294,8 +294,8 @@ bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *re
 
     // Copy the U plane
     src = Uplane;
-    if (swdata->format == SDL_PIXELFORMAT_P408 ||
-        swdata->format == SDL_PIXELFORMAT_P416) {
+    if (swdata->format == SDL_PIXELFORMAT_I444 ||
+        swdata->format == SDL_PIXELFORMAT_I4FL) {
         dst = swdata->pixels + swdata->h * swdata->pitches[0];
         dst += rect->y * swdata->pitches[1] + rect->x * bpp;
         length = rect->w * bpp;
@@ -322,8 +322,8 @@ bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *re
 
     // Copy the V plane
     src = Vplane;
-    if (swdata->format == SDL_PIXELFORMAT_P408 ||
-        swdata->format == SDL_PIXELFORMAT_P416) {
+    if (swdata->format == SDL_PIXELFORMAT_I444 ||
+        swdata->format == SDL_PIXELFORMAT_I4FL) {
         dst = swdata->pixels + swdata->h * swdata->pitches[0] + swdata->h * swdata->pitches[1];
         dst += rect->y * swdata->pitches[2] + rect->x * bpp;
         length = rect->w * bpp;
@@ -390,12 +390,12 @@ bool SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
     switch (swdata->format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         if (rect && (rect->x != 0 || rect->y != 0 || rect->w != swdata->w || rect->h != swdata->h)) {
-            return SDL_SetError("YV12, IYUV, P408, P416, NV12, NV21 textures only support full surface locks");
+            return SDL_SetError("YV12, IYUV, I444, I4FL, NV12, NV21 textures only support full surface locks");
         }
         break;
     default:

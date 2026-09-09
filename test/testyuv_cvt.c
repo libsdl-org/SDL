@@ -237,10 +237,10 @@ static void ConvertRGBtoPlanar1x1(Uint32 format, Uint8 *src, int pitch, Uint8 *o
     U = (Y + h * w * yuv_bytes_per_pixel);
     V = (U + h * w * yuv_bytes_per_pixel);
     switch (format) {
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
         yuv_bits = 8;
         break;
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I4FL:
         yuv_bits = 16;
         break;
     default:
@@ -252,7 +252,7 @@ static void ConvertRGBtoPlanar1x1(Uint32 format, Uint8 *src, int pitch, Uint8 *o
         for (x = 0; x < w; ++x) {
             RGBtoYUV(rgb, 8, yuv, yuv_bits, mode, monochrome, luminance);
             rgb += 3;
-            if (format == SDL_PIXELFORMAT_P408) {
+            if (format == SDL_PIXELFORMAT_I444) {
                 *Y = (Uint8)yuv[0];
                 *U = (Uint8)yuv[1];
                 *V = (Uint8)yuv[2];
@@ -564,8 +564,8 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
 bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
         ConvertRGBtoPlanar1x1(format, src, pitch, out, w, h, mode, monochrome, luminance);
         return true;
     case SDL_PIXELFORMAT_P010:
@@ -591,11 +591,11 @@ int CalculateYUVPitch(Uint32 format, int width)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I4FL:
         return width * 2;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return width;
