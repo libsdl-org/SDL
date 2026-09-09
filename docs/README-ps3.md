@@ -38,8 +38,5 @@ Use ps3loadx installed on PS3 and ps3load compiled from ps3toolchain to run and 
 [RPCS3](https://github.com/RPCS3/rpcs3)
 
 ## To Do
-- PS3 Screen Keyboard
-- PS3 Screen Mouse
 - Handle video mode/resolution change
-- Render target Ex
 - Filesystem

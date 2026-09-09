@@ -24,8 +24,6 @@
 
 #include "../../events/SDL_events_c.h"
 #include "SDL_ps3events_c.h"
-#include "SDL_ps3keyboard_c.h"
-#include "SDL_ps3mouse_c.h"
 #include "SDL_ps3video.h"
 
 #include <sysutil/sysutil.h>
@@ -78,8 +76,6 @@ static void sysWindowCallback(u64 event, u64 param, void *userdata)
 void PS3_PumpEvents(SDL_VideoDevice *_this)
 {
     sysUtilCheckCallback();
-    // PS3_PumpKeyboard(_this);
-    // PS3_PumpMouse();
 }
 
 void PS3_InitSysEvent(SDL_VideoDevice *_this)
@@ -90,18 +86,13 @@ void PS3_InitSysEvent(SDL_VideoDevice *_this)
 
     // Init window events handler.
     sysUtilRegisterCallback(SYSUTIL_EVENT_SLOT1, sysWindowCallback, _this);
-
-    // PS3_InitKeyboard(_this);
-    // PS3_InitMouse();
 }
 
 void PS3_QuitSysEvent(SDL_VideoDevice *_this)
 {
     sysUtilUnregisterCallback(SYSUTIL_EVENT_SLOT1);
-    // videoOutUnregisterCallback(0);
-    videoConfigure(0, NULL, NULL, 0); // reset video output
-    // PS3_QuitKeyboard(_this);
-    // PS3_QuitMouse();
+    // Reset video output
+    videoConfigure(0, NULL, NULL, 0);
 }
 
 #endif // SDL_VIDEO_DRIVER_PS3

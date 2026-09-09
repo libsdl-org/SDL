@@ -38,7 +38,7 @@
 #include "SDL_ps3modes_c.h"
 #include "SDL_ps3video.h"
 
-#include <stdlib.h>
+#include <malloc.h>
 
 #include <rsx/gcm_sys.h>
 #include <rsx/mm.h>

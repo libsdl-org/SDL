@@ -84,9 +84,9 @@ static bool PS3AUDIO_OpenDevice(SDL_AudioDevice *device)
     // PS3 audio block is always 256 samples
     device->sample_frames = 256;
 
-    /* Allocate the mixing buffer. Its size and starting address must
-    be a multiple of 64 bytes.  Our sample count is already a multiple of
-    64, so spec->size should be a multiple of 64 as well. */
+    // Allocate the mixing buffer. Its size and starting address must
+    // be a multiple of 64 bytes.  Our sample count is already a multiple of
+    // 64, so spec->size should be a multiple of 64 as well.
     const int mixlen = device->buffer_size * NUM_BUFFERS;
     device->hidden->rawbuf = (Uint8 *)SDL_aligned_alloc(64, mixlen);
     if (!device->hidden->rawbuf) {
@@ -107,7 +107,7 @@ static bool PS3AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
     u32 block_index = hwdata->last_filled_buf % hwdata->params.numBlocks;
 
-    float *dst = (float *)hwdata->config.audioDataStart + block_index * device->sample_frames * hwdata->config.channelCount;
+    float *dst = (float *)(hwdata->config.audioDataStart + block_index * device->sample_frames * hwdata->config.channelCount);
 
     SDL_memcpy(dst, buffer, buflen);
 

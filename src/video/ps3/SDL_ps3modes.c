@@ -25,7 +25,6 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_ps3video.h"
 
-
 bool PS3_InitModes(SDL_VideoDevice *_this)
 {
     SDL_DisplayMode mode;

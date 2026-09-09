@@ -29,4 +29,4 @@ extern void PS3_PumpEvents(SDL_VideoDevice *_this);
 extern void PS3_InitSysEvent(SDL_VideoDevice *_this);
 extern void PS3_QuitSysEvent(SDL_VideoDevice *_this);
 
-#endif
+#endif // _SDL_ps3events_h
