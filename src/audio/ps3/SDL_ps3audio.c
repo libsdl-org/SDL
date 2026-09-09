@@ -107,7 +107,7 @@ static bool PS3AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, in
 
     u32 block_index = hwdata->last_filled_buf % hwdata->params.numBlocks;
 
-    float *dst = (float *)(hwdata->config.audioDataStart + block_index * device->sample_frames * hwdata->config.channelCount);
+    float *dst = (float *)(uintptr_t)hwdata->config.audioDataStart + block_index * device->sample_frames * hwdata->config.channelCount;
 
     SDL_memcpy(dst, buffer, buflen);
 
