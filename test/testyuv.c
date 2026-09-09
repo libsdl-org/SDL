@@ -415,16 +415,16 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s", SDL_GetError());
         goto done;
     }
-    if (planar && (yuv_format == SDL_PIXELFORMAT_YV12 || yuv_format == SDL_PIXELFORMAT_IYUV)) {
+    if (planar && (yuv_format == SDL_PIXELFORMAT_YV12 || yuv_format == SDL_PIXELFORMAT_IYUV || yuv_format == SDL_PIXELFORMAT_I0FL)) {
         const int Yrows = original->h;
         const int UVrows = ((original->h + 1) / 2);
         const int src_Ypitch = pitch;
-        const int src_UVpitch = ((pitch + 1) / 2);
+        const int src_UVpitch = ((pitch + 1 * SDL_BYTESPERPIXEL(yuv_format)) / 2);
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
         const Uint8 *src_plane2 = src_plane1 + UVrows * src_UVpitch;
         const int Ypitch = pitch + 37;
-        const int UVpitch = ((Ypitch + 1) / 2);
+        const int UVpitch = ((Ypitch + 1 * SDL_BYTESPERPIXEL(yuv_format)) / 2);
         Uint8 *plane0 = (Uint8 *)SDL_calloc(1, Yrows * Ypitch);
         Uint8 *plane1 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
         Uint8 *plane2 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
@@ -926,6 +926,11 @@ int main(int argc, char **argv)
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--p010") == 0) {
                 yuv_format = SDL_PIXELFORMAT_P010;
+                rgb_format = SDL_PIXELFORMAT_XBGR2101010;
+                SetYUVConversionMode(YUV_CONVERSION_BT2020);
+                consumed = 1;
+            } else if (SDL_strcmp(argv[i], "--i0fl") == 0) {
+                yuv_format = SDL_PIXELFORMAT_I0FL;
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;

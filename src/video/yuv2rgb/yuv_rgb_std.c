@@ -175,6 +175,11 @@ static uint16_t clamp16(int32_t v)
 #undef YUV_BITS
 #define YUV_BITS    16
 
+#define STD_FUNCTION_NAME	yuvi0fl_rgb48_std
+#define YUV_FORMAT			YUV_FORMAT_420
+#define RGB_FORMAT			RGB_FORMAT_RGB48
+#include "yuv_rgb_std_func.h"
+
 #define STD_FUNCTION_NAME	yuvi4fl_rgb48_std
 #define YUV_FORMAT			YUV_FORMAT_444
 #define RGB_FORMAT			RGB_FORMAT_RGB48

@@ -34,7 +34,12 @@ static bool IsPlanar1x1Format(SDL_PixelFormat format)
 
 static bool IsPlanar2x2Format(SDL_PixelFormat format)
 {
-    return format == SDL_PIXELFORMAT_YV12 || format == SDL_PIXELFORMAT_IYUV || format == SDL_PIXELFORMAT_NV12 || format == SDL_PIXELFORMAT_NV21 || format == SDL_PIXELFORMAT_P010;
+    return format == SDL_PIXELFORMAT_YV12 ||
+           format == SDL_PIXELFORMAT_IYUV ||
+           format == SDL_PIXELFORMAT_NV12 ||
+           format == SDL_PIXELFORMAT_NV21 ||
+           format == SDL_PIXELFORMAT_P010 ||
+           format == SDL_PIXELFORMAT_I0FL;
 }
 
 static bool IsPacked4Format(Uint32 format)
@@ -65,16 +70,19 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
         sz_plane_chroma = sz_plane;
     } else if (IsPlanar2x2Format(format)) {
         {
-            /* sz_plane == w * h; */
+            /* sz_plane == w * h * bpp; */
             size_t s1;
             if (!SDL_size_mul_check_overflow(w, h, &s1)) {
                 return SDL_SetError("width * height would overflow");
             }
-            sz_plane = (int) s1;
+            if (!SDL_size_mul_check_overflow(s1, SDL_BYTESPERPIXEL(format), &s1)) {
+                return SDL_SetError("width * height * bpp would overflow");
+            }
+            sz_plane = (int)s1;
         }
 
         {
-            /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2); */
+            /* sz_plane_chroma == ((w + 1) / 2) * ((h + 1) / 2) * bpp; */
             size_t s1, s2, s3;
             if (!SDL_size_add_check_overflow(w, 1, &s1)) {
                 return SDL_SetError("width + 1 would overflow");
@@ -87,7 +95,10 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             if (!SDL_size_mul_check_overflow(s1, s2, &s3)) {
                 return SDL_SetError("width * height would overflow");
             }
-            sz_plane_chroma = (int) s3;
+            if (!SDL_size_mul_check_overflow(s3, SDL_BYTESPERPIXEL(format), &s3)) {
+                return SDL_SetError("width * height * bpp would overflow");
+            }
+            sz_plane_chroma = (int)s3;
         }
     } else {
         /* sz_plane_packed == ((w + 1) / 2) * h; */
@@ -105,8 +116,9 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
     switch (format) {
     case SDL_PIXELFORMAT_YV12: /**< Planar mode: Y + V + U  (3 planes) */
     case SDL_PIXELFORMAT_IYUV: /**< Planar mode: Y + U + V  (3 planes) */
-    case SDL_PIXELFORMAT_I444:
-    case SDL_PIXELFORMAT_I4FL:
+    case SDL_PIXELFORMAT_I444: /**< Planar mode: Y + U + V  (3 planes) */
+    case SDL_PIXELFORMAT_I0FL: /**< Planar mode: Y + U + V  (3 planes) */
+    case SDL_PIXELFORMAT_I4FL: /**< Planar mode: Y + U + V  (3 planes) */
 
         if (pitch) {
             *pitch = w * SDL_BYTESPERPIXEL(format);
@@ -223,9 +235,10 @@ static bool GetYUVPlanes(int width, int height, SDL_PixelFormat format, const vo
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_I0FL:
         pitches[0] = yuv_pitch;
-        pitches[1] = (pitches[0] + 1) / 2;
-        pitches[2] = (pitches[0] + 1) / 2;
+        pitches[1] = (pitches[0] + 1 * SDL_BYTESPERPIXEL(format)) / 2;
+        pitches[2] = pitches[1];
         planes[0] = (const Uint8 *)yuv;
         planes[1] = planes[0] + pitches[0] * height;
         planes[2] = planes[1] + pitches[1] * ((height + 1) / 2);
@@ -273,6 +286,7 @@ static bool GetYUVPlanes(int width, int height, SDL_PixelFormat format, const vo
         break;
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I0FL:
     case SDL_PIXELFORMAT_I4FL:
         *y = planes[0];
         *y_stride = pitches[0];
@@ -635,6 +649,16 @@ static bool yuv_rgb_std(
         }
     }
 
+    if (src_format == SDL_PIXELFORMAT_I0FL) {
+        switch (dst_format) {
+        case SDL_PIXELFORMAT_RGB48:
+            yuvi0fl_rgb48_std(width, height, (const uint16_t *)y, (const uint16_t *)u, (const uint16_t *)v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            return true;
+        default:
+            break;
+        }
+    }
+
     if (src_format == SDL_PIXELFORMAT_I4FL) {
         switch (dst_format) {
         case SDL_PIXELFORMAT_RGB48:
@@ -702,7 +726,7 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
         return result;
     }
 
-    if (src_format == SDL_PIXELFORMAT_I4FL && dst_format != SDL_PIXELFORMAT_RGB48) {
+    if ((src_format == SDL_PIXELFORMAT_I0FL || src_format == SDL_PIXELFORMAT_I4FL) && dst_format != SDL_PIXELFORMAT_RGB48) {
         bool result;
         void *tmp;
         int tmp_pitch = (width * 3 * sizeof(Uint16));
