@@ -166,8 +166,9 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
 
     case SDL_PIXELFORMAT_NV12: /**< Planar mode: Y + U/V interleaved  (2 planes) */
     case SDL_PIXELFORMAT_NV21: /**< Planar mode: Y + V/U interleaved  (2 planes) */
+    case SDL_PIXELFORMAT_P010: /**< Planar mode: Y + U/V interleaved, 10 bit  (2 planes) */
         if (pitch) {
-            *pitch = w;
+            *pitch = w * SDL_BYTESPERPIXEL(format);
         }
 
         if (size) {
@@ -237,7 +238,7 @@ static bool GetYUVPlanes(int width, int height, SDL_PixelFormat format, const vo
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_I0FL:
         pitches[0] = yuv_pitch;
-        pitches[1] = (pitches[0] + 1 * SDL_BYTESPERPIXEL(format)) / 2;
+        pitches[1] = ((pitches[0] / SDL_BYTESPERPIXEL(format) + 1) / 2) * SDL_BYTESPERPIXEL(format);
         pitches[2] = pitches[1];
         planes[0] = (const Uint8 *)yuv;
         planes[1] = planes[0] + pitches[0] * height;
@@ -1353,43 +1354,39 @@ static bool SDL_ConvertPixels_YUV_to_YUV_Copy(int width, int height, SDL_PixelFo
     }
 
     if (IsPlanar2x2Format(format)) {
+        const int bpp = SDL_BYTESPERPIXEL(format);
+
         // Y plane
+        const size_t length = width * bpp;
         for (i = height; i--;) {
-            SDL_memcpy(dst, src, width);
+            SDL_memcpy(dst, src, length);
             src = (const Uint8 *)src + src_pitch;
             dst = (Uint8 *)dst + dst_pitch;
         }
 
-        if (format == SDL_PIXELFORMAT_YV12 || format == SDL_PIXELFORMAT_IYUV) {
+        if (format == SDL_PIXELFORMAT_YV12 ||
+            format == SDL_PIXELFORMAT_IYUV ||
+            format == SDL_PIXELFORMAT_I0FL) {
             // U and V planes are a quarter the size of the Y plane, rounded up
-            width = (width + 1) / 2;
+            width = ((width + 1) / 2) * bpp;
             height = (height + 1) / 2;
-            src_pitch = (src_pitch + 1) / 2;
-            dst_pitch = (dst_pitch + 1) / 2;
+            src_pitch = ((src_pitch / bpp + 1) / 2) * bpp;
+            dst_pitch = ((dst_pitch / bpp + 1) / 2) * bpp;
             for (i = height * 2; i--;) {
                 SDL_memcpy(dst, src, width);
                 src = (const Uint8 *)src + src_pitch;
                 dst = (Uint8 *)dst + dst_pitch;
             }
-        } else if (format == SDL_PIXELFORMAT_NV12 || format == SDL_PIXELFORMAT_NV21) {
-            // U/V plane is half the height of the Y plane, rounded up
+        } else if (format == SDL_PIXELFORMAT_NV12 ||
+                   format == SDL_PIXELFORMAT_NV21 ||
+                   format == SDL_PIXELFORMAT_P010) {
+            // U/V plane is half the height of the Y plane, rounded up, with packed CrCb
+            width = ((width + 1) / 2) * 2 * bpp;
             height = (height + 1) / 2;
-            width = ((width + 1) / 2) * 2;
-            src_pitch = ((src_pitch + 1) / 2) * 2;
-            dst_pitch = ((dst_pitch + 1) / 2) * 2;
+            src_pitch = ((src_pitch / bpp + 1) / 2) * 2 * bpp;
+            dst_pitch = ((dst_pitch / bpp + 1) / 2) * 2 * bpp;
             for (i = height; i--;) {
                 SDL_memcpy(dst, src, width);
-                src = (const Uint8 *)src + src_pitch;
-                dst = (Uint8 *)dst + dst_pitch;
-            }
-        } else if (format == SDL_PIXELFORMAT_P010) {
-            // U/V plane is half the height of the Y plane, rounded up
-            height = (height + 1) / 2;
-            width = ((width + 1) / 2) * 2;
-            src_pitch = ((src_pitch + 1) / 2) * 2;
-            dst_pitch = ((dst_pitch + 1) / 2) * 2;
-            for (i = height; i--;) {
-                SDL_memcpy(dst, src, width * sizeof(Uint16));
                 src = (const Uint8 *)src + src_pitch;
                 dst = (Uint8 *)dst + dst_pitch;
             }

@@ -28,6 +28,7 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 
 #include <d3d11_1.h>
 #ifdef HAVE_DXGI1_5_H
@@ -1608,8 +1609,9 @@ static bool D3D11_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                 return false;
             }
         } else {
-            int Ypitch = srcPitch;
-            int UVpitch = ((Ypitch + 1 * SDL_BYTESPERPIXEL(texture->format)) / 2);
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int Ypitch = srcPitch;
+            const int UVpitch = ((Ypitch / bpp + 1) / 2) * bpp;
             const Uint8 *plane0 = (const Uint8 *)srcPixels;
             const Uint8 *plane1 = plane0 + rect->h * Ypitch;
             const Uint8 *plane2 = plane1 + ((rect->h + 1) / 2) * UVpitch;
@@ -1795,8 +1797,12 @@ static bool D3D11_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (textureData->yuv || textureData->nv12) {
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
-            textureData->pitch = texture->w;
-            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            size_t size, calculated_calculated_pitch;
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &calculated_calculated_pitch)) {
+                return false;
+            }
+            textureData->pitch = (int)calculated_calculated_pitch;
+            textureData->pixels = (Uint8 *)SDL_malloc(size);
             if (!textureData->pixels) {
                 return false;
             }

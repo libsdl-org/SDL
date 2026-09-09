@@ -24,6 +24,7 @@
 
 #include "../SDL_sysrender.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 
 #import <CoreVideo/CoreVideo.h>
 #import <Metal/Metal.h>
@@ -1003,13 +1004,14 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             // YV12 stores V before U, so the plane order is swapped for it.
             id<MTLTexture> firstplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureV : texturedata.mtltextureU;
             id<MTLTexture> secondplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureU : texturedata.mtltextureV;
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
             int UVpitch;
             SDL_Rect UVrect;
             if (texture->format == SDL_PIXELFORMAT_I444 || texture->format == SDL_PIXELFORMAT_I4FL) {
                 UVpitch = pitch;
                 UVrect = *rect;
             } else {
-                UVpitch = (pitch + 1 * SDL_BYTESPERPIXEL(texture->format)) / 2;
+                UVpitch = ((pitch / bpp + 1) / 2) * bpp;
                 UVrect.x = rect->x / 2;
                 UVrect.y = rect->y / 2;
                 UVrect.w = (rect->w + 1) / 2;
@@ -1030,8 +1032,9 @@ static bool METAL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
 
         if (texturedata.nv12) {
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int UVpitch = ((pitch / bpp + 1) / 2) * 2 * bpp;
             SDL_Rect UVrect = { rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2 };
-            int UVpitch = 2 * ((pitch + 1) / 2);
 
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
@@ -1121,24 +1124,26 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     @autoreleasepool {
         SDL3METAL_RenderData *data = (__bridge SDL3METAL_RenderData *)renderer->internal;
         SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
-        int buffersize = 0;
         id<MTLBuffer> lockedbuffer = nil;
+        size_t size, calculated_pitch;
 
         if (rect->w <= 0 || rect->h <= 0) {
             return SDL_SetError("Invalid rectangle dimensions for LockTexture.");
         }
 
-        *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
 #ifdef SDL_HAVE_YUV
         if (texturedata.yuv || texturedata.nv12) {
-            buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
+            if (!SDL_CalculateYUVSize(texture->format, rect->w, rect->h, &size, &calculated_pitch)) {
+                return false;
+            }
         } else
 #endif
         {
-            buffersize = (*pitch) * rect->h;
+            calculated_pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
+            size = rect->h * calculated_pitch;
         }
 
-        lockedbuffer = [data.mtldevice newBufferWithLength:buffersize options:MTLResourceStorageModeShared];
+        lockedbuffer = [data.mtldevice newBufferWithLength:size options:MTLResourceStorageModeShared];
         if (lockedbuffer == nil) {
             return SDL_OutOfMemory();
         }
@@ -1146,6 +1151,7 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         texturedata.lockedrect = *rect;
         texturedata.lockedbuffer = lockedbuffer;
         *pixels = [lockedbuffer contents];
+        *pitch = (int)calculated_pitch;
 
         return true;
     }
@@ -1192,7 +1198,8 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             // YV12 stores V before U, so the plane order is swapped for it.
             id<MTLTexture> firstplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureV : texturedata.mtltextureU;
             id<MTLTexture> secondplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureU : texturedata.mtltextureV;
-            int UVpitch = (pitch + 1) / 2;
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int UVpitch = ((pitch / bpp + 1) / 2) * bpp;
 
             [blitcmd copyFromBuffer:texturedata.lockedbuffer
                        sourceOffset:rect.h * pitch
@@ -1216,7 +1223,8 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
 
         if (texturedata.nv12) {
-            int UVpitch = 2 * ((pitch + 1) / 2);
+            const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int UVpitch = ((pitch / bpp + 1) / 2) * 2 * bpp;
 
             [blitcmd copyFromBuffer:texturedata.lockedbuffer
                        sourceOffset:rect.h * pitch
