@@ -220,6 +220,7 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_LIBDECOR_H 1
 #cmakedefine HAVE_LIBURING_H 1
+#cmakedefine SDL_LIBURING_DYNAMIC @SDL_LIBURING_DYNAMIC@
 #cmakedefine HAVE_FRIBIDI_H 1
 #cmakedefine SDL_FRIBIDI_DYNAMIC @SDL_FRIBIDI_DYNAMIC@
 #cmakedefine HAVE_LIBTHAI_H 1
