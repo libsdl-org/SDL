@@ -46,6 +46,7 @@ extern "C" {
 
 // This must be included here as the function definitions in SDL_pixels.c/_c.h are C, not C++
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 
 /* !!! FIXME: vertex buffer bandwidth could be lower; only use UV coords when
    !!! FIXME:  textures are needed. */
@@ -2079,16 +2080,17 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         } else {
             const int bpp = SDL_BYTESPERPIXEL(texture->format);
+            const int UVpitch = ((srcPitch / bpp + 1) / 2) * bpp;
 
             // Skip to the correct offset into the next texture
             srcPixels = (const void *)((const Uint8 *)srcPixels + rect->h * srcPitch);
-            if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1 * bpp) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateV : &textureData->mainResourceStateU)) {
+            if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, UVpitch, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateV : &textureData->mainResourceStateU)) {
                 return false;
             }
 
             // Skip to the correct offset into the next texture
-            srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * ((srcPitch + 1 * bpp) / 2));
-            if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, (srcPitch + 1 * bpp) / 2, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateU : &textureData->mainResourceStateV)) {
+            srcPixels = (const void *)((const Uint8 *)srcPixels + ((rect->h + 1) / 2) * UVpitch);
+            if (!D3D12_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, 0, rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2, srcPixels, UVpitch, texture->format == SDL_PIXELFORMAT_YV12 ? &textureData->mainResourceStateU : &textureData->mainResourceStateV)) {
                 return false;
             }
         }
@@ -2201,8 +2203,12 @@ static bool D3D12_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (textureData->yuv || textureData->nv12) {
         // It's more efficient to upload directly...
         if (!textureData->pixels) {
-            textureData->pitch = texture->w;
-            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            size_t size, calculated_pitch;
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &calculated_pitch)) {
+                return false;
+            }
+            textureData->pitch = (int)calculated_pitch;
+            textureData->pixels = (Uint8 *)SDL_malloc(size);
             if (!textureData->pixels) {
                 return false;
             }

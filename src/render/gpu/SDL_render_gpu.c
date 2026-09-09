@@ -25,6 +25,7 @@
 #include "../../events/SDL_windowevents_c.h"
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_sysvideo.h"
+#include "../../video/SDL_yuv_c.h"
 #include "../SDL_d3dmath.h"
 #include "../SDL_sysrender.h"
 #include "SDL_gpu_util.h"
@@ -321,25 +322,16 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     data->format = format;
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
-        size_t size;
-        data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
-        size = (size_t)texture->h * data->pitch;
-        if (texture->format == SDL_PIXELFORMAT_YV12 ||
-            texture->format == SDL_PIXELFORMAT_IYUV ||
-            texture->format == SDL_PIXELFORMAT_I0FL) {
-            // Need to add size for the U and V planes
-            size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
-        }
-        if (texture->format == SDL_PIXELFORMAT_I444 ||
-            texture->format == SDL_PIXELFORMAT_I4FL) {
-            // Need to add size for the U and V planes
-            size += 2 * texture->h * data->pitch;
-        }
-        if (texture->format == SDL_PIXELFORMAT_NV12 ||
-            texture->format == SDL_PIXELFORMAT_NV21 ||
-            texture->format == SDL_PIXELFORMAT_P010) {
-            // Need to add size for the U/V plane
-            size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
+        size_t size, pitch;
+        if (SDL_ISPIXELFORMAT_FOURCC(texture->format)) {
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &pitch)) {
+                SDL_free(data);
+                return false;
+            }
+            data->pitch = (int)pitch;
+        } else {
+            data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
+            size = (size_t)texture->h * data->pitch;
         }
         data->pixels = SDL_calloc(1, size);
         if (!data->pixels) {
@@ -584,8 +576,8 @@ static bool GPU_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, cons
             retval &= GPU_UpdateTextureInternal(renderdata, cpass, data->textureU, bpp, rect->x, rect->y, rect->w, rect->h, Uplane, pitch);
             retval &= GPU_UpdateTextureInternal(renderdata, cpass, data->textureV, bpp, rect->x, rect->y, rect->w, rect->h, Vplane, pitch);
         } else {
-            int Ypitch = pitch;
-            int UVpitch = ((Ypitch + 1 * SDL_BYTESPERPIXEL(texture->format)) / 2);
+            const int Ypitch = pitch;
+            const int UVpitch = ((Ypitch / bpp + 1) / 2) * bpp;
             const Uint8 *Yplane = (const Uint8 *)pixels;
             const Uint8 *Uplane = Yplane + rect->h * Ypitch;
             const Uint8 *Vplane = Uplane + ((rect->h + 1) / 2) * UVpitch;

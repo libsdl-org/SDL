@@ -28,6 +28,7 @@
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 
 #define D3D_DEBUG_INFO
 #include <d3d9.h>
@@ -807,8 +808,12 @@ static bool D3D_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (texturedata->yuv) {
         // It's more efficient to upload directly...
         if (!texturedata->pixels) {
-            texturedata->pitch = texture->w;
-            texturedata->pixels = (Uint8 *)SDL_malloc((texture->h * texturedata->pitch * 3) / 2);
+            size_t size, calculated_pitch;
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &calculated_pitch)) {
+                return false;
+            }
+            texturedata->pitch = (int)calculated_pitch;
+            texturedata->pixels = (Uint8 *)SDL_malloc(size);
             if (!texturedata->pixels) {
                 return false;
             }
