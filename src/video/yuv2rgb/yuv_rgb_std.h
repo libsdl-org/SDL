@@ -159,6 +159,12 @@ void yuvp010_xbgr2101010_std(
         uint8_t *rgb, uint32_t rgb_stride,
         YCbCrType yuv_type);
 
+void yuvi0fl_rgb48_std(
+        uint32_t width, uint32_t height,
+        const uint16_t *y, const uint16_t *u, const uint16_t *v, uint32_t y_stride, uint32_t uv_stride,
+        uint8_t *rgb, uint32_t rgb_stride,
+        YCbCrType yuv_type);
+
 void yuvi4fl_rgb48_std(
         uint32_t width, uint32_t height,
         const uint16_t *y, const uint16_t *u, const uint16_t *v, uint32_t y_stride, uint32_t uv_stride,

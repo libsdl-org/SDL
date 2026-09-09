@@ -2498,8 +2498,9 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
     CHECK_PARAM(texture->format != SDL_PIXELFORMAT_YV12 &&
                 texture->format != SDL_PIXELFORMAT_IYUV &&
                 texture->format != SDL_PIXELFORMAT_I444 &&
+                texture->format != SDL_PIXELFORMAT_I0FL &&
                 texture->format != SDL_PIXELFORMAT_I4FL) {
-        return SDL_SetError("Texture format must be YV12, IYUV, I444, or I4FL");
+        return SDL_SetError("Texture format must be YV12, IYUV, I444, I0FL, or I4FL");
     }
 
     real_rect.x = 0;

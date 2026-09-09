@@ -364,6 +364,7 @@ typedef enum SDL_PackedLayout
           ((format) == SDL_PIXELFORMAT_UYVY) || \
           ((format) == SDL_PIXELFORMAT_YVYU) || \
           ((format) == SDL_PIXELFORMAT_P010) || \
+          ((format) == SDL_PIXELFORMAT_I0FL) || \
           ((format) == SDL_PIXELFORMAT_I4FL)) ? 2 : 1) : (((format) >> 0) & 0xFF))
 
 
@@ -676,6 +677,8 @@ typedef enum SDL_PixelFormat
         /* SDL_DEFINE_PIXELFOURCC('I', '4', '4', '4'), */
     SDL_PIXELFORMAT_P010 = 0x30313050u,      /**< YUV 4:2:0 16-bit planar mode: Y + U/V interleaved  (2 planes) */
         /* SDL_DEFINE_PIXELFOURCC('P', '0', '1', '0'), */
+    SDL_PIXELFORMAT_I0FL = 0x4c463049u,      /**< YUV 4:2:0 16-bit planar mode: Y + U + V  (3 planes) */
+        /* SDL_DEFINE_PIXELFOURCC('I', '0', 'F', 'L'), */
     SDL_PIXELFORMAT_I4FL = 0x4c463449u,      /**< YUV 4:4:4 16-bit planar mode: Y + U + V  (3 planes) */
         /* SDL_DEFINE_PIXELFOURCC('I', '4', 'F', 'L'), */
     SDL_PIXELFORMAT_EXTERNAL_OES = 0x2053454fu,     /**< Android video texture format */
