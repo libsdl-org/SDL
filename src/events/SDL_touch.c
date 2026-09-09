@@ -633,3 +633,17 @@ int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, floa
     return posted;
 }
 
+int SDL_SendHold(SDL_EventType type, Uint64 timestamp, SDL_Window *window, Uint32 fingers)
+{
+    /* Post the event, if desired */
+    int posted = 0;
+    if (SDL_EventEnabled(type)) {
+        SDL_Event event;
+        event.type = type;
+        event.common.timestamp = timestamp;
+        event.hold.windowID = window ? SDL_GetWindowID(window) : 0;
+        event.hold.fingers = fingers;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+    return posted;
+}

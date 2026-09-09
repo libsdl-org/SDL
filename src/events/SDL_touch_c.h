@@ -51,5 +51,6 @@ extern void SDL_QuitTouch(void);
 
 // Send Gesture events
 extern int SDL_SendPinch(SDL_EventType type, Uint64 timestamp, SDL_Window *window, float scale, float span_x, float span_y, float focus_x, float focus_y);
+extern int SDL_SendHold(SDL_EventType type, Uint64 timestamp, SDL_Window *window, Uint32 fingers);
 
 #endif // SDL_touch_c_h_

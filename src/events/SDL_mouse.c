@@ -1055,7 +1055,7 @@ void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, -1);
 }
 
-void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
+void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction, SDL_MouseWheelSource source)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
@@ -1063,7 +1063,8 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         SDL_SetMouseFocus(window);
     }
 
-    if (x == 0.0f && y == 0.0f) {
+    // Pass through 0,0 to indicate a finger scroll stopping due to the finger being lifted.
+    if (source != SDL_MOUSEWHEEL_SOURCE_FINGER && x == 0.0f && y == 0.0f) {
         return;
     }
 
@@ -1082,6 +1083,7 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
         event.wheel.windowID = mouse->focus ? mouse->focus->id : 0;
         event.wheel.which = mouseID;
         event.wheel.direction = direction;
+        event.wheel.source = source;
         event.wheel.mouse_x = mouse->x;
         event.wheel.mouse_y = mouse->y;
 

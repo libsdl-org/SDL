@@ -85,5 +85,5 @@ void handlePointerEvent(screen_event_t event)
     // Capture mouse wheel
     // TODO: Verify this. I can at least confirm that this behaves the same
     //       way as x11.
-    SDL_SendMouseWheel(timestamp, window, 0, (float) mouse_wheel, (float) mouse_h_wheel, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(timestamp, window, 0, (float) mouse_wheel, (float) mouse_h_wheel, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
 }

@@ -288,7 +288,7 @@ class SDL_BLooper : public BLooper
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseWheel(0, win, SDL_DEFAULT_MOUSE_ID, xTicks, -yTicks, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, win, SDL_DEFAULT_MOUSE_ID, xTicks, -yTicks, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
     }
 
     void _HandleKey(BMessage *msg)

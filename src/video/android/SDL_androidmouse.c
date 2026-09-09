@@ -238,7 +238,7 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         break;
 
     case ACTION_SCROLL:
-        SDL_SendMouseWheel(0, window, SDL_DEFAULT_MOUSE_ID, x, y, SDL_MOUSEWHEEL_NORMAL);
+        SDL_SendMouseWheel(0, window, SDL_DEFAULT_MOUSE_ID, x, y, SDL_MOUSEWHEEL_NORMAL, SDL_MOUSEWHEEL_SOURCE_WHEEL);
         break;
 
     default:
