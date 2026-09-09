@@ -27,8 +27,6 @@
 
 #include <io/pad.h>
 
-#define NAMESIZE 10
-
 typedef struct
 {
     int word;
@@ -71,19 +69,29 @@ struct joystick_hwdata
     padData old_pad_data;
 };
 
-int numberOfJoysticks = MAX_PORT_NUM;
+int numberOfJoysticks = 0;
 
 static bool PS3_JoystickInit(void)
 {
+    padInfo padinfo;
     int result = ioPadInit(MAX_PORT_NUM);
 
-    // No gamepads present.
+    // No gamepads present
     if (result != 0) {
-        SDL_SetError("PS3_JoystickInit() : Couldn't initialize PS3 pads");
-        return false;
+        return SDL_SetError("PS3_JoystickInit: Couldn't initialize PS3 pads");
     }
 
-    SDL_PrivateJoystickAdded(1);
+    // Wait 200ms for controllers
+    SDL_Delay(200);
+    ioPadGetInfo(&padinfo);
+
+    for (int index = 1; index <= padinfo.connected; index++) {
+        if (!padinfo.status[index - 1]) {
+            continue;
+        }
+        numberOfJoysticks++;
+        SDL_PrivateJoystickAdded(numberOfJoysticks);
+    }
 
     return true;
 }
@@ -129,7 +137,12 @@ static SDL_GUID PS3_JoystickGetDeviceGUID(int device_index)
 
 static bool PS3_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
-    if (!(joystick->hwdata = (struct joystick_hwdata *)SDL_malloc(sizeof(struct joystick_hwdata)))) {
+    padInfo2 padinfo;
+
+    // Create the joystick data structure
+    joystick->hwdata = (struct joystick_hwdata *) SDL_calloc(1, sizeof(*joystick->hwdata));
+
+    if (joystick->hwdata == NULL) {
         return false;
     }
 
@@ -138,9 +151,12 @@ static bool PS3_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nballs = 0;
     joystick->nbuttons = SDL_arraysize(ps3_buttons);
 
-    // TODO: using padinfo check if rumble available
+    ioPadGetInfo2(&padinfo);
 
-    SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+    // Bit 4: has_vibrate
+    if ((padinfo.device_capability[device_index] & (1 << 4)) != 0) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
+    }
 
     return true;
 }
@@ -167,7 +183,6 @@ static SDL_INLINE Sint16 PS3_AxisScale(u16 raw)
 
 static void PS3_JoystickUpdate(SDL_Joystick *joystick)
 {
-
     padData new_pad_data;
     int joystickIndex = (int)(joystick->instance_id - 1);
     Uint64 timestamp = SDL_GetTicksNS();
@@ -205,13 +220,15 @@ static void PS3_JoystickUpdate(SDL_Joystick *joystick)
 
 static void PS3_JoystickClose(SDL_Joystick *joystick)
 {
-    if (joystick->hwdata)
+    if (joystick->hwdata) {
         SDL_free(joystick->hwdata);
-    ioPadEnd();
+    }
+    numberOfJoysticks--;
 }
 
 static void PS3_JoystickQuit(void)
 {
+    ioPadEnd();
     numberOfJoysticks = 0;
 }
 
