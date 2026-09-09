@@ -3,7 +3,7 @@ description: 'Download ninja and add it to the PATH environment variable'
 inputs:
   version:
     description: 'Ninja version'
-    default: '1.12.1'
+    default: '1.13.2'
 runs:
   using: 'composite'
   steps:

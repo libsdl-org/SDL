@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-extern SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file, bool transparent);
+extern SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file);
 extern char *GetNearbyFilename(const char *file);
 extern char *GetResourceFilename(const char *user_specified, const char *def);
 

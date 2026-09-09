@@ -96,10 +96,11 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
             if (!SDL_ReadU8(src, &pixelvalue)) {
                 return false;
             }
-            ch /= pixels_per_byte;
+            int ich = (int) ch;
             do {
                 COPY_PIXEL(pixelvalue);
-            } while (--ch);
+                ich -= pixels_per_byte;
+            } while (ich > 0);
         } else {
             /*
             | A leading zero is an escape; it may signal the end of the bitmap,
@@ -121,22 +122,31 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                     return false;
                 }
                 ofs += ch / pixels_per_byte;
-
+                if (ch & pixels_per_byte) {
+                    ofs++;
+                }
                 if (!SDL_ReadU8(src, &ch)) {
                     return false;
                 }
-                bits -= ((ch / pixels_per_byte) * pitch);
+                bits -= (ch * pitch);
                 break;
             default: // no compression
-                ch /= pixels_per_byte;
-                needsPad = (ch & 1);
+                // !!! FIXME: this needsPad calculation can probably be simpler than this.
+                if (pixels_per_byte == 1) {
+                    needsPad = (ch & 1) != 0;
+                } else {
+                    needsPad = (((ch + (pixels_per_byte-1)) / pixels_per_byte) & (pixels_per_byte-1)) != 0;
+                }
+
+                int ich = (int) ch;
                 do {
                     Uint8 pixelvalue;
                     if (!SDL_ReadU8(src, &pixelvalue)) {
                         return false;
                     }
                     COPY_PIXEL(pixelvalue);
-                } while (--ch);
+                    ich -= pixels_per_byte;
+                } while (ich > 0);
 
                 // pad at even boundary
                 if (needsPad && !SDL_ReadU8(src, &ch)) {

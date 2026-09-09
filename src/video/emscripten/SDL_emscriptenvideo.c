@@ -438,6 +438,11 @@ bool Emscripten_ShouldSetSwapInterval(int interval)
     return true;
 }
 
+int Emscripten_GetPendingSwapInterval(void)
+{
+    return pending_swap_interval;
+}
+
 static void Emscripten_PumpEvents(SDL_VideoDevice *_this)
 {
     if (!pumpevents_has_run) {

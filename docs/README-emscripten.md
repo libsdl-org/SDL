@@ -214,7 +214,7 @@ Note that SDL attempts to default to vsync _off_ on all platforms. You almost
 certainly do _not_ want this in Emscripten, however, as it will affect the
 efficiency of the mainloop. If using OpenGL directly, you should call
 SDL_GL_SetSwapInterval(1) sometime near startup; if using the 2D render API,
-either create the renderer with with the property
+either create the renderer with the property
 SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER set to 1, or call
 SDL_SetRenderVSync(renderer, 1). If you don't explicitly set vsync, you'll get
 a higher (but perhaps unstable) framerate, and use more power, but it will

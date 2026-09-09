@@ -107,6 +107,84 @@ static SDL_Scancode X11_KeyCodeToSDLScancode(SDL_VideoDevice *_this, KeyCode key
     return SDL_GetScancodeFromKeySym(keysym, keycode);
 }
 
+#ifdef X_HAVE_UTF8_STRING
+static bool X11_InitIM(SDL_VideoData *videodata);
+
+static void im_instantiate_handler(Display *display, XPointer clientData, XPointer callData)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)clientData;
+
+    if (X11_InitIM(videodata)) {
+        X11_XUnregisterIMInstantiateCallback(videodata->display, NULL, NULL, NULL, im_instantiate_handler, clientData);
+    }
+}
+
+static void im_destroyed_handler(XIM im, XPointer clientData, XPointer callData)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *)clientData;
+
+    videodata->im = NULL;
+    X11_XRegisterIMInstantiateCallback(videodata->display, NULL, NULL, NULL, im_instantiate_handler, clientData);
+}
+
+static bool X11_InitIM(SDL_VideoData *videodata)
+{
+    /* Set the locale, and call XSetLocaleModifiers before XOpenIM so that
+     * Compose keys will work correctly.
+     */
+    char *prev_locale = setlocale(LC_ALL, NULL);
+    char *prev_xmods = X11_XSetLocaleModifiers(NULL);
+
+    if (prev_locale) {
+        prev_locale = SDL_strdup(prev_locale);
+    }
+
+    if (prev_xmods) {
+        prev_xmods = SDL_strdup(prev_xmods);
+    }
+
+    (void)setlocale(LC_ALL, "");
+    X11_XSetLocaleModifiers("");
+
+    XIM im = X11_XOpenIM(videodata->display, NULL, NULL, NULL);
+
+    /* Reset the locale + X locale modifiers back to how they were,
+     * locale first because the X locale modifiers depend on it.
+     */
+    (void)setlocale(LC_ALL, prev_locale);
+    X11_XSetLocaleModifiers(prev_xmods);
+
+    SDL_free(prev_locale);
+    SDL_free(prev_xmods);
+
+    if (im) {
+        videodata->im = im;
+
+        XIMCallback destroyed_callback;
+        destroyed_callback.client_data = (XPointer)videodata;
+        destroyed_callback.callback = (XIMProc)im_destroyed_handler;
+
+        X11_XSetIMValues(im, XNDestroyCallback, &destroyed_callback, NULL);
+
+        /* Attach the new IC to any existing windows.
+         *
+         * If we wound up here before any old input contexts were destroyed,
+         * they will be recreated in the IC destroyed callback.
+         */
+        for (int i = 0; i < videodata->numwindows; ++i) {
+            SDL_WindowData *w = videodata->windowlist[i];
+            if (!w->ic) {
+                X11_CreateInputContext(w);
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+#endif // X_HAVE_UTF8_STRING
+
 bool X11_InitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
@@ -160,32 +238,9 @@ bool X11_InitKeyboard(SDL_VideoDevice *_this)
     // Open a connection to the X input manager
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
-        /* Set the locale, and call XSetLocaleModifiers before XOpenIM so that
-           Compose keys will work correctly. */
-        char *prev_locale = setlocale(LC_ALL, NULL);
-        char *prev_xmods = X11_XSetLocaleModifiers(NULL);
-
-        if (prev_locale) {
-            prev_locale = SDL_strdup(prev_locale);
+        if (!X11_InitIM(data)) {
+            X11_XRegisterIMInstantiateCallback(data->display, NULL, NULL, NULL, im_instantiate_handler, (XPointer)data);
         }
-
-        if (prev_xmods) {
-            prev_xmods = SDL_strdup(prev_xmods);
-        }
-
-        (void)setlocale(LC_ALL, "");
-        X11_XSetLocaleModifiers("");
-
-        data->im = X11_XOpenIM(data->display, NULL, NULL, NULL);
-
-        /* Reset the locale + X locale modifiers back to how they were,
-           locale first because the X locale modifiers depend on it. */
-        (void)setlocale(LC_ALL, prev_locale);
-        X11_XSetLocaleModifiers(prev_xmods);
-
-        SDL_free(prev_locale);
-
-        SDL_free(prev_xmods);
     }
 #endif
     // Try to determine which scancodes are being used based on fingerprint
@@ -522,6 +577,15 @@ void X11_QuitKeyboard(SDL_VideoDevice *_this)
 {
     SDL_VideoData *data = _this->internal;
 
+#ifdef X_HAVE_UTF8_STRING
+    if (data->im) {
+        X11_XCloseIM(data->im);
+        data->im = NULL;
+    } else {
+        X11_XUnregisterIMInstantiateCallback(data->display, NULL, NULL, NULL, im_instantiate_handler, (XPointer)data);
+    }
+#endif // X_HAVE_UTF8_STRING
+
 #ifdef SDL_VIDEO_DRIVER_X11_HAS_XKBLIB
     if (data->keyboard.xkb_enabled) {
         for (int i = 0; i < XkbNumKbdGroups; ++i) {
@@ -584,6 +648,7 @@ static void X11_SendEditingEvent(SDL_WindowData *data)
     data->ime_needs_clear_composition = true;
 }
 
+#ifdef X_HAVE_UTF8_STRING
 static int preedit_start_callback(XIC xic, XPointer client_data, XPointer call_data)
 {
     // No limit on preedit text length
@@ -716,7 +781,14 @@ static void ic_destroyed_handler(XIC ic, XPointer clientData, XPointer callData)
 {
     SDL_WindowData *data = (SDL_WindowData *)clientData;
     data->ic = NULL;
+    X11_DestroyInputContext(data);
+
+    // If the IM was already recreated, create a new IC.
+    if (data->videodata->im) {
+        X11_CreateInputContext(data);
+    }
 }
+#endif // X_HAVE_UTF8_STRING
 
 void X11_CreateInputContext(SDL_WindowData *data)
 {

@@ -34,7 +34,7 @@ class GdDesktopConfigurator:
         self._vs_toolset = vs_toolset
 
     def download_archive(self) -> None:
-        gdk_url = f"https://github.com/microsoft/GDK/releases/downloads/{ GIT_REF }/{ ARCHIVE_NAME }.zip"
+        gdk_url = f"https://github.com/microsoft/GDK/releases/download/{ GIT_REF }/{ ARCHIVE_NAME }.zip"
         logger.info("Downloading %s to %s", gdk_url, self.dl_archive_path)
         urllib.request.urlretrieve(gdk_url, self.dl_archive_path)
         assert self.dl_archive_path.is_file()

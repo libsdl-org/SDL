@@ -1070,22 +1070,27 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
                 internal->scale_factor = (double)native_mode.w / (double)internal->logical.width;
             } else {
                 // ...otherwise, the 'native' pixel values are a multiple of the logical screen size.
-                internal->pixel.width = internal->logical.width * (int)internal->scale_factor;
-                internal->pixel.height = internal->logical.height * (int)internal->scale_factor;
+                internal->scale_factor = internal->integer_scale_factor;
+                internal->pixel.width = internal->logical.width * internal->integer_scale_factor;
+                internal->pixel.height = internal->logical.height * internal->integer_scale_factor;
             }
         } else {
             /* ...and the output viewport is not scaled in the global compositing
              * space, the output dimensions need to be divided by the scale factor.
+             *
+             * NOTE: This path is needed for old versions of GNOME that predate fractional scaling.
              */
-            internal->logical.width /= (int)internal->scale_factor;
-            internal->logical.height /= (int)internal->scale_factor;
+            internal->scale_factor = internal->integer_scale_factor;
+            internal->logical.width /= internal->integer_scale_factor;
+            internal->logical.height /= internal->integer_scale_factor;
         }
     } else {
         /* Calculate the points from the pixel values, if xdg-output isn't present.
          * Use the native mode pixel values since they are pre-transformed.
          */
-        internal->logical.width = native_mode.w / (int)internal->scale_factor;
-        internal->logical.height = native_mode.h / (int)internal->scale_factor;
+        internal->scale_factor = internal->integer_scale_factor;
+        internal->logical.width = native_mode.w / internal->integer_scale_factor;
+        internal->logical.height = native_mode.h / internal->integer_scale_factor;
     }
 
     // The scaled desktop mode
@@ -1189,7 +1194,7 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
 static void handle_wl_output_scale(void *data, struct wl_output *output, int32_t factor)
 {
     SDL_DisplayData *internal = (SDL_DisplayData *)data;
-    internal->scale_factor = factor;
+    internal->integer_scale_factor = factor;
 }
 
 static void handle_wl_output_name(void *data, struct wl_output *wl_output, const char *name)
@@ -1245,6 +1250,7 @@ static bool Wayland_add_display(SDL_VideoData *d, uint32_t id, uint32_t version)
     data->output = output;
     data->registry_id = id;
     data->scale_factor = 1.0f;
+    data->integer_scale_factor = 1;
 
     wl_output_add_listener(output, &output_listener, data);
     SDL_WAYLAND_register_output(output);

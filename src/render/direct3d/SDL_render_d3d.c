@@ -223,7 +223,7 @@ static D3DFORMAT PixelFormatToD3DFMT(Uint32 format)
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
         return D3DFMT_L8;
     default:
         for (int i = 0; i < SDL_arraysize(d3d_format_map); i++) {
@@ -629,7 +629,7 @@ static bool D3D_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     }
 #ifdef SDL_HAVE_YUV
     if (texturedata->yuv) {
-        if (texture->format == SDL_PIXELFORMAT_P408) {
+        if (texture->format == SDL_PIXELFORMAT_I444) {
             // Skip to the correct offset into the next texture
             pixels = (const void *)((const Uint8 *)pixels + rect->h * pitch);
             if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x, rect->y, rect->w, rect->h, pixels, pitch)) {
@@ -708,7 +708,7 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
-    if (texture->format == SDL_PIXELFORMAT_P408) {
+    if (texture->format == SDL_PIXELFORMAT_I444) {
         texturedata->yuv = true;
 
         if (!D3D_CreateTextureRep(data->device, &texturedata->utexture, usage, texture->format, PixelFormatToD3DFMT(texture->format), texture->w, texture->h)) {
@@ -772,7 +772,7 @@ static bool D3D_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D_UpdateTextureRep(data->device, &texturedata->texture, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch)) {
         return false;
     }
-    if (texture->format == SDL_PIXELFORMAT_P408) {
+    if (texture->format == SDL_PIXELFORMAT_I444) {
         if (!D3D_UpdateTextureRep(data->device, &texturedata->utexture, rect->x, rect->y, rect->w, rect->h, Uplane, Upitch)) {
             return false;
         }
@@ -2045,7 +2045,7 @@ static bool D3D_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     if (caps.MaxSimultaneousTextures >= 3 && data->shaders[SHADER_YUV]) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P408);
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I444);
     }
 #endif
 

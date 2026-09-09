@@ -128,11 +128,14 @@
  * [blog post](https://moonside.games/posts/layers-all-the-way-down/)
  * explaining this situation.
  *
- * It is optimal for apps to pre-compile the shader formats they might use,
- * but for ease of use SDL provides a separate project,
+ * Shader binaries can be compiled using standard Vulkan, Direct3D or Metal
+ * tooling, but SDL provides a separate project,
  * [SDL_shadercross](https://github.com/libsdl-org/SDL_shadercross)
- * , for performing runtime shader cross-compilation. It also has a CLI
- * interface for offline precompilation as well.
+ * , as a convenient command-line wrapper for cross-compiling shaders from
+ * HLSL or SPIR-V to any backend format (SPIR-V, DXBC, DXIL, MSL).
+ *
+ * While offline ahead-of-time compilation is preferred, SDL_shadercross is
+ * also able to operate as a runtime library for advanced usecases.
  *
  * This is an extremely quick overview that leaves out several important
  * details. Already, though, one can see that GPU programming can be quite
@@ -982,7 +985,7 @@ typedef enum SDL_GPUCubeMapFace
  * Unlike textures, READ | WRITE can be used for simultaneous read-write
  * usage. The same data synchronization concerns as textures apply.
  *
- * If you use a STORAGE flag, the data in the buffer must respect std140
+ * If you use a STORAGE flag, the data in the buffer must respect std430
  * layout conventions. In practical terms this means you must ensure that vec3
  * and vec4 fields are 16-byte aligned.
  *
@@ -1418,6 +1421,7 @@ typedef struct SDL_GPUViewport
  *
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
+ * \sa SDL_GPUTransferBuffer
  */
 typedef struct SDL_GPUTextureTransferInfo
 {
@@ -1436,6 +1440,7 @@ typedef struct SDL_GPUTextureTransferInfo
  *
  * \sa SDL_UploadToGPUBuffer
  * \sa SDL_DownloadFromGPUBuffer
+ * \sa SDL_GPUTransferBuffer
  */
 typedef struct SDL_GPUTransferBufferLocation
 {
@@ -1451,6 +1456,7 @@ typedef struct SDL_GPUTransferBufferLocation
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_CopyGPUTextureToTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUTextureLocation
 {
@@ -1472,6 +1478,7 @@ typedef struct SDL_GPUTextureLocation
  * \sa SDL_UploadToGPUTexture
  * \sa SDL_DownloadFromGPUTexture
  * \sa SDL_CreateGPUTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUTextureRegion
 {
@@ -1492,6 +1499,7 @@ typedef struct SDL_GPUTextureRegion
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
+ * \sa SDL_GPUTexture
  */
 typedef struct SDL_GPUBlitRegion
 {
@@ -1702,6 +1710,8 @@ typedef struct SDL_GPUVertexInputState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUDepthStencilState
+ * \sa SDL_GPUStencilOp
+ * \sa SDL_GPUCompareOp
  */
 typedef struct SDL_GPUStencilOpState
 {
@@ -1716,6 +1726,7 @@ typedef struct SDL_GPUStencilOpState
  *
  * \since This struct is available since SDL 3.2.0.
  *
+ * \sa SDL_SetGPUBlendConstants
  * \sa SDL_GPUColorTargetDescription
  * \sa SDL_GPUBlendFactor
  * \sa SDL_GPUBlendOp
@@ -1842,6 +1853,9 @@ typedef struct SDL_GPUTransferBufferCreateInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUFillMode
+ * \sa SDL_GPUCullMode
+ * \sa SDL_GPUFrontFace
  */
 typedef struct SDL_GPURasterizerState
 {
@@ -1864,6 +1878,7 @@ typedef struct SDL_GPURasterizerState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUSampleCount
  */
 typedef struct SDL_GPUMultisampleState
 {
@@ -1882,6 +1897,7 @@ typedef struct SDL_GPUMultisampleState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineCreateInfo
+ * \sa SDL_GPUCompareOp
  * \sa SDL_GPUStencilOpState
  */
 typedef struct SDL_GPUDepthStencilState
@@ -1906,6 +1922,8 @@ typedef struct SDL_GPUDepthStencilState
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_GPUGraphicsPipelineTargetInfo
+ * \sa SDL_GPUTextureFormat
+ * \sa SDL_GPUColorTargetBlendState
  */
 typedef struct SDL_GPUColorTargetDescription
 {
@@ -2109,6 +2127,11 @@ typedef struct SDL_GPUDepthStencilTargetInfo
  * \since This struct is available since SDL 3.2.0.
  *
  * \sa SDL_BlitGPUTexture
+ * \sa SDL_GPUBlitRegion
+ * \sa SDL_GPULoadOp
+ * \sa SDL_FColor
+ * \sa SDL_FlipMode
+ * \sa SDL_GPUFilter
  */
 typedef struct SDL_GPUBlitInfo {
     SDL_GPUBlitRegion source;       /**< The source region for the blit. */
@@ -2619,7 +2642,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ---
  *
- * **SPIR-V**
+ * **SPIR-V (GLSL)**
  *
  * For compute shaders, use:
  *
@@ -2657,23 +2680,23 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ```glsl
  * // Any samplers come first in Set 0, in SDL bind slot order
- * layout(set = 0, binding = 0) sampler2d samplerBoundToSlot0;
- * layout(set = 0, binding = 1) sampler2d samplerBoundToSlot1;
+ * layout(set = 0, binding = 0) uniform sampler2D samplerBoundToSlot0;
+ * layout(set = 0, binding = 1) uniform sampler2D samplerBoundToSlot1;
  * // Any read-only storage textures come next in Set 0, in SDL bind slot order
- * layout(set = 0, binding = 2) image2d storageTextureBoundToSlot0;
- * layout(set = 0, binding = 3) image2d storageTextureBoundToSlot1;
+ * layout(set = 0, binding = 2) uniform image2D storageTextureBoundToSlot0;
+ * layout(set = 0, binding = 3) uniform image2D storageTextureBoundToSlot1;
  * // Any read-only storage buffers come next in Set 0, in SDL bind slot order
- * layout(set = 0, binding = 4) buffer storageBufferBoundToSlot0;
- * layout(set = 0, binding = 5) buffer storageBufferBoundToSlot1;
+ * layout(set = 0, binding = 4) buffer storageBufferBoundToSlot0 { ... };
+ * layout(set = 0, binding = 5) buffer storageBufferBoundToSlot1 { ... };
  * // Any read-write storage textures come first in Set 1, in SDL bind slot order
- * layout(set = 1, binding = 0) image2d rwStorageTextureBoundToSlot0;
- * layout(set = 1, binding = 1) image2d rwStorageTextureBoundToSlot1;
+ * layout(set = 1, binding = 0) uniform image2D rwStorageTextureBoundToSlot0;
+ * layout(set = 1, binding = 1) uniform image2D rwStorageTextureBoundToSlot1;
  * // Any read-write storage buffers come next in Set 1, in SDL bind slot order
- * layout(set = 1, binding = 2) buffer rwStorageBufferBoundToSlot0;
- * layout(set = 1, binding = 3) buffer rwStorageBufferBoundToSlot1;
+ * layout(set = 1, binding = 2) buffer rwStorageBufferBoundToSlot0 { ... };
+ * layout(set = 1, binding = 3) buffer rwStorageBufferBoundToSlot1 { ... };
  * // Any uniform buffers are in Set 2, in SDL slot order
- * layout(set = 2, binding = 0) uniform UniformDataBoundToSlot0 {};
- * layout(set = 2, binding = 1) uniform UniformDataBoundToSlot1 {};
+ * layout(set = 2, binding = 0) uniform UniformDataBoundToSlot0 { ... };
+ * layout(set = 2, binding = 1) uniform UniformDataBoundToSlot1 { ... };
  * ```
  *
  * ---
@@ -2892,7 +2915,7 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *
  * ---
  *
- * **SPIR-V**
+ * **SPIR-V (GLSL)**
  *
  * For vertex shaders, use: - Set 0 for samplers, storage textures, and
  * storage buffers - Set 1 for uniform data
@@ -2920,17 +2943,17 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *
  * ```glsl
  * // Any samplers come first in the set, in SDL bind slot order
- * layout(set = 0, binding = 0) sampler2d samplerBoundToSlot0;
- * layout(set = 0, binding = 1) sampler2d samplerBoundToSlot1;
+ * layout(set = 0, binding = 0) uniform sampler2D samplerBoundToSlot0;
+ * layout(set = 0, binding = 1) uniform sampler2D samplerBoundToSlot1;
  * // Any storage textures come next in the set, in SDL bind slot order
- * layout(set = 0, binding = 2) texture2d storageTextureBoundToSlot0;
- * layout(set = 0, binding = 3) texture2d storageTextureBoundToSlot1;
+ * layout(set = 0, binding = 2) uniform image2D storageTextureBoundToSlot0;
+ * layout(set = 0, binding = 3) uniform image2D storageTextureBoundToSlot1;
  * // Any storage buffers come next in the set, in SDL bind slot order
- * layout(set = 0, binding = 4) buffer storageBufferBoundToSlot0;
- * layout(set = 0, binding = 5) buffer storageBufferBoundToSlot1;
+ * layout(set = 0, binding = 4) buffer storageBufferBoundToSlot0 { ... };
+ * layout(set = 0, binding = 5) buffer storageBufferBoundToSlot1 { ... };
  * // Any uniform buffers are in their own set, in SDL slot order
- * layout(set = 1, binding = 0) uniform UniformDataBoundToSlot0 {};
- * layout(set = 1, binding = 1) uniform UniformDataBoundToSlot1 {};
+ * layout(set = 1, binding = 0) uniform UniformDataBoundToSlot0 { ... };
+ * layout(set = 1, binding = 1) uniform UniformDataBoundToSlot1 { ... };
  * ```
  *
  * ---
@@ -2980,8 +3003,8 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  * ByteAddressBuffer StorageBufferBoundToSlot0 : register( t4, space2 );
  * ByteAddressBuffer StorageBufferBoundToSlot1 : register( t5, space2 );
  * // Any uniform buffers are in the `b` register set *and* in their own space, in SDL slot order
- * cbuffer UniformDataBoundToSlot0 : register( b0, space4 ) { ... };
- * cbuffer UniformDataBoundToSlot1 : register( b1, space4 ) { ... };
+ * cbuffer UniformDataBoundToSlot0 : register( b0, space3 ) { ... };
+ * cbuffer UniformDataBoundToSlot1 : register( b1, space3 ) { ... };
  * ```
  *
  * ---
@@ -3159,7 +3182,7 @@ extern SDL_DECLSPEC SDL_GPUTexture * SDLCALL SDL_CreateGPUTexture(
  * Note that certain combinations of usage flags are invalid. For example, a
  * buffer cannot have both the VERTEX and INDEX flags.
  *
- * If you use a STORAGE flag, the data in the buffer must respect std140
+ * If you use a STORAGE flag, the data in the buffer must respect std430
  * layout conventions. In practical terms this means you must ensure that vec3
  * and vec4 fields are 16-byte aligned.
  *

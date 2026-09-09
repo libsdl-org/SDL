@@ -84,7 +84,6 @@ typedef struct
     SDL_PixelFormat src_format;
     SDL_PixelFormat dst_format;
     int flags;
-    unsigned int cpu;
     SDL_BlitFunc func;
 } SDL_BlitFuncEntry;
 

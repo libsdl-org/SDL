@@ -166,8 +166,8 @@ macro(CheckPipewire)
         sdl_link_dependency(pipewire LIBS PkgConfig::PC_PIPEWIRE PKG_CONFIG_PREFIX PC_PIPEWIRE PKG_CONFIG_SPECS ${PipeWire_PKG_CONFIG_SPEC})
       endif()
       set(HAVE_SDL_AUDIO TRUE)
-      endif()
     endif()
+  endif()
 endmacro()
 
 # Requires:

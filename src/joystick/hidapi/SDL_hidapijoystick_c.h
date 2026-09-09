@@ -164,6 +164,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360BB;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton;

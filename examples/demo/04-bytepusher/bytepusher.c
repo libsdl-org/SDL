@@ -302,6 +302,10 @@ static Uint16 keycode_mask(SDL_Keycode key) {
     int index;
     if (key >= SDLK_0 && key <= SDLK_9) {
         index = key - SDLK_0;
+    } else if (key >= SDLK_KP_1 && key <= SDLK_KP_9) {
+        index = key - SDLK_KP_1 + 1;
+    } else if (key == SDLK_KP_0) {
+        index = 0;
     } else if (key >= SDLK_A && key <= SDLK_F) {
         index = key - SDLK_A + 10;
     } else {
@@ -344,9 +348,9 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
         case SDL_EVENT_DROP_FILE:
             load_file(vm, event->drop.data);
             break;
-        
+
         case SDL_EVENT_KEY_DOWN:
-#ifndef __EMSCRIPTEN__
+#ifndef SDL_PLATFORM_EMSCRIPTEN
             if (event->key.key == SDLK_ESCAPE) {
                 return SDL_APP_SUCCESS;
             }
@@ -366,8 +370,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event) {
                 vm->keystate |= keycode_mask(event->key.key);
             }
             break;
-        
-        case SDL_EVENT_KEY_UP: 
+
+        case SDL_EVENT_KEY_UP:
             if (vm->positional_input) {
                 vm->keystate &= ~scancode_mask(event->key.scancode);
             } else {

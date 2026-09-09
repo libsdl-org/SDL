@@ -159,10 +159,10 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe002*/ SDL_SCANCODE_UNKNOWN,
     /*0xe003*/ SDL_SCANCODE_UNKNOWN,
     /*0xe004*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe005*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe005*/ SDL_SCANCODE_UNKNOWN, // "Messenger" on Natural Multimedia Keyboard
     /*0xe006*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe007*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe008*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe007*/ SDL_SCANCODE_AGAIN, // "Redo" on Natural Multimedia Keyboard
+    /*0xe008*/ SDL_SCANCODE_UNDO, // "Undo" on Natural Multimedia Keyboard
     /*0xe009*/ SDL_SCANCODE_UNKNOWN,
     /*0xe00a*/ SDL_SCANCODE_PASTE,
     /*0xe00b*/ SDL_SCANCODE_UNKNOWN,
@@ -176,7 +176,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe013*/ SDL_SCANCODE_UNKNOWN,
     /*0xe014*/ SDL_SCANCODE_UNKNOWN,
     /*0xe015*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe016*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe016*/ SDL_SCANCODE_UNKNOWN, // "Log Off" on Natural Multimedia Keyboard
     /*0xe017*/ SDL_SCANCODE_CUT,
     /*0xe018*/ SDL_SCANCODE_COPY,
     /*0xe019*/ SDL_SCANCODE_MEDIA_NEXT_TRACK,
@@ -187,9 +187,9 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe01e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe01f*/ SDL_SCANCODE_UNKNOWN,
     /*0xe020*/ SDL_SCANCODE_MUTE,
-    /*0xe021*/ SDL_SCANCODE_UNKNOWN, // LaunchApp2
+    /*0xe021*/ SDL_SCANCODE_UNKNOWN, // LaunchApp2; "Calculator" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
     /*0xe022*/ SDL_SCANCODE_MEDIA_PLAY_PAUSE,
-    /*0xe023*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe023*/ SDL_SCANCODE_UNKNOWN, // "Spell" on Natural Multimedia Keyboard
     /*0xe024*/ SDL_SCANCODE_MEDIA_STOP,
     /*0xe025*/ SDL_SCANCODE_UNKNOWN,
     /*0xe026*/ SDL_SCANCODE_UNKNOWN,
@@ -214,14 +214,14 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe039*/ SDL_SCANCODE_UNKNOWN,
     /*0xe03a*/ SDL_SCANCODE_UNKNOWN,
     /*0xe03b*/ SDL_SCANCODE_HELP,
-    /*0xe03c*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe03c*/ SDL_SCANCODE_UNKNOWN, // "My Music" on Natural Multimedia Keyboard
     /*0xe03d*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe03e*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe03f*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe040*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe041*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe042*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe043*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe03e*/ SDL_SCANCODE_AC_NEW, // "New" on Natural Multimedia Keyboard
+    /*0xe03f*/ SDL_SCANCODE_AC_OPEN, // "Open" on Natural Multimedia Keyboard
+    /*0xe040*/ SDL_SCANCODE_AC_CLOSE, // "Close" on Natural Multimedia Keyboard
+    /*0xe041*/ SDL_SCANCODE_UNKNOWN, // "Reply" on Natural Multimedia Keyboard
+    /*0xe042*/ SDL_SCANCODE_UNKNOWN, // "Fwd" on Natural Multimedia Keyboard
+    /*0xe043*/ SDL_SCANCODE_UNKNOWN, // "Send" on Natural Multimedia Keyboard
     /*0xe044*/ SDL_SCANCODE_UNKNOWN,
     /*0xe045*/ SDL_SCANCODE_NUMLOCKCLEAR,
     /*0xe046*/ SDL_SCANCODE_PAUSE,
@@ -230,7 +230,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe049*/ SDL_SCANCODE_PAGEUP,
     /*0xe04a*/ SDL_SCANCODE_UNKNOWN,
     /*0xe04b*/ SDL_SCANCODE_LEFT,
-    /*0xe04c*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe04c*/ SDL_SCANCODE_UNKNOWN, // "My Documents" on Natural Multimedia Keyboard
     /*0xe04d*/ SDL_SCANCODE_RIGHT,
     /*0xe04e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe04f*/ SDL_SCANCODE_END,
@@ -241,8 +241,8 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe054*/ SDL_SCANCODE_UNKNOWN,
     /*0xe055*/ SDL_SCANCODE_UNKNOWN,
     /*0xe056*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe057*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe058*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe057*/ SDL_SCANCODE_AC_SAVE, // "Save" on Natural Multimedia Keyboard
+    /*0xe058*/ SDL_SCANCODE_AC_PRINT, // "Print" on Natural Multimedia Keyboard
     /*0xe059*/ SDL_SCANCODE_UNKNOWN,
     /*0xe05a*/ SDL_SCANCODE_UNKNOWN,
     /*0xe05b*/ SDL_SCANCODE_LGUI,
@@ -253,16 +253,16 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe060*/ SDL_SCANCODE_UNKNOWN,
     /*0xe061*/ SDL_SCANCODE_UNKNOWN,
     /*0xe062*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe063*/ SDL_SCANCODE_UNKNOWN,
-    /*0xe064*/ SDL_SCANCODE_UNKNOWN,
+    /*0xe063*/ SDL_SCANCODE_WAKE,  // "Wake Up" on Turbo multimedia keyboards
+    /*0xe064*/ SDL_SCANCODE_UNKNOWN, // "My Pictures" on Natural Multimedia Keyboard
     /*0xe065*/ SDL_SCANCODE_AC_SEARCH,
     /*0xe066*/ SDL_SCANCODE_AC_BOOKMARKS,
     /*0xe067*/ SDL_SCANCODE_AC_REFRESH,
     /*0xe068*/ SDL_SCANCODE_AC_STOP,
     /*0xe069*/ SDL_SCANCODE_AC_FORWARD,
     /*0xe06a*/ SDL_SCANCODE_AC_BACK,
-    /*0xe06b*/ SDL_SCANCODE_UNKNOWN,    // LaunchApp1
-    /*0xe06c*/ SDL_SCANCODE_UNKNOWN,    // LaunchMail
+    /*0xe06b*/ SDL_SCANCODE_UNKNOWN,    // LaunchApp1; "My computer" on Turbo multimedia keyboards
+    /*0xe06c*/ SDL_SCANCODE_UNKNOWN,    // LaunchMail; "Mail" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
     /*0xe06d*/ SDL_SCANCODE_MEDIA_SELECT,
     /*0xe06e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe06f*/ SDL_SCANCODE_UNKNOWN,

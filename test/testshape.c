@@ -91,14 +91,6 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
-    if (!SDL_ISPIXELFORMAT_ALPHA(shape->format)) {
-        /* Set the colorkey to the top-left pixel */
-        Uint8 r, g, b, a;
-
-        SDL_ReadSurfacePixel(shape, 0, 0, &r, &g, &b, &a);
-        SDL_SetSurfaceColorKey(shape, 1, SDL_MapSurfaceRGBA(shape, r, g, b, a));
-    }
-
     if (!resizable) {
         /* Set the hit test callback so we can drag the window */
         if (!SDL_SetWindowHitTest(window, ShapeHitTest, shape)) {

@@ -1097,11 +1097,6 @@ static SDL_Surface *SDLTest_LoadIcon(const char *file)
         return NULL;
     }
 
-    if (icon->format == SDL_PIXELFORMAT_INDEX8) {
-        /* Set the colorkey */
-        SDL_SetSurfaceColorKey(icon, 1, *((Uint8 *)icon->pixels));
-    }
-
     return icon;
 }
 

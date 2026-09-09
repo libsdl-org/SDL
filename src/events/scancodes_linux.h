@@ -121,7 +121,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  92, 0x05c */    SDL_SCANCODE_INTERNATIONAL4,    // KEY_HENKAN
     /*  93, 0x05d */    SDL_SCANCODE_INTERNATIONAL2,    // KEY_KATAKANAHIRAGANA
     /*  94, 0x05e */    SDL_SCANCODE_INTERNATIONAL5,    // KEY_MUHENKAN
-    /*  95, 0x05f */    SDL_SCANCODE_INTERNATIONAL5,    // KEY_KPJPCOMMA
+    /*  95, 0x05f */    SDL_SCANCODE_INTERNATIONAL6,    // KEY_KPJPCOMMA
     /*  96, 0x060 */    SDL_SCANCODE_KP_ENTER,          // KEY_KPENTER
     /*  97, 0x061 */    SDL_SCANCODE_RCTRL,             // KEY_RIGHTCTRL
     /*  98, 0x062 */    SDL_SCANCODE_KP_DIVIDE,         // KEY_KPSLASH

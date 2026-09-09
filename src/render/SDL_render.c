@@ -1430,7 +1430,7 @@ static bool IsSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
     return false;
 }
 
-static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format)
+static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_PixelFormat format, bool hasAlpha)
 {
     int i;
 
@@ -1466,17 +1466,34 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
                 return renderer->texture_formats[i];
             }
         }
+    } else if (SDL_ISPIXELFORMAT_INDEXED(format)) {
+        for (i = 0; i < renderer->num_texture_formats; ++i) {
+            // Converting between <8bpp formats is not supported yet
+            if (renderer->texture_formats[i] == SDL_PIXELFORMAT_INDEX8) {
+                return renderer->texture_formats[i];
+            }
+        }
     } else {
-        bool hasAlpha = SDL_ISPIXELFORMAT_ALPHA(format);
-        bool isIndexed = SDL_ISPIXELFORMAT_INDEXED(format);
-        int size = SDL_BYTESPERPIXEL(format);
+        int type = SDL_PIXELTYPE(format);
+        int layout = SDL_PIXELLAYOUT(format);
+        hasAlpha = hasAlpha || SDL_ISPIXELFORMAT_ALPHA(format);
 
         // We just want to match the first format that has the same channels
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
-                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
-                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == hasAlpha &&
-                SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == isIndexed) {
+                SDL_PIXELTYPE(renderer->texture_formats[i]) == type &&
+                SDL_PIXELLAYOUT(renderer->texture_formats[i]) == layout &&
+                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == hasAlpha) {
+                return renderer->texture_formats[i];
+            }
+        }
+    }
+
+    if (hasAlpha) {
+        // The default format may still lack an alpha channel
+        for (i = 0; i < renderer->num_texture_formats; ++i) {
+            if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
+                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i])) {
                 return renderer->texture_formats[i];
             }
         }
@@ -1574,7 +1591,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         SDL_PropertiesID native_props = SDL_CreateProperties();
 
         if (!texture_is_fourcc_and_target) {
-            closest_format = GetClosestSupportedFormat(renderer, format);
+            closest_format = GetClosestSupportedFormat(renderer, format, false);
         } else {
             closest_format = renderer->texture_formats[0];
         }
@@ -1686,11 +1703,28 @@ SDL_Texture *SDL_CreateTexture(SDL_Renderer *renderer, SDL_PixelFormat format, S
 
 static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, SDL_Surface *surface)
 {
-    bool direct_update;
+    if (SDL_ISPIXELFORMAT_INDEXED(texture->format) && surface->palette) {
+        // Copy the palette to the new texture
+        SDL_Palette *existing = surface->palette;
+        SDL_Palette *palette = SDL_CreatePalette(existing->ncolors);
+        if (palette &&
+            SDL_SetPaletteColors(palette, existing->colors, 0, existing->ncolors) &&
+            SDL_SetTexturePalette(texture, palette)) {
+            // The texture has a reference to the palette now
+            SDL_DestroyPalette(palette);
+        } else {
+            SDL_DestroyPalette(palette);
+            return false;
+        }
+    }
 
+    bool direct_update;
     if (surface->format == texture->format &&
         SDL_GetSurfaceColorspace(surface) == texture->colorspace) {
-        if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
+        if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
+            // Update Texture directly - the color key is handled later
+            direct_update = true;
+        } else if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
              * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
             direct_update = false;
@@ -1723,19 +1757,19 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
         }
     }
 
-    if (texture->format == surface->format && surface->palette) {
-        // Copy the palette to the new texture
-        SDL_Palette *existing = surface->palette;
-        SDL_Palette *palette = SDL_CreatePalette(existing->ncolors);
-        if (palette &&
-            SDL_SetPaletteColors(palette, existing->colors, 0, existing->ncolors) &&
-            SDL_SetTexturePalette(texture, palette)) {
-            // The texture has a reference to the palette now
-            SDL_DestroyPalette(palette);
-        } else {
-            SDL_DestroyPalette(palette);
+    if (SDL_ISPIXELFORMAT_INDEXED(texture->format) && SDL_SurfaceHasColorKey(surface)) {
+        Uint32 key;
+        SDL_Color col;
+        SDL_Palette *palette;
+
+        palette = SDL_GetTexturePalette(texture);
+        if (!palette || !SDL_GetSurfaceColorKey(surface, &key) || key >= (Uint32)palette->ncolors) {
             return false;
         }
+
+        col = palette->colors[key];
+        col.a = SDL_ALPHA_TRANSPARENT;
+        SDL_SetPaletteColors(palette, &col, key, 1);
     }
 
     {
@@ -1811,38 +1845,9 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
         }
     }
 
-    // Look for 10-bit pixel formats if needed
-    if (format == SDL_PIXELFORMAT_UNKNOWN && SDL_ISPIXELFORMAT_10BIT(surface->format)) {
-        for (i = 0; i < renderer->num_texture_formats; ++i) {
-            if (SDL_ISPIXELFORMAT_10BIT(renderer->texture_formats[i])) {
-                format = renderer->texture_formats[i];
-                break;
-            }
-        }
-    }
-
-    // Look for floating point pixel formats if needed
-    if (format == SDL_PIXELFORMAT_UNKNOWN &&
-        (SDL_ISPIXELFORMAT_10BIT(surface->format) || SDL_ISPIXELFORMAT_FLOAT(surface->format))) {
-        for (i = 0; i < renderer->num_texture_formats; ++i) {
-            if (SDL_ISPIXELFORMAT_FLOAT(renderer->texture_formats[i])) {
-                format = renderer->texture_formats[i];
-                break;
-            }
-        }
-    }
-
     // Fallback, choose a valid pixel format
     if (format == SDL_PIXELFORMAT_UNKNOWN) {
-        format = renderer->texture_formats[0];
-
-        // See what the best texture format is
-        bool needAlpha;
-        if (SDL_ISPIXELFORMAT_ALPHA(surface->format) || SDL_SurfaceHasColorKey(surface)) {
-            needAlpha = true;
-        } else {
-            needAlpha = false;
-        }
+        bool needAlpha = SDL_SurfaceHasColorKey(surface);
 
         // If palette contains alpha values, promotes to alpha format
         if (surface->palette) {
@@ -1853,19 +1858,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
             }
         }
 
-        // Indexed formats don't support the transparency needed for color-keyed surfaces
-        bool preferIndexed = SDL_ISPIXELFORMAT_INDEXED(surface->format) && !needAlpha;
-        int size = SDL_BYTESPERPIXEL(format);
-
-        for (i = 0; i < renderer->num_texture_formats; ++i) {
-            if (!SDL_ISPIXELFORMAT_FOURCC(renderer->texture_formats[i]) &&
-                SDL_BYTESPERPIXEL(renderer->texture_formats[i]) == size &&
-                SDL_ISPIXELFORMAT_ALPHA(renderer->texture_formats[i]) == needAlpha &&
-                SDL_ISPIXELFORMAT_INDEXED(renderer->texture_formats[i]) == preferIndexed) {
-                format = renderer->texture_formats[i];
-                break;
-            }
-        }
+        format = GetClosestSupportedFormat(renderer, surface->format, needAlpha);
     }
 
     surface_colorspace = SDL_GetSurfaceColorspace(surface);
@@ -1895,7 +1888,7 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, surface->w);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, surface->h);
 
-texture = SDL_CreateTextureWithProperties(renderer, props);
+    texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
         return NULL;
@@ -2505,9 +2498,10 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
 
     CHECK_PARAM(texture->format != SDL_PIXELFORMAT_YV12 &&
                 texture->format != SDL_PIXELFORMAT_IYUV &&
-                texture->format != SDL_PIXELFORMAT_P408 &&
-                texture->format != SDL_PIXELFORMAT_P416) {
-        return SDL_SetError("Texture format must be YV12, IYUV, P408, or P416");
+                texture->format != SDL_PIXELFORMAT_I444 &&
+                texture->format != SDL_PIXELFORMAT_I0FL &&
+                texture->format != SDL_PIXELFORMAT_I4FL) {
+        return SDL_SetError("Texture format must be YV12, IYUV, I444, I0FL, or I4FL");
     }
 
     real_rect.x = 0;
@@ -5536,7 +5530,7 @@ bool SDL_RenderPresent(SDL_Renderer *renderer)
 
     CHECK_RENDERER_MAGIC(renderer, false);
 
-    CHECK_PARAM(renderer->target) {
+    if (renderer->target) {
         if (!renderer->window && SDL_strcmp(renderer->name, SDL_GPU_RENDERER) == 0) {
             // We're an offscreen renderer, we must submit the command queue
         } else {

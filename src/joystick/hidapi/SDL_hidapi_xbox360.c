@@ -200,6 +200,10 @@ static bool HIDAPI_DriverXbox360_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         // This is the wireless dongle, which talks a different protocol
         return false;
     }
+    if ((vendor_id == USB_VENDOR_MICROSOFT) && (product_id == USB_PRODUCT_XBOX360_BIGBUTTON_RECEIVER)) {
+        // This is the BigButton wireless receiver, which talks a different protocol
+        return false;
+    }
     if (interface_number > 0) {
         // This is the chatpad or other input interface, not the Xbox 360 interface
         return false;

@@ -104,7 +104,9 @@ static bool UpdateRotation(SDL_Renderer *renderer)
         return false;
     }
 
-    SDL_DestroyTexture(texture);
+    if (texture) {
+        SDL_DestroyTexture(texture);
+    }
     texture = SDL_CreateTextureFromSurface(renderer, rotated);
     SDL_DestroySurface(rotated);
     if (!texture) {

@@ -24,7 +24,7 @@ concurrency:
 jobs:
   controller:
     name: 'Create test plan'
-    runs-on: 'ubuntu-latest'
+    runs-on: 'ubuntu-slim'
     if: ${{ (github.event_name == 'schedule' && github.repository == 'libsdl-org/sdl') || github.event_name != 'schedule' }}
     outputs:
       platforms-level1: ${{ steps.plan.outputs.platforms-level1 }}
