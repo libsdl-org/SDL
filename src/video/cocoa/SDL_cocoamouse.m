@@ -451,6 +451,10 @@ static void Cocoa_OnGCMouseDisconnected(GCMouse *mouse)
 
 void Cocoa_InitGCMouse(void)
 {
+    if (!SDL_GetHintBoolean(SDL_HINT_MAC_USE_GCMOUSE, true)) {
+        return;
+    }
+
     @autoreleasepool {
         // These APIs are available starting in macOS Big Sur, but we don't enable
         // GCMouse until Sonoma due to broken motion and button events on MacBooks
