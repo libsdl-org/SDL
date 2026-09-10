@@ -341,7 +341,6 @@ static const char GLES2_Fragment_TextureABGR_PixelArt[] =
 "}\n"
 ;
 
-#ifdef SDL_HAVE_YUV
 
 #define YUV_SHADER_PROLOGUE                                     \
 "uniform sampler2D u_texture;\n"                                \
@@ -474,7 +473,6 @@ static const char GLES2_Fragment_TextureNV21_RG[] =
     YUV_SHADER_PROLOGUE
     NV21_RG_SHADER_BODY
 ;
-#endif
 
 // Custom Android video format texture
 static const char GLES2_Fragment_TextureExternalOES_Prologue[] =
@@ -578,7 +576,6 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureABGR;
     case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_PIXELART:
         return GLES2_Fragment_TextureABGR_PixelArt;
-#ifdef SDL_HAVE_YUV
     case GLES2_SHADER_FRAGMENT_TEXTURE_YUV:
         return GLES2_Fragment_TextureYUV;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA:
@@ -589,7 +586,6 @@ const char *GLES2_GetShader(GLES2_ShaderType type)
         return GLES2_Fragment_TextureNV21_RA;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RG:
         return GLES2_Fragment_TextureNV21_RG;
-#endif
     case GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES:
         return GLES2_Fragment_TextureExternalOES;
     default:

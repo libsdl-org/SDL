@@ -150,7 +150,6 @@ typedef struct
     void *pixels;
     int pitch;
     SDL_Rect locked_rect;
-#ifdef SDL_HAVE_YUV
     // YUV texture support
     bool yuv;
     bool nv12;
@@ -158,7 +157,6 @@ typedef struct
     bool utexture_external;
     GLuint vtexture;
     bool vtexture_external;
-#endif
     SDL_ScaleMode texture_scale_mode;
     SDL_TextureAddressMode texture_address_mode_u;
     SDL_TextureAddressMode texture_address_mode_v;
@@ -696,7 +694,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     SetTextureScaleMode(renderdata, textype, texture->format, data->texture_scale_mode);
     SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
 
-#ifdef SDL_HAVE_YUV
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV) {
         data->yuv = true;
@@ -775,7 +772,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         SetTextureAddressMode(renderdata, textype, data->texture_address_mode_u, data->texture_address_mode_v);
         SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_OPENGL_TEXTURE_UV_NUMBER, data->utexture);
     }
-#endif
 
     if (texture->format == SDL_PIXELFORMAT_INDEX8) {
         data->shader = SHADER_PALETTE_NEAREST;
@@ -790,7 +786,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     data->texel_size[2] = texture->w;
     data->texel_size[3] = texture->h;
 
-#ifdef SDL_HAVE_YUV
     if (data->yuv || data->nv12) {
         if (data->yuv) {
             data->shader = SHADER_YUV;
@@ -812,7 +807,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
             return SDL_SetError("Unsupported YUV colorspace");
         }
     }
-#endif // SDL_HAVE_YUV
 
     renderdata->glDisable(textype);
 
@@ -839,7 +833,6 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     renderdata->glTexSubImage2D(textype, 0, rect->x, rect->y, rect->w,
                                 rect->h, data->format, data->formattype,
                                 pixels);
-#ifdef SDL_HAVE_YUV
     if (data->yuv) {
         if (texture->format == SDL_PIXELFORMAT_I444) {
             // Skip to the correct offset into the next texture
@@ -890,11 +883,9 @@ static bool GL_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                     (rect->w + 1) / 2, (rect->h + 1) / 2,
                                     GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pixels);
     }
-#endif
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
-#ifdef SDL_HAVE_YUV
 static bool GL_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect,
                                const Uint8 *Yplane, int Ypitch,
@@ -971,7 +962,6 @@ static bool GL_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
-#endif
 
 static bool GL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                           const SDL_Rect *rect, void **pixels, int *pitch)
@@ -1304,7 +1294,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
     SetDrawState(data, cmd, shader, shader_params);
 
     if (texture != data->drawstate.texture) {
-#ifdef SDL_HAVE_YUV
         if (texturedata->yuv) {
             data->glActiveTextureARB(GL_TEXTURE2_ARB);
             data->glBindTexture(textype, texturedata->vtexture);
@@ -1316,7 +1305,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
             data->glActiveTextureARB(GL_TEXTURE1_ARB);
             data->glBindTexture(textype, texturedata->utexture);
         }
-#endif
         if (texture->palette) {
             GL_PaletteData *palette = (GL_PaletteData *)texture->palette->internal;
             data->glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1331,7 +1319,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
     }
 
     if (cmd->data.draw.texture_scale_mode != texturedata->texture_scale_mode) {
-#ifdef SDL_HAVE_YUV
         if (texturedata->yuv) {
             data->glActiveTextureARB(GL_TEXTURE2);
             if (!SetTextureScaleMode(data, textype, texture->format, cmd->data.draw.texture_scale_mode)) {
@@ -1352,7 +1339,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
             data->glActiveTextureARB(GL_TEXTURE0);
         }
-#endif
         if (texture->palette) {
             data->glActiveTextureARB(GL_TEXTURE1);
             if (!SetTextureScaleMode(data, textype, SDL_PIXELFORMAT_UNKNOWN, SDL_SCALEMODE_NEAREST)) {
@@ -1370,7 +1356,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (cmd->data.draw.texture_address_mode_u != texturedata->texture_address_mode_u ||
         cmd->data.draw.texture_address_mode_v != texturedata->texture_address_mode_v) {
-#ifdef SDL_HAVE_YUV
         if (texturedata->yuv) {
             data->glActiveTextureARB(GL_TEXTURE2);
             SetTextureAddressMode(data, textype, cmd->data.draw.texture_address_mode_u, cmd->data.draw.texture_address_mode_v);
@@ -1385,7 +1370,6 @@ static bool SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 
             data->glActiveTextureARB(GL_TEXTURE0);
         }
-#endif
         if (texture->palette) {
             data->glActiveTextureARB(GL_TEXTURE1);
             SetTextureAddressMode(data, textype, SDL_TEXTURE_ADDRESS_CLAMP, SDL_TEXTURE_ADDRESS_CLAMP);
@@ -1746,7 +1730,6 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (data->texture && !data->texture_external) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
-#ifdef SDL_HAVE_YUV
     if (data->yuv) {
         if (!data->utexture_external) {
             renderdata->glDeleteTextures(1, &data->utexture);
@@ -1760,7 +1743,6 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             renderdata->glDeleteTextures(1, &data->utexture);
         }
     }
-#endif
     SDL_free(data->pixels);
     SDL_free(data);
     texture->internal = NULL;
@@ -1878,10 +1860,8 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     renderer->DestroyPalette = GL_DestroyPalette;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
-#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
     renderer->UpdateTextureNV = GL_UpdateTextureNV;
-#endif
     renderer->LockTexture = GL_LockTexture;
     renderer->UnlockTexture = GL_UnlockTexture;
     renderer->SetRenderTarget = GL_SetRenderTarget;
@@ -2031,7 +2011,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL palette shaders not supported");
     }
-#ifdef SDL_HAVE_YUV
     // We support YV12 textures using 3 textures and a shader
     if (GL_SupportsShader(data->shaders, SHADER_YUV) &&
         data->num_texture_units >= 3) {
@@ -2053,7 +2032,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL NV12/NV21 not supported");
     }
-#endif
 #ifdef SDL_PLATFORM_MACOS
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_UYVY);
 #endif
