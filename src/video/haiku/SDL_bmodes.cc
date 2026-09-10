@@ -81,55 +81,55 @@ static void get_refresh_rate(display_mode &mode, int *numerator, int *denominato
  */
 void _SpoutModeData(display_mode *bmode)
 {
-    printf("BMode:\n");
-    printf("\tw,h = (%i,%i)\n", bmode->virtual_width, bmode->virtual_height);
-    printf("\th,v = (%i,%i)\n", bmode->h_display_start,
+    SDL_Log("BMode:");
+    SDL_Log("\tw,h = (%i,%i)", bmode->virtual_width, bmode->virtual_height);
+    SDL_Log("\th,v = (%i,%i)", bmode->h_display_start,
             bmode->v_display_start);
     if (bmode->flags) {
-        printf("\tFlags:\n");
+        SDL_Log("\tFlags:");
         if (bmode->flags & B_SCROLL) {
-            printf("\t\tB_SCROLL\n");
+            SDL_Log("\t\tB_SCROLL");
         }
         if (bmode->flags & B_8_BIT_DAC) {
-            printf("\t\tB_8_BIT_DAC\n");
+            SDL_Log("\t\tB_8_BIT_DAC");
         }
         if (bmode->flags & B_HARDWARE_CURSOR) {
-            printf("\t\tB_HARDWARE_CURSOR\n");
+            SDL_Log("\t\tB_HARDWARE_CURSOR");
         }
         if (bmode->flags & B_PARALLEL_ACCESS) {
-            printf("\t\tB_PARALLEL_ACCESS\n");
+            SDL_Log("\t\tB_PARALLEL_ACCESS");
         }
         if (bmode->flags & B_DPMS) {
-            printf("\t\tB_DPMS\n");
+            SDL_Log("\t\tB_DPMS");
         }
         if (bmode->flags & B_IO_FB_NA) {
-            printf("\t\tB_IO_FB_NA\n");
+            SDL_Log("\t\tB_IO_FB_NA");
         }
     }
-    printf("\tTiming:\n");
-    printf("\t\tpx clock: %i\n", bmode->timing.pixel_clock);
-    printf("\t\th - display: %i sync start: %i sync end: %i total: %i\n",
+    SDL_Log("\tTiming:");
+    SDL_Log("\t\tpx clock: %i", bmode->timing.pixel_clock);
+    SDL_Log("\t\th - display: %i sync start: %i sync end: %i total: %i",
         bmode->timing.h_display, bmode->timing.h_sync_start,
         bmode->timing.h_sync_end, bmode->timing.h_total);
-    printf("\t\tv - display: %i sync start: %i sync end: %i total: %i\n",
+    SDL_Log("\t\tv - display: %i sync start: %i sync end: %i total: %i",
         bmode->timing.v_display, bmode->timing.v_sync_start,
         bmode->timing.v_sync_end, bmode->timing.v_total);
     if (bmode->timing.flags) {
-        printf("\t\tFlags:\n");
+        SDL_Log("\t\tFlags:");
         if (bmode->timing.flags & B_BLANK_PEDESTAL) {
-            printf("\t\t\tB_BLANK_PEDESTAL\n");
+            SDL_Log("\t\t\tB_BLANK_PEDESTAL");
         }
         if (bmode->timing.flags & B_TIMING_INTERLACED) {
-            printf("\t\t\tB_TIMING_INTERLACED\n");
+            SDL_Log("\t\t\tB_TIMING_INTERLACED");
         }
         if (bmode->timing.flags & B_POSITIVE_HSYNC) {
-            printf("\t\t\tB_POSITIVE_HSYNC\n");
+            SDL_Log("\t\t\tB_POSITIVE_HSYNC");
         }
         if (bmode->timing.flags & B_POSITIVE_VSYNC) {
-            printf("\t\t\tB_POSITIVE_VSYNC\n");
+            SDL_Log("\t\t\tB_POSITIVE_VSYNC");
         }
         if (bmode->timing.flags & B_SYNC_ON_GREEN) {
-            printf("\t\t\tB_SYNC_ON_GREEN\n");
+            SDL_Log("\t\t\tB_SYNC_ON_GREEN");
         }
     }
 }

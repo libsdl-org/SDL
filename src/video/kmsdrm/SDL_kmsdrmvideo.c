@@ -297,15 +297,17 @@ static void print_plane_info(SDL_VideoDevice *_this, drmModePlanePtr plane)
     /* Now we look for the CRTCs supported by the plane. */
     drmModeRes *resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
     if (resources) {
-        printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
+        SDL_IOStream *io = SDL_IOFromDynamicMem();
+        SDL_IOprintf(io, "--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
         for (int i = 0; i < resources->count_crtcs; i++) {
             if (plane->possible_crtcs & (1 << i)) {
                 uint32_t crtc_id = resources->crtcs[i];
-                printf ("%d", crtc_id);
+                SDL_IOprintf(io, " %d", crtc_id);
                 break;
             }
         }
-        printf ("\n\n");
+        SDL_Log("%s\n\n", (const char *)SDL_GetPointerProperty(SDL_GetIOProperties(io), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, ""));
+        SDL_CloseIO(io);
     }
 }
 
@@ -315,12 +317,12 @@ static void get_planes_info(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
 
     drmModePlaneResPtr plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
     if (!plane_resources) {
-        printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
+        SDL_Log("drmModeGetPlaneResources failed: %s", strerror(errno));
         return;
     }
 
-    printf("--Number of planes found: %d-- \n", plane_resources->count_planes);
-    printf("--Usable CRTC that we have chosen: %d-- \n", dispdata->crtc.crtc->crtc_id);
+    SDL_Log("--Number of planes found: %d--", plane_resources->count_planes);
+    SDL_Log("--Usable CRTC that we have chosen: %d--", dispdata->crtc.crtc->crtc_id);
 
     /* Iterate on all the available planes. */
     for (uint32_t i = 0; (i < plane_resources->count_planes); i++) {
@@ -328,7 +330,7 @@ static void get_planes_info(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
 
         drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
         if (!plane) {
-            printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
+            SDL_Log("drmModeGetPlane(%u) failed: %s", plane_id, strerror(errno));
             continue;
         }
 
@@ -545,7 +547,7 @@ int drm_atomic_commit(SDL_VideoDevice *_this, SDL_DisplayData *dispdata, bool bl
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
 #if 0
-        printf("ATOMIC COMMIT FAILED: %s.\n", strerror(errno));
+        SDL_Log("ATOMIC COMMIT FAILED: %s.", strerror(errno));
 #endif
         goto out;
     }

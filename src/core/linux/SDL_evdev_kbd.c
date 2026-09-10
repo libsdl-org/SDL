@@ -110,50 +110,56 @@ static void SDL_EVDEV_dump_accents(SDL_EVDEV_keyboard_state *kbd)
 {
     unsigned int i;
 
-    printf("static struct kbdiacrs default_accents = {\n");
-    printf("    %d,\n", kbd->accents->kb_cnt);
-    printf("    {\n");
+    SDL_Log("static struct kbdiacrs default_accents = {");
+    SDL_Log("    %d,", kbd->accents->kb_cnt);
+    SDL_Log("    {");
     for (i = 0; i < kbd->accents->kb_cnt; ++i) {
         struct kbdiacr *diacr = &kbd->accents->kbdiacr[i];
-        printf("        { 0x%.2x, 0x%.2x, 0x%.2x },\n",
+        SDL_Log("        { 0x%.2x, 0x%.2x, 0x%.2x },",
                diacr->diacr, diacr->base, diacr->result);
     }
     while (i < 256) {
-        printf("        { 0x00, 0x00, 0x00 },\n");
+        SDL_Log("        { 0x00, 0x00, 0x00 },");
         ++i;
     }
-    printf("    }\n");
-    printf("};\n");
+    SDL_Log("    }");
+    SDL_Log("};");
 }
 #endif // DUMP_ACCENTS
 
 #ifdef DUMP_KEYMAP
+SDL_COMPILE_TIME_ASSERT(NR_KEYS_MULTIPLE_OF_8, NR_KEYS % 8 == 0);
 static void SDL_EVDEV_dump_keymap(SDL_EVDEV_keyboard_state *kbd)
 {
     int i, j;
 
     for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
         if (kbd->key_maps[i]) {
-            printf("static unsigned short default_key_map_%d[NR_KEYS] = {", i);
-            for (j = 0; j < NR_KEYS; ++j) {
-                if ((j % 8) == 0) {
-                    printf("\n    ");
-                }
-                printf("0x%.4x, ", kbd->key_maps[i][j]);
+            SDL_Log("static unsigned short default_key_map_%d[NR_KEYS] = {", i);
+            for (j = 0; j < NR_KEYS; j += 8) {
+                SDL_Log("    0x%.4x, 0x%.4x, 0x%.4x, 0x%.4x, 0x%.4x, 0x%.4x, 0x%.4x, 0x%.4x,",
+                    kbd->key_maps[i][j + 0],
+                    kbd->key_maps[i][j + 1],
+                    kbd->key_maps[i][j + 2],
+                    kbd->key_maps[i][j + 3],
+                    kbd->key_maps[i][j + 4],
+                    kbd->key_maps[i][j + 5],
+                    kbd->key_maps[i][j + 6],
+                    kbd->key_maps[i][j + 7]);
             }
-            printf("\n};\n");
+            SDL_Log("};");
         }
     }
-    printf("\n");
-    printf("static unsigned short *default_key_maps[MAX_NR_KEYMAPS] = {\n");
+    SDL_Log(" ");
+    SDL_Log("static unsigned short *default_key_maps[MAX_NR_KEYMAPS] = {");
     for (i = 0; i < MAX_NR_KEYMAPS; ++i) {
         if (kbd->key_maps[i]) {
-            printf("    default_key_map_%d,\n", i);
+            SDL_Log("    default_key_map_%d,", i);
         } else {
-            printf("    NULL,\n");
+            SDL_Log("    NULL,");
         }
     }
-    printf("};\n");
+    SDL_Log("};");
 }
 #endif // DUMP_KEYMAP
 
