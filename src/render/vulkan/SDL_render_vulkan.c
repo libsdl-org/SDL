@@ -2638,10 +2638,17 @@ static void VULKAN_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *pa
     VULKAN_RenderData *data = (VULKAN_RenderData *)renderer->internal;
     VULKAN_PaletteData *palettedata = (VULKAN_PaletteData *)palette->internal;
 
-    if (palettedata) {
-        VULKAN_DestroyImage(data, &palettedata->image);
-        SDL_free(palettedata);
+    if (!palettedata) {
+        return;
     }
+
+    /* Because VULKAN_DestroyPalette might be called while the data is in-flight, we need to issue the batch first
+       Unfortunately, this means that deleting a lot of palettes mid-frame will have poor performance. */
+    VULKAN_IssueBatch(data);
+    VULKAN_WaitForGPU(data);
+
+    VULKAN_DestroyImage(data, &palettedata->image);
+    SDL_free(palettedata);
 }
 
 static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
