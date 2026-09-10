@@ -22,7 +22,6 @@
 
 #ifdef SDL_JOYSTICK_DOS
 
-#include <dpmi.h> /* for __dpmi_regs, __dpmi_int */
 #include <limits.h>
 #include <pc.h> /* for inportb */
 
@@ -30,6 +29,10 @@
 #include "../SDL_sysjoystick.h"
 
 #define GAMEPORT 0x201
+#define GAMEPORT_AXIS_X 0x01
+#define GAMEPORT_AXIS_Y 0x02
+#define GAMEPORT_AXIS_MASK (GAMEPORT_AXIS_X | GAMEPORT_AXIS_Y)
+#define GAMEPORT_AXIS_TIMEOUT 65535
 
 /* Gameport status byte button bits (active low) */
 #define GAMEPORT_BUTTON1 0x10 /* bit 4 */
@@ -52,43 +55,47 @@ struct joystick_hwdata
     bool calibrated;    /* whether we've seen enough range */
 };
 
-/*
- * Probe for joystick presence using BIOS INT 15h, function 84h, subfunction 0.
- * This reads the button state — if the BIOS supports it, a joystick is present.
- * Returns true if the BIOS call succeeds (carry flag clear).
- */
-static bool ProbeGameport(void)
-{
-    __dpmi_regs regs;
-    SDL_zero(regs);
-    regs.x.ax = 0x8400; /* INT 15h AH=84h */
-    regs.x.dx = 0x0000; /* subfunction 0: read button state */
-    __dpmi_int(0x15, &regs);
-    /* Carry flag set = no joystick BIOS support */
-    return !(regs.x.flags & 0x01);
-}
-
-/*
- * Read joystick axes using BIOS INT 15h, function 84h, subfunction 1.
- * Returns calibrated raw values in AX (X axis) and BX (Y axis).
- * This avoids direct port I/O timing loops — the BIOS handles the
- * one-shot timer polling internally.
- */
+/* Time the gameport RC axes directly. Calling BIOS INT 15h from a protected-mode
+ * program requires an expensive DPMI mode switch on real hardware. The count is
+ * CPU-dependent, but CalibrateAxis maps the observed range to SDL coordinates. */
 static void ReadGameportAxes(int *axis_x, int *axis_y)
 {
-    __dpmi_regs regs;
-    SDL_zero(regs);
-    regs.x.ax = 0x8400; /* INT 15h AH=84h */
-    regs.x.dx = 0x0001; /* subfunction 1: read axis values */
-    __dpmi_int(0x15, &regs);
-    if (regs.x.flags & 0x01) {
-        /* BIOS call failed */
-        *axis_x = -1;
-        *axis_y = -1;
-    } else {
-        *axis_x = (int)regs.x.ax; /* joystick 1 X axis */
-        *axis_y = (int)regs.x.bx; /* joystick 1 Y axis */
+    unsigned int count = 0;
+    unsigned int x_count = 0;
+    unsigned int y_count = 0;
+    Uint8 pending = GAMEPORT_AXIS_MASK;
+
+    outportb(GAMEPORT, 0);
+    while (pending && count < GAMEPORT_AXIS_TIMEOUT) {
+        const Uint8 status = inportb(GAMEPORT);
+        ++count;
+        if (pending & GAMEPORT_AXIS_X) {
+            if (status & GAMEPORT_AXIS_X) {
+                x_count = count;
+            } else {
+                pending &= (Uint8)~GAMEPORT_AXIS_X;
+            }
+        }
+        if (pending & GAMEPORT_AXIS_Y) {
+            if (status & GAMEPORT_AXIS_Y) {
+                y_count = count;
+            } else {
+                pending &= (Uint8)~GAMEPORT_AXIS_Y;
+            }
+        }
     }
+
+    *axis_x = (pending & GAMEPORT_AXIS_X) ? -1 : (int)x_count;
+    *axis_y = (pending & GAMEPORT_AXIS_Y) ? -1 : (int)y_count;
+}
+
+static bool ProbeGameport(void)
+{
+    int axis_x;
+    int axis_y;
+
+    ReadGameportAxes(&axis_x, &axis_y);
+    return axis_x >= 0 && axis_y >= 0;
 }
 
 static Sint16 CalibrateAxis(int raw, struct joystick_hwdata *hwdata, int axis)
@@ -142,10 +149,8 @@ static int DOS_JoystickGetCount(void)
 
 static void DOS_JoystickDetect(void)
 {
-    /* Don't re-probe every frame — ProbeGameport() does a tight loop of up to
-       65536 port reads, which is very expensive and can interfere with SB16 IRQ
-       timing. DOS gameport joysticks are not hot-pluggable anyway. Detection
-       happens once in DOS_JoystickInit(). */
+    /* Direct gameport detection uses a timing loop, so run it only at startup.
+       DOS gameport joysticks are not hot-pluggable. */
 }
 
 static bool DOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
@@ -274,9 +279,8 @@ static void DOS_JoystickUpdate(SDL_Joystick *joystick)
     SDL_SendJoystickButton(0, joystick, 2, !(val & GAMEPORT_BUTTON3));
     SDL_SendJoystickButton(0, joystick, 3, !(val & GAMEPORT_BUTTON4));
 
-    /* Throttle axis reads — BIOS INT 15h subfunction 1 does an internal
-       timing loop that is very expensive. ~60 Hz is more than enough for
-       a 2-axis analog gameport stick. */
+    /* Analog gameport timing is still relatively expensive, so cache samples
+       at approximately 60 Hz rather than measuring on every SDL event pump. */
     now = SDL_GetTicksNS();
     if (now < dos_joystick_next_poll_ns) {
         return;
