@@ -80,6 +80,20 @@ static SDL_XInput2ScrollableDevice *scrollable_devices;
 static int scrollable_device_count;
 #endif
 
+typedef struct SDL_XInput2DeviceInfo
+{
+    int device_id;
+    int number[2];
+    bool relative[2];
+    bool prev_coord_valid[2];
+    double minval[2];
+    double maxval[2];
+    double prev_coords[2];
+    struct SDL_XInput2DeviceInfo *next;
+} SDL_XInput2DeviceInfo;
+
+static SDL_XInput2DeviceInfo *xinput2_device_info;
+
 static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -327,6 +341,12 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
 
 void X11_QuitXinput2(SDL_VideoDevice *_this)
 {
+    for (SDL_XInput2DeviceInfo *i = xinput2_device_info, *next = NULL; i; i = next) {
+        next = i->next;
+        SDL_free(i);
+    }
+    xinput2_device_info = NULL;
+
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_free(xinput2_pointer_button_map);
     xinput2_pointer_button_map = NULL;
@@ -368,16 +388,16 @@ void X11_Xinput2UpdatePointerMapping(SDL_VideoDevice *_this)
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
 // xi2 device went away? take it out of the list.
-static void xinput2_remove_device_info(SDL_VideoData *videodata, const int device_id)
+static void xinput2_remove_device_info(const int device_id)
 {
     SDL_XInput2DeviceInfo *prev = NULL;
     SDL_XInput2DeviceInfo *devinfo;
 
-    for (devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
+    for (devinfo = xinput2_device_info; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
+            SDL_assert((devinfo == xinput2_device_info) == (prev == NULL));
             if (!prev) {
-                videodata->mouse_device_info = devinfo->next;
+                xinput2_device_info = devinfo->next;
             } else {
                 prev->next = devinfo->next;
             }
@@ -388,9 +408,9 @@ static void xinput2_remove_device_info(SDL_VideoData *videodata, const int devic
     }
 }
 
-static void xinput2_reset_relative_valuators(SDL_VideoData *videodata)
+static void xinput2_reset_relative_valuators()
 {
-    for (SDL_XInput2DeviceInfo *devinfo = videodata->mouse_device_info; devinfo; devinfo = devinfo->next) {
+    for (SDL_XInput2DeviceInfo *devinfo = xinput2_device_info; devinfo; devinfo = devinfo->next) {
         devinfo->prev_coord_valid[0] = false;
         devinfo->prev_coord_valid[1] = false;
     }
@@ -449,15 +469,15 @@ static void xinput2_update_relative_valuators(SDL_XInput2DeviceInfo *devinfo, XI
     }
 }
 
-static SDL_XInput2DeviceInfo *xinput2_get_cached_device_info(SDL_VideoData *videodata, const int device_id)
+static SDL_XInput2DeviceInfo *xinput2_get_cached_device_info(const int device_id)
 {
-    for (SDL_XInput2DeviceInfo *devinfo = videodata->mouse_device_info, *prev = NULL; devinfo; devinfo = devinfo->next) {
+    for (SDL_XInput2DeviceInfo *devinfo = xinput2_device_info, *prev = NULL; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
-            SDL_assert((devinfo == videodata->mouse_device_info) == (prev == NULL));
+            SDL_assert((devinfo == xinput2_device_info) == (prev == NULL));
             if (prev) { // move this to the front of the list, assuming we'll get more from this one.
                 prev->next = devinfo->next;
-                devinfo->next = videodata->mouse_device_info;
-                videodata->mouse_device_info = devinfo;
+                devinfo->next = xinput2_device_info;
+                xinput2_device_info = devinfo;
             }
             return devinfo;
         }
@@ -470,7 +490,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_cached_device_info(SDL_VideoData *vide
 static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, const int device_id)
 {
     // Cache device info as we see new devices.
-    SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(videodata, device_id);
+    SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(device_id);
     if (devinfo) {
         return devinfo;
     }
@@ -492,8 +512,8 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
     X11_XIFreeDeviceInfo(xidevinfo);
 
     devinfo->device_id = device_id;
-    devinfo->next = videodata->mouse_device_info;
-    videodata->mouse_device_info = devinfo;
+    devinfo->next = xinput2_device_info;
+    xinput2_device_info = devinfo;
 
     return devinfo;
 }
@@ -522,7 +542,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 
             // not pen stuff...
             if (hierev->info[i].flags & XISlaveRemoved) {
-                xinput2_remove_device_info(videodata, hierev->info[i].deviceid);
+                xinput2_remove_device_info(hierev->info[i].deviceid);
             }
         }
         videodata->xinput_hierarchy_changed = true;
@@ -534,7 +554,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     {
         const XIDeviceChangedEvent *dcev = (const XIDeviceChangedEvent *)cookie->data;
         if (dcev->reason == XISlaveSwitch) {
-            SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(videodata, dcev->deviceid);
+            SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(dcev->deviceid);
             if (devinfo) {
                 xinput2_update_relative_valuators(devinfo, dcev->classes, dcev->num_classes);
             }
@@ -691,7 +711,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     case XI_Enter:
         xinput2_reset_scrollable_valuators();
-        xinput2_reset_relative_valuators(videodata);
+        xinput2_reset_relative_valuators();
         break;
 #endif
 
