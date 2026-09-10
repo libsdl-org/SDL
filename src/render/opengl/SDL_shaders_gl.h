@@ -38,13 +38,11 @@ typedef enum
     SHADER_RGB_PIXELART,
     SHADER_RGBA,
     SHADER_RGBA_PIXELART,
-#ifdef SDL_HAVE_YUV
     SHADER_YUV,
     SHADER_NV12_RA,
     SHADER_NV12_RG,
     SHADER_NV21_RA,
     SHADER_NV21_RG,
-#endif
     NUM_SHADERS
 } GL_Shader;
 

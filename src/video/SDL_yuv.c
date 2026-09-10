@@ -26,7 +26,6 @@
 #include "yuv2rgb/yuv_rgb.h"
 
 
-#ifdef SDL_HAVE_YUV
 static bool IsPlanar1x1Format(SDL_PixelFormat format)
 {
     return format == SDL_PIXELFORMAT_I444 || format == SDL_PIXELFORMAT_I4FL;
@@ -46,7 +45,6 @@ static bool IsPacked4Format(Uint32 format)
 {
     return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
-#endif
 
 /*
  * Calculate YUV size and pitch. Check for overflow.
@@ -54,7 +52,6 @@ static bool IsPacked4Format(Uint32 format)
  */
 bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, size_t *pitch)
 {
-#ifdef SDL_HAVE_YUV
     int sz_plane = 0, sz_plane_chroma = 0, sz_plane_packed = 0;
 
     if (IsPlanar1x1Format(format)) {
@@ -100,7 +97,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             }
             sz_plane_chroma = (int)s3;
         }
-    } else {
+    } else if (IsPacked4Format(format)) {
         /* sz_plane_packed == ((w + 1) / 2) * h; */
         size_t s1, s2;
         if (!SDL_size_add_check_overflow(w, 1, &s1)) {
@@ -111,6 +108,8 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
             return SDL_SetError("width * height would overflow");
         }
         sz_plane_packed = (int) s2;
+    } else {
+        return SDL_Unsupported();
     }
 
     switch (format) {
@@ -189,9 +188,6 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
     }
 
     return true;
-#else
-    return SDL_Unsupported();
-#endif
 }
 
 #ifdef SDL_HAVE_YUV

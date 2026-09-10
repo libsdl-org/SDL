@@ -2661,7 +2661,6 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
     texture->internal = textureData;
 
-#ifdef SDL_HAVE_YUV
     // YUV textures must have even width and height.  Also create Ycbcr conversion
     if (texture->format == SDL_PIXELFORMAT_YV12 ||
         texture->format == SDL_PIXELFORMAT_IYUV ||
@@ -2789,7 +2788,6 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             return false;
         }
     }
-#endif
     textureData->width = width;
     textureData->height = height;
 
@@ -2841,7 +2839,6 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
 
     VULKAN_DestroyImage(rendererData, &textureData->mainImage);
 
-#ifdef SDL_HAVE_YUV
     if (textureData->samplerYcbcrConversion != VK_NULL_HANDLE) {
         vkDestroySamplerYcbcrConversionKHR(rendererData->device, textureData->samplerYcbcrConversion, NULL);
         textureData->samplerYcbcrConversion = VK_NULL_HANDLE;
@@ -2858,7 +2855,6 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
         vkDestroyDescriptorSetLayout(rendererData->device, textureData->descriptorSetLayoutYcbcr, NULL);
         textureData->descriptorSetLayoutYcbcr = VK_NULL_HANDLE;
     }
-#endif
 
     VULKAN_DestroyBuffer(rendererData, &textureData->stagingBuffer);
     if (textureData->mainFramebuffer != VK_NULL_HANDLE) {
@@ -2967,7 +2963,6 @@ static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImag
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
                                    const SDL_Rect *rect,
                                    const Uint8 *Yplane, int Ypitch,
@@ -2978,7 +2973,6 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
                                     const Uint8 *Yplane, int Ypitch,
                                     const Uint8 *Uplane, int Upitch,
                                     const Uint8 *Vplane, int Vpitch);
-#endif
 
 static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                const SDL_Rect *rect, const void *srcPixels,
@@ -2991,7 +2985,6 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
-#ifdef SDL_HAVE_YUV
     Uint32 numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
     if (numPlanes == 2) {
         // NV12/NV21 data
@@ -3025,14 +3018,12 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         }
     }
-#endif
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                   const SDL_Rect *rect,
                                   const Uint8 *Yplane, int Ypitch,
@@ -3095,7 +3086,6 @@ static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     }
     return true;
 }
-#endif
 
 static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                              const SDL_Rect *rect, void **pixels, int *pitch)
@@ -4652,10 +4642,8 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
     renderer->DestroyPalette = VULKAN_DestroyPalette;
     renderer->CreateTexture = VULKAN_CreateTexture;
     renderer->UpdateTexture = VULKAN_UpdateTexture;
-#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VULKAN_UpdateTextureYUV;
     renderer->UpdateTextureNV = VULKAN_UpdateTextureNV;
-#endif
     renderer->LockTexture = VULKAN_LockTexture;
     renderer->UnlockTexture = VULKAN_UnlockTexture;
     renderer->SetRenderTarget = VULKAN_SetRenderTarget;
@@ -4720,7 +4708,6 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 
-#ifdef SDL_HAVE_YUV
     if (rendererData->supportsKHRSamplerYCbCrConversion) {
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
@@ -4731,7 +4718,6 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I0FL);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I4FL);
     }
-#endif
 
     return true;
 }

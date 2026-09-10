@@ -2468,7 +2468,6 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
                          const Uint8 *Uplane, int Upitch,
                          const Uint8 *Vplane, int Vpitch)
 {
-#ifdef SDL_HAVE_YUV
     SDL_Renderer *renderer;
     SDL_Rect real_rect;
 
@@ -2513,9 +2512,12 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
         return true; // nothing to do.
     }
 
+#ifdef SDL_HAVE_YUV
     if (texture->yuv) {
         return SDL_UpdateTextureYUVPlanar(texture, &real_rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
-    } else {
+    } else
+#endif
+    {
         SDL_assert(!texture->native);
         renderer = texture->renderer;
         SDL_assert(renderer->UpdateTextureYUV);
@@ -2528,16 +2530,12 @@ bool SDL_UpdateYUVTexture(SDL_Texture *texture, const SDL_Rect *rect,
             return SDL_Unsupported();
         }
     }
-#else
-    return false;
-#endif
 }
 
 bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
                         const Uint8 *Yplane, int Ypitch,
                         const Uint8 *UVplane, int UVpitch)
 {
-#ifdef SDL_HAVE_YUV
     SDL_Renderer *renderer;
     SDL_Rect real_rect;
 
@@ -2574,9 +2572,12 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
         return true; // nothing to do.
     }
 
+#ifdef SDL_HAVE_YUV
     if (texture->yuv) {
         return SDL_UpdateTextureNVPlanar(texture, &real_rect, Yplane, Ypitch, UVplane, UVpitch);
-    } else {
+    } else
+#endif
+    {
         SDL_assert(!texture->native);
         renderer = texture->renderer;
         SDL_assert(renderer->UpdateTextureNV);
@@ -2589,9 +2590,6 @@ bool SDL_UpdateNVTexture(SDL_Texture *texture, const SDL_Rect *rect,
             return SDL_Unsupported();
         }
     }
-#else
-    return false;
-#endif
 }
 
 #ifdef SDL_HAVE_YUV
