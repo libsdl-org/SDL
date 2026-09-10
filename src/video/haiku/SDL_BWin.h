@@ -690,9 +690,6 @@ class SDL_BWin : public BWindow
             if (fullscreen) {
                 BScreen screen(this);
                 BRect screenFrame = screen.Frame();
-                printf("screen frame: ");
-                screenFrame.PrintToStream();
-                printf("\n");
                 _bordered = Look() != B_NO_BORDER_WINDOW_LOOK;
                 _resizable = !(Flags() & B_NOT_RESIZABLE);
                 _non_fullscreen_frame = Frame();
