@@ -71,30 +71,34 @@ typedef struct
 
 typedef struct
 {
-    int device_id;
     int scroll_info_count;
     SDL_XInput2ScrollInfo *scroll_info;
 } SDL_XInput2ScrollableDevice;
-
-static SDL_XInput2ScrollableDevice *scrollable_devices;
-static int scrollable_device_count;
 #endif
 
-typedef struct SDL_XInput2DeviceInfo
+typedef struct
 {
-    int device_id;
     int number[2];
     bool relative[2];
     bool prev_coord_valid[2];
     double minval[2];
     double maxval[2];
     double prev_coords[2];
+} SDL_XInput2RelativeDevice;
+
+typedef struct SDL_XInput2DeviceInfo
+{
+    int device_id;
+    SDL_XInput2RelativeDevice relative;
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+    SDL_XInput2ScrollableDevice scroll;
+#endif
     struct SDL_XInput2DeviceInfo *next;
 } SDL_XInput2DeviceInfo;
 
 static SDL_XInput2DeviceInfo *xinput2_device_info;
 
-static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRawEvent *rawev)
+static void parse_relative_valuators(SDL_XInput2RelativeDevice *rel_dev, const XIRawEvent *rawev)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     double processed_coords[2] = { 0.0, 0.0 };
@@ -109,18 +113,18 @@ static void parse_relative_valuators(SDL_XInput2DeviceInfo *devinfo, const XIRaw
         }
 
         for (int j = 0; j < 2; ++j) {
-            if (devinfo->number[j] == i) {
+            if (rel_dev->number[j] == i) {
                 const double current_val = use_raw_vals ? rawev->raw_values[values_i] : rawev->valuators.values[values_i];
 
-                if (devinfo->relative[j]) {
+                if (rel_dev->relative[j]) {
                     processed_coords[j] = current_val;
                 } else {
                     // The first absolute value is meaningless by itself and must be ignored, as it only establishes a baseline for future deltas.
-                    if (devinfo->prev_coord_valid[j]) {
-                        processed_coords[j] = (current_val - devinfo->prev_coords[j]); // convert absolute to relative
+                    if (rel_dev->prev_coord_valid[j]) {
+                        processed_coords[j] = current_val - rel_dev->prev_coords[j]; // convert absolute to relative
                     }
-                    devinfo->prev_coords[j] = current_val;
-                    devinfo->prev_coord_valid[j] = true;
+                    rel_dev->prev_coords[j] = current_val;
+                    rel_dev->prev_coord_valid[j] = true;
                 }
                 ++found;
 
@@ -157,57 +161,43 @@ static SDL_Window *xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-static void xinput2_reset_scrollable_valuators(void)
+static void xinput2_parse_scrollable_valuators(SDL_XInput2ScrollableDevice *scroll_dev, const XIDeviceEvent *xev)
 {
-    for (int i = 0; i < scrollable_device_count; ++i) {
-        for (int j = 0; j < scrollable_devices[i].scroll_info_count; ++j) {
-            scrollable_devices[i].scroll_info[j].prev_value_valid = false;
+    int values_i = 0;
+    for (int j = 0; j < xev->valuators.mask_len * 8; ++j) {
+        if (!XIMaskIsSet(xev->valuators.mask, j)) {
+            continue;
         }
-    }
-}
 
-static void xinput2_parse_scrollable_valuators(const XIDeviceEvent *xev)
-{
-    for (int i = 0; i < scrollable_device_count; ++i) {
-        const SDL_XInput2ScrollableDevice *sd = &scrollable_devices[i];
-        if (xev->sourceid == sd->device_id) {
-            int values_i = 0;
-            for (int j = 0; j < xev->valuators.mask_len * 8; ++j) {
-                if (!XIMaskIsSet(xev->valuators.mask, j)) {
-                    continue;
+        for (int k = 0; k < scroll_dev->scroll_info_count; ++k) {
+            SDL_XInput2ScrollInfo *info = &scroll_dev->scroll_info[k];
+            if (info->number == j) {
+                const double current_val = xev->valuators.values[values_i];
+                const double delta = (info->prev_value - current_val) / info->increment;
+                /* Ignore very large jumps that can happen as a result of overflowing
+                 * the maximum range, as the driver will reset the position to zero
+                 * at "something that's close to 2^32".
+                 *
+                 * The first scroll event is meaningless by itself and must be discarded,
+                 * as it is only useful for establishing a baseline for future deltas.
+                 * This is a known deficiency of the XInput2 scroll protocol, and,
+                 * unfortunately, there is nothing we can do about it.
+                 *
+                 * http://who-t.blogspot.com/2012/06/xi-21-protocol-design-issues.html
+                 */
+                if (info->prev_value_valid && SDL_fabs(delta) < (double)SDL_MAX_SINT32 * 0.95) {
+                    const double x = info->scroll_type == XIScrollTypeHorizontal ? delta : 0;
+                    const double y = info->scroll_type == XIScrollTypeVertical ? delta : 0;
+
+                    SDL_Mouse *mouse = SDL_GetMouse();
+                    SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL);
                 }
-
-                for (int k = 0; k < sd->scroll_info_count; ++k) {
-                    SDL_XInput2ScrollInfo *info = &sd->scroll_info[k];
-                    if (info->number == j) {
-                        const double current_val = xev->valuators.values[values_i];
-                        const double delta = (info->prev_value - current_val) / info->increment;
-                        /* Ignore very large jumps that can happen as a result of overflowing
-                         * the maximum range, as the driver will reset the position to zero
-                         * at "something that's close to 2^32".
-                         *
-                         * The first scroll event is meaningless by itself and must be discarded,
-                         * as it is only useful for establishing a baseline for future deltas.
-                         * This is a known deficiency of the XInput2 scroll protocol, and,
-                         * unfortunately, there is nothing we can do about it.
-                         *
-                         * http://who-t.blogspot.com/2012/06/xi-21-protocol-design-issues.html
-                         */
-                        if (info->prev_value_valid && SDL_fabs(delta) < (double)SDL_MAX_SINT32 * 0.95) {
-                            const double x = info->scroll_type == XIScrollTypeHorizontal ? delta : 0;
-                            const double y = info->scroll_type == XIScrollTypeVertical ? delta : 0;
-
-                            SDL_Mouse *mouse = SDL_GetMouse();
-                            SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL);
-                        }
-                        info->prev_value = current_val;
-                        info->prev_value_valid = true;
-                    }
-                }
-
-                ++values_i;
+                info->prev_value = current_val;
+                info->prev_value_valid = true;
             }
         }
+
+        ++values_i;
     }
 }
 #endif // SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
@@ -341,25 +331,19 @@ bool X11_InitXinput2(SDL_VideoDevice *_this)
 
 void X11_QuitXinput2(SDL_VideoDevice *_this)
 {
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     for (SDL_XInput2DeviceInfo *i = xinput2_device_info, *next = NULL; i; i = next) {
         next = i->next;
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+        SDL_free(i->scroll.scroll_info);
+#endif
         SDL_free(i);
     }
     xinput2_device_info = NULL;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_free(xinput2_pointer_button_map);
     xinput2_pointer_button_map = NULL;
     xinput2_pointer_button_map_size = 0;
-
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-    for (int i = 0; i < scrollable_device_count; ++i) {
-        SDL_free(scrollable_devices[i].scroll_info);
-    }
-    SDL_free(scrollable_devices);
-    scrollable_devices = NULL;
-    scrollable_device_count = 0;
-#endif
 #endif
 }
 
@@ -390,10 +374,7 @@ void X11_Xinput2UpdatePointerMapping(SDL_VideoDevice *_this)
 // xi2 device went away? take it out of the list.
 static void xinput2_remove_device_info(const int device_id)
 {
-    SDL_XInput2DeviceInfo *prev = NULL;
-    SDL_XInput2DeviceInfo *devinfo;
-
-    for (devinfo = xinput2_device_info; devinfo; devinfo = devinfo->next) {
+    for (SDL_XInput2DeviceInfo *devinfo = xinput2_device_info, *prev = NULL; devinfo; devinfo = devinfo->next) {
         if (devinfo->device_id == device_id) {
             SDL_assert((devinfo == xinput2_device_info) == (prev == NULL));
             if (!prev) {
@@ -401,6 +382,9 @@ static void xinput2_remove_device_info(const int device_id)
             } else {
                 prev->next = devinfo->next;
             }
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+            SDL_free(devinfo->scroll.scroll_info);
+#endif
             SDL_free(devinfo);
             return;
         }
@@ -408,37 +392,51 @@ static void xinput2_remove_device_info(const int device_id)
     }
 }
 
-static void xinput2_reset_relative_valuators()
+static void xinput2_reset_device_valuators(void)
 {
     for (SDL_XInput2DeviceInfo *devinfo = xinput2_device_info; devinfo; devinfo = devinfo->next) {
-        devinfo->prev_coord_valid[0] = false;
-        devinfo->prev_coord_valid[1] = false;
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+        for (int i = 0; i < devinfo->scroll.scroll_info_count; ++i) {
+            devinfo->scroll.scroll_info[i].prev_value_valid = false;
+        }
+#endif
+        devinfo->relative.prev_coord_valid[0] = false;
+        devinfo->relative.prev_coord_valid[1] = false;
     }
 }
 
-static void xinput2_update_relative_valuators(SDL_XInput2DeviceInfo *devinfo, XIAnyClassInfo **classes, int num_classes)
+static void xinput2_update_device_info(SDL_XInput2DeviceInfo *devinfo, XIAnyClassInfo **classes, int num_classes)
 {
     if (!devinfo) {
         return;
     }
 
-    /* Search for relative axes with the following priority:
-     *  - Labelled 'Rel X'/'Rel Y'
-     *   - Labelled 'Abs X'/'Abs Y'
-     *    - The first two axes found
-     */
     bool have_rel_x = false, have_rel_y = false;
     bool have_abs_x = false, have_abs_y = false;
-    int axis_index = 0;
+    int rel_axis_index = 0;
+
+    SDL_zero(devinfo->relative);
+
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+    // Don't unnecessarily reallocate the array.
+    int allocated_scroll_info_count = devinfo->scroll.scroll_info_count;
+    devinfo->scroll.scroll_info_count = 0;
+#endif
+
     for (int i = 0; i < num_classes; ++i) {
-        const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)classes[i];
-        if (v->type == XIValuatorClass) {
+        if (classes[i]->type == XIValuatorClass) {
+            /* Search for relative axes with the following priority:
+             *  - Labelled 'Rel X'/'Rel Y'
+             *   - Labelled 'Abs X'/'Abs Y'
+             *    - The first two axes found
+             */
+            const XIValuatorClassInfo *v = (const XIValuatorClassInfo *)classes[i];
             if (v->label == xinput2_rel_x_atom || (v->label == xinput2_abs_x_atom && !have_rel_x) ||
-                (axis_index == 0 && !have_rel_x && !have_abs_x)) {
-                devinfo->number[0] = v->number;
-                devinfo->relative[0] = (v->mode == XIModeRelative);
-                devinfo->minval[0] = v->min;
-                devinfo->maxval[0] = v->max;
+                (rel_axis_index == 0 && !have_rel_x && !have_abs_x)) {
+                devinfo->relative.number[0] = v->number;
+                devinfo->relative.relative[0] = (v->mode == XIModeRelative);
+                devinfo->relative.minval[0] = v->min;
+                devinfo->relative.maxval[0] = v->max;
 
                 if (v->label == xinput2_rel_x_atom) {
                     have_rel_x = true;
@@ -446,11 +444,11 @@ static void xinput2_update_relative_valuators(SDL_XInput2DeviceInfo *devinfo, XI
                     have_abs_x = true;
                 }
             } else if (v->label == xinput2_rel_y_atom || (v->label == xinput2_abs_y_atom && !have_rel_y) ||
-                       (axis_index == 1 && !have_rel_y && !have_abs_y)) {
-                devinfo->number[1] = v->number;
-                devinfo->relative[1] = (v->mode == XIModeRelative);
-                devinfo->minval[1] = v->min;
-                devinfo->maxval[1] = v->max;
+                       (rel_axis_index == 1 && !have_rel_y && !have_abs_y)) {
+                devinfo->relative.number[1] = v->number;
+                devinfo->relative.relative[1] = (v->mode == XIModeRelative);
+                devinfo->relative.minval[1] = v->min;
+                devinfo->relative.maxval[1] = v->max;
 
                 if (v->label == xinput2_rel_y_atom) {
                     have_rel_y = true;
@@ -459,13 +457,34 @@ static void xinput2_update_relative_valuators(SDL_XInput2DeviceInfo *devinfo, XI
                 }
             }
 
-            // If two relative axes were found, nothing more to do.
-            if (have_rel_x && have_rel_y) {
-                break;
+            ++rel_axis_index;
+        }
+#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
+        else if (classes[i]->type == XIScrollClass) {
+            const XIScrollClassInfo *s = (XIScrollClassInfo *)classes[i];
+
+            // Allocate new scroll info entries two at a time, as they typically come in a horizontal/vertical pair.
+            if (devinfo->scroll.scroll_info_count == allocated_scroll_info_count) {
+                devinfo->scroll.scroll_info = SDL_realloc(devinfo->scroll.scroll_info, (allocated_scroll_info_count + 2) * sizeof(SDL_XInput2ScrollInfo));
+                if (!devinfo->scroll.scroll_info) {
+                    // No memory, oh well...
+                    allocated_scroll_info_count = 0;
+                    devinfo->scroll.scroll_info_count = 0;
+                    continue;
+                }
+
+                allocated_scroll_info_count += 2;
             }
 
-            ++axis_index;
+            SDL_XInput2ScrollInfo *scroll_info = &devinfo->scroll.scroll_info[devinfo->scroll.scroll_info_count];
+            ++devinfo->scroll.scroll_info_count;
+
+            SDL_zerop(scroll_info);
+            scroll_info->number = s->number;
+            scroll_info->scroll_type = s->scroll_type;
+            scroll_info->increment = s->increment;
         }
+#endif // SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     }
 }
 
@@ -508,7 +527,7 @@ static SDL_XInput2DeviceInfo *xinput2_get_device_info(SDL_VideoData *videodata, 
         return NULL;
     }
 
-    xinput2_update_relative_valuators(devinfo, xidevinfo->classes, xidevinfo->num_classes);
+    xinput2_update_device_info(devinfo, xidevinfo->classes, xidevinfo->num_classes);
     X11_XIFreeDeviceInfo(xidevinfo);
 
     devinfo->device_id = device_id;
@@ -541,7 +560,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             }
 
             // not pen stuff...
-            if (hierev->info[i].flags & XISlaveRemoved) {
+            if (hierev->info[i].flags & (XIMasterRemoved | XISlaveRemoved)) {
                 xinput2_remove_device_info(hierev->info[i].deviceid);
             }
         }
@@ -553,11 +572,9 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
     case XI_DeviceChanged:
     {
         const XIDeviceChangedEvent *dcev = (const XIDeviceChangedEvent *)cookie->data;
-        if (dcev->reason == XISlaveSwitch) {
-            SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(dcev->deviceid);
-            if (devinfo) {
-                xinput2_update_relative_valuators(devinfo, dcev->classes, dcev->num_classes);
-            }
+        SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(dcev->deviceid);
+        if (devinfo) {
+            xinput2_update_device_info(devinfo, dcev->classes, dcev->num_classes);
         }
     } break;
 
@@ -587,7 +604,7 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
             break; // oh well.
         }
 
-        parse_relative_valuators(devinfo, rawev);
+        parse_relative_valuators(&devinfo->relative, rawev);
     } break;
 
     case XI_KeyPress:
@@ -708,12 +725,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         }
     } break;
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
     case XI_Enter:
-        xinput2_reset_scrollable_valuators();
-        xinput2_reset_relative_valuators();
-        break;
-#endif
+    {
+        xinput2_reset_device_valuators();
+    } break;
 
     /* Register to receive XI_Motion (which deactivates MotionNotify), so that we can distinguish
        real mouse motions from synthetic ones, for multitouch and pen support. */
@@ -750,7 +765,10 @@ void X11_HandleXinput2Event(SDL_VideoDevice *_this, XGenericEventCookie *cookie)
         } else if (!pointer_emulated) {
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
             if (xev->deviceid == xev->sourceid) {
-                xinput2_parse_scrollable_valuators(xev);
+                SDL_XInput2DeviceInfo *devinfo = xinput2_get_device_info(videodata, xev->deviceid);
+                if (devinfo) {
+                    xinput2_parse_scrollable_valuators(&devinfo->scroll, xev);
+                }
             }
 #endif
 
@@ -1085,16 +1103,6 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this)
     old_mice = SDL_GetMice(&old_mouse_count);
     old_touch_devices = SDL_GetTouchDevices(&old_touch_count);
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-    // Scroll devices don't get add/remove events, so just rebuild the list.
-    for (int i = 0; i < scrollable_device_count; ++i) {
-        SDL_free(scrollable_devices[i].scroll_info);
-    }
-    SDL_free(scrollable_devices);
-    scrollable_devices = NULL;
-    scrollable_device_count = 0;
-#endif
-
     for (int i = 0; i < ndevices; i++) {
         XIDeviceInfo *dev = &info[i];
 
@@ -1125,53 +1133,11 @@ void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this)
             break;
         }
 
-#ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_SCROLLINFO
-        SDL_XInput2ScrollableDevice *sd = NULL;
-        int allocated_scroll_info_count = 0;
-
-        for (int j = 0; j < dev->num_classes; j++) {
-            const XIAnyClassInfo *class = dev->classes[j];
-            const XIScrollClassInfo *s = (XIScrollClassInfo *)class;
-
-            if (class->type != XIScrollClass) {
-                continue;
-            }
-
-            // Allocate a new scrollable device.
-            if (!sd) {
-                scrollable_devices = SDL_realloc(scrollable_devices, (scrollable_device_count + 1) * sizeof(SDL_XInput2ScrollableDevice));
-                if (!scrollable_devices) {
-                    // No memory; so just skip this.
-                    break;
-                }
-
-                sd = &scrollable_devices[scrollable_device_count];
-                ++scrollable_device_count;
-
-                SDL_zerop(sd);
-                sd->device_id = dev->deviceid;
-            }
-
-            // Allocate new scroll info entries two at a time, as they typically come in a horizontal/vertical pair.
-            if (sd->scroll_info_count == allocated_scroll_info_count) {
-                sd->scroll_info = SDL_realloc(sd->scroll_info, (allocated_scroll_info_count + 2) * sizeof(SDL_XInput2ScrollInfo));
-                if (!sd->scroll_info) {
-                    // No memory; just skip this.
-                    break;
-                }
-
-                allocated_scroll_info_count += 2;
-            }
-
-            SDL_XInput2ScrollInfo *scroll_info = &sd->scroll_info[sd->scroll_info_count];
-            ++sd->scroll_info_count;
-
-            SDL_zerop(scroll_info);
-            scroll_info->number = s->number;
-            scroll_info->scroll_type = s->scroll_type;
-            scroll_info->increment = s->increment;
+        // If a device info entry already exists for this device, update it.
+        SDL_XInput2DeviceInfo *devinfo = xinput2_get_cached_device_info(dev->deviceid);
+        if (devinfo) {
+            xinput2_update_device_info(devinfo, dev->classes, dev->num_classes);
         }
-#endif
 
 #ifdef SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
         for (int j = 0; j < dev->num_classes; j++) {
