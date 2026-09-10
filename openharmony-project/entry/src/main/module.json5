@@ -4,8 +4,12 @@
     "type": "entry",
     "description": "$string:module_desc",
     "mainElement": "EntryAbility",
+    // !!! FIXME: we can maybe put "car" and "wearable" in here, too, if SDL will run on them and we could test it at some point.
     "deviceTypes": [
-      "phone"
+      "phone",
+      "tablet",
+      "2in1",
+      "tv"
     ],
     "deliveryWithInstall": true,
     "installationFree": false,
