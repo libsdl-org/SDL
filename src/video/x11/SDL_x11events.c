@@ -1857,7 +1857,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                    (xevent->xclient.data.l[0] == videodata->atoms._NET_WM_SYNC_REQUEST)) {
 
 #ifdef DEBUG_XEVENTS
-            printf("window %p: _NET_WM_SYNC_REQUEST\n", data);
+            SDL_Log("window %p: _NET_WM_SYNC_REQUEST", data);
 #endif
 #ifdef SDL_VIDEO_DRIVER_X11_XSYNC
             X11_HandleSyncRequest(data->window, &xevent->xclient);

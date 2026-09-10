@@ -30,7 +30,6 @@
 
 // This is the code used to generate the lookup tables below:
 #if 0
-#include <stdio.h>
 #include <SDL3/SDL.h>
 
 #define GENERATE_SHIFTS
@@ -38,10 +37,13 @@
 static Uint32 Calculate(int v, int bits, int vmax, int shift)
 {
 #if defined(GENERATE_FLOOR)
+    (void)bits;
     return (Uint32)SDL_floor(v * 255.0f / vmax) << shift;
 #elif defined(GENERATE_ROUND)
+    (void)bits;
     return (Uint32)SDL_roundf(v * 255.0f / vmax) << shift;
 #elif defined(GENERATE_SHIFTS)
+    (void)vmax;
     switch (bits) {
     case 1:
         v = (v << 7) | (v << 6) | (v << 5) | (v << 4) | (v << 3) | (v << 2) | (v << 1) | v;
@@ -74,16 +76,22 @@ static Uint32 Calculate(int v, int bits, int vmax, int shift)
 int main(int argc, char *argv[])
 {
     int i, b;
+    SDL_IOStream *io = SDL_IOFromDynamicMem();
 
+    (void)argc;
+    (void)argv;
     for (b = 1; b <= 8; ++b) {
-        printf("static const Uint8 lookup_%d[] = {\n    ", b);
+        SDL_IOprintf(io, "static const Uint8 lookup_%d[] = {\n    ", b);
         for (i = 0; i < (1 << b); ++i) {
             if (i > 0) {
-                printf(", ");
+                SDL_IOprintf(io, ", ");
             }
-            printf("%d", Calculate(i, b, (1 << b) - 1, 0));
+            SDL_IOprintf(io, "%d", Calculate(i, b, (1 << b) - 1, 0));
         }
-        printf("\n};\n\n");
+        SDL_Log("%s\n};\n\n", (const char *)SDL_GetPointerProperty(SDL_GetIOProperties(io), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL));
+        SDL_SeekIO(io, 0, SDL_IO_SEEK_SET);
+        SDL_WriteIO(io, "", 1);
+        SDL_SeekIO(io, 0, SDL_IO_SEEK_SET);
     }
     return 0;
 }
@@ -1599,11 +1607,12 @@ bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst)
         if (!SDL_MapSurface(src, dst)) {
             return false;
         }
+#if 0
         // just here for debugging
-        // printf
-        // ("src = 0x%08X src->flags = %08X map->info.flags = %08x\ndst = 0x%08X dst->flags = %08X dst->map.info.flags = %08X\nmap->blit = 0x%08x\n",
-        // src, dst->flags, map->info.flags, dst, dst->flags,
-        // dst->map.info.flags, map->blit);
+        SDL_Log("src = %p src->flags = %08X map->info.flags = %08x\ndst = %p dst->flags = %08X dst->map.info.flags = %08X\nmap->blit = %p",
+            src, dst->flags, map->info.flags, dst, dst->flags,
+            dst->map.info.flags, map->blit);
+#endif
     } else {
         map->info.dst_surface = dst;
     }

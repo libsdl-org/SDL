@@ -41,7 +41,7 @@
 #endif
 
 #ifdef DEBUG_COCOAWINDOW
-#define DLog(fmt, ...) printf("%s: " fmt "\n", SDL_FUNCTION, ##__VA_ARGS__)
+#define DLog(fmt, ...) SDL_Log("%s: " fmt, SDL_FUNCTION, ##__VA_ARGS__)
 #else
 #define DLog(...) \
     do {          \

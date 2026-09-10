@@ -167,7 +167,7 @@ typedef struct
 #define offsetof(s, m) (size_t) & (((s *)0)->m)
 
 #ifdef DEBUG_STEAM_CONTROLLER
-#define DPRINTF(format, ...) printf(format, ##__VA_ARGS__)
+#define DPRINTF(format, ...) SDL_Log(format, ##__VA_ARGS__)
 #define HEXDUMP(ptr, len)    hexdump(ptr, len)
 #else
 #define DPRINTF(format, ...)
@@ -243,7 +243,7 @@ static int WriteSegmentToSteamControllerPacketAssembler(SteamControllerPacketAss
         }
 
         if (nSegmentLength != MAX_REPORT_SEGMENT_SIZE) {
-            printf("Bad segment size! %d\n", nSegmentLength);
+            SDL_Log("Bad segment size! %d", nSegmentLength);
             hexdump(pSegment, nSegmentLength);
             ResetSteamControllerPacketAssembler(pAssembler);
             return -1;
@@ -391,7 +391,7 @@ static int GetFeatureReport(SDL_HIDAPI_Device *dev, unsigned char uBuffer[65])
                 }
             }
         }
-        printf("Could not get a full ble packet after %d retries\n", nRetries);
+        SDL_Log("Could not get a full ble packet after %d retries", nRetries);
         return -1;
     } else {
         SDL_memset(uBuffer, 0, 65);
@@ -457,7 +457,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 2);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("GET_ATTRIBUTES_VALUES failed for controller %p\n", dev);
+            SDL_Log("GET_ATTRIBUTES_VALUES failed for controller %p", dev);
         }
         return false;
     }
@@ -468,7 +468,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     if (res < 0 || buf[1] != ID_GET_ATTRIBUTES_VALUES) {
         HEXDUMP(buf, res);
         if (!bSuppressErrorSpew) {
-            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
+            SDL_Log("Bad GET_ATTRIBUTES_VALUES response for controller %p", dev);
         }
         return false;
     }
@@ -476,7 +476,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     nAttributesLength = buf[2];
     if (nAttributesLength > res) {
         if (!bSuppressErrorSpew) {
-            printf("Bad GET_ATTRIBUTES_VALUES response for controller %p\n", dev);
+            SDL_Log("Bad GET_ATTRIBUTES_VALUES response for controller %p", dev);
         }
         return false;
     }
@@ -511,7 +511,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 2);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("CLEAR_DIGITAL_MAPPINGS failed for controller %p\n", dev);
+            SDL_Log("CLEAR_DIGITAL_MAPPINGS failed for controller %p", dev);
         }
         return false;
     }
@@ -523,7 +523,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 3);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev);
+            SDL_Log("LOAD_DEFAULT_SETTINGS failed for controller %p\n", dev);
         }
         return false;
     }
@@ -553,7 +553,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 3 + nSettings * 3);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("SET_SETTINGS failed for controller %p\n", dev);
+            SDL_Log("SET_SETTINGS failed for controller %p", dev);
         }
         return false;
     }
@@ -569,13 +569,13 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
         buf[3] = 0;
         res = SetFeatureReport(dev, buf, 4);
         if (res < 0) {
-            printf("GET_DIGITAL_MAPPINGS failed for controller %p\n", dev);
+            SDL_Log("GET_DIGITAL_MAPPINGS failed for controller %p\n", dev);
             return false;
         }
 
         res = ReadResponse(dev, buf, ID_GET_DIGITAL_MAPPINGS);
         if (res < 0 || buf[1] != ID_GET_DIGITAL_MAPPINGS) {
-            printf("Bad GET_DIGITAL_MAPPINGS response for controller %p\n", dev);
+            SDL_Log("Bad GET_DIGITAL_MAPPINGS response for controller %p", dev);
             return false;
         }
 
@@ -588,7 +588,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     }
 
     if (!bMappingsCleared && !bSuppressErrorSpew) {
-        printf("Warning: CLEAR_DIGITAL_MAPPINGS never completed for controller %p\n", dev);
+        SDL_Log("Warning: CLEAR_DIGITAL_MAPPINGS never completed for controller %p", dev);
     }
 
     // Set our new mappings
@@ -605,7 +605,7 @@ static bool ResetSteamController(SDL_HIDAPI_Device *dev, bool bSuppressErrorSpew
     res = SetFeatureReport(dev, buf, 9);
     if (res < 0) {
         if (!bSuppressErrorSpew) {
-            printf("SET_DIGITAL_MAPPINGS failed for controller %p\n", dev);
+            SDL_Log("SET_DIGITAL_MAPPINGS failed for controller %p", dev);
         }
         return false;
     }
