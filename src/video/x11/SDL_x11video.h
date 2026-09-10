@@ -136,7 +136,6 @@ struct SDL_VideoData
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
-    SDL_XInput2DeviceInfo *mouse_device_info;
     unsigned long xinput_last_button_serial;
     int xinput_master_pointer_device;
     bool xinput_hierarchy_changed;

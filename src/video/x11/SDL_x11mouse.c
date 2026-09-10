@@ -585,23 +585,12 @@ void X11_InitMouse(SDL_VideoDevice *_this)
 
 void X11_QuitMouse(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->internal;
-    SDL_XInput2DeviceInfo *i;
-    SDL_XInput2DeviceInfo *next;
-    int j;
-
-    for (j = 0; j < SDL_arraysize(sys_cursors); j++) {
-        if (sys_cursors[j]) {
-            X11_FreeCursor(sys_cursors[j]);
-            sys_cursors[j] = NULL;
+    for (int i = 0; i < SDL_arraysize(sys_cursors); i++) {
+        if (sys_cursors[i]) {
+            X11_FreeCursor(sys_cursors[i]);
+            sys_cursors[i] = NULL;
         }
     }
-
-    for (i = data->mouse_device_info; i; i = next) {
-        next = i->next;
-        SDL_free(i);
-    }
-    data->mouse_device_info = NULL;
 
     X11_DestroyEmptyCursor();
 }
