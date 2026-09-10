@@ -508,7 +508,7 @@ xsettings_client_new_with_grab_funcs (Display             *display,
   client->manager_window = None;
   client->settings = NULL;
 
-  sprintf(buffer, "_XSETTINGS_S%d", screen);
+  SDL_snprintf(buffer, sizeof(buffer), "_XSETTINGS_S%d", screen);
   atom_names[0] = buffer;
   atom_names[1] = "_XSETTINGS_SETTINGS";
   atom_names[2] = "MANAGER";
