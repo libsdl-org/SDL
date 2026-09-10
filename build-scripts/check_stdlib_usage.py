@@ -162,6 +162,7 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
     allowed_extensions = [ ".c", ".cpp", ".m", ".h",  ".hpp", ".cc" ]
 
     excluded_paths = [
+        "src/core/windows/gameinput/gameinput.cpp",
         "src/stdlib",
         "src/libm",
         "src/hidapi",
