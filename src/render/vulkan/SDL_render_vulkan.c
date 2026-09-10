@@ -37,6 +37,7 @@
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/SDL_pixels_c.h"
+#include "../../video/SDL_yuv_c.h"
 #include "SDL_shaders_vulkan.h"
 
 #define SET_ERROR_CODE(message, rc)                                                                 \
@@ -267,6 +268,8 @@ typedef struct
     // Pipeline layout with immutable sampler descriptor set layout
     VkPipelineLayout pipelineLayoutYcbcr;
 
+    Uint8 *pixels;
+    int pitch;
 } VULKAN_TextureData;
 
 // Pipeline State Object data
@@ -2872,6 +2875,7 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer,
         }
     }
 
+    SDL_free(textureData->pixels);
     SDL_free(textureData);
     texture->internal = NULL;
 }
@@ -3105,6 +3109,28 @@ static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("texture is already locked");
     }
 
+    bool yuv = (textureData->descriptorSetLayoutYcbcr != VK_NULL_HANDLE);
+    if (yuv) {
+        // It's more efficient to upload directly...
+        if (!textureData->pixels) {
+            size_t size, calculated_pitch;
+            if (!SDL_CalculateYUVSize(texture->format, texture->w, texture->h, &size, &calculated_pitch)) {
+                return false;
+            }
+            textureData->pitch = (int)calculated_pitch;
+            textureData->pixels = (Uint8 *)SDL_malloc(size);
+            if (!textureData->pixels) {
+                return false;
+            }
+        }
+        textureData->lockedRect = *rect;
+        *pixels =
+            (void *)(textureData->pixels + rect->y * textureData->pitch +
+                     rect->x * SDL_BYTESPERPIXEL(texture->format));
+        *pitch = textureData->pitch;
+        return true;
+    }
+
     VkDeviceSize pixelSize = VULKAN_GetBytesPerPixel(textureData->mainImage.format, 0);
     VkDeviceSize length = rect->w * pixelSize;
     VkDeviceSize stagingBufferSize = length * rect->h;
@@ -3139,6 +3165,15 @@ static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
 
     if (!textureData) {
+        return;
+    }
+
+    bool yuv = (textureData->descriptorSetLayoutYcbcr != VK_NULL_HANDLE);
+    if (yuv) {
+        const SDL_Rect *rect = &textureData->lockedRect;
+        const Uint8 *pixels = textureData->pixels + rect->y * textureData->pitch + rect->x * SDL_BYTESPERPIXEL(texture->format);
+
+        VULKAN_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
         return;
     }
 
