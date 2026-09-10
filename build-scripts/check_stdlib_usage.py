@@ -29,7 +29,7 @@ import sys
 
 SDL_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-STDLIB_SYMBOLS = (
+STDLIB_SDL_SYMBOLS = set((
     'abs',
     'acos',
     'acosf',
@@ -152,35 +152,46 @@ STDLIB_SYMBOLS = (
     'wcstoll',
     'wcstoul',
     'wcstoull',
+))
+
+UNSAFE_STDLIB_SYMBOLS = set((
+    'putc',
+    'puts',
+    'printf',
+    'sprintf',
+    'vprintf',
+))
+
+RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SDL_SYMBOLS.union(UNSAFE_STDLIB_SYMBOLS))})\b\(")
+
+
+EXCLUDED_PATHS = (
+    "src/core/windows/gameinput/gameinput.cpp",
+    "src/stdlib",
+    "src/libm",
+    "src/hidapi",
+    "src/video/khronos",
+    "src/video/miniz.h",
+    "src/video/stb_image.h",
+    "include/SDL3",
+    "build-scripts/gen_audio_resampler_filter.c",
+    "build-scripts/gen_audio_channel_conversion.c",
+    "test/win32/sdlprocdump.c",
 )
-RE_STDLIB_SYMBOL = re.compile(rf"(?<!->)\b(?P<symbol>{'|'.join(STDLIB_SYMBOLS)})\b\(")
 
 
-def find_symbols_in_file(file: pathlib.Path) -> int:
+def find_symbols_in_file(file: pathlib.Path, apply_exclude_paths: bool) -> int:
     match_count = 0
 
     allowed_extensions = [ ".c", ".cpp", ".m", ".h",  ".hpp", ".cc" ]
 
-    excluded_paths = [
-        "src/core/windows/gameinput/gameinput.cpp",
-        "src/stdlib",
-        "src/libm",
-        "src/hidapi",
-        "src/video/khronos",
-        "src/video/miniz.h",
-        "src/video/stb_image.h",
-        "include/SDL3",
-        "build-scripts/gen_audio_resampler_filter.c",
-        "build-scripts/gen_audio_channel_conversion.c",
-        "test/win32/sdlprocdump.c",
-    ]
-
     filename = pathlib.Path(file)
 
-    for ep in excluded_paths:
-        if ep in filename.as_posix():
-            # skip
-            return 0
+    if apply_exclude_paths:
+        for ep in EXCLUDED_PATHS:
+            if ep in filename.as_posix():
+                # skip
+                return 0
 
     if filename.suffix not in allowed_extensions:
         # skip
@@ -227,13 +238,19 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
                     line = line[:pos_line_comment]
 
                 if matches := tuple(RE_STDLIB_SYMBOL.finditer(line)):
-                    text_string = " or ".join(f"SDL_{m.group(1)}" for m in matches)
                     first_quote = line.find("\"")
                     last_quote = line.rfind("\"")
                     first_occurrence = min(m.span()[0] for m in matches)
                     last_occurrence = max(m.span()[1] for m in matches)
                     if first_quote == -1 or not (first_quote < first_occurrence and last_quote > last_occurrence):
-                        override_string = f"This should NOT be {text_string}"
+                        override_string = " or ".join(f"SDL_{m.group(1)}" for m in matches if m.group(1) in STDLIB_SDL_SYMBOLS)
+                        if override_string:
+                            override_string = f"This should NOT be {override_string}"
+                        if any(m for m in matches if m.group(1) in UNSAFE_STDLIB_SYMBOLS):
+                            if override_string:
+                                override_string += ". "
+                            override_string += "Allow unsafe stdlib"
+                        assert override_string
                         if override_string not in line_comment:
                             print(f"{filename}:{line_i}")
                             print(f"    {line}")
@@ -245,18 +262,19 @@ def find_symbols_in_file(file: pathlib.Path) -> int:
 
     return match_count
 
-def find_symbols_in_dir(path: pathlib.Path) -> int:
+def find_symbols_in_dir(path: pathlib.Path, apply_exclude_paths: bool) -> int:
     match_count = 0
     for entry in path.iterdir():
         if entry.is_dir():
-            match_count += find_symbols_in_dir(entry)
+            match_count += find_symbols_in_dir(entry, apply_exclude_paths=apply_exclude_paths)
         else:
-            match_count += find_symbols_in_file(entry)
+            match_count += find_symbols_in_file(entry, apply_exclude_paths=apply_exclude_paths)
     return match_count
 
 def main():
     parser = argparse.ArgumentParser(fromfile_prefix_chars="@")
     parser.add_argument("paths", default=[SDL_ROOT / "src", SDL_ROOT / "test"], nargs="*", type=pathlib.Path, help="Paths to look for stdlib symbols")
+    parser.add_argument("--no-exclude", action="store_false", dest="apply_exclude_paths", help="Don't apply exclude paths")
     args = parser.parse_args()
 
     print(f"Looking for stdlib usage in {', '.join(str(p) for p in args.paths)}...")
@@ -264,12 +282,13 @@ def main():
     match_count = 0
     for path in args.paths:
         if path.is_file():
-            match_count = find_symbols_in_file(path)
+            match_count = find_symbols_in_file(path, apply_exclude_paths=args.apply_exclude_paths)
         else:
-            match_count = find_symbols_in_dir(path)
+            match_count = find_symbols_in_dir(path, apply_exclude_paths=args.apply_exclude_paths)
 
     if match_count:
         print("If the stdlib usage is intentional, add a '// This should NOT be SDL_<symbol>()' line comment.")
+        print("If there is no equivalent SDL function, add a '// Allow unsafe stdlib' line comment.")
         print("")
         print("NOT OK")
     else:

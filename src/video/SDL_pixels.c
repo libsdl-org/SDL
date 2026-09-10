@@ -93,6 +93,7 @@ int main(int argc, char *argv[])
         SDL_WriteIO(io, "", 1);
         SDL_SeekIO(io, 0, SDL_IO_SEEK_SET);
     }
+    SDL_CloseIO(io);
     return 0;
 }
 #endif
