@@ -3576,7 +3576,8 @@ static VULKAN_Shader SelectShader(SDL_Renderer *renderer, const VULKAN_PixelShad
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-            if (shader_constants->input_type == INPUTTYPE_HDR10 &&
+            if (shader_constants->texture_type == TEXTURETYPE_RGB &&
+                shader_constants->input_type == INPUTTYPE_HDR10 &&
                 !PQShaderScalesInput(shader_constants)) {
                 // Do a simple 1-1 copy
                 return SHADER_RGB_SIMPLE;
