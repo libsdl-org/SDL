@@ -1768,78 +1768,124 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
    that we create here. */
 bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    static const struct { uint32_t fmt; const char *name; int r; int g; int b; int a; } gbm_formats[] = {
+        // !!! FIXME: I have no idea if this is a good preferred order for this list.
+        #define FMT(name, r, g, b, a) { GBM_FORMAT_##name, #name, r, g, b, a }
+        FMT(ARGB8888, 8, 8, 8, 8),
+        FMT(ABGR8888, 8, 8, 8, 8),
+        FMT(BGRA8888, 8, 8, 8, 8),
+        FMT(RGBA8888, 8, 8, 8, 8),
+        FMT(BGRX8888, 8, 8, 8, 0),
+        FMT(RGBX8888, 8, 8, 8, 0),
+        FMT(XRGB8888, 8, 8, 8, 0),
+        FMT(XBGR8888, 8, 8, 8, 0),
+        FMT(RGBA1010102, 10, 10, 10, 2),
+        FMT(BGRA1010102, 10, 10, 10, 2),
+        FMT(ARGB2101010, 10, 10, 10, 2),
+        FMT(ABGR2101010, 10, 10, 10, 2),
+        FMT(XRGB2101010, 10, 10, 10, 0),
+        FMT(XBGR2101010, 10, 10, 10, 0),
+        FMT(RGBX1010102, 10, 10, 10, 0),
+        FMT(BGRX1010102, 10, 10, 10, 0),
+        FMT(ARGB1555, 5, 5, 5, 1),
+        FMT(ABGR1555, 5, 5, 5, 1),
+        FMT(RGBA5551, 5, 5, 5, 1),
+        FMT(BGRA5551, 5, 5, 5, 1),
+        FMT(XRGB1555, 5, 5, 5, 0),
+        FMT(XBGR1555, 5, 5, 5, 0),
+        FMT(RGBX5551, 5, 5, 5, 0),
+        FMT(BGRX5551, 5, 5, 5, 0),
+        FMT(RGB565, 5, 6, 5, 0),
+        FMT(BGR565, 5, 6, 5, 0)
+        #undef FMT
+    };
+
     SDL_VideoData *viddata = _this->internal;
     SDL_WindowData *windata = window->internal;
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->internal;
-
-    uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
-    uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-
     EGLContext egl_context;
-
-    bool result = true;
+    bool result = false;
 
     // If the current window already has surfaces, destroy them before creating other.
     if (windata->gs) {
         KMSDRM_DestroySurfaces(_this, window);
     }
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
-                                               surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
-                    "GBM surface format not supported. Trying anyway.");
-    }
+    bool tried_setting_format = false;
+    const uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    for (int i = 0; i < SDL_arraysize(gbm_formats); i++) {
+        const uint32_t surface_fmt = gbm_formats[i].fmt;
 
-    /* The KMSDRM backend doesn't always set the mode the higher-level code in
-       SDL_video.c expects. Hulk-smash the display's current_mode to keep the
-       mode that's set in sync with what SDL_video.c thinks is set
+        SDL_Log("KMSDRM: Trying format GBM_FORMAT_%s", gbm_formats[i].name);
 
-       FIXME: How do we do that now? Can we get a better idea at the higher level?
-     */
-    KMSDRM_GetModeToSet(window, &dispdata->mode);
+        if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: GBM_FORMAT_%s is not supported.", gbm_formats[i].name);
+            continue;  // try the next one.
+        }
 
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                                            dispdata->mode.hdisplay, dispdata->mode.vdisplay,
-                                            surface_fmt, surface_flags);
-    if (!windata->gs && errno == ENOSYS) {
-        // Try again without the scanout flags, needed on NVIDIA drivers
-        windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                                                dispdata->mode.hdisplay, dispdata->mode.vdisplay,
-                                                surface_fmt, 0);
-    }
-    if (!windata->gs) {
-        return SDL_SetError("Could not create GBM surface: %s", strerror(errno));
-    }
+        tried_setting_format = true;
 
-    /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
-       but we need an EGL surface NOW, or GL won't be able to render into any surface
-       and we won't see the first frame. */
-    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
-    windata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windata->gs);
+        /* The KMSDRM backend doesn't always set the mode the higher-level code in
+           SDL_video.c expects. Hulk-smash the display's current_mode to keep the
+           mode that's set in sync with what SDL_video.c thinks is set
 
-    if (windata->egl_surface == EGL_NO_SURFACE) {
-        result = SDL_SetError("Could not create EGL window surface");
-        goto cleanup;
-    }
+           FIXME: How do we do that now? Can we get a better idea at the higher level?
+         */
+        KMSDRM_GetModeToSet(window, &dispdata->mode);
 
-    /* Current context passing to EGL is now done here. If something fails,
-       go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
-    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-    result = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, dispdata->mode.hdisplay, dispdata->mode.vdisplay, surface_fmt, surface_flags);
+        if (!windata->gs && errno == ENOSYS) {
+            // Try again without the scanout flags, needed on NVIDIA drivers
+            windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, dispdata->mode.hdisplay, dispdata->mode.vdisplay, surface_fmt, 0);
+        }
+        if (!windata->gs) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: gbm_surface_create(GBM_FORMAT_%s) failed.", gbm_formats[i].name);
+            SDL_SetError("Could not create %s GBM surface: %s", gbm_formats[i].name, strerror(errno));  // set error in case this was the last supposedly-supported format.
+            continue;   // try the next one.
+        }
 
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED,
-                        dispdata->mode.hdisplay, dispdata->mode.vdisplay);
-
-    windata->egl_surface_dirty = false;
-
-cleanup:
-
-    if (!result) {
-        // Error (complete) cleanup.
-        if (windata->gs) {
+        /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
+           but we need an EGL surface NOW, or GL won't be able to render into any surface
+           and we won't see the first frame. */
+        SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
+        windata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windata->gs);
+        if (windata->egl_surface == EGL_NO_SURFACE) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: SDL_EGL_CreateSurface(GBM_FORMAT_%s) failed: %s", gbm_formats[i].name, SDL_GetError());
             KMSDRM_gbm_surface_destroy(windata->gs);
             windata->gs = NULL;
+            continue;  // try the next one.
+        }
+
+        /* Current context passing to EGL is now done here. If something fails,
+           go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
+        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+        result = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        if (!result) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: SDL_EGL_MakeCurrent with GBM_FORMAT_%s failed: %s", gbm_formats[i].name, SDL_GetError());
+            continue;
+        }
+
+        _this->gl_config.red_size = gbm_formats[i].r;
+        _this->gl_config.green_size = gbm_formats[i].g;
+        _this->gl_config.blue_size = gbm_formats[i].b;
+        _this->gl_config.alpha_size = gbm_formats[i].a;
+
+        windata->egl_surface_dirty = false;
+
+        result = true;
+
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, dispdata->mode.hdisplay, dispdata->mode.vdisplay);
+
+        break;
+    }
+
+    SDL_assert(result || (windata->gs == NULL));
+
+    if (!result) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: Failed to create surfaces in _any_ format!");
+        if (!tried_setting_format) {   // make sure there's an error string set.
+            SDL_SetError("Could not find any supported GBM surface format.");
         }
     }
 
