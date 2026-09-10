@@ -83,7 +83,7 @@ Audio recording is not implemented.
 
 - Keyboard: IRQ1-driven with full extended scancode (0xE0 prefix) support.
 - Mouse: INT 33h mouse driver with relative motion via mickeys.
-- Joystick: gameport joystick via BIOS INT 15h (axes) and direct port 0x201 reads (buttons) with software calibration.
+- Joystick: gameport joystick via direct port 0x201 reads with software calibration. The joystick must be connected at init; there is no hot-plug detection. Note that disconnecting the joystick can degrade performance.
 
 ### Limitations
 
