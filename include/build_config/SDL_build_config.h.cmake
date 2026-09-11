@@ -73,6 +73,7 @@
 #cmakedefine HAVE_DLOPEN 1
 #cmakedefine HAVE_MALLOC 1
 #cmakedefine HAVE_FDATASYNC 1
+#cmakedefine HAVE_GETEXECPATH 1
 #cmakedefine HAVE_GETENV 1
 #cmakedefine HAVE_GETHOSTNAME 1
 #cmakedefine HAVE_SETENV 1
