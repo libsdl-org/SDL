@@ -71,7 +71,7 @@ static char *readSymLink(const char *path)
     return NULL;
 }
 
-#ifdef SDL_PLATFORM_OPENBSD
+#if defined(SDL_PLATFORM_OPENBSD) && !defined(HAVE_GETEXECPATH)
 static char *search_path_for_binary(const char *bin)
 {
     const char *envr_real = SDL_getenv("PATH");
