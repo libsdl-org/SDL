@@ -4204,7 +4204,7 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
-    VkFormat format = rendererData->surfaceFormat.format;
+    VkFormat format;
     const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     bool updateConstants = false;
     VULKAN_Shader shader = SelectShader(renderer, shader_constants, yuv);
@@ -4216,6 +4216,12 @@ static bool VULKAN_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand 
 
     if (!VULKAN_ActivateCommandBuffer(renderer, VK_ATTACHMENT_LOAD_OP_LOAD, NULL, stateCache)) {
         return false;
+    }
+
+    if (rendererData->textureRenderTarget) {
+        format = rendererData->textureRenderTarget->mainImage.format;
+    } else {
+        format = rendererData->surfaceFormat.format;
     }
 
     // See if we need to change the pipeline state
