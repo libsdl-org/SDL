@@ -40,6 +40,13 @@
 #include "../../video/SDL_yuv_c.h"
 #include "SDL_shaders_vulkan.h"
 
+#ifdef SDL_PLATFORM_ANDROID
+#include <dlfcn.h>
+#include <android/hardware_buffer.h>
+
+typedef void (*pfnAHardwareBuffer_describe)(const AHardwareBuffer *, AHardwareBuffer_Desc *);
+#endif
+
 #define SET_ERROR_CODE(message, rc)                                                                 \
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_VULKAN_DEBUG, false)) {                                  \
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "%s: %s", message, SDL_Vulkan_GetResultString(rc)); \
@@ -53,6 +60,12 @@
         SDL_TriggerBreakpoint();                                                                    \
     }                                                                                               \
     SDL_SetError("%s", message)                                                                     \
+
+#ifdef SDL_PLATFORM_ANDROID
+#define ANDROID_OPTIONAL_DEVICE_FUNCTION(X)    VULKAN_OPTIONAL_DEVICE_FUNCTION(X)
+#else
+#define ANDROID_OPTIONAL_DEVICE_FUNCTION(X)
+#endif
 
 #define VULKAN_FUNCTIONS()                                              \
     VULKAN_DEVICE_FUNCTION(vkAcquireNextImageKHR)                       \
@@ -150,6 +163,7 @@
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)            \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkCreateSamplerYcbcrConversionKHR)              \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkDestroySamplerYcbcrConversionKHR)             \
+    ANDROID_OPTIONAL_DEVICE_FUNCTION(vkGetAndroidHardwareBufferPropertiesANDROID)   \
 
 #define VULKAN_DEVICE_FUNCTION(name)            static PFN_##name name = NULL;
 #define VULKAN_GLOBAL_FUNCTION(name)            static PFN_##name name = NULL;
@@ -221,6 +235,19 @@ typedef struct
     SDL_FColor color;
 } VULKAN_VertexPositionColor;
 
+// Vulkan OES buffer info
+typedef struct
+{
+#ifdef SDL_PLATFORM_ANDROID
+    struct AHardwareBuffer *buffer;
+    VkAndroidHardwareBufferPropertiesANDROID properties;
+    VkAndroidHardwareBufferFormatPropertiesANDROID formatProperties;
+    VkExternalFormatANDROID externalFormat;
+#else
+    int dummy;
+#endif
+} VULKAN_ExternalBufferInfo;
+
 // Vulkan Buffer
 typedef struct
 {
@@ -249,10 +276,17 @@ typedef struct
 } VULKAN_PaletteData;
 
 // YUV conversion data
+typedef struct
+{
+    Uint64 externalFormat;
+    VkFilter filter;
+    VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo;
+} VULKAN_YUVPipelineCreateInfo;
+
 typedef struct VULKAN_YUVPipeline
 {
     // The information used to create this entry
-    VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo;
+    VULKAN_YUVPipelineCreateInfo createInfo;
 
     // Object passed to VkImageView and VkSampler for doing Ycbcr -> RGB conversion
     VkSamplerYcbcrConversion samplerYcbcrConversion;
@@ -374,6 +408,8 @@ typedef struct
     bool supportsEXTSwapchainColorspace;
     bool supportsKHRGetPhysicalDeviceProperties2;
     bool supportsKHRSamplerYCbCrConversion;
+    bool supportsKHRExternalMemoryCapabilities;
+    bool supportsANDROIDExternalMemoryAndroidHardwareBuffer;
     uint32_t surfaceFormatsAllocatedCount;
     uint32_t surfaceFormatsCount;
     uint32_t swapchainDesiredImageCount;
@@ -532,13 +568,14 @@ static void VULKAN_DestroyBuffer(VULKAN_RenderData *rendererData, VULKAN_Buffer 
 static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *vulkanImage);
 static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData);
 static void VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData);
+static void VULKAN_RecordExternalImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout);
 static void VULKAN_RecordPipelineImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout);
 static bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint32_t typeBits, VkMemoryPropertyFlags requiredFlags, VkMemoryPropertyFlags desiredFlags, uint32_t *memoryTypeIndexOut);
 static VkResult VULKAN_CreateWindowSizeDependentResources(SDL_Renderer *renderer);
 static VkDescriptorPool VULKAN_AllocateDescriptorPool(VULKAN_RenderData *rendererData);
 static VkResult VULKAN_CreateDescriptorSetAndPipelineLayout(VULKAN_RenderData *rendererData, VkSampler samplerYcbcr, VkDescriptorSetLayout *descriptorSetLayoutOut, VkPipelineLayout *pipelineLayoutOut);
-static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData, const VkSamplerYcbcrConversionCreateInfoKHR *samplerYcbcrConversionCreateInfo);
-static void VULKAN_CleanupYUVPipeline(VULKAN_RenderData *rendererData, VULKAN_YUVPipeline *data);
+static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData, const VULKAN_YUVPipelineCreateInfo *createInfo);
+static void VULKAN_CleanupYUVPipeline(VULKAN_RenderData *rendererData, VULKAN_YUVPipeline *pipeline);
 static VkSurfaceTransformFlagBitsKHR VULKAN_GetRotationForCurrentRenderTarget(VULKAN_RenderData *rendererData);
 static bool VULKAN_IsDisplayRotated90Degrees(VkSurfaceTransformFlagBitsKHR rotation);
 
@@ -837,7 +874,7 @@ static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *v
     SDL_zerop(vulkanImage);
 }
 
-static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_PropertiesID create_props, uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags imageUsage, VkComponentMapping swizzle, VkSamplerYcbcrConversionKHR samplerYcbcrConversion, VULKAN_Image *imageOut)
+static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_PropertiesID create_props, uint32_t width, uint32_t height, VkFormat format, VkImageUsageFlags imageUsage, VkComponentMapping swizzle, VkSamplerYcbcrConversionKHR samplerYcbcrConversion, VULKAN_ExternalBufferInfo *external, VULKAN_Image *imageOut)
 {
     VkResult result;
     VkSamplerYcbcrConversionInfoKHR samplerYcbcrConversionInfo = { 0 };
@@ -866,8 +903,18 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         imageCreateInfo.queueFamilyIndexCount = 0;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
+#ifdef SDL_PLATFORM_ANDROID
+        VkExternalMemoryImageCreateInfoKHR externalMemoryImageCreateInfo = { 0 };
+        if (external) {
+            externalMemoryImageCreateInfo.sType = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO_KHR;
+            externalMemoryImageCreateInfo.pNext = &external->externalFormat;
+            externalMemoryImageCreateInfo.handleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_ANDROID_HARDWARE_BUFFER_BIT_ANDROID;
+            imageCreateInfo.pNext = &externalMemoryImageCreateInfo;
+        }
+#endif
+
         // Allow writing to planar YUV textures from application code
-        if (VULKAN_VkFormatGetNumPlanes(format) > 1) {
+        if (VULKAN_VkFormatGetNumPlanes(format) > 1 && !external) {
             imageCreateInfo.flags |= (VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT | VK_IMAGE_CREATE_EXTENDED_USAGE_BIT);
             imageCreateInfo.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
         }
@@ -880,11 +927,19 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         }
 
         VkMemoryRequirements memoryRequirements = { 0 };
-        vkGetImageMemoryRequirements(rendererData->device, imageOut->image, &memoryRequirements);
-        if (result != VK_SUCCESS) {
-            VULKAN_DestroyImage(rendererData, imageOut);
-            SET_ERROR_CODE("vkGetImageMemoryRequirements()", result);
-            return result;
+#ifdef SDL_PLATFORM_ANDROID
+        if (external) {
+            memoryRequirements.memoryTypeBits = external->properties.memoryTypeBits;
+            memoryRequirements.size = external->properties.allocationSize;
+        } else
+#endif
+        {
+            vkGetImageMemoryRequirements(rendererData->device, imageOut->image, &memoryRequirements);
+            if (result != VK_SUCCESS) {
+                VULKAN_DestroyImage(rendererData, imageOut);
+                SET_ERROR_CODE("vkGetImageMemoryRequirements()", result);
+                return result;
+            }
         }
 
         uint32_t memoryTypeIndex = 0;
@@ -897,6 +952,21 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         memoryAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memoryAllocateInfo.allocationSize = memoryRequirements.size;
         memoryAllocateInfo.memoryTypeIndex = memoryTypeIndex;
+
+#ifdef SDL_PLATFORM_ANDROID
+        VkImportAndroidHardwareBufferInfoANDROID importHardwareBufferInfo = { 0 };
+        VkMemoryDedicatedAllocateInfoKHR dedicatedAllocateInfo = { 0 };
+        if (external) {
+            importHardwareBufferInfo.sType = VK_STRUCTURE_TYPE_IMPORT_ANDROID_HARDWARE_BUFFER_INFO_ANDROID;
+            importHardwareBufferInfo.buffer = external->buffer;
+
+            dedicatedAllocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR;
+            dedicatedAllocateInfo.pNext = &importHardwareBufferInfo;
+            dedicatedAllocateInfo.image = imageOut->image;
+
+            memoryAllocateInfo.pNext = &dedicatedAllocateInfo;
+        }
+#endif
         result = vkAllocateMemory(rendererData->device, &memoryAllocateInfo, NULL, &imageOut->deviceMemory);
         if (result != VK_SUCCESS) {
             VULKAN_DestroyImage(rendererData, imageOut);
@@ -915,14 +985,25 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
 
     if (imageOut->imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
         VULKAN_EnsureCommandBuffer(rendererData);
-        VULKAN_RecordPipelineImageBarrier(rendererData,
-            VK_ACCESS_NONE,
-            VK_ACCESS_SHADER_READ_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            imageOut->image,
-            &imageOut->imageLayout);
+        if (external) {
+            VULKAN_RecordExternalImageBarrier(rendererData,
+                VK_ACCESS_NONE,
+                VK_ACCESS_SHADER_READ_BIT,
+                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                imageOut->image,
+                &imageOut->imageLayout);
+        } else {
+            VULKAN_RecordPipelineImageBarrier(rendererData,
+                VK_ACCESS_NONE,
+                VK_ACCESS_SHADER_READ_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                imageOut->image,
+                &imageOut->imageLayout);
+        }
     }
 
     VkImageViewCreateInfo imageViewCreateInfo = { 0 };
@@ -959,6 +1040,33 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
     return result;
 }
 
+
+static void VULKAN_RecordExternalImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask,
+    VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout)
+{
+    // Stop any outstanding renderpass if open
+    if (rendererData->currentRenderPass != VK_NULL_HANDLE) {
+        vkCmdEndRenderPass(rendererData->currentCommandBuffer);
+        rendererData->currentRenderPass = VK_NULL_HANDLE;
+    }
+
+    VkImageMemoryBarrier barrier = { 0 };
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.srcAccessMask = sourceAccessMask;
+    barrier.dstAccessMask = destAccessMask;
+    barrier.oldLayout = *imageLayout;
+    barrier.newLayout = destLayout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_FOREIGN_EXT;
+    barrier.dstQueueFamilyIndex = rendererData->graphicsQueueFamilyIndex;
+    barrier.image = image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+    vkCmdPipelineBarrier(rendererData->currentCommandBuffer, srcStageFlags, dstStageFlags, 0, 0, NULL, 0, NULL, 1, &barrier);
+    *imageLayout = destLayout;
+}
 
 static void VULKAN_RecordPipelineImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask,
     VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout)
@@ -1796,18 +1904,34 @@ static bool VULKAN_ValidationLayersFound(void)
 // Create resources that depend on the device.
 static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_PropertiesID create_props)
 {
+    /* The list of extension names, in dependency order.
+     * If there are extension blocks that are not dependent upon each other, you'll need
+     * to dynamically build the list of extension names instead of using this array.
+     */
     static const char *const deviceExtensionNames[] = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        /* VK_KHR_sampler_ycbcr_conversion + dependent extensions.
-           Note VULKAN_DeviceExtensionsFound() call below, if these get moved in this
-           array, update that check too.
-       */
+        // VK_KHR_sampler_ycbcr_conversion + dependent extensions
+#define YCBCR_EXTENSION_OFFSET 1
+#define YCBCR_EXTENSION_COUNT 5
         VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
         VK_KHR_MAINTENANCE1_EXTENSION_NAME,
         VK_KHR_MAINTENANCE2_EXTENSION_NAME,
         VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
         VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+#ifdef SDL_PLATFORM_ANDROID
+        // VK_ANDROID_external_memory_android_hardware_buffer + dependent extensions
+#define ANDROID_EXTENSION_OFFSET (YCBCR_EXTENSION_OFFSET + YCBCR_EXTENSION_COUNT)
+#define ANDROID_EXTENSION_COUNT 4
+        VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME,
+        VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+        VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
+        VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME,
+#else
+#define ANDROID_EXTENSION_COUNT 0
+#endif
     };
+    SDL_COMPILE_TIME_ASSERT(deviceExtensionNames, SDL_arraysize(deviceExtensionNames) == (YCBCR_EXTENSION_OFFSET + YCBCR_EXTENSION_COUNT + ANDROID_EXTENSION_COUNT));
+
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VkResult result = VK_SUCCESS;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
@@ -1844,6 +1968,9 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     // Check for VK_KHR_get_physical_device_properties2
     rendererData->supportsKHRGetPhysicalDeviceProperties2 = VULKAN_InstanceExtensionFound(rendererData, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
+    // Check for VK_KHR_external_memory_capabilities, which we need to import hardware buffers
+    rendererData->supportsKHRExternalMemoryCapabilities = VULKAN_InstanceExtensionFound(rendererData, VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME);
+
     // Create VkInstance
     rendererData->instance = (VkInstance)SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER, NULL);
     if (rendererData->instance) {
@@ -1857,7 +1984,7 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         instanceCreateInfo.pApplicationInfo = &appInfo;
         char const *const *instanceExtensions = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
 
-        const char **instanceExtensionsCopy = (const char **)SDL_calloc(instanceCreateInfo.enabledExtensionCount + 2, sizeof(const char *));
+        const char **instanceExtensionsCopy = (const char **)SDL_calloc(instanceCreateInfo.enabledExtensionCount + 3, sizeof(const char *));
         for (uint32_t i = 0; i < instanceCreateInfo.enabledExtensionCount; i++) {
             instanceExtensionsCopy[i] = instanceExtensions[i];
         }
@@ -1867,6 +1994,10 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         }
         if (rendererData->supportsKHRGetPhysicalDeviceProperties2) {
             instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME;
+            instanceCreateInfo.enabledExtensionCount++;
+        }
+        if (rendererData->supportsKHRExternalMemoryCapabilities) {
+            instanceExtensionsCopy[instanceCreateInfo.enabledExtensionCount] = VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME;
             instanceCreateInfo.enabledExtensionCount++;
         }
         instanceCreateInfo.ppEnabledExtensionNames = (const char *const *)instanceExtensionsCopy;
@@ -1920,9 +2051,17 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     }
 
     if (rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
-        VULKAN_DeviceExtensionsFound(rendererData, 4, &deviceExtensionNames[1])) {
+        VULKAN_DeviceExtensionsFound(rendererData, YCBCR_EXTENSION_COUNT, &deviceExtensionNames[YCBCR_EXTENSION_OFFSET])) {
         rendererData->supportsKHRSamplerYCbCrConversion = true;
     }
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (rendererData->supportsKHRSamplerYCbCrConversion &&
+        rendererData->supportsKHRExternalMemoryCapabilities &&
+        VULKAN_DeviceExtensionsFound(rendererData, ANDROID_EXTENSION_COUNT, &deviceExtensionNames[ANDROID_EXTENSION_OFFSET])) {
+        rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer = true;
+    }
+#endif
 
     // Create Vulkan device
     rendererData->device = (VkDevice)SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, NULL);
@@ -1938,7 +2077,15 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         deviceCreateInfo.queueCreateInfoCount = 0;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
         deviceCreateInfo.pEnabledFeatures = NULL;
-        deviceCreateInfo.enabledExtensionCount = (rendererData->supportsKHRSamplerYCbCrConversion) ? SDL_arraysize(deviceExtensionNames) : 1;
+        deviceCreateInfo.enabledExtensionCount = 1;
+        if (rendererData->supportsKHRSamplerYCbCrConversion) {
+            deviceCreateInfo.enabledExtensionCount += YCBCR_EXTENSION_COUNT;
+        }
+#ifdef SDL_PLATFORM_ANDROID
+        if (rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer) {
+            deviceCreateInfo.enabledExtensionCount += ANDROID_EXTENSION_COUNT;
+        }
+#endif
         deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames;
 
         deviceQueueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -1974,6 +2121,12 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         VULKAN_DestroyAll(renderer);
         return VK_ERROR_UNKNOWN;
     }
+
+#ifdef SDL_PLATFORM_ANDROID
+    if (!vkGetAndroidHardwareBufferPropertiesANDROID) {
+        rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer = false;
+    }
+#endif
 
     // Get graphics/present queues
     vkGetDeviceQueue(rendererData->device, rendererData->graphicsQueueFamilyIndex, 0, &rendererData->graphicsQueue);
@@ -2644,7 +2797,7 @@ static bool VULKAN_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pal
     VkFormat format = SDLPixelFormatToVkTextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
     VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
     VkComponentMapping imageViewSwizzle = data->identitySwizzle;
-    VkResult result = VULKAN_AllocateImage(data, 0, 256, 1, format, usage, imageViewSwizzle, VK_NULL_HANDLE, &palettedata->image);
+    VkResult result = VULKAN_AllocateImage(data, 0, 256, 1, format, usage, imageViewSwizzle, VK_NULL_HANDLE, NULL, &palettedata->image);
     if (result != VK_SUCCESS) {
         SET_ERROR_CODE("VULKAN_AllocateImage()", result);
         return false;
@@ -2678,6 +2831,30 @@ static void VULKAN_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *pa
     SDL_free(palettedata);
 }
 
+#ifdef SDL_PLATFORM_ANDROID
+static void ANDROID_GetBufferSize(struct AHardwareBuffer *buffer, uint32_t *width, uint32_t *height)
+{
+    static pfnAHardwareBuffer_describe AHardwareBuffer_describeFunc;
+    if (!AHardwareBuffer_describeFunc) {
+        void *lib = dlopen("libandroid.so", RTLD_NOW | RTLD_LOCAL);
+        if (lib) {
+            AHardwareBuffer_describeFunc = (pfnAHardwareBuffer_describe)dlsym(lib, "AHardwareBuffer_describe");
+
+            // Leaving the library loaded so we can use the function again without another dlopen()
+        }
+    }
+    if (AHardwareBuffer_describeFunc) {
+        AHardwareBuffer_Desc desc;
+        SDL_zero(desc);
+        AHardwareBuffer_describeFunc(buffer, &desc);
+        if (desc.width > 0 && desc.height > 0) {
+            *width = desc.width;
+            *height = desc.height;
+        }
+    }
+}
+#endif // SDL_PLATFORM_ANDROID
+
 static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
@@ -2687,12 +2864,14 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     uint32_t width = texture->w;
     uint32_t height = texture->h;
     VkComponentMapping imageViewSwizzle = rendererData->identitySwizzle;
+    VULKAN_ExternalBufferInfo externalBufferInfo;
+    VULKAN_ExternalBufferInfo *external = NULL;
 
     if (!rendererData->device) {
         return SDL_SetError("Device lost and couldn't be recovered");
     }
 
-    if (textureFormat == VK_FORMAT_UNDEFINED) {
+    if (textureFormat == VK_FORMAT_UNDEFINED && texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified", SDL_FUNCTION, texture->format);
     }
 
@@ -2702,25 +2881,95 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     }
     texture->internal = textureData;
 
-    // YUV textures must have even width and height.  Also create Ycbcr conversion
-    if (texture->format == SDL_PIXELFORMAT_YV12 ||
-        texture->format == SDL_PIXELFORMAT_IYUV ||
-        texture->format == SDL_PIXELFORMAT_I444 ||
-        texture->format == SDL_PIXELFORMAT_NV12 ||
-        texture->format == SDL_PIXELFORMAT_NV21 ||
-        texture->format == SDL_PIXELFORMAT_P010 ||
-        texture->format == SDL_PIXELFORMAT_I0FL ||
-        texture->format == SDL_PIXELFORMAT_I4FL) {
-        const uint32_t YUV_SD_THRESHOLD = 576;
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
+        SDL_zero(externalBufferInfo);
+        external = &externalBufferInfo;
 
-        // Check that we have VK_KHR_sampler_ycbcr_conversion support
-        if (!rendererData->supportsKHRSamplerYCbCrConversion) {
-            return SDL_SetError("YUV textures require a Vulkan device that supports VK_KHR_sampler_ycbcr_conversion");
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            return SDL_SetError("SDL_PIXELFORMAT_EXTERNAL_OES textures can't be render targets");
         }
 
-        VkSamplerYcbcrConversionCreateInfoKHR samplerYcbcrConversionCreateInfo;
-        SDL_zero(samplerYcbcrConversionCreateInfo);
-        samplerYcbcrConversionCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
+#ifdef SDL_PLATFORM_ANDROID
+        external->buffer = (struct AHardwareBuffer *)SDL_GetPointerProperty(create_props, SDL_PROP_TEXTURE_CREATE_VULKAN_ANDROID_HARDWARE_BUFFER_POINTER, NULL);
+        if (!external->buffer) {
+            return SDL_SetError("SDL_PIXELFORMAT_EXTERNAL_OES texture requires a hardware buffer");
+        }
+
+        // Get the real buffer width and height
+        ANDROID_GetBufferSize(external->buffer, &width, &height);
+
+        VkAndroidHardwareBufferFormatPropertiesANDROID *formatProperties = &external->formatProperties;
+        formatProperties->sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_FORMAT_PROPERTIES_ANDROID;
+
+        VkAndroidHardwareBufferPropertiesANDROID *properties = &external->properties;
+        properties->sType = VK_STRUCTURE_TYPE_ANDROID_HARDWARE_BUFFER_PROPERTIES_ANDROID;
+        properties->pNext = formatProperties;
+        result = vkGetAndroidHardwareBufferPropertiesANDROID(rendererData->device, external->buffer, properties);
+        if (result != VK_SUCCESS) {
+            SET_ERROR_CODE("vkGetAndroidHardwareBufferPropertiesANDROID()", result);
+            return false;
+        }
+
+        VkExternalFormatANDROID *externalFormat = &external->externalFormat;
+        externalFormat->sType = VK_STRUCTURE_TYPE_EXTERNAL_FORMAT_ANDROID;
+        externalFormat->externalFormat = formatProperties->externalFormat;
+
+        textureFormat = formatProperties->format;
+
+        if (textureFormat == VK_FORMAT_UNDEFINED ||
+            formatProperties->suggestedYcbcrModel != VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY_KHR) {
+            VkFilter chromaFilter = VK_FILTER_LINEAR;
+            VkFilter lumaFilter = VK_FILTER_LINEAR;
+            if (!(formatProperties->formatFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT)) {
+                chromaFilter = VK_FILTER_NEAREST;
+            }
+            if (!(formatProperties->formatFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+                lumaFilter = VK_FILTER_NEAREST;
+            }
+            if (!(formatProperties->formatFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT)) {
+                lumaFilter = chromaFilter;
+            }
+
+            VULKAN_YUVPipelineCreateInfo createInfo;
+            SDL_zero(createInfo); // Must zero padding bytes for cache
+            createInfo.externalFormat = formatProperties->externalFormat;
+            createInfo.filter = lumaFilter;
+
+            VkSamplerYcbcrConversionCreateInfoKHR *samplerYcbcrConversionCreateInfo = &createInfo.samplerYcbcrConversionCreateInfo;
+            samplerYcbcrConversionCreateInfo->sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
+            samplerYcbcrConversionCreateInfo->pNext = externalFormat;
+            samplerYcbcrConversionCreateInfo->format = formatProperties->format;
+            samplerYcbcrConversionCreateInfo->ycbcrModel = formatProperties->suggestedYcbcrModel;
+            samplerYcbcrConversionCreateInfo->ycbcrRange = formatProperties->suggestedYcbcrRange;
+            samplerYcbcrConversionCreateInfo->components = formatProperties->samplerYcbcrConversionComponents;
+            samplerYcbcrConversionCreateInfo->xChromaOffset = formatProperties->suggestedXChromaOffset;
+            samplerYcbcrConversionCreateInfo->yChromaOffset = formatProperties->suggestedYChromaOffset;
+            samplerYcbcrConversionCreateInfo->chromaFilter = chromaFilter;
+
+            textureData->yuvPipeline = VULKAN_GetYUVPipeline(rendererData, &createInfo);
+            if (!textureData->yuvPipeline) {
+                return false;
+            }
+
+            textureData->yuv = true;
+        }
+#endif // SDL_PLATFORM_ANDROID
+    } else if (texture->format == SDL_PIXELFORMAT_YV12 ||
+               texture->format == SDL_PIXELFORMAT_IYUV ||
+               texture->format == SDL_PIXELFORMAT_I444 ||
+               texture->format == SDL_PIXELFORMAT_NV12 ||
+               texture->format == SDL_PIXELFORMAT_NV21 ||
+               texture->format == SDL_PIXELFORMAT_P010 ||
+               texture->format == SDL_PIXELFORMAT_I0FL ||
+               texture->format == SDL_PIXELFORMAT_I4FL) {
+        const uint32_t YUV_SD_THRESHOLD = 576;
+
+        VULKAN_YUVPipelineCreateInfo createInfo;
+        SDL_zero(createInfo); // Must zero padding bytes for cache
+        createInfo.filter = VK_FILTER_LINEAR;
+
+        VkSamplerYcbcrConversionCreateInfoKHR *samplerYcbcrConversionCreateInfo = &createInfo.samplerYcbcrConversionCreateInfo;
+        samplerYcbcrConversionCreateInfo->sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_CREATE_INFO_KHR;
 
         if (texture->format != SDL_PIXELFORMAT_I444 &&
             texture->format != SDL_PIXELFORMAT_I4FL) {
@@ -2730,70 +2979,69 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         }
 
         // Create samplerYcbcrConversion which will be used on the VkImageView and VkSampler
-        samplerYcbcrConversionCreateInfo.format = textureFormat;
+        samplerYcbcrConversionCreateInfo->format = textureFormat;
         switch (SDL_COLORSPACEMATRIX(texture->colorspace)) {
         case SDL_MATRIX_COEFFICIENTS_BT470BG:
         case SDL_MATRIX_COEFFICIENTS_BT601:
-            samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
+            samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
             break;
         case SDL_MATRIX_COEFFICIENTS_BT709:
-            samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
+            samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
             break;
         case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
-            samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+            samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
             break;
         case SDL_MATRIX_COEFFICIENTS_UNSPECIFIED:
             if (texture->format == SDL_PIXELFORMAT_P010) {
-                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+                samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
             } else if (height > YUV_SD_THRESHOLD) {
-                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
+                samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
             } else {
-                samplerYcbcrConversionCreateInfo.ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
+                samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
             }
             break;
         default:
             return SDL_SetError("Unsupported Ycbcr colorspace: %d", SDL_COLORSPACEMATRIX(texture->colorspace));
         }
-        samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        samplerYcbcrConversionCreateInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        samplerYcbcrConversionCreateInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        samplerYcbcrConversionCreateInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        samplerYcbcrConversionCreateInfo->components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        samplerYcbcrConversionCreateInfo->components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        samplerYcbcrConversionCreateInfo->components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        samplerYcbcrConversionCreateInfo->components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
         if (texture->format == SDL_PIXELFORMAT_YV12 ||
             texture->format == SDL_PIXELFORMAT_NV21) {
-            samplerYcbcrConversionCreateInfo.components.r = VK_COMPONENT_SWIZZLE_B;
-            samplerYcbcrConversionCreateInfo.components.b = VK_COMPONENT_SWIZZLE_R;
+            samplerYcbcrConversionCreateInfo->components.r = VK_COMPONENT_SWIZZLE_B;
+            samplerYcbcrConversionCreateInfo->components.b = VK_COMPONENT_SWIZZLE_R;
         }
 
         switch (SDL_COLORSPACERANGE(texture->colorspace)) {
         case SDL_COLOR_RANGE_LIMITED:
-            samplerYcbcrConversionCreateInfo.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
+            samplerYcbcrConversionCreateInfo->ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
             break;
         case SDL_COLOR_RANGE_FULL:
         default:
-            samplerYcbcrConversionCreateInfo.ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL_KHR;
+            samplerYcbcrConversionCreateInfo->ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL_KHR;
             break;
         }
 
         switch (SDL_COLORSPACECHROMA(texture->colorspace)) {
         case SDL_CHROMA_LOCATION_LEFT:
-            samplerYcbcrConversionCreateInfo.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
-            samplerYcbcrConversionCreateInfo.yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+            samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+            samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
             break;
         case SDL_CHROMA_LOCATION_TOPLEFT:
-            samplerYcbcrConversionCreateInfo.xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
-            samplerYcbcrConversionCreateInfo.yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+            samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+            samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
             break;
         case SDL_CHROMA_LOCATION_NONE:
         case SDL_CHROMA_LOCATION_CENTER:
         default:
-            samplerYcbcrConversionCreateInfo.xChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
-            samplerYcbcrConversionCreateInfo.yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+            samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+            samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
             break;
         }
-        samplerYcbcrConversionCreateInfo.chromaFilter = VK_FILTER_LINEAR;
-        samplerYcbcrConversionCreateInfo.forceExplicitReconstruction = VK_FALSE;
+        samplerYcbcrConversionCreateInfo->chromaFilter = VK_FILTER_LINEAR;
 
-        textureData->yuvPipeline = VULKAN_GetYUVPipeline(rendererData, &samplerYcbcrConversionCreateInfo);
+        textureData->yuvPipeline = VULKAN_GetYUVPipeline(rendererData, &createInfo);
         if (!textureData->yuvPipeline) {
             return false;
         }
@@ -2803,13 +3051,16 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     textureData->width = width;
     textureData->height = height;
 
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT;
+    if (!external) {
+        usage |= (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
+    }
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
     }
 
     VkSamplerYcbcrConversionKHR samplerYcbcrConversion = (textureData->yuvPipeline ? textureData->yuvPipeline->samplerYcbcrConversion : VK_NULL_HANDLE);
-    result = VULKAN_AllocateImage(rendererData, create_props, width, height, textureFormat, usage, imageViewSwizzle, samplerYcbcrConversion, &textureData->mainImage);
+    result = VULKAN_AllocateImage(rendererData, create_props, width, height, textureFormat, usage, imageViewSwizzle, samplerYcbcrConversion, external, &textureData->mainImage);
     if (result != VK_SUCCESS) {
         SET_ERROR_CODE("VULKAN_AllocateImage()", result);
         return false;
@@ -2982,6 +3233,10 @@ static bool VULKAN_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
+        return SDL_Unsupported();
+    }
+
     Uint32 numPlanes = VULKAN_VkFormatGetNumPlanes(textureData->mainImage.format);
     if (numPlanes == 2) {
         // NV12/NV21 data
@@ -3034,6 +3289,10 @@ static bool VULKAN_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture
         return SDL_SetError("Texture is not currently available");
     }
 
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
+        return SDL_Unsupported();
+    }
+
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
@@ -3074,6 +3333,10 @@ static bool VULKAN_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
         return SDL_SetError("Texture is not currently available");
     }
 
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
+        return SDL_Unsupported();
+    }
+
     if (!VULKAN_UpdateTextureInternal(rendererData, textureData->mainImage.image, textureData->mainImage.format, 0, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch, &textureData->mainImage.imageLayout)) {
         return false;
     }
@@ -3090,12 +3353,17 @@ static bool VULKAN_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
     VkResult rc;
+
     if (!textureData) {
         return SDL_SetError("Texture is not currently available");
     }
 
     if (textureData->stagingBuffer.buffer != VK_NULL_HANDLE) {
         return SDL_SetError("texture is already locked");
+    }
+
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
+        return SDL_Unsupported();
     }
 
     if (textureData->yuv) {
@@ -3153,6 +3421,10 @@ static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     VULKAN_TextureData *textureData = (VULKAN_TextureData *)texture->internal;
 
     if (!textureData) {
+        return;
+    }
+
+    if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
         return;
     }
 
@@ -3824,18 +4096,17 @@ static VkDescriptorSet VULKAN_AllocateDescriptorSet(SDL_Renderer *renderer, VULK
     return descriptorSet;
 }
 
-static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData, const VkSamplerYcbcrConversionCreateInfoKHR *samplerYcbcrConversionCreateInfo)
+static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData, const VULKAN_YUVPipelineCreateInfo *createInfo)
 {
     VULKAN_YUVPipeline *pipeline;
     VkResult result;
 
-    // Save pNext and set it to NULL for the cache comparison
-    VkSamplerYcbcrConversionCreateInfoKHR cacheKey;
-    SDL_memcpy(&cacheKey, samplerYcbcrConversionCreateInfo, sizeof(cacheKey));
-    cacheKey.pNext = NULL;
+    VULKAN_YUVPipelineCreateInfo cacheKey;
+    SDL_memcpy(&cacheKey, createInfo, sizeof(cacheKey));
+    cacheKey.samplerYcbcrConversionCreateInfo.pNext = NULL;
 
     for (pipeline = rendererData->yuvPipelineCache; pipeline; pipeline = pipeline->next) {
-        if (SDL_memcmp(&pipeline->samplerYcbcrConversionCreateInfo, &cacheKey, sizeof(cacheKey)) == 0) {
+        if (SDL_memcmp(&pipeline->createInfo, &cacheKey, sizeof(cacheKey)) == 0) {
             return pipeline;
         }
     }
@@ -3844,9 +4115,9 @@ static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData
     if (!pipeline) {
         return NULL;
     }
-    SDL_memcpy(&pipeline->samplerYcbcrConversionCreateInfo, &cacheKey, sizeof(cacheKey));
+    SDL_memcpy(&pipeline->createInfo, &cacheKey, sizeof(cacheKey));
 
-    result = vkCreateSamplerYcbcrConversionKHR(rendererData->device, samplerYcbcrConversionCreateInfo, NULL, &pipeline->samplerYcbcrConversion);
+    result = vkCreateSamplerYcbcrConversionKHR(rendererData->device, &createInfo->samplerYcbcrConversionCreateInfo, NULL, &pipeline->samplerYcbcrConversion);
     if (result != VK_SUCCESS) {
         SET_ERROR_CODE("vkCreateSamplerYcbcrConversionKHR()", result);
         VULKAN_CleanupYUVPipeline(rendererData, pipeline);
@@ -3856,8 +4127,8 @@ static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData
     // Also create VkSampler object which we will need to pass to the PSO as an immutable sampler
     VkSamplerCreateInfo samplerCreateInfo = { 0 };
     samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerCreateInfo.magFilter = VK_FILTER_LINEAR;
-    samplerCreateInfo.minFilter = VK_FILTER_LINEAR;
+    samplerCreateInfo.magFilter = createInfo->filter;
+    samplerCreateInfo.minFilter = createInfo->filter;
     samplerCreateInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
     samplerCreateInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     samplerCreateInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -4829,6 +5100,10 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I0FL);
         SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I4FL);
+    }
+
+    if (rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_EXTERNAL_OES);
     }
 
     return true;
