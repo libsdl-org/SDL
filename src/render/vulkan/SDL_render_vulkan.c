@@ -2767,6 +2767,50 @@ static VkResult VULKAN_UpdateForWindowSizeChange(SDL_Renderer *renderer)
     return VULKAN_CreateWindowSizeDependentResources(renderer);
 }
 
+#ifdef SDL_PLATFORM_ANDROID
+static bool VULKAN_HandleWindowRestored(SDL_Renderer *renderer)
+{
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
+
+    if (!rendererData->device) {
+        return false;
+    }
+
+    if (rendererData->surface_external) {
+        // We can't recreate external surfaces, fall back to device lost handling
+        return false;
+    }
+
+    VULKAN_IssueBatch(rendererData);
+    VULKAN_WaitForGPU(rendererData);
+
+    if (rendererData->swapchain != VK_NULL_HANDLE) {
+        vkDestroySwapchainKHR(rendererData->device, rendererData->swapchain, NULL);
+        rendererData->swapchain = VK_NULL_HANDLE;
+    }
+    if (rendererData->surface != VK_NULL_HANDLE) {
+        vkDestroySurfaceKHR(rendererData->instance, rendererData->surface, NULL);
+        rendererData->surface = VK_NULL_HANDLE;
+    }
+    if (!SDL_Vulkan_CreateSurface(renderer->window, rendererData->instance, NULL, &rendererData->surface)) {
+        return false;
+    }
+
+    // The formats we cached were queried against the old surface
+    VkResult result = VULKAN_GetSurfaceFormats(rendererData);
+    if (result != VK_SUCCESS) {
+        return false;
+    }
+
+    result = VULKAN_CreateWindowSizeDependentResources(renderer);
+    if (result != VK_SUCCESS) {
+        return false;
+    }
+
+    return true;
+}
+#endif // SDL_PLATFORM_ANDROID
+
 static void VULKAN_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
@@ -2778,7 +2822,11 @@ static void VULKAN_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *ev
 #ifdef SDL_PLATFORM_ANDROID
     // Prevent black screen when app returns from background
     if (event->type == SDL_EVENT_WINDOW_RESTORED) {
-        VULKAN_HandleDeviceLost(renderer);
+        // Try to just recreate the surface and swap chain
+        if (!VULKAN_HandleWindowRestored(renderer)) {
+            // We're fully lost, notify the application
+            VULKAN_HandleDeviceLost(renderer);
+        }
     }
 #endif
 }
