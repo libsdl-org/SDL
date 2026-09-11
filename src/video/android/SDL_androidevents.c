@@ -35,7 +35,7 @@
 #ifdef SDL_VIDEO_OPENGL_EGL
 static void android_egl_context_restore(SDL_Window *window)
 {
-    if (window) {
+    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
         SDL_WindowData *data = window->internal;
         SDL_GL_MakeCurrent(window, NULL);
         if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
@@ -56,7 +56,7 @@ static void android_egl_context_restore(SDL_Window *window)
 
 static void android_egl_context_backup(SDL_Window *window)
 {
-    if (window) {
+    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
         int interval = 0;
         // Keep a copy of the EGL Context so we can try to restore it when we resume
         SDL_WindowData *data = window->internal;
