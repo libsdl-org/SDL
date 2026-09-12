@@ -791,10 +791,13 @@ bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
     }
 
     /* Acquire shared access. Exclusive access is required for forces,
-     * though. */
+     * though. But if there's no window handle (b/c the video driver
+     * is disabled) use non-exclusive and give up forces rather than
+     * fail to open.
+     */
     result =
         IDirectInputDevice8_SetCooperativeLevel(joystick->hwdata->InputDevice, SDL_HelperWindow,
-                                                DISCL_EXCLUSIVE |
+                                                (SDL_HelperWindow ? DISCL_EXCLUSIVE : DISCL_NONEXCLUSIVE) |
                                                     DISCL_BACKGROUND);
     if (FAILED(result)) {
         return SetDIerror("IDirectInputDevice8::SetCooperativeLevel", result);
