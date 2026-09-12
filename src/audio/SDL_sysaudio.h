@@ -391,5 +391,6 @@ extern AudioBootStrap NGAGEAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap DOSSOUNDBLASTER_bootstrap;
+extern AudioBootStrap OHAUDIO_bootstrap;
 
 #endif // SDL_sysaudio_h_

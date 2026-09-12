@@ -1577,6 +1577,15 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER`: the EGLSurface associated with
  *   the window
  *
+ * On OpenHarmony/HarmonyOS:
+ *
+ * - `SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER`: the OH_NativeXComponent
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER`: the OHNativeWindow associated
+ *   with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER`: the EGLSurface associated with
+ *   the window
+ *
  * On iOS:
  *
  * - `SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER`: the `(__unsafe_unretained)`
@@ -1704,6 +1713,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT                          "SDL.window.HDR_headroom"
 #define SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER                      "SDL.window.android.window"
 #define SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER                     "SDL.window.android.surface"
+#define SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER              "SDL.window.openharmony.xcomponent"
+#define SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER                  "SDL.window.openharmony.window"
+#define SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER                 "SDL.window.openharmony.surface"
 #define SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER                        "SDL.window.uikit.window"
 #define SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER                 "SDL.window.uikit.metal_view_tag"
 #define SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER             "SDL.window.uikit.opengl.framebuffer"

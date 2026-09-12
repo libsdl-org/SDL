@@ -23,6 +23,7 @@
 #include "../SDL_main_callbacks.h"
 #include "../../video/SDL_sysvideo.h"
 
+// !!! FIXME: does this ifndef need to be here?
 #ifndef SDL_PLATFORM_IOS
 
 static Uint64 callback_rate_increment = 0;

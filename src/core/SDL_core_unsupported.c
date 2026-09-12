@@ -204,3 +204,25 @@ bool SDL_IsUbuntuTouch(void)
 }
 
 #endif
+
+#ifndef SDL_PLATFORM_OPENHARMONY
+const char *SDL_GetOpenHarmonyInternalStoragePath(void)
+{
+    SDL_Unsupported();
+    return NULL;
+}
+
+int SDL_GetOpenHarmonySDKVersion(void)
+{
+    return SDL_Unsupported();
+}
+
+bool SDL_RequestOpenHarmonyPermission(const char *permission, SDL_RequestOpenHarmonyPermissionCallback cb, void *userdata)
+{
+    (void)permission;
+    (void)cb;
+    (void)userdata;
+    return SDL_Unsupported();
+}
+#endif
+

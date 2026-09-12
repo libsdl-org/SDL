@@ -257,6 +257,10 @@ typedef struct SDL_IOStream SDL_IOStream;
  *   to an Android NDK `AAsset *`, that this SDL_IOStream is using to access
  *   the filesystem. If SDL used some other method to access the filesystem,
  *   this property will not be set.
+ * - `SDL_PROP_IOSTREAM_OPENHARMONY_RAWFILE64_POINTER`: a pointer, that can be
+ *   cast to an OpenHarmony/HarmonyOS `RawFile64 *`, that this SDL_IOStream is
+ *   using to access the filesystem. If SDL used some other method to access
+ *   the filesystem, this property will not be set.
  *
  * \param file a UTF-8 string representing the filename to open.
  * \param mode an ASCII string representing the mode to be used for opening
@@ -277,10 +281,11 @@ typedef struct SDL_IOStream SDL_IOStream;
  */
 extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromFile(const char *file, const char *mode);
 
-#define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER    "SDL.iostream.windows.handle"
-#define SDL_PROP_IOSTREAM_STDIO_FILE_POINTER        "SDL.iostream.stdio.file"
-#define SDL_PROP_IOSTREAM_FILE_DESCRIPTOR_NUMBER    "SDL.iostream.file_descriptor"
-#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER    "SDL.iostream.android.aasset"
+#define SDL_PROP_IOSTREAM_WINDOWS_HANDLE_POINTER        "SDL.iostream.windows.handle"
+#define SDL_PROP_IOSTREAM_STDIO_FILE_POINTER            "SDL.iostream.stdio.file"
+#define SDL_PROP_IOSTREAM_FILE_DESCRIPTOR_NUMBER        "SDL.iostream.file_descriptor"
+#define SDL_PROP_IOSTREAM_ANDROID_AASSET_POINTER        "SDL.iostream.android.aasset"
+#define SDL_PROP_IOSTREAM_OPENHARMONY_RAWFILE64_POINTER "SDL.iostream.openharmony.rawfile64"
 
 /**
  * Use this function to prepare a read-write memory buffer for use with

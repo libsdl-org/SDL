@@ -1342,3 +1342,6 @@ SDL_DYNAPI_PROC(bool,SDL_SetJoystickSensorEnabled,(SDL_Joystick *a,SDL_SensorTyp
 SDL_DYNAPI_PROC(bool,SDL_JoystickSensorEnabled,(SDL_Joystick *a,SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_GetJoystickSensorDataRate,(SDL_Joystick *a,SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetJoystickSensorData,(SDL_Joystick *a,SDL_SensorType b,float *c,int d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_GetOpenHarmonySDKVersion,(void),(),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetOpenHarmonyInternalStoragePath,(void),(),return)
+SDL_DYNAPI_PROC(bool,SDL_RequestOpenHarmonyPermission,(const char *a,SDL_RequestOpenHarmonyPermissionCallback b,void *c),(a,b,c),return)

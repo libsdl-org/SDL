@@ -1307,3 +1307,6 @@ _SDL_SetJoystickSensorEnabled
 _SDL_JoystickSensorEnabled
 _SDL_GetJoystickSensorDataRate
 _SDL_GetJoystickSensorData
+_SDL_GetOpenHarmonySDKVersion
+_SDL_GetOpenHarmonyInternalStoragePath
+_SDL_RequestOpenHarmonyPermission
