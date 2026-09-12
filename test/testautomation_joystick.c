@@ -279,6 +279,68 @@ static int SDLCALL joystick_testMappings(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Missing joystick axes must not become half-pressed gamepad triggers.
+ */
+static int SDLCALL joystick_testMissingAxes(void *arg)
+{
+    SDL_VirtualJoystickDesc joystick_desc;
+    SDL_JoystickID joystick_id = 0;
+    SDL_Gamepad *gamepad = NULL;
+    SDL_Joystick *joystick = NULL;
+    char guid_string[33] = {0};
+    char mapping_string[256] = {0};
+
+    SDL_INIT_INTERFACE(&joystick_desc);
+    joystick_desc.type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    joystick_desc.naxes = 2;
+    joystick_desc.nbuttons = 2;
+    joystick_desc.name = "Virtual two-axis joystick";
+    joystick_id = SDL_AttachVirtualJoystick(&joystick_desc);
+    SDLTest_AssertCheck(joystick_id != 0, "SDL_AttachVirtualJoystick()");
+    if (!joystick_id) {
+        return TEST_ABORTED;
+    }
+
+    SDL_GUIDToString(SDL_GetJoystickGUIDForID(joystick_id), guid_string, sizeof(guid_string));
+    /* Axis 2 is the first invalid index; axis 5 matches the DOS fallback mapping.
+     * A second right-trigger binding checks that valid bindings are still read. */
+    SDL_snprintf(mapping_string, sizeof(mapping_string),
+                 "%s,Virtual two-axis joystick,leftx:a0,lefty:a1,a:b0,"
+                 "lefttrigger:a2,righttrigger:a5,righttrigger:b1,", guid_string);
+    SDLTest_AssertCheck(SDL_SetGamepadMapping(joystick_id, mapping_string), "SDL_SetGamepadMapping()");
+    gamepad = SDL_OpenGamepad(joystick_id);
+    SDLTest_AssertCheck(gamepad != NULL, "SDL_OpenGamepad()");
+    if (gamepad) {
+        joystick = SDL_GetGamepadJoystick(gamepad);
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) == 0,
+                            "Missing left trigger is released");
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) == 0,
+                            "Missing right trigger is released");
+
+        SDLTest_AssertCheck(SDL_SetJoystickVirtualAxis(joystick, 0, -16384), "Set X axis");
+        SDLTest_AssertCheck(SDL_SetJoystickVirtualAxis(joystick, 1, 16384), "Set Y axis");
+        SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, 0, true), "Press button 0");
+        SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, 1, true), "Press button 1");
+        SDL_UpdateJoysticks();
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTX) == -16384, "X axis is unchanged");
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFTY) == 16384, "Y axis is unchanged");
+        SDLTest_AssertCheck(SDL_GetGamepadButton(gamepad, SDL_GAMEPAD_BUTTON_SOUTH), "Button 0 is pressed");
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) == SDL_JOYSTICK_AXIS_MAX,
+                            "Valid button binding works after a missing axis");
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_LEFT_TRIGGER) == 0,
+                            "Missing left trigger stays released while other controls move");
+
+        SDLTest_AssertCheck(SDL_SetJoystickVirtualButton(joystick, 1, false), "Release button 1");
+        SDL_UpdateJoysticks();
+        SDLTest_AssertCheck(SDL_GetGamepadAxis(gamepad, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER) == 0,
+                            "Right trigger returns to released");
+        SDL_CloseGamepad(gamepad);
+    }
+    SDLTest_AssertCheck(SDL_DetachVirtualJoystick(joystick_id), "SDL_DetachVirtualJoystick()");
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Joystick routine test cases */
@@ -288,11 +350,15 @@ static const SDLTest_TestCaseReference joystickTest1 = {
 static const SDLTest_TestCaseReference joystickTest2 = {
     joystick_testMappings, "joystick_testMappings", "Test gamepad mapping functionality", TEST_ENABLED
 };
+static const SDLTest_TestCaseReference joystickTest3 = {
+    joystick_testMissingAxes, "joystick_testMissingAxes", "Test mappings with missing joystick axes", TEST_ENABLED
+};
 
 /* Sequence of Joystick routine test cases */
 static const SDLTest_TestCaseReference *joystickTests[] = {
     &joystickTest1,
     &joystickTest2,
+    &joystickTest3,
     NULL
 };
 
