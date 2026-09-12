@@ -86,10 +86,10 @@ static snd_pcm_state_t (*ALSA_snd_pcm_state)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint)(int, const char *, void ***);
 static char *(*ALSA_snd_device_name_get_hint)(const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint)(void **);
-#ifndef SDL_PLATFORM_QNXNTO
-static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
+#ifdef SDL_PLATFORM_QNXNTO
+static int (*ALSA_snd_pcm_avail_delay)(snd_pcm_t *, snd_pcm_sframes_t *, snd_pcm_sframes_t *);
 #else
-static int32_t (*ALSA_snd_pcm_avail_delay)(snd_pcm_t *, snd_pcm_sframes_t *, snd_pcm_sframes_t *);
+static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
 #endif
 static size_t (*ALSA_snd_ctl_card_info_sizeof)(void);
 static size_t (*ALSA_snd_pcm_info_sizeof)(void);
