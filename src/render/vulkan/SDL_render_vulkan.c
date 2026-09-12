@@ -3012,6 +3012,51 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
             samplerYcbcrConversionCreateInfo->yChromaOffset = formatProperties->suggestedYChromaOffset;
             samplerYcbcrConversionCreateInfo->chromaFilter = chromaFilter;
 
+            if (texture->colorspace != SDL_COLORSPACE_UNKNOWN) {
+                switch (SDL_COLORSPACEMATRIX(texture->colorspace)) {
+                case SDL_MATRIX_COEFFICIENTS_BT470BG:
+                case SDL_MATRIX_COEFFICIENTS_BT601:
+                    samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_601_KHR;
+                    break;
+                case SDL_MATRIX_COEFFICIENTS_BT709:
+                    samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709_KHR;
+                    break;
+                case SDL_MATRIX_COEFFICIENTS_BT2020_NCL:
+                    samplerYcbcrConversionCreateInfo->ycbcrModel = VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_2020_KHR;
+                    break;
+                default:
+                    break;
+                }
+
+                switch (SDL_COLORSPACERANGE(texture->colorspace)) {
+                case SDL_COLOR_RANGE_LIMITED:
+                    samplerYcbcrConversionCreateInfo->ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_NARROW_KHR;
+                    break;
+                case SDL_COLOR_RANGE_FULL:
+                    samplerYcbcrConversionCreateInfo->ycbcrRange = VK_SAMPLER_YCBCR_RANGE_ITU_FULL_KHR;
+                    break;
+                default:
+                    break;
+                }
+
+                switch (SDL_COLORSPACECHROMA(texture->colorspace)) {
+                case SDL_CHROMA_LOCATION_LEFT:
+                    samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+                    samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+                    break;
+                case SDL_CHROMA_LOCATION_TOPLEFT:
+                    samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+                    samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_COSITED_EVEN_KHR;
+                    break;
+                case SDL_CHROMA_LOCATION_CENTER:
+                    samplerYcbcrConversionCreateInfo->xChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+                    samplerYcbcrConversionCreateInfo->yChromaOffset = VK_CHROMA_LOCATION_MIDPOINT_KHR;
+                    break;
+                default:
+                    break;
+                }
+            }
+
             textureData->yuvPipeline = VULKAN_GetYUVPipeline(rendererData, &createInfo);
             if (!textureData->yuvPipeline) {
                 return false;
