@@ -1165,76 +1165,76 @@ int main(int argc, char **argv)
             if (SDL_strcmp(argv[i], "--all") == 0) {
                 should_test_all_formats = true;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--jpeg") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--jpeg") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_JPEG);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--bt601") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--bt601") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_BT601);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--bt709") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--bt709") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_BT709);
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--auto") == 0) {
                 SetYUVConversionMode(YUV_CONVERSION_AUTOMATIC);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--yv12") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--yv12") == 0) {
                 yuv_format = SDL_PIXELFORMAT_YV12;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--iyuv") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--iyuv") == 0) {
                 yuv_format = SDL_PIXELFORMAT_IYUV;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--i444") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--i444") == 0) {
                 yuv_format = SDL_PIXELFORMAT_I444;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--yuy2") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--yuy2") == 0) {
                 yuv_format = SDL_PIXELFORMAT_YUY2;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--uyvy") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--uyvy") == 0) {
                 yuv_format = SDL_PIXELFORMAT_UYVY;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--yvyu") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--yvyu") == 0) {
                 yuv_format = SDL_PIXELFORMAT_YVYU;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--nv12") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--nv12") == 0) {
                 yuv_format = SDL_PIXELFORMAT_NV12;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--nv21") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--nv21") == 0) {
                 yuv_format = SDL_PIXELFORMAT_NV21;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--p010") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--p010") == 0) {
                 yuv_format = SDL_PIXELFORMAT_P010;
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--i0fl") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--i0fl") == 0) {
                 yuv_format = SDL_PIXELFORMAT_I0FL;
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--i4fl") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--i4fl") == 0) {
                 yuv_format = SDL_PIXELFORMAT_I4FL;
                 rgb_format = SDL_PIXELFORMAT_XBGR2101010;
                 SetYUVConversionMode(YUV_CONVERSION_BT2020);
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--rgb555") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--rgb555") == 0) {
                 rgb_format = SDL_PIXELFORMAT_XRGB1555;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--rgb565") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--rgb565") == 0) {
                 rgb_format = SDL_PIXELFORMAT_RGB565;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--rgb24") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--rgb24") == 0) {
                 rgb_format = SDL_PIXELFORMAT_RGB24;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--argb") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--argb") == 0) {
                 rgb_format = SDL_PIXELFORMAT_ARGB8888;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--abgr") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--abgr") == 0) {
                 rgb_format = SDL_PIXELFORMAT_ABGR8888;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--rgba") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--rgba") == 0) {
                 rgb_format = SDL_PIXELFORMAT_RGBA8888;
                 consumed = 1;
-            } else if (SDL_strcmp(argv[i], "--bgra") == 0) {
+            } else if (SDL_strcasecmp(argv[i], "--bgra") == 0) {
                 rgb_format = SDL_PIXELFORMAT_BGRA8888;
                 consumed = 1;
             } else if (SDL_strcmp(argv[i], "--planar") == 0) {
