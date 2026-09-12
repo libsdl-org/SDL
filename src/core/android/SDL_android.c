@@ -984,6 +984,10 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     SDL_main_func sdlmain = NULL;
     void *library_handle = NULL;
 
+#ifdef SDL_ANDROID_BUILD_STATIC_LIB
+    extern int main(int argc, char **argv);
+    sdlmain = (SDL_main_func) main;
+#else
     // load the main function from user shared library
     if (!sdlmain) {
         const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
@@ -1011,6 +1015,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         }
         (*env)->ReleaseStringUTFChars(env, library, library_file);
     }
+#endif
 
     if (sdlmain) {
         // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
@@ -1035,9 +1040,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): no SDL_main()");
     }
 
+#ifndef SDL_ANDROID_BUILD_STATIC_LIB
     if (library_handle) {
         dlclose(library_handle);
     }
+#endif
 
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
