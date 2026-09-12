@@ -1314,3 +1314,4 @@ _SDL_GetRenderClipRectFloat
 _SDL_GetOpenHarmonySDKVersion
 _SDL_GetOpenHarmonyInternalStoragePath
 _SDL_RequestOpenHarmonyPermission
+_SDL_SetTrayMenuShownCallback
