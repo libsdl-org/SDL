@@ -29,6 +29,10 @@
 #include <android/native_window.h>
 #include "../video/android/SDL_androidvideo.h"
 #endif
+#ifdef SDL_VIDEO_DRIVER_QNX
+#include <screen/screen.h>
+#include "../video/qnx/SDL_qnx.h"
+#endif
 #ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
@@ -1290,6 +1294,17 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 
     // Format based on selected egl config.
     ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_QNX
+    // Wayland is also a supported platform on QNX, so we need to be specific.
+    if (SDL_strcmp(_this->name, "qnx") == 0) {
+        int format = QNX_ChooseFormat(_this, _this->egl_data->egl_config);
+
+        if (screen_set_window_property_iv(nw, SCREEN_PROPERTY_FORMAT, &format) < 0) {
+            return EGL_NO_SURFACE;
+        }
+    }
 #endif
 
 #ifdef EGL_KHR_gl_colorspace
