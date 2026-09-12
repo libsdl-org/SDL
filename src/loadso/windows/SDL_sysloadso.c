@@ -58,11 +58,18 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
     return symbol;
 }
 
-void SDL_UnloadObject(SDL_SharedObject *handle)
+bool SDL_UnloadObject(SDL_SharedObject *handle)
 {
-    if (handle) {
-        FreeLibrary((HMODULE)handle);
+    if (!handle) {
+        return true;
     }
+    bool success = FreeLibrary((HMODULE)handle);
+    if (!success) {
+        char errbuf[512];
+        SDL_snprintf(errbuf, sizeof (errbuf), "Failed unloading library");
+        WIN_SetError(errbuf);
+    }
+    return success;
 }
 
 #endif // SDL_LOADSO_WINDOWS
