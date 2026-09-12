@@ -916,14 +916,78 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupMainThread)(
     Android_JNI_SetEnv(NULL);
 }
 
+static void parse_args(JNIEnv *env, jobject array, const char *argv0,
+        void **args_out, int *argc_out, char ***argv_out)
+{
+    const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
+    int argc = 0;
+    char **argv = NULL;
+
+    size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
+    for (int i = 0; i < len; ++i) {
+        total_alloc_len++;  // null terminator.
+        jstring string = (*env)->GetObjectArrayElement(env, array, i);
+        if (string) {
+            const char *utf = (*env)->GetStringUTFChars(env, string, 0);
+            if (utf) {
+                total_alloc_len += SDL_strlen(utf) + 1;
+                (*env)->ReleaseStringUTFChars(env, string, utf);
+            }
+            (*env)->DeleteLocalRef(env, string);
+        }
+    }
+
+    void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
+    if (args) {
+        size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
+        argv = (char **) args;
+        char *ptr = (char *) &argv[len + 2];
+        size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
+        argv[argc++] = ptr;
+        SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
+        for (int i = 0; i < len; ++i) {
+            jstring string = (*env)->GetObjectArrayElement(env, array, i);
+            const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
+            cpy = SDL_strlcpy(ptr, utf ? utf : "", remain) + 1;
+            if (cpy < remain) {
+                argv[argc++] = ptr;
+                remain -= cpy;
+                ptr += cpy;
+            }
+            if (utf) {
+                (*env)->ReleaseStringUTFChars(env, string, utf);
+            }
+            if (string) {
+                (*env)->DeleteLocalRef(env, string);
+            }
+        }
+        argv[argc] = NULL;
+    }
+
+    *args_out = args;
+    *argc_out = argc;
+    *argv_out = argv;
+}
+
 // Start up the SDL app
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls, jstring library, jstring function, jobject array)
 {
     int status = -1;
-    const char *library_file;
-    void *library_handle;
+    // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
+    //   https://github.com/love2d/love-android/issues/24
+    // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
+    const char *argv0 = "app_process";
+    void *args = NULL;
+    int argc = 0;
+    char **argv = NULL;
+    SDL_main_func sdlmain = NULL;
 
-    library_file = (*env)->GetStringUTFChars(env, library, NULL);
+#ifdef SDL_ANDROID_BUILD_STATIC_LIB
+    extern int main(int argc, char **argv);
+    sdlmain = (SDL_main_func) main;
+#else
+    void *library_handle;
+    const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
 
     if (library_handle == NULL) {
@@ -937,78 +1001,38 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     }
 
     if (library_handle) {
-        const char *function_name;
-        SDL_main_func SDL_main;
-
-        function_name = (*env)->GetStringUTFChars(env, function, NULL);
-        SDL_main = (SDL_main_func)dlsym(library_handle, function_name);
-        if (SDL_main) {
-            // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
-            //   https://github.com/love2d/love-android/issues/24
-            // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
-            const char *argv0 = "app_process";
-            const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
-
-            size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
-            for (int i = 0; i < len; ++i) {
-                total_alloc_len++;  // null terminator.
-                jstring string = (*env)->GetObjectArrayElement(env, array, i);
-                if (string) {
-                    const char *utf = (*env)->GetStringUTFChars(env, string, 0);
-                    if (utf) {
-                        total_alloc_len += SDL_strlen(utf) + 1;
-                        (*env)->ReleaseStringUTFChars(env, string, utf);
-                    }
-                    (*env)->DeleteLocalRef(env, string);
-                }
-            }
-
-            void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
-            if (!args) { // uhoh.
-                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
-            } else {
-                size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
-                int argc = 0;
-                char **argv = (char **) args;
-                char *ptr = (char *) &argv[len + 2];
-                size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
-                argv[argc++] = ptr;
-                SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
-                for (int i = 0; i < len; ++i) {
-                    jstring string = (*env)->GetObjectArrayElement(env, array, i);
-                    const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
-                    cpy = SDL_strlcpy(ptr, utf ? utf : "", remain) + 1;
-                    if (cpy < remain) {
-                        argv[argc++] = ptr;
-                        remain -= cpy;
-                        ptr += cpy;
-                    }
-                    if (utf) {
-                        (*env)->ReleaseStringUTFChars(env, string, utf);
-                    }
-                    if (string) {
-                        (*env)->DeleteLocalRef(env, string);
-                    }
-                }
-                argv[argc] = NULL;
-
-                // Run the application.
-                status = SDL_RunApp(argc, argv, SDL_main, NULL);
-
-                // Release the arguments.
-                free(args);  // This should NOT be SDL_free()
-            }
-        } else {
+        const char *function_name = (*env)->GetStringUTFChars(env, function, NULL);
+        sdlmain = (SDL_main_func)dlsym(library_handle, function_name);
+        if (!sdlmain) {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
         }
         (*env)->ReleaseStringUTFChars(env, function, function_name);
-
-        dlclose(library_handle);
-
     } else {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
     }
     (*env)->ReleaseStringUTFChars(env, library, library_file);
+#endif
+
+    if (sdlmain) {
+        parse_args(env, array, argv0, &args, &argc, &argv);
+        if (args) {
+            // Run the application.
+            status = SDL_RunApp(argc, argv, sdlmain, NULL);
+
+            // Release the arguments.
+            free(args);  // This should NOT be SDL_free()
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
+        }
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): no SDL_main()");
+    }
+
+#ifndef SDL_ANDROID_BUILD_STATIC_LIB
+    if (library_handle) {
+        dlclose(library_handle);
+    }
+#endif
 
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
