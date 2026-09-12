@@ -86,7 +86,11 @@ static snd_pcm_state_t (*ALSA_snd_pcm_state)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint)(int, const char *, void ***);
 static char *(*ALSA_snd_device_name_get_hint)(const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint)(void **);
+#ifndef SDL_PLATFORM_QNXNTO
 static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
+#else
+static int32_t (*ALSA_snd_pcm_avail_delay)(snd_pcm_t *, snd_pcm_sframes_t *, snd_pcm_sframes_t *);
+#endif
 static size_t (*ALSA_snd_ctl_card_info_sizeof)(void);
 static size_t (*ALSA_snd_pcm_info_sizeof)(void);
 static int (*ALSA_snd_card_next)(int *);
@@ -176,7 +180,11 @@ static bool load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
+#ifndef SDL_PLATFORM_QNXNTO
     SDL_ALSA_SYM(snd_pcm_avail);
+#else
+    SDL_ALSA_SYM(snd_pcm_avail_delay);
+#endif
     SDL_ALSA_SYM(snd_ctl_card_info_sizeof);
     SDL_ALSA_SYM(snd_pcm_info_sizeof);
     SDL_ALSA_SYM(snd_card_next);
@@ -379,7 +387,13 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
     const int delay = SDL_clamp(fulldelay, 1, 5);
 
     while (!SDL_GetAtomicInt(&device->shutdown)) {
+#ifdef SDL_PLATFORM_QNXNTO
+        snd_pcm_sframes_t avail_frames;
+        snd_pcm_sframes_t delay_frames;
+        const int rc = ALSA_snd_pcm_avail_delay(device->hidden->pcm, &avail_frames, &delay_frames);
+#else
         const int rc = ALSA_snd_pcm_avail(device->hidden->pcm);
+#endif
         if (rc < 0) {
             const int status = RecoverALSADevice(device->hidden->pcm, rc);
             if (status < 0) {
@@ -388,9 +402,15 @@ static bool ALSA_WaitDevice(SDL_AudioDevice *device)
                 return false;
             }
         }
+#ifdef SDL_PLATFORM_QNXNTO
+        if (avail_frames >= sample_frames) {
+            break;
+        }
+#else
         if (rc >= sample_frames) {
             break;
         }
+#endif
         SDL_Delay(delay);
     }
     return true;
@@ -427,6 +447,29 @@ static bool ALSA_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int bu
 
 static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
 {
+#ifdef SDL_PLATFORM_QNXNTO
+    snd_pcm_sframes_t avail_frames;
+    snd_pcm_sframes_t delay_frames;
+    int rc = ALSA_snd_pcm_avail_delay(device->hidden->pcm, &avail_frames, &delay_frames);
+    if ((rc < 0) || (avail_frames == 0)) {
+        // Wait a bit and try again, maybe the hardware isn't quite ready yet?
+        SDL_Delay(1);
+
+        rc = ALSA_snd_pcm_avail_delay(device->hidden->pcm, &avail_frames, &delay_frames);
+        if ((rc < 0) || (avail_frames == 0)) {
+            // We'll catch it next time
+            *buffer_size = 0;
+            return NULL;
+        }
+    }
+
+    const int requested_frames = SDL_min(device->sample_frames, avail_frames);
+    const int requested_bytes = requested_frames * SDL_AUDIO_FRAMESIZE(device->spec);
+    SDL_assert(requested_bytes <= *buffer_size);
+    //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA GETDEVICEBUF: NEED %d BYTES", requested_bytes);
+    *buffer_size = requested_bytes;
+    return device->hidden->mixbuf;
+#else
     snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(device->hidden->pcm);
     if (rc <= 0) {
         // Wait a bit and try again, maybe the hardware isn't quite ready yet?
@@ -446,6 +489,7 @@ static Uint8 *ALSA_GetDeviceBuf(SDL_AudioDevice *device, int *buffer_size)
     //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA GETDEVICEBUF: NEED %d BYTES", requested_bytes);
     *buffer_size = requested_bytes;
     return device->hidden->mixbuf;
+#endif
 }
 
 static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
@@ -453,10 +497,20 @@ static int ALSA_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen)
     const int frame_size = SDL_AUDIO_FRAMESIZE(device->spec);
     SDL_assert((buflen % frame_size) == 0);
 
+#ifdef SDL_PLATFORM_QNXNTO
+    snd_pcm_sframes_t total_available;
+    snd_pcm_sframes_t total_delay;
+
+    (void)ALSA_snd_pcm_avail_delay(device->hidden->pcm, &total_available, &total_delay);
+    if (total_available == 0) {
+        return 0;  // go back to WaitDevice and try again.
+    }
+#else
     const snd_pcm_sframes_t total_available = ALSA_snd_pcm_avail(device->hidden->pcm);
     if (total_available == 0) {
         return 0;  // go back to WaitDevice and try again.
     }
+#endif
 
     const int total_frames = SDL_min(buflen / frame_size, total_available);
     const int rc = ALSA_snd_pcm_readi(device->hidden->pcm, buffer, total_frames);
@@ -1047,12 +1101,16 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         //==========================================================================================
         // Here the alsa pcm is in SND_PCM_STATE_PREPARED state, let's figure out a good fit for
         // SDL channel map, it may request to change the target number of channels though.
+#ifndef SDL_PLATFORM_QNXNTO
         status = alsa_chmap_cfg(ctx);
         if (status < 0) {
             return status; // we forward the SDL error
         } else if (status == CHMAP_INSTALLED) {
             return CHANS_N_CONFIGURED; // we are finished here
         }
+#else
+        return CHANS_N_CONFIGURED;
+#endif
 
         // status == CHANS_N_NEXT
         ALSA_snd_pcm_free_chmaps(ctx->chmap_queries);
