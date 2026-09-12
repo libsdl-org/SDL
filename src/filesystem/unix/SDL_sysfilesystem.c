@@ -213,7 +213,7 @@ static char *GetExePath(void)
 #elif defined(SDL_PLATFORM_QNXNTO)
         char exe_path[PATH_MAX];
         if (_cmdname(exe_path) != NULL) {
-            result = strdup(exe_path);
+            result = SDL_strdup(exe_path);
         }
 #else
         result = readSymLink("/proc/self/exe"); // linux.

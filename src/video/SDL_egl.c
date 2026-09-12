@@ -1301,8 +1301,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     if (SDL_strcmp(_this->name, "qnx") == 0) {
         int format = QNX_ChooseFormat(_this, _this->egl_data->egl_config);
 
-        if (screen_set_window_property_iv(nw, SCREEN_PROPERTY_FORMAT,
-                                          &format) < 0) {
+        if (screen_set_window_property_iv(nw, SCREEN_PROPERTY_FORMAT, &format) < 0) {
             return EGL_NO_SURFACE;
         }
     }
