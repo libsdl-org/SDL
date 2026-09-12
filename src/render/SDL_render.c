@@ -1523,6 +1523,10 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
         SDL_SetError("Palettized textures can't be render targets");
         return NULL;
     }
+    CHECK_PARAM(SDL_ISPIXELFORMAT_FOURCC(format) && access == SDL_TEXTUREACCESS_TARGET) {
+        SDL_SetError("%s textures can't be render targets", SDL_GetPixelFormatName(format));
+        return NULL;
+    }
     CHECK_PARAM(w <= 0 || h <= 0) {
         SDL_SetError("Texture dimensions can't be 0");
         return NULL;

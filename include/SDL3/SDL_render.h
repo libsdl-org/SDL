@@ -803,8 +803,18 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  * With the vulkan renderer:
  *
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage associated
- *   with the texture, if you want to wrap an existing texture.
+ *   with the texture, if you want to wrap an existing texture. For NV12 style
+ *   textures this is the single two plane VkImage holding both the Y and UV
+ *   planes, and for YUV style textures it is the VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated
+ *   with the U plane of a YUV texture, if you want to wrap an existing
+ *   texture.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER`: the VkImage associated
+ *   with the V plane of a YUV texture, if you want to wrap an existing
+ *   texture.
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_LAYOUT_NUMBER`: the VkImageLayout for the
+ *   VkImage, defaults to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER`: additional VK_IMAGE_USAGE bits that should be used when creating the texture.
  *   VkImage, defaults to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_ANDROID_HARDWARE_BUFFER_POINTER`: the AHardwareBuffer to sample from, if you want to use an existing Android hardware buffer as the texture. You must use SDL_PIXELFORMAT_EXTERNAL_OES for the texture format.
  *   You can't directly update the texture or use it as a render target. If the Android buffer contents change, you must recreate the texture to pick up the changes.
@@ -871,7 +881,10 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER      "SDL.texture.create.opengles2.texture_u"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER      "SDL.texture.create.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER           "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER         "SDL.texture.create.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER         "SDL.texture.create.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_LAYOUT_NUMBER            "SDL.texture.create.vulkan.layout"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER             "SDL.texture.create.vulkan.usage"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_ANDROID_HARDWARE_BUFFER_POINTER "SDL.texture.create.vulkan.android_hardware_buffer"
 #define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER             "SDL.texture.create.gpu.texture"
 #define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER          "SDL.texture.create.gpu.texture_uv"
@@ -935,7 +948,13 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  * With the vulkan renderer:
  *
  * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER`: the VkImage associated with the
- *   texture
+ *   texture. For NV12 style textures this is the single two plane VkImage
+ *   holding both the Y and UV planes, and for YUV style textures it is the
+ *   VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated with
+ *   the U plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER`: the VkImage associated with
+ *   the V plane of a YUV texture
  *
  * With the opengl renderer:
  *
@@ -1018,6 +1037,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER            "SDL.texture.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER            "SDL.texture.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER             "SDL.texture.gpu.texture_uv"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER              "SDL.texture.gpu.texture_u"
