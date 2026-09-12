@@ -51,7 +51,10 @@
     if (@available(macOS 11, iOS 14, *)) {
         completionHandler(UNNotificationPresentationOptionBanner + UNNotificationPresentationOptionSound);
     } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         completionHandler(UNNotificationPresentationOptionAlert + UNNotificationPresentationOptionSound);
+#pragma clang diagnostic pop
     }
 }
 
@@ -97,13 +100,16 @@ static bool ShouldEnableNotifications(void)
      * FIXME: These functions are deprecated, find a modern way.
      */
     CFBundleRef bundle = CFBundleGetMainBundle();
-    CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle);
+    CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle); // FIXME: This is a leak!
 
     CFStringRef uti;
-    if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) &&
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) /* FIXME: This is a leak! */ &&
         uti && UTTypeConformsTo(uti, kUTTypeApplicationBundle)) {
         return true;
     }
+#pragma clang diagnostic pop
 
     return false;
 #else
