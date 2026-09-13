@@ -134,7 +134,7 @@ struct SDL_Tray {
             NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
             if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
                 if (strongSelf.tray->middle_click_callback) {
-                    strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray);
+                    strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
                 }
             }
         }
