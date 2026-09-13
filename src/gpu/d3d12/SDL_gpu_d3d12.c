@@ -6230,6 +6230,73 @@ static void D3D12_CopyTextureToTexture(
         destinationSubresource->parent);
 }
 
+static void D3D12_CopyTextureToBuffer(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUTextureRegion *source,
+    const SDL_GPUBufferLocation *destination,
+    bool cycle)
+{
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12_TEXTURE_COPY_LOCATION sourceLocation;
+    D3D12_TEXTURE_COPY_LOCATION destinationLocation;
+    D3D12BufferContainer *destinationContainer = (D3D12BufferContainer *)destination->buffer;
+
+    D3D12Buffer *destinationBuffer = D3D12_INTERNAL_PrepareBufferForWrite(
+        d3d12CommandBuffer,
+        destinationContainer,
+        cycle,
+        D3D12_RESOURCE_STATE_COPY_DEST);
+
+    D3D12TextureSubresource *sourceSubresource = D3D12_INTERNAL_FetchTextureSubresource(
+        (D3D12TextureContainer *)source->texture,
+        source->layer,
+        source->mip_level);
+
+    D3D12_INTERNAL_TextureSubresourceTransitionFromDefaultUsage(
+        d3d12CommandBuffer,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        sourceSubresource);
+
+    sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    sourceLocation.SubresourceIndex = sourceSubresource->index;
+    sourceLocation.pResource = sourceSubresource->parent->resource;
+
+    D3D12_BOX sourceBox = {
+        source->x,
+        source->y,
+        source->z,
+        source->x + source->w,
+        source->y + source->h,
+        source->z + source->d
+    };
+
+    // FIXME: what if pitch is not 256-aligned?
+    // FIXME: depth-stencil planes?
+    destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    destinationLocation.PlacedFootprint.Footprint.Format = SDLToD3D12_TextureFormat[sourceSubresource->parent->container->header.info.format];
+    destinationLocation.PlacedFootprint.Footprint.Width = source->w;
+    destinationLocation.PlacedFootprint.Footprint.Height = source->h;
+    destinationLocation.PlacedFootprint.Footprint.Depth = source->d;
+    destinationLocation.PlacedFootprint.Footprint.RowPitch = BytesPerRow(source->w, sourceSubresource->parent->container->header.info.format);
+
+    ID3D12GraphicsCommandList_CopyTextureRegion(
+        d3d12CommandBuffer->graphicsCommandList,
+        &destinationLocation,
+        0,
+        0,
+        0,
+        &sourceLocation,
+        &sourceBox);
+
+    D3D12_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        d3d12CommandBuffer,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        sourceSubresource);
+
+    D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, sourceSubresource->parent);
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, destinationBuffer);
+}
+
 static void D3D12_CopyBufferToBuffer(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUBufferLocation *source,
@@ -6273,6 +6340,67 @@ static void D3D12_CopyBufferToBuffer(
 
     D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, sourceBuffer);
     D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, destinationBuffer);
+}
+
+static void D3D12_CopyBufferToTexture(
+    SDL_GPUCommandBuffer *commandBuffer,
+    const SDL_GPUBufferLocation *source,
+    const SDL_GPUTextureRegion *destination,
+    bool cycle)
+{
+    D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    D3D12_TEXTURE_COPY_LOCATION sourceLocation;
+    D3D12_TEXTURE_COPY_LOCATION destinationLocation;
+
+    D3D12Buffer *sourceBuffer = ((D3D12BufferContainer *)source->buffer)->activeBuffer;
+
+    D3D12_INTERNAL_BufferTransitionFromDefaultUsage(
+        d3d12CommandBuffer,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        sourceBuffer);
+
+    D3D12TextureSubresource *destinationSubresource = D3D12_INTERNAL_PrepareTextureSubresourceForWrite(
+        d3d12CommandBuffer,
+        (D3D12TextureContainer *)destination->texture,
+        destination->layer,
+        destination->mip_level,
+        cycle,
+        D3D12_RESOURCE_STATE_COPY_DEST);
+
+    // FIXME: what if pitch is not 256-aligned?
+    // FIXME: depth-stencil planes?
+    sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
+    sourceLocation.PlacedFootprint.Footprint.Format = SDLToD3D12_TextureFormat[destinationSubresource->parent->container->header.info.format];
+    sourceLocation.PlacedFootprint.Footprint.Width = destination->w;
+    sourceLocation.PlacedFootprint.Footprint.Height = destination->h;
+    sourceLocation.PlacedFootprint.Footprint.Depth = destination->d;
+    sourceLocation.PlacedFootprint.Footprint.RowPitch = BytesPerRow(destination->w, destinationSubresource->parent->container->header.info.format);
+
+    destinationLocation.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
+    destinationLocation.SubresourceIndex = destinationSubresource->index;
+    destinationLocation.pResource = destinationSubresource->parent->resource;
+
+    ID3D12GraphicsCommandList_CopyTextureRegion(
+        d3d12CommandBuffer->graphicsCommandList,
+        &destinationLocation,
+        destination->x,
+        destination->y,
+        destination->z,
+        &sourceLocation,
+        NULL);
+
+    D3D12_INTERNAL_BufferTransitionToDefaultUsage(
+        d3d12CommandBuffer,
+        D3D12_RESOURCE_STATE_COPY_SOURCE,
+        sourceBuffer);
+
+    D3D12_INTERNAL_TextureTransitionToDefaultUsage(
+        d3d12CommandBuffer,
+        D3D12_RESOURCE_STATE_COPY_DEST,
+        destinationSubresource->parent);
+
+    D3D12_INTERNAL_TrackBuffer(d3d12CommandBuffer, sourceBuffer);
+    D3D12_INTERNAL_TrackTexture(d3d12CommandBuffer, destinationSubresource->parent);
 }
 
 static void D3D12_DownloadFromTexture(

@@ -1307,3 +1307,5 @@ _SDL_SetJoystickSensorEnabled
 _SDL_JoystickSensorEnabled
 _SDL_GetJoystickSensorDataRate
 _SDL_GetJoystickSensorData
+_SDL_CopyGPUTextureToBuffer
+_SDL_CopyGPUBufferToTexture
