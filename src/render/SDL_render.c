@@ -1165,8 +1165,8 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
         renderer->main_view.pixel_w = surface->w;
         renderer->main_view.pixel_h = surface->h;
     }
-    renderer->main_view.viewport.w = -1;
-    renderer->main_view.viewport.h = -1;
+    renderer->main_view.viewport.w = -1.0f;
+    renderer->main_view.viewport.h = -1.0f;
     renderer->main_view.scale.x = 1.0f;
     renderer->main_view.scale.y = 1.0f;
     renderer->main_view.logical_scale.x = 1.0f;
@@ -1558,8 +1558,8 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->scaleMode = renderer->scale_mode;
     texture->view.pixel_w = w;
     texture->view.pixel_h = h;
-    texture->view.viewport.w = -1;
-    texture->view.viewport.h = -1;
+    texture->view.viewport.w = -1.0f;
+    texture->view.viewport.h = -1.0f;
     texture->view.scale.x = 1.0f;
     texture->view.scale.y = 1.0f;
     texture->view.logical_scale.x = 1.0f;
@@ -3161,24 +3161,55 @@ bool SDL_ConvertEventToRenderCoordinates(SDL_Renderer *renderer, SDL_Event *even
 
 bool SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
+    if (rect) {
+        SDL_FRect frect;
+        SDL_RectToFRect(rect, &frect);
+        return SDL_SetRenderViewportFloat(renderer, &frect);
+    } else {
+        return SDL_SetRenderViewportFloat(renderer, NULL);
+    }
+}
+
+bool SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
+{
+    if (rect) {
+        SDL_zerop(rect);
+    }
+
+    SDL_FRect frect;
+    if (SDL_GetRenderViewportFloat(renderer, &frect)) {
+        if (rect) {
+            rect->x = (int)SDL_floorf(frect.x);
+            rect->y = (int)SDL_floorf(frect.y);
+            rect->w = (int)SDL_ceilf(frect.w);
+            rect->h = (int)SDL_ceilf(frect.h);
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool SDL_SetRenderViewportFloat(SDL_Renderer *renderer, const SDL_FRect *rect)
+{
     CHECK_RENDERER_MAGIC(renderer, false);
 
     SDL_RenderViewState *view = renderer->view;
     if (rect) {
-        if ((rect->w < 0) || (rect->h < 0)) {
+        if ((rect->w < 0.0f) || (rect->h < 0.0f)) {
             return SDL_SetError("rect has a negative size");
         }
         SDL_copyp(&view->viewport, rect);
     } else {
-        view->viewport.x = view->viewport.y = 0;
-        view->viewport.w = view->viewport.h = -1;
+        view->viewport.x = view->viewport.y = 0.0f;
+        view->viewport.w = view->viewport.h = -1.0f;
     }
     UpdatePixelViewport(renderer, view);
 
     return QueueCmdSetViewport(renderer);
 }
 
-bool SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
+bool SDL_GetRenderViewportFloat(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     if (rect) {
         SDL_zerop(rect);
@@ -3190,15 +3221,15 @@ bool SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect)
         const SDL_RenderViewState *view = renderer->view;
         rect->x = view->viewport.x;
         rect->y = view->viewport.y;
-        if (view->viewport.w >= 0) {
+        if (view->viewport.w >= 0.0f) {
             rect->w = view->viewport.w;
         } else {
-            rect->w = (int)SDL_ceilf(view->pixel_w / view->current_scale.x);
+            rect->w = view->pixel_w / view->current_scale.x;
         }
-        if (view->viewport.h >= 0) {
+        if (view->viewport.h >= 0.0f) {
             rect->h = view->viewport.h;
         } else {
-            rect->h = (int)SDL_ceilf(view->pixel_h / view->current_scale.y);
+            rect->h = view->pixel_h / view->current_scale.y;
         }
     }
     return true;
@@ -3209,7 +3240,7 @@ bool SDL_RenderViewportSet(SDL_Renderer *renderer)
     CHECK_RENDERER_MAGIC(renderer, false);
 
     const SDL_RenderViewState *view = renderer->view;
-    return (view->viewport.w >= 0 && view->viewport.h >= 0);
+    return (view->viewport.w >= 0.0f && view->viewport.h >= 0.0f);
 }
 
 static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
@@ -3221,14 +3252,14 @@ static void GetRenderViewportSize(SDL_Renderer *renderer, SDL_FRect *rect)
     rect->x = 0.0f;
     rect->y = 0.0f;
 
-    if (view->viewport.w >= 0) {
-        rect->w = (float)view->viewport.w;
+    if (view->viewport.w >= 0.0f) {
+        rect->w = view->viewport.w;
     } else {
         rect->w = view->pixel_w / scale_x;
     }
 
-    if (view->viewport.h >= 0) {
-        rect->h = (float)view->viewport.h;
+    if (view->viewport.h >= 0.0f) {
+        rect->h = view->viewport.h;
     } else {
         rect->h = view->pixel_h / scale_y;
     }
@@ -3283,10 +3314,39 @@ bool SDL_GetRenderSafeArea(SDL_Renderer *renderer, SDL_Rect *rect)
 
 bool SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
+    if (rect) {
+        SDL_FRect frect;
+        SDL_RectToFRect(rect, &frect);
+        return SDL_SetRenderClipRectFloat(renderer, &frect);
+    } else {
+        return SDL_SetRenderClipRectFloat(renderer, NULL);
+    }
+}
+
+bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
+{
+    if (rect) {
+        SDL_zerop(rect);
+    }
+
+    SDL_FRect frect;
+    if (SDL_GetRenderClipRectFloat(renderer, &frect)) {
+        rect->x = (int)SDL_floorf(frect.x);
+        rect->y = (int)SDL_floorf(frect.y);
+        rect->w = (int)SDL_ceilf(frect.w);
+        rect->h = (int)SDL_ceilf(frect.h);
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool SDL_SetRenderClipRectFloat(SDL_Renderer *renderer, const SDL_FRect *rect)
+{
     CHECK_RENDERER_MAGIC(renderer, false);
 
     SDL_RenderViewState *view = renderer->view;
-    if (rect && rect->w >= 0 && rect->h >= 0) {
+    if (rect && rect->w >= 0.0f && rect->h >= 0.0f) {
         view->clipping_enabled = true;
         SDL_copyp(&view->clip_rect, rect);
     } else {
@@ -3298,7 +3358,7 @@ bool SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect)
     return QueueCmdSetClipRect(renderer);
 }
 
-bool SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect)
+bool SDL_GetRenderClipRectFloat(SDL_Renderer *renderer, SDL_FRect *rect)
 {
     if (rect) {
         SDL_zerop(rect);

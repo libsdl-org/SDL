@@ -1823,6 +1823,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Rendere
  *
  * \sa SDL_GetRenderViewport
  * \sa SDL_RenderViewportSet
+ * \sa SDL_SetRenderViewportFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect);
 
@@ -1841,10 +1842,58 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, c
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GetRenderViewportFloat
  * \sa SDL_RenderViewportSet
  * \sa SDL_SetRenderViewport
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
+
+/**
+ * Set the drawing area for rendering on the current target.
+ *
+ * Drawing will clip to this area (separately from any clipping done with
+ * SDL_SetRenderClipRect), and the top left of the area will become coordinate
+ * (0, 0) for future drawing commands.
+ *
+ * The area's width and height must be >= 0.
+ *
+ * Each render target has its own viewport. This function sets the viewport
+ * for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect the SDL_FRect structure representing the drawing area, or NULL
+ *             to set the viewport to the entire target.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetRenderViewportFloat
+ * \sa SDL_RenderViewportSet
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewportFloat(SDL_Renderer *renderer, const SDL_FRect *rect);
+
+/**
+ * Get the drawing area for the current target.
+ *
+ * Each render target has its own viewport. This function gets the viewport
+ * for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure filled in with the current drawing area.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_RenderViewportSet
+ * \sa SDL_SetRenderViewportFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewportFloat(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Return whether an explicit rectangle was set as the viewport.
@@ -1864,7 +1913,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, S
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRenderViewport
+ * \sa SDL_GetRenderViewportFloat
  * \sa SDL_SetRenderViewport
+ * \sa SDL_SetRenderViewportFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *renderer);
 
@@ -1908,6 +1959,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderSafeArea(SDL_Renderer *renderer, S
  *
  * \sa SDL_GetRenderClipRect
  * \sa SDL_RenderClipEnabled
+ * \sa SDL_SetRenderClipRectFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect);
 
@@ -1927,10 +1979,53 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, c
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GetRenderClipRectFloat
  * \sa SDL_RenderClipEnabled
  * \sa SDL_SetRenderClipRect
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
+
+/**
+ * Set the clip rectangle for rendering on the specified target.
+ *
+ * Each render target has its own clip rectangle. This function sets the
+ * cliprect for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure representing the clip area, relative to
+ *             the viewport, or NULL to disable clipping.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetRenderClipRectFloat
+ * \sa SDL_RenderClipEnabled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRectFloat(SDL_Renderer *renderer, const SDL_FRect *rect);
+
+/**
+ * Get the clip rectangle for the current target.
+ *
+ * Each render target has its own clip rectangle. This function gets the
+ * cliprect for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure filled in with the current clipping area
+ *             or an empty rectangle if clipping is disabled.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_RenderClipEnabled
+ * \sa SDL_SetRenderClipRectFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRectFloat(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Get whether clipping is enabled on the given render target.
@@ -1947,7 +2042,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, S
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRenderClipRect
+ * \sa SDL_GetRenderClipRectFloat
  * \sa SDL_SetRenderClipRect
+ * \sa SDL_SetRenderClipRectFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
 
