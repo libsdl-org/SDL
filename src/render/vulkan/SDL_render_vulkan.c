@@ -159,7 +159,6 @@ typedef void (*pfnAHardwareBuffer_describe)(const AHardwareBuffer *, AHardwareBu
     VULKAN_INSTANCE_FUNCTION(vkGetPhysicalDeviceSurfaceSupportKHR)      \
     VULKAN_INSTANCE_FUNCTION(vkQueueWaitIdle)                           \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceFeatures2KHR)              \
-    VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceFormatProperties2KHR)      \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceMemoryProperties2KHR)      \
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)            \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkCreateSamplerYcbcrConversionKHR)              \
@@ -567,51 +566,10 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
     }
 }
 
-static VkFormat SDLPixelFormatToVkTextureFormat(SDL_PixelFormat format, Uint32 output_colorspace)
-{
-    switch (format) {
-    case SDL_PIXELFORMAT_INDEX8:
-        return VK_FORMAT_R8_UNORM;
-    case SDL_PIXELFORMAT_YUY2:
-        return VK_FORMAT_G8B8G8R8_422_UNORM;
-    case SDL_PIXELFORMAT_UYVY:
-        return VK_FORMAT_B8G8R8G8_422_UNORM;
-    case SDL_PIXELFORMAT_YV12:
-    case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_I444:
-        return VK_FORMAT_R8_UNORM;
-    case SDL_PIXELFORMAT_NV12:
-    case SDL_PIXELFORMAT_NV21:
-        return  VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-    case SDL_PIXELFORMAT_P010:
-        return VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
-    case SDL_PIXELFORMAT_I0FL:
-    case SDL_PIXELFORMAT_I4FL:
-        return VK_FORMAT_R16_UNORM;
-    default:
-        for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
-            if (vk_format_map[i].sdl == format) {
-                if (output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
-                    output_colorspace == SDL_COLORSPACE_HDR10) {
-                    return vk_format_map[i].srgb;
-                } else {
-                    return vk_format_map[i].unorm;
-                }
-            }
-        }
-        return VK_FORMAT_UNDEFINED;
-    }
-}
-
 static VkFormat VULKAN_GetVkImageFormat(SDL_PixelFormat format, Uint32 output_colorspace)
 {
     switch (format) {
     case SDL_PIXELFORMAT_INDEX8:
-        return VK_FORMAT_R8_UNORM;
-    case SDL_PIXELFORMAT_YUY2:
-        return VK_FORMAT_G8B8G8R8_422_UNORM;
-    case SDL_PIXELFORMAT_UYVY:
-        return VK_FORMAT_B8G8R8G8_422_UNORM;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_I444:
@@ -651,7 +609,7 @@ static VkFormat VULKAN_GetVkImageViewFormat(SDL_PixelFormat format, int plane, U
         }
     case SDL_PIXELFORMAT_P010:
         if (plane == 0) {
-            return VK_FORMAT_R8_UNORM;
+            return VK_FORMAT_R16_UNORM;
         } else {
             return VK_FORMAT_R16G16_UNORM;
         }
@@ -2967,8 +2925,8 @@ static bool VULKAN_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pal
     }
     palette->internal = palettedata;
 
-    VkFormat format = SDLPixelFormatToVkTextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
-    VkImageUsageFlags usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    VkFormat format = VULKAN_GetVkImageFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+    VkImageUsageFlags usage = (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     VkComponentMapping imageViewSwizzle = data->identitySwizzle;
     VkResult result = VULKAN_AllocateImage(data, 0, NULL, 256, 1, format, usage, VK_NULL_HANDLE, NULL, &palettedata->image);
     if (result != VK_SUCCESS) {
@@ -5226,6 +5184,19 @@ static bool VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
     return true;
 }
 
+static bool VULKAN_TextureFormatSupported(VkPhysicalDevice physicalDevice, VkFormat format)
+{
+    VkImageFormatProperties properties;
+    if (vkGetPhysicalDeviceImageFormatProperties(physicalDevice, format,
+                                                 VK_IMAGE_TYPE_2D,
+                                                 VK_IMAGE_TILING_OPTIMAL,
+                                                 (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT),
+                                                 0, &properties) == VK_SUCCESS) {
+        return true;
+    }
+    return false;
+}
+
 static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     VULKAN_RenderData *rendererData;
@@ -5309,42 +5280,37 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
     }
 
     for (int i = 0; i < SDL_arraysize(vk_format_map); i++) {
-        VkImageFormatProperties properties;
-
-        if (vkGetPhysicalDeviceImageFormatProperties(rendererData->physicalDevice,
-                                                     vk_format_map[i].unorm,
-                                                     VK_IMAGE_TYPE_2D,
-                                                     VK_IMAGE_TILING_OPTIMAL,
-                                                     VK_IMAGE_USAGE_SAMPLED_BIT,
-                                                     0,
-                                                     &properties) != VK_SUCCESS) {
+        if (!VULKAN_TextureFormatSupported(rendererData->physicalDevice, vk_format_map[i].unorm)) {
             continue;
         }
-
-        if (vkGetPhysicalDeviceImageFormatProperties(rendererData->physicalDevice,
-                                                     vk_format_map[i].srgb,
-                                                     VK_IMAGE_TYPE_2D,
-                                                     VK_IMAGE_TILING_OPTIMAL,
-                                                     VK_IMAGE_USAGE_SAMPLED_BIT,
-                                                     0,
-                                                     &properties) != VK_SUCCESS) {
+        if (!VULKAN_TextureFormatSupported(rendererData->physicalDevice, vk_format_map[i].srgb)) {
             continue;
         }
-
         SDL_AddSupportedTextureFormat(renderer, vk_format_map[i].sdl);
     }
 
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    if (VULKAN_TextureFormatSupported(rendererData->physicalDevice,
+            VULKAN_GetVkImageFormat(SDL_PIXELFORMAT_INDEX8, renderer->output_colorspace)) &&
+        VULKAN_TextureFormatSupported(rendererData->physicalDevice,
+            VULKAN_GetVkImageFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace))) {
+        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
+    }
 
-    if (rendererData->supportsKHRSamplerYCbCrConversion) {
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_YV12);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_IYUV);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I444);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV12);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_NV21);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_P010);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I0FL);
-        SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_I4FL);
+    static const SDL_PixelFormat yuvFormats[] = {
+        SDL_PIXELFORMAT_YV12,
+        SDL_PIXELFORMAT_IYUV,
+        SDL_PIXELFORMAT_I444,
+        SDL_PIXELFORMAT_NV12,
+        SDL_PIXELFORMAT_NV21,
+        SDL_PIXELFORMAT_P010,
+        SDL_PIXELFORMAT_I0FL,
+        SDL_PIXELFORMAT_I4FL
+    };
+    for (int i = 0; i < SDL_arraysize(yuvFormats); ++i) {
+        VkFormat format = VULKAN_GetVkImageFormat(yuvFormats[i], renderer->output_colorspace);
+        if (VULKAN_TextureFormatSupported(rendererData->physicalDevice, format)) {
+            SDL_AddSupportedTextureFormat(renderer, yuvFormats[i]);
+        }
     }
 
     if (rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer) {
