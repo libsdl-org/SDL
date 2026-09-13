@@ -90,21 +90,21 @@ struct SDL_Tray {
     if (buttonNumber == 0) {
         /* Left click */
         if (self.tray->left_click_callback) {
-            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray);
+            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
         } else {
             show_menu = true;
         }
     } else if (buttonNumber == 1) {
         /* Right click */
         if (self.tray->right_click_callback) {
-            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray);
+            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
         } else {
             show_menu = true;
         }
     } else if (buttonNumber == 2) {
         /* Middle click */
         if (self.tray->middle_click_callback) {
-            self.tray->middle_click_callback(self.tray->userdata, self.tray);
+            self.tray->middle_click_callback(self.tray->userdata, self.tray, 0, 0, SDL_TRAYCALLBACKCAPABILITIES_NONE);
         }
     }
 
