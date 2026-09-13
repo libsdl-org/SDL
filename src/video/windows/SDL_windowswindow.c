@@ -713,7 +713,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         }
 
         style |= GetWindowStyle(window);
-        styleEx |= GetWindowStyleEx(window);
+        styleEx |= (DWORD)SDL_GetNumberProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER, GetWindowStyleEx(window));
 
         // Figure out what the window area will be
         WIN_ConstrainPopup(window, false);
