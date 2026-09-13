@@ -1342,3 +1342,4 @@ SDL_DYNAPI_PROC(bool,SDL_SetJoystickSensorEnabled,(SDL_Joystick *a,SDL_SensorTyp
 SDL_DYNAPI_PROC(bool,SDL_JoystickSensorEnabled,(SDL_Joystick *a,SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(float,SDL_GetJoystickSensorDataRate,(SDL_Joystick *a,SDL_SensorType b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetJoystickSensorData,(SDL_Joystick *a,SDL_SensorType b,float *c,int d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(char*,SDL_EncodeURL,(const char *a,const char *b),(a,b),return)

@@ -1308,6 +1308,7 @@ SDL3_0.0.0 {
     SDL_JoystickSensorEnabled;
     SDL_GetJoystickSensorDataRate;
     SDL_GetJoystickSensorData;
+    SDL_EncodeURL;
     # extra symbols go here (don't modify this line)
   local: *;
 };
