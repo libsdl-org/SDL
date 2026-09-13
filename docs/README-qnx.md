@@ -42,3 +42,9 @@ You can find the cross-compiled build tools at https://github.com/qnx-ports/buil
 - Currently, only software and OpenGLES2 rendering is supported.
 - Unless your application is managed by a window manager capable of closing the application, you will need to quit it yourself.
 - Restraining the mouse to a window or warping the mouse cursor will not work.
+
+## Notes - alsa
+- For sound to work on the rpi, you may need to run,
+  ```bash
+  export SDL_AUDIO_DEVICE_SAMPLE_FRAMES=6912 # Or any other value retrieved from speaker-test
+  ```
