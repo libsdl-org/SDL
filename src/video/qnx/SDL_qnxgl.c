@@ -121,6 +121,7 @@ bool QNX_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
             if (surface == EGL_NO_SURFACE) {
                 return false;
             }
+            SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_QNX_SURFACE_POINTER, impl->egl_surface);
 
             if (!SDL_EGL_MakeCurrent(_this, surface, impl->context)) {
                 return false;

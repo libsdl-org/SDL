@@ -547,6 +547,7 @@ static void QNX_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData   *impl = (SDL_WindowData *)window->internal;
 
     if (impl) {
+        SDL_EGL_DestroySurface(_this, impl->egl_surface);
         screen_destroy_window(impl->window);
         window->internal = NULL;
     }
