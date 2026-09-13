@@ -180,10 +180,10 @@ static bool load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
-#ifndef SDL_PLATFORM_QNXNTO
-    SDL_ALSA_SYM(snd_pcm_avail);
-#else
+#ifdef SDL_PLATFORM_QNXNTO
     SDL_ALSA_SYM(snd_pcm_avail_delay);
+#else
+    SDL_ALSA_SYM(snd_pcm_avail);
 #endif
     SDL_ALSA_SYM(snd_ctl_card_info_sizeof);
     SDL_ALSA_SYM(snd_pcm_info_sizeof);
@@ -1101,15 +1101,15 @@ static int ALSA_pcm_cfg_hw_chans_n_scan(struct ALSA_pcm_cfg_ctx *ctx, unsigned i
         //==========================================================================================
         // Here the alsa pcm is in SND_PCM_STATE_PREPARED state, let's figure out a good fit for
         // SDL channel map, it may request to change the target number of channels though.
-#ifndef SDL_PLATFORM_QNXNTO
+#ifdef SDL_PLATFORM_QNXNTO
+        return CHANS_N_CONFIGURED;
+#else
         status = alsa_chmap_cfg(ctx);
         if (status < 0) {
             return status; // we forward the SDL error
         } else if (status == CHMAP_INSTALLED) {
             return CHANS_N_CONFIGURED; // we are finished here
         }
-#else
-        return CHANS_N_CONFIGURED;
 #endif
 
         // status == CHANS_N_NEXT
