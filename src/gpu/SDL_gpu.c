@@ -2092,6 +2092,14 @@ void SDL_BindGPUVertexSamplers(
         if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation)
         {
             CHECK_SAMPLER_TEXTURES
+
+            for (Uint32 i = 0; i < num_bindings; i += 1) {
+                TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+                if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
+                {
+                    SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+                }
+            }
         }
 
         for (Uint32 i = 0; i < num_bindings; i += 1) {
@@ -2199,6 +2207,14 @@ void SDL_BindGPUFragmentSamplers(
 
         if (!((CommandBufferCommonHeader *)RENDERPASS_COMMAND_BUFFER)->ignore_render_pass_texture_validation) {
             CHECK_SAMPLER_TEXTURES
+        }
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+            if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
+            {
+                SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+            }
         }
 
         for (Uint32 i = 0; i < num_bindings; i += 1) {
@@ -2557,6 +2573,14 @@ void SDL_BindGPUComputeSamplers(
 
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
+
+        for (Uint32 i = 0; i < num_bindings; i += 1) {
+            TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+            if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
+            {
+                SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+            }
+        }
 
         for (Uint32 i = 0; i < num_bindings; i += 1) {
             ((ComputePass *)compute_pass)->sampler_bound[first_slot + i] = true;
