@@ -91,6 +91,12 @@ jobs:
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
           sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
+      - name: 'Set up Google Dawn N-Gage SDK'
+        uses: ./.github/actions/setup-dawn
+        if: ${{ matrix.platform.dawn-platform != '' }}
+        with:
+          platform: ${{ matrix.platform.dawn-platform }}
+          shell: ${{ matrix.platform.shell }}
       - name: 'Set up Nokia N-Gage SDK'
         uses: ./.github/actions/setup-ngage-sdk
         if: ${{ matrix.platform.setup-ngage-sdk-path != '' }}

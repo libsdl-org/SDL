@@ -103,7 +103,7 @@ macro(add_sdl_example_executable TARGET)
         endif()
     elseif(EMSCRIPTEN)
         set_property(TARGET ${TARGET} PROPERTY SUFFIX ".html")
-        target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1)
+        target_link_options(${TARGET} PRIVATE -sALLOW_MEMORY_GROWTH=1 -sASYNCIFY=1) # The WebGPU SDLGPU backend requires Asyncify.
     elseif(N3DS)
         set(ROMFS_DIR "${CMAKE_CURRENT_BINARY_DIR}/romfs/${TARGET}")
         file(MAKE_DIRECTORY "${ROMFS_DIR}")
@@ -164,6 +164,7 @@ add_sdl_example_executable(demo-snake SOURCES demo/01-snake/snake.c)
 add_sdl_example_executable(demo-woodeneye-008 SOURCES demo/02-woodeneye-008/woodeneye-008.c)
 add_sdl_example_executable(demo-infinite-monkeys SOURCES demo/03-infinite-monkeys/infinite-monkeys.c)
 add_sdl_example_executable(demo-bytepusher SOURCES demo/04-bytepusher/bytepusher.c)
+add_sdl_example_executable(gpu-orbital-simulation SOURCES gpu/01-orbital-simulation/orbit.c gpu/01-orbital-simulation/math.c)
 
 # When you add an example, remember to add the Visual Studio project as well:
 # - Add a new example in examples/

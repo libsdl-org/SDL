@@ -1,0 +1,87 @@
+name: 'Setup Google Dawn'
+description: 'Download Dawn GitHub release archive'
+inputs:
+  platform:
+    description: 'Platform (macos-latest, ubuntu-latest, windows-latest)'
+    required: true
+  shell:
+    description: 'Shell'
+    required: true
+  dawn-release-name:
+    description: 'git tag of the Google Dawn release'
+    default: 'v20260819.212523'
+  dawn-git-tag:
+    description: 'git hash of dawn release (depends on dawn-release-name)'
+    default: 'e463578aa391834c1cf889ef0024e9978057f39a'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Calculate variables'
+      id: calc
+      shell: sh
+      run: |
+        case "${{ inputs.platform }}" in
+          "macos-latest" | "ubuntu-latest" | "windows-latest")
+            # https://github.com/google/dawn/releases/download/v20260819.212523/Dawn-e463578aa391834c1cf889ef0024e9978057f39a-macos-latest-Release.tar.gz
+            # https://github.com/google/dawn/releases/download/v20260819.212523/Dawn-e463578aa391834c1cf889ef0024e9978057f39a-ubuntu-latest-Release.tar.gz
+            # https://github.com/google/dawn/releases/download/v20260819.212523/Dawn-e463578aa391834c1cf889ef0024e9978057f39a-windows-latest-Release.tar.gz
+            dirname="Dawn-${{ inputs.dawn-git-tag }}-${{ inputs.platform }}-Release"
+            archive="${dirname}.tar.gz"
+            url="https://github.com/google/dawn/releases/download/${{ inputs.dawn-release-name }}/$archive"
+            ;;
+          *)
+            echo "Unsupported ${{ runner.os }}-${{ runner.inputs.platform }}"
+            exit 1;
+            ;;
+        esac
+        extract_dir="$(echo '${{ runner.temp }}' | sed -E 's#\\#/#g')"
+        extract_dir_unix="${extract_dir}"
+        if [ x${{ runner.os }} = xWindows ]; then
+          extract_dir_unix="$(cygpath -u "$extract_dir")"
+        fi
+        echo "extract-dir=${extract_dir}" >> ${GITHUB_OUTPUT}
+        echo "extract-dir-unix=${extract_dir_unix}" >> ${GITHUB_OUTPUT}
+        echo "archive=${archive}" >> ${GITHUB_OUTPUT}
+        echo "dirname=${dirname}" >> ${GITHUB_OUTPUT}
+        echo "url=${url}" >> ${GITHUB_OUTPUT}
+        echo "cache-key=${archive}-${{ inputs.platform }}" >> ${GITHUB_OUTPUT}
+    - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
+      id: cache-restore
+      uses: actions/cache/restore@v5
+      with:
+        path: '${{ steps.calc.outputs.extract-dir }}/${{ steps.calc.outputs.archive }}'
+        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Download Dawn ${{ inputs.dawn-release-name }} for ${{ inputs.platform }}'
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      shell: pwsh
+      run: |
+        Invoke-WebRequest "${{ steps.calc.outputs.url }}" -OutFile "${{ steps.calc.outputs.extract-dir }}/${{ steps.calc.outputs.archive }}"
+    - name: 'Cache ${{ steps.calc.outputs.archive }}'
+      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
+      uses: actions/cache/save@v5
+      with:
+        path: '${{ steps.calc.outputs.extract-dir }}/${{ steps.calc.outputs.archive }}'
+        key: ${{ steps.calc.outputs.cache-key }}
+    - name: 'Extract Dawn'
+      shell: sh
+      run: |
+        cd "${{ steps.calc.outputs.extract-dir-unix }}"
+        tar xf "${{ steps.calc.outputs.extract-dir-unix }}/${{ steps.calc.outputs.archive }}"
+        if [ ! -d "${{ steps.calc.outputs.extract-dir-unix }}/${{ steps.calc.outputs.dirname }}" ]; then
+          echo "Extraction failes: ${{ steps.calc.outputs.extract-dir }}/${{ steps.calc.outputs.dirname }} directory does not exist" 
+          exit 1
+        fi
+    - name: 'Set output variables'
+      id: final
+      shell: ${{ inputs.shell }}
+      run: |
+        dawn_prefix="${{ steps.calc.outputs.extract-dir }}/${{ steps.calc.outputs.dirname }}"
+        if [ -f "${dawn_prefix}/cmake/DawnConfig.cmake" ]; then
+          echo "Dawn_DIR=${dawn_prefix}/cmake" >> ${GITHUB_ENV}
+        elif [ -d "${dawn_prefix}/lib/cmake" ]; then
+          echo "Dawn_DIR=${dawn_prefix}/lib/cmake" >> ${GITHUB_ENV}
+        elif [ -d "${dawn_prefix}/lib64/cmake" ]; then
+          echo "Dawn_DIR=${dawn_prefix}/lib64/cmake" >> ${GITHUB_ENV}
+        fi
+        echo "Dawn_ROOT=${dawn_prefix}" >> ${GITHUB_ENV}
