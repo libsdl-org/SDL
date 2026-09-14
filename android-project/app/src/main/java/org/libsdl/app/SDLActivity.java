@@ -496,7 +496,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         if (nativeIsHIDAPIEnabled()) {
-            mHIDDeviceManager = HIDDeviceManager.acquire(this);
+            mHIDDeviceManager = HIDDeviceManager.acquire(this.getApplicationContext());
         }
 
         // Set up the surface
