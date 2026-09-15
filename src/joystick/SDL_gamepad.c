@@ -3473,7 +3473,12 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                 bool valid_output_range;
 
                 if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
+                    const int input_axis = binding->input.axis.axis;
+                    /* Missing axes return zero, which would normalize to a half-pressed trigger. */
+                    if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
+                        continue;
+                    }
+                    value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
                     } else {
