@@ -1349,3 +1349,4 @@ SDL_DYNAPI_PROC(bool,SDL_GetRenderClipRectFloat,(SDL_Renderer *a,SDL_FRect *b),(
 SDL_DYNAPI_PROC(int,SDL_GetOpenHarmonySDKVersion,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetOpenHarmonyInternalStoragePath,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_RequestOpenHarmonyPermission,(const char *a,SDL_RequestOpenHarmonyPermissionCallback b,void *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetAudioDeviceProperties,(SDL_AudioDeviceID a),(a),return)

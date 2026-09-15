@@ -383,7 +383,7 @@ static void QSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevic
                         SDL_assert(card <= 0xFFFF);
                         SDL_assert(deviceno <= 0xFFFF);
                         const Uint32 sdlhandle = ((Uint32) card) | (((Uint32) deviceno) << 16);
-                        SDL_AddAudioDevice(recording, fullname, pspec, (void *) ((size_t) sdlhandle));
+                        SDL_AddAudioDevice(recording, fullname, NULL, pspec, (void *) ((size_t) sdlhandle));
                     }
                 } else {
                     // Check if we got end of devices list
