@@ -79,14 +79,28 @@ public class SDL {
 
     // This function stores the current activity (SDL or not)
     static public void setContext(Activity context) {
-        if (isSubsystemCompiled(SDL_INIT_AUDIO)) {
-            SDLAudioManager.setContext(context);
-        }
         mContext = context;
+        if (context != null) {
+            mApplicationContext = context.getApplicationContext();            
+        }
+        else {
+            mApplicationContext = null;
+        }
+
+        // Use the static application context for our audio subsystem.
+        if (isSubsystemCompiled(SDL_INIT_AUDIO)) {
+            SDLAudioManager.setContext(mApplicationContext);
+        }
     }
 
+    // This probably should be renamed to getActivityContext, but is still just getContext for legacy
+    // reasons.
     static public Activity getContext() {
         return mContext;
+    }
+
+    static public Context getStaticContext() {
+        return mApplicationContext;
     }
 
     static void loadLibrary(String libraryName) throws UnsatisfiedLinkError, SecurityException, NullPointerException {
@@ -139,4 +153,5 @@ public class SDL {
     }
 
     protected static Activity mContext;
+    protected static Context mApplicationContext;
 }
