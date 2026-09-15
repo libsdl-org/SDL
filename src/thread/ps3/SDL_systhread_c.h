@@ -19,24 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_main_callbacks.h"
 
-// Add your platform here if you define a custom SDL_RunApp() implementation
-#if !defined(SDL_PLATFORM_WIN32) && \
-    !defined(SDL_PLATFORM_GDK) && \
-    !defined(SDL_PLATFORM_IOS) && \
-    !defined(SDL_PLATFORM_TVOS) && \
-    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
-    !defined(SDL_PLATFORM_PSP) && \
-    !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_PS3) && \
-    !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+#include <lv2/thread.h>
+#include <signal.h>
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
-{
-    (void)reserved;
-    return SDL_CallMainFunction(argc, argv, mainFunction);
-}
+typedef sys_ppu_thread_t SYS_ThreadHandle;
 
-#endif
+#include <signal.h>
+
+// Functions needed to work with system threads in other portions of SDL
+extern void SDL_MaskSignals(sigset_t *omask);
+extern void SDL_UnmaskSignals(sigset_t *omask);
