@@ -122,6 +122,31 @@ static void COREAUDIO_FreeDeviceHandle(SDL_AudioDevice *device)
     SDL_free(handle);
 }
 
+static char *GetAudioDeviceStringProperty(AudioDeviceID dev, const AudioObjectPropertyAddress *addr)
+{
+    CFStringRef cfstr = NULL;
+    UInt32 size = sizeof(CFStringRef);
+    if (AudioObjectGetPropertyData(dev, addr, 0, NULL, &size, &cfstr) != kAudioHardwareNoError) {
+        return NULL;
+    }
+
+    CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
+    char *retval = (char *)SDL_malloc(len + 1);
+    if (!retval) {
+        return NULL;
+    }
+
+    const bool failed = !CFStringGetCString(cfstr, retval, len + 1, kCFStringEncodingUTF8);
+    CFRelease(cfstr);
+    if (failed) {
+        SDL_free(retval);
+        return NULL;
+    }
+
+    return retval;
+}
+
+
 // This only _adds_ new devices. Removal is handled by devices triggering kAudioDevicePropertyDeviceIsAlive property changes.
 static void RefreshPhysicalDevices(void)
 {
@@ -147,18 +172,8 @@ static void RefreshPhysicalDevices(void)
 
     // any non-zero items remaining in `devs` are new devices to be added.
     for (int recording = 0; recording < 2; recording++) {
-        const AudioObjectPropertyAddress addr = {
-            kAudioDevicePropertyStreamConfiguration,
-            recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMain
-        };
-        const AudioObjectPropertyAddress nameaddr = {
-            kAudioObjectPropertyName,
-            recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMain
-        };
-        const AudioObjectPropertyAddress freqaddr = {
-            kAudioDevicePropertyNominalSampleRate,
+        AudioObjectPropertyAddress addr = {
+            0,
             recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
             kAudioObjectPropertyElementMain
         };
@@ -172,6 +187,7 @@ static void RefreshPhysicalDevices(void)
             AudioBufferList *buflist = NULL;
             double sampleRate = 0;
 
+            addr.mSelector = kAudioDevicePropertyStreamConfiguration;
             if (AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size) != noErr) {
                 continue;
             } else if ((buflist = (AudioBufferList *)SDL_malloc(size)) == NULL) {
@@ -195,50 +211,48 @@ static void RefreshPhysicalDevices(void)
             }
 
             size = sizeof(sampleRate);
-            if (AudioObjectGetPropertyData(dev, &freqaddr, 0, NULL, &size, &sampleRate) == noErr) {
+            addr.mSelector = kAudioDevicePropertyNominalSampleRate;
+            if (AudioObjectGetPropertyData(dev, &addr, 0, NULL, &size, &sampleRate) == noErr) {
                 spec.freq = (int)sampleRate;
             }
 
-            CFStringRef cfstr = NULL;
-            size = sizeof(CFStringRef);
-            if (AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr) != kAudioHardwareNoError) {
+            addr.mSelector = kAudioObjectPropertyName;
+            char *name = GetAudioDeviceStringProperty(dev, &addr);
+            if (!name) {
                 continue;
             }
 
-            CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
-            char *name = (char *)SDL_malloc(len + 1);
-            bool usable = ((name != NULL) && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8)));
+            addr.mSelector = kAudioDevicePropertyDeviceUID;
+            char *unique_id = GetAudioDeviceStringProperty(dev, &addr);  // it's okay if this one fails.
 
-            CFRelease(cfstr);
+            // Some devices have whitespace at the end...trim it.
+            int len = SDL_strlen(name);
+            while ((len > 0) && (name[len - 1] == ' ')) {
+                len--;
+            }
+            name[len] = '\0';
 
-            if (usable) {
-                // Some devices have whitespace at the end...trim it.
-                len = (CFIndex) SDL_strlen(name);
-                while ((len > 0) && (name[len - 1] == ' ')) {
-                    len--;
-                }
-                usable = (len > 0);
+            if (len == 0) {  // name is blank?!
+                SDL_free(name);
+                name = (unique_id && *unique_id) ? SDL_strdup(unique_id) : NULL;
             }
 
-            if (usable) {
-                name[len] = '\0';
-
-                #if DEBUG_COREAUDIO
-                SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d)", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev);
-                #endif
-                SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
-                if (newhandle) {
-                    newhandle->devid = dev;
-                    newhandle->recording = recording ? true : false;
-                    SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name, &spec, newhandle);
-                    if (device) {
-                        AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
-                    } else {
-                        SDL_free(newhandle);
-                    }
+            #if DEBUG_COREAUDIO
+            SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d, unique_id='%s')", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev, unique_id);
+            #endif
+            SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
+            if (newhandle) {
+                newhandle->devid = dev;
+                newhandle->recording = recording ? true : false;
+                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", unique_id, &spec, newhandle);
+                if (device) {
+                    AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
+                } else {
+                    SDL_free(newhandle);
                 }
             }
             SDL_free(name); // SDL_AddAudioDevice() would have copied the string.
+            SDL_free(unique_id); // SDL_AddAudioDevice() would have copied the string.
         }
     }
 

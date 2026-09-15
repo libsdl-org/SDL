@@ -575,6 +575,11 @@ static void DestroyLogicalAudioDevice(SDL_LogicalAudioDevice *logdev)
     }
 
     UpdateAudioStreamFormatsPhysical(logdev->physical_device);
+
+    if (logdev->props) {
+        SDL_DestroyProperties(logdev->props);
+    }
+
     SDL_free(logdev);
 }
 
@@ -597,10 +602,15 @@ static void DestroyPhysicalAudioDevice(SDL_AudioDevice *device)
 
     SDL_UnlockMutex(device->lock);  // don't use ReleaseAudioDevice because we don't want to change refcounts while destroying.
 
+    if (device->props) {
+        SDL_DestroyProperties(device->props);
+    }
+
     SDL_DestroyMutex(device->lock);
     SDL_DestroyCondition(device->close_cond);
     SDL_free(device->work_buffer);
     SDL_free(device->chmap);
+    SDL_free(device->unique_id);
     SDL_free(device->name);
     SDL_free(device);
 }
@@ -624,7 +634,7 @@ void RefPhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_AtomicIncRef(&device->refcount);
 }
 
-static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recording, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
+static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, const char *unique_id, bool recording, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
 {
     SDL_assert(name != NULL);
 
@@ -646,8 +656,18 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recordi
         return NULL;
     }
 
+    if (unique_id) {
+        device->unique_id = SDL_strdup(unique_id);
+        if (!device->unique_id) {
+            SDL_free(device->name);
+            SDL_free(device);
+            return NULL;
+        }
+    }
+
     device->lock = SDL_CreateMutex();
     if (!device->lock) {
+        SDL_free(device->unique_id);
         SDL_free(device->name);
         SDL_free(device);
         return NULL;
@@ -656,6 +676,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recordi
     device->close_cond = SDL_CreateCondition();
     if (!device->close_cond) {
         SDL_DestroyMutex(device->lock);
+        SDL_free(device->unique_id);
         SDL_free(device->name);
         SDL_free(device);
         return NULL;
@@ -678,6 +699,7 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recordi
     } else {
         SDL_DestroyCondition(device->close_cond);
         SDL_DestroyMutex(device->lock);
+        SDL_free(device->unique_id);
         SDL_free(device->name);
         SDL_free(device);
         device = NULL;
@@ -688,19 +710,19 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, bool recordi
     return device;
 }
 
-static SDL_AudioDevice *CreateAudioRecordingDevice(const char *name, const SDL_AudioSpec *spec, void *handle)
+static SDL_AudioDevice *CreateAudioRecordingDevice(const char *name, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
 {
     SDL_assert(current_audio.impl.HasRecordingSupport);
-    return CreatePhysicalAudioDevice(name, true, spec, handle, &current_audio.recording_device_count);
+    return CreatePhysicalAudioDevice(name, unique_id, true, spec, handle, &current_audio.recording_device_count);
 }
 
-static SDL_AudioDevice *CreateAudioPlaybackDevice(const char *name, const SDL_AudioSpec *spec, void *handle)
+static SDL_AudioDevice *CreateAudioPlaybackDevice(const char *name, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
 {
-    return CreatePhysicalAudioDevice(name, false, spec, handle, &current_audio.playback_device_count);
+    return CreatePhysicalAudioDevice(name, unique_id, false, spec, handle, &current_audio.playback_device_count);
 }
 
 // The audio backends call this when a new device is plugged in.
-SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_AudioSpec *inspec, void *handle)
+SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const char *unique_id, const SDL_AudioSpec *inspec, void *handle)
 {
     // device handles MUST be unique! If the target reuses the same handle for hardware with both recording and playback interfaces, wrap it in a pointer you SDL_malloc'd!
     SDL_assert(SDL_FindPhysicalAudioDeviceByHandle(handle) == NULL);
@@ -721,7 +743,7 @@ SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_
         spec.freq = (inspec->freq != 0) ? inspec->freq : default_freq;
     }
 
-    SDL_AudioDevice *device = recording ? CreateAudioRecordingDevice(name, &spec, handle) : CreateAudioPlaybackDevice(name, &spec, handle);
+    SDL_AudioDevice *device = recording ? CreateAudioRecordingDevice(name, unique_id, &spec, handle) : CreateAudioPlaybackDevice(name, unique_id, &spec, handle);
 
     // Add a device add event to the pending list, to be pushed when the event queue is pumped (away from any of our internal threads).
     if (device) {
@@ -869,9 +891,9 @@ static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_playback, S
     SDL_assert(current_audio.impl.OnlyHasDefaultPlaybackDevice);
     SDL_assert(current_audio.impl.OnlyHasDefaultRecordingDevice || !current_audio.impl.HasRecordingSupport);
 
-    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)((size_t)0x1));
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, NULL, (void *)((size_t)0x1));
     if (current_audio.impl.HasRecordingSupport) {
-        *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, (void *)((size_t)0x2));
+        *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, NULL, (void *)((size_t)0x2));
     }
 }
 
@@ -1666,6 +1688,34 @@ int *SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID devid, int *count)
     }
 
     return result;
+}
+
+SDL_PropertiesID SDL_GetAudioDeviceProperties(SDL_AudioDeviceID devid)
+{
+    SDL_AudioDevice *device = NULL;
+    SDL_LogicalAudioDevice *logdev = NULL;
+    SDL_PropertiesID props = 0;
+
+    if (SDL_IsAudioDeviceLogical(devid)) {
+        logdev = ObtainLogicalAudioDevice(devid, &device);
+    } else {
+        device = ObtainPhysicalAudioDevice(devid);
+    }
+
+    if (device) {  // found a device?
+        SDL_PropertiesID *propsptr = logdev ? &logdev->props : &device->props;
+        props = *propsptr;
+        if (!props) {
+            props = *propsptr = SDL_CreateProperties();
+            if (props != 0) {  // fill in some basic properties.
+                SDL_SetStringProperty(props, SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING, device->unique_id);
+            }
+        }
+
+        ReleaseAudioDevice(device);
+    }
+
+    return props;
 }
 
 

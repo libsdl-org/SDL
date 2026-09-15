@@ -71,7 +71,7 @@ extern void SDL_SetupAudioResampler(void);
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
+extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const char *unique_id, const SDL_AudioSpec *spec, void *handle);
 
 /* Backends should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
@@ -275,6 +275,9 @@ struct SDL_LogicalAudioDevice
     // App-supplied pointer for postmix callback.
     void *postmix_userdata;
 
+    // Properties, maybe copied from physical device.
+    SDL_PropertiesID props;
+
     // double-linked list of opened devices on the same physical device.
     SDL_LogicalAudioDevice *next;
     SDL_LogicalAudioDevice *prev;
@@ -301,6 +304,11 @@ struct SDL_AudioDevice
 
     // human-readable name of the device. ("SoundBlaster Pro 16")
     char *name;
+
+    // unique, platform-specific, backend-specific string to identify this specific device.
+    // It needs to survive between runs of the program, but ideally it survives reboots and
+    // device disconnect/reconnect, if possible. If it can't be provided, leave this NULL.
+    char *unique_id;
 
     // the unique instance ID of this device.
     SDL_AudioDeviceID instance_id;
@@ -351,6 +359,9 @@ struct SDL_AudioDevice
 
     // true if this physical device is currently opened by the backend.
     bool currently_opened;
+
+    // Properties!
+    SDL_PropertiesID props;
 
     // Data private to this driver
     struct SDL_PrivateAudioData *hidden;
