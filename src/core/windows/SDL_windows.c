@@ -783,7 +783,7 @@ bool WIN_HasBrokenEZFRD64DLL(void)
                 "C:/Windows/USB_Vibration",
                 "C:/Windows/USB Vibration"
             };
-            for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64DLL; ++i) {
+            for (int i = 0; i < SDL_arraysize(directories) && !has_broken_EZFRD64_DLL; ++i) {
                 int count = 0;
                 char **files = SDL_GlobDirectory(directories[i], "*/EZFRD64.DLL", SDL_GLOB_CASEINSENSITIVE, &count);
                 if (count > 0) {
