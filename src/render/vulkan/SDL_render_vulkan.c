@@ -2110,7 +2110,7 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         rendererData->fences = NULL;
     }
     if (rendererData->commandBuffers) {
-        vkResetCommandPool(rendererData->device, rendererData->commandPool, 0);
+        vkFreeCommandBuffers(rendererData->device, rendererData->commandPool, rendererData->swapchainImageCount, rendererData->commandBuffers);
         SDL_free(rendererData->commandBuffers);
         rendererData->commandBuffers = NULL;
         rendererData->currentCommandBuffer = VK_NULL_HANDLE;
