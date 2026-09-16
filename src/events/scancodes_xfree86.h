@@ -414,7 +414,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 231, 0x0e7 */   SDL_SCANCODE_UNKNOWN,            // XF86Send
     /* 232, 0x0e8 */   SDL_SCANCODE_UNKNOWN,            // XF86Reply
     /* 233, 0x0e9 */   SDL_SCANCODE_UNKNOWN,            // XF86MailForward
-    /* 234, 0x0ea */   SDL_SCANCODE_UNKNOWN,            // XF86Save
+    /* 234, 0x0ea */   SDL_SCANCODE_AC_SAVE,            // XF86Save
     /* 235, 0x0eb */   SDL_SCANCODE_UNKNOWN,            // XF86Documents
     /* 236, 0x0ec */   SDL_SCANCODE_UNKNOWN,            // XF86Battery
     /* 237, 0x0ed */   SDL_SCANCODE_UNKNOWN,            // XF86Bluetooth
