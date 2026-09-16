@@ -931,6 +931,10 @@ struct D3D12Renderer
     WinPixEventRuntimeFns winpixeventruntimeFns;
 #endif
     ID3D12Debug *d3d12Debug;
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    ID3D12InfoQueue *debugInfoQueue;
+    BOOL InfoQueueMessageCallbackUnsupported;
+#endif
     BOOL supportsTearing;
     SDL_SharedObject *d3d12_dll;
     ID3D12Device *device;
@@ -1267,6 +1271,7 @@ static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window)
 static bool D3D12_Wait(SDL_GPURenderer *driverData);
 static bool D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *fences, Uint32 numFences);
 static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData);
+static void D3D12_INTERNAL_DrainInfoQueueMessages(D3D12Renderer *renderer);
 
 // Helpers
 
@@ -1736,6 +1741,10 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
     if (renderer->commandQueue) {
         ID3D12CommandQueue_Release(renderer->commandQueue);
         renderer->commandQueue = NULL;
+    }
+    if (renderer->debugInfoQueue) {
+        ID3D12InfoQueue_Release(renderer->debugInfoQueue);
+        renderer->debugInfoQueue = NULL;
     }
     if (renderer->device) {
         ID3D12Device_Release(renderer->device);
@@ -7977,6 +7986,9 @@ static bool D3D12_INTERNAL_Submit(
 
     // Notify the command buffer that we have completed recording
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    D3D12_INTERNAL_DrainInfoQueueMessages(renderer);
+#endif
     CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
 
     res = ID3D12GraphicsCommandList_QueryInterface(
@@ -8135,6 +8147,9 @@ static bool D3D12_Cancel(
 
     // Notify the command buffer that we have completed recording
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    D3D12_INTERNAL_DrainInfoQueueMessages(renderer);
+#endif
     CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
 
     d3d12CommandBuffer->autoReleaseFence = false;
@@ -8809,7 +8824,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         D3D12_MESSAGE_SEVERITY_CORRUPTION,
         true);
 
-    ID3D12InfoQueue_Release(infoQueue);
+    renderer->debugInfoQueue = infoQueue;
 }
 
 static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
@@ -8912,17 +8927,53 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D_GUID(D3D_IID_ID3D12InfoQueue1),
         (void **)&infoQueue);
     if (FAILED(res)) {
+        renderer->InfoQueueMessageCallbackUnsupported = true;
         return;
     }
 
-    ID3D12InfoQueue1_RegisterMessageCallback(
+    res = ID3D12InfoQueue1_RegisterMessageCallback(
         infoQueue,
         D3D12_INTERNAL_OnD3D12DebugInfoMsg,
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
         &callbackCookie);
+    if (FAILED(res)) {
+        renderer->InfoQueueMessageCallbackUnsupported = true;
+    }
 
     ID3D12InfoQueue1_Release(infoQueue);
+}
+
+static void D3D12_INTERNAL_DrainInfoQueueMessages(D3D12Renderer *renderer)
+{
+    ID3D12InfoQueue *infoQueue = renderer->debugInfoQueue;
+    UINT64 count, i;
+
+    if (!renderer->InfoQueueMessageCallbackUnsupported || infoQueue == NULL) {
+        return;
+    }
+
+    count = ID3D12InfoQueue_GetNumStoredMessages(infoQueue);
+    if (count == 0) {
+        return;
+    }
+
+    for (i = 0; i < count; i += 1) {
+        SIZE_T size = 0;
+        ID3D12InfoQueue_GetMessage(infoQueue, i, NULL, &size);
+        D3D12_MESSAGE *message = (D3D12_MESSAGE *)SDL_malloc(size);
+        if (message && SUCCEEDED(ID3D12InfoQueue_GetMessage(infoQueue, i, message, &size))) {
+            D3D12_INTERNAL_OnD3D12DebugInfoMsg(
+                message->Category,
+                message->Severity,
+                message->ID,
+                message->pDescription,
+                NULL);
+        }
+        SDL_free(message);
+    }
+
+    ID3D12InfoQueue_ClearStoredMessages(infoQueue);
 }
 #endif
 
