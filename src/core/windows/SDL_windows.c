@@ -778,8 +778,8 @@ bool WIN_HasBrokenEZFRD64DLL(void)
     static bool checked = false;
     static bool has_broken_EZFRD64_DLL = false;
 
-#ifdef _WIN64
     if (!checked) {
+#ifdef _WIN64
         if (SDL_GetHintBoolean("SDL_CHECK_BROKEN_EZFRD64", true)) {
             // The 64-bit version of EZFRD64.DLL crashes after being loaded,
             // which happens implicitly when querying the device capabilities,
@@ -798,9 +798,9 @@ bool WIN_HasBrokenEZFRD64DLL(void)
                 SDL_free(files);
             }
         }
+#endif
         checked = true;
     }
-#endif
     return has_broken_EZFRD64_DLL;
 }
 
