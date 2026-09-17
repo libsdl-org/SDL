@@ -158,6 +158,7 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_PRO_2:
         case USB_PRODUCT_8BITDO_PRO_2_BT:
         case USB_PRODUCT_8BITDO_PRO_3:
+        case USB_PRODUCT_8BITDO_ULTIMATE2_BT:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
         case USB_PRODUCT_8BITDO_ULTIMATE3:
             return true;
@@ -176,7 +177,7 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
     }
     device->context = ctx;
 
-    if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
+    if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS || device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_BT) {
         // The Ultimate 2 Wireless v1.02 firmware has 12 byte reports, v1.03 firmware has 34 byte reports
         const int ULTIMATE2_WIRELESS_V103_REPORT_SIZE = 34;
         const int MAX_ATTEMPTS = 3;
@@ -316,6 +317,7 @@ static Uint64 HIDAPI_Driver8BitDo_GetIMURateForProductID(SDL_HIDAPI_Device *devi
             // This firmware appears to update at 100 Hz over USB
             return 100;
         }
+    case USB_PRODUCT_8BITDO_ULTIMATE2_BT:
     case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
         if (device->is_bluetooth) {
             // Note, This is estimated by observation of Bluetooth packets received in the testcontroller tool
@@ -347,6 +349,7 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     if (device->product_id == USB_PRODUCT_8BITDO_PRO_2 ||
         device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT ||
         device->product_id == USB_PRODUCT_8BITDO_PRO_3 ||
+        device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_BT ||
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
 		// This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
