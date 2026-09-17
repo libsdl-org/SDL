@@ -119,12 +119,6 @@ jobs:
 
           # Add signed entry to apt sources and configure the APT client to use Intel repository:
           echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
-          
-          # Update package list
-          sudo apt-get update -y
-          
-          # Install oneAPI
-          sudo apt-get install -y intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic
       - name: 'Install apk packages'
         if: ${{ matrix.platform.apk-packages != '' }}
         run: |
@@ -133,7 +127,7 @@ jobs:
       - name: 'Install apt packages'
         if: ${{ matrix.platform.apt-packages != '' }}
         run: |
-          ${{ matrix.platform.sudo }} apt-get update
+          ${{ matrix.platform.sudo }} apt-get update -y
           ${{ matrix.platform.sudo }} apt-get install -y ${{ matrix.platform.apt-packages }}
       - name: 'Install brew packages'
         if: ${{ matrix.platform.brew-packages != '' }}
