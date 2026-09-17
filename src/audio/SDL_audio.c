@@ -1590,7 +1590,6 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle)
 
 const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
 {
-    // bit #1 of devid is set for physical devices and unset for logical.
     const char *result = NULL;
 
     if (!SDL_GetCurrentAudioDriver()) {
@@ -1600,9 +1599,10 @@ const char *SDL_GetAudioDeviceName(SDL_AudioDeviceID devid)
         const void *vdev = NULL;
 
         // This does not call ObtainPhysicalAudioDevice() because the device's name never changes, so
-        // it doesn't have to lock the whole device. However, just to make sure the device pointer itself
-        // remains valid (in case the device is unplugged at the wrong moment), we hold the
-        // subsystem_rwlock while we copy the string.
+        // it doesn't have to lock the whole device, as this can causes a deadlock in sdl2-compat in
+        // certain corner cases.
+        // However, just to make sure the device pointer itself remains valid (in case the device is
+        // unplugged at the wrong moment), we hold the subsystem_rwlock while we copy the string.
         SDL_LockRWLockForReading(current_audio.subsystem_rwlock);
 
         // Allow default device IDs to be used, just return the current default physical device's name.
