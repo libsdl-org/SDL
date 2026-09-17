@@ -737,6 +737,10 @@ SDL_GPUDevice *SDL_CreateGPUDeviceWithProperties(SDL_PropertiesID props)
             if (!SDL_GetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_ANISOTROPY_BOOLEAN, true)) {
                 result->validate_feature_anisotropy_disabled = true;
             }
+            if (result->debug_mode) {
+                result->max_viewport_width = SDL_MAX_UINT32;
+                result->max_viewport_height = SDL_MAX_UINT32;
+            }
         }
     }
     return result;
@@ -1803,8 +1807,14 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         CHECK_COMMAND_BUFFER_RETURN_NULL
         CHECK_ANY_PASS_IN_PROGRESS("Cannot begin render pass during another pass!", NULL)
 
+        COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_MAX_UINT32;
+        COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_MAX_UINT32;
+
         for (Uint32 i = 0; i < num_color_targets; i += 1) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)color_target_infos[i].texture;
+
+            COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_width, textureHeader->info.width);
+            COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_height, textureHeader->info.height);
 
             if (color_target_infos[i].cycle && color_target_infos[i].load_op == SDL_GPU_LOADOP_LOAD) {
                 SDL_assert_release(!"Cannot cycle color target when load op is LOAD!");
@@ -1940,6 +1950,12 @@ void SDL_SetGPUViewport(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+
+        if (((viewport->x + viewport->w) > RENDERPASS_DEVICE->max_viewport_width) ||
+            ((viewport->y + viewport->h) > RENDERPASS_DEVICE->max_viewport_height)) {
+            SDL_assert_release(!"Viewport size exceeds current render target dimensions");
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->SetViewport(
@@ -1962,6 +1978,12 @@ void SDL_SetGPUScissor(
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
+
+        if (((Uint32) (scissor->x + scissor->w) > RENDERPASS_DEVICE->max_viewport_width) ||
+            ((Uint32) (scissor->y + scissor->h) > RENDERPASS_DEVICE->max_viewport_height)) {
+            SDL_assert_release(!"Scissor rectangle size exceeds current render target dimensions");
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->SetScissor(
