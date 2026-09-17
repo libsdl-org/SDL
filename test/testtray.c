@@ -45,6 +45,11 @@
  * - If trays are destroyed, closing the window exits the application
  */
 
+static void tray_menu_shown(void *ptr, SDL_TrayMenu *menu, bool shown)
+{
+    SDL_Log(shown ? "Control tray menu shown" : "Control tray menu hidden");
+}
+
 static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
 {
     SDL_Event e;
@@ -666,6 +671,7 @@ int main(int argc, char **argv)
 
     SDL_SetTrayEntryCallback(entry_quit, tray_quit, NULL);
     SDL_SetTrayEntryCallback(entry_close, tray_close, trays);
+    SDL_SetTrayMenuShownCallback(menu, tray_menu_shown, NULL);
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 
