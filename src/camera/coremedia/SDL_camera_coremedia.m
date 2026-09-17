@@ -583,7 +583,11 @@ static void COREMEDIA_DetectDevices(void)
             AVCaptureDeviceTypeBuiltInTripleCamera,
             AVCaptureDeviceTypeBuiltInUltraWideCamera,
             #else
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // Deprecated in macOS 14.0; its replacement, AVCaptureDeviceTypeExternal, doesn't exist before then.
             AVCaptureDeviceTypeExternalUnknown,
+#pragma clang diagnostic pop
             #endif
             AVCaptureDeviceTypeBuiltInWideAngleCamera
         ];
