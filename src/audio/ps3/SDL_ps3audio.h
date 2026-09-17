@@ -18,25 +18,31 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_internal.h"
-#include "SDL_main_callbacks.h"
 
-// Add your platform here if you define a custom SDL_RunApp() implementation
-#if !defined(SDL_PLATFORM_WIN32) && \
-    !defined(SDL_PLATFORM_GDK) && \
-    !defined(SDL_PLATFORM_IOS) && \
-    !defined(SDL_PLATFORM_TVOS) && \
-    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
-    !defined(SDL_PLATFORM_PSP) && \
-    !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_PS3) && \
-    !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+#ifndef SDL_ps3audio_h_
+#define SDL_ps3audio_h_
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
+#include "../SDL_sysaudio.h"
+
+#include <audio/audio.h>
+
+#define NUM_BUFFERS 8
+
+struct SDL_PrivateAudioData
 {
-    (void)reserved;
-    return SDL_CallMainFunction(argc, argv, mainFunction);
-}
+    // The file descriptor for the audio device
+    audioPortParam params;
+    audioPortConfig config;
+    u32 portNum;
+    u32 last_filled_buf;
+    sys_event_queue_t snd_queue; // Queue identifier
+    u64 snd_queue_key;           // Queue Key
+    // The raw allocated mixing buffer.
+    Uint8 *rawbuf;
+    // Individual mixing buffers.
+    Uint8 *mixbufs[NUM_BUFFERS];
+    // Index of the next available mixing buffer.
+    int next_buffer;
+};
 
-#endif
+#endif // SDL_ps3audio_h_
