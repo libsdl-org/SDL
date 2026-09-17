@@ -561,9 +561,11 @@ static bool Cocoa_ShowCursor(SDL_Cursor *cursor)
         for (; window != NULL; window = window->next) {
             SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
             if (data) {
-                [data.nswindow performSelectorOnMainThread:@selector(invalidateCursorRectsForView:)
-                                                withObject:[data.nswindow contentView]
-                                             waitUntilDone:NO];
+                NSWindow *nsWindow = data.nswindow;
+
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [nsWindow invalidateCursorRectsForView: [nsWindow contentView]];
+                });
             }
         }
         return true;
