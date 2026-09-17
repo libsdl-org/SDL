@@ -1124,6 +1124,8 @@ struct SDL_GPUDevice
     bool default_enable_depth_clip;
     bool validate_feature_depth_clamp_disabled;
     bool validate_feature_anisotropy_disabled;
+    Uint32 max_viewport_width;
+    Uint32 max_viewport_height;
 };
 
 #define ASSIGN_DRIVER_FUNC(func, name) \
