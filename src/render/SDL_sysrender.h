@@ -194,6 +194,7 @@ typedef struct SDL_RenderCommand
             SDL_TextureAddressMode texture_address_mode_u;
             SDL_TextureAddressMode texture_address_mode_v;
             SDL_GPURenderState *gpu_render_state;
+            Uint8 tentatively_named_rendergeometry_position_coordinate_count;
         } draw;
         struct
         {
