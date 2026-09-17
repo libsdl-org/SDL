@@ -1206,15 +1206,12 @@ SDL_Palette *SDL_CreatePalette(int ncolors)
 
 bool SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int firstcolor, int ncolors)
 {
-    bool result = true;
-
     // Verify the parameters
     if (!palette) {
         return false;
     }
     if (ncolors > (palette->ncolors - firstcolor)) {
         ncolors = (palette->ncolors - firstcolor);
-        result = false;
     }
 
     if (colors != (palette->colors + firstcolor)) {
@@ -1226,7 +1223,7 @@ bool SDL_SetPaletteColors(SDL_Palette *palette, const SDL_Color *colors, int fir
         palette->version = 1;
     }
 
-    return result;
+    return true;
 }
 
 void SDL_DestroyPalette(SDL_Palette *palette)
