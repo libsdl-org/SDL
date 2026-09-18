@@ -3375,6 +3375,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     const Uint64 timestamp = Wayland_AdjustEventTimestampBase(Wayland_EventTimestampMSToNS(time));
     SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
+    const bool eraser = sdltool->info.subtype == SDL_PEN_TYPE_ERASER;
 
     if (sdltool->frame.have_proximity && sdltool->frame.in_proximity) {
         SDL_SendPenProximity(timestamp, instance_id, window, true, true);
@@ -3387,14 +3388,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame.have_motion && sdltool->frame.tool_state) {
         if (sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN) {
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
-            SDL_SendPenTouch(timestamp, instance_id, window, false, true);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, eraser, true);
         } else {
-            SDL_SendPenTouch(timestamp, instance_id, window, false, false); // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, eraser, false);
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
         }
     } else {
         if (sdltool->frame.tool_state) {
-            SDL_SendPenTouch(timestamp, instance_id, window, false, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, eraser, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN);
         }
 
         if (sdltool->frame.have_motion) {
