@@ -182,6 +182,11 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 134:
         controller_type = SDL_FLYDIGI_APEX5;
         break;
+    case 149://Apex6
+    case 150://Apex6 Pro
+    case 152://Apex 6 Pro Phantom Blade Zero
+        controller_type = SDL_FLYDIGI_APEX6;
+        break;
     default:
         // Try to guess from the name of the controller
         if (SDL_strcasestr(device->name, "VADER") != NULL) {
@@ -203,6 +208,8 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
                 controller_type = SDL_FLYDIGI_APEX4;
             } else if (SDL_strstr(device->name, "APEX5") != NULL) {
                 controller_type = SDL_FLYDIGI_APEX5;
+            } else if (SDL_strstr(device->name, "APEX6") != NULL) {
+                controller_type = SDL_FLYDIGI_APEX6;
             }
         }
         break;
@@ -226,6 +233,14 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case SDL_FLYDIGI_APEX5:
         HIDAPI_SetDeviceName(device, "Flydigi Apex 5");
+        ctx->has_lmrm = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
+        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
+        break;
+    case SDL_FLYDIGI_APEX6:
+        HIDAPI_SetDeviceName(device, "Flydigi Apex 6");
         ctx->has_lmrm = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
@@ -299,7 +314,7 @@ static int HIDAPI_DriverFlydigi_WritePacket(SDL_HIDAPI_Device *device, const Uin
 {
     // We know that at the very least the Vader 5 now uses unnumbered reports for commands instead of FLYDIGI_V2_CMD_REPORT_ID.
     // If other Flydigi things prove to do the same, we can tweak this check to be more general.
-    bool bUsesUnnumberedReports = (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && device->product_id == USB_PRODUCT_FLYDIGI_V2_VADER);
+    bool bUsesUnnumberedReports = (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && (device->product_id == USB_PRODUCT_FLYDIGI_V2_VADER || device->product_id == USB_PRODUCT_FLYDIGI_V2_APEX6));
 
     if (bUsesUnnumberedReports && data[0] == FLYDIGI_V2_CMD_REPORT_ID) {
         // Zero out the report byte.
@@ -434,11 +449,19 @@ static void HIDAPI_DriverFlydigi_HandleInfoResponse(SDL_Joystick *joystick, SDL_
     switch (status) {
     case 0:
         state = SDL_POWERSTATE_ON_BATTERY;
-        percent = level * 20;
+        if(ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6){
+             percent = level * 10;
+        } else {
+            percent = level * 20;
+        }
         break;
     case 1:
         state = SDL_POWERSTATE_CHARGING;
-        percent = level * 20;
+        if(ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6){
+             percent = level * 10;
+        } else {
+            percent = level * 20;
+        }
         break;
     case 2:
         state = SDL_POWERSTATE_CHARGED;

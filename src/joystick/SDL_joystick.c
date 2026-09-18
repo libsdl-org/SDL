@@ -3551,7 +3551,7 @@ bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
         }
     }
     if (vendor_id == USB_VENDOR_FLYDIGI_V2) {
-        if (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER) {
+        if (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER || product_id == USB_PRODUCT_FLYDIGI_V2_APEX6) {
             return true;
         }
     }
