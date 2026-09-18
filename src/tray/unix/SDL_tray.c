@@ -332,3 +332,12 @@ void SDL_DestroyTray(SDL_Tray *tray)
         driver = NULL;
     }
 }
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    if (!menu) {
+        return;
+    }
+
+    menu->parent_tray->driver->SetTrayMenuShownCallback(menu, callback, userdata);
+}

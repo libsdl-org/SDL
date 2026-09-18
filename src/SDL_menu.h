@@ -59,6 +59,12 @@ typedef struct SDL_MenuItem
     void *udata;
     void *udata2;
     void *udata3;
+    
+    /* Callback for hide/show notifications */
+    void (*visibility_notify)(SDL_ListNode *, bool, void *, void *, void *);
+    void *visibility_notify_udata;
+    void *visibility_notify_udata2;
+    void *visibility_notify_udata3;
 } SDL_MenuItem;
 
 #endif // SDL_menu_h_

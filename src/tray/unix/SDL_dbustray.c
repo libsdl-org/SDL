@@ -853,6 +853,10 @@ SDL_TrayEntry *InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *label,
     entry_dbus->item->sub_menu = NULL;
     entry_dbus->item->udata = entry;
     entry_dbus->sub_menu = NULL;
+    entry_dbus->item->visibility_notify = NULL;
+    entry_dbus->item->visibility_notify_udata = NULL;
+    entry_dbus->item->visibility_notify_udata2 = NULL;
+    entry_dbus->item->visibility_notify_udata3 = NULL;
 
     if (menu_dbus->menu) {
         update = true;
@@ -1103,6 +1107,42 @@ void ClickTrayEntry(SDL_TrayEntry *entry)
     entry_cb(dbus_entry->item->cb_data, dbus_entry->item->udata);
 }
 
+void TrayMenuShownCallback(SDL_ListNode *menu, bool shown, void *udata, void *udata2, void *udata3)
+{
+    SDL_TrayMenuShownCallback callback;
+    
+    callback = udata;
+    callback((SDL_TrayMenu *)udata2, udata3, shown);
+}
+
+void SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    SDL_TrayMenuDBus *menu_dbus;
+
+    if (!menu) {
+        return;
+    }
+    
+    menu_dbus = (SDL_TrayMenuDBus *)menu->internal;
+    if (menu_dbus->menu) {
+        SDL_MenuItem *item;
+        
+        item = menu_dbus->menu->entry;
+        if (callback) {
+            item->visibility_notify = TrayMenuShownCallback;
+            item->visibility_notify_udata = callback;
+            item->visibility_notify_udata2 = menu;
+            item->visibility_notify_udata3 = userdata;
+        } else {
+            item->visibility_notify = NULL;
+            item->visibility_notify_udata = NULL;
+            item->visibility_notify_udata2 = NULL;
+            item->visibility_notify_udata3 = NULL;
+        }
+    }
+}
+
+
 SDL_TrayDriver *SDL_Tray_CreateDBusDriver(void)
 {
     SDL_TrayDriverDBus *dbus_driver;
@@ -1194,6 +1234,7 @@ SDL_TrayDriver *SDL_Tray_CreateDBusDriver(void)
     driver->SetTrayEntryEnabled = SetTrayEntryEnabled;
     driver->GetTrayEntryEnabled = GetTrayEntryEnabled;
     driver->ClickTrayEntry = ClickTrayEntry;
+    driver->SetTrayMenuShownCallback = SetTrayMenuShownCallback;
     driver->DestroyDriver = DestroyDriver;
 
     return driver;
