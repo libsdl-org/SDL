@@ -817,7 +817,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *en
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, handle);
+            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, NULL, handle);
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }

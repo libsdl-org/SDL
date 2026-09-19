@@ -330,8 +330,9 @@ static void SNDIO_Deinitialize(void)
 
 static void SNDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
-    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
+    // !!! FIXME: shouldn't we just use OnlyHasDefaultPlaybackDevice/OnlyHasDefaultRecordingDevice?
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, NULL, (void *)0x1);
+    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, NULL, (void *)0x2);
 }
 
 static bool SNDIO_Init(SDL_AudioDriverImpl *impl)

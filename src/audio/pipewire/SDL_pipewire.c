@@ -291,7 +291,7 @@ static bool io_list_check_add(struct io_node *node)
     spa_list_append(&hotplug_io_list, &node->link);
 
     if (hotplug_events_enabled) {
-        SDL_AddAudioDevice(node->recording, node->name, &node->spec, PW_ID_TO_HANDLE(node->id));
+        SDL_AddAudioDevice(node->recording, node->name, NULL, &node->spec, PW_ID_TO_HANDLE(node->id));
     }
 
     return true;
@@ -876,7 +876,7 @@ static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audio
     }
 
     spa_list_for_each (io, &hotplug_io_list, link) {
-        SDL_AudioDevice *device = SDL_AddAudioDevice(io->recording, io->name, &io->spec, PW_ID_TO_HANDLE(io->id));
+        SDL_AudioDevice *device = SDL_AddAudioDevice(io->recording, io->name, NULL, &io->spec, PW_ID_TO_HANDLE(io->id));
         if (pipewire_default_sink_id && SDL_strcmp(io->path, pipewire_default_sink_id) == 0) {
             if (!io->recording) {
                 *default_playback = device;
