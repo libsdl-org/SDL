@@ -231,6 +231,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries = true;
 
+    // Whether the fix for Amazon Fire TV mouse in relative mode should be active. To override, 
+    // set this to false on Amazon devices (where it will get set true).
+    public static boolean mNeedsAmazonMouseFix = false;
+
+
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
@@ -387,6 +392,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (Build.VERSION.SDK_INT >= 30 /* Android 11 (R) */) {
             getWindow().setDecorFitsSystemWindows(false);
         }
+
+        SDLActivity.mNeedsAmazonMouseFix = Build.MANUFACTURER.equals("Amazon");
 
         /* Control activity re-creation */
         if (mSDLMainFinished || mActivityCreated) {
@@ -1632,6 +1639,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         int deviceId = event.getDeviceId();
         int source = event.getSource();
         InputDevice device = InputDevice.getDevice(deviceId);
+
+        if (mNeedsAmazonMouseFix && source == InputDevice.SOURCE_KEYBOARD && deviceId == -1) {
+            // Recent Amazon Fire TV devices will do something very strange with the mouse when in relative mouse mode.
+            // Namely, they will ALSO synthesize keyboard events, in the form:
+            // - left mouse click: KEYCODE_ENTER
+            // - right mouse click: KEYCODE_BACK
+            // - mouse movement: KEYCODE_DPAD_[UP|DOWN|LEFT|RIGHT]
+            //
+            // This causes all KINDS of wacky problems. Thankfully, they also set the deviceId to -1, where a real 
+            // keyboard will have an actual device ID. So in this case, just eat the keyboard code.
+            return true; 
+        }
 
         if (source == InputDevice.SOURCE_UNKNOWN) {
             if (device != null) {
