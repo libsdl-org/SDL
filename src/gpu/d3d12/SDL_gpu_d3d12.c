@@ -9578,6 +9578,11 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     }
     SDL_free(deviceName);
 
+    SDL_SetNumberProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+        D3D12_MAX_VIEW_INSTANCE_COUNT);
+
     // Record driver version
     char driverVer[64];
     (void)SDL_snprintf(

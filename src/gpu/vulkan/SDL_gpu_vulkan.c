@@ -68,6 +68,8 @@ typedef struct VulkanExtensions
     Uint8 MSFT_layered_driver;
     // Only required for decoding HDR ASTC textures
     Uint8 EXT_texture_compression_astc_hdr;
+    // Core since 1.1
+    Uint8 KHR_multiview;
 } VulkanExtensions;
 
 // Defines
@@ -1160,6 +1162,7 @@ struct VulkanRenderer
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
+    VkPhysicalDeviceMultiviewPropertiesKHR multiviewProperties;
     VkDevice logicalDevice;
     Uint8 integratedMemoryNotification;
     Uint8 outOfDeviceLocalMemoryWarning;
@@ -11349,7 +11352,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr) else CHECK(KHR_multiview)
 #undef CHECK
     }
 
@@ -11365,7 +11368,8 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_driver_properties +
         supports->KHR_portability_subset +
         supports->MSFT_layered_driver +
-        supports->EXT_texture_compression_astc_hdr);
+        supports->EXT_texture_compression_astc_hdr +
+        supports->KHR_multiview);
 }
 
 static inline void CreateDeviceExtensionArray(
@@ -11383,6 +11387,7 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_portability_subset)
     CHECK(MSFT_layered_driver)
     CHECK(EXT_texture_compression_astc_hdr)
+    CHECK(KHR_multiview)
 #undef CHECK
 }
 
@@ -12615,6 +12620,12 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->physicalDeviceProperties.pNext =
             &renderer->physicalDeviceDriverProperties;
 
+        if (renderer->supports.KHR_multiview) {
+            renderer->physicalDeviceProperties.pNext = &renderer->multiviewProperties;
+            renderer->multiviewProperties.sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
+        }
+
         renderer->vkGetPhysicalDeviceProperties2KHR(
             renderer->physicalDevice,
             &renderer->physicalDeviceProperties);
@@ -13589,6 +13600,18 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s", driverVer);
         }
+    }
+
+    if (renderer->supports.KHR_multiview) {
+        SDL_SetNumberProperty(
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+            renderer->multiviewProperties.maxMultiviewViewCount);
+    } else {
+        SDL_SetNumberProperty(
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+            1);
     }
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(renderer, &features)) {

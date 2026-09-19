@@ -4669,6 +4669,11 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Metal Device: %s", deviceName);
         }
 
+        SDL_SetNumberProperty(
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+            device.maxVertexAmplificationCount);
+
         // Remember debug mode
         renderer->debugMode = debugMode;
         renderer->allowedFramesInFlight = 2;
