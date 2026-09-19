@@ -1315,6 +1315,8 @@ SDL3_0.0.0 {
     SDL_GetOpenHarmonySDKVersion;
     SDL_GetOpenHarmonyInternalStoragePath;
     SDL_RequestOpenHarmonyPermission;
+    SDL_StartLocation;
+    SDL_StopLocation;
     # extra symbols go here (don't modify this line)
   local: *;
 };
