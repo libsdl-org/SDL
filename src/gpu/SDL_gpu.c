@@ -1800,11 +1800,12 @@ void SDL_PushGPUComputeUniformData(
 
 // Render Pass
 
-SDL_GPURenderPass *SDL_BeginGPURenderPass(
+static SDL_GPURenderPass *SDL_BeginGPURenderPassOrMultiview(
     SDL_GPUCommandBuffer *command_buffer,
     const SDL_GPUColorTargetInfo *color_target_infos,
     Uint32 num_color_targets,
-    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info)
+    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info,
+    Uint32 view_count)
 {
     CommandBufferCommonHeader *commandBufferHeader;
 
@@ -1819,6 +1820,11 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
     CHECK_PARAM(num_color_targets > MAX_COLOR_TARGET_BINDINGS) {
         SDL_SetError("num_color_targets exceeds MAX_COLOR_TARGET_BINDINGS");
+        return NULL;
+    }
+
+    CHECK_PARAM(view_count > MAX_VIEW_COUNT) {
+        SDL_SetError("view_mask exceeds MAX_VIEW_COUNT");
         return NULL;
     }
 
@@ -1911,7 +1917,8 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         command_buffer,
         color_target_infos,
         num_color_targets,
-        depth_stencil_target_info);
+        depth_stencil_target_info,
+        view_count);
 
     commandBufferHeader = (CommandBufferCommonHeader *)command_buffer;
 
@@ -1929,6 +1936,40 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
     }
 
     return (SDL_GPURenderPass *)&(commandBufferHeader->render_pass);
+}
+
+SDL_GPURenderPass *SDL_BeginGPURenderPass(
+    SDL_GPUCommandBuffer *command_buffer,
+    const SDL_GPUColorTargetInfo *color_target_infos,
+    Uint32 num_color_targets,
+    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info)
+{
+    return SDL_BeginGPURenderPassOrMultiview(
+        command_buffer,
+        color_target_infos,
+        num_color_targets,
+        depth_stencil_target_info,
+        0);
+}
+
+SDL_GPURenderPass *SDL_BeginMultiViewGPURenderPass(
+    SDL_GPUCommandBuffer *command_buffer,
+    const SDL_GPUColorTargetInfo *color_target_infos,
+    Uint32 num_color_targets,
+    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info,
+    Uint32 view_count)
+{
+    CHECK_PARAM(view_count == 0) {
+        SDL_InvalidParamError("view_count");
+        return NULL;
+    }
+
+    return SDL_BeginGPURenderPassOrMultiview(
+        command_buffer,
+        color_target_infos,
+        num_color_targets,
+        depth_stencil_target_info,
+        view_count);
 }
 
 void SDL_BindGPUGraphicsPipeline(
