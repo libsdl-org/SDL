@@ -4362,7 +4362,8 @@ static void D3D12_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewMask)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
@@ -4495,6 +4496,15 @@ static void D3D12_BeginRenderPass(
         rtvs,
         false,
         (depthStencilTargetInfo == NULL) ? NULL : &dsv);
+
+    if (viewCount != 0) {
+        // TODO
+        Uint32 mask = 0;
+        for (Uint32 i = 0; i < viewCount; i++) {
+            mask |= 1 << i;
+        }
+        ID3D12GraphicsCommandList_SetViewInstanceMask(mask);
+    }
 
     // Set sensible default states
     SDL_GPUViewport defaultViewport;

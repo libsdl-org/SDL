@@ -2210,6 +2210,16 @@ static void METAL_INTERNAL_ReturnUniformBufferToPool(
     uniformBuffer->drawOffset = 0;
 }
 
+static void METAL_SetVertexAmplification(SDL_GPUCommandBuffer *commandBuffer)
+{
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+
+        // TODO
+        // [metalCommandBuffer->renderEncoder setVertexAmplificationCount];
+    }
+}
+
 static void METAL_SetViewport(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUViewport *viewport)
@@ -2273,7 +2283,8 @@ static void METAL_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewMask)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2377,6 +2388,11 @@ static void METAL_BeginRenderPass(
             if (h < vpHeight) {
                 vpHeight = h;
             }
+        }
+
+        if (viewCount != 0) {
+            // TODO
+            METAL_SetVertexAmplification(commandBuffer);
         }
 
         // Set sensible default states

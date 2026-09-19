@@ -2608,9 +2608,9 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
  * These indicate the current usage of that resource on the command buffer.
  * The transition from one usage mode to another indicates how the barrier should be constructed.
  *
- * For buffer reads, read usage modes can be combined. 
+ * For buffer reads, read usage modes can be combined.
  * This can be a useful shortcut in certain cases, like when reading GLTF data.
- * 
+ *
  * Pipeline barriers cannot be inserted during a render pass, but they can be inserted
  * during a compute or copy pass.
  *
@@ -2913,13 +2913,13 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
 
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_VERTEX_READ;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDEX_READ;
     }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDIRECT;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         flags |= VULKAN_BUFFER_USAGE_MODE_GRAPHICS_STORAGE_READ;
     }
@@ -2930,7 +2930,7 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
     // If no read flags are set, read-write can be the default.
     if (!flags && buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         flags = VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
-    } 
+    }
 
     if (!flags) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -7938,7 +7938,8 @@ static void VULKAN_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
@@ -7955,6 +7956,7 @@ static void VULKAN_BeginRenderPass(
     SDL_FColor defaultBlendConstants;
     Uint32 framebufferWidth = SDL_MAX_UINT32;
     Uint32 framebufferHeight = SDL_MAX_UINT32;
+    Uint32 viewMask = 0;
 
     for (i = 0; i < numColorTargets; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)colorTargetInfos[i].texture;
@@ -8105,6 +8107,26 @@ static void VULKAN_BeginRenderPass(
     renderPassBeginInfo.renderArea.extent.height = framebufferHeight;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
+
+    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
+
+    if (viewCount != 0) {
+        for (i = 0; i < viewCount; i++) {
+            viewMask |= 1 << i;
+        }
+
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
+        multiViewInfo.pNext = NULL;
+        // TODO
+        multiViewInfo.subpassCount = 0;
+        multiViewInfo.pViewMasks = &viewMask;
+        multiViewInfo.dependencyCount = 0;
+        multiViewInfo.pViewOffsets = NULL;
+        multiViewInfo.correlationMaskCount = 0;
+        multiViewInfo.pCorrelationMasks = NULL;
+
+        renderPassBeginInfo.pNext = &multiViewInfo;
+    }
 
     renderer->vkCmdBeginRenderPass(
         vulkanCommandBuffer->commandBuffer,
@@ -9412,7 +9434,8 @@ static void VULKAN_Blit(
             commandBuffer,
             &targetInfo,
             1,
-            NULL);
+            NULL,
+            0);
         VULKAN_EndRenderPass(commandBuffer);
     }
 
