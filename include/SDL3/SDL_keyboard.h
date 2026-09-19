@@ -466,8 +466,8 @@ typedef enum SDL_Capitalization
  *
  * On HarmonyOS/OpenHarmony you can directly specify the input type:
  *
- * - `SDL_PROP_TEXTINPUT_OPENHARMONY_INPUTTYPE_NUMBER` - the text input type to
- *   use, overriding other properties. This is documented at
+ * - `SDL_PROP_TEXTINPUT_OPENHARMONY_INPUTTYPE_NUMBER` - the text input type
+ *   to use, overriding other properties. This is documented at
  *   https://developer.android.com/reference/android/text/InputType
  *
  * \param window the window to enable text input.

@@ -115,7 +115,8 @@
 #if defined(__OHOS__)
 
 /**
- * A preprocessor macro that is only defined if compiling for OpenHarmony/HarmonyOS.
+ * A preprocessor macro that is only defined if compiling for
+ * OpenHarmony/HarmonyOS.
  *
  * \since This macro is available since SDL 3.6.0.
  */

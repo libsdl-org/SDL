@@ -1399,7 +1399,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   window, if you want to wrap an existing window.
  * - `SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER`: optional,
  *   another window to share pixel format with, useful for OpenGL windows
- * - `SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER`: the window style (WS_EX_*) flags to use instead of the defaults.
+ * - `SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER`: the window style
+ *   (WS_EX_*) flags to use instead of the defaults.
  *
  * These are additional supported properties with X11:
  *
@@ -1583,10 +1584,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER`: the OH_NativeXComponent
  *   associated with the window
- * - `SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER`: the OHNativeWindow associated
+ * - `SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER`: the OHNativeWindow
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER`: the EGLSurface associated
  *   with the window
- * - `SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER`: the EGLSurface associated with
- *   the window
  *
  * On iOS:
  *
