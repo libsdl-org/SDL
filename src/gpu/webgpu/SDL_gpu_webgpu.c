@@ -10,8 +10,6 @@
 // FIXME: We create a WebGPU surface through the video backend, but we destroy it through the GPU backend?
 // FIXME: I'm pretty sure 2D array mipmap generation is broken?
 
-#include "SDL_internal.h"
-
 #ifdef SDL_GPU_WEBGPU
 
 #include "../SDL_sysgpu.h"
@@ -31,11 +29,153 @@
 // This means that the buffer is "pseudo-mapped". See BufferContainer.pseudoMappedRange for more.
 #define MAP_STATE_MAPPED_CPU 2
 
-static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
-    WGPUPresentMode_Fifo,
-    WGPUPresentMode_Immediate,
-    WGPUPresentMode_Mailbox,
-};
+// I hate manual memory management so much I'm just reinventing the dynamic array but worse
+#define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)    \
+    do {                                                                                                         \
+        EXPAND_ARRAY_IF_NEEDED(array, elementType, arrayElementCount + 1, arrayCapacity, arrayElementCount + 1); \
+        ((elementType *)array)[arrayElementCount++] = element;                                                   \
+    } while (0)
+
+// WebGPU is bad and stinky
+#define ALIGN_VALUE(value, alignment) (value % alignment != 0 ? value + (alignment - (value % alignment)) : value)
+
+// Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
+// Thank you very much, I hate writing shaders. -- TheStickmahn
+// https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
+
+const char *blitVert = "\n\
+struct VertexOutput {\n\
+    @builtin(position) pos: vec4<f32>,\n\
+    @location(0) tex: vec2<f32>\n\
+};\n\
+@vertex\n\
+fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {\n\
+    var output: VertexOutput;\n\
+    let tex = vec2<f32>(\n\
+        f32((vertexIndex << 1u) & 2u),\n\
+        f32(vertexIndex & 2u)\n\
+    );\n\
+    output.tex = tex;\n\
+    output.pos = vec4<f32>(\n\
+        tex * vec2<f32>(2.0, -2.0) + vec2<f32>(-1.0, 1.0),\n\
+        0.0,\n\
+        1.0\n\
+    );\n\
+    return output;\n\
+}";
+
+const char *blit2DShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blit2DArrayShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = vec2<f32>(\n\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\n\
+    );\n\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blit3DShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = vec3<f32>(\n\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\n\
+        sourceRegion.layerOrDepth\n\
+    );\n\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blitCubeShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    let u = 2.0 * scaledUV.x - 1.0;\n\
+    let v = 2.0 * scaledUV.y - 1.0;\n\
+    var newCoord: vec3<f32>;\n\
+    switch(u32(sourceRegion.layerOrDepth)) {\n\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
+    }\n\
+\n\
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blitCubeArrayShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    let u = 2.0 * scaledUV.x - 1.0;\n\
+    let v = 2.0 * scaledUV.y - 1.0;\n\
+    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;\n\
+    var newCoord: vec3<f32>;\n\
+    \n\
+    switch(u32(sourceRegion.layerOrDepth) % 6u) {\n\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
+    }\n\
+    \n\
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, f32(sourceRegion.mipLevel));\n\
+}";
 
 // NOTE: All of these required features are subject to change as we test it on different browsers and operating systems.
 // Also, note that while Firefox's documentation *claims* that a lot of features are unsupported,
@@ -70,62 +210,11 @@ const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[7] = {
     WGPUFeatureName_TextureFormatsTier2,
 };
 
-static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
-{
-    switch (name) {
-    case WGPUFeatureName_CoreFeaturesAndLimits:
-        return "WGPUFeatureName_CoreFeaturesAndLimits";
-    case WGPUFeatureName_DepthClipControl:
-        return "WGPUFeatureName_DepthClipControl";
-    case WGPUFeatureName_Depth32FloatStencil8:
-        return "WGPUFeatureName_Depth32FloatStencil8";
-    case WGPUFeatureName_TextureCompressionBC:
-        return "WGPUFeatureName_TextureCompressionBC";
-    case WGPUFeatureName_TextureCompressionBCSliced3D:
-        return "WGPUFeatureName_TextureCompressionBCSliced3D";
-    case WGPUFeatureName_TextureCompressionETC2:
-        return "WGPUFeatureName_TextureCompressionETC2";
-    case WGPUFeatureName_TextureCompressionASTC:
-        return "WGPUFeatureName_TextureCompressionASTC";
-    case WGPUFeatureName_TextureCompressionASTCSliced3D:
-        return "WGPUFeatureName_TextureCompressionASTCSliced3D";
-    case WGPUFeatureName_TimestampQuery:
-        return "WGPUFeatureName_TimestampQuery";
-    case WGPUFeatureName_IndirectFirstInstance:
-        return "WGPUFeatureName_IndirectFirstInstance";
-    case WGPUFeatureName_ShaderF16:
-        return "WGPUFeatureName_ShaderF16";
-    case WGPUFeatureName_RG11B10UfloatRenderable:
-        return "WGPUFeatureName_RG11B10UfloatRenderable";
-    case WGPUFeatureName_BGRA8UnormStorage:
-        return "WGPUFeatureName_BGRA8UnormStorage";
-    case WGPUFeatureName_Float32Filterable:
-        return "WGPUFeatureName_Float32Filterable";
-    case WGPUFeatureName_Float32Blendable:
-        return "WGPUFeatureName_Float32Blendable";
-    case WGPUFeatureName_ClipDistances:
-        return "WGPUFeatureName_ClipDistances";
-    case WGPUFeatureName_DualSourceBlending:
-        return "WGPUFeatureName_DualSourceBlending";
-    case WGPUFeatureName_Subgroups:
-        return "WGPUFeatureName_Subgroups";
-    case WGPUFeatureName_TextureFormatsTier1:
-        return "WGPUFeatureName_TextureFormatsTier1";
-    case WGPUFeatureName_TextureFormatsTier2:
-        return "WGPUFeatureName_TextureFormatsTier2";
-    case WGPUFeatureName_PrimitiveIndex:
-        return "WGPUFeatureName_PrimitiveIndex";
-    case WGPUFeatureName_TextureComponentSwizzle:
-        return "WGPUFeatureName_TextureComponentSwizzle";
-    case WGPUFeatureName_SubgroupSizeControl:
-        return "WGPUFeatureName_SubgroupSizeControl";
-    case WGPUFeatureName_Force32:
-        return "WGPUFeatureName_Force32";
-    default:
-        SDL_assert(!"Unsupported WGPUFeatureName");
-        return "Unknown WGPUFeatureName";
-    }
-}
+static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
+    WGPUPresentMode_Fifo,
+    WGPUPresentMode_Immediate,
+    WGPUPresentMode_Mailbox,
+};
 
 static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
     WGPUTextureFormat_Undefined,            // INVALID
@@ -249,24 +338,6 @@ static WGPUTextureFormat SwapchainCompositionToFallbackFormat[] = {
     WGPUTextureFormat_RGBA16Float,    // HDR_EXTENDED_LINEAR (no fallback)
     WGPUTextureFormat_RGB10A2Unorm,   // HDR10_ST2084 (no fallback)
 };
-
-static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat(
-    SDL_GPUSwapchainComposition composition,
-    bool usingFallback)
-{
-    switch (composition) {
-    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR:
-        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR:
-        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR:
-        return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084:
-        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM;
-    default:
-        return SDL_GPU_TEXTUREFORMAT_INVALID;
-    }
-}
 
 static WGPUVertexFormat SDLToWebGPU_VertexFormat[] = {
     0,                          // INVALID
@@ -418,57 +489,6 @@ static WGPUAddressMode SDLToWebGPU_AddressMode[] = {
     WGPUAddressMode_ClampToEdge,
 };
 
-static WGPUTextureSampleType WebGPUTextureFormatToSampleType(WGPUTextureFormat format)
-{
-    switch (format) {
-    case WGPUTextureFormat_R8Uint:
-    case WGPUTextureFormat_RG8Uint:
-    case WGPUTextureFormat_RGBA8Uint:
-    case WGPUTextureFormat_R16Uint:
-    case WGPUTextureFormat_RG16Uint:
-    case WGPUTextureFormat_RGBA16Uint:
-    case WGPUTextureFormat_R32Uint:
-    case WGPUTextureFormat_RG32Uint:
-    case WGPUTextureFormat_RGBA32Uint:
-        return WGPUTextureSampleType_Uint;
-
-    case WGPUTextureFormat_R8Sint:
-    case WGPUTextureFormat_RG8Sint:
-    case WGPUTextureFormat_RGBA8Sint:
-    case WGPUTextureFormat_R16Sint:
-    case WGPUTextureFormat_RG16Sint:
-    case WGPUTextureFormat_RGBA16Sint:
-    case WGPUTextureFormat_R32Sint:
-    case WGPUTextureFormat_RG32Sint:
-    case WGPUTextureFormat_RGBA32Sint:
-        return WGPUTextureSampleType_Sint;
-
-    case WGPUTextureFormat_Depth16Unorm:
-    case WGPUTextureFormat_Depth24Plus:
-    case WGPUTextureFormat_Depth32Float:
-        return WGPUTextureSampleType_Depth;
-
-    case WGPUTextureFormat_R32Float:
-    case WGPUTextureFormat_RG32Float:
-    case WGPUTextureFormat_RGBA32Float:
-        return WGPUTextureSampleType_UnfilterableFloat;
-
-    default:
-        return WGPUTextureSampleType_Float;
-    }
-}
-
-static bool WebGPUTextureFormatIsBlendable(WGPUTextureFormat format, bool blendableFloat32FeatureEnabled)
-{
-    // TODO: I couldn't find a list of which formats support blending so we'll just add them when we find them
-    switch (format) {
-    case WGPUTextureFormat_RGBA32Float:
-        return blendableFloat32FeatureEnabled;
-    default:
-        return true;
-    }
-}
-
 // These WGSL identifiers were developed using Naga's wgsl keywords as a reference.
 // Thank you WGPU developers!
 // TODO: Make sure all of these license notices:
@@ -571,6 +591,7 @@ static char *WGSLStorageTextureAccessIdentifiers[3] = {
     "read",
 };
 
+// FIXME: No professional project should use the term "Thingamabob" ever
 static WGPUTextureFormat WGSLTextureFormatIdentifiersIndexThingamabob[43] = {
     WGPUTextureFormat_Undefined,
     WGPUTextureFormat_Undefined,
@@ -643,154 +664,131 @@ static WGPUStorageTextureAccess WGSLStorageTextureAccessIdentifiersIndexWowISuck
     WGPUStorageTextureAccess_ReadOnly,
 };
 
-// Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
-// Thank you very much, I hate writing shaders. -- TheStickmahn
-// https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
+static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
+{
+    switch (name) {
+    case WGPUFeatureName_CoreFeaturesAndLimits:
+        return "WGPUFeatureName_CoreFeaturesAndLimits";
+    case WGPUFeatureName_DepthClipControl:
+        return "WGPUFeatureName_DepthClipControl";
+    case WGPUFeatureName_Depth32FloatStencil8:
+        return "WGPUFeatureName_Depth32FloatStencil8";
+    case WGPUFeatureName_TextureCompressionBC:
+        return "WGPUFeatureName_TextureCompressionBC";
+    case WGPUFeatureName_TextureCompressionBCSliced3D:
+        return "WGPUFeatureName_TextureCompressionBCSliced3D";
+    case WGPUFeatureName_TextureCompressionETC2:
+        return "WGPUFeatureName_TextureCompressionETC2";
+    case WGPUFeatureName_TextureCompressionASTC:
+        return "WGPUFeatureName_TextureCompressionASTC";
+    case WGPUFeatureName_TextureCompressionASTCSliced3D:
+        return "WGPUFeatureName_TextureCompressionASTCSliced3D";
+    case WGPUFeatureName_TimestampQuery:
+        return "WGPUFeatureName_TimestampQuery";
+    case WGPUFeatureName_IndirectFirstInstance:
+        return "WGPUFeatureName_IndirectFirstInstance";
+    case WGPUFeatureName_ShaderF16:
+        return "WGPUFeatureName_ShaderF16";
+    case WGPUFeatureName_RG11B10UfloatRenderable:
+        return "WGPUFeatureName_RG11B10UfloatRenderable";
+    case WGPUFeatureName_BGRA8UnormStorage:
+        return "WGPUFeatureName_BGRA8UnormStorage";
+    case WGPUFeatureName_Float32Filterable:
+        return "WGPUFeatureName_Float32Filterable";
+    case WGPUFeatureName_Float32Blendable:
+        return "WGPUFeatureName_Float32Blendable";
+    case WGPUFeatureName_ClipDistances:
+        return "WGPUFeatureName_ClipDistances";
+    case WGPUFeatureName_DualSourceBlending:
+        return "WGPUFeatureName_DualSourceBlending";
+    case WGPUFeatureName_Subgroups:
+        return "WGPUFeatureName_Subgroups";
+    case WGPUFeatureName_TextureFormatsTier1:
+        return "WGPUFeatureName_TextureFormatsTier1";
+    case WGPUFeatureName_TextureFormatsTier2:
+        return "WGPUFeatureName_TextureFormatsTier2";
+    case WGPUFeatureName_PrimitiveIndex:
+        return "WGPUFeatureName_PrimitiveIndex";
+    case WGPUFeatureName_TextureComponentSwizzle:
+        return "WGPUFeatureName_TextureComponentSwizzle";
+    case WGPUFeatureName_SubgroupSizeControl:
+        return "WGPUFeatureName_SubgroupSizeControl";
+    case WGPUFeatureName_Force32:
+        return "WGPUFeatureName_Force32";
+    default:
+        SDL_assert(!"Unsupported WGPUFeatureName");
+        return "Unknown WGPUFeatureName";
+    }
+}
 
-const char *blitVert = "\n\
-struct VertexOutput {\n\
-    @builtin(position) pos: vec4<f32>,\n\
-    @location(0) tex: vec2<f32>\n\
-};\n\
-@vertex\n\
-fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {\n\
-    var output: VertexOutput;\n\
-    let tex = vec2<f32>(\n\
-        f32((vertexIndex << 1u) & 2u),\n\
-        f32(vertexIndex & 2u)\n\
-    );\n\
-    output.tex = tex;\n\
-    output.pos = vec4<f32>(\n\
-        tex * vec2<f32>(2.0, -2.0) + vec2<f32>(-1.0, 1.0),\n\
-        0.0,\n\
-        1.0\n\
-    );\n\
-    return output;\n\
-}";
+static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat(
+    SDL_GPUSwapchainComposition composition,
+    bool usingFallback)
+{
+    switch (composition) {
+    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR:
+        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
+    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR:
+        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
+    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR:
+        return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
+    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084:
+        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM;
+    default:
+        return SDL_GPU_TEXTUREFORMAT_INVALID;
+    }
+}
 
-// TODO: We should just generate the RGBA32 compat shaders at runtime.
-const char *blit2DShader = "\n\
-struct SourceRegionBuffer {\n\
-    uvLeftTop: vec2<f32>,\n\
-    uvDimensions: vec2<f32>,\n\
-    mipLevel: u32,\n\
-    layerOrDepth: f32\n\
-}\n\
-@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\n\
-@group(2) @binding(1) var sourceSampler: sampler;\n\
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
-@fragment\n\
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
-    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
-    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
-}";
+static WGPUTextureSampleType WebGPUTextureFormatToSampleType(WGPUTextureFormat format)
+{
+    switch (format) {
+    case WGPUTextureFormat_R8Uint:
+    case WGPUTextureFormat_RG8Uint:
+    case WGPUTextureFormat_RGBA8Uint:
+    case WGPUTextureFormat_R16Uint:
+    case WGPUTextureFormat_RG16Uint:
+    case WGPUTextureFormat_RGBA16Uint:
+    case WGPUTextureFormat_R32Uint:
+    case WGPUTextureFormat_RG32Uint:
+    case WGPUTextureFormat_RGBA32Uint:
+        return WGPUTextureSampleType_Uint;
 
-const char *blit2DArrayShader = "\n\
-struct SourceRegionBuffer {\n\
-    uvLeftTop: vec2<f32>,\n\
-    uvDimensions: vec2<f32>,\n\
-    mipLevel: u32,\n\
-    layerOrDepth: f32\n\
-}\n\
-@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\n\
-@group(2) @binding(1) var sourceSampler: sampler;\n\
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
-@fragment\n\
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
-    let newCoord = vec2<f32>(\n\
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\n\
-    );\n\
-    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), f32(sourceRegion.mipLevel));\n\
-}";
+    case WGPUTextureFormat_R8Sint:
+    case WGPUTextureFormat_RG8Sint:
+    case WGPUTextureFormat_RGBA8Sint:
+    case WGPUTextureFormat_R16Sint:
+    case WGPUTextureFormat_RG16Sint:
+    case WGPUTextureFormat_RGBA16Sint:
+    case WGPUTextureFormat_R32Sint:
+    case WGPUTextureFormat_RG32Sint:
+    case WGPUTextureFormat_RGBA32Sint:
+        return WGPUTextureSampleType_Sint;
 
-const char *blit3DShader = "\n\
-struct SourceRegionBuffer {\n\
-    uvLeftTop: vec2<f32>,\n\
-    uvDimensions: vec2<f32>,\n\
-    mipLevel: u32,\n\
-    layerOrDepth: f32\n\
-}\n\
-@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\n\
-@group(2) @binding(1) var sourceSampler: sampler;\n\
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
-@fragment\n\
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
-    let newCoord = vec3<f32>(\n\
-        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\n\
-        sourceRegion.layerOrDepth\n\
-    );\n\
-    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
-}";
+    case WGPUTextureFormat_Depth16Unorm:
+    case WGPUTextureFormat_Depth24Plus:
+    case WGPUTextureFormat_Depth32Float:
+        return WGPUTextureSampleType_Depth;
 
-const char *blitCubeShader = "\n\
-struct SourceRegionBuffer {\n\
-    uvLeftTop: vec2<f32>,\n\
-    uvDimensions: vec2<f32>,\n\
-    mipLevel: u32,\n\
-    layerOrDepth: f32\n\
-}\n\
-@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\n\
-@group(2) @binding(1) var sourceSampler: sampler;\n\
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
-@fragment\n\
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
-    let u = 2.0 * scaledUV.x - 1.0;\n\
-    let v = 2.0 * scaledUV.y - 1.0;\n\
-    var newCoord: vec3<f32>;\n\
-    switch(u32(sourceRegion.layerOrDepth)) {\n\
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
-    }\n\
-\n\
-    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
-}";
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG32Float:
+    case WGPUTextureFormat_RGBA32Float:
+        return WGPUTextureSampleType_UnfilterableFloat;
 
-const char *blitCubeArrayShader = "\n\
-struct SourceRegionBuffer {\n\
-    uvLeftTop: vec2<f32>,\n\
-    uvDimensions: vec2<f32>,\n\
-    mipLevel: u32,\n\
-    layerOrDepth: f32\n\
-}\n\
-@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\n\
-@group(2) @binding(1) var sourceSampler: sampler;\n\
-@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
-@fragment\n\
-fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
-    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
-    let u = 2.0 * scaledUV.x - 1.0;\n\
-    let v = 2.0 * scaledUV.y - 1.0;\n\
-    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;\n\
-    var newCoord: vec3<f32>;\n\
-    \n\
-    switch(u32(sourceRegion.layerOrDepth) % 6u) {\n\
-        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
-        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
-        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
-        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
-        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
-        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
-        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
-    }\n\
-    \n\
-    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, f32(sourceRegion.mipLevel));\n\
-}";
+    default:
+        return WGPUTextureSampleType_Float;
+    }
+}
 
-// I hate manual memory management so much I'm just reinventing the dynamic array but worse
-#define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)    \
-    do {                                                                                                         \
-        EXPAND_ARRAY_IF_NEEDED(array, elementType, arrayElementCount + 1, arrayCapacity, arrayElementCount + 1); \
-        ((elementType *)array)[arrayElementCount++] = element;                                                   \
-    } while (0)
-
-// WebGPU is bad and stinky
-#define ALIGN_VALUE(value, alignment) (value % alignment != 0 ? value + (alignment - (value % alignment)) : value)
+static bool WebGPUTextureFormatIsBlendable(WGPUTextureFormat format, bool blendableFloat32FeatureEnabled)
+{
+    // TODO: I couldn't find a list of which formats support blending so we'll just add them when we find them
+    switch (format) {
+    case WGPUTextureFormat_RGBA32Float:
+        return blendableFloat32FeatureEnabled;
+    default:
+        return true;
+    }
+}
 
 typedef struct WebGPUTexture WebGPUTexture;
 typedef struct WebGPUTextureContainer WebGPUTextureContainer;
@@ -842,44 +840,36 @@ typedef struct WebGPURenderer
     SDL_PropertiesID props;
     SDL_HashTable *bindGroupHashTable; // A cache of the renderer's bind groups.
 
-    SDL_Mutex *queryingFenceLock;
     SDL_Mutex *destroyingSelfLock;
-    SDL_Mutex *registeringQueuedDestroyLock;
     SDL_Mutex *submittingCommandBufferLock;
-    SDL_Mutex *creatingWebGPUResourceLock;
 
-    // The ID of the thread which created this renderer.
-    // This is currently only used for upload transfer buffer mapping / writing.
-    // Since wgpuQueueWriteBuffer isn't thread-safe, we can't use pseudo-mapping
-    // and instead have to fall back to regular (slow) maps and unmaps
-    Uint64 createdByThreadID;
     Uint64 numSubmissions;
 
     Uint32 maxFramesInFlight;
     Uint32 blitPipelineCount;
     Uint32 blitPipelineCapacity;
 
-    Uint32 nextBindableResourceID;
+    Uint64 nextBindableResourceID;
 
     // For how many submissions can a bind group be unused until it's automatically freed?
     // Set to -1 to disable pruning, and 0 to instantly free it.
     int bindGroupsExpireAfter;
 
+    // TODO: REMOVE THIS!!! IT SUCKS!!!!
     WebGPUFence *queueDoneFence;
 
     bool debugMode;
     bool destroyingSelf;
     bool preferLowPower;
-    bool shouldRecreateLostDevice;
 } WebGPURenderer;
 
+// TODO: Ooooh, I hate the windowing stuff in this backend.
 struct WebGPUWindowData
 {
     SDL_Window *window;
     WebGPURenderer *renderer;
 
     SDL_GPUSwapchainComposition swapchainComposition;
-    SDL_GPUPresentMode presentMode;
 
     bool surfaceDirty;
     bool shouldUseFallbackFormat;
@@ -887,18 +877,6 @@ struct WebGPUWindowData
     WGPUSurface surface;
     WGPUSurfaceConfiguration surfaceConfig;
 };
-
-typedef enum WebGPUBufferType
-{
-    WEBGPU_BUFFER_TYPE_GPU,
-    WEBGPU_BUFFER_TYPE_UNIFORM,
-    WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD,
-    WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD,
-    // A transfer buffer which can only be accessed on the GPU.
-    // This is used for texture copies where the user has not properly padded the data.
-    // The GPUOnly transfer buffer acts as an intermediate.
-    WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY,
-} WebGPUBufferType;
 
 // FIXME: This has a really bad name.
 typedef enum WebGPUBindGroupType
@@ -1014,6 +992,18 @@ typedef struct WebGPUBindGroup
     bool invalid;
 } WebGPUBindGroup;
 
+typedef enum WebGPUBufferType
+{
+    WEBGPU_BUFFER_TYPE_GPU,
+    WEBGPU_BUFFER_TYPE_UNIFORM,
+    WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD,
+    WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD,
+    // A transfer buffer which can only be accessed on the GPU.
+    // This is used for texture copies where the user has not properly padded the data.
+    // The GPUOnly transfer buffer acts as an intermediate.
+    WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY,
+} WebGPUBufferType;
+
 struct WebGPUBuffer
 {
     WebGPUBufferContainer *container;
@@ -1026,15 +1016,7 @@ struct WebGPUBuffer
 
     // The resource's identifier. (Excellent documentation by yours truly, give me that pulitzer now)
     Uint64 identifier;
-
-    // the bind groups which depend on this resource
-    // if this resource is freed, invalidate all of the dependents
-    char **dependants;
-
     SDL_AtomicInt referenceCount;
-
-    Uint32 numDependants;
-    Uint32 dependantsCapacity;
 };
 
 struct WebGPUBufferContainer
@@ -1047,7 +1029,6 @@ struct WebGPUBufferContainer
 
     SDL_GPUBufferUsageFlags usageFlags;
     WebGPUBufferType bufferType;
-    Uint32 size;
 
     // Actually mapping stuff in WebGPU's really slow. So, we don't. Instead we allocate some memory,
     // say that's the mapped buffer, and then when you use it to copy something we call wgpuQueueWriteBuffer.
@@ -1055,25 +1036,19 @@ struct WebGPUBufferContainer
     // However, this does increase performance SIGNIFIGANTLY if you're uploading data regularly.
     void *pseudoMappedRange;
 
+    Uint32 size;
+
     // The map state of this buffer.
     // 0 = Not mapped.
     // 1 = Mapped from GPU (Accessing GPU memory directly)
     // 2 = Mapped on CPU (Pseudo-mapping, see above)
     Uint16 mapState;
-
-    bool dedicated;
-    char *debugName;
 };
 
 typedef struct WebGPUTextureView
 {
     WGPUTextureView view;
-
     Uint64 identifier;
-    char **dependants;
-
-    Uint32 numDependants;
-    Uint32 dependantsCapacity;
 } WebGPUTextureView;
 
 struct WebGPUTexture
@@ -1091,9 +1066,6 @@ struct WebGPUTexture
 
     Uint32 textureViewCount;
     Uint32 textureViewCapacity;
-
-    bool markedForDestroy;  // so that defrag doesn't double-free
-    bool externallyManaged; // true for XR swapchain images
 };
 
 struct WebGPUTextureContainer
@@ -1106,8 +1078,6 @@ struct WebGPUTextureContainer
     Uint32 textureCount;
     Uint32 activeTextureIndex;
     WebGPUTexture **textures;
-
-    bool canBeCycled;
 };
 
 typedef struct WebGPUSampler
@@ -1115,11 +1085,6 @@ typedef struct WebGPUSampler
     WGPUSampler sampler;
 
     Uint64 identifier;
-
-    char **dependants;
-
-    Uint32 numDependants;
-    Uint32 dependantsCapacity;
 } WebGPUSampler;
 
 typedef struct WebGPUFence
@@ -1239,11 +1204,9 @@ typedef struct WebGPUShader
 {
     WGPUShaderModule shader;
 
-    SDL_GPUShaderStage stage;
     char *entrypoint;
+    SDL_GPUShaderStage stage;
     WebGPUShaderBindGroupLayouts *bindGroupLayouts;
-
-    Uint32 refCount;
 } WebGPUShader;
 
 typedef struct WebGPUGraphicsPipeline
@@ -1423,7 +1386,7 @@ static void WEBGPU_INTERNAL_DeviceLostCallback(WGPUDevice const *device, WGPUDev
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Device has been lost.");
     }
 
-    if (((WebGPURenderer *)renderer)->shouldRecreateLostDevice && !((WebGPURenderer *)renderer)->destroyingSelf) {
+    if (!((WebGPURenderer *)renderer)->destroyingSelf) {
         // Since the device has been lost, there might be some larger issues within WebGPU.
         // We'll double check that everything's in order.
 
@@ -1525,6 +1488,8 @@ static inline void WEBGPU_INTERNAL_RegisterQueuedDestroy(WebGPURenderer *rendere
     WEBGPU_INTERNAL_InsertElementIntoArray(renderer->queuedDestroys, renderer->queuedDestroyCapacity,
                                            renderer->queuedDestroyCount, WebGPUQueuedDestroy *, destroy);
 }
+
+// TODO: All of these could be folded into one macro pretty easily
 
 static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *renderer, WebGPUTextureContainer *container)
 {
@@ -1693,20 +1658,6 @@ static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *succes
         if (!supported) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
             SDL_assert_release(!"WebGPU adapter does not support all required features!");
-        }
-    }
-
-    for (int i = 0; i < SDL_arraysize(WEBGPU_INTERNAL_RequiredFeatures); i++) {
-        bool supported = false;
-        for (int j = 0; j < supportedFeatures.featureCount; j++) {
-            if (WEBGPU_INTERNAL_RequiredFeatures[i] == supportedFeatures.features[j]) {
-                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_RequiredFeatures[i]);
-                supported = true;
-                break;
-            }
-        }
-        if (!supported) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
         }
     }
 
@@ -2284,17 +2235,6 @@ static Uint32 WEBGPU_INTERNAL_ParseBindGroupLayoutEntriesFromShader(const char *
     return entryCount;
 }
 
-// Alright I did some shoddy benchmarking of this.
-//
-// On a single 7950X thread with DDR5-6000 running on Linux (Release build, ofc)
-// this can chug through about 18MiB of shader source code a second.
-//
-// Really slow, but for our purposes it'll work.
-//
-// For context: Tint's autogenerated ports of all the SDL_gpu_example shaders comes out to about 26KiB in total, which would take
-// roughly 1-2 MS.
-//
-// The larger issue with this is that we're memory leaking. I'm bad with C strings so I don't know /where/ it's leaking but I do know it is.
 static WebGPUShaderBindGroupLayouts *WEBGPU_INTERNAL_GenerateBindGroupLayoutsForShader(const char *shaderSource,
                                                                                        WebGPURenderer *renderer,
                                                                                        WGPUShaderStage stage)
@@ -2643,11 +2583,8 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 }
                 break;
             case WEBGPU_QUEUED_DESTROY_SAMPLER:
-                currentRefCount = current->resource.sampler->numDependants;
-                if (currentRefCount == 0 || forciblyDestroy) {
-                    WEBGPU_INTERNAL_ReleaseSampler(renderer, current->resource.sampler);
-                    wasReleased = true;
-                }
+                WEBGPU_INTERNAL_ReleaseSampler(renderer, current->resource.sampler);
+                wasReleased = true;
                 break;
             case WEBGPU_QUEUED_DESTROY_BUFFER_CONTAINER:
                 // Like with texture containers, the buffer container doesn't have any direct references.
@@ -3243,7 +3180,6 @@ static SDL_GPUTexture *WEBGPU_CreateTexture(
         SDL_CopyProperties(createInfo->props, container->header.info.props);
     }
 
-    container->canBeCycled = true;
     container->activeTexture = texture;
     container->activeTextureIndex = 0;
     container->textureCapacity = 1;
@@ -3289,12 +3225,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
 
 static void WEBGPU_INTERNAL_ReleaseSampler(WebGPURenderer *renderer, WebGPUSampler *sampler)
 {
-    for (int i = 0; i < sampler->numDependants; i++) {
-        // WEBGPU_INTERNAL_InvalidateBindGroup(renderer, sampler->dependants[i]);
-    }
-
     wgpuSamplerRelease(sampler->sampler);
-    SDL_free(sampler->dependants);
     SDL_free(sampler);
 }
 
@@ -3316,7 +3247,6 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *device, SDL_Window *window)
     SDL_SetPointerProperty(props, WINDOW_PROPERTY_DATA, windowData);
 
     windowData->window = window;
-    windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC,
     windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR;
     windowData->renderer = (WebGPURenderer *)device;
     windowData->surface = SDL_WGPU_CreateSurface(window, windowData->renderer->instance);
@@ -3464,10 +3394,6 @@ static SDL_GPUShader *WEBGPU_CreateShader(
 
 static void WEBGPU_INTERNAL_ReleaseShader(WebGPUShader *shader)
 {
-    if (shader->refCount != 0) {
-        return;
-    }
-
     wgpuShaderModuleRelease(shader->shader);
 
     SDL_free(shader->bindGroupLayouts);
@@ -3630,7 +3556,7 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     WGPUPrimitiveState primitiveState = {
         .cullMode = SDLToWebGPU_CullMode[createInfo->rasterizer_state.cull_mode],
         .frontFace = SDLToWebGPU_FrontFace[createInfo->rasterizer_state.front_face],
-        .stripIndexFormat = WGPUIndexFormat_Undefined,
+        .stripIndexFormat = (createInfo->primitive_type == SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP) ? WGPUIndexFormat_Uint32 : WGPUIndexFormat_Undefined,
         .topology = SDLToWebGPU_PrimitiveType[createInfo->primitive_type],
         .unclippedDepth = !createInfo->rasterizer_state.enable_depth_clip,
         .nextInChain = NULL,
@@ -3918,8 +3844,6 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
     bufferContainer->bufferCount = 1;
     bufferContainer->buffers = SDL_calloc(bufferContainer->bufferCapacity, sizeof(WebGPUBuffer *));
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
-    bufferContainer->dedicated = dedicated;
-    bufferContainer->debugName = NULL;
     bufferContainer->bufferType = bufferType;
     bufferContainer->usageFlags = usageFlags;
     bufferContainer->size = size;
@@ -3932,33 +3856,19 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
         bufferContainer->pseudoMappedRange = NULL;
     }
 
-    if (debugName != NULL) {
-        bufferContainer->debugName = SDL_strdup(debugName);
-    }
-
     return bufferContainer;
 }
 
 static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPURenderer *renderer, WebGPUBuffer *buffer)
 {
-    for (int i = 0; i < buffer->numDependants; i++) {
-        // WEBGPU_INTERNAL_InvalidateBindGroup(renderer, buffer->dependants[i]);
-    }
-
     wgpuBufferRelease(buffer->buffer);
-    SDL_free(buffer->dependants);
     SDL_free(buffer);
     buffer = NULL;
 }
 
 static void WEBGPU_INTERNAL_ReleaseTextureView(WebGPURenderer *renderer, WebGPUTextureView *view)
 {
-    for (int j = 0; j < view->numDependants; j++) {
-        // WEBGPU_INTERNAL_InvalidateBindGroup(renderer, view->dependants[j]);
-    }
-
     wgpuTextureViewRelease(view->view);
-    SDL_free(view->dependants);
     SDL_free(view);
     view = NULL;
 }
@@ -3995,11 +3905,6 @@ static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPURenderer *renderer, Web
 
     for (int i = 0; i < container->bufferCount; i++) {
         WEBGPU_INTERNAL_ReleaseBuffer(renderer, container->buffers[i]);
-    }
-
-    if (container->debugName != NULL) {
-        SDL_free(container->debugName);
-        container->debugName = NULL;
     }
 
     SDL_free(container->pseudoMappedRange);
@@ -4239,13 +4144,11 @@ static void *WEBGPU_INTERNAL_MapBufferRange(WebGPURenderer *renderer, WebGPUBuff
 
 static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer, bool cycle)
 {
-    bool isMainThread = SDL_GetCurrentThreadID() == ((WebGPURenderer *)device)->createdByThreadID;
-
     if (cycle) {
         WEBGPU_INTERNAL_CycleBufferContainer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer);
     }
 
-    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && isMainThread && !DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING) {
+    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && !DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING) {
         // Time to do our magic tricks.
         if (cycle) {
             SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
@@ -5258,13 +5161,9 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
     WebGPUSubmittedCommandBuffer *submitted = NULL;
     WebGPURenderer *renderer = wrapper->renderer;
 
-    bool isMainThread = SDL_GetCurrentThreadID() == renderer->createdByThreadID;
-
     SDL_LockMutex(renderer->submittingCommandBufferLock);
 
-    if (isMainThread) {
-        WEBGPU_INTERNAL_UploadQueuedUniformData(wrapper);
-    }
+    WEBGPU_INTERNAL_UploadQueuedUniformData(wrapper);
 
 #ifdef _MSC_VER
     WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &(WGPUCommandBufferDescriptor)WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
@@ -5294,22 +5193,20 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
     wgpuQueueSubmit(wrapper->queue, 1, &cmdBuf);
 
-    if (isMainThread) {
 #ifndef __EMSCRIPTEN__
-        for (int i = 0; i < wrapper->surfaceCount; i++) {
-            wgpuSurfacePresent(wrapper->surfaces[i]);
-        }
+    for (int i = 0; i < wrapper->surfaceCount; i++) {
+        wgpuSurfacePresent(wrapper->surfaces[i]);
+    }
 #endif
-        for (int i = 0; i < wrapper->swapchainTextureCount; i++) {
-            WebGPUTextureContainer *container = wrapper->acquiredSwapchainTextures[i];
+    for (int i = 0; i < wrapper->swapchainTextureCount; i++) {
+        WebGPUTextureContainer *container = wrapper->acquiredSwapchainTextures[i];
 
-            for (int j = 0; j < container->textureCount; j++) {
-                WEBGPU_INTERNAL_ReleaseTexture(wrapper->renderer, container->textures[j]);
-            }
-
-            SDL_free(container->textures);
-            SDL_free(container);
+        for (int j = 0; j < container->textureCount; j++) {
+            WEBGPU_INTERNAL_ReleaseTexture(wrapper->renderer, container->textures[j]);
         }
+
+        SDL_free(container->textures);
+        SDL_free(container);
     }
     wgpuCommandEncoderRelease(wrapper->encoder);
     wgpuCommandBufferRelease(cmdBuf);
@@ -5354,10 +5251,7 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     }
 
     // Destroying mutexes
-    SDL_DestroyMutex(renderer->queryingFenceLock);
-    SDL_DestroyMutex(renderer->registeringQueuedDestroyLock);
     SDL_DestroyMutex(renderer->submittingCommandBufferLock);
-    SDL_DestroyMutex(renderer->creatingWebGPUResourceLock);
 
     wgpuQueueRelease(renderer->queue);
     // FIXME: Releasing the device leaks a bunch of memory each time!!! There's 100% some resource I'm not freeing.
@@ -5545,7 +5439,6 @@ static bool WEBGPU_SetSwapchainParameters(SDL_GPURenderer *driverData, SDL_Windo
     windowData->surfaceConfig.device = windowData->renderer->device;
 
     windowData->swapchainComposition = swapchainComposition;
-    windowData->presentMode = presentMode;
 
     windowData->surfaceDirty = true;
 
@@ -5903,20 +5796,14 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
-    renderer->shouldRecreateLostDevice = true;
     renderer->props = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
     renderer->maxFramesInFlight = 2; // Default
 
     renderer->bindGroupHashTable = SDL_CreateHashTable(512, true, WEBGPU_INTERNAL_HashBindGroupKey, WEBGPU_INTERNAL_MatchHashedBindGroupKey, WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey, NULL);
 
-    renderer->queryingFenceLock = SDL_CreateMutex();
     renderer->destroyingSelfLock = SDL_CreateMutex();
-    renderer->registeringQueuedDestroyLock = SDL_CreateMutex();
     renderer->submittingCommandBufferLock = SDL_CreateMutex();
-    renderer->creatingWebGPUResourceLock = SDL_CreateMutex();
-
-    renderer->createdByThreadID = SDL_GetCurrentThreadID();
 
     if (!SDL_CopyProperties(props, renderer->props)) {
         SDL_Log("Failed to copy properties! Oh no!\n%s", SDL_GetError());
