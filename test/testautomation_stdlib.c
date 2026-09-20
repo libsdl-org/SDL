@@ -49,10 +49,25 @@ static int SDLCALL stdlib_strlcpy(void *arg)
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
     SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int)SDL_strlen(text), (int)result);
 
-    result = SDL_strlcpy(text, "foo", 2);
-    expected = "f";
+    SDL_memcpy(text, "ABCD", 4);
+    result = SDL_strlcpy(text + 1, "foo", 0);
+    expected = "ABCD";
+    SDLTest_AssertPass("Call to SDL_strlcpy(\"foo\") with buffer size 0");
+    SDLTest_AssertCheck(SDL_memcmp(text, expected, 4) == 0, "Check buffer unchanged");
+    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", (int)result);
+    SDL_memcpy(text, "ABCD", 4);
+    result = SDL_strlcpy(text + 1, "foo", 1);
+    expected = "A\0CD";
+    SDLTest_AssertPass("Call to SDL_strlcpy(\"foo\") with buffer size 1");
+    SDLTest_AssertCheck(text[1] == '\0', "Check text is null-terminated");
+    SDLTest_AssertCheck(SDL_memcmp(text, expected, 4) == 0, "Check text and guard bytes");
+    SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", (int)result);
+    SDL_memcpy(text, "ABCD", 4);
+    result = SDL_strlcpy(text + 1, "foo", 2);
+    expected = "Af\0D";
     SDLTest_AssertPass("Call to SDL_strlcpy(\"foo\") with buffer size 2");
-    SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
+    SDLTest_AssertCheck(text[2] == '\0', "Check text is null-terminated");
+    SDLTest_AssertCheck(SDL_memcmp(text, expected, 4) == 0, "Check text and guard bytes");
     SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", (int)result);
 
     return TEST_COMPLETED;
