@@ -229,6 +229,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case SDL_FLYDIGI_APEX4:
         // The Apex 4 controller has sensors, but they're only reported when gyro mouse is enabled
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 800.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         HIDAPI_SetDeviceName(device, "Flydigi Apex 4");
         break;
     case SDL_FLYDIGI_APEX5:
@@ -804,12 +807,12 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
         // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
         // As result, roll has a different scaling factor than pitch and yaw.
         // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
-        const float flPitchAndYawScale = DEG2RAD(72000.0f);
-        const float flRollScale = DEG2RAD(1200.0f);
+        const float flPitchAndYawScale = DEG2RAD(12750.0f) / INT16_MAX;
+        const float flRollScale = DEG2RAD(3500.0f) / INT16_MAX;
 
-        values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+        values[0] = LOAD16(data[26], data[27]) * flPitchAndYawScale;
+        values[1] = LOAD16(data[18], data[20]) * flPitchAndYawScale;
+        values[2] = -LOAD16(data[29], data[30]) * flRollScale;
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
