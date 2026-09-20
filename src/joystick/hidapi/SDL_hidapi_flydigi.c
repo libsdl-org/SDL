@@ -182,9 +182,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 134:
         controller_type = SDL_FLYDIGI_APEX5;
         break;
-    case 149://Apex6
-    case 150://Apex6 Pro
-    case 152://Apex 6 Pro Phantom Blade Zero
+    case 149: //Apex6
+    case 150: //Apex6 Pro
+    case 152: //Apex 6 Pro Phantom Blade Zero
         controller_type = SDL_FLYDIGI_APEX6;
         break;
     default:
