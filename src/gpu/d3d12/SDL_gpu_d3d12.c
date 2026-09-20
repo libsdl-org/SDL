@@ -9095,7 +9095,7 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
     }
 
     SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat *)SDL_calloc((size_t)num_found_formats + 1, sizeof(SDL_GPUTextureFormat));
-    memcpy(retval, sdl_formats, sizeof(SDL_GPUTextureFormat) * num_found_formats); // Copy the translated formats
+    SDL_memcpy(retval, sdl_formats, sizeof(SDL_GPUTextureFormat) * num_found_formats); // Copy the translated formats
     retval[num_found_formats] = SDL_GPU_TEXTUREFORMAT_INVALID; // Add a termination for good measure
 
     *num_formats = num_found_formats;
