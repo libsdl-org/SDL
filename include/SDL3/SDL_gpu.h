@@ -2616,6 +2616,10 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * Driver Branch: promo490_3_Google
  * ```
  *
+ * `SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER`: Contains the maximum number of
+ * views that can be used with `SDL_BeginMultiViewGPURenderPass`. If multiview
+ * rendering is not available, this will be set to 1.
+ *
  * \param device a GPU context to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.

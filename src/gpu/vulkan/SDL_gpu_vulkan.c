@@ -68,7 +68,7 @@ typedef struct VulkanExtensions
     Uint8 MSFT_layered_driver;
     // Only required for decoding HDR ASTC textures
     Uint8 EXT_texture_compression_astc_hdr;
-    // Core since 1.1
+    // Core since 1.1, max views defaults to 1 if not available
     Uint8 KHR_multiview;
 } VulkanExtensions;
 
@@ -1190,6 +1190,7 @@ struct VulkanRenderer
     bool supportsPortabilityEnumeration;
     bool supportsFillModeNonSolid;
     bool supportsMultiDrawIndirect;
+    bool supportsMultiview;
 
     VulkanMemoryAllocator *memoryAllocator;
     VkPhysicalDeviceMemoryProperties memoryProperties;
@@ -11412,6 +11413,7 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     bool *supportsColorspace,
     bool *supportsPhysicalDeviceProperties2,
     bool *supportsPortabilityEnumeration,
+    bool *supportsMultiview,
     int *firstUnsupportedExtensionIndex)
 {
     Uint32 extensionCount, i;
@@ -11461,6 +11463,12 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     // Only needed for MoltenVK!
     *supportsPortabilityEnumeration = SupportsInstanceExtension(
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+        availableExtensions,
+        extensionCount);
+
+    // Optional, if not available then max view count will be 1
+    *supportsMultiview = SupportsInstanceExtension(
+        VK_KHR_MULTIVIEW_EXTENSION_NAME,
         availableExtensions,
         extensionCount);
 
@@ -12097,6 +12105,7 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
             &renderer->supportsColorspace,
             &renderer->supportsPhysicalDeviceProperties2,
             &renderer->supportsPortabilityEnumeration,
+            &renderer->supportsMultiview,
             &firstUnsupportedExtensionIndex)) {
         if (renderer->debugMode) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU,
@@ -12620,7 +12629,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->physicalDeviceProperties.pNext =
             &renderer->physicalDeviceDriverProperties;
 
-        if (renderer->supports.KHR_multiview) {
+        if (renderer->supportsMultiview) {
             renderer->physicalDeviceProperties.pNext = &renderer->multiviewProperties;
             renderer->multiviewProperties.sType =
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
@@ -13602,17 +13611,14 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         }
     }
 
-    if (renderer->supports.KHR_multiview) {
-        SDL_SetNumberProperty(
-            renderer->props,
-            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
-            renderer->multiviewProperties.maxMultiviewViewCount);
-    } else {
-        SDL_SetNumberProperty(
-            renderer->props,
-            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
-            1);
+    if (!renderer->supportsMultiview) {
+        renderer->multiviewProperties.maxMultiviewViewCount = 1;
     }
+
+    SDL_SetNumberProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+        renderer->multiviewProperties.maxMultiviewViewCount);
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(renderer, &features)) {
         SET_STRING_ERROR("Failed to create logical device!");
