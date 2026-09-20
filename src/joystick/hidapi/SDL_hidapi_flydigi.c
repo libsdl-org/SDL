@@ -449,16 +449,16 @@ static void HIDAPI_DriverFlydigi_HandleInfoResponse(SDL_Joystick *joystick, SDL_
     switch (status) {
     case 0:
         state = SDL_POWERSTATE_ON_BATTERY;
-        if(ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6){
-             percent = level * 10;
+        if (ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6) {
+            percent = level * 10;
         } else {
             percent = level * 20;
         }
         break;
     case 1:
         state = SDL_POWERSTATE_CHARGING;
-        if(ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6){
-             percent = level * 10;
+        if (ctx->device->guid.data[15] == SDL_FLYDIGI_APEX6) {
+            percent = level * 10;
         } else {
             percent = level * 20;
         }

@@ -1301,7 +1301,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                     SDL_strlcat(mapping_string, "misc4:b17,misc5:b18,misc6:b19", sizeof(mapping_string));
                 }
             } else if (guid.data[15] == SDL_FLYDIGI_APEX5 || guid.data[15] == SDL_FLYDIGI_APEX6) {
-                // Apex 5 has additional shoulder macro buttons
+                // Apex 5 and Apex 6 have additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
         } else if (SDL_IsJoystickGameSirController(vendor, product) &&
