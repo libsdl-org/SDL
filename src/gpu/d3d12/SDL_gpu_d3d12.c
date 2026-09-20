@@ -4499,11 +4499,7 @@ static void D3D12_BeginRenderPass(
 
     if (viewCount != 0) {
         // TODO
-        Uint32 mask = 0;
-        for (Uint32 i = 0; i < viewCount; i++) {
-            mask |= 1 << i;
-        }
-        ID3D12GraphicsCommandList_SetViewInstanceMask(mask);
+        ID3D12GraphicsCommandList_SetViewInstanceMask((1u << viewCount) - 1);
     }
 
     // Set sensible default states

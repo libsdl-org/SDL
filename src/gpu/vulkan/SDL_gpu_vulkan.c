@@ -8115,9 +8115,7 @@ static void VULKAN_BeginRenderPass(
     VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
 
     if (viewCount != 0) {
-        for (i = 0; i < viewCount; i++) {
-            viewMask |= 1 << i;
-        }
+        viewMask = (1u << viewCount) - 1;
 
         multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
         multiViewInfo.pNext = NULL;

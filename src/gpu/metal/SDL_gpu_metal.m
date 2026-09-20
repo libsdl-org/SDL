@@ -2210,13 +2210,15 @@ static void METAL_INTERNAL_ReturnUniformBufferToPool(
     uniformBuffer->drawOffset = 0;
 }
 
-static void METAL_SetVertexAmplification(SDL_GPUCommandBuffer *commandBuffer)
+static void METAL_SetVertexAmplificationCount(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint32 viewCount)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
 
         // TODO
-        // [metalCommandBuffer->renderEncoder setVertexAmplificationCount];
+        [metalCommandBuffer->renderEncoder setVertexAmplificationCount:viewCount];
     }
 }
 
@@ -2392,7 +2394,7 @@ static void METAL_BeginRenderPass(
 
         if (viewCount != 0) {
             // TODO
-            METAL_SetVertexAmplification(commandBuffer);
+            METAL_SetVertexAmplificationCount(commandBuffer, viewCount);
         }
 
         // Set sensible default states
