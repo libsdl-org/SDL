@@ -266,7 +266,7 @@ UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
     if (@available(iOS 27.0, *)) {
         UIWindowScene *windowScene = UIKit_GetActiveWindowScene();
         if (windowScene != nil) {
-            return windowScene.interfaceOrientation;
+            return windowScene.effectiveGeometry.interfaceOrientation;
         }
         return UIInterfaceOrientationUnknown;
     }
