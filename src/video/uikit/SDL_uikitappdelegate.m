@@ -67,7 +67,7 @@ int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void *reserve
 // Load a launch image using the old UILaunchImageFile-era naming rules.
 static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
-    UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+    UIInterfaceOrientation curorient = UIKit_GetInterfaceOrientation();
     UIUserInterfaceIdiom idiom = [UIDevice currentDevice].userInterfaceIdiom;
     UIImage *image = nil;
 
@@ -207,7 +207,7 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
-        UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
+        UIInterfaceOrientation curorient = UIKit_GetInterfaceOrientation();
 
         // We always want portrait-oriented size, to match UILaunchImageSize.
         if (screenw > screenh) {
@@ -418,6 +418,19 @@ API_AVAILABLE(ios(13.0))
     SDL_SetMainReady();
     [self performSelector:@selector(postFinishLaunch) withObject:nil afterDelay:0.0];
 }
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 270000
+- (void)windowScene:(UIWindowScene *)windowScene didUpdateEffectiveGeometry:(UIWindowSceneGeometry *)previousEffectiveGeometry API_AVAILABLE(ios(26.0))
+{
+    if (@available(iOS 27.0, *)) {
+        const bool orientationchanged = (windowScene.effectiveGeometry.interfaceOrientation != previousEffectiveGeometry.interfaceOrientation);
+        if (orientationchanged) {
+            SDL_OnApplicationDidChangeStatusBarOrientation();
+        }
+    }
+}
+
+#endif
 
 - (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
 {
