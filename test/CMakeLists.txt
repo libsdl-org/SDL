@@ -373,6 +373,7 @@ add_sdl_test_executable(testhittesting SOURCES testhittesting.c NAME83 hittest)
 add_sdl_test_executable(testdraw SOURCES testdraw.c NAME83 draw)
 add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c NAME83 drawches)
 add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c NAME83 dropfile)
+add_sdl_test_executable(testlocation SOURCES testlocation.c)
 add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c NAME83 error)
 add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARGS 0 10 20 40 80 160 320 640 SOURCES testsymbols.c NAME83 symbols)
 
