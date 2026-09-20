@@ -8891,6 +8891,7 @@ static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
 static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *renderer)
 {
     ID3D12InfoQueue1 *infoQueue = NULL;
+    DWORD callbackCookie = 0;
     HRESULT res;
 
     res = ID3D12Device_QueryInterface(
@@ -8906,7 +8907,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D12_INTERNAL_OnD3D12DebugInfoMsg,
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
-        NULL);
+        &callbackCookie);
 
     ID3D12InfoQueue1_Release(infoQueue);
 }
