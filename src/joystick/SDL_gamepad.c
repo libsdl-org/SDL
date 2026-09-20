@@ -1290,8 +1290,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                     // Vader 5 has additional shoulder macro buttons and a circle button
                     SDL_strlcat(mapping_string, "misc4:b17,misc5:b18,misc6:b19", sizeof(mapping_string));
                 }
-            } else if (guid.data[15] == SDL_FLYDIGI_APEX5) {
-                // Apex 5 has additional shoulder macro buttons
+            } else if (guid.data[15] == SDL_FLYDIGI_APEX5 || guid.data[15] == SDL_FLYDIGI_APEX6) {
+                // Apex 5 and Apex 6 have additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {

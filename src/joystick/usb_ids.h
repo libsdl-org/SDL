@@ -93,6 +93,7 @@
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3            0x1846
 #define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
+#define USB_PRODUCT_FLYDIGI_V2_APEX6                      0x2502
 #define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
 #define USB_PRODUCT_HARMONIX_WII_RB1_GUITAR               0x0004
 #define USB_PRODUCT_HARMONIX_WII_RB1_DRUMS                0x0005
