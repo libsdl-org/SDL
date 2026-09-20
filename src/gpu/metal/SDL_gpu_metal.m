@@ -3833,7 +3833,7 @@ static void METAL_ReleaseWindow(
 
         windowData->layer = nil;
         windowData->drawable = nil;
-        windowData->texture.hanlde = nil;
+        windowData->texture.handle = nil;
 
         SDL_free(windowData);
 
