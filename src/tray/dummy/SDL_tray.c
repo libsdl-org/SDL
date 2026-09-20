@@ -120,6 +120,10 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 {
 }
 
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+}
+
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
 {
 }

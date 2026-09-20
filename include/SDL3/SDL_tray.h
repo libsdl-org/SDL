@@ -98,6 +98,20 @@ typedef Uint32 SDL_TrayEntryFlags;
 typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
 /**
+ * A callback that is invoked when a tray menu is shown or hidden.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param menu the tray menu that was shown or hidden.
+ * \param shown true if the menu is shown, false if it is hidden.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayMenuShownCallback
+ */
+typedef void (SDLCALL *SDL_TrayMenuShownCallback)(void *userdata, SDL_TrayMenu *menu, bool shown);
+
+/**
  * A callback that is invoked when the tray icon is clicked.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
@@ -514,6 +528,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
  * \sa SDL_InsertTrayEntryAt
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata);
+
+/**
+ * Sets a callback to be invoked when the menu is shown or hidden.
+ *
+ * \param menu the menu to be updated.
+ * \param callback a callback to be invoked when the menu is shown or hidden.
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTraySubmenu
+ * \sa SDL_TrayMenuShownCallback
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata);
 
 /**
  * Simulate a click on a tray entry.

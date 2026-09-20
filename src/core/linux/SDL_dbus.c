@@ -1332,18 +1332,10 @@ static DBusHandlerResult MenuHandleEvent(SDL_DBusContext *ctx, SDL_ListNode *men
     ctx->message_iter_next(&args);
     ctx->message_iter_get_basic(&args, &event_id);
 
-    item = NULL;
-    dbus_item = NULL;
-    if (!SDL_strcmp(event_id, "clicked")) {
-        dbus_item = MenuGetItemById(menu, id);
-        item = (SDL_MenuItem *)dbus_item;
-    }
-
-    reply = ctx->message_new_method_return(msg);
-    ctx->connection_send(conn, reply, NULL);
-    ctx->message_unref(reply);
-
-    if (item) {
+    dbus_item = MenuGetItemById(menu, id);
+    item = (SDL_MenuItem *)dbus_item;
+        
+    if (item && !SDL_strcmp(event_id, "clicked")) {
         if (item->type == SDL_MENU_ITEM_TYPE_CHECKBOX) {
             item->flags ^= SDL_MENU_ITEM_FLAGS_CHECKED;
             SDL_DBus_UpdateMenu(ctx, conn, menu, NULL, NULL, NULL, SDL_DBUS_UPDATE_MENU_FLAG_DO_NOT_REPLACE);
@@ -1353,6 +1345,26 @@ static DBusHandlerResult MenuHandleEvent(SDL_DBusContext *ctx, SDL_ListNode *men
             item->cb(item, item->cb_data);
         }
     }
+
+    if (!item) {
+        item = menu->entry;
+    }
+    
+    if (!SDL_strcmp(event_id, "opened")) {
+        if (item->visibility_notify) {
+            item->visibility_notify(menu, true, item->visibility_notify_udata, item->visibility_notify_udata2, item->visibility_notify_udata3);
+        }
+    }
+        
+    if (!SDL_strcmp(event_id, "closed")) {
+        if (item->visibility_notify) {
+            item->visibility_notify(menu, false, item->visibility_notify_udata, item->visibility_notify_udata2, item->visibility_notify_udata3);
+        }
+    }
+
+    reply = ctx->message_new_method_return(msg);
+    ctx->connection_send(conn, reply, NULL);
+    ctx->message_unref(reply);
 
     return DBUS_HANDLER_RESULT_HANDLED;
 }
@@ -1376,24 +1388,38 @@ static DBusHandlerResult MenuHandleEventGroup(SDL_DBusContext *ctx, SDL_ListNode
                 ctx->message_iter_get_basic(&struct_iter, &id);
                 ctx->message_iter_next(&struct_iter);
                 if (ctx->message_iter_get_arg_type(&struct_iter) == DBUS_TYPE_STRING) {
+                    SDL_DBusMenuItem *dbus_item;
+                    SDL_MenuItem *item;
+
+                    dbus_item = MenuGetItemById(menu, id);
+                    item = (SDL_MenuItem *)dbus_item;
+
                     ctx->message_iter_get_basic(&struct_iter, &event_id);
 
-                    if (!SDL_strcmp(event_id, "clicked")) {
-                        SDL_DBusMenuItem *dbus_item;
-                        SDL_MenuItem *item;
+                    if (item && !SDL_strcmp(event_id, "clicked")) {
+                        if (item->type == SDL_MENU_ITEM_TYPE_CHECKBOX) {
+                            item->flags ^= SDL_MENU_ITEM_FLAGS_CHECKED;
+                            SDL_DBus_UpdateMenu(ctx, conn, menu, NULL, NULL, NULL, SDL_DBUS_UPDATE_MENU_FLAG_DO_NOT_REPLACE);
+                        }
 
-                        dbus_item = MenuGetItemById(menu, id);
-                        item = (SDL_MenuItem *)dbus_item;
-
-                        if (item) {
-                            if (item->type == SDL_MENU_ITEM_TYPE_CHECKBOX) {
-                                item->flags ^= SDL_MENU_ITEM_FLAGS_CHECKED;
-                                SDL_DBus_UpdateMenu(ctx, conn, menu, NULL, NULL, NULL, SDL_DBUS_UPDATE_MENU_FLAG_DO_NOT_REPLACE);
-                            }
-
-                            if (item->cb) {
-                                item->cb(item, item->cb_data);
-                            }
+                        if (item->cb) {
+                            item->cb(item, item->cb_data);
+                        }
+                    }
+                
+                    if (!item) {
+                        item = menu->entry;
+                    }
+                    
+                    if (!SDL_strcmp(event_id, "opened")) {
+                        if (item->visibility_notify) {
+                            item->visibility_notify(menu, true, item->visibility_notify_udata, item->visibility_notify_udata2, item->visibility_notify_udata3);
+                        }
+                    }
+                        
+                    if (!SDL_strcmp(event_id, "closed")) {
+                        if (item->visibility_notify) {
+                            item->visibility_notify(menu, false, item->visibility_notify_udata, item->visibility_notify_udata2, item->visibility_notify_udata3);
                         }
                     }
                 }

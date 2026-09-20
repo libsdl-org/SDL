@@ -44,6 +44,9 @@ struct SDL_TrayMenu {
 
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
+
+    void *userdata;
+    SDL_TrayMenuShownCallback callback;
 };
 
 struct SDL_TrayEntry {
@@ -105,8 +108,30 @@ static SDL_TrayEntry *find_entry_with_id(SDL_Tray *tray, UINT_PTR id)
     return find_entry_in_menu(tray->menu, id);
 }
 
+static SDL_TrayMenu *find_menu_from_hmenu(SDL_TrayMenu *menu, HMENU hMenu)
+{
+    if (menu->hMenu == hMenu) {
+        return menu;
+    }
+
+    for (int i = 0; i < menu->nEntries; i++) {
+        SDL_TrayEntry *entry = menu->entries[i];
+
+        if (entry->submenu) {
+            SDL_TrayMenu *m = find_menu_from_hmenu(entry->submenu, hMenu);
+
+            if (m) {
+                return m;
+            }
+        }
+    }
+
+    return NULL;
+}
+
 LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     SDL_Tray *tray = (SDL_Tray *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    SDL_TrayMenu *menu = NULL;
     SDL_TrayEntry *entry = NULL;
 
     if (!tray) {
@@ -173,6 +198,30 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_SETTINGCHANGE:
             if (wParam == 0 && lParam != 0 && SDL_wcscmp((wchar_t *)lParam, L"ImmersiveColorSet") == 0) {
                 WIN_UpdateDarkModeForHWND(hwnd);
+            }
+            break;
+
+        case WM_INITMENUPOPUP:
+            if (!tray->menu) {
+                break;
+            }
+
+            menu = find_menu_from_hmenu(tray->menu, (HMENU) wParam);
+
+            if (menu && menu->callback) {
+                menu->callback(menu->userdata, menu, true);
+            }
+            break;
+
+        case WM_UNINITMENUPOPUP:
+            if (!tray->menu) {
+                break;
+            }
+
+            menu = find_menu_from_hmenu(tray->menu, (HMENU) wParam);
+
+            if (menu && menu->callback) {
+                menu->callback(menu->userdata, menu, false);
             }
             break;
 
@@ -733,6 +782,16 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 
     entry->callback = callback;
     entry->userdata = userdata;
+}
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    if (!menu) {
+        return;
+    }
+
+    menu->callback = callback;
+    menu->userdata = userdata;
 }
 
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
