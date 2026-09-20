@@ -2838,7 +2838,6 @@ elseif(APPLE)
         "${SDL3_SOURCE_DIR}/src/joystick/darwin/*.c"
         "${SDL3_SOURCE_DIR}/src/joystick/darwin/*.h"
       )
-      set_property(SOURCE ${MFI_JOYSTICK_SOURCES} APPEND_STRING PROPERTY COMPILE_FLAGS " -fobjc-weak")
       check_objc_source_compiles("
           #include <AvailabilityMacros.h>
           #include <TargetConditionals.h>
