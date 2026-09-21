@@ -1313,7 +1313,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             }
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
-        } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+        } else if (vendor == USB_VENDOR_8BITDO &&
+                   (product == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
+                    product == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G)) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,", sizeof(mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
