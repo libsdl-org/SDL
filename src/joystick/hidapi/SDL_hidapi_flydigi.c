@@ -74,6 +74,7 @@ enum
 #define FLYDIGI_V2_MAGIC1               0x5A
 #define FLYDIGI_V2_MAGIC2               0xA5
 #define FLYDIGI_V2_GET_INFO_COMMAND     0x01
+#define FLYDIGI_V2_CHECK_ARCHITECTURE_COMMAND 0x07
 #define FLYDIGI_V2_GET_STATUS_COMMAND   0x10
 #define FLYDIGI_V2_SET_STATUS_COMMAND   0x11
 #define FLYDIGI_V2_HAPTIC_COMMAND       0x12
@@ -422,6 +423,23 @@ static bool GetReply(SDL_HIDAPI_Device* device, Uint8 command, Uint8* data, size
     return false;
 }
 
+static bool SDL_HIDAPI_Flydigi_CheckNewArchitectureRequest(SDL_HIDAPI_Device *device)
+{
+    const Uint8 cmd[] = {
+        FLYDIGI_V2_CMD_REPORT_ID,
+        FLYDIGI_V2_MAGIC1,
+        FLYDIGI_V2_MAGIC2,
+        FLYDIGI_V2_CHECK_ARCHITECTURE_COMMAND,
+        0,
+        0
+    };
+
+    if (HIDAPI_DriverFlydigi_WritePacket(device, cmd, sizeof(cmd)) < 0) {
+        return SDL_SetError("Couldn't query controller info");
+    }
+    return true;
+}
+
 static bool SDL_HIDAPI_Flydigi_SendInfoRequest(SDL_HIDAPI_Device *device)
 {
     const Uint8 cmd[] = {
@@ -530,7 +548,22 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
+    /**Check whether is the new architecture */
+    Uint8 versionData[USB_PACKET_LENGTH];
+    Uint8 isNewArchitecture = 0;
+    if (!SDL_HIDAPI_Flydigi_CheckNewArchitectureRequest(device)) {
+        return false;
+    }
+    if (!GetReply(device, FLYDIGI_V2_CHECK_ARCHITECTURE_COMMAND, versionData, sizeof(versionData))) {
+        return SDL_SetError("Couldn't get controller info");
+    }
+
+    if (versionData[3] == 1 && versionData[4] == 0) {
+        isNewArchitecture = 1;
+    }
+
     Uint8 data[USB_PACKET_LENGTH];
+
     if (!SDL_HIDAPI_Flydigi_SendInfoRequest(device)) {
         return false;
     }
@@ -560,13 +593,24 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     }
 
     switch (data[6]) {
+    case 0:
+        if (isNewArchitecture == 1){
+            ctx->wireless = false;
+        }
+        break;
     case 1:
         // Wired connection
-        ctx->wireless = false;
+        if (isNewArchitecture == 1){
+            ctx->wireless = true;
+        } else {
+            ctx->wireless = false;
+        }
         break;
     case 2:
         // Wireless connection
-        ctx->wireless = true;
+        if (isNewArchitecture != 1){
+            ctx->wireless = true;
+        }
         break;
     default:
         break;
