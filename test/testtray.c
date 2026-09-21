@@ -52,6 +52,21 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
+static void SDLCALL scroll_callback(void *userdata, SDL_Tray *tray, Sint32 delta, SDL_TrayScrollFlags flags)
+{
+	const char *axis_string;
+	
+	if (flags & SDL_TRAYSCROLL_VERTICAL) {
+		axis_string = "vertical";
+	} else if (flags & SDL_TRAYSCROLL_HORIZONTAL) {
+		axis_string = "horizontal";
+	} else {
+		axis_string = "unknown";
+	}
+	
+    SDL_Log("Got %s scroll event with delta %d on example tray.", axis_string, delta);
+}
+
 static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray)
 {
     SDL_Log("Left click on example tray - menu shown");
@@ -626,6 +641,7 @@ int main(int argc, char **argv)
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, tray2_leftclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, tray2_rightclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, tray2_middleclick);
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, scroll_callback);
     SDL_Tray *tray2 = SDL_CreateTrayWithProperties(tray2_props);
     SDL_DestroyProperties(tray2_props);
 

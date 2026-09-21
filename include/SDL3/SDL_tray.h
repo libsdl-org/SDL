@@ -85,6 +85,18 @@ typedef Uint32 SDL_TrayEntryFlags;
 #define SDL_TRAYENTRY_CHECKED     0x40000000u /**< Make the entry checked. This is valid only for checkboxes. Optional. */
 
 /**
+ * Flags for tray scroll events.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayWithProperties
+ */
+typedef Uint32 SDL_TrayScrollFlags;
+
+#define SDL_TRAYSCROLL_VERTICAL   0x00000001u /**< Vertical scroll event. */
+#define SDL_TRAYSCROLL_HORIZONTAL 0x00000002u /**< Horizontal scroll event. */
+
+/**
  * A callback that is invoked when a tray entry is selected.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
@@ -112,6 +124,22 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * \sa SDL_CreateTrayWithProperties
  */
 typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
+
+/**
+ * A callback that is invoked when the mouse wheel is scrolled while 
+ * the cursor is over the tray icon.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked. May be NULL.
+ * \param tray the tray icon on which the scrolling took place.
+ * \param delta the scrolled distance (negative for down/right, positive for up/left).
+ * \param flags flags indicating event details, including the scroll orientation (axis).
+ * 
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayWithProperties
+ */
+typedef void (SDLCALL *SDL_TrayScrollCallback)(void *userdata, SDL_Tray *tray, Sint32 delta, SDL_TrayScrollFlags flags);
 
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.
@@ -173,7 +201,11 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
  *   Not supported on all platforms. May be NULL.
- *
+ * - `SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER`: an
+ *   SDL_TrayScrollCallback to be invoked when mouse scrollling occurs while
+ *   the mouse is hovering over the tray icon.
+ *   Not supported on all platforms. May be NULL.
+ * 
  * \param props the properties to use.
  * \returns The newly created system tray icon.
  *
@@ -194,6 +226,7 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTrayWithProperties(SDL_Properti
 #define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
 #define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
 #define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
+#define SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER      "SDL.tray.create.scroll_callback"
 
 /**
  * Updates the system tray icon's icon.
