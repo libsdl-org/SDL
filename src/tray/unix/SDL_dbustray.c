@@ -49,6 +49,7 @@ typedef struct SDL_TrayDBus
     SDL_TrayClickCallback l_cb;
     SDL_TrayClickCallback r_cb;
     SDL_TrayClickCallback m_cb;
+    SDL_TrayScrollCallback scroll_cb;
     void *udata;
 
     bool block;
@@ -388,7 +389,23 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->error_init(&err);
         driver->dbus->message_get_args(msg, &err, DBUS_TYPE_INT32, &delta, DBUS_TYPE_STRING, &orientation, DBUS_TYPE_INVALID);
         if (!driver->dbus->error_is_set(&err)) {
-            /* Scroll callback support will come later :) */
+            SDL_TrayScrollFlags scroll_flags;
+            
+            /* Both the freedesktop draft pages and the XML introspection files in both KDE and Ayantana implementations of SNI show the scrolling orientation values being all lowercase. */
+            /* However, some desktops, at the very least MATE, seem to capitalize the first letter of the orientation string for some unknown reason... */
+            SDL_strlwr(orientation);
+            
+            if (!SDL_strcmp(orientation, "vertical")) {
+				scroll_flags = SDL_TRAYSCROLL_VERTICAL;
+			} else if (!SDL_strcmp(orientation, "horizontal")) {
+				scroll_flags = SDL_TRAYSCROLL_HORIZONTAL;
+			} else {
+				scroll_flags = 0;
+			}
+			
+			if (tray_dbus->scroll_cb) {
+				tray_dbus->scroll_cb(tray_dbus->udata, tray, delta, scroll_flags);
+			}
         } else {
             driver->dbus->error_free(&err);
         }
@@ -515,6 +532,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     tray_dbus->l_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray_dbus->r_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray_dbus->m_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->scroll_cb = (SDL_TrayScrollCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, NULL);
     tray_dbus->udata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
 
     return tray;
