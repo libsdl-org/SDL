@@ -548,9 +548,9 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
-    /**Check whether is the new architecture */
+    // Check whether is the new architecture
     Uint8 versionData[USB_PACKET_LENGTH];
-    Uint8 isNewArchitecture = 0;
+    bool isNewArchitecture = false;
     if (!SDL_HIDAPI_Flydigi_CheckNewArchitectureRequest(device)) {
         return false;
     }
@@ -559,7 +559,7 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     }
 
     if (versionData[3] == 1 && versionData[4] == 0) {
-        isNewArchitecture = 1;
+        isNewArchitecture = true;
     }
 
     Uint8 data[USB_PACKET_LENGTH];
@@ -594,13 +594,13 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
 
     switch (data[6]) {
     case 0:
-        if (isNewArchitecture == 1){
+        if (isNewArchitecture) {
             ctx->wireless = false;
         }
         break;
     case 1:
         // Wired connection
-        if (isNewArchitecture == 1){
+        if (isNewArchitecture) {
             ctx->wireless = true;
         } else {
             ctx->wireless = false;
@@ -608,7 +608,7 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
         break;
     case 2:
         // Wireless connection
-        if (isNewArchitecture != 1){
+        if (!isNewArchitecture) {
             ctx->wireless = true;
         }
         break;
