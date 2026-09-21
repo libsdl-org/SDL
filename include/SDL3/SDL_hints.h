@@ -2840,8 +2840,8 @@ extern "C" {
 /**
  * A variable controlling whether the GCMouse API will be used on macOS.
  *
- * On supported versions of macOS, GCMouse is usually a better way to
- * read mouse input, but may cause problems in some scenarios (remote control
+ * On supported versions of macOS, GCMouse is usually a better way to read
+ * mouse input, but may cause problems in some scenarios (remote control
  * software that wants to send non-GCMouse input events, etc).
  *
  * When GCMouse is disabled, SDL will use standard Cocoa mouse events.

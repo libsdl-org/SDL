@@ -853,7 +853,7 @@ Certificate Request:
                 NIST CURVE: P-256
         Attributes:
             Requested Extensions:
-                X509v3 Subject Key Identifier: 
+                X509v3 Subject Key Identifier:
                     [hex values for key identifier are here]
     Signature Algorithm: ecdsa-with-SHA256
     Signature Value:

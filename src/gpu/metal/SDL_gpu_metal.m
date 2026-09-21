@@ -3837,6 +3837,10 @@ static void METAL_ReleaseWindow(
         }
         SDL_UnlockMutex(renderer->windowLock);
 
+        windowData->layer = nil;
+        windowData->drawable = nil;
+        windowData->texture.handle = nil;
+
         SDL_free(windowData);
 
         SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);

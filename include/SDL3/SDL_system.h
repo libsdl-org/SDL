@@ -617,6 +617,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
 #endif /* SDL_PLATFORM_ANDROID */
 
 #ifdef SDL_PLATFORM_OPENHARMONY
+
 /**
  * Query OpenHarmony API level of the current device.
  *
@@ -645,8 +646,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
  * This path is unique to your application and cannot be written to by other
  * applications.
  *
- * Your internal storage path is typically:
- * `/data/storage/el2/base/files`.
+ * Your internal storage path is typically: `/data/storage/el2/base/files`.
  *
  * \returns the path used for internal storage or NULL on failure; call
  *          SDL_GetError() for more information.
@@ -659,7 +659,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetOpenHarmonyInternalStoragePath(v
  * Callback that presents SDL_RequestOpenHarmonyPermission() results.
  *
  * \param userdata an app-controlled pointer that is passed to the callback.
- * \param permission the OpenHarmony-specific permission name that was requested.
+ * \param permission the OpenHarmony-specific permission name that was
+ *                   requested.
  * \param granted true if permission is granted, false if denied.
  *
  * \since This datatype is available since SDL 3.6.0.
