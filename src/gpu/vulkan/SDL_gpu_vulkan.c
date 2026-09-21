@@ -12588,6 +12588,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     VkPhysicalDeviceFeatures haveDeviceFeatures;
     VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures;
     const char **deviceExtensions;
+    Uint32 extensionCount, i;
 
     VkDeviceQueueCreateInfo queueCreateInfo;
     float queuePriority = 1.0f;
@@ -12648,12 +12649,21 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
     deviceCreateInfo.enabledLayerCount = 0;
     deviceCreateInfo.ppEnabledLayerNames = NULL;
-    deviceCreateInfo.enabledExtensionCount = GetDeviceExtensionCount(
+
+    // Create the list of device extensions to enable (internal extension + opt-in extensions)
+    extensionCount = GetDeviceExtensionCount(
         &renderer->supports);
+
     deviceExtensions = SDL_stack_alloc(
         const char *,
-        deviceCreateInfo.enabledExtensionCount);
+        extensionCount + features->additionalDeviceExtensionCount);
+
     CreateDeviceExtensionArray(&renderer->supports, deviceExtensions);
+    for (i = 0; i < features->additionalDeviceExtensionCount; ++i) {
+        deviceExtensions[extensionCount++] = features->additionalDeviceExtensionNames[i];
+    }
+
+    deviceCreateInfo.enabledExtensionCount = extensionCount;
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
     VkPhysicalDeviceFeatures2 featureList;
