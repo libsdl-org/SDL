@@ -1633,7 +1633,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         int source = event.getSource();
         InputDevice device = InputDevice.getDevice(deviceId);
 
-        if (event.flags & KeyEvent.FLAG_FALLBACK) {
+        if (event.getFlags() & KeyEvent.FLAG_FALLBACK) {
             // If this is a fallback event -- e.g., the mouse is being turned into dpad navigational keys 
             // just eat it, since that's almost never what we actually want to have happen. This will 
             // happen with Logitech mice on Amazon Fire TV devices and some Samsung devices.
