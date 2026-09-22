@@ -422,6 +422,7 @@ add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${
 add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c NAME83 gpufx)
 add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c NAME83 gpumsdf)
 add_sdl_test_executable(testgpu_spinning_cube_xr SOURCES testgpu_spinning_cube_xr.c NAME83 gpucubxr)
+add_sdl_test_executable(testgpu_spinning_cube_multiview SOURCES testgpu_spinning_cube_multiview.c NAME83 gpucubmv)
 
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
