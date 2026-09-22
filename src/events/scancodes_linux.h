@@ -158,7 +158,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 129, 0x081 */    SDL_SCANCODE_AGAIN,             // KEY_AGAIN
     /* 130, 0x082 */    SDL_SCANCODE_AC_PROPERTIES,     // KEY_PROPS
     /* 131, 0x083 */    SDL_SCANCODE_UNDO,              // KEY_UNDO
-    /* 132, 0x084 */    SDL_SCANCODE_UNKNOWN,           // KEY_FRONT
+    /* 132, 0x084 */    SDL_SCANCODE_FRONT,             // KEY_FRONT
     /* 133, 0x085 */    SDL_SCANCODE_COPY,              // KEY_COPY
     /* 134, 0x086 */    SDL_SCANCODE_AC_OPEN,           // KEY_OPEN
     /* 135, 0x087 */    SDL_SCANCODE_PASTE,             // KEY_PASTE
