@@ -450,6 +450,7 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
     MAKE_VIDPID(0x3297, 0x1969), // Moonlander MK1 Keyboard
     MAKE_VIDPID(0x3434, 0x0121), // Keychron Q3 System Control
+    MAKE_VIDPID(0x3434, 0x0163), // Keychron Q6 System Control
     MAKE_VIDPID(0x3434, 0x0211), // Keychron K1 Pro System Control
     MAKE_VIDPID(0x3434, 0x02a0), // Keychron K10 Pro System Control
     MAKE_VIDPID(0x3434, 0x0353), // Keychron V5 System Control
