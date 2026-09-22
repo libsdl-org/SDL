@@ -312,7 +312,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 129, 0x081 */   SDL_SCANCODE_AGAIN,              // Redo
     /* 130, 0x082 */   SDL_SCANCODE_UNKNOWN,            // SunProps
     /* 131, 0x083 */   SDL_SCANCODE_UNDO,               // Undo
-    /* 132, 0x084 */   SDL_SCANCODE_UNKNOWN,            // SunFront
+    /* 132, 0x084 */   SDL_SCANCODE_FRONT,              // SunFront
     /* 133, 0x085 */   SDL_SCANCODE_COPY,               // XF86Copy
     /* 134, 0x086 */   SDL_SCANCODE_UNKNOWN,            // SunOpen, XF86Open
     /* 135, 0x087 */   SDL_SCANCODE_PASTE,              // XF86Paste

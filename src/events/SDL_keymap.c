@@ -508,6 +508,8 @@ static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keym
         return SDLK_CRSEL;
     case SDL_SCANCODE_EXSEL:
         return SDLK_EXSEL;
+    case SDL_SCANCODE_FRONT:
+        return SDLK_FRONT;
     case SDL_SCANCODE_KP_00:
         return SDLK_KP_00;
     case SDL_SCANCODE_KP_000:
@@ -913,7 +915,7 @@ static const char *SDL_scancode_names[SDL_SCANCODE_COUNT] =
     /* 162 */ "Clear / Again",
     /* 163 */ "CrSel",
     /* 164 */ "ExSel",
-    /* 165 */ NULL,
+    /* 165 */ "Front",
     /* 166 */ NULL,
     /* 167 */ NULL,
     /* 168 */ NULL,
