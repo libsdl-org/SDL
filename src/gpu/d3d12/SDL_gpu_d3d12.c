@@ -916,7 +916,7 @@ struct D3D12Renderer
     ID3D12Debug *d3d12Debug;
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
     ID3D12InfoQueue *debugInfoQueue;
-    BOOL InfoQueueMessageCallbackUnsupported;
+    BOOL InfoQueueMessageCallbackSupported;
 #endif
     BOOL supportsTearing;
     SDL_SharedObject *d3d12_dll;
@@ -8914,7 +8914,6 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D_GUID(D3D_IID_ID3D12InfoQueue1),
         (void **)&infoQueue);
     if (FAILED(res)) {
-        renderer->InfoQueueMessageCallbackUnsupported = true;
         return;
     }
 
@@ -8924,8 +8923,8 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
         &callbackCookie);
-    if (FAILED(res)) {
-        renderer->InfoQueueMessageCallbackUnsupported = true;
+    if (!FAILED(res)) {
+        renderer->InfoQueueMessageCallbackSupported = true;
     }
 
     ID3D12InfoQueue1_Release(infoQueue);
@@ -8936,7 +8935,7 @@ static void D3D12_INTERNAL_DrainInfoQueueMessages(D3D12Renderer *renderer)
     ID3D12InfoQueue *infoQueue = renderer->debugInfoQueue;
     UINT64 count, i;
 
-    if (!renderer->InfoQueueMessageCallbackUnsupported || infoQueue == NULL) {
+    if (renderer->InfoQueueMessageCallbackSupported || infoQueue == NULL) {
         return;
     }
 
