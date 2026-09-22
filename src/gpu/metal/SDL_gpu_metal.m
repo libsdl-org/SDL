@@ -2217,8 +2217,9 @@ static void METAL_SetVertexAmplificationCount(
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
 
-        // TODO
-        [metalCommandBuffer->renderEncoder setVertexAmplificationCount:viewCount];
+        if (@available(macOS 26.0, iOS 26.0, tvOS 26.0, *)) {
+            [metalCommandBuffer->renderEncoder setVertexAmplificationCount:viewCount];
+        }
     }
 }
 
@@ -2286,7 +2287,7 @@ static void METAL_BeginRenderPass(
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
-    Uint32 viewMask)
+    Uint32 viewCount)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2393,7 +2394,7 @@ static void METAL_BeginRenderPass(
         }
 
         if (viewCount != 0) {
-            // TODO
+            // TODO: What to do when viewCount > maxVertexAmplificationCount?
             METAL_SetVertexAmplificationCount(commandBuffer, viewCount);
         }
 
@@ -4671,10 +4672,16 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Metal Device: %s", deviceName);
         }
 
+        int maxViewCount = 1;
+
+        if (@available(macOS 26.0, iOS 26.0, tvOS 26.0, *)) {
+            maxViewCount = device.maxVertexAmplificationCount;
+        }
+
         SDL_SetNumberProperty(
             renderer->props,
             SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
-            device.maxVertexAmplificationCount);
+            maxViewCount);
 
         // Remember debug mode
         renderer->debugMode = debugMode;
