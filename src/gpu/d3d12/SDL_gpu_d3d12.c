@@ -8923,7 +8923,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
         &callbackCookie);
-    if (!FAILED(res)) {
+    if (SUCCEEDED(res)) {
         renderer->InfoQueueMessageCallbackSupported = true;
     }
 
