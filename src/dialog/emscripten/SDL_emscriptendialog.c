@@ -118,7 +118,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                     FS.close(stream);
                     HEAP32[(c_fs_filepath_arr >> 2) + i] = c_fs_filepath;
                 }
-                _SDL_Emscripten_OnFileDialogComplete(callback, userdata, c_fs_filepath_arr, file_buffers.length);
+                _SDL_Emscripten_OnFileDialogComplete(callback, userdata, c_fs_filepath_arr, -1);
                 releaseFilepaths();
             }).catch(function() {
                 _SDL_Emscripten_OnFileDialogComplete(callback, userdata, 0, 0);
