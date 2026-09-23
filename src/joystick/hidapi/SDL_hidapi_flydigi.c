@@ -592,28 +592,32 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
         return SDL_SetError("Unsupported firmware version");
     }
 
-    switch (data[6]) {
-    case 0:
-        if (isNewArchitecture) {
+    if (isNewArchitecture) {
+        switch (data[6]) {
+        case 0:
+            // Wired connection
             ctx->wireless = false;
-        }
-        break;
-    case 1:
-        // Wired connection
-        if (isNewArchitecture) {
+            break;
+        case 1:
+            // Wireless connection
             ctx->wireless = true;
-        } else {
+            break;
+        default:
+            break;
+        }
+    } else {
+        switch (data[6]) {
+        case 1:
+            // Wired connection
             ctx->wireless = false;
-        }
-        break;
-    case 2:
-        // Wireless connection
-        if (!isNewArchitecture) {
+            break;
+        case 2:
+            // Wireless connection
             ctx->wireless = true;
+            break;
+        default:
+            break;
         }
-        break;
-    default:
-        break;
     }
     ctx->deviceID = data[5];
 
