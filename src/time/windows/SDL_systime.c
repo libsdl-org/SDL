@@ -119,6 +119,15 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        if (-rem_ns < 100) {
+            ticks -= 100;
+        }
+        rem_ns += SDL_NS_PER_SECOND;
+    }
+
     SDL_TimeToWindows(ticks, &low, &high);
     ft.dwLowDateTime = (DWORD)low;
     ft.dwHighDateTime = (DWORD)high;
@@ -144,7 +153,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
             dt->hour = st->wHour;
             dt->minute = st->wMinute;
             dt->second = st->wSecond;
-            dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+            dt->nanosecond = rem_ns;
             dt->day_of_week = st->wDayOfWeek;
 
             return true;

@@ -105,6 +105,14 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 
     const u32 res = sceRtcGetTickResolution();
     const u32 div = (SDL_NS_PER_SECOND / res);
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        if (-rem_ns < (int)div) {
+            ticks -= (int)div;
+        }
+        rem_ns += SDL_NS_PER_SECOND;
+    }
     const u64 sceTicks = (u64)((ticks / div) + (DELTA_EPOCH_0001_OFFSET * div));
 
     if (localTime) {

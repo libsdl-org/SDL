@@ -162,6 +162,12 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        ticks -= SDL_NS_PER_SECOND;
+        rem_ns += SDL_NS_PER_SECOND;
+    }
     const time_t tval = (time_t)SDL_NS_TO_SECONDS(ticks);
 
     if (localTime) {
@@ -185,7 +191,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         dt->hour = tm->tm_hour;
         dt->minute = tm->tm_min;
         dt->second = tm->tm_sec;
-        dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+        dt->nanosecond = rem_ns;
         dt->day_of_week = tm->tm_wday;
 
         /* tm_gmtoff wasn't formally standardized until POSIX.1-2024, but practically it has been available on desktop
