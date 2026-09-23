@@ -125,28 +125,51 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch (uMsg) {
         case WM_TRAYICON:
             {
-                bool show_menu = false;
+				POINT cursor_pos;
+                bool show_menu;
 
+				show_menu = false;
+				GetCursorPos(&cursor_pos);
+				
                 switch (LOWORD(lParam)) {
                     case WM_LBUTTONUP:
                         if (tray->left_click_callback) {
-                            show_menu = tray->left_click_callback(tray->userdata, tray);
-                        } else {
+                            show_menu = tray->left_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES |
+                                SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU |
+                                SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU
+                            );
+						} else {
                             show_menu = true;
                         }
                         break;
 
                     case WM_CONTEXTMENU:
                         if (tray->right_click_callback) {
-                            show_menu = tray->right_click_callback(tray->userdata, tray);
-                        } else {
+                            show_menu = tray->right_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES |
+                                SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU |
+                                SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU
+                            );
+						} else {
                             show_menu = true;
                         }
                         break;
 
                     case WM_MBUTTONUP:
                         if (tray->middle_click_callback) {
-                            tray->middle_click_callback(tray->userdata, tray);
+                            tray->middle_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES
+                            );
                         }
                         break;
                 }

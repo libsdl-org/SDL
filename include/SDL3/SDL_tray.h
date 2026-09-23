@@ -85,6 +85,18 @@ typedef Uint32 SDL_TrayEntryFlags;
 #define SDL_TRAYENTRY_CHECKED     0x40000000u /**< Make the entry checked. This is valid only for checkboxes. Optional. */
 
 /**
+ * Flags that indicate the capabilities of tray callbacks.
+ *
+ * \since This datatype is available since SDL 3.6.0
+ */
+typedef Uint32 SDL_TrayCallbackCapabilities;
+
+#define SDL_TRAYCALLBACKCAPABILITIES_NONE                 0x00000000u /**< Tray callbacks have no capabilities */
+#define SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU        0x00000001u /**< Tray callbacks can suppress context menu */
+#define SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU         0x00000002u /**< Tray callbacks can request context menu open */
+#define SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES    0x00000004u /**< Tray callbacks include screen-space coordinates */
+
+/**
  * A callback that is invoked when a tray entry is selected.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
@@ -103,6 +115,9 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked. May be NULL.
  * \param tray the tray that was clicked.
+ * \param x the screen-space x coordinate of the tray click
+ * \param y the screen-space y coordinate of the tray click
+ * \param capabilities the capabilities of the tray callbacks
  * \returns true to show the tray menu after the callback returns, false to
  *          skip showing the menu. This return value is only used for left and
  *          right click callbacks; other mouse events ignore the return value.
@@ -111,7 +126,7 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *
  * \sa SDL_CreateTrayWithProperties
  */
-typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
+typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities);
 
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.
@@ -166,13 +181,20 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  *   SDL_TrayClickCallback to be invoked when the tray icon is left-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the "Activate" signal is sent from
+ *   the SNI host to the client. This does not occur when a tray menu is
+ *   registered.
  * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the menu is shown or the
+ *   "ContextMenu" signal is sent from the SNI host to the client.
  * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
  *   Not supported on all platforms. May be NULL.
+ *   On Linux, this is only sent when the "SecondaryActivate" signal is sent
+ *   from the SNI host to the client.
  *
  * \param props the properties to use.
  * \returns The newly created system tray icon.
