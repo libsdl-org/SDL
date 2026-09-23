@@ -130,7 +130,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
             dt->hour = t.hour;
             dt->minute = t.minute;
             dt->second = t.second;
-            dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+            dt->nanosecond = rem_ns;
             dt->utc_offset = (int)(((Sint64)local - (Sint64)sceTicks) / (Sint64)res);
 
             SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);
