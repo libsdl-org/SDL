@@ -1349,3 +1349,11 @@ SDL_DYNAPI_PROC(bool,SDL_GetRenderClipRectFloat,(SDL_Renderer *a,SDL_FRect *b),(
 SDL_DYNAPI_PROC(int,SDL_GetOpenHarmonySDKVersion,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_GetOpenHarmonyInternalStoragePath,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_RequestOpenHarmonyPermission,(const char *a,SDL_RequestOpenHarmonyPermissionCallback b,void *c),(a,b,c),return)
+SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_SetTrayStatus,(SDL_Tray *a,SDL_TrayStatus b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_GetTrayStatus,(SDL_Tray *a),(a),return)
+#ifndef SDL_DYNAPI_PROC_NO_VARARGS
+SDL_DYNAPI_PROC(bool,SDL_GetTrayMiscProperty,(SDL_Tray *a,Uint32 b, ...),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetTrayMiscProperty,(SDL_Tray *a,Uint32 b, ...),(a,b),return)
+#endif
+
+

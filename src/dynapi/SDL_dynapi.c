@@ -208,7 +208,29 @@ static void SDL_InitDynamicAPI(void);
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Info, INFO)                                                                         \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Warn, WARN)                                                                         \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Error, ERROR)                                                                       \
-    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Critical, CRITICAL)
+    SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Critical, CRITICAL)                                 \
+    _static bool SDLCALL SDL_SetTrayMiscProperty##name(SDL_Tray *tray, Uint32 property, ...)              \
+    {                                                                                                     \
+        bool result;                                                                                      \
+        va_list ap;                                                                                       \
+        initcall;                                                                                         \
+        va_start(ap, property);                                                                           \
+        void *arg = va_arg(ap, void *);                                                                   \
+        va_end(ap);                                                                                       \
+        result = jump_table.SDL_SetTrayMiscProperty(tray, property, arg);                                 \
+        return result;                                                                                    \
+    }                                                                                                     \
+    _static bool SDLCALL SDL_GetTrayMiscProperty##name(SDL_Tray *tray, Uint32 property, ...)              \
+    {                                                                                                     \
+        bool result;                                                                                      \
+        va_list ap;                                                                                       \
+        initcall;                                                                                         \
+        va_start(ap, property);                                                                           \
+        void *arg = va_arg(ap, void *);                                                                   \
+        va_end(ap);                                                                                       \
+        result = jump_table.SDL_GetTrayMiscProperty(tray, property, arg);                                 \
+        return result;                                                                                    \
+    }
 
 // Typedefs for function pointers for jump table, and predeclare funcs
 // The DEFAULT funcs will init jump table and then call real function.
@@ -378,6 +400,28 @@ SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Info, INFO)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Warn, WARN)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Error, ERROR)
 SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(Critical, CRITICAL)
+static bool SDLCALL SDL_SetTrayMiscProperty_LOGSDLCALLS(SDL_Tray *tray, Uint32 property, ...)
+{
+    bool result;
+    va_list ap;
+    SDL_Log_REAL("SDL3CALL SDL_SetTrayMiscProperty");
+    va_start(ap, property);
+    void *arg = va_arg(ap, void *);
+    va_end(ap);
+    result = SDL_SetTrayMiscProperty_REAL(tray, property, arg);
+    return result;
+}
+static bool SDLCALL SDL_GetTrayMiscProperty_LOGSDLCALLS(SDL_Tray *tray, Uint32 property, ...)
+{
+    bool result;
+    va_list ap;
+    SDL_Log_REAL("SDL3CALL SDL_GetTrayMiscProperty");
+    va_start(ap, property);
+    void *arg = va_arg(ap, void *);
+    va_end(ap);
+    result = SDL_GetTrayMiscProperty_REAL(tray, property, arg);
+    return result;
+}
 #define SDL_DYNAPI_PROC(rc, fn, params, args, ret) \
     rc SDLCALL fn##_LOGSDLCALLS params             \
     {                                              \

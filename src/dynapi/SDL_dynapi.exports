@@ -1314,3 +1314,7 @@ _SDL_GetRenderClipRectFloat
 _SDL_GetOpenHarmonySDKVersion
 _SDL_GetOpenHarmonyInternalStoragePath
 _SDL_RequestOpenHarmonyPermission
+_SDL_SetTrayStatus
+_SDL_GetTrayStatus
+_SDL_SetTrayMiscProperty
+_SDL_GetTrayMiscProperty

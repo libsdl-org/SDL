@@ -52,6 +52,21 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
+static void SDLCALL scroll_callback(void *userdata, SDL_Tray *tray, Sint32 delta, SDL_TrayScrollFlags flags)
+{
+    const char *axis_string;
+
+    if (flags & SDL_TRAYSCROLL_VERTICAL) {
+        axis_string = "vertical";
+    } else if (flags & SDL_TRAYSCROLL_HORIZONTAL) {
+        axis_string = "horizontal";
+    } else {
+        axis_string = "unknown";
+    }
+
+    SDL_Log("Got %s scroll event with delta %d on example tray.", axis_string, delta);
+}
+
 static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray)
 {
     SDL_Log("Left click on example tray - menu shown");
@@ -127,6 +142,42 @@ static void SDLCALL change_icon(void *ptr, SDL_TrayEntry *entry)
     };
 
     SDL_ShowOpenFileDialog(apply_icon, ptr, NULL, filters, 2, NULL, 0);
+}
+
+static const char *status_to_str(SDL_TrayStatus status)
+{
+    switch (status) {
+        case SDL_TRAYSTATUS_VISIBLE:
+            return "visible";
+            break;
+        case SDL_TRAYSTATUS_HIDDEN:
+            return "hidden";
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            return "important";
+            break;
+        case SDL_TRAYSTATUS_INVALID:
+            return "invalid";
+            break;
+        default:
+            return "unknown";
+            break;
+    }
+}
+
+static void SDLCALL change_vis_show(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted visible, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_VISIBLE)));
+}
+
+static void SDLCALL change_vis_hide(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted hidden, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_HIDDEN)));
+}
+
+static void SDLCALL change_vis_imp(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted important, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_IMPORTANT)));
 }
 
 static void SDLCALL print_entry(void *ptr, SDL_TrayEntry *entry)
@@ -626,6 +677,7 @@ int main(int argc, char **argv)
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, tray2_leftclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, tray2_rightclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, tray2_middleclick);
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, scroll_callback);
     SDL_Tray *tray2 = SDL_CreateTrayWithProperties(tray2_props);
     SDL_DestroyProperties(tray2_props);
 
@@ -633,6 +685,9 @@ int main(int argc, char **argv)
         SDL_Log("Couldn't create example tray: %s", SDL_GetError());
         goto clean_tray1;
     }
+
+    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION, "SDL Tray Accessiblity Description String");
+    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION, "Tooltip description (only supported on Linux SNI)");
 
     SDL_DestroySurface(icon);
     SDL_DestroySurface(icon2);
@@ -680,6 +735,26 @@ int main(int argc, char **argv)
     CHECK(entry_icon);
 
     SDL_SetTrayEntryCallback(entry_icon, change_icon, tray2);
+
+    SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
+
+    SDL_TrayEntry *entry_show = SDL_InsertTrayEntryAt(menu, -1, "Show secondary tray icon", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_show);
+
+    SDL_SetTrayEntryCallback(entry_show, change_vis_show, tray2);
+
+    SDL_TrayEntry *entry_hide = SDL_InsertTrayEntryAt(menu, -1, "Hide secondary tray icon", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_hide);
+
+    SDL_SetTrayEntryCallback(entry_hide, change_vis_hide, tray2);
+
+    SDL_TrayEntry *entry_imp = SDL_InsertTrayEntryAt(menu, -1, "Make secondary tray icon important", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_imp);
+
+    SDL_SetTrayEntryCallback(entry_imp, change_vis_imp, tray2);
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 

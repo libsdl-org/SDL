@@ -1315,6 +1315,10 @@ SDL3_0.0.0 {
     SDL_GetOpenHarmonySDKVersion;
     SDL_GetOpenHarmonyInternalStoragePath;
     SDL_RequestOpenHarmonyPermission;
+    SDL_SetTrayStatus;
+    SDL_GetTrayStatus;
+    SDL_SetTrayMiscProperty;
+    SDL_GetTrayMiscProperty;
     # extra symbols go here (don't modify this line)
   local: *;
 };
