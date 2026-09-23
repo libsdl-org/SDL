@@ -3,14 +3,20 @@
 
 #include <emscripten/emscripten.h>
 
-EMSCRIPTEN_KEEPALIVE void SDL_Emscripten_OnFileDialogComplete(SDL_DialogFileCallback callback, void *userdata, const char *const *files, int nfiles)
+EMSCRIPTEN_KEEPALIVE void SDL_Emscripten_OnFileDialogComplete(SDL_DialogFileCallback callback, void *userdata, const char *const *filelist, int filter)
 {
-    if (!files || !nfiles) {
-        const char *const no_files[] = { NULL };
-        callback(userdata, no_files, 0);
-    } else {
-        callback(userdata, files, nfiles);
-    }
+    callback(userdata, filelist, filter);
+}
+
+EMSCRIPTEN_KEEPALIVE void SDL_Emscripten_OnFileDialogCancel(SDL_DialogFileCallback callback, void *userdata, int filter)
+{
+    const char *const filelist[] = { NULL };
+    callback(userdata, filelist, filter);
+}
+
+EMSCRIPTEN_KEEPALIVE void SDL_Emscripten_OnFileDialogError(SDL_DialogFileCallback callback, void *userdata, int filter)
+{
+    callback(userdata, NULL, filter);
 }
 
 void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFileCallback callback, void *userdata, SDL_PropertiesID props)
@@ -62,7 +68,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
         input.oncancel = function() {
             input.oncancel = null;
             input.onchange = null;
-            _SDL_Emscripten_OnFileDialogComplete(callback, userdata, 0, 0);
+            _SDL_Emscripten_OnFileDialogCancel(callback, userdata, -1);
         };
         input.onchange = function() {
             input.oncancel = null;
@@ -70,13 +76,13 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
 
             var files = Array.from(input.files);
             if (files.length == 0) {
-                _SDL_Emscripten_OnFileDialogComplete(callback, userdata, 0, 0);
+                _SDL_Emscripten_OnFileDialogCancel(callback, userdata, -1);
                 return;
             }
 
             var c_fs_filepath_arr = _malloc((files.length + 1) * 4);
             if (!c_fs_filepath_arr) {
-                _SDL_Emscripten_OnFileDialogComplete(callback, userdata, 0, 0);
+                _SDL_Emscripten_OnFileDialogError(callback, userdata, -1);
                 return;
             }
             for (var i = 0; i <= files.length; ++i) {
@@ -99,7 +105,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             for (var i = 0; i < files.length; ++i) {
                 file_promises.push(files[i].arrayBuffer());
             }
-            
+
             Promise.all(file_promises).then(function(file_buffers) {
                 for (var i = 0; i < file_buffers.length; ++i) {
                     if (!SDL3.dialog_count) {
@@ -121,7 +127,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                 _SDL_Emscripten_OnFileDialogComplete(callback, userdata, c_fs_filepath_arr, -1);
                 releaseFilepaths();
             }).catch(function() {
-                _SDL_Emscripten_OnFileDialogComplete(callback, userdata, 0, 0);
+                _SDL_Emscripten_OnFileDialogError(callback, userdata, -1);
                 releaseFilepaths();
             });
         };
