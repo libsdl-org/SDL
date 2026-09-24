@@ -185,6 +185,7 @@ struct SDL_WindowData
     {
         int width;
         int height;
+        bool insets_apply;
     } last_configure;
 
     // System enforced window size limits.
@@ -222,6 +223,7 @@ struct SDL_WindowData
         bool active;
     } text_input_props;
 
+    SDL_Rect explicit_geometry;
     SDL_DisplayID last_displayID;
     int pending_state_deadline_count;
     Uint64 last_focus_event_time_ns;
@@ -245,6 +247,7 @@ struct SDL_WindowData
     bool reparenting_required;
     bool double_buffer;
     bool accepts_drag_and_drop;
+    bool enable_insets;
 
     SDL_HitTestResult hit_test_result;
 

@@ -5,8 +5,26 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_test.h>
 
-/* 2000-01-01T16:35:42 UTC */
-#define JAN_1_2000_NS SDL_SECONDS_TO_NS(946744542)
+/* 1970-01-01T00:00:00.00 UTC */
+#define JAN_1_1970_NS 0
+
+/* 1970-01-01T00:00:00.01 UTC */
+#define JAN_1_1970_1_NS 1
+
+/* 1969-12-31T23:59:59.999999997 UTC */
+#define DEC_31_1969_NS -3
+
+/* 2000-01-01T16:35:42.10 UTC */
+#define JAN_1_2000_NS SDL_SECONDS_TO_NS(946744542) + 10
+
+/* 2000-02-29T00:00:00.00 UTC (leap year) */
+#define FEB_29_2000_NS SDL_SECONDS_TO_NS(951782400)
+
+/* 1955-11-05T01:21:59.03 */
+#define NOV_5_1955_NS SDL_SECONDS_TO_NS(-446769481) + 3
+
+/* 1955-11-05T01:21:59.500000000 */
+#define NOV_5_1955_1_NS SDL_SECONDS_TO_NS(-446769481) + 500000000
 
 /* Test case functions */
 
@@ -30,70 +48,96 @@ static int SDLCALL time_getRealtimeClock(void *arg)
  */
 static int SDLCALL time_dateTimeConversion(void *arg)
 {
+    static const struct
+    {
+        SDL_Time ticks;
+        const char *desc;
+
+        /* Expected values */
+        int year;
+        int month;
+        int day;
+        int hour;
+        int minute;
+        int second;
+        int nanosecond;
+        int day_of_week;
+    } TimeTest[] = {
+        { JAN_1_1970_NS, "1970-01-01T00:00:00.00 (Thu)", 1970, 1, 1, 0, 0, 0, 0, 4 },
+        { JAN_1_1970_1_NS, "1970-01-01T00:00:00.01 (Thu)", 1970, 1, 1, 0, 0, 0, 1, 4 },
+        { DEC_31_1969_NS, "1969-12-31T23:59:59.999999997 (Wed)", 1969, 12, 31, 23, 59, 59, 999999997, 3 },
+        { JAN_1_2000_NS, "2000-01-01T16:35:42.10 (Sat)", 2000, 1, 1, 16, 35, 42, 10, 6 },
+        { FEB_29_2000_NS, "2000-02-29T00:00:00.00 (Tue)", 2000, 2, 29, 0, 0, 0, 0, 2 },
+        { NOV_5_1955_NS, "1955-11-05T01:21:59.03 (Sat)", 1955, 11, 5, 1, 21, 59, 3, 6 },
+        { NOV_5_1955_1_NS, "1955-11-05T01:21:59.500000000 (Sat)", 1955, 11, 5, 1, 21, 59, 500000000, 6 }
+    };
     int result;
-    SDL_Time ticks[2];
+    SDL_Time ticks;
     SDL_DateTime dt;
 
-    ticks[0] = JAN_1_2000_NS;
+    for (int i = 0; i < SDL_arraysize(TimeTest); ++i) {
+        result = SDL_TimeToDateTime(TimeTest[i].ticks, &dt, false);
+        SDLTest_Log("Testing time conversion for %s", TimeTest[i].desc);
+        SDLTest_AssertPass("Call to SDL_TimeToUTCDateTime()");
+        SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
+        SDLTest_AssertCheck(dt.year == TimeTest[i].year, "Check year value, expected %i, got: %i", TimeTest[i].year, dt.year);
+        SDLTest_AssertCheck(dt.month == TimeTest[i].month, "Check month value, expected %i, got: %i", TimeTest[i].month, dt.month);
+        SDLTest_AssertCheck(dt.day == TimeTest[i].day, "Check day value, expected %i, got: %i", TimeTest[i].day, dt.day);
+        SDLTest_AssertCheck(dt.hour == TimeTest[i].hour, "Check hour value, expected %i, got: %i", TimeTest[i].hour, dt.hour);
+        SDLTest_AssertCheck(dt.minute == TimeTest[i].minute, "Check hour value, expected %i, got: %i", TimeTest[i].minute, dt.minute);
+        SDLTest_AssertCheck(dt.second == TimeTest[i].second, "Check second value, expected %i, got: %i", TimeTest[i].second, dt.second);
+        SDLTest_AssertCheck(dt.nanosecond == TimeTest[i].nanosecond, "Check nanosecond value, expected %i, got: %i", TimeTest[i].nanosecond, dt.nanosecond);
+        SDLTest_AssertCheck(dt.day_of_week == TimeTest[i].day_of_week, "Check day of week, expected %i, got: %i", TimeTest[i].day_of_week, dt.day_of_week);
 
-    result = SDL_TimeToDateTime(ticks[0], &dt, false);
-    SDLTest_AssertPass("Call to SDL_TimeToUTCDateTime()");
-    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
-    SDLTest_AssertCheck(dt.year == 2000, "Check year value, expected 2000, got: %i", dt.year);
-    SDLTest_AssertCheck(dt.month == 1, "Check month value, expected 1, got: %i", dt.month);
-    SDLTest_AssertCheck(dt.day == 1, "Check day value, expected 1, got: %i", dt.day);
-    SDLTest_AssertCheck(dt.hour == 16, "Check hour value, expected 16, got: %i", dt.hour);
-    SDLTest_AssertCheck(dt.minute == 35, "Check hour value, expected 35, got: %i", dt.minute);
-    SDLTest_AssertCheck(dt.second == 42, "Check hour value, expected 42, got: %i", dt.second);
+        result = SDL_DateTimeToTime(&dt, &ticks);
+        SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
+        SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
-    result = SDL_DateTimeToTime(&dt, &ticks[1]);
-    SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
-    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
+        result = TimeTest[i].ticks == ticks;
+        SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: original = %" SDL_PRIs64 ", converted = %" SDL_PRIs64, TimeTest[i].ticks, ticks);
 
-    result = ticks[0] == ticks[1];
-    SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: ticks0 = %" SDL_PRIs64 ", ticks1 = %" SDL_PRIs64, ticks[0], ticks[1]);
+        /* Local time unknown, so just verify success. */
+        result = SDL_TimeToDateTime(TimeTest[i].ticks, &dt, true);
+        SDLTest_AssertPass("Call to SDL_TimeToLocalDateTime()");
+        SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
-    /* Local time unknown, so just verify success. */
-    result = SDL_TimeToDateTime(ticks[0], &dt, true);
-    SDLTest_AssertPass("Call to SDL_TimeToLocalDateTime()");
-    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
+        /* Convert back and verify result. */
+        result = SDL_DateTimeToTime(&dt, &ticks);
+        SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
+        SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
 
-    /* Convert back and verify result. */
-    result = SDL_DateTimeToTime(&dt, &ticks[1]);
-    SDLTest_AssertPass("Call to SDL_DateTimeToTime()");
-    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
+        result = TimeTest[i].ticks == ticks;
+        SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: original = %" SDL_PRIs64 ", converted = %" SDL_PRIs64, TimeTest[i].ticks, ticks);
 
-    result = ticks[0] == ticks[1];
-    SDLTest_AssertCheck(result, "Check that original and converted SDL_Time values match: ticks0 = %" SDL_PRIs64 ", ticks1 = %" SDL_PRIs64, ticks[0], ticks[1]);
+        /* Advance the time one day. */
+        ++dt.day;
+        if (dt.day > SDL_GetDaysInMonth(dt.year, dt.month)) {
+            dt.day = 1;
+            ++dt.month;
+        }
+        if (dt.month > 12) {
+            dt.month = 1;
+            ++dt.year;
+        }
 
-    /* Advance the time one day. */
-    ++dt.day;
-    if (dt.day > SDL_GetDaysInMonth(dt.year, dt.month)) {
-        dt.day = 1;
-        ++dt.month;
+        result = SDL_DateTimeToTime(&dt, &ticks);
+        SDLTest_AssertPass("Call to SDL_DateTimeToTime() (one day advanced)");
+        SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
+
+        result = (TimeTest[i].ticks + (Sint64)SDL_SECONDS_TO_NS(86400)) == ticks;
+        SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (Sint64)SDL_NS_TO_SECONDS(ticks - TimeTest[i].ticks));
     }
-    if (dt.month > 12) {
-        dt.month = 1;
-        ++dt.year;
-    }
-
-    result = SDL_DateTimeToTime(&dt, &ticks[1]);
-    SDLTest_AssertPass("Call to SDL_DateTimeToTime() (one day advanced)");
-    SDLTest_AssertCheck(result == true, "Check result value, expected true, got: %i", result);
-
-    result = (ticks[0] + (Sint64)SDL_SECONDS_TO_NS(86400)) == ticks[1];
-    SDLTest_AssertCheck(result, "Check that the difference is exactly 86400 seconds, got: %" SDL_PRIs64, (Sint64)SDL_NS_TO_SECONDS(ticks[1] - ticks[0]));
 
     /* Check dates that overflow/underflow an SDL_Time */
     dt.year = 2400;
     dt.month = 1;
     dt.day = 1;
-    result = SDL_DateTimeToTime(&dt, &ticks[0]);
+    result = SDL_DateTimeToTime(&dt, &ticks);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (year overflows an SDL_Time)");
     SDLTest_AssertCheck(result == false, "Check result value, expected false, got: %i", result);
 
     dt.year = 1601;
-    result = SDL_DateTimeToTime(&dt, &ticks[0]);
+    result = SDL_DateTimeToTime(&dt, &ticks);
     SDLTest_AssertPass("Call to SDL_DateTimeToTime() (year underflows an SDL_Time)");
     SDLTest_AssertCheck(result == false, "Check result value, expected false, got: %i", result);
 

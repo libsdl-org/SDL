@@ -137,6 +137,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
         SDL_Keymap **sdl_keymap;
+        struct wl_array reserved_scancodes;
         char *current_locale;
 
         SDL_WaylandKeyboardRepeat repeat;

@@ -102,6 +102,12 @@ static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat);
 
 typedef struct
 {
+    Uint32 key;
+    SDL_Scancode scancode;
+} Wayland_ReservedKey;
+
+typedef struct
+{
     SDL_TouchID id;
     wl_fixed_t fx;
     wl_fixed_t fy;
@@ -1613,21 +1619,17 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
 
     // Look up the scancode for hardware keyboards. Virtual keyboards get the scancode from the keysym.
     if (!seat->keyboard.is_virtual) {
-        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, (key - 8));
-        if (scancode == SDL_SCANCODE_UNKNOWN) {
-            return;
-        }
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, key - 8);
     }
 
     for (xkb_layout_index_t layout = 0; layout < seat->keyboard.xkb.num_layouts; ++layout) {
         const xkb_level_index_t num_levels = WAYLAND_xkb_keymap_num_levels_for_key(seat->keyboard.xkb.keymap, key, layout);
         for (xkb_level_index_t level = 0; level < num_levels; ++level) {
             if (WAYLAND_xkb_keymap_key_get_syms_by_level(seat->keyboard.xkb.keymap, key, layout, level, &syms) > 0) {
-                /* If the keyboard is virtual or the key didn't have a corresponding hardware scancode, try to
-                 * look it up from the keysym. If there is still no corresponding scancode, skip this mapping
-                 * for now, as it will be dynamically added with a reserved scancode on first use.
+                /* If the keyboard is virtual, try to look up the scancode from the keysym. If there is still no corresponding
+                 * scancode, skip this mapping for now, as it will be dynamically added with a reserved scancode on first use.
                  */
-                if (scancode == SDL_SCANCODE_UNKNOWN) {
+                if (scancode == SDL_SCANCODE_UNKNOWN && seat->keyboard.is_virtual) {
                     scancode = SDL_GetScancodeFromKeySym(syms[0], key);
                     if (scancode == SDL_SCANCODE_UNKNOWN) {
                         continue;
@@ -1653,6 +1655,22 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.caps_mask ? SDL_KMOD_CAPS : 0);
 
                     SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(syms[0], key, sdl_mod);
+
+                    /* For hardware keyboards, map unknown keys with valid keycodes to the reserved scancode range.
+                     * Reserved codes are always assigned from layout zero to avoid potential overlap.
+                     */
+                    if (keycode != SDLK_UNKNOWN && scancode == SDL_SCANCODE_UNKNOWN) {
+                        scancode = SDL_GetKeymapNextReservedScancode(seat->keyboard.sdl_keymap[0]);
+                        if (level) {
+                            // Make sure the base level always has this scancode mapped, since it is a unique key.
+                            SDL_SetKeymapEntry(seat->keyboard.sdl_keymap[layout], scancode, 0, SDLK_UNKNOWN);
+                        }
+                        Wayland_ReservedKey *res = WAYLAND_wl_array_add(&seat->keyboard.reserved_scancodes, sizeof(Wayland_ReservedKey));
+                        if (res) {
+                            res->scancode = scancode;
+                            res->key = key - 8;
+                        }
+                    }
 
                     if (!keycode) {
                         switch (scancode) {
@@ -1728,6 +1746,8 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
     SDL_free(seat->keyboard.sdl_keymap);
     seat->keyboard.sdl_keymap = NULL;
+    WAYLAND_wl_array_release(&seat->keyboard.reserved_scancodes);
+    WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
     seat->keyboard.xkb.num_layouts = 0;
 
 #if SDL_XKBCOMMON_CHECK_VERSION(1, 10, 0)
@@ -1782,6 +1802,8 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         if (!seat->keyboard.sdl_keymap) {
             return;
         }
+
+        WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
 
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
             seat->keyboard.sdl_keymap[i] = SDL_CreateKeymap(false);
@@ -1856,18 +1878,26 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-/*
- * Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
+/* Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
  * Key presses from these devices must be looked up by their keysym value.
  */
-static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, uint32_t key, const xkb_keysym_t **syms)
+static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, Uint32 key, const xkb_keysym_t **syms)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
     if (!seat->keyboard.is_virtual) {
-        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, key);
-    }
-    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, key);
+
+        // No table entry? Check the reserved list.
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
+            Wayland_ReservedKey *i;
+            wl_array_for_each(i, &seat->keyboard.reserved_scancodes) {
+                if (i->key == key) {
+                    return i->scancode;
+                }
+            }
+        }
+    } else {
         const xkb_keysym_t *keysym;
         if (WAYLAND_xkb_state_key_get_syms(seat->keyboard.xkb.state, key + 8, &keysym) > 0) {
             scancode = SDL_GetScancodeFromKeySym(keysym[0], key + 8);
@@ -2020,7 +2050,7 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
 
 static void Wayland_HandleModifierKeys(SDL_WaylandSeat *seat, SDL_Scancode scancode, bool pressed)
 {
-    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers, false);
     SDL_Keymod mod;
 
     /* SDL clients expect modifier state to be activated at the same time as the
@@ -2464,6 +2494,8 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat)
         seat->keyboard.sdl_keymap = NULL;
     }
 
+    WAYLAND_wl_array_release(&seat->keyboard.reserved_scancodes);
+
     if (seat->keyboard.key_inhibitor) {
         zwp_keyboard_shortcuts_inhibitor_v1_destroy(seat->keyboard.key_inhibitor);
     }
@@ -2574,6 +2606,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !seat->keyboard.wl_keyboard) {
         seat->keyboard.wl_keyboard = wl_seat_get_keyboard(wl_seat);
+        WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
         wl_keyboard_set_user_data(seat->keyboard.wl_keyboard, seat);
         wl_keyboard_add_listener(seat->keyboard.wl_keyboard, &keyboard_listener, seat);
 
@@ -3542,6 +3575,7 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     // Keep the seats in the order in which they were added.
     WAYLAND_wl_list_insert(display->seat_list.prev, &seat->link);
 
+    WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
     WAYLAND_wl_list_init(&seat->touch.points);
     WAYLAND_wl_list_init(&seat->tablet.tool_list);
     seat->wl_seat = wl_seat;
