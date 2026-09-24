@@ -3168,9 +3168,7 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     }
 
     window->internal = data;
-    if (!c->scale_to_display_enabled) {
-        data->enable_insets = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN, false);
-    }
+    data->enable_insets = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN, false);
 
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
         window->x = 0;
