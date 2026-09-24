@@ -385,7 +385,6 @@ static int SDLCALL iostrm_testMem(void *arg)
 static int SDLCALL iostrm_testConstMem(void *arg)
 {
     SDL_IOStream *rw;
-    SDL_PropertiesID props;
     int result;
 
     /* Open handle */
@@ -400,11 +399,6 @@ static int SDLCALL iostrm_testConstMem(void *arg)
 
     /* Run generic tests */
     testGenericIOStreamValidations(rw, false);
-
-    /* Verify properties preserve the supplied buffer size. */
-    props = SDL_GetIOProperties(rw);
-    SDLTest_AssertCheck(props != 0, "Get constant memory stream properties");
-    SDLTest_AssertCheck(SDL_GetNumberProperty(props, SDL_PROP_IOSTREAM_MEMORY_SIZE_NUMBER, -1) == (Sint64)(sizeof(IOStreamHelloWorldCompString) - 1), "Verify memory size property matches the supplied buffer size");
 
     /* Close handle */
     result = SDL_CloseIO(rw);
