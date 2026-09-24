@@ -1658,8 +1658,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * queried each time it is shown.
  *
  * Note: The `border_inset_*` properties can be set by the application when
- * client-side decorations such as shadows or invisible resize borders
- * extend beyond the visible frame (see docs/README-wayland.md for details).
+ * client-side decorations such as shadows or invisible resize borders extend
+ * beyond the visible frame (see docs/README-wayland.md for details).
  *
  * - `SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER`: the wl_display associated with
  *   the window

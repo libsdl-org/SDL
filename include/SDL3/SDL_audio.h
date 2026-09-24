@@ -675,8 +675,8 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  *
  * - `SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING`: This identifier can be used to
  *   locate a specific device. In optimal conditions, this identifier will not
- *   change between runs of an app, hardware disconnection, and system reboots.
- *   However, depending on the hardware, operating system, and other
+ *   change between runs of an app, hardware disconnection, and system
+ *   reboots. However, depending on the hardware, operating system, and other
  *   circumstances, a device's identifier may change, so if the app cannot
  *   find a device with a previously queried identifier, the user should be
  *   prompted to choose a new device (possibly the same device, now with a new
@@ -687,8 +687,8 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  *   set. Note that property is useful for finding specific hardware again on
  *   a later run of the app, but often times it's better to just open the
  *   default device (SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK or
- *   SDL_AUDIO_DEVICE_DEFAULT_RECORDING), and let the user set this up globally
- *   on their platform.
+ *   SDL_AUDIO_DEVICE_DEFAULT_RECORDING), and let the user set this up
+ *   globally on their platform.
  *
  * \param devid the audio device instance id to query.
  * \returns a valid property ID on success or 0 on failure; call

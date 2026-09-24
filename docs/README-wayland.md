@@ -30,12 +30,12 @@ encounter limitations or behavior that is different from other windowing systems
   to the surface minus the insets (in points, regardless of pixel density) and translates configure sizes and size
   limits accordingly. Maximized and fullscreen windows are always sized exactly as configured, while tiled windows keep
   their insets. Changes take effect on the next configure. Only xdg-toplevel windows are affected; popup and custom-role
-  surfaces ignore the properties, as does libdecor, which manages the window geometry itself (see 
+  surfaces ignore the properties, as does libdecor, which manages the window geometry itself (see
   `SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR`). Note that in certain cases, compositors may ignore the min and max size
   hints, as well as the non-resizable state on windows. When this occurs and insets are enabled, SDL can't mask around
   the main surface or use scaled viewports to compensate, so clients are responsible for handling this behavior
   themselves.
-  
+
 
 ### Windows do not appear immediately after creation
 
