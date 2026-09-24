@@ -1253,6 +1253,7 @@ SDL_IOStream *SDL_IOFromConstMem(const void *mem, size_t size)
     iodata->base = (Uint8 *)mem;
     iodata->here = iodata->base;
     iodata->stop = iodata->base + size;
+    iodata->size = size;
 
     SDL_IOStream *iostr = SDL_OpenIO(&iface, iodata);
     if (!iostr) {
