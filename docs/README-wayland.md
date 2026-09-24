@@ -25,12 +25,15 @@ encounter limitations or behavior that is different from other windowing systems
 ### Border insets for client-side decorations
 
 - Applications drawing client-side decorations (shadows or invisible resize borders) can declare their insets via the
-  `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_*` window properties when the window is created with the `SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN` property set to `true`. SDL then sets the xdg window geometry to the surface minus
-  the insets (in points, regardless of pixel density) and translates configure sizes and size limits accordingly.
-  Maximized and fullscreen windows are always sized exactly as configured, while tiled windows keep their insets.
-  Changes take effect on the next configure. Only xdg-toplevel windows are affected; popup and custom-role surfaces
-  ignore the properties, as does libdecor, which manages the window geometry itself
-  (see `SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR`).
+  `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_*` window properties when the window is created with the
+  `SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN` property set to `true`. SDL then sets the xdg window geometry
+  to the surface minus the insets (in points, regardless of pixel density) and translates configure sizes and size
+  limits accordingly. Maximized and fullscreen windows are always sized exactly as configured, while tiled windows keep
+  their insets.  Changes take effect on the next configure. Only xdg-toplevel windows are affected; popup and
+  custom-role surfaces ignore the properties, as does libdecor, which manages the window geometry itself (see 
+  `SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR`). Insets are also incompatible with display scaling mode, and will be
+  automatically disabled when `SDL_HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY` is enabled.
+  
 
 ### Windows do not appear immediately after creation
 

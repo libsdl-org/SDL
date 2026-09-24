@@ -644,7 +644,8 @@ static void ConfigureWindowGeometry(SDL_Window *window)
         data->mask.mapped = false;
     }
 
-    if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL && data->shell_surface.xdg.surface) {
+    if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL && data->shell_surface.xdg.surface &&
+        (data->enable_insets || !data->viewport)) {
         /* The window geometry is the surface minus the declared border insets. They don't apply
          * when an exact size is required (maximized/fullscreen).
          */
@@ -1189,7 +1190,7 @@ static void handle_xdg_toplevel_configure(void *data,
      * sizes adopted from the cached window size are converted back to geometry space for
      * the last_configure store.
      */
-    const bool insets_apply = !fullscreen && !maximized;
+    const bool insets_apply = wind->enable_insets && !fullscreen && !maximized;
 
     // When resizing, dimensions other than 0 are a maximum.
     const bool new_configure_size = width != wind->last_configure.width || height != wind->last_configure.height ||
@@ -3167,7 +3168,9 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     }
 
     window->internal = data;
-    data->enable_insets = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN, false);
+    if (!c->scale_to_display_enabled) {
+        data->enable_insets = SDL_GetBooleanProperty(create_props, SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN, false);
+    }
 
     if (window->x == SDL_WINDOWPOS_UNDEFINED) {
         window->x = 0;
