@@ -3255,6 +3255,8 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *device, SDL_Window *window)
     int h = 0;
 
     if (!WEBGPU_SupportsSwapchainComposition(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR)) {
+        // FIXME: Insanely unclear error message.
+        // This gets triggered if SupportsSwapchainComposition fails, but that could happen for numerous reasons.
         SDL_assert_release(!"Surface does not support SDR!");
     }
 
@@ -3285,6 +3287,9 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *device, SDL_Window *window)
 static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, SDL_Window *window, SDL_GPUTexture **swapchainTexture, Uint32 *width, Uint32 *height)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    // HACK?
+    WEBGPU_INTERNAL_HandlePendingDestroys(cmdBuf->renderer);
 
     if (cmdBuf->renderer->submittedCommandBufferCount >= cmdBuf->renderer->maxFramesInFlight) {
         *swapchainTexture = NULL;
