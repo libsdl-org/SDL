@@ -586,6 +586,10 @@ static MonitorInfo *GetMonitorInfo(Display *dpy, int screen, RROutput output, bo
                     break;
                 }
             }
+
+            if (props) {
+                X11_XFree(props);
+            }
         }
     }
 
