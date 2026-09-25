@@ -56,7 +56,8 @@ typedef struct SDL_TrayDBus
 
     SDL_TrayStatus vis_state;
 	char *icon_desc;
-    char *tooltip_desc;
+    char *tooltip_desc;  
+    int delta_normalization;
 } SDL_TrayDBus;
 
 typedef struct SDL_TrayMenuDBus
@@ -443,10 +444,18 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
                 scroll_flags = 0;
             }
             
-            /* KDE (and if I am not mistaken, all Qt desktops and maybe a few others?) send scroll deltas as increments of 120 while other desktops like GNOME and MATE do not, this is a workaround for that. */
-            /* If this causes too much trouble, we will drop this and probably check for known Qt, KDE, LXQT and such DBus services and apply this normalization only if we find matches. */
-            if (!(delta % 120)) {
-                delta = delta / 120;
+            /* See the documentation for SDL_HINT_TRAY_SNI_SCROLL_NORMALIZATION for why this is done. */
+            switch (tray_dbus->delta_normalization) {
+                case 1:
+                   delta = delta / 120;
+                   break;
+                case 2:
+                   break;
+                default:
+                   if (!(delta % 120)) {
+                     delta = delta / 120;
+                   }
+                   break;
             }
 
             if (tray_dbus->scroll_cb) {
@@ -473,6 +482,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     SDL_Surface *icon;
     const char *tooltip;
     const char *object_path;
+    const char *delta_normalization_hint;
     char *register_name;
     DBusObjectPathVTable vtable;
     DBusError err;
@@ -585,6 +595,12 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     tray_dbus->icon_desc = NULL;
 	tray_dbus->tooltip_desc = NULL;
 
+    tray_dbus->delta_normalization = 0;
+    delta_normalization_hint = SDL_GetHint(SDL_HINT_TRAY_SNI_SCROLL_NORMALIZATION);
+    if (delta_normalization_hint) {
+        tray_dbus->delta_normalization = SDL_atoi(delta_normalization_hint);
+    }
+    
     return tray;
 }
 

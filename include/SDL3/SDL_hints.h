@@ -3822,6 +3822,30 @@ extern "C" {
 #define SDL_HINT_TRACKPAD_IS_TOUCH_ONLY "SDL_TRACKPAD_IS_TOUCH_ONLY"
 
 /**
+ * A variable controlling the application of scroll delta normalization for tray icons 
+ * on Linux platforms with the SNI tray driver.
+ *
+ * KDE and possibly some other desktops send SNI scroll deltas in increments of 120,
+ * while others like GNOME and MATE send them normally. Due to this discrepancy,
+ * SDL will automatically normalize scroll deltas if they happen to cleanly divide by 120. 
+ * However this heuristic can fail if a high resolution trackpad a high-end mouse with a 
+ * free-flowing scroll wheel happens to send a value of 120 or a multiple of it, causing a 
+ * sudden slow down in scrolling or jerky movements. Use this hint to force enable or disable
+ * this normalization behavior.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Automatically apply delta normalization. (default)
+ * - "1": Always apply delta normalization.
+ * - "2": Never apply delta normalization.
+ * 
+ * This hint should be ideally set before any tray icons are created.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_TRAY_SNI_SCROLL_NORMALIZATION "SDL_TRAY_SNI_SCROLL_NORMALIZATION"
+
+/**
  * A variable controlling whether the Android / tvOS remotes should be listed
  * as joystick devices, instead of sending keyboard events.
  *
