@@ -230,6 +230,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case SDL_FLYDIGI_APEX4:
         // The Apex 4 controller has sensors, but they're only reported when gyro mouse is enabled
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 800.0f;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         HIDAPI_SetDeviceName(device, "Flydigi Apex 4");
         break;
     case SDL_FLYDIGI_APEX5:
@@ -840,7 +843,32 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
     }
 #undef READ_TRIGGER_AXIS
 
-    if (ctx->sensors_enabled) {
+    if (ctx->sensors_enabled && ctx->device->guid.data[15] == SDL_FLYDIGI_APEX4) {
+        Uint64 sensor_timestamp;
+        float values[3];
+
+        // Advance the imu sensor time stamp based on the observed rate of receipt of packets in the testcontroller app.
+        // This varies between Product ID and connection type.
+        sensor_timestamp = ctx->sensor_timestamp_ns;
+        ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
+
+        // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
+        // As result, roll has a different scaling factor than pitch and yaw.
+        // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
+        const float flPitchAndYawScale = DEG2RAD(12750.0f) / INT16_MAX;
+        const float flRollScale = DEG2RAD(3500.0f) / INT16_MAX;
+
+        values[0] = LOAD16(data[26], data[27]) * flPitchAndYawScale;
+        values[1] = LOAD16(data[18], data[20]) * flPitchAndYawScale;
+        values[2] = -LOAD16(data[29], data[30]) * flRollScale;
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
+
+        const float flAccelScale = ctx->accelScale;
+        values[0] = -LOAD16(data[11], data[12]) * flAccelScale; // Acceleration along pitch axis
+        values[1] = LOAD16(data[15], data[16]) * flAccelScale;  // Acceleration along yaw axis
+        values[2] = LOAD16(data[13], data[14]) * flAccelScale;  // Acceleration along roll axis
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, values, 3);
+    } else if (ctx->sensors_enabled) {
         Uint64 sensor_timestamp;
         float values[3];
 
