@@ -686,7 +686,7 @@ int main(int argc, char **argv)
         goto clean_tray1;
     }
 
-    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION, "SDL Tray Accessiblity Description String");
+    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION, "SDL Tray Accessiblity Description String (only supported on Linux SNI)");
     SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION, "Tooltip description (only supported on Linux SNI)");
 
     SDL_DestroySurface(icon);
