@@ -201,7 +201,7 @@ void Android_NativeSurfaceResized(SDL_Window *window)
     if (window) {
         SDL_WindowData *data = window->internal;
         if (data->native_window) {
-            int format = 0;
+            int format = ANativeWindow_getFormat(data->native_window);
             int new_w = ANativeWindow_getWidth(data->native_window);
             int new_h = ANativeWindow_getHeight(data->native_window);
             ANativeWindow_setBuffersGeometry(data->native_window, new_w, new_h, format);
