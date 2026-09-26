@@ -341,7 +341,7 @@ jobs:
             ${{ matrix.platform.cpactions-install-cmd }}
             cmake -S . -B build -GNinja  \
               ${{ matrix.platform.cmake-toolchain-file != '' && format('-DCMAKE_TOOLCHAIN_FILE={0}', matrix.platform.cmake-toolchain-file) || '' }} \
-              -Wdeprecated -Wdev -Werror \
+              -Wdeprecated -Wdev -Werror=dev -Werror=deprecated \
               -DSDL_WERROR=${{ matrix.platform.werror }} \
               -DSDL_INSTALL_DOCS=ON \
               ${{ matrix.platform.cmake-arguments }} \
