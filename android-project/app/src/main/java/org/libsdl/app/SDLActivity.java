@@ -231,6 +231,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries = true;
 
+    // Initial values needed for SDL_Init()
+    public static int mAndroid_SurfaceWidth;
+    public static int mAndroid_SurfaceHeight;
+    public static int mAndroid_DeviceWidth;
+    public static int mAndroid_DeviceHeight;
+    public static float mAndroid_ScreenDensity;
+    public static float mAndroid_ScreenRate;
+    public static int mInit_CurrentRotation;
+    public static int mInit_NaturalOrientation;
+    public static boolean mInit_DarkModeEnabled;
+
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
@@ -506,10 +517,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mLayout = new RelativeLayout(this);
             mLayout.addView(mSurface);
 
-            // Get our current screen orientation and pass it down.
-            SDLActivity.nativeSetNaturalOrientation(SDLActivity.getNaturalOrientation());
-            mCurrentRotation = SDLActivity.getCurrentRotation();
-            SDLActivity.onNativeRotationChanged(mCurrentRotation);
+            // Get our current screen orientation.
+            mInit_NaturalOrientation = SDLActivity.getNaturalOrientation();
+            mInit_CurrentRotation = SDLActivity.getCurrentRotation();
+
+            mCurrentRotation = mInit_CurrentRotation;
         }
 
         try {
@@ -523,10 +535,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         switch (getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK) {
         case Configuration.UI_MODE_NIGHT_NO:
-            SDLActivity.onNativeDarkModeChanged(false);
+            mInit_DarkModeEnabled = false;
             break;
         case Configuration.UI_MODE_NIGHT_YES:
-            SDLActivity.onNativeDarkModeChanged(true);
+            mInit_DarkModeEnabled = true;
             break;
         }
 
@@ -1223,7 +1235,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native String nativeGetHint(String name);
     public static native boolean nativeGetHintBoolean(String name, boolean default_value);
     public static native void nativeSetenv(String name, String value);
-    public static native void nativeSetNaturalOrientation(int orientation);
     public static native void onNativeRotationChanged(int rotation);
     public static native void onNativeInsetsChanged(int left, int right, int top, int bottom);
     public static native void nativeAddTouch(int touchId, String name);
