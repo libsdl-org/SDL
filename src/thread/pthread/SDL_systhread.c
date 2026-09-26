@@ -71,6 +71,16 @@ static void *RunThread(void *data)
     Android_JNI_SetupThread();
 #endif
     SDL_RunThread((SDL_Thread *)data);
+
+    {
+        const char *str = SDL_GetError();
+        if (str && str[0]) {
+            SDL_LogError(SDL_LOG_CATEGORY_SYSTEM, "An SDL thread ends (error=%s)", str);
+        } else {
+            SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "An SDL thread ends");
+        }
+    }
+
     return NULL;
 }
 
