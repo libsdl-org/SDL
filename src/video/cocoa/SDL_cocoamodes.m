@@ -138,7 +138,10 @@ static bool HasValidDisplayModeFlags(CGDisplayModeRef vidmode)
 static Uint32 GetDisplayModePixelFormat(CGDisplayModeRef vidmode)
 {
     // This API is deprecated in 10.11 with no good replacement (as of 10.15).
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     CFStringRef fmt = CGDisplayModeCopyPixelEncoding(vidmode);
+#pragma clang diagnostic pop
     Uint32 pixelformat = SDL_PIXELFORMAT_UNKNOWN;
 
     if (CFStringCompare(fmt, CFSTR(IO32BitDirectPixels),
@@ -294,7 +297,10 @@ static char *Cocoa_GetDisplayName(CGDirectDisplayID displayID)
     }
 
     // This API is deprecated in 10.9 with no good replacement (as of 10.15).
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     io_service_t servicePort = CGDisplayIOServicePort(displayID);
+#pragma clang diagnostic pop
     CFDictionaryRef deviceInfo = IODisplayCreateInfoDictionary(servicePort, kIODisplayOnlyPreferredName);
     NSDictionary *localizedNames = [(__bridge NSDictionary *)deviceInfo objectForKey:[NSString stringWithUTF8String:kDisplayProductName]];
     char *displayName = NULL;

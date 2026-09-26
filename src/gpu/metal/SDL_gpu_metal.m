@@ -4614,6 +4614,12 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
             props,
             SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN,
             false);
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // MTLGPUFamilyMac1 and the MTLFeatureSet APIs are deprecated as of macOS 13.0,
+        // but there is no replacement for the Mac1 family, and supportsFamily: doesn't
+        // exist before macOS 10.15.
         if (@available(macOS 10.15, *)) {
             hasHardwareSupport = allowMacFamily1 ?
                 [device supportsFamily:MTLGPUFamilyMac1] :
@@ -4623,6 +4629,7 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
                 [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v4] :
                 [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily2_v1];
         }
+#pragma clang diagnostic pop
 #elif defined(SDL_PLATFORM_VISIONOS)
         hasHardwareSupport = true;
 #else
