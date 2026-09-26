@@ -21,6 +21,14 @@ include(sdlcompilers)
 check_language(CXX)
 if(CMAKE_CXX_COMPILER)
     enable_language(CXX)
+
+    find_package(Qt6 QUIET COMPONENTS Widgets)
+    if(Qt6_FOUND)
+
+        if(cxx_std_17 IN_LIST CMAKE_CXX_COMPILE_FEATURES)
+            add_subdirectory(qt6)
+        endif()
+    endif()
 endif()
 
 find_package(Python3 COMPONENTS Interpreter)
@@ -713,8 +721,8 @@ function(add_sdl_test TEST TARGET)
             set(installedtestsdir "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3")
             configure_file(template.test.in "${exe}.test" @ONLY)
             install(
-                    FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
-                    DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
+                FILES "${CMAKE_CURRENT_BINARY_DIR}/${exe}.test"
+                DESTINATION ${CMAKE_INSTALL_DATADIR}/installed-tests/SDL3
             )
         endif()
         if(TARGET pretest AND NOT "${TARGET}" MATCHES "pretest")
