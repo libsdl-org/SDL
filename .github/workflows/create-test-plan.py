@@ -851,7 +851,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.static_lib = StaticLibType.A
         case SdlPlatform.FreeBSD | SdlPlatform.NetBSD | SdlPlatform.OpenBSD:
             job.cpactions = True
-            job.no_cmake = True
+            job.shell = "cpa.sh {0}"
             job.run_tests = False
             job.apt_packages = []
             job.shared_lib = SharedLibType.SO_0
@@ -859,7 +859,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             match spec.platform:
                 case SdlPlatform.FreeBSD:
                     job.cpactions_os = "freebsd"
-                    job.cpactions_version = "14.4"
+                    job.cpactions_version = "15.0"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "sudo pkg update"
                     job.cpactions_install_cmd = "sudo pkg install -y cmake ninja pkgconf libXcursor libXext libXinerama libXi libXfixes libXrandr libXScrnSaver libXxf86vm wayland wayland-protocols libxkbcommon mesa-libs libglvnd evdev-proto libinotify alsa-lib jackit pipewire pulseaudio sndio dbus zh-fcitx ibus libudev-devd"
@@ -867,6 +867,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                         "-DSDL_CHECK_REQUIRED_INCLUDES=/usr/local/include",
                         "-DSDL_CHECK_REQUIRED_LINK_OPTIONS=-L/usr/local/lib",
                     ))
+                    fpic = True
                 case SdlPlatform.NetBSD:
                     job.cpactions_os = "netbsd"
                     job.cpactions_version = "10.1"
@@ -875,10 +876,11 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
                 case SdlPlatform.OpenBSD:
                     job.cpactions_os = "openbsd"
-                    job.cpactions_version = "7.7"
+                    job.cpactions_version = "7.9"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "sudo pkg_add -u"
                     job.cpactions_install_cmd = "sudo pkg_add cmake ninja pkgconf wayland wayland-protocols libxkbcommon libinotify pulseaudio dbus ibus"
+                    fpic = True
         case SdlPlatform.NGage:
             build_parallel = False
             job.cmake_build_type = "Release"
