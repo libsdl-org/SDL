@@ -3121,12 +3121,10 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     case SDL_GPU_SAMPLECOUNT_1:
         desc.sampleCount = 1;
         break;
-    case SDL_GPU_SAMPLECOUNT_4:
-        desc.sampleCount = 4;
-        break;
     case SDL_GPU_SAMPLECOUNT_2:
     case SDL_GPU_SAMPLECOUNT_8:
-        SDL_assert_release(!"Texture sample count must be 1 or 4! Blame WebGPU.");
+    case SDL_GPU_SAMPLECOUNT_4:
+        desc.sampleCount = 4;
         break;
     }
 
@@ -3547,14 +3545,15 @@ static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *d
     case SDL_GPU_SAMPLECOUNT_1:
         multisampleState.count = 1;
         break;
-    case SDL_GPU_SAMPLECOUNT_4:
-        multisampleState.count = 4;
-        break;
     case SDL_GPU_SAMPLECOUNT_2:
     case SDL_GPU_SAMPLECOUNT_8:
         if (((WebGPURenderer *)driverData)->debugMode) {
-            SDL_assert_release(!"WebGPU only supports 1x or 4x multisampling!");
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "WebGPU only supports 1x or 4x multisampling! Falling back to 4x.");
         }
+        multisampleState.count = 4;
+        break;
+    case SDL_GPU_SAMPLECOUNT_4:
+        multisampleState.count = 4;
         break;
     }
 
