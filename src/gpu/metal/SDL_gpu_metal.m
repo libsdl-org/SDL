@@ -2210,6 +2210,19 @@ static void METAL_INTERNAL_ReturnUniformBufferToPool(
     uniformBuffer->drawOffset = 0;
 }
 
+static void METAL_SetVertexAmplificationCount(
+    SDL_GPUCommandBuffer *commandBuffer,
+    Uint32 viewCount)
+{
+    @autoreleasepool {
+        MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
+
+        if (@available(macOS 26.0, iOS 26.0, tvOS 26.0, *)) {
+            [metalCommandBuffer->renderEncoder setVertexAmplificationCount:viewCount];
+        }
+    }
+}
+
 static void METAL_SetViewport(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUViewport *viewport)
@@ -2273,7 +2286,8 @@ static void METAL_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
@@ -2377,6 +2391,11 @@ static void METAL_BeginRenderPass(
             if (h < vpHeight) {
                 vpHeight = h;
             }
+        }
+
+        if (viewCount != 0) {
+            // TODO: What to do when viewCount > maxVertexAmplificationCount?
+            METAL_SetVertexAmplificationCount(commandBuffer, viewCount);
         }
 
         // Set sensible default states
@@ -4656,6 +4675,17 @@ static SDL_GPUDevice *METAL_CreateDevice(bool debugMode, bool preferLowPower, SD
         if (verboseLogs) {
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Metal Device: %s", deviceName);
         }
+
+        int maxViewCount = 1;
+
+        if (@available(macOS 26.0, iOS 26.0, tvOS 26.0, *)) {
+            maxViewCount = device.maxVertexAmplificationCount;
+        }
+
+        SDL_SetNumberProperty(
+            renderer->props,
+            SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+            maxViewCount);
 
         // Remember debug mode
         renderer->debugMode = debugMode;
