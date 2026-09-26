@@ -187,7 +187,7 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe01e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe01f*/ SDL_SCANCODE_UNKNOWN,
     /*0xe020*/ SDL_SCANCODE_MUTE,
-    /*0xe021*/ SDL_SCANCODE_UNKNOWN, // LaunchApp2; "Calculator" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
+    /*0xe021*/ SDL_SCANCODE_AL_CALCULATOR, // LaunchApp2; "Calculator" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
     /*0xe022*/ SDL_SCANCODE_MEDIA_PLAY_PAUSE,
     /*0xe023*/ SDL_SCANCODE_UNKNOWN, // "Spell" on Natural Multimedia Keyboard
     /*0xe024*/ SDL_SCANCODE_MEDIA_STOP,
@@ -261,8 +261,8 @@ static const SDL_Scancode windows_scancode_table[] = {
     /*0xe068*/ SDL_SCANCODE_AC_STOP,
     /*0xe069*/ SDL_SCANCODE_AC_FORWARD,
     /*0xe06a*/ SDL_SCANCODE_AC_BACK,
-    /*0xe06b*/ SDL_SCANCODE_UNKNOWN,    // LaunchApp1; "My computer" on Turbo multimedia keyboards
-    /*0xe06c*/ SDL_SCANCODE_UNKNOWN,    // LaunchMail; "Mail" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
+    /*0xe06b*/ SDL_SCANCODE_AL_LOCAL_MACHINE_BROWSER, // LaunchApp1; "My computer" on Turbo multimedia keyboards
+    /*0xe06c*/ SDL_SCANCODE_AL_EMAIL_READER,          // LaunchMail; "Mail" on Natural Multimedia Keyboard and on Turbo multimedia keyboards
     /*0xe06d*/ SDL_SCANCODE_MEDIA_SELECT,
     /*0xe06e*/ SDL_SCANCODE_UNKNOWN,
     /*0xe06f*/ SDL_SCANCODE_UNKNOWN,
