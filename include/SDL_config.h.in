@@ -214,6 +214,7 @@
 #undef HAVE_MEMFD_CREATE
 #undef HAVE_POSIX_FALLOCATE
 #undef HAVE__EXIT
+#undef HAVE_GETEXECPATH
 
 #else
 

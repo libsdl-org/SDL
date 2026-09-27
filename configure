@@ -19815,6 +19815,12 @@ then :
   printf "%s\n" "#define HAVE__EXIT 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "getexecpath" "ac_cv_func_getexecpath"
+if test "x$ac_cv_func_getexecpath" = xyes
+then :
+  printf "%s\n" "#define HAVE_GETEXECPATH 1" >>confdefs.h
+
+fi
 
 
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for pow in -lm" >&5
