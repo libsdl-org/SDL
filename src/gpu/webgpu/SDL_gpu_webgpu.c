@@ -19,8 +19,11 @@
 #define DEFAULT_BINDGROUP_EXPIRY                       10000
 #define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
 
-// Disable pseudo-mapping. Useful for debugging upload errors.
-#define DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING false
+#ifndef PSEUDO_MAPPING_ENABLED
+// If this is TRUE, it becomes impossible to *actually map* any upload buffers.
+// This is a GROSS HACKY SOLUTION AND I HATE IT WITH THE BURNING PASSION OF A THOUSAND SUNS
+#define PSEUDO_MAPPING_ENABLED true
+#endif
 
 // map states
 #define MAP_STATE_UNMAPPED 0
@@ -38,6 +41,19 @@
 
 // WebGPU is bad and stinky
 #define ALIGN_VALUE(value, alignment) (value % alignment != 0 ? value + (alignment - (value % alignment)) : value)
+
+#define TRACK_RESOURCE(resource, type, array, count, capacity, refcountvar)                                                                       \
+    for (Sint32 totallyUniqueVariableName = commandBuffer->submitted.count - 1; totallyUniqueVariableName >= 0; totallyUniqueVariableName -= 1) { \
+        if (commandBuffer->submitted.array[totallyUniqueVariableName] == resource) {                                                              \
+            return;                                                                                                                               \
+        }                                                                                                                                         \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    WEBGPU_INTERNAL_InsertElementIntoArray(commandBuffer->submitted.array,                                                                        \
+                                           commandBuffer->submitted.capacity,                                                                     \
+                                           commandBuffer->submitted.count,                                                                        \
+                                           type, resource);                                                                                       \
+    SDL_AtomicIncRef(&refcountvar)
 
 // Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
 // Thank you very much, I hate writing shaders. -- TheStickmahn
@@ -1489,7 +1505,15 @@ static inline void WEBGPU_INTERNAL_RegisterQueuedDestroy(WebGPURenderer *rendere
                                            renderer->queuedDestroyCount, WebGPUQueuedDestroy *, destroy);
 }
 
-// TODO: All of these could be folded into one macro pretty easily
+static void WEBGPU_INTERNAL_TrackBuffer(WebGPUCommandBuffer *commandBuffer, WebGPUBuffer *buffer)
+{
+    TRACK_RESOURCE(buffer, WebGPUBuffer *, usedBuffers, usedBufferCount, usedBufferCapacity, buffer->referenceCount);
+}
+
+static void WEBGPU_INTERNAL_TrackTexture(WebGPUCommandBuffer *commandBuffer, WebGPUTexture *texture)
+{
+    TRACK_RESOURCE(texture, WebGPUTexture *, usedTextures, usedTextureCount, usedTextureCapacity, texture->referenceCount);
+}
 
 static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *renderer, WebGPUTextureContainer *container)
 {
@@ -1504,20 +1528,6 @@ static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *rend
 
     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
 }
-
-// static void WEBGPU_INTERNAL_QueueTextureForRelease(WebGPURenderer *renderer, WebGPUTexture *texture)
-// {
-//     WebGPUQueuedDestroy *destroy = NULL;
-//     if (texture == NULL) {
-//         return;
-//     }
-//
-//     destroy = SDL_calloc(1, sizeof(*destroy));
-//     destroy->type = WEBGPU_QUEUED_DESTROY_TEXTURE;
-//     destroy->resource.texture = texture;
-//
-//     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
-// }
 
 static void WEBGPU_INTERNAL_QueueSamplerForRelease(WebGPURenderer *renderer, WebGPUSampler *sampler)
 {
@@ -1543,20 +1553,6 @@ static void WEBGPU_INTERNAL_QueueBufferContainerForRelease(WebGPURenderer *rende
     destroy = SDL_calloc(1, sizeof(*destroy));
     destroy->type = WEBGPU_QUEUED_DESTROY_BUFFER_CONTAINER;
     destroy->resource.bufferContainer = container;
-
-    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
-}
-
-static void WEBGPU_INTERNAL_QueueBufferForRelease(WebGPURenderer *renderer, WebGPUBuffer *buffer)
-{
-    WebGPUQueuedDestroy *destroy = NULL;
-    if (buffer == NULL) {
-        return;
-    }
-
-    destroy = SDL_calloc(1, sizeof(*destroy));
-    destroy->type = WEBGPU_QUEUED_DESTROY_BUFFER;
-    destroy->resource.buffer = buffer;
 
     WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
 }
@@ -3782,7 +3778,15 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, Uint
             usages |= WGPUBufferUsage_CopySrc;
         }
     } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD) {
-        usages |= WGPUBufferUsage_MapWrite;
+        // HACK:
+        // Anything with a MapWrite usage can't be copied to. This has the issue of making
+        // it impossible to upload pseudo-mapped data to a buffer which can also be mapped.
+        // God I hate this. Why do you do these things to me Firefox?
+        if (PSEUDO_MAPPING_ENABLED == true) {
+            usages |= WGPUBufferUsage_CopyDst;
+        } else {
+            usages |= WGPUBufferUsage_MapWrite;
+        }
         usages |= WGPUBufferUsage_CopySrc;
     } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
         usages |= WGPUBufferUsage_MapRead;
@@ -3850,11 +3854,11 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
     bufferContainer->buffers[0] = bufferContainer->activeBuffer;
     bufferContainer->bufferType = bufferType;
     bufferContainer->usageFlags = usageFlags;
-    bufferContainer->size = size;
+    bufferContainer->size = ALIGN_VALUE(size, 4);
 
-    if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD) {
-        bufferContainer->pseudoMappedRange = SDL_malloc(size);
-        SDL_memset(bufferContainer->pseudoMappedRange, 0, size);
+    if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD && PSEUDO_MAPPING_ENABLED) {
+        bufferContainer->pseudoMappedRange = SDL_malloc(ALIGN_VALUE(size, 4));
+        SDL_memset(bufferContainer->pseudoMappedRange, 0, ALIGN_VALUE(size, 4));
     } else {
         // This trick only works for upload transfer buffers.
         bufferContainer->pseudoMappedRange = NULL;
@@ -4152,7 +4156,7 @@ static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBu
         WEBGPU_INTERNAL_CycleBufferContainer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer);
     }
 
-    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && !DEV_DISABLE_TRANSFER_BUFFER_PSEUDO_MAPPING) {
+    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && PSEUDO_MAPPING_ENABLED) {
         // Time to do our magic tricks.
         if (cycle) {
             SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
@@ -4194,11 +4198,8 @@ static void WEBGPU_CopyBufferToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_
         WEBGPU_INTERNAL_CycleBufferContainer(((WebGPUCommandBuffer *)copyPass)->renderer, (WebGPUBufferContainer *)destination->buffer);
     }
 
-    SDL_AtomicIncRef(&((WebGPUBufferContainer *)source->buffer)->activeBuffer->referenceCount);
-    SDL_AtomicIncRef(&((WebGPUBufferContainer *)destination->buffer)->activeBuffer->referenceCount);
-
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount, WebGPUBuffer *, ((WebGPUBufferContainer *)source->buffer)->activeBuffer);
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount, WebGPUBuffer *, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
 
     WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->buffer, source->offset, (WebGPUBufferContainer *)destination->buffer, destination->offset, size);
 }
@@ -4226,13 +4227,8 @@ static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SD
     destInfo.origin = (WGPUOrigin3D){ .x = destination->x, .y = destination->y, .z = destination->z + destination->layer };
     destInfo.mipLevel = destination->mip_level;
 
-    SDL_AtomicIncRef(&((WebGPUTextureContainer *)source->texture)->activeTexture->referenceCount);
-    SDL_AtomicIncRef(&((WebGPUTextureContainer *)destination->texture)->activeTexture->referenceCount);
-
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity,
-                                           cmdBuf->submitted.usedTextureCount, WebGPUTexture *, ((WebGPUTextureContainer *)source->texture)->activeTexture);
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity,
-                                           cmdBuf->submitted.usedTextureCount, WebGPUTexture *, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)source->texture)->activeTexture);
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
 
     wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ ALIGN_VALUE(w, blockWidthDest), ALIGN_VALUE(h, blockHeightDest), d });
 }
@@ -4259,11 +4255,8 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
         WEBGPU_INTERNAL_CycleBufferContainer(((WebGPUCommandBuffer *)copyPass)->renderer, (WebGPUBufferContainer *)destination->buffer);
     }
 
-    SDL_AtomicIncRef(&((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer->referenceCount);
-    SDL_AtomicIncRef(&((WebGPUBufferContainer *)destination->buffer)->activeBuffer->referenceCount);
-
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount, WebGPUBuffer *, ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer);
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount, WebGPUBuffer *, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
 
     // Spaghetti code here. Opaque pointers are terrifying.
     if (((WebGPUBufferContainer *)source->transfer_buffer)->mapState == MAP_STATE_MAPPED_CPU) {
@@ -4274,107 +4267,100 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
     }
 }
 
-static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureTransferInfo *source, const SDL_GPUTextureRegion *destination, bool cycle)
+// This'll eventually become a public function, but until PR #16249 is merged it'll be internal.
+static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUTextureRegion *destination, bool cycle)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+    WGPUTexelCopyBufferInfo sourceInfo = {};
+
+    // This should be NULL unless the user didn't pad their data correctly.
+    WebGPUBufferContainer *interimBuffer = NULL;
 
     if (cycle) {
         WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
     }
 
-    // NOTE:
-    // WebGPU requires ASTC textures to be sized as a multiple of the block size,
-    // i.e; An ASTC 4x5 texture's width must be a multiple of 4 and its height must be a multiple of 5.
-    // The backend automatically scales up ASTC textures if needed, which makes it invisible to the end-user that WebGPU has this restriction.
-    // However, we also have to pad the destination size in here since, again; it's invisible to the end user.
-    // We should probably make a note in the docs stating that ASTC textures in the WebGPU backend are not always the same size as the user expects.
+    if (((WebGPUBufferContainer *)source->buffer)->mapState == MAP_STATE_MAPPED_CPU) {
+        WebGPUBufferContainer *sourceBuffer = (WebGPUBufferContainer *)source->buffer;
+
+        wgpuQueueWriteBuffer(cmdBuf->queue, sourceBuffer->activeBuffer->buffer, 0, sourceBuffer->pseudoMappedRange, sourceBuffer->size);
+    }
+
     Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
     Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 bytesPerRow = BytesPerRow(ALIGN_VALUE(destination->w, blockWidth), ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
 
-    Uint32 paddedWidth = ALIGN_VALUE(destination->w, blockWidth);
-    Uint32 paddedHeight = ALIGN_VALUE(destination->h, blockHeight);
+    sourceInfo = (WGPUTexelCopyBufferInfo){
+        .buffer = ((WebGPUBufferContainer *)source->buffer)->activeBuffer->buffer,
+        .layout = (WGPUTexelCopyBufferLayout){
+            .bytesPerRow = bytesPerRow,
+            .rowsPerImage = ALIGN_VALUE(destination->h, blockHeight),
+            .offset = source->offset,
+        },
+    };
 
-    Uint32 pixelsPerRowSource = source->pixels_per_row != 0 ? source->pixels_per_row : destination->w;
-    Uint32 pixelsPerRowDest = source->pixels_per_row != 0 ? source->pixels_per_row : paddedWidth;
+    if (bytesPerRow % 256 != 0) {
+        // BytesPerRow isn't a multiple of 256! This is a Bad Thing!
+        // WebGPU inherits D3D12's horrible 256-byte alignment requirement for BPR, so we'll need to do something about this.
+        // To do this, we'll create an interim buffer which'll be 256-byte aligned, and then we'll issue some GPU copies to
+        // put the user's data into said interim buffer.
+        // TODO: We should probably save this interim buffer for a while, just in case the user uploads another texture (which they'll probably do)
+        Uint32 paddedBPR = ALIGN_VALUE(bytesPerRow, 256);
 
-    size_t bytesPerRowSource = BytesPerRow(pixelsPerRowSource, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
-    size_t bytesPerRowDest = BytesPerRow(pixelsPerRowDest, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+        // HACK: We need to add blockWidth since for some reason 1x1 texture uploads require 260 bytes of data
+        // despite WebGPU's very strong insistance on 256-byte alignment? Am I tweaking?
+        interimBuffer = WEBGPU_INTERNAL_CreateBufferContainer(cmdBuf->renderer, (Uint64)paddedBPR * ALIGN_VALUE(destination->h, blockHeight) + blockWidth,
+                                                              0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false,
+                                                              "SDLGPU Automatic Texture Padding Buffer");
 
-    size_t paddedBytesPerRow = ALIGN_VALUE(bytesPerRowDest, 256);
-    size_t blocksPerLayer = (destination->h + blockHeight - 1) / blockHeight;
-
-    WebGPUBuffer *userSourceBuffer = ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer;
-    WebGPUBuffer *finalSourceBuffer = userSourceBuffer;
-
-    bool hadToPad = false;
-
-    if (((WebGPUBufferContainer *)source->transfer_buffer)->mapState == MAP_STATE_MAPPED_CPU) {
-        // No need to pad anything, writeTexture does that for us.
-        wgpuQueueWriteTexture(cmdBuf->queue,
-                              &(WGPUTexelCopyTextureInfo){
-                                  .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
-                                  .aspect = WGPUTextureAspect_All,
-                                  .mipLevel = destination->mip_level,
-                                  .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->z + destination->layer },
-                              },
-                              ((WebGPUBufferContainer *)source->transfer_buffer)->pseudoMappedRange,
-                              ((WebGPUBufferContainer *)source->transfer_buffer)->size,
-                              &(WGPUTexelCopyBufferLayout){
-                                  .bytesPerRow = bytesPerRowDest,
-                                  .offset = source->offset,
-                                  .rowsPerImage = blocksPerLayer,
-                              },
-                              &(WGPUExtent3D){ paddedWidth, paddedHeight, destination->d });
-    } else {
-        if (paddedBytesPerRow != bytesPerRowDest) {
-            // FIXME: Why are we creating a whole new buffer just for a single upload? We need to create a buffer pool.
-            WebGPUBuffer *babysittingSourceBuffer = WEBGPU_INTERNAL_CreateBuffer(cmdBuf->renderer, paddedBytesPerRow * blocksPerLayer, 0,
-                                                                                 WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, "Autopadded Texture Transfer Buffer");
-
-            for (int i = 0; i < blocksPerLayer; i++) {
-                wgpuCommandEncoderCopyBufferToBuffer(cmdBuf->encoder, userSourceBuffer->buffer, source->offset + i * bytesPerRowSource,
-                                                     babysittingSourceBuffer->buffer, i * paddedBytesPerRow, ALIGN_VALUE(bytesPerRowSource, 4));
-            }
-
-            finalSourceBuffer = babysittingSourceBuffer;
-            hadToPad = true;
+        for (int i = 0; i < (destination->h + blockHeight - 1) / blockHeight; i++) {
+            WEBGPU_INTERNAL_CopyBufferToBuffer(cmdBuf->encoder, (WebGPUBufferContainer *)source->buffer,
+                                               source->offset + bytesPerRow * i, interimBuffer, paddedBPR * i, SDL_max(bytesPerRow, 4));
         }
 
-        WGPUTexelCopyBufferInfo sourceInfo = {
-            .buffer = finalSourceBuffer->buffer,
+        sourceInfo = (WGPUTexelCopyBufferInfo){
+            .buffer = interimBuffer->activeBuffer->buffer,
             .layout = (WGPUTexelCopyBufferLayout){
-                .bytesPerRow = paddedBytesPerRow,
-                .rowsPerImage = blocksPerLayer,
-                .offset = hadToPad ? 0 : source->offset,
+                .bytesPerRow = paddedBPR,
+                .rowsPerImage = ALIGN_VALUE(destination->h, blockHeight),
+                .offset = 0,
             },
         };
-
-        WGPUTexelCopyTextureInfo destInfo = {
-            .aspect = WGPUTextureAspect_All,
-            .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
-            .mipLevel = destination->mip_level,
-            .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->z + destination->layer },
-        };
-
-        wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ paddedWidth, paddedHeight, destination->d });
-
-        if (!hadToPad) {
-            // If we had to pad the buffer ourselves, there's no actual dependency on the
-            // user's source buffer so we don't have to increment the reference count.
-            SDL_AtomicIncRef(&finalSourceBuffer->referenceCount);
-            WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity,
-                                                   cmdBuf->submitted.usedBufferCount, WebGPUBuffer *, finalSourceBuffer);
-        }
     }
 
-    SDL_AtomicIncRef(&((WebGPUTextureContainer *)destination->texture)->activeTexture->referenceCount);
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity,
-                                           cmdBuf->submitted.usedTextureCount, WebGPUTexture *,
-                                           ((WebGPUTextureContainer *)destination->texture)->activeTexture);
+    WGPUTexelCopyTextureInfo destInfo = {
+        .aspect = WGPUTextureAspect_All,
+        .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
+        .mipLevel = destination->mip_level,
+        .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->z + destination->layer },
+    };
 
-    if (hadToPad) {
-        WEBGPU_INTERNAL_QueueBufferForRelease(cmdBuf->renderer, finalSourceBuffer);
+    wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder,
+                                          &sourceInfo, &destInfo,
+                                          &(WGPUExtent3D){
+                                              ALIGN_VALUE(destination->w, blockWidth),
+                                              ALIGN_VALUE(destination->h, blockHeight),
+                                              destination->d,
+                                          });
+
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->buffer)->activeBuffer);
+
+    if (interimBuffer) {
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, interimBuffer->activeBuffer);
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease(cmdBuf->renderer, interimBuffer);
     }
+}
+
+static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureTransferInfo *source, const SDL_GPUTextureRegion *destination, bool cycle)
+{
+    // Since a transfer buffer in the WebGPU backend is actually just a normal buffer in a trenchcoat we can just use CopyBufferToTexture.
+    WEBGPU_INTERNAL_CopyBufferToTexture(copyPass,
+                                        &(SDL_GPUBufferLocation){
+                                            .buffer = (SDL_GPUBuffer *)source->transfer_buffer,
+                                            .offset = source->offset,
+                                        },
+                                        destination, cycle);
 }
 
 static void WEBGPU_PushDebugGroup(SDL_GPUCommandBuffer *commandBuffer, const char *name)
@@ -4626,9 +4612,7 @@ static void WEBGPU_BindVertexBuffers(SDL_GPUCommandBuffer *renderPass, Uint32 fi
         cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].buffer = ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer;
         cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].offset = binding[i].offset;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                               WebGPUBuffer *, ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer);
-        SDL_AtomicIncRef(&((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer->referenceCount);
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer);
     }
 
     cmdBuf->vertexStageBinds.shouldBindVertexBuffers = true;
@@ -4644,9 +4628,7 @@ static void WEBGPU_BindIndexBuffer(SDL_GPUCommandBuffer *renderPass, const SDL_G
     cmdBuf->vertexStageBinds.indexFormat = SDLToWebGPU_IndexFormat[elementSize];
     cmdBuf->vertexStageBinds.shouldBindIndexBuffer = true;
 
-    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                           WebGPUBuffer *, ((WebGPUBufferContainer *)binding->buffer)->activeBuffer);
-    SDL_AtomicIncRef(&((WebGPUBufferContainer *)binding->buffer)->activeBuffer->referenceCount);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)binding->buffer)->activeBuffer);
 }
 
 static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, const SDL_GPUTextureSamplerBinding *textureSamplerBindings, uint32_t numBindings)
@@ -4667,10 +4649,7 @@ static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 f
         cmdBuf->vertexStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
         cmdBuf->vertexStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
-
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
     }
     cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4682,9 +4661,7 @@ static void WEBGPU_BindVertexStorageBuffers(SDL_GPUCommandBuffer *renderPass, Ui
     for (int i = 0; i < numBindings; i++) {
         cmdBuf->vertexStageBinds.boundStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
-        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
     }
     cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4696,9 +4673,7 @@ static void WEBGPU_BindVertexStorageTextures(SDL_GPUCommandBuffer *renderPass, U
     for (int i = 0; i < numBindings; i++) {
         cmdBuf->vertexStageBinds.boundStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
     }
     cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4720,10 +4695,7 @@ static void WEBGPU_BindFragmentSamplers(SDL_GPUCommandBuffer *renderPass, Uint32
         cmdBuf->fragmentStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
         cmdBuf->fragmentStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
-
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
     }
     cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4735,9 +4707,7 @@ static void WEBGPU_BindFragmentStorageBuffers(SDL_GPUCommandBuffer *renderPass, 
     for (int i = 0; i < numBindings; i++) {
         cmdBuf->fragmentStageBinds.boundStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
-        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
     }
     cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4749,9 +4719,7 @@ static void WEBGPU_BindFragmentStorageTextures(SDL_GPUCommandBuffer *renderPass,
     for (int i = 0; i < numBindings; i++) {
         cmdBuf->fragmentStageBinds.boundStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
     }
     cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4764,24 +4732,7 @@ static void WEBGPU_BindComputeSamplers(SDL_GPUCommandBuffer *commandBuffer, Uint
         cmdBuf->computeStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
         cmdBuf->computeStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
-
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->referenceCount);
-    }
-    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
-}
-
-static void WEBGPU_BindComputeStorageTextures(SDL_GPUCommandBuffer *commandBuffer, Uint32 firstSlot, SDL_GPUTexture *const *storageTextures, Uint32 numBindings)
-{
-    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
-
-    for (int i = 0; i < numBindings; i++) {
-        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
-
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)storageTextures[i])->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
     }
     cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -4793,9 +4744,19 @@ static void WEBGPU_BindComputeStorageBuffers(SDL_GPUCommandBuffer *commandBuffer
     for (int i = 0; i < numBindings; i++) {
         cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                               WebGPUBuffer *, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
-        SDL_AtomicIncRef(&((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer->referenceCount);
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+    }
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindComputeStorageTextures(SDL_GPUCommandBuffer *commandBuffer, Uint32 firstSlot, SDL_GPUTexture *const *storageTextures, Uint32 numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
     }
     cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
 }
@@ -5065,9 +5026,7 @@ static void WEBGPU_INTERNAL_BindComputeReadWriteStorageTextures(WebGPUCommandBuf
         // FIXME: Our layer & mip level system is gross and I hate it
         cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = ((WebGPUTextureContainer *)bindings->texture)->activeTexture->fullTextureView;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedTextures, cmdBuf->submitted.usedTextureCapacity, cmdBuf->submitted.usedTextureCount,
-                                               WebGPUTexture *, ((WebGPUTextureContainer *)bindings[i].texture)->activeTexture);
-        SDL_AtomicIncRef(&((WebGPUTextureContainer *)bindings[i].texture)->activeTexture->referenceCount);
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)bindings[i].texture)->activeTexture);
     }
     cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
 }
@@ -5082,9 +5041,7 @@ static void WEBGPU_INTERNAL_BindComputeReadWriteStorageBuffers(WebGPUCommandBuff
 
         cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] = ((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer;
 
-        WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->submitted.usedBuffers, cmdBuf->submitted.usedBufferCapacity, cmdBuf->submitted.usedBufferCount,
-                                               WebGPUBuffer *, ((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer);
-        SDL_AtomicIncRef(&((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer->referenceCount);
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer);
     }
     cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
 }
