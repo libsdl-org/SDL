@@ -86,7 +86,7 @@ if(EXISTS "${_sdl2main_library}")
     )
     if(WIN32)
       # INTERFACE_LINK_OPTIONS needs CMake 3.13
-      cmake_minimum_required(VERSION 3.13)
+      cmake_minimum_required(VERSION 3.13...4.3)
       # Mark WinMain/WinMain@16 as undefined, such that it will be withheld by the linker.
       if(CMAKE_SIZEOF_VOID_P EQUAL 4)
         set_target_properties(SDL2::SDL2main

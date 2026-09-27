@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0...4.0)
+cmake_minimum_required(VERSION 3.0...4.3)
 project(SDL2_test C)
 
 include(CheckCCompilerFlag)

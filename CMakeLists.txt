@@ -2316,7 +2316,7 @@ elseif(APPLE)
   endif()
 
   # Minimum version for $<LINK_LIBRARY:feature,library-list>
-  cmake_minimum_required(VERSION 3.24)
+  cmake_minimum_required(VERSION 3.24...4.3)
 
   # Actually load the frameworks at the end so we don't duplicate include.
   if(SDL_FRAMEWORK_COREVIDEO)
@@ -3309,7 +3309,7 @@ if (SDL_ASAN)
 endif()
 
 if(SDL_CCACHE AND NOT CMAKE_VERSION VERSION_LESS 3.4)
-  cmake_minimum_required(VERSION 3.4...3.5)
+  cmake_minimum_required(VERSION 3.4...4.3)
   find_program(CCACHE_BINARY ccache)
   if(CCACHE_BINARY)
     set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE_BINARY})

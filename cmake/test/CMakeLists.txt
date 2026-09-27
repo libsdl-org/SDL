@@ -1,6 +1,6 @@
 # This cmake build script is meant for verifying the various CMake configuration script.
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.12...4.3)
 project(sdl_test LANGUAGES C)
 
 include(CheckLanguage)
