@@ -52,8 +52,8 @@ jobs:
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
         with:
-          local-cache: true
-          ndk-version: r21e
+          local-cache: false
+          ndk-version: r28c
       - uses: ilammy/msvc-dev-cmd@v1
         if: ${{ matrix.platform.platform == 'msvc' }}
         with:
