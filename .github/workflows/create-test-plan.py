@@ -193,7 +193,6 @@ class JobDetails:
     cc_from_cmake: bool = False
     source_cmd: str = ""
     pretest_cmd: str = ""
-    android_apks: list[str] = dataclasses.field(default_factory=list)
     android_ndk: bool = False
     android_mk: bool = False
     minidump: bool = False
@@ -264,7 +263,6 @@ class JobDetails:
             "static-lib": self.static_lib.value if self.static_lib else None,
             "cmake-build-type": self.cmake_build_type,
             "run-tests": self.run_tests,
-            "android-apks": my_shlex_join(self.android_apks),
             "android-mk": self.android_mk,
             "werror": self.werror,
             "sudo": self.sudo,
@@ -508,14 +506,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 ))
                 job.cmake_toolchain_file = "${ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake"
                 job.cc = f"${{ANDROID_NDK_HOME}}/toolchains/llvm/prebuilt/linux-x86_64/bin/clang --target={spec.android_arch}-none-linux-androideabi{spec.android_platform}"
-
-                job.android_apks = [
-                    "testaudiorecording-apk",
-                    "testautomation-apk",
-                    "testcontroller-apk",
-                    "testmultiaudio-apk",
-                    "testsprite-apk",
-                ]
         case SdlPlatform.Emscripten:
             job.run_tests = False
             job.shared = False
