@@ -54,6 +54,12 @@ jobs:
         with:
           local-cache: false
           ndk-version: r28c
+      - name: 'Configure Android NDK variables'
+        if: ${{ matrix.platform.android-ndk }}
+        shell: sh
+        run: |
+          # We cannot use GitHub expressions in the controller job
+          echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >>$GITHUB_ENV
       - uses: ilammy/msvc-dev-cmd@v1
         if: ${{ matrix.platform.platform == 'msvc' }}
         with:
