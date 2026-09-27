@@ -1109,6 +1109,7 @@ if(SDL_LIBC)
       check_symbol_exists("${_FN}" "${STDC_HEADER_NAMES}" ${_HAVEVAR})
     endforeach()
 
+    check_symbol_exists(getexecpath "unistd.h" HAVE_GETEXECPATH)
     check_symbol_exists(sigaction "signal.h" HAVE_SIGACTION)
     check_symbol_exists(sigtimedwait "signal.h" HAVE_SIGTIMEDWAIT)
     check_symbol_exists(setjmp "setjmp.h" HAVE_SETJMP)
