@@ -20,15 +20,15 @@ jobs:
       src-zip: ${{ steps.releaser.outputs.src-zip }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Set up SDL sources'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           path: 'SDL'
           fetch-depth: 0
@@ -43,7 +43,7 @@ jobs:
             --github \
             --debug
       - name: 'Store source archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sources
           path: '${{ github.workspace}}/dist'
@@ -90,11 +90,11 @@ jobs:
       dmg: ${{ steps.releaser.outputs.dmg }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
@@ -119,7 +119,7 @@ jobs:
             --github \
             --debug
       - name: 'Store DMG image file'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dmg
           path: '${{ github.workspace }}/dist'
@@ -188,11 +188,11 @@ jobs:
       VC-devel: ${{ steps.releaser.outputs.VC-devel }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Download source archives'
@@ -217,7 +217,7 @@ jobs:
             --github                                `
             --debug
       - name: 'Store MSVC archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: win32
           path: '${{ github.workspace }}/dist'
@@ -227,7 +227,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: 'Fetch .github/actions/setup-ninja/action.yml'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: '.github/actions/setup-ninja/action.yml'
       - name: 'Download source archives'
@@ -305,11 +305,11 @@ jobs:
       mingw-devel-tar-xz: ${{ steps.releaser.outputs.mingw-devel-tar-xz }}
     steps:
       - name: 'Set up Python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
       - name: 'Fetch build-release.py'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           sparse-checkout: 'build-scripts/build-release.py'
       - name: 'Install Mingw toolchain'
@@ -337,7 +337,7 @@ jobs:
             --github                                \
             --debug
       - name: 'Store MinGW archives'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mingw
           path: '${{ github.workspace }}/dist'
