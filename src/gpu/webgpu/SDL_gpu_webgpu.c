@@ -17,13 +17,8 @@
 
 #define WINDOW_PROPERTY_DATA                           "SDL.internal.gpu.webgpu.data"
 #define DEFAULT_BINDGROUP_EXPIRY                       10000
+#define DEFAULT_PSEUDOMAP_SIZE_THRESHOLD               (1 << 25)
 #define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
-
-#ifndef PSEUDO_MAPPING_ENABLED
-// If this is TRUE, it becomes impossible to *actually map* any upload buffers.
-// This is a GROSS HACKY SOLUTION AND I HATE IT WITH THE BURNING PASSION OF A THOUSAND SUNS
-#define PSEUDO_MAPPING_ENABLED true
-#endif
 
 // map states
 #define MAP_STATE_UNMAPPED 0
@@ -867,6 +862,11 @@ typedef struct WebGPURenderer
 
     Uint64 nextBindableResourceID;
 
+    /**
+     * How big can a buffer get until pseudo-mapping is disallowed due to memory usage concerns?
+     */
+    Uint64 pseudoMapBufferSizeThreshold;
+
     // For how many submissions can a bind group be unused until it's automatically freed?
     // Set to -1 to disable pruning, and 0 to instantly free it.
     int bindGroupsExpireAfter;
@@ -1059,6 +1059,11 @@ struct WebGPUBufferContainer
     // 1 = Mapped from GPU (Accessing GPU memory directly)
     // 2 = Mapped on CPU (Pseudo-mapping, see above)
     Uint16 mapState;
+
+    /**
+     * Should this buffer be pseudo-mapped?
+     */
+    bool shouldPseudomap;
 };
 
 typedef struct WebGPUTextureView
@@ -3782,7 +3787,7 @@ static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, Uint
         // Anything with a MapWrite usage can't be copied to. This has the issue of making
         // it impossible to upload pseudo-mapped data to a buffer which can also be mapped.
         // God I hate this. Why do you do these things to me Firefox?
-        if (PSEUDO_MAPPING_ENABLED == true) {
+        if (size <= renderer->pseudoMapBufferSizeThreshold) {
             usages |= WGPUBufferUsage_CopyDst;
         } else {
             usages |= WGPUBufferUsage_MapWrite;
@@ -3856,13 +3861,9 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
     bufferContainer->usageFlags = usageFlags;
     bufferContainer->size = ALIGN_VALUE(size, 4);
 
-    if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD && PSEUDO_MAPPING_ENABLED) {
-        bufferContainer->pseudoMappedRange = SDL_malloc(ALIGN_VALUE(size, 4));
-        SDL_memset(bufferContainer->pseudoMappedRange, 0, ALIGN_VALUE(size, 4));
-    } else {
-        // This trick only works for upload transfer buffers.
-        bufferContainer->pseudoMappedRange = NULL;
-    }
+    // The memory is allocated when the transfer buffer's first mapped.
+    bufferContainer->pseudoMappedRange = NULL;
+    bufferContainer->shouldPseudomap = size <= renderer->pseudoMapBufferSizeThreshold;
 
     return bufferContainer;
 }
@@ -4156,8 +4157,13 @@ static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBu
         WEBGPU_INTERNAL_CycleBufferContainer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer);
     }
 
-    if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange != NULL && PSEUDO_MAPPING_ENABLED) {
+    if (((WebGPUBufferContainer *)transferBuffer)->shouldPseudomap) {
         // Time to do our magic tricks.
+        if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange == NULL) {
+            ((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange = SDL_malloc(((WebGPUBufferContainer *)transferBuffer)->size);
+            SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
+        }
+
         if (cycle) {
             SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
         }
@@ -4176,11 +4182,11 @@ static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBu
 
 static void WEBGPU_UnmapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer)
 {
-    if (((WebGPUBufferContainer *)transferBuffer)->mapState == MAP_STATE_MAPPED_CPU) {
-        // Yeah we don't actually have to do anything.
-    } else {
+    if (((WebGPUBufferContainer *)transferBuffer)->mapState == MAP_STATE_MAPPED_GPU) {
         wgpuBufferUnmap(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer);
     }
+
+    ((WebGPUBufferContainer *)transferBuffer)->mapState = MAP_STATE_UNMAPPED;
 }
 
 static void WEBGPU_INTERNAL_CopyBufferToBuffer(WGPUCommandEncoder encoder, WebGPUBufferContainer *sourceBuf,
@@ -4259,9 +4265,9 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
     WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
 
     // Spaghetti code here. Opaque pointers are terrifying.
-    if (((WebGPUBufferContainer *)source->transfer_buffer)->mapState == MAP_STATE_MAPPED_CPU) {
+    if (((WebGPUBufferContainer *)source->transfer_buffer)->shouldPseudomap) {
         WEBGPU_INTERNAL_UploadToBufferFromCPU(copyPass, destination, ((WebGPUBufferContainer *)source->transfer_buffer)->pseudoMappedRange + source->offset, false);
-    } else if (((WebGPUBufferContainer *)source->transfer_buffer)->mapState == MAP_STATE_MAPPED_GPU) {
+    } else {
         WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->transfer_buffer, source->offset,
                                            (WebGPUBufferContainer *)destination->buffer, destination->offset, ALIGN_VALUE(destination->size, 4));
     }
@@ -4285,7 +4291,7 @@ static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, 
         WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
     }
 
-    if (((WebGPUBufferContainer *)source->buffer)->mapState == MAP_STATE_MAPPED_CPU) {
+    if (((WebGPUBufferContainer *)source->buffer)->shouldPseudomap) {
         WebGPUBufferContainer *sourceBuffer = (WebGPUBufferContainer *)source->buffer;
 
         if (source->offset > sourceBuffer->size) {
@@ -5751,6 +5757,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 
     Sint64 bindGroupsExpireAfter = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS, DEFAULT_BINDGROUP_EXPIRY);
+    Sint64 pseudoMapThreshold = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB, DEFAULT_PSEUDOMAP_SIZE_THRESHOLD);
 
     bool getAdapterSucceeded = false;
     bool getDeviceSucceeded = false;
@@ -5765,6 +5772,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     renderer->preferLowPower = preferLowPower;
     renderer->props = SDL_CreateProperties();
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
+    renderer->pseudoMapBufferSizeThreshold = pseudoMapThreshold;
     renderer->maxFramesInFlight = 2; // Default
 
     renderer->bindGroupHashTable = SDL_CreateHashTable(512, true, WEBGPU_INTERNAL_HashBindGroupKey, WEBGPU_INTERNAL_MatchHashedBindGroupKey, WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey, NULL);

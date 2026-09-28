@@ -2384,6 +2384,13 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   are usecases for when you want to disable caching (if so, set this to 0)
  *   or if you want to disable cache pruning. (if so, set this to -1)
  *   TLDR: Don't touch this if you don't know EXACTLY what it does.
+ * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB`:
+ *   This sets the limit as to how large a GPU transfer buffer can be before it
+ *   can no longer be "pseudo-mapped". Pseudo-mapping refers to an internal 
+ *   optimization which disables traditional GPU buffer mapping in favor of a 
+ *   WebGPU owned staging buffer. This is almost always the best option, however
+ *   it does come with the caveat of requiring an equally sized CPU buffer for 
+ *   each mapped GPU transfer buffer.
  *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
@@ -2421,8 +2428,9 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
-
 #define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB   "SDL.gpu.device.create.webgpu.pseudomapsizethreshold"
+
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_SYSTEM_ID_POINTER                         "SDL.gpu.device.create.xr.system_id_out"
@@ -4287,6 +4295,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  * You must unmap the transfer buffer before encoding upload commands using
  * SDL_UnmapGPUTransferBuffer. The memory is owned by the graphics driver - do
  * NOT call SDL_free() on the returned pointer.
+ *
+ * Note that for the WebGPU backend, mapping download buffers is a very expensive
+ * procedure. Mapping download buffers with the WebGPU backend is strongly 
+ * discouraged.
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
