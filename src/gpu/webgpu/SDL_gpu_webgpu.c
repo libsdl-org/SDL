@@ -4276,6 +4276,11 @@ static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, 
     // This should be NULL unless the user didn't pad their data correctly.
     WebGPUBufferContainer *interimBuffer = NULL;
 
+    Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 bytesPerRowNotAligned = BytesPerRow(destination->w, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 bytesPerRow = BytesPerRow(ALIGN_VALUE(destination->w, blockWidth), ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+
     if (cycle) {
         WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
     }
@@ -4283,18 +4288,19 @@ static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, 
     if (((WebGPUBufferContainer *)source->buffer)->mapState == MAP_STATE_MAPPED_CPU) {
         WebGPUBufferContainer *sourceBuffer = (WebGPUBufferContainer *)source->buffer;
 
-        wgpuQueueWriteBuffer(cmdBuf->queue, sourceBuffer->activeBuffer->buffer, 0, sourceBuffer->pseudoMappedRange, sourceBuffer->size);
-    }
+        if (source->offset > sourceBuffer->size) {
+            SDL_assert_release(!"Offset is greater than buffer size!");
+        }
 
-    Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
-    Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
-    Uint32 bytesPerRow = BytesPerRow(ALIGN_VALUE(destination->w, blockWidth), ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+        wgpuQueueWriteBuffer(cmdBuf->queue, sourceBuffer->activeBuffer->buffer, source->offset,
+                             sourceBuffer->pseudoMappedRange + source->offset, (Uint64)bytesPerRowNotAligned * ((destination->h + blockHeight - 1) / blockHeight));
+    }
 
     sourceInfo = (WGPUTexelCopyBufferInfo){
         .buffer = ((WebGPUBufferContainer *)source->buffer)->activeBuffer->buffer,
         .layout = (WGPUTexelCopyBufferLayout){
             .bytesPerRow = bytesPerRow,
-            .rowsPerImage = ALIGN_VALUE(destination->h, blockHeight),
+            .rowsPerImage = (destination->h + blockHeight - 1) / blockHeight,
             .offset = source->offset,
         },
     };
@@ -4322,7 +4328,7 @@ static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, 
             .buffer = interimBuffer->activeBuffer->buffer,
             .layout = (WGPUTexelCopyBufferLayout){
                 .bytesPerRow = paddedBPR,
-                .rowsPerImage = ALIGN_VALUE(destination->h, blockHeight),
+                .rowsPerImage = (destination->h + blockHeight - 1) / blockHeight,
                 .offset = 0,
             },
         };
