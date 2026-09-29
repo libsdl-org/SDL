@@ -1676,7 +1676,7 @@ if(ANDROID)
       set(path_android_jar "${SDL_ANDROID_PLATFORM_ROOT}/android.jar")
       set(android_java_sources_root "${SDL3_SOURCE_DIR}/android-project/app/src/main/java")
       file(GLOB SDL_JAVA_SOURCES "${android_java_sources_root}/org/libsdl/app/*.java")
-      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8;-source;1.8;-target;1.8")
       add_jar(SDL3-jar
         SOURCES ${SDL_JAVA_SOURCES}
         INCLUDE_JARS "${path_android_jar}"
