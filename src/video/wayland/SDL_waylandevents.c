@@ -2739,7 +2739,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
             wl_data_offer_accept(id, serial, FILE_MIME);
         }
 
-        if (data_device->has_mime_file) {
+        if (!data_device->has_mime_file) {
             size_t mime_count = 0;
             const char *const *text_mime_types = Wayland_GetTextMimeTypes(SDL_GetVideoDevice(), &mime_count);
             for (size_t i = 0; i < mime_count; ++i) {
