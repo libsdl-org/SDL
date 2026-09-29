@@ -1595,7 +1595,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
 #ifdef SDL_HAPTIC_ANDROID
 #ifdef SDL_ANDROID_GAMEPAD_AS_RPC
     RPC_Prepare(nativeAddHaptic);
-    RPC_Add(device_name);
+    RPC_Add(device_id);
     RPC_AddString(device_name);
     RPC_Send;
 #else
