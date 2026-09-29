@@ -108,7 +108,7 @@ static gs_rgbaq float_color_to_RGBAQ(const SDL_FColor *color, float color_scale)
     uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 0x80);
 
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
@@ -118,7 +118,7 @@ static gs_rgbaq float_color_to_RGBAQ_tex(const SDL_FColor *color, float color_sc
     uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 127.0f);
     uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 127.0f);
     uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 127.0f);
-    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 127.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 0x80);
 
     return color_to_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
@@ -128,7 +128,7 @@ static uint64_t float_GS_SETREG_RGBAQ(const SDL_FColor *color, float color_scale
     uint8_t colorR = (uint8_t)SDL_roundf(SDL_clamp(color->r * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorG = (uint8_t)SDL_roundf(SDL_clamp(color->g * color_scale, 0.0f, 1.0f) * 255.0f);
     uint8_t colorB = (uint8_t)SDL_roundf(SDL_clamp(color->b * color_scale, 0.0f, 1.0f) * 255.0f);
-    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 255.0f);
+    uint8_t colorA = (uint8_t)SDL_roundf(SDL_clamp(color->a, 0.0f, 1.0f) * 0x80);
 
     return GS_SETREG_RGBAQ(colorR, colorG, colorB, colorA, 0x00);
 }
@@ -190,14 +190,22 @@ static bool PS2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     PS2_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
-    if (length == pitch && length == dpitch) {
-        SDL_memcpy(dst, src, length * rect->h);
-    } else {
-        for (row = 0; row < rect->h; ++row) {
-            SDL_memcpy(dst, src, length);
-            src += pitch;
-            dst += dpitch;
+    const bool has_alpha32 = (SDL_BYTESPERPIXEL(texture->format) == 4 &&
+                          SDL_ISPIXELFORMAT_ALPHA(texture->format));
+
+    for (row = 0; row < rect->h; ++row) {
+        SDL_memcpy(dst, src, length);
+
+        // Convert alpha from 0-255 to the GS range 0-0x80
+        if (has_alpha32) {
+            for (int x = 0; x < rect->w; ++x) {
+                Uint8 a = dst[x * 4 + 3];
+                dst[x * 4 + 3] = (Uint8)((a * 128 + 127) / 255);
+            }
         }
+
+        src += pitch;
+        dst += dpitch;
     }
 
     PS2_UnlockTexture(renderer, texture);
@@ -671,7 +679,7 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     } else {
         gsGlobal->Interlace = GS_INTERLACED;
     }
-    
+
     // GS width/height
     gsGlobal->Width = 0;
     gsGlobal->Height = 0;
