@@ -664,10 +664,19 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
  * As an optimization, the pixels made available for editing don't necessarily
  * contain the old texture data. This is a write-only operation, and if you
  * need to keep a copy of the texture data you should do that at the
- * application level.
+ * application level. If the existing texture contents happen to be in the
+ * locked buffer, it is purely coincidental.
  *
  * You must use SDL_UnlockTexture() to unlock the pixels and apply any
  * changes.
+ *
+ * Every pixel must be initialized by the caller, or uninitialized data will
+ * be uploaded to the texture during unlock.
+ *
+ * `pitch` may be larger than the bytes needed for a row of pixels, as there
+ * might be padding included. Use `(y * pitch) + (x * pixel_size_in_bytes)` to
+ * write to the first byte of the pixel at `(x, y)` in the locked texture area,
+ * where `(0, 0)` is the top-left corner of the area.
  *
  * \param texture the texture to lock for access, which was created with
  *                `SDL_TEXTUREACCESS_STREAMING`.
