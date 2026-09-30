@@ -813,11 +813,16 @@ if(ANDROID AND TARGET SDL3::Jar)
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
 
+            set(native_libs ${TEST})
+            if(SDL_TESTS_LINK_SHARED)
+                list(APPEND native_libs SDL3::SDL3-shared)
+            endif()
+
             sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
                 APK_IN ${TEST}-apk-linked
                 OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
                 ASSETS ${RESOURCE_FILES}
-                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                NATIVE_LIBS ${native_libs}
                 DEX ${TEST}-dex
             )
 
