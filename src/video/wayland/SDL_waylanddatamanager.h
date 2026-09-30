@@ -100,7 +100,6 @@ struct SDL_WaylandDataDevice
     struct wl_surface *dnd_surface;
 
     // Clipboard and Primary Selection
-    uint32_t selection_serial;
     SDL_WaylandDataSource *selection_source;
 };
 
@@ -109,7 +108,6 @@ struct SDL_WaylandPrimarySelectionDevice
     struct zwp_primary_selection_device_v1 *primary_selection_device;
     struct SDL_WaylandSeat *seat;
 
-    uint32_t selection_serial;
     SDL_WaylandPrimarySelectionSource *selection_source;
     SDL_WaylandPrimarySelectionOffer *selection_offer;
 };
@@ -140,7 +138,5 @@ extern void Wayland_PrimarySelectionOfferDestroy(SDL_WaylandPrimarySelectionOffe
 // Clipboard / Primary Selection
 extern bool Wayland_DataDeviceSetSelectionSource(SDL_WaylandDataDevice *device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count);
 extern bool Wayland_PrimarySelectionDeviceSetSelection(SDL_WaylandPrimarySelectionDevice *device, SDL_WaylandPrimarySelectionSource *source, const char *const *mime_types, size_t mime_count);
-extern void Wayland_DataDeviceSetSerial(SDL_WaylandDataDevice *device, uint32_t serial);
-extern void Wayland_PrimarySelectionDeviceSetSerial(SDL_WaylandPrimarySelectionDevice *device, uint32_t serial);
 
 #endif // SDL_waylanddatamanager_h_
