@@ -3146,9 +3146,13 @@ bool SDL_SetWindowBordered(SDL_Window *window, bool bordered)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
-    const bool want = (bordered != false); // normalize the flag.
+    if (!_this->SetWindowBordered) {
+        return SDL_Unsupported();
+    }
+
+    const bool want = bordered;
     const bool have = !(window->flags & SDL_WINDOW_BORDERLESS);
-    if ((want != have) && (_this->SetWindowBordered)) {
+    if (want != have) {
         if (want) {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
         } else {
@@ -3165,9 +3169,13 @@ bool SDL_SetWindowResizable(SDL_Window *window, bool resizable)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
-    const bool want = (resizable != false); // normalize the flag.
+    if (!_this->SetWindowResizable) {
+        return SDL_Unsupported();
+    }
+
+    const bool want = resizable;
     const bool have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
-    if ((want != have) && (_this->SetWindowResizable)) {
+    if (want != have) {
         if (want) {
             window->flags |= SDL_WINDOW_RESIZABLE;
         } else {
@@ -3185,9 +3193,13 @@ bool SDL_SetWindowAlwaysOnTop(SDL_Window *window, bool on_top)
     CHECK_WINDOW_MAGIC(window, false);
     CHECK_WINDOW_NOT_POPUP(window, false);
 
-    const bool want = (on_top != false); // normalize the flag.
+    if (!_this->SetWindowAlwaysOnTop) {
+        return SDL_Unsupported();
+    }
+
+    const bool want = on_top;
     const bool have = ((window->flags & SDL_WINDOW_ALWAYS_ON_TOP) != 0);
-    if ((want != have) && (_this->SetWindowAlwaysOnTop)) {
+    if (want != have) {
         if (want) {
             window->flags |= SDL_WINDOW_ALWAYS_ON_TOP;
         } else {
