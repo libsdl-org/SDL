@@ -35,6 +35,9 @@
 #include "vulkan_vi.h"
 #endif
 
+#ifdef VK_USE_PLATFORM_UBM_SEC
+#include "vulkan_ubm.h"
+#endif
 
 #ifdef VK_USE_PLATFORM_WAYLAND_KHR
 #include "vulkan_wayland.h"
@@ -91,12 +94,15 @@
 #endif
 
 
-#ifdef VK_ENABLE_BETA_EXTENSIONS
-#include "vulkan_beta.h"
-#endif
-
 #ifdef VK_USE_PLATFORM_OHOS
 #include "vulkan_ohos.h"
+#endif
+
+/* vulkan_beta.h should go last in the event any beta extension interactions
+ * with platform extensions exist.
+ */
+#ifdef VK_ENABLE_BETA_EXTENSIONS
+#include "vulkan_beta.h"
 #endif
 
 #endif // VULKAN_H_

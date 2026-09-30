@@ -459,6 +459,12 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrSystemSpatialPlanePropertiesBD, XR_TYPE_SYSTEM_SPATIAL_PLANE_PROPERTIES_BD) \
     _avail(XrSpatialEntityComponentDataPlaneOrientationBD, XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_PLANE_ORIENTATION_BD) \
     _avail(XrSenseDataFilterPlaneOrientationBD, XR_TYPE_SENSE_DATA_FILTER_PLANE_ORIENTATION_BD) \
+    _avail(XrSystemLightEstimationPropertiesBD, XR_TYPE_SYSTEM_LIGHT_ESTIMATION_PROPERTIES_BD) \
+    _avail(XrSenseDataProviderCreateInfoLightEstimationBD, XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_LIGHT_ESTIMATION_BD) \
+    _avail(XrEnvironmentTextureCreateConfigInfoBD, XR_TYPE_ENVIRONMENT_TEXTURE_CREATE_CONFIG_INFO_BD) \
+    _avail(XrLightEstimationDataEnvironmentTextureRawBD, XR_TYPE_LIGHT_ESTIMATION_DATA_ENVIRONMENT_TEXTURE_RAW_BD) \
+    _avail(XrLightEstimationDataSphericalHarmonicsBD, XR_TYPE_LIGHT_ESTIMATION_DATA_SPHERICAL_HARMONICS_BD) \
+    _avail(XrSpatialEntityComponentDataLightEstimationBD, XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_LIGHT_ESTIMATION_BD) \
     _avail(XrSpatialAudioRendererCreateInfoBD, XR_TYPE_SPATIAL_AUDIO_RENDERER_CREATE_INFO_BD) \
     _avail(XrAudioBufferBD, XR_TYPE_AUDIO_BUFFER_BD) \
     _avail(XrSoundObjectDirectivityCardioidBD, XR_TYPE_SOUND_OBJECT_DIRECTIVITY_CARDIOID_BD) \
@@ -636,6 +642,38 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrSenseDataFilterDynamicObjectTypeBD, XR_TYPE_SENSE_DATA_FILTER_DYNAMIC_OBJECT_TYPE_BD) \
     _avail(XrSystemDynamicObjectKeyboardPropertiesBD, XR_TYPE_SYSTEM_DYNAMIC_OBJECT_KEYBOARD_PROPERTIES_BD) \
     _avail(XrSystemDynamicObjectMousePropertiesBD, XR_TYPE_SYSTEM_DYNAMIC_OBJECT_MOUSE_PROPERTIES_BD) \
+    _avail(XrCameraPropertiesBD, XR_TYPE_CAMERA_PROPERTIES_BD) \
+    _avail(XrCameraCapabilitiesBD, XR_TYPE_CAMERA_CAPABILITIES_BD) \
+    _avail(XrAvailableCamerasEnumerateInfoBD, XR_TYPE_AVAILABLE_CAMERAS_ENUMERATE_INFO_BD) \
+    _avail(XrAvailableCameraBD, XR_TYPE_AVAILABLE_CAMERA_BD) \
+    _avail(XrCameraPropertyTypesEnumerateInfoBD, XR_TYPE_CAMERA_PROPERTY_TYPES_ENUMERATE_INFO_BD) \
+    _avail(XrCameraPropertyTypesBD, XR_TYPE_CAMERA_PROPERTY_TYPES_BD) \
+    _avail(XrCameraPropertiesGetInfoBD, XR_TYPE_CAMERA_PROPERTIES_GET_INFO_BD) \
+    _avail(XrCameraPropertyFacingBD, XR_TYPE_CAMERA_PROPERTY_FACING_BD) \
+    _avail(XrCameraPropertyPositionBD, XR_TYPE_CAMERA_PROPERTY_POSITION_BD) \
+    _avail(XrCameraPropertyCameraTypeBD, XR_TYPE_CAMERA_PROPERTY_CAMERA_TYPE_BD) \
+    _avail(XrCameraCapabilityTypesEnumerateInfoBD, XR_TYPE_CAMERA_CAPABILITY_TYPES_ENUMERATE_INFO_BD) \
+    _avail(XrCameraCapabilityTypesBD, XR_TYPE_CAMERA_CAPABILITY_TYPES_BD) \
+    _avail(XrCameraSupportedCapabilitiesGetInfoBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITIES_GET_INFO_BD) \
+    _avail(XrCameraSupportedCapabilitiesBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITIES_BD) \
+    _avail(XrCameraSupportedCapabilityImageResolutionAndFrameRateBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_IMAGE_RESOLUTION_AND_FRAME_RATE_BD) \
+    _avail(XrCameraCapabilityImageResolutionAndFrameRateBD, XR_TYPE_CAMERA_CAPABILITY_IMAGE_RESOLUTION_AND_FRAME_RATE_BD) \
+    _avail(XrCameraSupportedCapabilityDataTransferTypeBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_DATA_TRANSFER_TYPE_BD) \
+    _avail(XrCameraCapabilityDataTransferTypeBD, XR_TYPE_CAMERA_CAPABILITY_DATA_TRANSFER_TYPE_BD) \
+    _avail(XrCameraSupportedCapabilityImageFormatBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_IMAGE_FORMAT_BD) \
+    _avail(XrCameraCapabilityImageFormatBD, XR_TYPE_CAMERA_CAPABILITY_IMAGE_FORMAT_BD) \
+    _avail(XrCameraSupportedCapabilityCameraModelBD, XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_CAMERA_MODEL_BD) \
+    _avail(XrCameraCapabilityCameraModelBD, XR_TYPE_CAMERA_CAPABILITY_CAMERA_MODEL_BD) \
+    _avail(XrCameraDeviceCreateInfoBD, XR_TYPE_CAMERA_DEVICE_CREATE_INFO_BD) \
+    _avail(XrCreateCameraDeviceCompletionBD, XR_TYPE_CREATE_CAMERA_DEVICE_COMPLETION_BD) \
+    _avail(XrCameraCaptureSessionCreateInfoBD, XR_TYPE_CAMERA_CAPTURE_SESSION_CREATE_INFO_BD) \
+    _avail(XrCreateCameraCaptureSessionCompletionBD, XR_TYPE_CREATE_CAMERA_CAPTURE_SESSION_COMPLETION_BD) \
+    _avail(XrCameraIntrinsicsBD, XR_TYPE_CAMERA_INTRINSICS_BD) \
+    _avail(XrCameraExtrinsicsBD, XR_TYPE_CAMERA_EXTRINSICS_BD) \
+    _avail(XrCameraCaptureBeginInfoBD, XR_TYPE_CAMERA_CAPTURE_BEGIN_INFO_BD) \
+    _avail(XrCameraImageAcquireInfoBD, XR_TYPE_CAMERA_IMAGE_ACQUIRE_INFO_BD) \
+    _avail(XrCameraImageBD, XR_TYPE_CAMERA_IMAGE_BD) \
+    _avail(XrCameraImageDataRawBufferBD, XR_TYPE_CAMERA_IMAGE_DATA_RAW_BUFFER_BD) \
     _avail(XrSpatialBoundsSpherefANDROID, XR_TYPE_SPATIAL_BOUNDS_SPHEREF_ANDROID) \
     _avail(XrSpatialBoundsBoxfANDROID, XR_TYPE_SPATIAL_BOUNDS_BOXF_ANDROID) \
     _avail(XrSpatialBoundsFrustumfANDROID, XR_TYPE_SPATIAL_BOUNDS_FRUSTUMF_ANDROID) \
@@ -652,10 +690,18 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrSystemHapticParametricPropertiesEXT, XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT) \
     _avail(XrColorSpacesEnumerateInfoSONY, XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY) \
     _avail(XrSwapchainCreateInfoColorSpaceSONY, XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY) \
+    _avail(XrHdrMetadataSONY, XR_TYPE_HDR_METADATA_SONY) \
     _avail(XrSpatialEntityPersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT) \
     _avail(XrPersistSpatialEntityCompletionEXT, XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
     _avail(XrSpatialEntityUnpersistInfoEXT, XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT) \
     _avail(XrUnpersistSpatialEntityCompletionEXT, XR_TYPE_UNPERSIST_SPATIAL_ENTITY_COMPLETION_EXT) \
+    _avail(XrSpatialReferenceImageEXT, XR_TYPE_SPATIAL_REFERENCE_IMAGE_EXT) \
+    _avail(XrSpatialImageStaticOptimizationEXT, XR_TYPE_SPATIAL_IMAGE_STATIC_OPTIMIZATION_EXT) \
+    _avail(XrSpatialImageSizeEXT, XR_TYPE_SPATIAL_IMAGE_SIZE_EXT) \
+    _avail(XrSpatialCapabilityConfigurationImageTrackingEXT, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_IMAGE_TRACKING_EXT) \
+    _avail(XrSpatialImageTrackingDatabaseCreateInfoEXT, XR_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_CREATE_INFO_EXT) \
+    _avail(XrSpatialComponentImage2DListEXT, XR_TYPE_SPATIAL_COMPONENT_IMAGE_2D_LIST_EXT) \
+    _avail(XrCreateSpatialImageTrackingDatabaseCompletionEXT, XR_TYPE_CREATE_SPATIAL_IMAGE_TRACKING_DATABASE_COMPLETION_EXT) \
     _avail(XrSpatialCapabilityConfigurationObjectTrackingANDROID, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_ANDROID) \
     _avail(XrSpatialComponentObjectSemanticLabelListANDROID, XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_ANDROID) \
     _avail(XrSpatialCapabilityConfigurationDepthRaycastANDROID, XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_DEPTH_RAYCAST_ANDROID) \
@@ -682,6 +728,31 @@ This file contains expansion macros (X Macros) for OpenXR structures.
     _avail(XrGeospatialAnchorCreateInfoANDROID, XR_TYPE_GEOSPATIAL_ANCHOR_CREATE_INFO_ANDROID) \
     _avail(XrSurfaceAnchorCreateInfoANDROID, XR_TYPE_SURFACE_ANCHOR_CREATE_INFO_ANDROID) \
     _avail(XrSurfaceAnchorCreateCompletionANDROID, XR_TYPE_SURFACE_ANCHOR_CREATE_COMPLETION_ANDROID) \
+    _avail(XrSessionCreateInfoSpatialContainersEXT, XR_TYPE_SESSION_CREATE_INFO_SPATIAL_CONTAINERS_EXT) \
+    _avail(XrSpatialContainerCreateInfoEXT, XR_TYPE_SPATIAL_CONTAINER_CREATE_INFO_EXT) \
+    _avail(XrSpatialContainerSpaceCreateInfoEXT, XR_TYPE_SPATIAL_CONTAINER_SPACE_CREATE_INFO_EXT) \
+    _avail(XrEventDataSpatialContainerClosedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_CLOSED_EXT) \
+    _avail(XrSystemSpatialContainerPropertiesEXT, XR_TYPE_SYSTEM_SPATIAL_CONTAINER_PROPERTIES_EXT) \
+    _avail(XrSpatialContainerBoundsEXT, XR_TYPE_SPATIAL_CONTAINER_BOUNDS_EXT) \
+    _avail(XrEventDataSpatialContainerBoundsChangedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_CHANGED_EXT) \
+    _avail(XrSpatialContainerBoundsGetInfoEXT, XR_TYPE_SPATIAL_CONTAINER_BOUNDS_GET_INFO_EXT) \
+    _avail(XrSpatialContainerStateGetInfoEXT, XR_TYPE_SPATIAL_CONTAINER_STATE_GET_INFO_EXT) \
+    _avail(XrSpatialContainerVisibleRequestInfoEXT, XR_TYPE_SPATIAL_CONTAINER_VISIBLE_REQUEST_INFO_EXT) \
+    _avail(XrEventDataSpatialContainerVisibleChangedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_CHANGED_EXT) \
+    _avail(XrEventDataSpatialContainerVisibleRequestDeniedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_REQUEST_DENIED_EXT) \
+    _avail(XrEventDataSpatialContainerInteractableChangedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_INTERACTABLE_CHANGED_EXT) \
+    _avail(XrSpatialContainerBoundsModeRequestInfoEXT, XR_TYPE_SPATIAL_CONTAINER_BOUNDS_MODE_REQUEST_INFO_EXT) \
+    _avail(XrEventDataSpatialContainerBoundsModeRequestDeniedEXT, XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_MODE_REQUEST_DENIED_EXT) \
+    _avail(XrSpatialContainerStateEXT, XR_TYPE_SPATIAL_CONTAINER_STATE_EXT) \
+    _avail(XrSpatialContainerViewLocateInfoEXT, XR_TYPE_SPATIAL_CONTAINER_VIEW_LOCATE_INFO_EXT) \
+    _avail(XrSpatialContainerViewsLocateInfoEXT, XR_TYPE_SPATIAL_CONTAINER_VIEWS_LOCATE_INFO_EXT) \
+    _avail(XrSpatialContainerViewStateEXT, XR_TYPE_SPATIAL_CONTAINER_VIEW_STATE_EXT) \
+    _avail(XrSpatialContainerLayerEXT, XR_TYPE_SPATIAL_CONTAINER_LAYER_EXT) \
+    _avail(XrSpatialContainerLayerFrameEndInfoEXT, XR_TYPE_SPATIAL_CONTAINER_LAYER_FRAME_END_INFO_EXT) \
+    _avail(XrSpatialContainerBeginInfoEXT, XR_TYPE_SPATIAL_CONTAINER_BEGIN_INFO_EXT) \
+    _avail(XrSpatialContainerEndInfoEXT, XR_TYPE_SPATIAL_CONTAINER_END_INFO_EXT) \
+    _avail(XrSpatialContainerCompositionLayerViewConfigurationEXT, XR_TYPE_SPATIAL_CONTAINER_COMPOSITION_LAYER_VIEW_CONFIGURATION_EXT) \
+    _avail(XrSpatialContainerLayerVolumeClippingEXT, XR_TYPE_SPATIAL_CONTAINER_LAYER_VOLUME_CLIPPING_EXT) \
     _avail(XrBatteryStateDisplayEXT, XR_TYPE_BATTERY_STATE_DISPLAY_EXT) \
     _avail(XrLoaderInitInfoPropertiesEXT, XR_TYPE_LOADER_INIT_INFO_PROPERTIES_EXT) \
     _avail(XrEventDataViewConfigurationViewsChangedEXT, XR_TYPE_EVENT_DATA_VIEW_CONFIGURATION_VIEWS_CHANGED_EXT) \

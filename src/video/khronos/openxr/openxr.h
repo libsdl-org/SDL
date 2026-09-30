@@ -26,7 +26,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 62)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 63)
 
 // OpenXR 1.0 version number
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
@@ -311,8 +311,20 @@ typedef enum XrResult {
     XR_ERROR_SPATIAL_COMPONENT_UNSUPPORTED_FOR_CAPABILITY_EXT = -1000740004,
     XR_ERROR_SPATIAL_CAPABILITY_CONFIGURATION_INVALID_EXT = -1000740005,
     XR_ERROR_SPATIAL_COMPONENT_NOT_ENABLED_EXT = -1000740006,
+    XR_ERROR_CAMERA_UNAVAILABLE_BD = -1000755000,
+    XR_ERROR_CAMERA_OCCUPIED_BD = -1000755001,
+    XR_ERROR_CAMERA_CAPTURE_SESSION_CAPTURING_BD = -1000755002,
+    XR_ERROR_CAMERA_CAPTURE_SESSION_NOT_CAPTURING_BD = -1000755003,
+    XR_ERROR_CAMERA_ID_INVALID_BD = -1000755004,
+    XR_ERROR_CAMERA_IMAGE_ID_INVALID_BD = -1000755005,
+    XR_ERROR_CAMERA_PROPERTY_TYPE_INVALID_BD = -1000755006,
+    XR_ERROR_CAMERA_CAPABILITY_TYPE_INVALID_BD = -1000755007,
+    XR_ERROR_IMAGE_BUFFER_EXHAUSTED_BD = -1000755008,
     XR_ERROR_SPATIAL_PERSISTENCE_SCOPE_UNSUPPORTED_EXT = -1000763001,
     XR_ERROR_SPATIAL_PERSISTENCE_SCOPE_INCOMPATIBLE_EXT = -1000781001,
+    XR_ERROR_SPATIAL_IMAGE_FORMAT_UNSUPPORTED_EXT = -1000782001,
+    XR_ERROR_SPATIAL_IMAGE_INVALID_EXT = -1000782002,
+    XR_ERROR_SPATIAL_IMAGE_SIZE_MISSING_EXT = -1000782003,
     XR_ERROR_KEYLESS_AUTH_NOT_SETUP_ANDROID = -1000787000,
     XR_ERROR_KEYLESS_AUTH_FAILED_ANDROID = -1000787001,
     XR_ERROR_GEOSPATIAL_TRACKER_NOT_RUNNING_ANDROID = -1000789000,
@@ -321,6 +333,15 @@ typedef enum XrResult {
     XR_ERROR_SPATIAL_ANCHOR_ATTACHABLE_COMPONENT_NOT_FOUND_ANDROID = -1000790001,
     XR_ERROR_SPATIAL_ANCHOR_ENTITY_ID_INVALID_ANDROID = -1000795001,
     XR_ERROR_SURFACE_ANCHOR_LOCATION_UNSUPPORTED_ANDROID = -1000797000,
+    XR_ERROR_SPATIAL_CONTAINER_CLOSED_EXT = -1000810000,
+    XR_ERROR_SPATIAL_CONTAINERS_ENABLED_EXT = -1000810001,
+    XR_ERROR_SPATIAL_CONTAINERS_NOT_ENABLED_EXT = -1000810002,
+    XR_ERROR_COMPATIBLE_SPATIAL_CONTAINER_MISSING_EXT = -1000810003,
+    XR_ERROR_SPATIAL_CONTAINER_IS_RENDERING_EXT = -1000813001,
+    XR_ERROR_SPATIAL_CONTAINER_NOT_RENDERING_EXT = -1000813002,
+    XR_ERROR_SPATIAL_CONTAINER_MISSING_EXT = -1000813003,
+    XR_ERROR_SPATIAL_CONTAINER_DUPLICATE_EXT = -1000813004,
+    XR_ERROR_SPATIAL_CONTAINER_GRAPHICS_PRESENTATION_MISSING_EXT = -1000813005,
     XR_ERROR_EXTENSION_DEPENDENCY_NOT_ENABLED_KHR = XR_ERROR_EXTENSION_DEPENDENCY_NOT_ENABLED,
     XR_ERROR_PERMISSION_INSUFFICIENT_KHR = XR_ERROR_PERMISSION_INSUFFICIENT,
     XR_RESULT_MAX_ENUM = 0x7FFFFFFF
@@ -782,6 +803,12 @@ typedef enum XrStructureType {
     XR_TYPE_SYSTEM_SPATIAL_PLANE_PROPERTIES_BD = 1000396000,
     XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_PLANE_ORIENTATION_BD = 1000396001,
     XR_TYPE_SENSE_DATA_FILTER_PLANE_ORIENTATION_BD = 1000396002,
+    XR_TYPE_SYSTEM_LIGHT_ESTIMATION_PROPERTIES_BD = 1000397000,
+    XR_TYPE_SENSE_DATA_PROVIDER_CREATE_INFO_LIGHT_ESTIMATION_BD = 1000397001,
+    XR_TYPE_ENVIRONMENT_TEXTURE_CREATE_CONFIG_INFO_BD = 1000397002,
+    XR_TYPE_LIGHT_ESTIMATION_DATA_ENVIRONMENT_TEXTURE_RAW_BD = 1000397003,
+    XR_TYPE_LIGHT_ESTIMATION_DATA_SPHERICAL_HARMONICS_BD = 1000397005,
+    XR_TYPE_SPATIAL_ENTITY_COMPONENT_DATA_LIGHT_ESTIMATION_BD = 1000397006,
     XR_TYPE_SPATIAL_AUDIO_RENDERER_CREATE_INFO_BD = 1000409000,
     XR_TYPE_AUDIO_BUFFER_BD = 1000409001,
     XR_TYPE_SOUND_OBJECT_DIRECTIVITY_CARDIOID_BD = 1000409003,
@@ -960,6 +987,38 @@ typedef enum XrStructureType {
     XR_TYPE_SENSE_DATA_FILTER_DYNAMIC_OBJECT_TYPE_BD = 1000746004,
     XR_TYPE_SYSTEM_DYNAMIC_OBJECT_KEYBOARD_PROPERTIES_BD = 1000747000,
     XR_TYPE_SYSTEM_DYNAMIC_OBJECT_MOUSE_PROPERTIES_BD = 1000748000,
+    XR_TYPE_AVAILABLE_CAMERAS_ENUMERATE_INFO_BD = 1000755000,
+    XR_TYPE_CAMERA_PROPERTIES_GET_INFO_BD = 1000755001,
+    XR_TYPE_CAMERA_PROPERTIES_BD = 1000755002,
+    XR_TYPE_CAMERA_PROPERTY_FACING_BD = 1000755003,
+    XR_TYPE_CAMERA_PROPERTY_POSITION_BD = 1000755004,
+    XR_TYPE_CAMERA_PROPERTY_CAMERA_TYPE_BD = 1000755005,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITIES_GET_INFO_BD = 1000755006,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITIES_BD = 1000755007,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_IMAGE_RESOLUTION_AND_FRAME_RATE_BD = 1000755008,
+    XR_TYPE_CAMERA_CAPABILITY_IMAGE_RESOLUTION_AND_FRAME_RATE_BD = 1000755009,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_DATA_TRANSFER_TYPE_BD = 1000755010,
+    XR_TYPE_CAMERA_CAPABILITY_DATA_TRANSFER_TYPE_BD = 1000755011,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_IMAGE_FORMAT_BD = 1000755012,
+    XR_TYPE_CAMERA_CAPABILITY_IMAGE_FORMAT_BD = 1000755013,
+    XR_TYPE_CAMERA_SUPPORTED_CAPABILITY_CAMERA_MODEL_BD = 1000755014,
+    XR_TYPE_CAMERA_CAPABILITY_CAMERA_MODEL_BD = 1000755015,
+    XR_TYPE_CAMERA_DEVICE_CREATE_INFO_BD = 1000755016,
+    XR_TYPE_CREATE_CAMERA_DEVICE_COMPLETION_BD = 1000755017,
+    XR_TYPE_CAMERA_CAPTURE_SESSION_CREATE_INFO_BD = 1000755018,
+    XR_TYPE_CREATE_CAMERA_CAPTURE_SESSION_COMPLETION_BD = 1000755019,
+    XR_TYPE_CAMERA_INTRINSICS_BD = 1000755020,
+    XR_TYPE_CAMERA_EXTRINSICS_BD = 1000755021,
+    XR_TYPE_CAMERA_CAPTURE_BEGIN_INFO_BD = 1000755022,
+    XR_TYPE_CAMERA_IMAGE_ACQUIRE_INFO_BD = 1000755023,
+    XR_TYPE_CAMERA_IMAGE_BD = 1000755024,
+    XR_TYPE_CAMERA_IMAGE_DATA_RAW_BUFFER_BD = 1000755025,
+    XR_TYPE_CAMERA_CAPABILITIES_BD = 1000755026,
+    XR_TYPE_CAMERA_CAPABILITY_TYPES_ENUMERATE_INFO_BD = 1000755027,
+    XR_TYPE_CAMERA_CAPABILITY_TYPES_BD = 1000755028,
+    XR_TYPE_CAMERA_PROPERTY_TYPES_ENUMERATE_INFO_BD = 1000755029,
+    XR_TYPE_CAMERA_PROPERTY_TYPES_BD = 1000755030,
+    XR_TYPE_AVAILABLE_CAMERA_BD = 1000755031,
     XR_TYPE_SPATIAL_BOUNDS_SPHEREF_ANDROID = 1000761000,
     XR_TYPE_SPATIAL_BOUNDS_BOXF_ANDROID = 1000761001,
     XR_TYPE_SPATIAL_BOUNDS_FRUSTUMF_ANDROID = 1000761002,
@@ -976,10 +1035,18 @@ typedef enum XrStructureType {
     XR_TYPE_SYSTEM_HAPTIC_PARAMETRIC_PROPERTIES_EXT = 1000775002,
     XR_TYPE_COLOR_SPACES_ENUMERATE_INFO_SONY = 1000776000,
     XR_TYPE_SWAPCHAIN_CREATE_INFO_COLOR_SPACE_SONY = 1000776001,
+    XR_TYPE_HDR_METADATA_SONY = 1000777000,
     XR_TYPE_SPATIAL_ENTITY_PERSIST_INFO_EXT = 1000781000,
     XR_TYPE_PERSIST_SPATIAL_ENTITY_COMPLETION_EXT = 1000781001,
     XR_TYPE_SPATIAL_ENTITY_UNPERSIST_INFO_EXT = 1000781002,
     XR_TYPE_UNPERSIST_SPATIAL_ENTITY_COMPLETION_EXT = 1000781003,
+    XR_TYPE_SPATIAL_REFERENCE_IMAGE_EXT = 1000782000,
+    XR_TYPE_SPATIAL_IMAGE_STATIC_OPTIMIZATION_EXT = 1000782001,
+    XR_TYPE_SPATIAL_IMAGE_SIZE_EXT = 1000782002,
+    XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_IMAGE_TRACKING_EXT = 1000782003,
+    XR_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_CREATE_INFO_EXT = 1000782004,
+    XR_TYPE_SPATIAL_COMPONENT_IMAGE_2D_LIST_EXT = 1000782005,
+    XR_TYPE_CREATE_SPATIAL_IMAGE_TRACKING_DATABASE_COMPLETION_EXT = 1000782006,
     XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_OBJECT_TRACKING_ANDROID = 1000785000,
     XR_TYPE_SPATIAL_COMPONENT_OBJECT_SEMANTIC_LABEL_LIST_ANDROID = 1000785001,
     XR_TYPE_SPATIAL_CAPABILITY_CONFIGURATION_DEPTH_RAYCAST_ANDROID = 1000786000,
@@ -1006,6 +1073,31 @@ typedef enum XrStructureType {
     XR_TYPE_SURFACE_ANCHOR_CREATE_COMPLETION_ANDROID = 1000797002,
     XR_TYPE_SYSTEM_GEOSPATIAL_ANCHOR_PROPERTIES_ANDROID = 1000797003,
     XR_TYPE_GEOSPATIAL_TRACKER_ANCHOR_TRACKING_INFO_ANDROID = 1000797004,
+    XR_TYPE_SPATIAL_CONTAINER_CREATE_INFO_EXT = 1000810000,
+    XR_TYPE_SPATIAL_CONTAINER_SPACE_CREATE_INFO_EXT = 1000810001,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_CLOSED_EXT = 1000810003,
+    XR_TYPE_SYSTEM_SPATIAL_CONTAINER_PROPERTIES_EXT = 1000810004,
+    XR_TYPE_SPATIAL_CONTAINER_BOUNDS_EXT = 1000810005,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_CHANGED_EXT = 1000810006,
+    XR_TYPE_SPATIAL_CONTAINER_BOUNDS_GET_INFO_EXT = 1000810007,
+    XR_TYPE_SPATIAL_CONTAINER_STATE_GET_INFO_EXT = 1000810008,
+    XR_TYPE_SPATIAL_CONTAINER_VISIBLE_REQUEST_INFO_EXT = 1000810009,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_CHANGED_EXT = 1000810010,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_VISIBLE_REQUEST_DENIED_EXT = 1000810011,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_INTERACTABLE_CHANGED_EXT = 1000810012,
+    XR_TYPE_SPATIAL_CONTAINER_BOUNDS_MODE_REQUEST_INFO_EXT = 1000810013,
+    XR_TYPE_EVENT_DATA_SPATIAL_CONTAINER_BOUNDS_MODE_REQUEST_DENIED_EXT = 1000810014,
+    XR_TYPE_SPATIAL_CONTAINER_STATE_EXT = 1000810015,
+    XR_TYPE_SESSION_CREATE_INFO_SPATIAL_CONTAINERS_EXT = 1000810016,
+    XR_TYPE_SPATIAL_CONTAINER_VIEW_LOCATE_INFO_EXT = 1000813000,
+    XR_TYPE_SPATIAL_CONTAINER_VIEWS_LOCATE_INFO_EXT = 1000813001,
+    XR_TYPE_SPATIAL_CONTAINER_VIEW_STATE_EXT = 1000813002,
+    XR_TYPE_SPATIAL_CONTAINER_LAYER_EXT = 1000813003,
+    XR_TYPE_SPATIAL_CONTAINER_LAYER_FRAME_END_INFO_EXT = 1000813004,
+    XR_TYPE_SPATIAL_CONTAINER_BEGIN_INFO_EXT = 1000813005,
+    XR_TYPE_SPATIAL_CONTAINER_COMPOSITION_LAYER_VIEW_CONFIGURATION_EXT = 1000813006,
+    XR_TYPE_SPATIAL_CONTAINER_END_INFO_EXT = 1000813007,
+    XR_TYPE_SPATIAL_CONTAINER_LAYER_VOLUME_CLIPPING_EXT = 1000813008,
     XR_TYPE_BATTERY_STATE_DISPLAY_EXT = 1000836000,
     XR_TYPE_LOADER_INIT_INFO_PROPERTIES_EXT = 1000838000,
     XR_TYPE_EVENT_DATA_VIEW_CONFIGURATION_VIEWS_CHANGED_EXT = 1000839000,
@@ -1147,8 +1239,12 @@ typedef enum XrObjectType {
     XR_OBJECT_TYPE_SPATIAL_ENTITY_EXT = 1000740000,
     XR_OBJECT_TYPE_SPATIAL_CONTEXT_EXT = 1000740001,
     XR_OBJECT_TYPE_SPATIAL_SNAPSHOT_EXT = 1000740002,
+    XR_OBJECT_TYPE_CAMERA_DEVICE_BD = 1000755000,
+    XR_OBJECT_TYPE_CAMERA_CAPTURE_SESSION_BD = 1000755001,
     XR_OBJECT_TYPE_SPATIAL_PERSISTENCE_CONTEXT_EXT = 1000763000,
+    XR_OBJECT_TYPE_SPATIAL_IMAGE_TRACKING_DATABASE_EXT = 1000782000,
     XR_OBJECT_TYPE_GEOSPATIAL_TRACKER_ANDROID = 1000789000,
+    XR_OBJECT_TYPE_SPATIAL_CONTAINER_EXT = 1000810000,
     XR_OBJECT_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrObjectType;
 typedef XrFlags64 XrInstanceCreateFlags;
@@ -2402,6 +2498,23 @@ typedef XrFrustumf XrFrustumfKHR;
 #define XR_KHR_generic_controller 1
 #define XR_KHR_generic_controller_SPEC_VERSION 1
 #define XR_KHR_GENERIC_CONTROLLER_EXTENSION_NAME "XR_KHR_generic_controller"
+
+
+// XR_KHR_extended_result_name_lengths is a preprocessor guard. Do not pass it to API calls.
+#define XR_KHR_extended_result_name_lengths 1
+#define XR_KHR_extended_result_name_lengths_SPEC_VERSION 1
+#define XR_KHR_EXTENDED_RESULT_NAME_LENGTHS_EXTENSION_NAME "XR_KHR_extended_result_name_lengths"
+#define XR_MAX_RESULT_STRING_SIZE_EXTENDED_KHR 256
+typedef XrResult (XRAPI_PTR *PFN_xrResultToString2KHR)(XrInstance instance, XrResult value, char buffer[XR_MAX_RESULT_STRING_SIZE_EXTENDED_KHR]);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrResultToString2KHR(
+    XrInstance                                  instance,
+    XrResult                                    value,
+    char                                        buffer[XR_MAX_RESULT_STRING_SIZE_EXTENDED_KHR]);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
 
 
 // XR_EXT_performance_settings is a preprocessor guard. Do not pass it to API calls.
@@ -8890,7 +9003,7 @@ XR_DEFINE_ATOM(XrSpatialEntityIdBD)
 XR_DEFINE_HANDLE(XrSenseDataProviderBD)
 XR_DEFINE_HANDLE(XrSenseDataSnapshotBD)
 XR_DEFINE_HANDLE(XrAnchorBD)
-#define XR_BD_spatial_sensing_SPEC_VERSION 2
+#define XR_BD_spatial_sensing_SPEC_VERSION 3
 #define XR_BD_SPATIAL_SENSING_EXTENSION_NAME "XR_BD_spatial_sensing"
 
 typedef enum XrSpatialEntityComponentTypeBD {
@@ -8902,6 +9015,7 @@ typedef enum XrSpatialEntityComponentTypeBD {
     XR_SPATIAL_ENTITY_COMPONENT_TYPE_TRIANGLE_MESH_BD = 5,
     XR_SPATIAL_ENTITY_COMPONENT_TYPE_SPHERE_BD = 6,
     XR_SPATIAL_ENTITY_COMPONENT_TYPE_PLANE_ORIENTATION_BD = 1000396000,
+    XR_SPATIAL_ENTITY_COMPONENT_TYPE_LIGHT_ESTIMATION_BD = 1000397000,
     XR_SPATIAL_ENTITY_COMPONENT_TYPE_DYNAMIC_OBJECT_BD = 1000746000,
     XR_SPATIAL_ENTITY_COMPONENT_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
 } XrSpatialEntityComponentTypeBD;
@@ -8932,6 +9046,9 @@ typedef enum XrSemanticLabelBD {
     XR_SEMANTIC_LABEL_LAMP_BD = 22,
     XR_SEMANTIC_LABEL_WALL_ART_BD = 23,
     XR_SEMANTIC_LABEL_STAIRWAY_BD = 24,
+    XR_SEMANTIC_LABEL_KEYBOARD_BD = 25,
+    XR_SEMANTIC_LABEL_MOUSE_BD = 26,
+    XR_SEMANTIC_LABEL_LAPTOP_BD = 27,
     XR_SEMANTIC_LABEL_MAX_ENUM_BD = 0x7FFFFFFF
 } XrSemanticLabelBD;
 
@@ -8940,6 +9057,7 @@ typedef enum XrSenseDataProviderTypeBD {
     XR_SENSE_DATA_PROVIDER_TYPE_SCENE_BD = 1000392000,
     XR_SENSE_DATA_PROVIDER_TYPE_MESH_BD = 1000393000,
     XR_SENSE_DATA_PROVIDER_TYPE_PLANE_BD = 1000396000,
+    XR_SENSE_DATA_PROVIDER_TYPE_LIGHT_ESTIMATION_BD = 1000397000,
     XR_SENSE_DATA_PROVIDER_TYPE_DYNAMIC_OBJECT_BD = 1000746000,
     XR_SENSE_DATA_PROVIDER_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
 } XrSenseDataProviderTypeBD;
@@ -9577,6 +9695,124 @@ typedef struct XrSenseDataFilterPlaneOrientationBD {
     XrPlaneOrientationBD*       orientations;
 } XrSenseDataFilterPlaneOrientationBD;
 
+
+
+// XR_BD_spatial_light_estimation is a preprocessor guard. Do not pass it to API calls.
+#define XR_BD_spatial_light_estimation 1
+#define XR_BD_spatial_light_estimation_SPEC_VERSION 1
+#define XR_BD_SPATIAL_LIGHT_ESTIMATION_EXTENSION_NAME "XR_BD_spatial_light_estimation"
+
+typedef enum XrEnvironmentTexturePixelFormatBD {
+    XR_ENVIRONMENT_TEXTURE_PIXEL_FORMAT_RGB_16FLOAT_BD = 0,
+    XR_ENVIRONMENT_TEXTURE_PIXEL_FORMAT_RGBA_16FLOAT_BD = 1,
+    XR_ENVIRONMENT_TEXTURE_PIXEL_FORMAT_MAX_ENUM_BD = 0x7FFFFFFF
+} XrEnvironmentTexturePixelFormatBD;
+
+typedef enum XrEnvironmentTextureResolutionBD {
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_8_8_BD = 0,
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_16_16_BD = 1,
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_32_32_BD = 2,
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_64_64_BD = 3,
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_128_128_BD = 4,
+    XR_ENVIRONMENT_TEXTURE_RESOLUTION_MAX_ENUM_BD = 0x7FFFFFFF
+} XrEnvironmentTextureResolutionBD;
+
+typedef enum XrEnvironmentTextureTransferTypeBD {
+    XR_ENVIRONMENT_TEXTURE_TRANSFER_TYPE_RAW_BD = 0,
+    XR_ENVIRONMENT_TEXTURE_TRANSFER_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
+} XrEnvironmentTextureTransferTypeBD;
+
+typedef enum XrSphericalHarmonicsKindBD {
+    XR_SPHERICAL_HARMONICS_KIND_TOTAL_BD = 0,
+    XR_SPHERICAL_HARMONICS_KIND_MAX_ENUM_BD = 0x7FFFFFFF
+} XrSphericalHarmonicsKindBD;
+typedef XrFlags64 XrLightEstimationCreateFlagsBD;
+
+// Flag bits for XrLightEstimationCreateFlagsBD
+static const XrLightEstimationCreateFlagsBD XR_LIGHT_ESTIMATION_CREATE_SPHERICAL_HARMONICS_BIT_BD = 0x00000001;
+static const XrLightEstimationCreateFlagsBD XR_LIGHT_ESTIMATION_CREATE_ENVIRONMENT_TEXTURE_BIT_BD = 0x00000002;
+
+// XrSystemLightEstimationPropertiesBD extends XrSystemProperties
+typedef struct XrSystemLightEstimationPropertiesBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsLightEstimation;
+    XrBool32              supportsEnvironmentTexture;
+    XrBool32              supportsSphericalHarmonics;
+} XrSystemLightEstimationPropertiesBD;
+
+// XrSenseDataProviderCreateInfoLightEstimationBD extends XrSenseDataProviderCreateInfoBD
+typedef struct XrSenseDataProviderCreateInfoLightEstimationBD {
+    XrStructureType                   type;
+    const void* XR_MAY_ALIAS          next;
+    XrLightEstimationCreateFlagsBD    createFlags;
+} XrSenseDataProviderCreateInfoLightEstimationBD;
+
+// XrEnvironmentTextureCreateConfigInfoBD extends XrSenseDataProviderCreateInfoBD
+typedef struct XrEnvironmentTextureCreateConfigInfoBD {
+    XrStructureType                       type;
+    const void* XR_MAY_ALIAS              next;
+    XrEnvironmentTexturePixelFormatBD     pixelFormat;
+    XrEnvironmentTextureResolutionBD      resolution;
+    XrEnvironmentTextureTransferTypeBD    transferType;
+} XrEnvironmentTextureCreateConfigInfoBD;
+
+// XrLightEstimationDataEnvironmentTextureRawBD extends XrSpatialEntityComponentDataLightEstimationBD
+typedef struct XrLightEstimationDataEnvironmentTextureRawBD {
+    XrStructureType                      type;
+    const void* XR_MAY_ALIAS             next;
+    XrEnvironmentTexturePixelFormatBD    pixelFormat;
+    uint32_t                             cubemapFaceBufferSize;
+    uint8_t*                             rightCubemapFaceBuffer;
+    uint8_t*                             leftCubemapFaceBuffer;
+    uint8_t*                             topCubemapFaceBuffer;
+    uint8_t*                             bottomCubemapFaceBuffer;
+    uint8_t*                             frontCubemapFaceBuffer;
+    uint8_t*                             backCubemapFaceBuffer;
+} XrLightEstimationDataEnvironmentTextureRawBD;
+
+// XrLightEstimationDataSphericalHarmonicsBD extends XrSpatialEntityComponentDataLightEstimationBD
+typedef struct XrLightEstimationDataSphericalHarmonicsBD {
+    XrStructureType               type;
+    const void* XR_MAY_ALIAS      next;
+    XrSphericalHarmonicsKindBD    kind;
+    uint32_t                      coefficientCapacityInput;
+    uint32_t                      coefficientCountOutput;
+     float*                       coefficients;
+} XrLightEstimationDataSphericalHarmonicsBD;
+
+// XrSpatialEntityComponentDataLightEstimationBD extends XrSpatialEntityComponentDataBaseHeaderBD
+typedef struct XrSpatialEntityComponentDataLightEstimationBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              isValid;
+} XrSpatialEntityComponentDataLightEstimationBD;
+
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateEnvironmentTextureResolutionsBD)(XrSession session, uint32_t resolutionCapacityInput, uint32_t* resolutionCountOutput, XrEnvironmentTextureResolutionBD* resolutions);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateEnvironmentTexturePixelFormatsBD)(XrSession session, uint32_t pixelFormatCapacityInput, uint32_t* pixelFormatCountOutput, XrEnvironmentTexturePixelFormatBD* pixelFormats);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateEnvironmentTextureTransferTypesBD)(XrSession session, uint32_t transferTypeCapacityInput, uint32_t* transferTypeCountOutput, XrEnvironmentTextureTransferTypeBD* transferTypes);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentTextureResolutionsBD(
+    XrSession                                   session,
+    uint32_t                                    resolutionCapacityInput,
+    uint32_t*                                   resolutionCountOutput,
+    XrEnvironmentTextureResolutionBD*           resolutions);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentTexturePixelFormatsBD(
+    XrSession                                   session,
+    uint32_t                                    pixelFormatCapacityInput,
+    uint32_t*                                   pixelFormatCountOutput,
+    XrEnvironmentTexturePixelFormatBD*          pixelFormats);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateEnvironmentTextureTransferTypesBD(
+    XrSession                                   session,
+    uint32_t                                    transferTypeCapacityInput,
+    uint32_t*                                   transferTypeCountOutput,
+    XrEnvironmentTextureTransferTypeBD*         transferTypes);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
 
 
 // XR_BD_ultra_controller_interaction is a preprocessor guard. Do not pass it to API calls.
@@ -12394,6 +12630,7 @@ typedef enum XrSpatialCapabilityEXT {
     XR_SPATIAL_CAPABILITY_MARKER_TRACKING_ARUCO_MARKER_EXT = 1000743002,
     XR_SPATIAL_CAPABILITY_MARKER_TRACKING_APRIL_TAG_EXT = 1000743003,
     XR_SPATIAL_CAPABILITY_ANCHOR_EXT = 1000762000,
+    XR_SPATIAL_CAPABILITY_IMAGE_TRACKING_EXT = 1000782000,
     XR_SPATIAL_CAPABILITY_OBJECT_TRACKING_ANDROID = 1000785000,
     XR_SPATIAL_CAPABILITY_DEPTH_RAYCAST_ANDROID = 1000786000,
     XR_SPATIAL_CAPABILITY_MAX_ENUM_EXT = 0x7FFFFFFF
@@ -12405,6 +12642,9 @@ typedef enum XrSpatialCapabilityFeatureEXT {
     XR_SPATIAL_CAPABILITY_FEATURE_SPHERE_BOUNDS_FILTER_ANDROID = 1000761000,
     XR_SPATIAL_CAPABILITY_FEATURE_BOX_BOUNDS_FILTER_ANDROID = 1000761001,
     XR_SPATIAL_CAPABILITY_FEATURE_FRUSTUM_BOUNDS_FILTER_ANDROID = 1000761002,
+    XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_AUTOMATIC_SIZE_IMAGES_EXT = 1000782000,
+    XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_STATIC_IMAGES_EXT = 1000782001,
+    XR_SPATIAL_CAPABILITY_FEATURE_IMAGE_TRACKING_FIXED_SIZE_IMAGES_EXT = 1000782002,
     XR_SPATIAL_CAPABILITY_FEATURE_MAX_ENUM_EXT = 0x7FFFFFFF
 } XrSpatialCapabilityFeatureEXT;
 
@@ -12420,6 +12660,7 @@ typedef enum XrSpatialComponentTypeEXT {
     XR_SPATIAL_COMPONENT_TYPE_MARKER_EXT = 1000743000,
     XR_SPATIAL_COMPONENT_TYPE_ANCHOR_EXT = 1000762000,
     XR_SPATIAL_COMPONENT_TYPE_PERSISTENCE_EXT = 1000763000,
+    XR_SPATIAL_COMPONENT_TYPE_IMAGE_2D_EXT = 1000782000,
     XR_SPATIAL_COMPONENT_TYPE_OBJECT_SEMANTIC_LABEL_ANDROID = 1000785000,
     XR_SPATIAL_COMPONENT_TYPE_RAYCAST_RESULT_ANDROID = 1000786000,
     XR_SPATIAL_COMPONENT_TYPE_SUBSUMED_BY_ANDROID = 1000791000,
@@ -13010,6 +13251,406 @@ typedef struct XrSystemDynamicObjectMousePropertiesBD {
 
 
 
+// XR_BD_camera_image is a preprocessor guard. Do not pass it to API calls.
+#define XR_BD_camera_image 1
+XR_DEFINE_ATOM(XrCameraIdBD)
+XR_DEFINE_ATOM(XrCameraImageIdBD)
+XR_DEFINE_HANDLE(XrCameraDeviceBD)
+XR_DEFINE_HANDLE(XrCameraCaptureSessionBD)
+#define XR_BD_camera_image_SPEC_VERSION   1
+#define XR_BD_CAMERA_IMAGE_EXTENSION_NAME "XR_BD_camera_image"
+
+typedef enum XrCameraPropertyTypeBD {
+    XR_CAMERA_PROPERTY_TYPE_FACING_BD = 1,
+    XR_CAMERA_PROPERTY_TYPE_POSITION_BD = 2,
+    XR_CAMERA_PROPERTY_TYPE_CAMERA_TYPE_BD = 3,
+    XR_CAMERA_PROPERTY_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraPropertyTypeBD;
+
+typedef enum XrCameraFacingBD {
+    XR_CAMERA_FACING_WORLD_BD = 1,
+    XR_CAMERA_FACING_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraFacingBD;
+
+typedef enum XrCameraPositionBD {
+    XR_CAMERA_POSITION_UNSPECIFIED_BD = 1,
+    XR_CAMERA_POSITION_LEFT_BD = 2,
+    XR_CAMERA_POSITION_RIGHT_BD = 3,
+    XR_CAMERA_POSITION_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraPositionBD;
+
+typedef enum XrCameraTypeBD {
+    XR_CAMERA_TYPE_PASSTHROUGH_COLOR_BD = 1,
+    XR_CAMERA_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraTypeBD;
+
+typedef enum XrCameraCapabilityTypeBD {
+    XR_CAMERA_CAPABILITY_TYPE_IMAGE_RESOLUTION_AND_FRAME_RATE_BD = 1,
+    XR_CAMERA_CAPABILITY_TYPE_IMAGE_FORMAT_BD = 2,
+    XR_CAMERA_CAPABILITY_TYPE_DATA_TRANSFER_TYPE_BD = 3,
+    XR_CAMERA_CAPABILITY_TYPE_CAMERA_MODEL_BD = 4,
+    XR_CAMERA_CAPABILITY_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraCapabilityTypeBD;
+
+typedef enum XrCameraDataTransferTypeBD {
+    XR_CAMERA_DATA_TRANSFER_TYPE_RAW_BUFFER_BD = 1,
+    XR_CAMERA_DATA_TRANSFER_TYPE_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraDataTransferTypeBD;
+
+typedef enum XrCameraImageFormatBD {
+    XR_CAMERA_IMAGE_FORMAT_RGBA_8888_BD = 1,
+    XR_CAMERA_IMAGE_FORMAT_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraImageFormatBD;
+
+typedef enum XrCameraModelBD {
+    XR_CAMERA_MODEL_PINHOLE_BD = 1,
+    XR_CAMERA_MODEL_MAX_ENUM_BD = 0x7FFFFFFF
+} XrCameraModelBD;
+typedef struct XR_MAY_ALIAS XrCameraPropertyBaseHeaderBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrCameraPropertyBaseHeaderBD;
+
+typedef struct XrCameraPropertiesBD {
+    XrStructureType                   type;
+    void* XR_MAY_ALIAS                next;
+    uint32_t                          propertyCount;
+    XrCameraPropertyBaseHeaderBD**    properties;
+} XrCameraPropertiesBD;
+
+typedef struct XR_MAY_ALIAS XrCameraCapabilityBaseHeaderBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrCameraCapabilityBaseHeaderBD;
+
+typedef struct XrCameraCapabilitiesBD {
+    XrStructureType                     type;
+    const void* XR_MAY_ALIAS            next;
+    uint32_t                            capabilityCount;
+    XrCameraCapabilityBaseHeaderBD**    capabilities;
+} XrCameraCapabilitiesBD;
+
+typedef struct XrAvailableCamerasEnumerateInfoBD {
+    XrStructureType                  type;
+    const void* XR_MAY_ALIAS         next;
+    const XrCameraPropertiesBD*      properties;
+    const XrCameraCapabilitiesBD*    capabilities;
+} XrAvailableCamerasEnumerateInfoBD;
+
+typedef struct XrAvailableCameraBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrCameraIdBD          cameraId;
+} XrAvailableCameraBD;
+
+typedef struct XrCameraPropertyTypesEnumerateInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraIdBD                cameraId;
+} XrCameraPropertyTypesEnumerateInfoBD;
+
+typedef struct XrCameraPropertyTypesBD {
+    XrStructureType            type;
+    void* XR_MAY_ALIAS         next;
+    uint32_t                   propertyTypeCapacityInput;
+    uint32_t                   propertyTypeCountOutput;
+    XrCameraPropertyTypeBD*    propertyTypes;
+} XrCameraPropertyTypesBD;
+
+typedef struct XrCameraPropertiesGetInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraIdBD                cameraId;
+} XrCameraPropertiesGetInfoBD;
+
+typedef struct XrCameraPropertyFacingBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraFacingBD            facing;
+} XrCameraPropertyFacingBD;
+
+typedef struct XrCameraPropertyPositionBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraPositionBD          position;
+} XrCameraPropertyPositionBD;
+
+typedef struct XrCameraPropertyCameraTypeBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraTypeBD              cameraType;
+} XrCameraPropertyCameraTypeBD;
+
+typedef struct XrCameraCapabilityTypesEnumerateInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraIdBD                cameraId;
+} XrCameraCapabilityTypesEnumerateInfoBD;
+
+typedef struct XrCameraCapabilityTypesBD {
+    XrStructureType              type;
+    void* XR_MAY_ALIAS           next;
+    uint32_t                     capabilityTypeCapacityInput;
+    uint32_t                     capabilityTypeCountOutput;
+    XrCameraCapabilityTypeBD*    capabilityTypes;
+} XrCameraCapabilityTypesBD;
+
+typedef struct XrCameraSupportedCapabilitiesGetInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraIdBD                id;
+} XrCameraSupportedCapabilitiesGetInfoBD;
+
+typedef struct XR_MAY_ALIAS XrCameraSupportedCapabilityBaseHeaderBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+} XrCameraSupportedCapabilityBaseHeaderBD;
+
+typedef struct XrCameraSupportedCapabilitiesBD {
+    XrStructureType                              type;
+    void* XR_MAY_ALIAS                           next;
+    uint32_t                                     capabilityCount;
+    XrCameraSupportedCapabilityBaseHeaderBD**    capabilities;
+} XrCameraSupportedCapabilitiesBD;
+
+typedef struct XrCameraImageResolutionAndFrameRateBD {
+    XrExtent2Di    resolution;
+    uint32_t       frameRate;
+} XrCameraImageResolutionAndFrameRateBD;
+
+typedef struct XrCameraSupportedCapabilityImageResolutionAndFrameRateBD {
+    XrStructureType                           type;
+    void* XR_MAY_ALIAS                        next;
+    uint32_t                                  resolutionAndFrameRateCapacityInput;
+    uint32_t                                  resolutionAndFrameRateCountOutput;
+    XrCameraImageResolutionAndFrameRateBD*    resolutionAndFrameRates;
+} XrCameraSupportedCapabilityImageResolutionAndFrameRateBD;
+
+typedef struct XrCameraCapabilityImageResolutionAndFrameRateBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrExtent2Di                 resolution;
+    uint32_t                    frameRate;
+} XrCameraCapabilityImageResolutionAndFrameRateBD;
+
+typedef struct XrCameraSupportedCapabilityDataTransferTypeBD {
+    XrStructureType                type;
+    void* XR_MAY_ALIAS             next;
+    uint32_t                       transferTypeCapacityInput;
+    uint32_t                       transferTypeCountOutput;
+    XrCameraDataTransferTypeBD*    transferTypes;
+} XrCameraSupportedCapabilityDataTransferTypeBD;
+
+typedef struct XrCameraCapabilityDataTransferTypeBD {
+    XrStructureType               type;
+    const void* XR_MAY_ALIAS      next;
+    XrCameraDataTransferTypeBD    transferType;
+} XrCameraCapabilityDataTransferTypeBD;
+
+typedef struct XrCameraSupportedCapabilityImageFormatBD {
+    XrStructureType           type;
+    void* XR_MAY_ALIAS        next;
+    uint32_t                  formatCapacityInput;
+    uint32_t                  formatCountOutput;
+    XrCameraImageFormatBD*    formats;
+} XrCameraSupportedCapabilityImageFormatBD;
+
+typedef struct XrCameraCapabilityImageFormatBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraImageFormatBD       format;
+} XrCameraCapabilityImageFormatBD;
+
+typedef struct XrCameraSupportedCapabilityCameraModelBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              modelCapacityInput;
+    uint32_t              modelCountOutput;
+    XrCameraModelBD*      models;
+} XrCameraSupportedCapabilityCameraModelBD;
+
+typedef struct XrCameraCapabilityCameraModelBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraModelBD             model;
+} XrCameraCapabilityCameraModelBD;
+
+typedef struct XrCameraDeviceCreateInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrCameraIdBD                cameraId;
+} XrCameraDeviceCreateInfoBD;
+
+typedef struct XrCreateCameraDeviceCompletionBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+    XrCameraDeviceBD      device;
+} XrCreateCameraDeviceCompletionBD;
+
+typedef struct XrCameraCaptureSessionCreateInfoBD {
+    XrStructureType                                 type;
+    const void* XR_MAY_ALIAS                        next;
+    XrCameraDeviceBD                                camera;
+    uint32_t                                        configCount;
+    const XrCameraCapabilityBaseHeaderBD* const*    configs;
+} XrCameraCaptureSessionCreateInfoBD;
+
+typedef struct XrCreateCameraCaptureSessionCompletionBD {
+    XrStructureType             type;
+    void* XR_MAY_ALIAS          next;
+    XrResult                    futureResult;
+    XrCameraCaptureSessionBD    captureSession;
+} XrCreateCameraCaptureSessionCompletionBD;
+
+// XrCameraIntrinsicsBD extends XrCameraImageDataBaseHeaderBD
+typedef struct XrCameraIntrinsicsBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrVector2f            focalLength;
+    XrVector2f            principalPoint;
+    XrVector2f            fov;
+} XrCameraIntrinsicsBD;
+
+// XrCameraExtrinsicsBD extends XrCameraImageDataBaseHeaderBD
+typedef struct XrCameraExtrinsicsBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrPosef               pose;
+} XrCameraExtrinsicsBD;
+
+typedef struct XrCameraCaptureBeginInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrCameraCaptureBeginInfoBD;
+
+typedef struct XrCameraImageAcquireInfoBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrTime                      lastCaptureTime;
+} XrCameraImageAcquireInfoBD;
+
+typedef struct XrCameraImageBD {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBool32                    available;
+    XrTime                      captureTime;
+    XrCameraImageIdBD           imageId;
+} XrCameraImageBD;
+
+typedef struct XR_MAY_ALIAS XrCameraImageDataBaseHeaderBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+} XrCameraImageDataBaseHeaderBD;
+
+typedef struct XrCameraImageDataRawBufferBD {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              width;
+    uint32_t              height;
+    uint32_t              stride;
+    uint32_t              bytesPerPixel;
+    uint32_t              pixelStride;
+    uint32_t              bufferSize;
+    uint8_t*              buffer;
+} XrCameraImageDataRawBufferBD;
+
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateAvailableCamerasBD)(XrInstance instance, const XrAvailableCamerasEnumerateInfoBD* enumerateInfo, uint32_t cameraCapacityInput, uint32_t* cameraCountOutput, XrAvailableCameraBD* cameras);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateCameraPropertyTypesBD)(XrInstance instance, const XrCameraPropertyTypesEnumerateInfoBD* enumerateInfo, XrCameraPropertyTypesBD* propertyTypes);
+typedef XrResult (XRAPI_PTR *PFN_xrGetCameraPropertiesBD)(XrInstance instance, const XrCameraPropertiesGetInfoBD* getInfo, XrCameraPropertiesBD* properties);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateCameraCapabilityTypesBD)(XrInstance instance, const XrCameraCapabilityTypesEnumerateInfoBD* enumerateInfo, XrCameraCapabilityTypesBD* capabilityTypes);
+typedef XrResult (XRAPI_PTR *PFN_xrGetCameraSupportedCapabilitiesBD)(XrInstance instance, const XrCameraSupportedCapabilitiesGetInfoBD* getInfo, XrCameraSupportedCapabilitiesBD* capabilities);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateCameraDeviceAsyncBD)(XrInstance instance, const XrCameraDeviceCreateInfoBD* createInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateCameraDeviceCompleteBD)(XrInstance instance, XrFutureEXT future, XrCreateCameraDeviceCompletionBD* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyCameraDeviceBD)(XrCameraDeviceBD device);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateCameraCaptureSessionAsyncBD)(XrSession session, const XrCameraCaptureSessionCreateInfoBD* createInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateCameraCaptureSessionCompleteBD)(XrSession session, XrFutureEXT future, XrCreateCameraCaptureSessionCompletionBD* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyCameraCaptureSessionBD)(XrCameraCaptureSessionBD captureSession);
+typedef XrResult (XRAPI_PTR *PFN_xrBeginCameraCaptureBD)(XrCameraCaptureSessionBD captureSession, const XrCameraCaptureBeginInfoBD* beginInfo);
+typedef XrResult (XRAPI_PTR *PFN_xrEndCameraCaptureBD)(XrCameraCaptureSessionBD captureSession);
+typedef XrResult (XRAPI_PTR *PFN_xrAcquireCameraImageBD)(XrCameraCaptureSessionBD captureSession, const XrCameraImageAcquireInfoBD* acquireInfo, XrCameraImageBD* image);
+typedef XrResult (XRAPI_PTR *PFN_xrGetCameraImageDataBD)(XrCameraCaptureSessionBD captureSession, XrCameraImageIdBD imageId, XrCameraImageDataBaseHeaderBD* imageData);
+typedef XrResult (XRAPI_PTR *PFN_xrReleaseCameraImageBD)(XrCameraCaptureSessionBD captureSession, XrCameraImageIdBD imageId);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateAvailableCamerasBD(
+    XrInstance                                  instance,
+    const XrAvailableCamerasEnumerateInfoBD*    enumerateInfo,
+    uint32_t                                    cameraCapacityInput,
+    uint32_t*                                   cameraCountOutput,
+    XrAvailableCameraBD*                        cameras);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateCameraPropertyTypesBD(
+    XrInstance                                  instance,
+    const XrCameraPropertyTypesEnumerateInfoBD* enumerateInfo,
+    XrCameraPropertyTypesBD*                    propertyTypes);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetCameraPropertiesBD(
+    XrInstance                                  instance,
+    const XrCameraPropertiesGetInfoBD*          getInfo,
+    XrCameraPropertiesBD*                       properties);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateCameraCapabilityTypesBD(
+    XrInstance                                  instance,
+    const XrCameraCapabilityTypesEnumerateInfoBD* enumerateInfo,
+    XrCameraCapabilityTypesBD*                  capabilityTypes);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetCameraSupportedCapabilitiesBD(
+    XrInstance                                  instance,
+    const XrCameraSupportedCapabilitiesGetInfoBD* getInfo,
+    XrCameraSupportedCapabilitiesBD*            capabilities);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateCameraDeviceAsyncBD(
+    XrInstance                                  instance,
+    const XrCameraDeviceCreateInfoBD*           createInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateCameraDeviceCompleteBD(
+    XrInstance                                  instance,
+    XrFutureEXT                                 future,
+    XrCreateCameraDeviceCompletionBD*           completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyCameraDeviceBD(
+    XrCameraDeviceBD                            device);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateCameraCaptureSessionAsyncBD(
+    XrSession                                   session,
+    const XrCameraCaptureSessionCreateInfoBD*   createInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateCameraCaptureSessionCompleteBD(
+    XrSession                                   session,
+    XrFutureEXT                                 future,
+    XrCreateCameraCaptureSessionCompletionBD*   completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyCameraCaptureSessionBD(
+    XrCameraCaptureSessionBD                    captureSession);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrBeginCameraCaptureBD(
+    XrCameraCaptureSessionBD                    captureSession,
+    const XrCameraCaptureBeginInfoBD*           beginInfo);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEndCameraCaptureBD(
+    XrCameraCaptureSessionBD                    captureSession);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrAcquireCameraImageBD(
+    XrCameraCaptureSessionBD                    captureSession,
+    const XrCameraImageAcquireInfoBD*           acquireInfo,
+    XrCameraImageBD*                            image);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetCameraImageDataBD(
+    XrCameraCaptureSessionBD                    captureSession,
+    XrCameraImageIdBD                           imageId,
+    XrCameraImageDataBaseHeaderBD*              imageData);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrReleaseCameraImageBD(
+    XrCameraCaptureSessionBD                    captureSession,
+    XrCameraImageIdBD                           imageId);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
 // XR_ANDROID_spatial_discovery_bounds is a preprocessor guard. Do not pass it to API calls.
 #define XR_ANDROID_spatial_discovery_bounds 1
 #define XR_ANDROID_spatial_discovery_bounds_SPEC_VERSION 1
@@ -13304,6 +13945,39 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateColorSpacesSONY(
 #endif /* !XR_NO_PROTOTYPES */
 
 
+// XR_SONY_hdr_metadata is a preprocessor guard. Do not pass it to API calls.
+#define XR_SONY_hdr_metadata 1
+#define XR_SONY_hdr_metadata_SPEC_VERSION 1
+#define XR_SONY_HDR_METADATA_EXTENSION_NAME "XR_SONY_hdr_metadata"
+typedef struct XrXYColorSONY {
+    float    x;
+    float    y;
+} XrXYColorSONY;
+
+typedef struct XrHdrMetadataSONY {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrXYColorSONY               displayPrimaryRed;
+    XrXYColorSONY               displayPrimaryGreen;
+    XrXYColorSONY               displayPrimaryBlue;
+    XrXYColorSONY               whitePoint;
+    float                       maxLuminance;
+    float                       minLuminance;
+    float                       maxContentLightLevel;
+    float                       maxFrameAverageLightLevel;
+} XrHdrMetadataSONY;
+
+typedef XrResult (XRAPI_PTR *PFN_xrSetHdrMetadataSONY)(XrSwapchain swapchain, const XrHdrMetadataSONY* hdrMetadata);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrSetHdrMetadataSONY(
+    XrSwapchain                                 swapchain,
+    const XrHdrMetadataSONY*                    hdrMetadata);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
 // XR_EXT_spatial_persistence_operations is a preprocessor guard. Do not pass it to API calls.
 #define XR_EXT_spatial_persistence_operations 1
 #define XR_EXT_spatial_persistence_operations_SPEC_VERSION 1
@@ -13362,6 +14036,117 @@ XRAPI_ATTR XrResult XRAPI_CALL xrUnpersistSpatialEntityCompleteEXT(
     XrSpatialPersistenceContextEXT              persistenceContext,
     XrFutureEXT                                 future,
     XrUnpersistSpatialEntityCompletionEXT*      completion);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_EXT_spatial_image_tracking is a preprocessor guard. Do not pass it to API calls.
+#define XR_EXT_spatial_image_tracking 1
+XR_DEFINE_HANDLE(XrSpatialImageTrackingDatabaseEXT)
+#define XR_EXT_spatial_image_tracking_SPEC_VERSION 1
+#define XR_EXT_SPATIAL_IMAGE_TRACKING_EXTENSION_NAME "XR_EXT_spatial_image_tracking"
+
+typedef enum XrSpatialReferenceImageFormatEXT {
+    XR_SPATIAL_REFERENCE_IMAGE_FORMAT_RGBA_8888_EXT = 1,
+    XR_SPATIAL_REFERENCE_IMAGE_FORMAT_RGB_888_EXT = 2,
+    XR_SPATIAL_REFERENCE_IMAGE_FORMAT_YUV_420_888_EXT = 3,
+    XR_SPATIAL_REFERENCE_IMAGE_FORMAT_MAX_ENUM_EXT = 0x7FFFFFFF
+} XrSpatialReferenceImageFormatEXT;
+typedef struct XrSpatialReferenceImagePlaneEXT {
+    uint32_t          bufferSize;
+    const uint8_t*    buffer;
+    uint32_t          rowStride;
+    uint32_t          pixelStride;
+} XrSpatialReferenceImagePlaneEXT;
+
+typedef struct XrSpatialReferenceImageEXT {
+    XrStructureType                           type;
+    const void* XR_MAY_ALIAS                  next;
+    uint32_t                                  width;
+    uint32_t                                  height;
+    XrSpatialReferenceImageFormatEXT          format;
+    uint32_t                                  planeCount;
+    const XrSpatialReferenceImagePlaneEXT*    planes;
+} XrSpatialReferenceImageEXT;
+
+// XrSpatialImageStaticOptimizationEXT extends XrSpatialReferenceImageEXT,XrSpatialImageTrackingDatabaseCreateInfoEXT
+typedef struct XrSpatialImageStaticOptimizationEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBool32                    optimizeForStaticImage;
+} XrSpatialImageStaticOptimizationEXT;
+
+// XrSpatialImageSizeEXT extends XrSpatialReferenceImageEXT,XrSpatialImageTrackingDatabaseCreateInfoEXT
+typedef struct XrSpatialImageSizeEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    float                       physicalWidth;
+} XrSpatialImageSizeEXT;
+
+typedef struct XrSpatialCapabilityConfigurationImageTrackingEXT {
+    XrStructureType                             type;
+    const void* XR_MAY_ALIAS                    next;
+    XrSpatialCapabilityEXT                      capability;
+    uint32_t                                    enabledComponentCount;
+    const XrSpatialComponentTypeEXT*            enabledComponents;
+    uint32_t                                    imageTrackingDatabaseCount;
+    const XrSpatialImageTrackingDatabaseEXT*    imageTrackingDatabases;
+} XrSpatialCapabilityConfigurationImageTrackingEXT;
+
+typedef struct XrSpatialImageTrackingDatabaseCreateInfoEXT {
+    XrStructureType                      type;
+    const void* XR_MAY_ALIAS             next;
+    uint32_t                             spatialReferenceImageCount;
+    const XrSpatialReferenceImageEXT*    spatialReferenceImages;
+} XrSpatialImageTrackingDatabaseCreateInfoEXT;
+
+typedef struct XrSpatialImage2DDataEXT {
+    XrSpatialImageTrackingDatabaseEXT    imageTrackingDatabase;
+    uint32_t                             referenceImageIndex;
+} XrSpatialImage2DDataEXT;
+
+// XrSpatialComponentImage2DListEXT extends XrSpatialComponentDataQueryResultEXT
+typedef struct XrSpatialComponentImage2DListEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    imageCount;
+    XrSpatialImage2DDataEXT*    images;
+} XrSpatialComponentImage2DListEXT;
+
+typedef struct XrCreateSpatialImageTrackingDatabaseCompletionEXT {
+    XrStructureType                      type;
+    void* XR_MAY_ALIAS                   next;
+    XrResult                             futureResult;
+    XrSpatialImageTrackingDatabaseEXT    database;
+} XrCreateSpatialImageTrackingDatabaseCompletionEXT;
+
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateSpatialReferenceImageFormatsEXT)(XrInstance instance, XrSystemId systemId, XrSpatialCapabilityEXT capability, uint32_t formatCapacityInput, uint32_t* formatCountOutput, XrSpatialReferenceImageFormatEXT* formats);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialImageTrackingDatabaseAsyncEXT)(XrSession session, const XrSpatialImageTrackingDatabaseCreateInfoEXT* createInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialImageTrackingDatabaseCompleteEXT)(XrSession session, XrFutureEXT future, XrCreateSpatialImageTrackingDatabaseCompletionEXT* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroySpatialImageTrackingDatabaseEXT)(XrSpatialImageTrackingDatabaseEXT database);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSpatialReferenceImageFormatsEXT(
+    XrInstance                                  instance,
+    XrSystemId                                  systemId,
+    XrSpatialCapabilityEXT                      capability,
+    uint32_t                                    formatCapacityInput,
+    uint32_t*                                   formatCountOutput,
+    XrSpatialReferenceImageFormatEXT*           formats);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialImageTrackingDatabaseAsyncEXT(
+    XrSession                                   session,
+    const XrSpatialImageTrackingDatabaseCreateInfoEXT* createInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialImageTrackingDatabaseCompleteEXT(
+    XrSession                                   session,
+    XrFutureEXT                                 future,
+    XrCreateSpatialImageTrackingDatabaseCompletionEXT* completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialImageTrackingDatabaseEXT(
+    XrSpatialImageTrackingDatabaseEXT           database);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
 
@@ -13784,6 +14569,284 @@ XRAPI_ATTR XrResult XRAPI_CALL xrCreateSurfaceAnchorCompleteANDROID(
     XrSpatialContextEXT                         spatialContext,
     XrFutureEXT                                 future,
     XrSurfaceAnchorCreateCompletionANDROID*     completion);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_EXT_spatial_container is a preprocessor guard. Do not pass it to API calls.
+#define XR_EXT_spatial_container 1
+XR_DEFINE_HANDLE(XrSpatialContainerEXT)
+#define XR_EXT_spatial_container_SPEC_VERSION 1
+#define XR_EXT_SPATIAL_CONTAINER_EXTENSION_NAME "XR_EXT_spatial_container"
+
+typedef enum XrSpatialContainerGraphicsPresentationEXT {
+    XR_SPATIAL_CONTAINER_GRAPHICS_PRESENTATION_SELF_RENDERING_EXT = 1000813000,
+    XR_SPATIAL_CONTAINER_GRAPHICS_PRESENTATION_MAX_ENUM_EXT = 0x7FFFFFFF
+} XrSpatialContainerGraphicsPresentationEXT;
+
+typedef enum XrSpatialContainerBoundsModeEXT {
+    XR_SPATIAL_CONTAINER_BOUNDS_MODE_BOUNDED_EXT = 1,
+    XR_SPATIAL_CONTAINER_BOUNDS_MODE_IMMERSIVE_EXT = 2,
+    XR_SPATIAL_CONTAINER_BOUNDS_MODE_MAX_ENUM_EXT = 0x7FFFFFFF
+} XrSpatialContainerBoundsModeEXT;
+
+typedef enum XrSpatialContainerVolumeClippingEXT {
+    XR_SPATIAL_CONTAINER_VOLUME_CLIPPING_NONE_EXT = 0,
+    XR_SPATIAL_CONTAINER_VOLUME_CLIPPING_STRICT_EXT = 1,
+    XR_SPATIAL_CONTAINER_VOLUME_CLIPPING_MAX_ENUM_EXT = 0x7FFFFFFF
+} XrSpatialContainerVolumeClippingEXT;
+// XrSessionCreateInfoSpatialContainersEXT extends XrSessionCreateInfo
+typedef struct XrSessionCreateInfoSpatialContainersEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSessionCreateInfoSpatialContainersEXT;
+
+typedef struct XrSpatialContainerCreateInfoEXT {
+    XrStructureType                              type;
+    const void* XR_MAY_ALIAS                     next;
+    XrSpatialContainerGraphicsPresentationEXT    graphicsPresentation;
+    XrExtent3Df                                  suggestedBounds;
+} XrSpatialContainerCreateInfoEXT;
+
+typedef struct XrSpatialContainerSpaceCreateInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+} XrSpatialContainerSpaceCreateInfoEXT;
+
+typedef struct XrEventDataSpatialContainerClosedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+} XrEventDataSpatialContainerClosedEXT;
+
+// XrSystemSpatialContainerPropertiesEXT extends XrSystemProperties
+typedef struct XrSystemSpatialContainerPropertiesEXT {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              maxSpatialContainerCount;
+    XrBool32              supportsBounded;
+    XrBool32              supportsImmersive;
+} XrSystemSpatialContainerPropertiesEXT;
+
+typedef struct XrSpatialContainerBoundsEXT {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrExtent3Df           bounds;
+    XrBool32              infiniteBounds;
+} XrSpatialContainerBoundsEXT;
+
+typedef struct XrEventDataSpatialContainerBoundsChangedEXT {
+    XrStructureType                    type;
+    const void* XR_MAY_ALIAS           next;
+    XrSpatialContainerEXT              spatialContainer;
+    XrExtent3Df                        bounds;
+    XrBool32                           infiniteBounds;
+    XrSpatialContainerBoundsModeEXT    boundsMode;
+} XrEventDataSpatialContainerBoundsChangedEXT;
+
+typedef struct XrSpatialContainerBoundsGetInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpatialContainerBoundsGetInfoEXT;
+
+typedef struct XrSpatialContainerStateGetInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpatialContainerStateGetInfoEXT;
+
+typedef struct XrSpatialContainerVisibleRequestInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBool32                    visible;
+} XrSpatialContainerVisibleRequestInfoEXT;
+
+typedef struct XrEventDataSpatialContainerVisibleChangedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+    XrBool32                    visible;
+} XrEventDataSpatialContainerVisibleChangedEXT;
+
+typedef struct XrEventDataSpatialContainerVisibleRequestDeniedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+} XrEventDataSpatialContainerVisibleRequestDeniedEXT;
+
+typedef struct XrEventDataSpatialContainerInteractableChangedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+    XrBool32                    interactable;
+} XrEventDataSpatialContainerInteractableChangedEXT;
+
+typedef struct XrSpatialContainerBoundsModeRequestInfoEXT {
+    XrStructureType                    type;
+    const void* XR_MAY_ALIAS           next;
+    XrSpatialContainerBoundsModeEXT    boundsMode;
+} XrSpatialContainerBoundsModeRequestInfoEXT;
+
+typedef struct XrEventDataSpatialContainerBoundsModeRequestDeniedEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+} XrEventDataSpatialContainerBoundsModeRequestDeniedEXT;
+
+typedef struct XrSpatialContainerStateEXT {
+    XrStructureType                    type;
+    void* XR_MAY_ALIAS                 next;
+    XrBool32                           visible;
+    XrBool32                           interactable;
+    XrSpatialContainerBoundsModeEXT    boundsMode;
+} XrSpatialContainerStateEXT;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialContainerEXT)(XrSession session, const XrSpatialContainerCreateInfoEXT* createInfo, XrSpatialContainerEXT* spatialContainer);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroySpatialContainerEXT)(XrSpatialContainerEXT spatialContainer);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialContainerSpaceEXT)(XrSession session, const XrSpatialContainerSpaceCreateInfoEXT* createInfo, XrSpace* space);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestSpatialContainerVisibleEXT)(XrSpatialContainerEXT spatialContainer, const XrSpatialContainerVisibleRequestInfoEXT* info);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestSpatialContainerBoundsModeEXT)(XrSpatialContainerEXT spatialContainer, const XrSpatialContainerBoundsModeRequestInfoEXT* info);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpatialContainerBoundsEXT)(XrSpatialContainerEXT spatialContainer, const XrSpatialContainerBoundsGetInfoEXT* getInfo, XrSpatialContainerBoundsEXT* bounds);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpatialContainerStateEXT)(XrSpatialContainerEXT spatialContainer, const XrSpatialContainerStateGetInfoEXT* getInfo, XrSpatialContainerStateEXT* state);
+typedef XrResult (XRAPI_PTR *PFN_xrEnumerateSupportedSpatialContainerGraphicsPresentationsEXT)(XrInstance instance, XrSystemId systemId, uint32_t graphicsPresentationCapacityInput, uint32_t* graphicsPresentationCountOutput, XrSpatialContainerGraphicsPresentationEXT* graphicsPresentations);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialContainerEXT(
+    XrSession                                   session,
+    const XrSpatialContainerCreateInfoEXT*      createInfo,
+    XrSpatialContainerEXT*                      spatialContainer);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialContainerEXT(
+    XrSpatialContainerEXT                       spatialContainer);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialContainerSpaceEXT(
+    XrSession                                   session,
+    const XrSpatialContainerSpaceCreateInfoEXT* createInfo,
+    XrSpace*                                    space);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestSpatialContainerVisibleEXT(
+    XrSpatialContainerEXT                       spatialContainer,
+    const XrSpatialContainerVisibleRequestInfoEXT* info);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestSpatialContainerBoundsModeEXT(
+    XrSpatialContainerEXT                       spatialContainer,
+    const XrSpatialContainerBoundsModeRequestInfoEXT* info);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpatialContainerBoundsEXT(
+    XrSpatialContainerEXT                       spatialContainer,
+    const XrSpatialContainerBoundsGetInfoEXT*   getInfo,
+    XrSpatialContainerBoundsEXT*                bounds);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpatialContainerStateEXT(
+    XrSpatialContainerEXT                       spatialContainer,
+    const XrSpatialContainerStateGetInfoEXT*    getInfo,
+    XrSpatialContainerStateEXT*                 state);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEnumerateSupportedSpatialContainerGraphicsPresentationsEXT(
+    XrInstance                                  instance,
+    XrSystemId                                  systemId,
+    uint32_t                                    graphicsPresentationCapacityInput,
+    uint32_t*                                   graphicsPresentationCountOutput,
+    XrSpatialContainerGraphicsPresentationEXT*  graphicsPresentations);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_EXT_spatial_container_self_rendering is a preprocessor guard. Do not pass it to API calls.
+#define XR_EXT_spatial_container_self_rendering 1
+#define XR_EXT_spatial_container_self_rendering_SPEC_VERSION 1
+#define XR_EXT_SPATIAL_CONTAINER_SELF_RENDERING_EXTENSION_NAME "XR_EXT_spatial_container_self_rendering"
+typedef struct XrSpatialContainerViewLocateInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrViewConfigurationType     viewConfigurationType;
+    XrSpace                     space;
+    XrSpatialContainerEXT       spatialContainer;
+} XrSpatialContainerViewLocateInfoEXT;
+
+typedef struct XrSpatialContainerViewsLocateInfoEXT {
+    XrStructureType                               type;
+    const void* XR_MAY_ALIAS                      next;
+    XrTime                                        displayTime;
+    uint32_t                                      viewLocateInfoCount;
+    const XrSpatialContainerViewLocateInfoEXT*    viewLocateInfos;
+} XrSpatialContainerViewsLocateInfoEXT;
+
+typedef struct XrSpatialContainerViewStateEXT {
+    XrStructureType            type;
+    void* XR_MAY_ALIAS         next;
+    XrViewStateFlags           viewStateFlags;
+    XrViewConfigurationType    viewConfigurationType;
+    XrBool32                   shouldSubmitLayers;
+    XrExtent2Di                recommendedImageExtent;
+} XrSpatialContainerViewStateEXT;
+
+typedef struct XrSpatialContainerLayerEXT {
+    XrStructureType                               type;
+    const void* XR_MAY_ALIAS                      next;
+    XrSpatialContainerEXT                         spatialContainer;
+    XrBool32                                      retainPreviousSubmission;
+    uint32_t                                      layerCount;
+    const XrCompositionLayerBaseHeader* const*    layers;
+} XrSpatialContainerLayerEXT;
+
+// XrSpatialContainerLayerFrameEndInfoEXT extends XrFrameEndInfo
+typedef struct XrSpatialContainerLayerFrameEndInfoEXT {
+    XrStructureType                      type;
+    const void* XR_MAY_ALIAS             next;
+    uint32_t                             containerLayerCount;
+    const XrSpatialContainerLayerEXT*    containerLayers;
+} XrSpatialContainerLayerFrameEndInfoEXT;
+
+typedef struct XrSpatialContainerBeginInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+    XrViewConfigurationType     primaryViewConfigurationType;
+} XrSpatialContainerBeginInfoEXT;
+
+typedef struct XrSpatialContainerEndInfoEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpatialContainerEXT       spatialContainer;
+} XrSpatialContainerEndInfoEXT;
+
+// XrSpatialContainerCompositionLayerViewConfigurationEXT extends XrCompositionLayerProjection
+typedef struct XrSpatialContainerCompositionLayerViewConfigurationEXT {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrViewConfigurationType     viewConfigurationType;
+} XrSpatialContainerCompositionLayerViewConfigurationEXT;
+
+// XrSpatialContainerLayerVolumeClippingEXT extends XrSpatialContainerLayerEXT
+typedef struct XrSpatialContainerLayerVolumeClippingEXT {
+    XrStructureType                        type;
+    const void* XR_MAY_ALIAS               next;
+    XrSpatialContainerVolumeClippingEXT    volumeClipping;
+} XrSpatialContainerLayerVolumeClippingEXT;
+
+typedef XrResult (XRAPI_PTR *PFN_xrBeginSpatialContainerRenderingEXT)(XrSession session, const XrSpatialContainerBeginInfoEXT* beginInfo);
+typedef XrResult (XRAPI_PTR *PFN_xrEndSpatialContainerRenderingEXT)(XrSession session, const XrSpatialContainerEndInfoEXT* endInfo);
+typedef XrResult (XRAPI_PTR *PFN_xrLocateSpatialContainerViewsEXT)(XrSession session, const XrSpatialContainerViewsLocateInfoEXT* locateInfo, uint32_t viewStateCount, XrSpatialContainerViewStateEXT* viewStates, uint32_t viewCount, XrView* views);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrBeginSpatialContainerRenderingEXT(
+    XrSession                                   session,
+    const XrSpatialContainerBeginInfoEXT*       beginInfo);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrEndSpatialContainerRenderingEXT(
+    XrSession                                   session,
+    const XrSpatialContainerEndInfoEXT*         endInfo);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpatialContainerViewsEXT(
+    XrSession                                   session,
+    const XrSpatialContainerViewsLocateInfoEXT* locateInfo,
+    uint32_t                                    viewStateCount,
+    XrSpatialContainerViewStateEXT*             viewStates,
+    uint32_t                                    viewCount,
+    XrView*                                     views);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
 
