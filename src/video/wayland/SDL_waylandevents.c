@@ -2228,6 +2228,9 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
+
+    // The spec says that data offers are no longer valid when keyboard focus is lost.
+    Wayland_DataDeviceSetSelectionOffer(seat->data_device, NULL);
 }
 
 static bool keyboard_input_get_text(char text[8], const SDL_WaylandSeat *seat, uint32_t key, bool down, bool *handled_by_ime)
