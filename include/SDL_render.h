@@ -675,8 +675,8 @@ extern DECLSPEC int SDLCALL SDL_UpdateNVTexture(SDL_Texture * texture,
  *
  * `pitch` may be larger than the bytes needed for a row of pixels, as there
  * might be padding included. Use `(y * pitch) + (x * pixel_size_in_bytes)` to
- * write to the first byte of the pixel at `(x, y)` in the locked texture area,
- * where `(0, 0)` is the top-left corner of the area.
+ * write to the first byte of the pixel at `(x, y)` in the locked texture
+ * area, where `(0, 0)` is the top-left corner of the area.
  *
  * \param texture the texture to lock for access, which was created with
  *                `SDL_TEXTUREACCESS_STREAMING`.
