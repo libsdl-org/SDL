@@ -750,13 +750,13 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.msys2_packages.extend([
                 f"{msys2_env}-cc",
                 f"{msys2_env}-cmake",
-                f"{msys2_env}-ffmpeg",
                 f"{msys2_env}-ninja",
                 f"{msys2_env}-pkg-config",
             ])
             if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
-                job.msys2_packages.append(f"{msys2_env}-perl")
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
+                job.msys2_packages.append(f"{msys2_env}-perl")
+                job.msys2_packages.append(f"{msys2_env}-ffmpeg")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
         case SdlPlatform.Riscos:
