@@ -1722,7 +1722,6 @@ if(ANDROID)
     endif()
   endif()
   if(TARGET SDL3-static)
-    target_compile_options(SDL3-static PRIVATE "-DSDL_ANDROID_BUILD_STATIC_LIB")
     target_link_options(SDL3-static INTERFACE "-Wl,-u,JNI_OnLoad")
   endif()
 

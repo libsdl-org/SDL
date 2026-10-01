@@ -981,37 +981,40 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     int argc = 0;
     char **argv = NULL;
     SDL_main_func sdlmain = NULL;
+    void *library_handle = NULL;
 
-#ifdef SDL_ANDROID_BUILD_STATIC_LIB
-    extern int main(int argc, char **argv);
+    extern int main(int argc, char **argv) __attribute__((weak));
+
+    // try to get sdlmain from static linking
     sdlmain = (SDL_main_func) main;
-#else
-    void *library_handle;
-    const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
-    library_handle = dlopen(library_file, RTLD_GLOBAL);
 
-    if (library_handle == NULL) {
-        /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
-           In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
-        const char *library_name = SDL_strrchr(library_file, '/');
-        if (library_name && *library_name) {
-            library_name += 1;
-            library_handle = dlopen(library_name, RTLD_GLOBAL);
-        }
-    }
+    // else try to load it from user shared library
+    if (!sdlmain) {
+        const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
+        library_handle = dlopen(library_file, RTLD_GLOBAL);
 
-    if (library_handle) {
-        const char *function_name = (*env)->GetStringUTFChars(env, function, NULL);
-        sdlmain = (SDL_main_func)dlsym(library_handle, function_name);
-        if (!sdlmain) {
-            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+        if (library_handle == NULL) {
+            /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
+               In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
+            const char *library_name = SDL_strrchr(library_file, '/');
+            if (library_name && *library_name) {
+                library_name += 1;
+                library_handle = dlopen(library_name, RTLD_GLOBAL);
+            }
         }
-        (*env)->ReleaseStringUTFChars(env, function, function_name);
-    } else {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
+
+        if (library_handle) {
+            const char *function_name = (*env)->GetStringUTFChars(env, function, NULL);
+            sdlmain = (SDL_main_func)dlsym(library_handle, function_name);
+            if (!sdlmain) {
+                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+            }
+            (*env)->ReleaseStringUTFChars(env, function, function_name);
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
+        }
+        (*env)->ReleaseStringUTFChars(env, library, library_file);
     }
-    (*env)->ReleaseStringUTFChars(env, library, library_file);
-#endif
 
     if (sdlmain) {
         parse_args(env, array, argv0, &args, &argc, &argv);
@@ -1028,11 +1031,9 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): no SDL_main()");
     }
 
-#ifndef SDL_ANDROID_BUILD_STATIC_LIB
     if (library_handle) {
         dlclose(library_handle);
     }
-#endif
 
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
