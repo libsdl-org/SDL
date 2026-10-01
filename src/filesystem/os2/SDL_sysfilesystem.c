@@ -70,6 +70,11 @@ char *SDL_GetBasePath(void)
     return OS2_SysToUTF8(acBuf);
 }
 
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmultichar"
+#endif
+
 char *SDL_GetPrefPath(const char *org, const char *app)
 {
     PSZ     pszPath;
@@ -123,6 +128,10 @@ char *SDL_GetPrefPath(const char *org, const char *app)
 
     return OS2_SysToUTF8(acBuf);
 }
+
+#if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
 
 #endif /* SDL_FILESYSTEM_OS2 */
 
