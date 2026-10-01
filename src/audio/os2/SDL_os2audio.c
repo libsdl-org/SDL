@@ -72,7 +72,7 @@ static LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG   ulRC;
 
-    debug_os2("cbAudioWriteEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %#lX",ulStatus,pBuffer,ulFlags);
+    debug_os2("cbAudioWriteEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %lX",ulStatus,pBuffer,ulFlags);
 
     if (pAData->ulState == 2)
     {
@@ -107,7 +107,7 @@ static LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG   ulRC;
 
-    debug_os2("cbAudioReadEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %#lX",ulStatus,pBuffer,ulFlags);
+    debug_os2("cbAudioReadEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %lX",ulStatus,pBuffer,ulFlags);
 
     if (pAData->ulState == 2)
     {
@@ -317,7 +317,7 @@ static int OS2_CaptureFromDevice(_THIS,void *buffer,int buflen)
     SDL_memcpy(buffer,pMixBuffer->pBuffer, len);
     pAData->pDrainBuffer = _getNextBuffer(pAData, pMixBuffer);
 
-    debug_os2("buflen = %u, ulBufferLength = %lu",buflen,pMixBuffer->ulBufferLength);
+    debug_os2("buflen = %d, ulBufferLength = %lu",buflen,pMixBuffer->ulBufferLength);
 
     return len;
 }
@@ -597,5 +597,3 @@ AudioBootStrap OS2AUDIO_bootstrap = {
 };
 
 #endif /* SDL_AUDIO_DRIVER_OS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

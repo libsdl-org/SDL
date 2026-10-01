@@ -100,7 +100,7 @@ static BOOL _vmanInit(void)
     /* Load vman.dll */
     ulRC = DosLoadModule(acBuf, sizeof(acBuf), "VMAN", &hmodVMan);
     if (ulRC != NO_ERROR) {
-        debug_os2("Could not load VMAN.DLL, rc = %u : %s", ulRC, acBuf);
+        debug_os2("Could not load VMAN.DLL, rc = %lu : %s", ulRC, acBuf);
         hmodVMan = NULLHANDLE;
         return FALSE;
     }
@@ -286,7 +286,7 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
                        (ulHeight * ulScanLineSize) + sizeof(ULONG),
                        PAG_COMMIT | PAG_EXECUTE | PAG_READ | PAG_WRITE);
     if (ulRC != NO_ERROR) {
-        debug_os2("DosAllocMem(), rc = %u", ulRC);
+        debug_os2("DosAllocMem(), rc = %lu", ulRC);
         return NULL;
     }
 
@@ -307,7 +307,7 @@ static VOID voVideoBufFree(PVODATA pVOData)
 
     ulRC = DosFreeMem(pVOData->pBuffer);
     if (ulRC != NO_ERROR) {
-        debug_os2("DosFreeMem(), rc = %u", ulRC);
+        debug_os2("DosFreeMem(), rc = %lu", ulRC);
     } else {
         pVOData->pBuffer = NULL;
     }
@@ -479,5 +479,3 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
 
     return sHWReqIn.cScrChangeRects != 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

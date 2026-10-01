@@ -27,7 +27,7 @@
 
 #ifndef GENICONV_STANDALONE
 #include "../../../SDL_internal.h"
-#else
+#else  /**/
 #include <string.h>
 #include <ctype.h>
 #define SDL_isspace isspace
@@ -412,5 +412,3 @@ unsigned long os2cpFromName(char *cp)
 
     return (lFound == -1)? 0 : aName2CP[lFound].ulCode;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

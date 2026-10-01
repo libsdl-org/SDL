@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
 #ifndef SDL_os2video_h_
@@ -78,5 +79,3 @@ typedef struct _MODEDATA {
 } MODEDATA;
 
 #endif /* SDL_os2video_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

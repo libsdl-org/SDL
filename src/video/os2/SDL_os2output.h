@@ -55,5 +55,3 @@ extern OS2VIDEOOUTPUT voDive;
 extern OS2VIDEOOUTPUT voVMan;
 
 #endif /* SDL_os2output_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

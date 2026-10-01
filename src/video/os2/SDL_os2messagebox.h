@@ -25,5 +25,3 @@
 extern int OS2_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
 #endif /* SDL_VIDEO_DRIVER_OS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

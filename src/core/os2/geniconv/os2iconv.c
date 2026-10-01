@@ -103,7 +103,7 @@ static int uconv_open(const char *code, UconvObject *uobj)
     if (rc != ULS_SUCCESS) {
         unsigned long cp = os2cpFromName((char *)code);
         char cp_name[16];
-        if (cp != 0 && SDL_snprintf(cp_name, sizeof(cp_name), "IBM-%u", cp) > 0) {
+        if (cp != 0 && SDL_snprintf(cp_name, sizeof(cp_name), "IBM-%lu", cp) > 0) {
             rc = _createUconvObj(cp_name, uobj);
         }
     }
@@ -282,5 +282,3 @@ int _System os2_iconv_close(iconv_t cd)
 
     return 0;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

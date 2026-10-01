@@ -18,6 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
 #ifndef SDL_os2mm_h_
@@ -51,5 +52,3 @@ typedef struct SDL_PrivateAudioData
 } SDL_PrivateAudioData;
 
 #endif /* SDL_os2mm_h_ */
-
-/* vi: set ts=4 sw=4 expandtab: */

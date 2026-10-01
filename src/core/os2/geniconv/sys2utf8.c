@@ -23,7 +23,7 @@
 
 #ifndef GENICONV_STANDALONE
 #include "../../../SDL_internal.h"
-#else
+#else  /**/
 #include <stdlib.h>
 #define SDL_malloc malloc
 #define SDL_realloc realloc
@@ -115,5 +115,3 @@ void StrUTF8Free(char *str)
 {
     SDL_free(str);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

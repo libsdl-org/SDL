@@ -21,7 +21,6 @@
 
 /*
   Universal iconv implementation for OS/2.
-
   Andrey Vasilkin, 2016.
 */
 
@@ -157,5 +156,3 @@ int libiconv_close(iconv_t cd)
 {
     return fn_iconv_close(cd);
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

@@ -21,7 +21,6 @@
 
 /*
   Universal iconv implementation for OS/2.
-
   Andrey Vasilkin, 2016.
 */
 
@@ -81,5 +80,3 @@ char *StrUTF8New(int to_utf8, char *str, int c_str);
 void StrUTF8Free(char *str);
 
 #endif /* GENICONV_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

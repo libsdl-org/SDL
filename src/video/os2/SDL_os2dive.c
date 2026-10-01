@@ -210,7 +210,7 @@ static BOOL voSetVisibleRegion(PVODATA pVOData, HWND hwnd,
                 return TRUE;
             }
 
-            SDL_SetError("DiveSetupBlitter(), rc = 0x%X", ulRC);
+            SDL_SetError("DiveSetupBlitter(), rc = 0x%lX", ulRC);
         } /* if (prectl != NULL) */
     } /* if (hrgn == NULLHANDLE) else */
 
@@ -240,7 +240,7 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
                        (ulHeight * ulScanLineSize) + sizeof(ULONG),
                        PAG_COMMIT | PAG_EXECUTE | PAG_READ | PAG_WRITE);
     if (ulRC != NO_ERROR) {
-        debug_os2("DosAllocMem(), rc = %u", ulRC);
+        debug_os2("DosAllocMem(), rc = %lu", ulRC);
         return NULL;
     }
 
@@ -248,7 +248,7 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
                                 fccColorEncoding, ulWidth, ulHeight,
                                 ulScanLineSize, pVOData->pBuffer);
     if (ulRC != DIVE_SUCCESS) {
-        debug_os2("DiveAllocImageBuffer(), rc = 0x%X", ulRC);
+        debug_os2("DiveAllocImageBuffer(), rc = 0x%lX", ulRC);
         DosFreeMem(pVOData->pBuffer);
         pVOData->pBuffer = NULL;
         pVOData->ulDIVEBufNum = 0;
@@ -259,7 +259,7 @@ static PVOID voVideoBufAlloc(PVODATA pVOData, ULONG ulWidth, ULONG ulHeight,
     pVOData->ulWidth = ulWidth;
     pVOData->ulHeight = ulHeight;
 
-    debug_os2("buffer: 0x%P, DIVE buffer number: %u",
+    debug_os2("buffer: 0x%p, DIVE buffer number: %lu",
               pVOData->pBuffer, pVOData->ulDIVEBufNum);
 
     return pVOData->pBuffer;
@@ -272,9 +272,9 @@ static VOID voVideoBufFree(PVODATA pVOData)
     if (pVOData->ulDIVEBufNum != 0) {
         ulRC = DiveFreeImageBuffer(pVOData->hDive, pVOData->ulDIVEBufNum);
         if (ulRC != DIVE_SUCCESS) {
-            debug_os2("DiveFreeImageBuffer(,%u), rc = %u", pVOData->ulDIVEBufNum, ulRC);
+            debug_os2("DiveFreeImageBuffer(,%lu), rc = %lu", pVOData->ulDIVEBufNum, ulRC);
         } else {
-            debug_os2("DIVE buffer %u destroyed", pVOData->ulDIVEBufNum);
+            debug_os2("DIVE buffer %lu destroyed", pVOData->ulDIVEBufNum);
         }
         pVOData->ulDIVEBufNum = 0;
     }
@@ -282,7 +282,7 @@ static VOID voVideoBufFree(PVODATA pVOData)
     if (pVOData->pBuffer) {
         ulRC = DosFreeMem(pVOData->pBuffer);
         if (ulRC != NO_ERROR) {
-            debug_os2("DosFreeMem(), rc = %u", ulRC);
+            debug_os2("DosFreeMem(), rc = %lu", ulRC);
         }
         pVOData->pBuffer = NULL;
     }
@@ -317,17 +317,15 @@ static BOOL voUpdate(PVODATA pVOData, HWND hwnd, SDL_Rect *pSDLRects,
         SDL_stack_free(pbLineMask);
 
         if (ulRC != DIVE_SUCCESS) {
-            debug_os2("DiveBlitImageLines(), rc = 0x%X", ulRC);
+            debug_os2("DiveBlitImageLines(), rc = 0x%lX", ulRC);
         }
     } else {
         ulRC = DiveBlitImage(pVOData->hDive, pVOData->ulDIVEBufNum,
                              DIVE_BUFFER_SCREEN);
         if (ulRC != DIVE_SUCCESS) {
-            debug_os2("DiveBlitImage(), rc = 0x%X", ulRC);
+            debug_os2("DiveBlitImage(), rc = 0x%lX", ulRC);
         }
     }
 
     return ulRC == DIVE_SUCCESS;
 }
-
-/* vi: set ts=4 sw=4 expandtab: */

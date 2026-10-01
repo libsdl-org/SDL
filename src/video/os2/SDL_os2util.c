@@ -110,5 +110,3 @@ HPOINTER utilCreatePointer(SDL_Surface *surface, ULONG ulHotX, ULONG ulHotY)
 }
 
 #endif /* SDL_VIDEO_DRIVER_OS2 */
-
-/* vi: set ts=4 sw=4 expandtab: */

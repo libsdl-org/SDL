@@ -28,5 +28,3 @@ char *os2cpToName(unsigned long cp);
 unsigned long os2cpFromName(char *cp);
 
 #endif /* OS2CP_H */
-
-/* vi: set ts=4 sw=4 expandtab: */

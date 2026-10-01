@@ -42,7 +42,7 @@ void SDL_SYS_InitTLSData(void)
         /* Allocate the thread local memory (1 DWORD) */
         ulRC = DosAllocThreadLocalMemory(1, (PULONG *)&ppSDLTLSData);
         if (ulRC != NO_ERROR) {
-            debug_os2("DosAllocThreadLocalMemory() failed, rc = %u", ulRC);
+            debug_os2("DosAllocThreadLocalMemory() failed, rc = %lu", ulRC);
         }
     }
 }
@@ -69,7 +69,7 @@ void SDL_SYS_QuitTLSData(void)
         /* Free the thread local memory */
         ulRC = DosFreeThreadLocalMemory((PULONG)ppSDLTLSData);
         if (ulRC != NO_ERROR) {
-            debug_os2("DosFreeThreadLocalMemory() failed, rc = %u", ulRC);
+            debug_os2("DosFreeThreadLocalMemory() failed, rc = %lu", ulRC);
         } else {
             ppSDLTLSData = NULL;
         }
