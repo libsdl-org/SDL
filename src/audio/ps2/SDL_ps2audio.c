@@ -89,10 +89,9 @@ static bool PS2AUDIO_OpenDevice(SDL_AudioDevice *device)
 
 static bool PS2AUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
 {
-    // We assume it's working by default. In case if we throw error
-    //  audio device will be removed and never recreated.
-    audsrv_play_audio((char *)buffer, buflen);
-    return true;
+    // A short write is normal (ring buffer momentarily full), not an error -
+    // only a negative return (e.g. audsrv not initialized) is.
+    return audsrv_play_audio((char *)buffer, buflen) >= 0;
 }
 
 static bool PS2AUDIO_WaitDevice(SDL_AudioDevice *device)
