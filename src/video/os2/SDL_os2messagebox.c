@@ -495,8 +495,8 @@ int OS2_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
             *pSDLBtnData = (SDL_MessageBoxButtonData *)messageboxdata->buttons;
     ULONG   cSDLBtnData = messageboxdata->numbuttons;
     BOOL    fVideoInitialized = SDL_WasInit(SDL_INIT_VIDEO);
-    HAB     hab;
-    HMQ     hmq;
+    HAB     hab = NULLHANDLE;
+    HMQ     hmq = NULLHANDLE;
     BOOL    fSuccess = FALSE;
 
     if (!fVideoInitialized) {
