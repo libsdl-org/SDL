@@ -134,7 +134,7 @@ JOB_SPECS = {
     "openbsd": JobSpec(name="OpenBSD",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.OpenBSD,     artifact="SDL-openbsd-x64",  autotools=True, ),
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", autotools=True, ),
     "watcom-win32": JobSpec(name="Watcom (Windows)",                        os=JobOs.WindowsLatest, platform=SdlPlatform.Watcom,      artifact="SDL-watcom-win32",  no_cmake=True, watcom_platform=WatcomPlatform.Windows ),
-    "watcom-os2": JobSpec(name="Watcom (OS/2)",                             os=JobOs.WindowsLatest, platform=SdlPlatform.Watcom,      artifact="SDL-watcom-win32",  no_cmake=True, watcom_platform=WatcomPlatform.OS2 ),
+    "watcom-os2": JobSpec(name="Watcom (OS/2)",                             os=JobOs.WindowsLatest, platform=SdlPlatform.Watcom,      artifact="SDL-watcom-os2",  no_cmake=True, watcom_platform=WatcomPlatform.OS2 ),
     # "watcom-win32"
     # "watcom-os2"
 }
