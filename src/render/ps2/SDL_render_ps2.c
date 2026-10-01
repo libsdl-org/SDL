@@ -737,7 +737,18 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
 
     gsKit_mode_switch(gsGlobal, GS_ONESHOT);
 
+    // gsKit_vram_clear() doesn't touch physical VRAM - flip twice so both
+    // physical buffers are black before anything can see either of them
+    // (otherwise the previous app's framebuffer/power-on garbage shows
+    // through on whichever buffer the single flip missed).
     gsKit_clear(gsGlobal, GS_BLACK);
+    gsKit_queue_exec(gsGlobal);
+    gsKit_finish();
+    gsKit_flip(gsGlobal);
+    gsKit_clear(gsGlobal, GS_BLACK);
+    gsKit_queue_exec(gsGlobal);
+    gsKit_finish();
+    gsKit_flip(gsGlobal);
 
     data->gsGlobal = gsGlobal;
 
