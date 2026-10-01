@@ -305,7 +305,7 @@ set(SDL_CFLAGS )
 
 # When building shared lib for Windows with MinGW,
 # avoid the DLL having a "lib" prefix
-if(WINDOWS)
+if(WINDOWS OR OS2)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
@@ -3493,10 +3493,15 @@ if(SDL_SHARED)
       set_target_properties(SDL2 PROPERTIES
         DEFINE_SYMBOL BUILD_SDL)
     endif()
-    set_target_properties(SDL2 PROPERTIES
-      VERSION ${SDL_VERSION}
-      SOVERSION ${LT_REVISION}
-      OUTPUT_NAME "SDL2")
+    if(OS2)
+      set_target_properties(SDL2 PROPERTIES
+        OUTPUT_NAME "SDL2")
+    else()
+      set_target_properties(SDL2 PROPERTIES
+        VERSION ${SDL_VERSION}
+        SOVERSION ${LT_REVISION}
+        OUTPUT_NAME "SDL2")
+    endif()
   endif()
   # Note: The clang toolset for Visual Studio does not support /NODEFAULTLIB.
   if(MSVC AND NOT SDL_LIBC AND NOT MSVC_CLANG AND NOT SDL_CPU_ARM32)
