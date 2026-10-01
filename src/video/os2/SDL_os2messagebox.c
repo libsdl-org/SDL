@@ -272,7 +272,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem->cChildren = 2 + cSDLBtnData; /* Ststic text + buttons. */
     /* Length of class name, if 0 then offClassname contains a WC_ value. */
     pDlgItem->cchClassName = 0;
-    pDlgItem->offClassName = (USHORT)WC_FRAME;
+    pDlgItem->offClassName = (USHORT) ((ULONG) WC_FRAME);
     /* Length of text. */
     pDlgItem->cchText = cbTitle;
     pDlgItem->offText = pcDlgData - (PCHAR)pTemplate; /* Offset to title text.  */
@@ -326,7 +326,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem->cChildren = 0;
     /* Length of class name, 0 - offClassname contains a WC_ constant. */
     pDlgItem->cchClassName = 0;
-    pDlgItem->offClassName = (USHORT)WC_STATIC;
+    pDlgItem->offClassName = (USHORT) ((ULONG) WC_STATIC);
 
     pDlgItem->cchText = cbText;
     pDlgItem->offText = pcDlgData - (PCHAR)pTemplate;   /* Offset to the text. */
@@ -373,7 +373,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
     pDlgItem->fsItemStatus = 0;
     pDlgItem->cChildren = 0;
     pDlgItem->cchClassName = 0;
-    pDlgItem->offClassName = (USHORT)WC_STATIC;
+    pDlgItem->offClassName = (USHORT) ((ULONG) WC_STATIC);
 
     pDlgItem->cchText = 3; /* 0xFF, low byte of the icon Id, high byte of icon Id. */
     pDlgItem->offText = pcDlgData - (PCHAR)pTemplate;   /* Offset to the Id. */
@@ -404,7 +404,7 @@ static HWND _makeDlg(const SDL_MessageBoxData *messageboxdata)
         pDlgItem->fsItemStatus = 0;
         pDlgItem->cChildren = 0;     /* No children. */
         pDlgItem->cchClassName = 0;  /* 0 - offClassname is WC_ constant. */
-        pDlgItem->offClassName = (USHORT)WC_BUTTON;
+        pDlgItem->offClassName = (USHORT) ((ULONG) WC_BUTTON);
 
         pszBtnText = OS2_UTF8ToSys(pSDLBtnData[ulIdx].text);
         cbBtnText = (!pszBtnText)? 1 : (SDL_strlen(pszBtnText) + 1);
