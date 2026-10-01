@@ -72,7 +72,7 @@ static LONG APIENTRY cbAudioWriteEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG   ulRC;
 
-    debug_os2("cbAudioWriteEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %lX",ulStatus,pBuffer,ulFlags);
+    debug_os2("cbAudioWriteEvent: ulStatus = %lu, pBuffer = %p, ulFlags = 0x%lX",ulStatus,pBuffer,ulFlags);
 
     if (pAData->ulState == 2)
     {
@@ -107,7 +107,7 @@ static LONG APIENTRY cbAudioReadEvent(ULONG ulStatus, PMCI_MIX_BUFFER pBuffer,
     SDL_PrivateAudioData *pAData = (SDL_PrivateAudioData *)_this->hidden;
     ULONG   ulRC;
 
-    debug_os2("cbAudioReadEvent: ulStatus = %lu, pBuffer = %p, ulFlags = %lX",ulStatus,pBuffer,ulFlags);
+    debug_os2("cbAudioReadEvent: ulStatus = %lu, pBuffer = %p, ulFlags = 0x%lX",ulStatus,pBuffer,ulFlags);
 
     if (pAData->ulState == 2)
     {

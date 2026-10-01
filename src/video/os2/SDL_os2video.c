@@ -1331,7 +1331,7 @@ static int OS2_CreateWindowFramebuffer(_THIS, SDL_Window *window,
         return -1;
 
     *format = pSDLDisplayMode->format;
-    debug_os2("Pitch: %d, frame buffer: 0x%X.", *pitch, *pixels);
+    debug_os2("Pitch: %d, frame buffer: 0x%p.", *pitch, *pixels);
     WinSendMsg(pWinData->hwnd, WM_VRNENABLED, 0, 0);
 
     return 0;
