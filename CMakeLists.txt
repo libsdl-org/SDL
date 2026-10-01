@@ -2834,7 +2834,7 @@ elseif(OS2)
   endif()
 
   if(SDL_TIMERS)
-    set(SDL_TIMER_UNIX 1)
+    set(SDL_TIMER_OS2 1)
     file(GLOB OS2_TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/os2/*.c)
     list(APPEND SOURCE_FILES ${OS2_TIMER_SOURCES})
     set(HAVE_SDL_TIMERS TRUE)
