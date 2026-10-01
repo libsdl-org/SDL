@@ -52,6 +52,7 @@ class SdlPlatform(Enum):
     NetBSD = "netbsd"
     OpenBSD = "openbsd"
     Watcom = "watcom"
+    OS2EMX = "os2emx"
 
 
 class Msys2Platform(Enum):
@@ -135,6 +136,7 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      os=JobOs.UbuntuLatest,  platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", autotools=True, ),
     "watcom-win32": JobSpec(name="Watcom (Windows)",                        os=JobOs.WindowsLatest, platform=SdlPlatform.Watcom,      artifact="SDL-watcom-win32",  no_cmake=True, watcom_platform=WatcomPlatform.Windows ),
     "watcom-os2": JobSpec(name="Watcom (OS/2)",                             os=JobOs.WindowsLatest, platform=SdlPlatform.Watcom,      artifact="SDL-watcom-os2",  no_cmake=True, watcom_platform=WatcomPlatform.OS2 ),
+    "os2-emx": JobSpec(name="OS/2 EMX (KLIBC)",                             os=JobOs.UbuntuLatest,  platform=SdlPlatform.OS2EMX,      artifact="SDL-os2-emx", ),
     # "watcom-win32"
     # "watcom-os2"
 }
@@ -658,6 +660,18 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                     job.run_tests = True
                 case _:
                     raise ValueError(f"Unsupported watcom_platform=${spec.watcom_platform}")
+        case SdlPlatform.OS2EMX:
+            fpic = False
+            job.apt_packages = []
+            job.build_autotools_tests = False
+            job.run_tests = False
+            job.cmake_generator = "Unix Makefiles"
+            job.cmake_build_arguments.append("-j$(nproc)")
+            job.cc_from_cmake = True
+            job.cmake_toolchain_file = "$OS2EMX_CMAKE_TOOLCHAIN_FILE"
+            job.sudo = ""
+            job.shared_lib = SharedLibType.WIN32
+            #job.static_lib = StaticLibType.A
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 

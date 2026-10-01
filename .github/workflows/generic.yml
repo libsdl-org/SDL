@@ -65,6 +65,11 @@ jobs:
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
           sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
+      - name: 'Set up OS2EMX cross-toolchain'
+        uses: komh/setup-cross-os2emx@v1
+        if: ${{ matrix.platform.platform == 'os2emx' }}
+        with:
+          platform: linux-x64
       - name: 'Set up Windows GDK Desktop'
         uses: ./.github/actions/setup-gdk-desktop
         if: ${{ matrix.platform.setup-gdk-folder != '' }}
