@@ -298,7 +298,10 @@ static bool PS2_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
             col_ = (SDL_FColor *)((char *)color + j * color_stride);
             uv_ = (float *)((char *)uv + j * uv_stride);
 
-            vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x, xy_[1] * scale_y, 0);
+            /* Texel (0,0) is the corner of the top-left texel, but pixel
+               (0,0) is the center of the top-left pixel - align them so
+               textured draws land 1:1 (ps2dev/gsKit#11). */
+            vertices->xyz2 = vertex_to_XYZ2(data->gsGlobal, xy_[0] * scale_x - 0.5f, xy_[1] * scale_y - 0.5f, 0);
             vertices->rgbaq = float_color_to_RGBAQ_tex(col_, color_scale);
             vertices->uv = vertex_to_UV(ps2_tex, uv_[0] * ps2_tex->Width, uv_[1] * ps2_tex->Height);
 
