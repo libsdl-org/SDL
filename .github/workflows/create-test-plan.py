@@ -145,6 +145,7 @@ JOB_SPECS = {
 class StaticLibType(Enum):
     MSVC = "SDL2-static.lib"
     A = "libSDL2.a"
+    A_NOLIB = "SDL2.a"
 
 
 class SharedLibType(Enum):
@@ -671,7 +672,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.cmake_toolchain_file = "$OS2EMX_CMAKE_TOOLCHAIN_FILE"
             job.sudo = ""
             job.shared_lib = SharedLibType.WIN32
-            #job.static_lib = StaticLibType.A
+            job.static_lib = StaticLibType.A_NOLIB
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
