@@ -55,6 +55,14 @@ typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsi
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
+// the return value is BOOL
+typedef int(SDLCALL *SDL_WindowsGetMessageImpl)(void *userdata, void *lpMsg, void *hWnd, unsigned int wMsgFilterMin, unsigned int wMsgFilterMax);
+
+/**
+ * Set a GetMessage implement, for blocking etc.
+ */
+extern DECLSPEC void SDLCALL SDL_SetWindowsGetMessageImpl(SDL_WindowsGetMessageImpl callback, void *userdata);
+
 #endif /* defined(__WIN32__) || defined(__GDK__) */
 
 #if defined(__WIN32__) || defined(__WINGDK__)
