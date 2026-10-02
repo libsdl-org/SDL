@@ -32,7 +32,7 @@
 Uint64 SDL_GetPerformanceCounter(void)
 {
     // The PowerPC Time Base.
-    return __builtin_ppc_mftb();
+    return __builtin_ppc_get_timebase();
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
