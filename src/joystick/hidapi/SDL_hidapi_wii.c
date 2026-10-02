@@ -1104,6 +1104,7 @@ static bool HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_J
         report[0] = k_eWiiOutputReportIDs_SpeakerData;
         report[1] = (Uint8)(size << 3);
         SDL_memcpy(&report[2], data, size);
+        WriteOutput(ctx, report, sizeof(report), false);
         return true;
     }
     return SDL_Unsupported();
