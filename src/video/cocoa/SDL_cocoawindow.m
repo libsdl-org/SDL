@@ -1752,6 +1752,14 @@ static int SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, NSVie
      * necessary. */
     nswindow.releasedWhenClosed = NO;
 
+    /* Disable AppKit's implicit window show/hide animations. Ordering a
+     * window out (SDL_HideWindow, SDL_DestroyWindow) starts an ~250ms
+     * transform animation that only progresses while the main runloop is
+     * being serviced; if the app stops pumping events after destroying the
+     * window, the animation never runs and the window server keeps the dead
+     * window on screen indefinitely (see #10081). */
+    nswindow.animationBehavior = NSWindowAnimationBehaviorNone;
+
     /* Prevents the window's "window device" from being destroyed when it is
      * hidden. See http://www.mikeash.com/pyblog/nsopenglcontext-and-one-shot.html
      */
@@ -2401,6 +2409,12 @@ void Cocoa_DestroyWindow(_THIS, SDL_Window * window)
             /* Release the content view to avoid further updateLayer callbacks */
             [data.nswindow setContentView:nil];
             [data.nswindow close];
+
+            /* AppKit defers the window server side of the close to the next
+             * main runloop pass; give it one so the window actually leaves
+             * the screen even if the app never pumps events again (#10081).
+             * This does not dispatch NSEvents, only runloop sources. */
+            CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.020, false);
         }
 
 #ifdef SDL_VIDEO_OPENGL
