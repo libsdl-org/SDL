@@ -12,6 +12,9 @@
 
 /* Simple program to test the SDL controller routines */
 
+// Enable to show a cursor for the Wii Remote Pointer
+// #define WII_REMOTE_CURSOR
+
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -37,6 +40,11 @@
 #define BUTTON_MARGIN  16.0f
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
+
+#if WII_REMOTE_CURSOR
+float wii_pointer_x = (SCREEN_WIDTH/2);
+float wii_pointer_y = (SCREEN_HEIGHT/2);
+#endif
 
 typedef struct
 {
@@ -2296,6 +2304,13 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 
     case SDL_EVENT_MOUSE_MOTION:
+#if WII_REMOTE_CURSOR
+        if(event->motion.which == -3)
+        {
+            wii_pointer_x = event->motion.x;
+            wii_pointer_y = event->motion.y;
+        }
+#endif
         if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
             VirtualGamepadMouseMotion(event->motion.x, event->motion.y);
         }
@@ -2452,6 +2467,13 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
     } else {
         DrawGamepadWaiting(screen);
     }
+#if WII_REMOTE_CURSOR
+    if(controller && strstr(SDL_GetGamepadName(controller->gamepad), "Nintendo Wii Remote"))
+    {
+        SDL_FRect wiiPointer = {wii_pointer_x, wii_pointer_y, 50.0f, 50.0f};
+        SDL_RenderRect(screen, &wiiPointer);
+    }
+#endif
     SDL_Delay(16);
     SDL_RenderPresent(screen);
 
@@ -2473,6 +2495,10 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
+#if WII_REMOTE_CURSOR
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII_IR, "1");
+#endif
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_ENHANCED_REPORTS, "auto");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_STEAM, "1");
