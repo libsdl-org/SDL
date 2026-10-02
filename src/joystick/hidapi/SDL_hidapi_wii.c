@@ -1384,7 +1384,7 @@ static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joys
     int i;
     SDL_Point points[2];
 
-    if (!data->hasIR)
+    if (!data->hasIR || !ctx->m_bIREnabled)
         return;
     
     points[0].x = Unpack10(data->rgucIR[0], data->rgucIR[2], 4);
