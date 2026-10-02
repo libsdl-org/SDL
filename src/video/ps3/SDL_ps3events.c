@@ -44,13 +44,13 @@ static void sysWindowCallback(u64 event, u64 param, void *userdata)
     case SYSUTIL_MENU_OPEN:
         // XMB opened
         if (window) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_LEAVE, 0, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
         }
         break;
     case SYSUTIL_MENU_CLOSE:
         // XMB closed
         if (window) {
-            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOUSE_ENTER, 0, 0);
+            SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
         }
         break;
     case SYSUTIL_DRAW_BEGIN:
