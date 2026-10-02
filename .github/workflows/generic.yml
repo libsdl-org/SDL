@@ -227,7 +227,7 @@ jobs:
           ctest -VV --test-dir build/ -j2
       - name: 'Install (CMake)'
         id: cmake-install
-        if: ${{ steps.build.outcome == 'success' }}
+        if: ${{ steps.cmake-build.outcome == 'success' }}
 #        shell: ${{ matrix.platform.shell }}
         run: |
           ${{ matrix.platform.source-cmd }}
