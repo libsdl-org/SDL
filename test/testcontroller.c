@@ -41,7 +41,7 @@
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
 
-#if WII_REMOTE_CURSOR
+#ifdef WII_REMOTE_CURSOR
 float wii_pointer_x = (SCREEN_WIDTH/2);
 float wii_pointer_y = (SCREEN_HEIGHT/2);
 #endif
@@ -2304,7 +2304,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 
     case SDL_EVENT_MOUSE_MOTION:
-#if WII_REMOTE_CURSOR
+#ifdef WII_REMOTE_CURSOR
         if(event->motion.which == -3)
         {
             wii_pointer_x = event->motion.x;
@@ -2467,7 +2467,7 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
     } else {
         DrawGamepadWaiting(screen);
     }
-#if WII_REMOTE_CURSOR
+#ifdef WII_REMOTE_CURSOR
     if(controller && strstr(SDL_GetGamepadName(controller->gamepad), "Nintendo Wii Remote"))
     {
         SDL_FRect wiiPointer = {wii_pointer_x, wii_pointer_y, 50.0f, 50.0f};
@@ -2495,7 +2495,7 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-#if WII_REMOTE_CURSOR
+#ifdef WII_REMOTE_CURSOR
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
     SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII_IR, "1");
 #endif
