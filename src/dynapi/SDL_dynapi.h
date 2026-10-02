@@ -67,6 +67,8 @@
 #define SDL_DYNAMIC_API 0 /* The N-Gage doesn't support dynamic linking either */
 #elif defined(__3DS__)
 #define SDL_DYNAMIC_API 0 /* devkitARM doesn't support dynamic linking */
+#elif defined(PLAYDATE) || defined(TARGET_PLAYDATE)
+#define SDL_DYNAMIC_API 0  /* playdate doesn't support dynamic linking */
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0 /* we need dlopen(), but don't have it.... */
 #endif
