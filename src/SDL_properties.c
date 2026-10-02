@@ -595,31 +595,41 @@ bool SDL_HasProperty(SDL_PropertiesID props, const char *name)
     return (SDL_GetPropertyType(props, name) != SDL_PROPERTY_TYPE_INVALID);
 }
 
+static bool SDL_SetupPropertyQuery(SDL_PropertiesID props, const char *name, SDL_Properties **properties)
+{
+    CHECK_PARAM(!props) {
+        return false;
+    }
+    CHECK_PARAM(!name || !*name) {
+        return false;
+    }
+
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)properties);
+    CHECK_PARAM(!properties) {
+        return false;
+    }
+
+    SDL_LockMutex((*properties)->lock);
+    return true;
+}
+
+static void SDL_CleanupPropertyQuery(SDL_Properties *properties)
+{
+    SDL_UnlockMutex(properties->lock);
+}
+
 SDL_PropertyType SDL_GetPropertyType(SDL_PropertiesID props, const char *name)
 {
     SDL_Properties *properties = NULL;
     SDL_PropertyType type = SDL_PROPERTY_TYPE_INVALID;
 
-    if (!props) {
-        return SDL_PROPERTY_TYPE_INVALID;
-    }
-    if (!name || !*name) {
-        return SDL_PROPERTY_TYPE_INVALID;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return SDL_PROPERTY_TYPE_INVALID;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             type = property->type;
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return type;
 }
@@ -629,31 +639,18 @@ void *SDL_GetPointerProperty(SDL_PropertiesID props, const char *name, void *def
     SDL_Properties *properties = NULL;
     void *value = default_value;
 
-    if (!props) {
-        return value;
-    }
-    if (!name || !*name) {
-        return value;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return value;
-    }
-
     // Note that taking the lock here only guarantees that we won't read the
     // hashtable while it's being modified. The value itself can easily be
     // freed from another thread after it is returned here.
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             if (property->type == SDL_PROPERTY_TYPE_POINTER) {
                 value = property->value.pointer_value;
             }
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return value;
 }
@@ -663,20 +660,7 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
     SDL_Properties *properties = NULL;
     const char *value = default_value;
 
-    if (!props) {
-        return value;
-    }
-    if (!name || !*name) {
-        return value;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return value;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
@@ -710,8 +694,8 @@ const char *SDL_GetStringProperty(SDL_PropertiesID props, const char *name, cons
                 break;
             }
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return value;
 }
@@ -721,20 +705,7 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
     SDL_Properties *properties = NULL;
     Sint64 value = default_value;
 
-    if (!props) {
-        return value;
-    }
-    if (!name || !*name) {
-        return value;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return value;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
@@ -754,8 +725,8 @@ Sint64 SDL_GetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 de
                 break;
             }
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return value;
 }
@@ -765,20 +736,7 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
     SDL_Properties *properties = NULL;
     float value = default_value;
 
-    if (!props) {
-        return value;
-    }
-    if (!name || !*name) {
-        return value;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return value;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
@@ -798,8 +756,8 @@ float SDL_GetFloatProperty(SDL_PropertiesID props, const char *name, float defau
                 break;
             }
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return value;
 }
@@ -809,20 +767,7 @@ bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, bool defau
     SDL_Properties *properties = NULL;
     bool value = default_value ? true : false;
 
-    if (!props) {
-        return value;
-    }
-    if (!name || !*name) {
-        return value;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    if (!properties) {
-        return value;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    if (SDL_SetupPropertyQuery(props, name, &properties)) {
         SDL_Property *property = NULL;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&property)) {
             switch (property->type) {
@@ -842,8 +787,8 @@ bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, bool defau
                 break;
             }
         }
+        SDL_CleanupPropertyQuery(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return value;
 }
@@ -851,26 +796,15 @@ bool SDL_GetBooleanProperty(SDL_PropertiesID props, const char *name, bool defau
 bool SDL_ClearProperty(SDL_PropertiesID props, const char *name)
 {
     SDL_Properties *properties = NULL;
+    bool result;
 
-    CHECK_PARAM(!props) {
-        return SDL_InvalidParamError("props");
-    }
-    CHECK_PARAM(!name || !*name) {
-        return SDL_InvalidParamError("name");
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        return SDL_InvalidParamError("props");
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    result = SDL_SetupPropertyAssignment(props, name, &properties);
+    if (result) {
         SDL_RemoveFromHashTable(properties->props, name);
+        SDL_CleanupPropertyAssignment(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
-    return true;
+    return result;
 }
 
 int SDL_GetNumProperties(SDL_PropertiesID props)
