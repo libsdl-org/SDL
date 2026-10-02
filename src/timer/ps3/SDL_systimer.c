@@ -29,52 +29,15 @@
 #include <time.h>
 #include <unistd.h>
 
-static struct timeval start;
-static bool ticks_started = false;
-
-int gettimeofday(struct timeval *tv, void *unused)
-{
-    u64 sec;
-    u64 nsec;
-    int rv = -1;
-
-    rv = sysGetCurrentTime(&sec, &nsec);
-    if (rv < 0) {
-        return -1;
-    }
-
-    tv->tv_sec = sec;
-    tv->tv_usec = nsec / 1000;
-
-    return 0;
-}
-
-void SDL_TicksInit(void)
-{
-    if (ticks_started) {
-        return;
-    }
-    ticks_started = true;
-
-    gettimeofday(&start, NULL);
-}
-
-void SDL_TicksQuit(void)
-{
-    ticks_started = false;
-}
-
 Uint64 SDL_GetPerformanceCounter(void)
 {
-    u64 sec;
-    u64 nsec;
-    sysGetCurrentTime(&sec, &nsec);
-    return (Uint64)sec * 1000000000ULL + nsec;
+    // The PowerPC Time Base.
+    return __builtin_ppc_mftb();
 }
 
 Uint64 SDL_GetPerformanceFrequency(void)
 {
-    return 1000000000ULL; // nanoseconds
+    return sysGetTimebaseFrequency();
 }
 
 void SDL_SYS_DelayNS(Uint64 ns)
@@ -83,4 +46,4 @@ void SDL_SYS_DelayNS(Uint64 ns)
     sysUsleep(ns / 1000);
 }
 
-#endif /* SDL_TIMER_PS3 */
+#endif // SDL_TIMER_PS3
