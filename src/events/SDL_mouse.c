@@ -654,7 +654,7 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!SDL_UpdateMouseFocus(window, x, y, SDL_GetMouseButtonState(mouse, mouseID, true), (mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != -3))) {
+        if (!SDL_UpdateMouseFocus(window, x, y, SDL_GetMouseButtonState(mouse, mouseID, true), (mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != ((SDL_MouseID)-3)))) {
             return;
         }
     }
@@ -840,7 +840,7 @@ static void SDL_PrivateSendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_MOUSE_MOTION)) {
-        if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != -3) {
+        if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != ((SDL_MouseID)-3)) {
             // We're not in relative mode, so all mouse events are global mouse events
             mouseID = SDL_GLOBAL_MOUSE_ID;
         }
@@ -1013,7 +1013,7 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
 
     // Post the event, if desired
     if (SDL_EventEnabled(type)) {
-        if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != -3) {
+        if ((!mouse->relative_mode || mouse->warp_emulation_active) && mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && mouseID != ((SDL_MouseID)-3)) {
             // We're not in relative mode, so all mouse events are global mouse events
             mouseID = SDL_GLOBAL_MOUSE_ID;
         } else {

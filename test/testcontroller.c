@@ -2305,7 +2305,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
 
     case SDL_EVENT_MOUSE_MOTION:
 #ifdef WII_REMOTE_CURSOR
-        if(event->motion.which == -3)
+        if(event->motion.which == (SDL_MouseID)-3)
         {
             wii_pointer_x = event->motion.x;
             wii_pointer_y = event->motion.y;

@@ -59,6 +59,7 @@
 
 #define WII_IR_X_MAX 1023.0f
 #define WII_IR_Y_MAX 767.0f
+#define WII_IR_MOUSE_ID ((SDL_MouseID)-3)
 
 typedef enum
 {
@@ -870,12 +871,12 @@ void IRHintChanged(void *userdata, const char *name, const char *oldValue, const
     bool bIREnabled = SDL_GetHintBoolean(name, false);
     if (ctx->m_bIREnabled != bIREnabled) {
         if (ctx->m_bIREnabled && !bIREnabled) {
-            SDL_RemoveMouse(-3);
+            SDL_RemoveMouse(WII_IR_MOUSE_ID);
         } else {
-            SDL_AddMouse(-3, ctx->device->name);
+            SDL_AddMouse(WII_IR_MOUSE_ID, ctx->device->name);
         }
         ctx->m_bIREnabled = bIREnabled;
-        SDL_RemoveMouse(-3);
+        SDL_RemoveMouse(WII_IR_MOUSE_ID);
         IRSetup(ctx);
     }
 }
@@ -1032,7 +1033,7 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY, IRSensitivityHintChanged, ctx);
     if (ctx->m_bIREnabled) {
         IRSetup(ctx);
-        SDL_AddMouse(-3, ctx->device->name);
+        SDL_AddMouse(WII_IR_MOUSE_ID, ctx->device->name);
     }
 
     // Speaker Hints
@@ -1425,7 +1426,7 @@ static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joys
         // SDL_Log("Wii Point 0 %i %i", points[0].x, points[0].y);
         // SDL_Log("Wii Point 1 %i %i", points[1].x, points[1].y);
         //SDL_Log("Wii Pointer Position %f %f", position_x, position_y);
-        SDL_SendMouseMotion(ctx->timestamp, NULL, -3, true, (position_x*WII_IR_X_MAX) - (ctx->m_fLastPosition[0]*WII_IR_X_MAX), (position_y*WII_IR_Y_MAX) - (ctx->m_fLastPosition[1]*WII_IR_Y_MAX));
+        SDL_SendMouseMotion(ctx->timestamp, NULL, WII_IR_MOUSE_ID, true, (position_x*WII_IR_X_MAX) - (ctx->m_fLastPosition[0]*WII_IR_X_MAX), (position_y*WII_IR_Y_MAX) - (ctx->m_fLastPosition[1]*WII_IR_Y_MAX));
 
         ctx->m_fLastPosition[0] = position_x;
         ctx->m_fLastPosition[1] = position_y;
@@ -1926,7 +1927,7 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
                            SpeakerVolumeHintChanged, ctx);
 
     if (ctx->m_bIREnabled) {
-        SDL_RemoveMouse(-3);
+        SDL_RemoveMouse(WII_IR_MOUSE_ID);
     }
 
     ctx->joystick = NULL;
