@@ -341,67 +341,73 @@ void SDL_UnlockProperties(SDL_PropertiesID props)
     SDL_UnlockMutex(properties->lock);
 }
 
+static bool SDL_SetupPropertyAssignment(SDL_PropertiesID props, const char *name, SDL_Properties **properties)
+{
+    CHECK_PARAM(!props) {
+        return SDL_InvalidParamError("props");
+    }
+    CHECK_PARAM(!name || !*name) {
+        return SDL_InvalidParamError("name");
+    }
+
+    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)properties);
+    CHECK_PARAM(!properties) {
+        return SDL_InvalidParamError("props");
+    }
+
+    SDL_LockMutex((*properties)->lock);
+    return true;
+}
+
+static void SDL_CleanupPropertyAssignment(SDL_Properties *properties)
+{
+    SDL_UnlockMutex(properties->lock);
+}
+
 bool SDL_SetPointerPropertyWithCleanup(SDL_PropertiesID props, const char *name, void *value, SDL_CleanupPropertyCallback cleanup, void *userdata)
 {
     SDL_Properties *properties = NULL;
-    bool result = true;
+    bool result;
 
-    if (!value) {
-        result = SDL_ClearProperty(props, name);
-        goto done;
-    }
+    if (value) {
+        result = SDL_SetupPropertyAssignment(props, name, &properties);
+        if (result) {
+            SDL_Property *existing;
+            if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
+                if (existing->type == SDL_PROPERTY_TYPE_POINTER &&
+                    existing->value.pointer_value == value &&
+                    existing->cleanup == cleanup &&
+                    existing->userdata == userdata) {
+                    // The value is already set
+                } else {
+                    SDL_FreePropertyContents(existing, true);
 
-    CHECK_PARAM(!props) {
-        result = SDL_InvalidParamError("props");
-        goto done;
-    }
-    CHECK_PARAM(!name || !*name) {
-        result = SDL_InvalidParamError("name");
-        goto done;
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        result = SDL_InvalidParamError("props");
-        goto done;
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
-        SDL_Property *existing;
-        if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
-            if (existing->type == SDL_PROPERTY_TYPE_POINTER &&
-                existing->value.pointer_value == value &&
-                existing->cleanup == cleanup &&
-                existing->userdata == userdata) {
-                // The value is already set
+                    existing->type = SDL_PROPERTY_TYPE_POINTER;
+                    existing->value.pointer_value = value;
+                    existing->cleanup = cleanup;
+                    existing->userdata = userdata;
+                }
             } else {
-                SDL_FreePropertyContents(existing, true);
-
-                existing->type = SDL_PROPERTY_TYPE_POINTER;
-                existing->value.pointer_value = value;
-                existing->cleanup = cleanup;
-                existing->userdata = userdata;
+                char *key = SDL_strdup(name);
+                SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
+                if (property) {
+                    property->type = SDL_PROPERTY_TYPE_POINTER;
+                    property->value.pointer_value = value;
+                    property->cleanup = cleanup;
+                    property->userdata = userdata;
+                }
+                if (!key || !property ||
+                    !SDL_InsertIntoHashTable(properties->props, key, property, false)) {
+                    SDL_FreePropertyWithCleanup(key, property, NULL, true);
+                    result = false;
+                }
             }
-        } else {
-            char *key = SDL_strdup(name);
-            SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
-            if (property) {
-                property->type = SDL_PROPERTY_TYPE_POINTER;
-                property->value.pointer_value = value;
-                property->cleanup = cleanup;
-                property->userdata = userdata;
-            }
-            if (!key || !property ||
-                !SDL_InsertIntoHashTable(properties->props, key, property, false)) {
-                SDL_FreePropertyWithCleanup(key, property, NULL, true);
-                result = false;
-            }
+            SDL_CleanupPropertyAssignment(properties);
         }
+    } else {
+        result = SDL_ClearProperty(props, name);
     }
-    SDL_UnlockMutex(properties->lock);
 
-done:
     if (!result && cleanup) {
         cleanup(userdata, value);
     }
@@ -438,61 +444,49 @@ bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surfac
 bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char *value)
 {
     SDL_Properties *properties = NULL;
-    bool result = true;
+    bool result;
 
-    if (!value) {
-        return SDL_ClearProperty(props, name);
-    }
-
-    CHECK_PARAM(!props) {
-        return SDL_InvalidParamError("props");
-    }
-    CHECK_PARAM(!name || !*name) {
-        return SDL_InvalidParamError("name");
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        return SDL_InvalidParamError("props");
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
-        SDL_Property *existing;
-        if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
-            if (existing->type == SDL_PROPERTY_TYPE_STRING &&
-                SDL_strcmp(existing->value.string_value, value) == 0) {
-                // The value is already set
-            } else {
-                char *string = SDL_strdup(value);
-                if (string) {
-                    SDL_FreePropertyContents(existing, true);
-                    existing->type = SDL_PROPERTY_TYPE_STRING;
-                    existing->value.string_value = string;
+    if (value) {
+        result = SDL_SetupPropertyAssignment(props, name, &properties);
+        if (result) {
+            SDL_Property *existing;
+            if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
+                if (existing->type == SDL_PROPERTY_TYPE_STRING &&
+                    SDL_strcmp(existing->value.string_value, value) == 0) {
+                    // The value is already set
                 } else {
+                    char *string = SDL_strdup(value);
+                    if (string) {
+                        SDL_FreePropertyContents(existing, true);
+                        existing->type = SDL_PROPERTY_TYPE_STRING;
+                        existing->value.string_value = string;
+                    } else {
+                        result = false;
+                    }
+                }
+            } else {
+                char *key = SDL_strdup(name);
+                SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
+                char *string = SDL_strdup(value);
+                if (property) {
+                    property->type = SDL_PROPERTY_TYPE_STRING;
+                    property->value.string_value = string;
+                }
+                if (!key || !property || !string ||
+                    !SDL_InsertIntoHashTable(properties->props, key, property, false)) {
+                    if (property) {
+                        property->value.string_value = NULL;
+                    }
+                    SDL_free(string);
+                    SDL_FreePropertyWithCleanup(key, property, NULL, true);
                     result = false;
                 }
             }
-        } else {
-            char *key = SDL_strdup(name);
-            SDL_Property *property = (SDL_Property *)SDL_calloc(1, sizeof(*property));
-            char *string = SDL_strdup(value);
-            if (property) {
-                property->type = SDL_PROPERTY_TYPE_STRING;
-                property->value.string_value = string;
-            }
-            if (!key || !property || !string ||
-                !SDL_InsertIntoHashTable(properties->props, key, property, false)) {
-                if (property) {
-                    property->value.string_value = NULL;
-                }
-                SDL_free(string);
-                SDL_FreePropertyWithCleanup(key, property, NULL, true);
-                result = false;
-            }
+            SDL_CleanupPropertyAssignment(properties);
         }
+    } else {
+        return SDL_ClearProperty(props, name);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return result;
 }
@@ -500,22 +494,10 @@ bool SDL_SetStringProperty(SDL_PropertiesID props, const char *name, const char 
 bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 value)
 {
     SDL_Properties *properties = NULL;
-    bool result = true;
+    bool result;
 
-    CHECK_PARAM(!props) {
-        return SDL_InvalidParamError("props");
-    }
-    CHECK_PARAM(!name || !*name) {
-        return SDL_InvalidParamError("name");
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        return SDL_InvalidParamError("props");
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    result = SDL_SetupPropertyAssignment(props, name, &properties);
+    if (result) {
         SDL_Property *existing;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
             if (existing->type != SDL_PROPERTY_TYPE_NUMBER) {
@@ -536,8 +518,8 @@ bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 valu
                 result = false;
             }
         }
+        SDL_CleanupPropertyAssignment(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return result;
 }
@@ -545,22 +527,10 @@ bool SDL_SetNumberProperty(SDL_PropertiesID props, const char *name, Sint64 valu
 bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
 {
     SDL_Properties *properties = NULL;
-    bool result = true;
+    bool result;
 
-    CHECK_PARAM(!props) {
-        return SDL_InvalidParamError("props");
-    }
-    CHECK_PARAM(!name || !*name) {
-        return SDL_InvalidParamError("name");
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        return SDL_InvalidParamError("props");
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    result = SDL_SetupPropertyAssignment(props, name, &properties);
+    if (result) {
         SDL_Property *existing;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
             if (existing->type != SDL_PROPERTY_TYPE_FLOAT) {
@@ -581,8 +551,8 @@ bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
                 result = false;
             }
         }
+        SDL_CleanupPropertyAssignment(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return result;
 }
@@ -590,22 +560,10 @@ bool SDL_SetFloatProperty(SDL_PropertiesID props, const char *name, float value)
 bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, bool value)
 {
     SDL_Properties *properties = NULL;
-    bool result = true;
+    bool result;
 
-    CHECK_PARAM(!props) {
-        return SDL_InvalidParamError("props");
-    }
-    CHECK_PARAM(!name || !*name) {
-        return SDL_InvalidParamError("name");
-    }
-
-    SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)&properties);
-    CHECK_PARAM(!properties) {
-        return SDL_InvalidParamError("props");
-    }
-
-    SDL_LockMutex(properties->lock);
-    {
+    result = SDL_SetupPropertyAssignment(props, name, &properties);
+    if (result) {
         SDL_Property *existing;
         if (SDL_FindInHashTable(properties->props, name, (const void **)&existing)) {
             if (existing->type != SDL_PROPERTY_TYPE_BOOLEAN) {
@@ -626,8 +584,8 @@ bool SDL_SetBooleanProperty(SDL_PropertiesID props, const char *name, bool value
                 result = false;
             }
         }
+        SDL_CleanupPropertyAssignment(properties);
     }
-    SDL_UnlockMutex(properties->lock);
 
     return result;
 }
