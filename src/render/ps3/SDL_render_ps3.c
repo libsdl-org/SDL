@@ -163,7 +163,7 @@ void PS3_DrawColoredPrimitive(PS3_RenderData *data, u8 primitive_type,
     // TODO: use blen only when needed
     // rsxSetBlendEnable(data->context, renderer->blendMode == SDL_BLENDMODE_NONE ? GCM_FALSE : GCM_TRUE);
     rsxSetBlendEnable(data->context, GCM_FALSE);
-    // TODO: control pixel size?
+    // TODO: control pixel size
     // rsxSetPointSize(data->context, 4.0f);
     rsxDrawVertexArray(data->context, primitive_type, 0, count);
 }
@@ -873,7 +873,6 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     for (u32 i=0;i < FRAME_BUFFER_COUNT;i++) {
         buffer = rsxMemalign(64, data->screenh*data->color_pitch);
         rsxAddressToOffset(buffer, &data->color_offset[i]);
-        printf("fb[%d]: %p (%08x) [%dx%d] %d\n", i, buffer, data->color_offset[i], data->screenw, data->screenh, data->color_pitch);
         gcmSetDisplayBuffer(i, data->color_offset[i], data->color_pitch, data->screenw, data->screenh);
     }
 
@@ -901,7 +900,7 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     // Init render target
     memset(&data->surface, 0, sizeof(gcmSurface));
 
-    data->surface.colorFormat = GCM_SURFACE_X8R8G8B8;
+    data->surface.colorFormat = GCM_SURFACE_A8R8G8B8;
     data->surface.colorTarget = GCM_SURFACE_TARGET_0;
     data->surface.colorLocation[0] = GCM_LOCATION_RSX;
     data->surface.colorOffset[0] = data->color_offset[data->curr_fb];
