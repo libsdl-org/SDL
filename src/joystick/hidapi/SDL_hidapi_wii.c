@@ -1377,7 +1377,6 @@ static inline uint16_t Unpack10(uint8_t low, uint8_t high_byte, uint8_t shift) {
     return low | ((uint16_t)((high_byte >> shift) & 0x03) << 8);
 }
 
-// NOTE: Points 3 and 4 were not reading properly for me, always 1023 for both values, so I'm skipping them
 // Based on https://wiibrew.org/wiki/Wiimote/Pointing#Pointing_position
 static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
