@@ -2036,6 +2036,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
+    Wayland_UpdateImplicitGrabSerial(seat, serial);
+
     SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
     if (!window) {
         // Not a surface owned by SDL.
@@ -2148,6 +2150,13 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
      */
     if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
+    }
+
+    // The spec says that data offers are no longer valid when keyboard focus is lost.
+    if (seat->data_device->selection_offer) {
+        Wayland_data_offer_destroy(seat->data_device->selection_offer);
+        seat->data_device->selection_offer = NULL;
+        Wayland_data_offer_notify_from_mimes(NULL, false);
     }
 }
 
@@ -3927,8 +3936,6 @@ void Wayland_UpdateImplicitGrabSerial(SDL_WaylandSeat *seat, Uint32 serial)
     if (serial > seat->last_implicit_grab_serial) {
         seat->last_implicit_grab_serial = serial;
         seat->display->last_implicit_grab_seat = seat;
-        Wayland_data_device_set_serial(seat->data_device, serial);
-        Wayland_primary_selection_device_set_serial(seat->primary_selection_device, serial);
     }
 }
 

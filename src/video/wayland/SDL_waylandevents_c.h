@@ -290,6 +290,7 @@ extern void Wayland_DisplayUpdateKeyboardGrabs(SDL_VideoData *display, SDL_Windo
 extern void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window);
 
 /* The implicit grab serial needs to be updated on:
+ * - Gaining keyboard focus
  * - Keyboard key down/up
  * - Mouse button down
  * - Touch event down
