@@ -342,6 +342,21 @@ static EM_BOOL Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent 
         break;
     }
 
+    if (wheelEvent->mouse.ctrlKey && SDL_EventEnabled(SDL_EVENT_PINCH_UPDATE)) {
+        // Browsers emit "wheel" event with "ctrlKey" flag active when the user does a pinch gesture.
+
+        // makes touch and wheel zoom events match better
+        double scale = SDL_sqrt(deltaY > 0 ? deltaY : -deltaY); 
+        if (deltaY < 0) { scale *= -1.0; }
+        scale = SDL_pow(0.885, scale);
+
+        // We send all events as web target doesn't accumulate scale value like desktop targets.
+        SDL_SendPinch(SDL_EVENT_PINCH_BEGIN, 0, window_data->window, 0);
+        SDL_SendPinch(SDL_EVENT_PINCH_UPDATE, 0, window_data->window, scale);
+        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, window_data->window, 0);
+        return true;
+    }
+
     SDL_SendMouseWheel(0, window_data->window, SDL_DEFAULT_MOUSE_ID, deltaX, -deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_EventEnabled(SDL_EVENT_MOUSE_WHEEL);
 }
