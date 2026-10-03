@@ -82,7 +82,7 @@ static bool ShouldMaskFullscreen()
     }
 
     const char *desktop = SDL_getenv("XDG_CURRENT_DESKTOP");
-    if (desktop && SDL_strcmp(desktop, "KDE") == 0) {
+    if (desktop && SDL_strstr(desktop, "KDE") != NULL) {
         mask_required = 1;
     } else {
         mask_required = 0;
