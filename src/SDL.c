@@ -818,6 +818,8 @@ const char *SDL_GetPlatform(void)
     return "RISC OS";
 #elif defined(SDL_PLATFORM_SOLARIS)
     return "Solaris";
+#elif defined(SDL_PLATFORM_MSYS)
+    return "Msys";
 #elif defined(SDL_PLATFORM_CYGWIN)
     return "Cygwin";
 #elif defined(SDL_PLATFORM_WIN32)
