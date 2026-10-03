@@ -1336,4 +1336,64 @@
 
 #endif /* SDL_ENABLE_OLD_NAMES */
 
+/* In SDL2, `SDL_ThreadID()` was a function that is now called `SDL_GetCurrentThreadID()`.
+ * In SDL3, the thread ID *type* is called `SDL_ThreadID` (in SDL2 it was
+ * `SDL_threadID` with lower 't').
+ *
+ * Unfortunately, at least in C++ writing SDL_ThreadID() compiles fine even for
+ * the type, it's the default constructor of the type, so e.g.
+ * `myID = SDL_ThreadID();` is equivalent to `myID = 0;`
+ *
+ * Of course if you've been porting SDL2 code and have missed renaming this case
+ * of `SDL_ThreadID()` to `SDL_GetCurrentThreadID()` this is quite a pitfall:
+ * The code compiles fine, but behaves wrong: it will set `myID` to `0` instead
+ * of the current thread's ID.
+ *
+ * This makes it impossible to provide a "proper" `SDL_ENABLE_OLD_NAMES` treatment
+ * of SDL_ThreadID() in this header, so the following `#define` sets `SDL_ThreadID()`
+ * to an invalid value, forcing you to consciously adjust it to your needs, i.e.
+ * replacing it with `SDL_GetCurrentThreadID()` or `0` depending on your intentions.
+ *
+ * Note that using `SDL_ThreadID x = ...;` is unaffected, only "SDL_ThreadID" followed
+ * by "(" will lead to a compile error.
+ *
+ * Unfortunately, there are some cases where this breaks legit SDL3 code that
+ * actually means to use `SDL_ThreadID(...`, like:
+ * - Definitions of function pointers with SDL_ThreadID as return type, like
+ *   `typedef SDL_ThreadID (SDLCALL *SDL_DYNAPIFN_SDL_GetCurrentThreadID) (void);`
+ * - C++ casts like `SDL_ThreadID tid = SDL_ThreadID(id);`
+ *
+ * For C++ casts, just replace `SDL_ThreadID(id)` with either a C-style cast
+ * ( `(SDL_ThreadID)id` ) or one of the other C++ cast types like
+ * `static_cast<SDL_ThreadID>(id)`.
+ *
+ * For the (hopefully rare) case of function pointers returning SDL_ThreadID,
+ * or any other legit case where `SDL_ThreadID` is followed by `(` that can't be
+ * easily avoided by using slightly different syntax, you can `#undef SDL_ThreadID`
+ * before your code using it to get rid of this define causing the compiler error.
+ *
+ * If you have your own `#define SDL_ThreadID what_ever` to hack around conflicts
+ * and make sure it's defined before including this header, SDL_ThreadID will
+ * *not* get defined here so it doesn't get in your way.
+ *
+ * If you're using `SDL_ENABLE_OLD_NAMES` to support both SDL2 and SDL3 with
+ * the same code, consider adding:
+ *
+ * ```c
+ * #if SDL_MAJOR_VERSION == 2
+ *   #define SDL_GetCurrentThreadID() SDL_ThreadID()
+ * #endif
+ * ```
+ *
+ * and using `SDL_GetCurrentThreadID()` in your code, even if you otherwise use
+ * the SDL2 names.
+ *
+ * The gain of catching the bugs caused by accidentally using `SDL_ThreadID()`
+ * when `SDL_GetCurrentThreadID()` was intended hopefully outweight the annoyances
+ * caused by this in some rare cases.
+ */
+#ifndef SDL_ThreadID
+#define SDL_ThreadID()  SDL_ThreadID_is_a_type_now_function_is_SDL_GetCurrentThreadID
+#endif
+
 #endif /* SDL_oldnames_h_ */
