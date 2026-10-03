@@ -37,7 +37,12 @@ enum
 {
     SDL_GAMEPAD_BUTTON_8BITDO_L4 = 11,
     SDL_GAMEPAD_BUTTON_8BITDO_R4,
-    SDL_GAMEPAD_BUTTON_8BITDO_PL,
+    SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS,
+};
+
+enum
+{
+    SDL_GAMEPAD_BUTTON_8BITDO_PL = 13,
     SDL_GAMEPAD_BUTTON_8BITDO_PR,
     SDL_GAMEPAD_NUM_8BITDO_BUTTONS,
 };
@@ -159,6 +164,8 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_PRO_2_BT:
         case USB_PRODUCT_8BITDO_PRO_3:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+        case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS:
+        case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_BT:
         case USB_PRODUCT_8BITDO_ULTIMATE3:
             return true;
         default:
@@ -269,6 +276,10 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "8BitDo Pro 2");
     } else if (device->product_id == USB_PRODUCT_8BITDO_PRO_3) {
         HIDAPI_SetDeviceName(device, "8BitDo Pro 3");
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+        HIDAPI_SetDeviceName(device, "8BitDo Ultimate 2C Wireless Controller (Xbox, 2.4GHz)");
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_BT) {
+        HIDAPI_SetDeviceName(device, "8BitDo Ultimate 2C Wireless Controller (Xbox, BT)");
     }
 
     return HIDAPI_JoystickConnected(device, NULL);
@@ -348,8 +359,10 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         device->product_id == USB_PRODUCT_8BITDO_PRO_2_BT ||
         device->product_id == USB_PRODUCT_8BITDO_PRO_3 ||
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
-		// This controller has additional buttons
+        // This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS || device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_BT) {
+        joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS;
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE3_BUTTONS;
     } else {
@@ -718,6 +731,74 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
+static void HIDAPI_Driver8BitDo_Handle2CStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size, bool bt)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    Uint8 hat_index = bt ? 1 : 3;
+    if (ctx->last_state[hat_index] != data[hat_index]) {
+        Uint8 hat;
+        switch (data[hat_index]) {
+        case 0: hat = SDL_HAT_UP; break;
+        case 1: hat = SDL_HAT_RIGHTUP; break;
+        case 2: hat = SDL_HAT_RIGHT; break;
+        case 3: hat = SDL_HAT_RIGHTDOWN; break;
+        case 4: hat = SDL_HAT_DOWN; break;
+        case 5: hat = SDL_HAT_LEFTDOWN; break;
+        case 6: hat = SDL_HAT_LEFT; break;
+        case 7: hat = SDL_HAT_LEFTUP; break;
+        default: hat = SDL_HAT_CENTERED; break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+
+    Uint8 buttons_index = bt ? 8 : 1;
+    if (ctx->last_state[buttons_index] != data[buttons_index]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,          ((data[buttons_index] & 0x01) != 0)); // A
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,           ((data[buttons_index] & 0x02) != 0)); // B
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_L4,      ((data[buttons_index] & 0x04) != 0)); // L4
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,           ((data[buttons_index] & 0x08) != 0)); // X
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH,          ((data[buttons_index] & 0x10) != 0)); // Y
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_R4,      ((data[buttons_index] & 0x20) != 0)); // R4
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  ((data[buttons_index] & 0x40) != 0)); // LB
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[buttons_index] & 0x80) != 0)); // RB
+    }
+
+    Uint8 buttons_second_index = bt ? 9 : 2;
+    if (ctx->last_state[buttons_second_index] != data[buttons_second_index]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,        ((data[buttons_second_index] & 0x04) != 0)); // Minus
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START,       ((data[buttons_second_index] & 0x08) != 0)); // Plus
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,       ((data[buttons_second_index] & 0x10) != 0)); // Power / Home
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,  ((data[buttons_second_index] & 0x20) != 0)); // L3
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[buttons_second_index] & 0x40) != 0)); // R3
+    }
+
+#define READ_STICK_AXIS(offset) \
+    (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x7f), -0x7f, 0xff - 0x7f, SDL_MIN_SINT16, SDL_MAX_SINT16))
+
+    axis = READ_STICK_AXIS(bt ? 2 : 4);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+    axis = READ_STICK_AXIS(bt ? 3 : 5);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+    axis = READ_STICK_AXIS(bt ? 4 : 6);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    axis = READ_STICK_AXIS(bt ? 5 : 7);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+#undef READ_STICK_AXIS
+
+#define READ_TRIGGER_AXIS(offset) \
+    (Sint16)(((int)data[offset] * 257) - 32768)
+
+    axis = READ_TRIGGER_AXIS(bt ? 7 : 9);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+    axis = READ_TRIGGER_AXIS(bt ? 6 : 8);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+#undef READ_TRIGGER_AXIS
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
 static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
@@ -739,7 +820,11 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (size == 9) {
+        if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS && size == 64) {
+            HIDAPI_Driver8BitDo_Handle2CStatePacket(joystick, ctx, data, size, false);
+        } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_BT && size == 11) {
+            HIDAPI_Driver8BitDo_Handle2CStatePacket(joystick, ctx, data, size, true);
+        } else if (size == 9) {
             // Old firmware USB report for the SF30 Pro and SN30 Pro controllers
             HIDAPI_Driver8BitDo_HandleOldStatePacket(joystick, ctx, data, size);
         } else {
