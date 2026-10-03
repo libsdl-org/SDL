@@ -186,7 +186,7 @@
         float x, y;
         x = point.x;
         y = (sdlwindow->h - point.y);
-        SDL_SendDropPosition(sdlwindow, x, y);
+        SDL_SendDropPosition(sdlwindow, x, y, NULL);
         return NSDragOperationGeneric;
     } else if (([sender draggingSourceOperationMask] & NSDragOperationCopy) == NSDragOperationCopy) {
         SDL_Window *sdlwindow = [self findSDLWindow];
@@ -194,7 +194,7 @@
         float x, y;
         x = point.x;
         y = (sdlwindow->h - point.y);
-        SDL_SendDropPosition(sdlwindow, x, y);
+        SDL_SendDropPosition(sdlwindow, x, y, NULL);
         return NSDragOperationCopy;
     }
 
@@ -258,7 +258,7 @@
         x = point.x;
         y = (sdlwindow->h - point.y);
         if (x >= 0.0f && x < (float)sdlwindow->w && y >= 0.0f && y < (float)sdlwindow->h) {
-            SDL_SendDropPosition(sdlwindow, x, y);
+            SDL_SendDropPosition(sdlwindow, x, y, NULL);
         }
         // Use SendDropPosition to update the mouse location
 
@@ -1187,6 +1187,35 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     // Get the parent-relative coordinates for child windows.
     SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
+
+    if (window->dockable) {
+        const NSPoint cocoaLocation = [NSEvent mouseLocation];
+        [NSApp enumerateWindowsWithOptions:NSWindowListOrderedFrontToBack
+                                usingBlock:^(NSWindow *nswin, BOOL *stop) {
+                                  if (nswin != _data.nswindow) {
+                                      NSRect r = [nswindow contentRectForFrameRect:[nswin frame]];
+                                      if (NSPointInRect(cocoaLocation, r)) {
+                                          SDL_VideoDevice *vid = SDL_GetVideoDevice();
+                                          SDL_Window *sdlwindow;
+                                          for (sdlwindow = vid->windows; sdlwindow; sdlwindow = sdlwindow->next) {
+                                              if (nswin == ((__bridge SDL_CocoaWindowData *)sdlwindow->internal).nswindow) {
+                                                  break;
+                                              }
+                                          }
+                                          *stop = YES;
+                                          if (sdlwindow) {
+                                              const float dx = cocoaLocation.x - sdlwindow->x;
+                                              const float dy = (CGDisplayPixelsHigh(kCGDirectMainDisplay) - cocoaLocation.y) - sdlwindow->y;
+                                              SDL_SendDropPosition(sdlwindow, dx, dy, window);
+                                          }
+                                          _data.drop_target = sdlwindow;
+                                      } else if (_data.drop_target) {
+                                          SDL_SendDropComplete(_data.drop_target);
+                                          _data.drop_target = NULL;
+                                      }
+                                  }
+                                }];
+    }
 }
 
 - (NSSize)windowWillResize:(NSWindow *)sender toSize:(NSSize)frameSize
@@ -1710,6 +1739,11 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
                 isDragAreaRunning = YES;
                 [_data.nswindow setMovableByWindowBackground:YES];
             }
+            if (window->dockable) {
+                SDL_PropertiesID props = SDL_GetWindowProperties(window);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, point.x);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, point.y);
+            }
             return YES; // dragging!
         } else {
             if (isDragAreaRunning) {
@@ -1849,6 +1883,21 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         break;
     }
 
+    if (_data.implicit_drag) {
+        SDL_CocoaWindowData *drag_data = (__bridge SDL_CocoaWindowData*)_data.implicit_drag->internal;
+        if (drag_data.drop_target) {
+            SDL_SendDropWindow(drag_data.drop_target, _data.implicit_drag);
+            SDL_SendDropComplete(drag_data.drop_target);
+        }
+        _data.implicit_drag = NULL;
+    }
+
+    if (_data.drop_target) {
+        SDL_SendDropWindow(_data.drop_target, _data.window);
+        SDL_SendDropComplete(_data.drop_target);
+        _data.drop_target = NULL;
+    }
+
     if (button == SDL_BUTTON_LEFT && [self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data.window, SDL_EVENT_WINDOW_HIT_TEST, 0, 0);
         return; // stopped dragging, drop event.
@@ -1949,6 +1998,13 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
     }
 
     SDL_SendMouseMotion(Cocoa_GetEventTimestamp([theEvent timestamp]), window, mouseID, false, x, y);
+
+    if (_data.implicit_drag) {
+        NSPoint g = [NSEvent mouseLocation];
+        SDL_CocoaWindowData *drag_data = (__bridge SDL_CocoaWindowData *)_data.implicit_drag->internal;
+        NSPoint p = NSMakePoint(g.x + _data.drag_offset.x, g.y + _data.drag_offset.y);
+        [drag_data.nswindow setFrameOrigin:p];
+    }
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -2231,7 +2287,19 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
 {
     if (_sdlWindow->flags & SDL_WINDOW_POPUP_MENU) {
         return YES;
-    } else if (SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH)) {
+    }
+
+    // If the click will result in a drag, pass the mouse up/down events.
+    if (_sdlWindow->hit_test) { // if no hit-test, skip this.
+        const NSPoint location = [theEvent locationInWindow];
+        const SDL_Point point = { (int)location.x, _sdlWindow->h - (((int)location.y) - 1) };
+        const SDL_HitTestResult rc = _sdlWindow->hit_test(_sdlWindow, &point, _sdlWindow->hit_test_data);
+        if (rc == SDL_HITTEST_DRAGGABLE) {
+            return YES; // dragging!
+        }
+    }
+
+    if (SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH)) {
         return SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, false);
     } else {
         return SDL_GetHintBoolean("SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH", false);
@@ -2527,6 +2595,20 @@ bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
             nswindow.opaque = NO;
             nswindow.hasShadow = NO;
             nswindow.backgroundColor = [NSColor clearColor];
+        }
+
+        if (window->dockable && SDL_GetGlobalMouseState(NULL, NULL)) {
+            SDL_Window *drag_source = SDL_GetMouseFocus();
+            if (drag_source) {
+                NSPoint cursor = [NSEvent mouseLocation];
+                SDL_CocoaWindowData *drag_data = ((__bridge SDL_CocoaWindowData *)drag_source->internal);
+                drag_data.implicit_drag = window;
+                drag_data.drag_offset = NSMakePoint( window->x - cursor.x,
+                                                    (CGDisplayPixelsHigh(kCGDirectMainDisplay) - (window->y + window->h)) - cursor.y);
+                SDL_PropertiesID props = SDL_GetWindowProperties(window);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, -(int)drag_data.drag_offset.x);
+                SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, ((int)drag_data.drag_offset.y) + window->h);
+            }
         }
 
 // We still support OpenGL as long as Apple offers it, deprecated or not, so disable deprecation warnings about it.

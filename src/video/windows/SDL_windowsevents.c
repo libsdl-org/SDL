@@ -1158,6 +1158,58 @@ static bool DispatchModalLoopMessageHook(HWND *hwnd, UINT *msg, WPARAM *wParam, 
     return false;
 }
 
+typedef struct FindTopmostWindowData
+{
+    SDL_VideoData *video_data;
+    const SDL_Window *dragging;
+    SDL_Window *topmost;
+    POINT cursor;
+} FindTopmostWindowData;
+
+static BOOL CALLBACK FindTopmostSDLWindowProc(HWND hwnd, LPARAM lParam)
+{
+    FindTopmostWindowData *data = (FindTopmostWindowData *)lParam;
+    SDL_WindowData *win_data = WIN_GetWindowDataFromHWND(hwnd);
+    if (win_data && win_data->window != data->dragging) {
+        RECT rect;
+        SDL_zero(rect);
+        if (GetClientRect(hwnd, &rect)) {
+            ClientToScreen(hwnd, (LPPOINT) &rect);
+            ClientToScreen(hwnd, (LPPOINT) &rect + 1);
+            if (PtInRect(&rect, data->cursor)) {
+                data->topmost = win_data->window;
+            }
+        }
+    }
+    return TRUE;
+}
+
+static void SendWindowDropData(SDL_WindowData *data)
+{
+    FindTopmostWindowData topmost_data;
+    SDL_zero(topmost_data);
+    topmost_data.dragging = data->window;
+    if (GetCursorPos(&topmost_data.cursor)) {
+        EnumWindows(FindTopmostSDLWindowProc, (LPARAM)&topmost_data);
+        if (topmost_data.topmost) {
+            HWND hwnd = topmost_data.topmost->internal->hwnd;
+            RECT rect;
+            SDL_zero(rect);
+            if (GetClientRect(hwnd, &rect)) {
+                ClientToScreen(hwnd, (LPPOINT) &rect);
+                ClientToScreen(hwnd, (LPPOINT) &rect + 1);
+                SDL_SendDropPosition(topmost_data.topmost, topmost_data.cursor.x - rect.left, topmost_data.cursor.y - rect.top, data->window);
+            }
+            data->dock_target = topmost_data.topmost;
+        } else {
+            if (data->dock_target) {
+                SDL_SendDropComplete(data->dock_target);
+                data->dock_target = NULL;
+            }
+        }
+    }
+}
+
 LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     SDL_WindowData *data;
@@ -1477,12 +1529,31 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
         }
 
+        if (data->videodata->implicit_drag) {
+            SDL_WindowData *drag = data->videodata->implicit_drag->internal;
+            POINT pt;
+            SDL_zero(pt);
+            GetCursorPos(&pt);
+            SetWindowPos(drag->hwnd, 0, pt.x + drag->drag_offset.x, pt.y + drag->drag_offset.y, 0, 0,
+                         SWP_NOSIZE | SWP_NOREDRAW | SWP_NOZORDER | SWP_NOCOPYBITS);
+            SendWindowDropData(data->videodata->implicit_drag->internal);
+        }
+
     } break;
 
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
     case WM_MBUTTONUP:
     case WM_XBUTTONUP:
+        if (data->videodata->implicit_drag) {
+            SDL_Window *drop_window = data->videodata->implicit_drag;
+            if (drop_window && drop_window->internal->dock_target) {
+                SDL_SendDropWindow(drop_window->internal->dock_target, drop_window);
+            }
+            drop_window->internal->dock_target = NULL;
+            data->videodata->implicit_drag = NULL;
+        }
+        SDL_FALLTHROUGH;
     case WM_LBUTTONDOWN:
     case WM_LBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
@@ -1779,6 +1850,14 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         break;
 #endif // WM_GETMINMAXINFO
 
+    case WM_MOVING:
+    {
+        if (data->window->dockable) {
+            SendWindowDropData(data);
+        }
+        returnCode = 0;
+    } break;
+
     case WM_WINDOWPOSCHANGING:
 
         if (data->expected_resize) {
@@ -1941,6 +2020,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     } break;
 
     case WM_EXITSIZEMOVE:
+    {
+        if (data->dock_target) {
+            SDL_SendDropWindow(data->dock_target, data->window);
+            SDL_Log("NULL TARGET");
+            data->dock_target = NULL;
+        }
+    } SDL_FALLTHROUGH;
     case WM_EXITMENULOOP:
     {
         --data->in_modal_loop;
@@ -2336,7 +2422,13 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                         SDL_SetMouseFocus(window);
                         return HTCLIENT;
                     }
-
+                    if (window->dockable) {
+                        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+                        data->drag_offset.x = point.x;
+                        data->drag_offset.y = point.y;
+                        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, data->drag_offset.x);
+                        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, data->drag_offset.y);
+                    }
                     POST_HIT_TEST(HTCAPTION);
                 }
                 case SDL_HITTEST_RESIZE_TOPLEFT:

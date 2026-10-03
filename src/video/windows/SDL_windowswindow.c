@@ -1072,6 +1072,17 @@ void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (window->flags & SDL_WINDOW_MODAL) {
         WIN_SetWindowModal(_this, window, true);
     }
+    if (window->dockable && (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON_MASK(SDL_BUTTON_LEFT))) {
+        POINT pt;
+        SDL_zero(pt);
+        GetCursorPos(&pt);
+        window->internal->drag_offset.x = window->x - pt.x;
+        window->internal->drag_offset.y = window->y - pt.y;
+        SDL_PropertiesID props = SDL_GetWindowProperties(window);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, data->drag_offset.x);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, data->drag_offset.y);
+        window->internal->videodata->implicit_drag = window;
+    }
 }
 
 void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
@@ -1775,7 +1786,7 @@ static STDMETHODIMP SDLDropTarget_DragEnter(SDLDropTarget *target,
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragEnter at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
-        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y, NULL);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragEnter at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
@@ -1794,7 +1805,7 @@ static STDMETHODIMP SDLDropTarget_DragOver(SDLDropTarget *target,
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragOver at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
-        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y, NULL);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In DragOver at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
@@ -1819,7 +1830,7 @@ static STDMETHODIMP SDLDropTarget_Drop(SDLDropTarget *target,
     if (ScreenToClient(target->hwnd, &pnt)) {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Drop at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => window %u at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG, pt.x, pt.y, target->window->id, pnt.x, pnt.y);
-        SDL_SendDropPosition(target->window, pnt.x, pnt.y);
+        SDL_SendDropPosition(target->window, pnt.x, pnt.y, NULL);
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In Drop at %" SDL_PRIdSLONG ", %" SDL_PRIdSLONG " => nil, nil", pt.x, pt.y);
