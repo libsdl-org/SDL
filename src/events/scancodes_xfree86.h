@@ -320,11 +320,11 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 137, 0x089 */   SDL_SCANCODE_CUT,                // XF86Cut
     /* 138, 0x08a */   SDL_SCANCODE_HELP,               // Help
     /* 139, 0x08b */   SDL_SCANCODE_MENU,               // XF86MenuKB
-    /* 140, 0x08c */   SDL_SCANCODE_UNKNOWN,            // XF86Calculator
+    /* 140, 0x08c */   SDL_SCANCODE_AL_CALCULATOR,      // XF86Calculator
     /* 141, 0x08d */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 142, 0x08e */   SDL_SCANCODE_SLEEP,              // XF86Sleep
     /* 143, 0x08f */   SDL_SCANCODE_WAKE,               // XF86WakeUp
-    /* 144, 0x090 */   SDL_SCANCODE_UNKNOWN,            // XF86Explorer
+    /* 144, 0x090 */   SDL_SCANCODE_AL_FILE_BROWSER,    // XF86Explorer
     /* 145, 0x091 */   SDL_SCANCODE_UNKNOWN,            // XF86Send
     /* 146, 0x092 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol
     /* 147, 0x093 */   SDL_SCANCODE_UNKNOWN,            // XF86Xfer
@@ -335,9 +335,9 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 152, 0x098 */   SDL_SCANCODE_UNKNOWN,            // XF86ScreenSaver
     /* 153, 0x099 */   SDL_SCANCODE_UNKNOWN,            // XF86RotateWindows
     /* 154, 0x09a */   SDL_SCANCODE_UNKNOWN,            // XF86TaskPane
-    /* 155, 0x09b */   SDL_SCANCODE_UNKNOWN,            // XF86Mail
+    /* 155, 0x09b */   SDL_SCANCODE_AL_EMAIL_READER,    // XF86Mail
     /* 156, 0x09c */   SDL_SCANCODE_AC_BOOKMARKS,       // XF86Favorites
-    /* 157, 0x09d */   SDL_SCANCODE_UNKNOWN,            // XF86MyComputer
+    /* 157, 0x09d */   SDL_SCANCODE_AL_LOCAL_MACHINE_BROWSER, // XF86MyComputer
     /* 158, 0x09e */   SDL_SCANCODE_AC_BACK,            // XF86Back
     /* 159, 0x09f */   SDL_SCANCODE_AC_FORWARD,         // XF86Forward
     /* 160, 0x0a0 */   SDL_SCANCODE_UNKNOWN,            // NoSymbol

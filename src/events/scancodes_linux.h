@@ -166,11 +166,11 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 137, 0x089 */    SDL_SCANCODE_CUT,               // KEY_CUT
     /* 138, 0x08a */    SDL_SCANCODE_HELP,              // KEY_HELP
     /* 139, 0x08b */    SDL_SCANCODE_MENU,              // KEY_MENU
-    /* 140, 0x08c */    SDL_SCANCODE_UNKNOWN,           // KEY_CALC
+    /* 140, 0x08c */    SDL_SCANCODE_AL_CALCULATOR,     // KEY_CALC
     /* 141, 0x08d */    SDL_SCANCODE_UNKNOWN,           // KEY_SETUP
     /* 142, 0x08e */    SDL_SCANCODE_SLEEP,             // KEY_SLEEP
     /* 143, 0x08f */    SDL_SCANCODE_WAKE,              // KEY_WAKEUP
-    /* 144, 0x090 */    SDL_SCANCODE_UNKNOWN,           // KEY_FILE
+    /* 144, 0x090 */    SDL_SCANCODE_AL_FILE_BROWSER,   // KEY_FILE
     /* 145, 0x091 */    SDL_SCANCODE_UNKNOWN,           // KEY_SENDFILE
     /* 146, 0x092 */    SDL_SCANCODE_UNKNOWN,           // KEY_DELETEFILE
     /* 147, 0x093 */    SDL_SCANCODE_UNKNOWN,           // KEY_XFER
@@ -181,9 +181,9 @@ static SDL_Scancode const linux_scancode_table[] = {
     /* 152, 0x098 */    SDL_SCANCODE_UNKNOWN,           // KEY_COFFEE
     /* 153, 0x099 */    SDL_SCANCODE_UNKNOWN,           // KEY_ROTATE_DISPLAY
     /* 154, 0x09a */    SDL_SCANCODE_UNKNOWN,           // KEY_CYCLEWINDOWS
-    /* 155, 0x09b */    SDL_SCANCODE_UNKNOWN,           // KEY_MAIL
+    /* 155, 0x09b */    SDL_SCANCODE_AL_EMAIL_READER,   // KEY_MAIL
     /* 156, 0x09c */    SDL_SCANCODE_AC_BOOKMARKS,      // KEY_BOOKMARKS
-    /* 157, 0x09d */    SDL_SCANCODE_UNKNOWN,           // KEY_COMPUTER
+    /* 157, 0x09d */    SDL_SCANCODE_AL_LOCAL_MACHINE_BROWSER, // KEY_COMPUTER
     /* 158, 0x09e */    SDL_SCANCODE_AC_BACK,           // KEY_BACK
     /* 159, 0x09f */    SDL_SCANCODE_AC_FORWARD,        // KEY_FORWARD
     /* 160, 0x0a0 */    SDL_SCANCODE_UNKNOWN,           // KEY_CLOSECD
