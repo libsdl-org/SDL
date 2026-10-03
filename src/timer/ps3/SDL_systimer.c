@@ -19,24 +19,31 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_main_callbacks.h"
 
-// Add your platform here if you define a custom SDL_RunApp() implementation
-#if !defined(SDL_PLATFORM_WIN32) && \
-    !defined(SDL_PLATFORM_GDK) && \
-    !defined(SDL_PLATFORM_IOS) && \
-    !defined(SDL_PLATFORM_TVOS) && \
-    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
-    !defined(SDL_PLATFORM_PSP) && \
-    !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_PS3) && \
-    !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+#ifdef SDL_TIMER_PS3
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
+#include "../SDL_timer_c.h"
+
+#include <sys/systime.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+
+Uint64 SDL_GetPerformanceCounter(void)
 {
-    (void)reserved;
-    return SDL_CallMainFunction(argc, argv, mainFunction);
+    // The PowerPC Time Base.
+    return __builtin_ppc_get_timebase();
 }
 
-#endif
+Uint64 SDL_GetPerformanceFrequency(void)
+{
+    return sysGetTimebaseFrequency();
+}
+
+void SDL_SYS_DelayNS(Uint64 ns)
+{
+    // Convert nanoseconds to microseconds.
+    sysUsleep(ns / 1000);
+}
+
+#endif // SDL_TIMER_PS3

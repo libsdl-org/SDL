@@ -19,24 +19,13 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_main_callbacks.h"
 
-// Add your platform here if you define a custom SDL_RunApp() implementation
-#if !defined(SDL_PLATFORM_WIN32) && \
-    !defined(SDL_PLATFORM_GDK) && \
-    !defined(SDL_PLATFORM_IOS) && \
-    !defined(SDL_PLATFORM_TVOS) && \
-    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
-    !defined(SDL_PLATFORM_PSP) && \
-    !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_PS3) && \
-    !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+#ifndef _SDL_ps3modes_h
+#define _SDL_ps3modes_h
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
-{
-    (void)reserved;
-    return SDL_CallMainFunction(argc, argv, mainFunction);
-}
+extern bool PS3_InitModes(SDL_VideoDevice *_this);
+extern bool PS3_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display);
+extern bool PS3_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
+extern void PS3_QuitModes(SDL_VideoDevice *_this);
 
-#endif
+#endif // SDL_ps3modes_h
