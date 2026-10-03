@@ -12,8 +12,6 @@
 
 /* Simple program to test the SDL controller routines */
 
-// Enable to show a cursor for the Wii Remote Pointer
-
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -39,7 +37,6 @@
 #define BUTTON_MARGIN  16.0f
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
-
 
 typedef struct
 {
@@ -2298,7 +2295,7 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         UpdateButtonHighlights(event->button.x, event->button.y, event->button.down);
         break;
 
-    case SDL_EVENT_MOUSE_MOTION: 
+    case SDL_EVENT_MOUSE_MOTION:
         if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
             VirtualGamepadMouseMotion(event->motion.x, event->motion.y);
         }
@@ -2455,7 +2452,6 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
     } else {
         DrawGamepadWaiting(screen);
     }
-
     SDL_Delay(16);
     SDL_RenderPresent(screen);
 
