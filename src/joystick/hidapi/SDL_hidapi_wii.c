@@ -59,7 +59,6 @@
 
 #define WII_IR_X_MAX 1023.0f
 #define WII_IR_Y_MAX 767.0f
-#define WII_IR_MOUSE_ID ((SDL_MouseID)-3)
 
 typedef enum
 {
@@ -871,12 +870,12 @@ void IRHintChanged(void *userdata, const char *name, const char *oldValue, const
     bool bIREnabled = SDL_GetHintBoolean(name, false);
     if (ctx->m_bIREnabled != bIREnabled) {
         if (ctx->m_bIREnabled && !bIREnabled) {
-            SDL_RemoveMouse(WII_IR_MOUSE_ID);
+            SDL_RemoveMouse((SDL_MouseID)(uintptr_t)ctx->joystick);
         } else {
-            SDL_AddMouse(WII_IR_MOUSE_ID, ctx->device->name);
+            SDL_AddMouse((SDL_MouseID)(uintptr_t)ctx->joystick, "Nintendo Wii Remote");
         }
         ctx->m_bIREnabled = bIREnabled;
-        SDL_RemoveMouse(WII_IR_MOUSE_ID);
+        SDL_RemoveMouse((SDL_MouseID)(uintptr_t)ctx->joystick);
         IRSetup(ctx);
     }
 }
@@ -1033,7 +1032,7 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY, IRSensitivityHintChanged, ctx);
     if (ctx->m_bIREnabled) {
         IRSetup(ctx);
-        SDL_AddMouse(WII_IR_MOUSE_ID, ctx->device->name);
+        SDL_AddMouse((SDL_MouseID)(uintptr_t)joystick, "Nintendo Wii Remote");
     }
 
     // Speaker Hints
@@ -1424,8 +1423,8 @@ static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joys
 
         // SDL_Log("Wii Point 0 %i %i", points[0].x, points[0].y);
         // SDL_Log("Wii Point 1 %i %i", points[1].x, points[1].y);
-        //SDL_Log("Wii Pointer Position %f %f", position_x, position_y);
-        SDL_SendMouseMotion(ctx->timestamp, NULL, WII_IR_MOUSE_ID, true, (position_x*WII_IR_X_MAX) - (ctx->m_fLastPosition[0]*WII_IR_X_MAX), (position_y*WII_IR_Y_MAX) - (ctx->m_fLastPosition[1]*WII_IR_Y_MAX));
+        // SDL_Log("Wii Remote %i Pointer Position %f %f", SDL_GetJoystickPlayerIndex(joystick), position_x, position_y);
+        SDL_SendMouseMotion(ctx->timestamp, NULL, (SDL_MouseID)(uintptr_t)joystick, true, (position_x*WII_IR_X_MAX) - (ctx->m_fLastPosition[0]*WII_IR_X_MAX), (position_y*WII_IR_Y_MAX) - (ctx->m_fLastPosition[1]*WII_IR_Y_MAX));
 
         ctx->m_fLastPosition[0] = position_x;
         ctx->m_fLastPosition[1] = position_y;
@@ -1814,6 +1813,10 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
         break;
     case k_eWiiInputReportIDs_ButtonDataE:
     case k_eWiiInputReportIDs_ButtonDataF:
+    // This was happening to me sometimes and Wiimote wouldn't work without me adding this here
+    case k_eWiiInputReportIDs_Acknowledge: 
+        HandleResponse(ctx, joystick);
+        break;
     default:
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Unsupported button data type %02x", ctx->m_rgucReadBuffer[0]);
         return;
@@ -1926,7 +1929,7 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
                            SpeakerVolumeHintChanged, ctx);
 
     if (ctx->m_bIREnabled) {
-        SDL_RemoveMouse(WII_IR_MOUSE_ID);
+        SDL_RemoveMouse((SDL_MouseID)(uintptr_t)joystick);
     }
 
     ctx->joystick = NULL;
