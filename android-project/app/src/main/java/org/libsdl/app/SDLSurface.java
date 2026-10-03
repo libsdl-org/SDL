@@ -148,7 +148,22 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
-        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
+
+        if (density <= 0.0f) {
+            density = 1.0f;
+        }
+
+        float rate = mDisplay.getRefreshRate();
+
+        // Initial values needed for SDL_Init()
+        SDLActivity.mAndroid_SurfaceWidth = width;
+        SDLActivity.mAndroid_SurfaceHeight = height;
+        SDLActivity.mAndroid_DeviceWidth= nDeviceWidth;
+        SDLActivity.mAndroid_DeviceHeight= nDeviceHeight;
+        SDLActivity.mAndroid_ScreenDensity= density;
+        SDLActivity.mAndroid_ScreenRate= rate;
+
+        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, rate);
         SDLActivity.onNativeResize();
 
         // Prevent a screen distortion glitch,
