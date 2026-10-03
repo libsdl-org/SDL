@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include <stdint.h>
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -95,8 +96,13 @@ typedef struct
     Uint16 firmware_version;
     Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds.
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
+    // Convertion from raw values to meters per second squared.
     float accelScale;
-    float gyroScale;
+    // Convertion from raw values to radians per second.
+    // A negative value means that the gyro axis is inverted.
+    // X Y Z
+    // https://wiki.libsdl.org/SDL2/SDL_SensorType
+    float gyroScale[3];
     Uint64 next_heartbeat;
     Uint64 last_packet;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -237,7 +243,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_lmrm = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
         break;
     case SDL_FLYDIGI_APEX6:
@@ -245,7 +251,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_lmrm = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER2:
@@ -266,6 +272,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale[0] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(1200.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER4_PRO:
@@ -273,6 +282,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale[0] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(1200.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER5_PRO:
@@ -282,7 +294,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_circle = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = SENSOR_INTERVAL_VADER5_PRO_NS;
         break;
     default:
@@ -849,15 +861,10 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
-        // As result, roll has a different scaling factor than pitch and yaw.
-        // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
-        const float flPitchAndYawScale = DEG2RAD(72000.0f);
-        const float flRollScale = DEG2RAD(1200.0f);
-
-        values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+        const float* flGyroScale = ctx->gyroScale;
+        values[0] = LOAD16(data[26], data[27]) * flGyroScale[0] / INT16_MAX; // Acceleration along pitch axis
+        values[1] = LOAD16(data[18], data[20]) * flGyroScale[1] / INT16_MAX;  // Acceleration along yaw axis
+        values[2] = LOAD16(data[29], data[30]) * flGyroScale[2] / INT16_MAX;  // Acceleration along roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
@@ -1001,7 +1008,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        const float flGyroScale = ctx->gyroScale;
+        const float flGyroScale = ctx->gyroScale[0];
         values[0] = HIDAPI_RemapVal((float)LOAD16(data[17], data[18]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         values[1] = HIDAPI_RemapVal((float)LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         values[2] = HIDAPI_RemapVal(-(float)LOAD16(data[19], data[20]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
