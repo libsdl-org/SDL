@@ -107,6 +107,9 @@ typedef struct
     int collection_depth;
     DescriptorGlobalState global;
     DescriptorLocalState local;
+    int collection_maxcount;
+    int collection_count;
+    DescriptorCollection *collections;
     int field_maxcount;
     int field_count;
     int field_offset;
@@ -234,6 +237,30 @@ static bool AddUsage(DescriptorContext *ctx, Uint32 usage)
     return true;
 }
 
+static bool AddCollection(DescriptorContext *ctx, Uint8 type)
+{
+    if (ctx->collection_count == ctx->collection_maxcount) {
+        int collection_maxcount = ctx->collection_maxcount + 4;
+        DescriptorCollection *collections = (DescriptorCollection *)SDL_realloc(ctx->collections, collection_maxcount * sizeof(*collections));
+        if (!collections) {
+            return false;
+        }
+        ctx->collections = collections;
+        ctx->collection_maxcount = collection_maxcount;
+    }
+
+    // The Usage applied to a collection is the first Usage local item that
+    // precedes the Collection main item, per the HID Usage Tables spec.
+    Uint32 usage = (ctx->local.usage_count > 0) ? ctx->local.usages[0] : 0;
+
+    DescriptorCollection *collection = &ctx->collections[ctx->collection_count++];
+    collection->usage = usage;
+    collection->type = type;
+
+    DebugDescriptor(ctx, "Adding report %d collection 0x%.8x type 0x%.8x", (Uint8)ctx->global.report_id, collection->usage, collection->type);
+    return true;
+}
+
 static bool AddInputField(DescriptorContext *ctx, Uint32 usage, int bit_size)
 {
     if (ctx->field_count == ctx->field_maxcount) {
@@ -340,6 +367,9 @@ static bool ParseMainItem(DescriptorContext *ctx, int tag, size_t size, const Ui
             break;
         default:
             break;
+        }
+        if (!AddCollection(ctx, *data)) {
+            return false;
         }
         ++ctx->collection_depth;
         break;
@@ -511,6 +541,7 @@ static bool ParseDescriptor(DescriptorContext *ctx, const Uint8 *descriptor, siz
 static void CleanupContext(DescriptorContext *ctx)
 {
     SDL_free(ctx->local.usages);
+    SDL_free(ctx->collections);
     SDL_free(ctx->fields);
 }
 
@@ -525,6 +556,9 @@ SDL_ReportDescriptor *SDL_ParseReportDescriptor(const Uint8 *descriptor, size_t 
             result->field_count = ctx.field_count;
             result->fields = ctx.fields;
             ctx.fields = NULL;
+            result->collection_count = ctx.collection_count;
+            result->collections = ctx.collections;
+            ctx.collections = NULL;
         }
     }
     CleanupContext(&ctx);
@@ -547,10 +581,27 @@ bool SDL_DescriptorHasUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page,
     return false;
 }
 
+bool SDL_DescriptorHasCollectionUsage(SDL_ReportDescriptor *descriptor, Uint16 usage_page, Uint16 usage, Uint8 type)
+{
+    if (!descriptor) {
+        return false;
+    }
+
+    Uint32 full_usage = (((Uint32)usage_page << 16) | usage);
+    for (int i = 0; i < descriptor->collection_count; ++i) {
+        if (descriptor->collections[i].usage == full_usage &&
+            descriptor->collections[i].type == type) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void SDL_DestroyDescriptor(SDL_ReportDescriptor *descriptor)
 {
     if (descriptor) {
         SDL_free(descriptor->fields);
+        SDL_free(descriptor->collections);
         SDL_free(descriptor);
     }
 }
