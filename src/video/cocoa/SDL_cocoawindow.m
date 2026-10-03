@@ -223,7 +223,18 @@
     }
     @autoreleasepool {
         NSPasteboard *pasteboard = [sender draggingPasteboard];
-        NSString *desiredType = [pasteboard availableTypeFromArray:@[ NSFilenamesPboardType, NSPasteboardTypeString ]];
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+        // Deprecated in macOS 10.14 in favor of NSPasteboardTypeFileURL, which requires
+        // reading multiple pasteboard items instead of a single filenames plist.
+        NSString *filenamesType = NSFilenamesPboardType;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+        NSString *desiredType = [pasteboard availableTypeFromArray:@[ filenamesType, NSPasteboardTypeString ]];
         SDL_Window *sdlwindow = [self findSDLWindow];
         NSData *pboardData;
         id pboardPlist;
@@ -247,7 +258,7 @@
         if (pboardData == nil) {
             return NO;
         }
-        SDL_assert([desiredType isEqualToString:NSFilenamesPboardType] ||
+        SDL_assert([desiredType isEqualToString:filenamesType] ||
                    [desiredType isEqualToString:NSPasteboardTypeString]);
 
         pboardString = [pasteboard stringForType:desiredType];
@@ -262,7 +273,7 @@
         }
         // Use SendDropPosition to update the mouse location
 
-        if ([desiredType isEqualToString:NSFilenamesPboardType]) {
+        if ([desiredType isEqualToString:filenamesType]) {
             for (NSString *path in (NSArray *)pboardPlist) {
                 NSURL *fileURL = [NSURL fileURLWithPath:path];
                 NSNumber *isAlias = nil;
@@ -868,7 +879,14 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     [view setNextResponder:self];
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
     [view setAcceptsTouchEvents:YES];
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -2412,8 +2430,15 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
         /* Prevents the window's "window device" from being destroyed when it is
          * hidden. See http://www.mikeash.com/pyblog/nsopenglcontext-and-one-shot.html
          */
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
         [nswindow setOneShot:NO];
-
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+        
         if (window->flags & SDL_WINDOW_EXTERNAL) {
             // Query the title from the existing window
             NSString *title = [nswindow title];
@@ -3346,8 +3371,16 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept)
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
         if (accept) {
-            [data.nswindow registerForDraggedTypes:@[ (NSString *)kUTTypeFileURL,
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+            // UTTypeFileURL / UTTypeUTF8PlainText don't exist before macOS 11.0.
+           [data.nswindow registerForDraggedTypes:@[ (NSString *)kUTTypeFileURL,
                                                       (NSString *)kUTTypeUTF8PlainText ]];
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
         } else {
             [data.nswindow unregisterDraggedTypes];
         }
