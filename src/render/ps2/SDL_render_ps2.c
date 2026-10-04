@@ -709,13 +709,9 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     if (hint) {
         if (SDL_strcmp(hint, "32") == 0) {
             gsGlobal->PSM = GS_PSM_CT32;
-        }
-
-        else if (SDL_strcmp(hint, "24") == 0) {
+        } else if (SDL_strcmp(hint, "24") == 0) {
             gsGlobal->PSM = GS_PSM_CT24;
-        }
-
-        else if (SDL_strcmp(hint, "16") == 0) {
+        } else if (SDL_strcmp(hint, "16") == 0) {
             gsGlobal->PSM = GS_PSM_CT16;
         }
     }
