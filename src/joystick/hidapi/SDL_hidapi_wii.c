@@ -166,7 +166,6 @@ typedef struct
     bool m_bDisconnected;
     bool m_bIREnabled;
     Sint32 m_iIRSensitivity;
-    float m_fRotation;
     SDL_Point m_IRLastPoints[2];
     float m_fLastPosition[2];
     bool m_bSpeakerEnabled;
@@ -1402,25 +1401,6 @@ static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joys
         // Position = (1 - Midpoint.x, Midpoint.y);
         float position_x = 1 - middle_x;
         float position_y = middle_y;
-
-        // Rotation = Math.Atan2(Accelerometer.Z, Accelerometer.X) - (float)(Math.PI / 2.0);
-        float sin = SDL_sinf(ctx->m_fRotation);
-        float cos = SDL_cosf(ctx->m_fRotation);
-
-        // Position.Subtract(0.5,0.5);
-        position_x -= 0.5f;
-        position_y -= 0.5f;
-
-        // Position.Rotate(Rotation);
-        float centered_pos_x = position_x;
-        float centered_pos_y = position_y;
-        position_x = (centered_pos_x * cos) - (centered_pos_y * sin);
-        position_y = (centered_pos_x * sin) + (centered_pos_y * cos);
-
-        // Position.Add(0.5,0.5)
-        position_x += 0.5f;
-        position_y += 0.5f;
-
         // SDL_Log("Wii Point 0 %i %i", points[0].x, points[0].y);
         // SDL_Log("Wii Point 1 %i %i", points[1].x, points[1].y);
         // SDL_Log("Wii Remote %i Pointer Position %f %f", SDL_GetJoystickPlayerIndex(joystick), position_x, position_y);
@@ -1572,9 +1552,6 @@ static void HandleWiiRemoteAccelData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
     values[0] = -((float)x / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[1] = ((float)z / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
     values[2] = ((float)y / ACCEL_RES_PER_G) * SDL_STANDARD_GRAVITY;
-    if(ctx->m_bIREnabled) {
-            ctx->m_fRotation = SDL_atan2f(values[2], values[0]) - SDL_PI_F / 2.0f;
-    }
     SDL_SendJoystickSensor(ctx->timestamp, joystick, SDL_SENSOR_ACCEL, ctx->timestamp, values, 3);
 }
 
