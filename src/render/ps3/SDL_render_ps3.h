@@ -97,6 +97,7 @@ typedef struct PS3_RenderData
     u32 depth_offset;
     u32 depth_pitch;
     u32 screenw, screenh;
+    u32 cur_w, cur_h;
     gcmContextData *context; // Context to keep track of the RSX buffer
     PS3_DrawStateCache drawstate;
 

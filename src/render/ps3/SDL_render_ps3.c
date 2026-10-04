@@ -89,48 +89,6 @@ static void HandlerVBlank(const u32 head)
     }
 }
 
-void setDrawEnv(SDL_Renderer *renderer)
-{
-    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
-
-    rsxSetColorMask(data->context, GCM_COLOR_MASK_B |
-                                GCM_COLOR_MASK_G |
-                                GCM_COLOR_MASK_R |
-                                GCM_COLOR_MASK_A);
-
-    rsxSetColorMaskMrt(data->context,0);
-
-    u16 x,y,w,h;
-    f32 min, max;
-    f32 scale[4],offset[4];
-
-    x = 0;
-    y = 0;
-    w = data->screenw;
-    h = data->screenh;
-    min = 0.0f;
-    max = 1.0f;
-    scale[0] = w*0.5f;
-    scale[1] = h*-0.5f;
-    scale[2] = (max - min)*0.5f;
-    scale[3] = 0.0f;
-    offset[0] = x + w*0.5f;
-    offset[1] = y + h*0.5f;
-    offset[2] = (max + min)*0.5f;
-    offset[3] = 0.0f;
-
-    rsxSetViewport(data->context,x, y, w, h, min, max, scale, offset);
-    rsxSetScissor(data->context,x,y,w,h);
-
-    // Disable depth for 2D
-    rsxSetDepthTestEnable(data->context, GCM_FALSE);
-    rsxSetDepthFunc(data->context, GCM_LESS);
-    rsxSetShadeModel(data->context,GCM_SHADE_MODEL_SMOOTH);
-    // Disabe depth buffer updates
-    rsxSetDepthWriteEnable(data->context, 0);
-    rsxSetFrontFace(data->context,GCM_FRONTFACE_CCW);
-}
-
 void PS3_DrawColoredPrimitive(PS3_RenderData *data, u8 primitive_type,
                                 ColorVertex *verts, u32 count,
                                 Uint8 r, Uint8 g, Uint8 b, Uint8 a)
@@ -215,31 +173,6 @@ static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     tdata->rsx_texture.depth  = 1;
     tdata->rsx_texture.pitch  = pitch;
     tdata->rsx_texture.offset = tdata->offset;
-
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
-
-        tdata->rsx_surface.type          = GCM_SURFACE_TYPE_LINEAR;
-        tdata->rsx_surface.antiAlias     = GCM_SURFACE_CENTER_1;
-        tdata->rsx_surface.colorFormat   = GCM_SURFACE_A8R8G8B8;
-        tdata->rsx_surface.colorTarget   = GCM_SURFACE_TARGET_0;
-        tdata->rsx_surface.colorLocation[0] = GCM_LOCATION_RSX;
-        tdata->rsx_surface.colorOffset[0]   = tdata->offset;
-        tdata->rsx_surface.colorPitch[0]    = pitch;
-        for (int i = 1; i < 4; i++) {
-            tdata->rsx_surface.colorLocation[i] = GCM_LOCATION_RSX;
-            tdata->rsx_surface.colorOffset[i] = tdata->offset;
-            tdata->rsx_surface.colorPitch[i] = 64;
-        }
-        tdata->rsx_surface.depthFormat   = GCM_SURFACE_ZETA_Z16;
-        tdata->rsx_surface.depthLocation = GCM_LOCATION_RSX;
-        tdata->rsx_surface.depthOffset   = data->depth_offset;
-        tdata->rsx_surface.depthPitch    = data->depth_pitch;
-        tdata->rsx_surface.width  = texture->w;
-        tdata->rsx_surface.height = texture->h;
-        tdata->rsx_surface.x = 0;
-        tdata->rsx_surface.y = 0;
-    }
 
     texture->internal = (void *)tdata;
 
@@ -384,10 +317,24 @@ static bool PS3_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     if (texture) {
         PS3_TextureData *tdata = (PS3_TextureData *)texture->internal;
-        rsxSetSurface(data->context, &tdata->rsx_surface);
+        data->surface.colorLocation[0] = GCM_LOCATION_RSX;
+        data->surface.colorOffset[0]   = tdata->rsx_texture.offset;
+        data->surface.colorPitch[0]    = tdata->rsx_texture.pitch;
+        data->surface.width  = tdata->rsx_texture.width;
+        data->surface.height = tdata->rsx_texture.height;
+        data->cur_w = tdata->rsx_texture.width;
+        data->cur_h = tdata->rsx_texture.height;
     } else {
-        rsxSetSurface(data->context, &data->surface);
+        data->surface.colorLocation[0] = GCM_LOCATION_RSX;
+        data->surface.colorOffset[0]   = data->color_offset[data->curr_fb];
+        data->surface.colorPitch[0]    = data->color_pitch;
+        data->surface.width  = data->screenw;
+        data->surface.height = data->screenh;
+        data->cur_w = data->screenw;
+        data->cur_h = data->screenh;
     }
+
+    rsxSetSurface(data->context, &data->surface);
 
     return true;
 }
@@ -565,8 +512,8 @@ static void PS3_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     x = 0;
     y = 0;
-    w = data->screenw;
-    h = data->screenh;
+    w = data->cur_w;
+    h = data->cur_h;
     min = 0.0f;
     max = 1.0f;
     scale[0] = w*0.5f;
@@ -876,6 +823,8 @@ static bool PS3_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     data->color_pitch = displayMode->w * SDL_BYTESPERPIXEL(displayMode->format);
     data->screenw = displayMode->w;
     data->screenh = displayMode->h;
+    data->cur_w = displayMode->w;
+    data->cur_h = displayMode->h;
 
     data->fbOnDisplay = 0;
     data->fbFlipped = 0;
