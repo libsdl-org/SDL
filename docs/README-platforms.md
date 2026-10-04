@@ -18,6 +18,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [Nokia N-Gage](README-ngage.md)
 - [OpenBSD](README-bsd.md)
 - [PlayStation 2](README-ps2.md) (Homebrew)
+- [PlayStation 3](README-ps3.md) (Homebrew)
 - [PlayStation 4](README-ps4.md) (Separate NDA-only fork)
 - [PlayStation 5](README-ps5.md) (Separate NDA-only fork)
 - [PlayStation Portable](README-psp.md) (Homebrew)

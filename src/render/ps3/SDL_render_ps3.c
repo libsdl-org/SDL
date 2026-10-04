@@ -216,6 +216,31 @@ static bool PS3_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     tdata->rsx_texture.pitch  = pitch;
     tdata->rsx_texture.offset = tdata->offset;
 
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+        PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
+
+        tdata->rsx_surface.type          = GCM_SURFACE_TYPE_LINEAR;
+        tdata->rsx_surface.antiAlias     = GCM_SURFACE_CENTER_1;
+        tdata->rsx_surface.colorFormat   = GCM_SURFACE_A8R8G8B8;
+        tdata->rsx_surface.colorTarget   = GCM_SURFACE_TARGET_0;
+        tdata->rsx_surface.colorLocation[0] = GCM_LOCATION_RSX;
+        tdata->rsx_surface.colorOffset[0]   = tdata->offset;
+        tdata->rsx_surface.colorPitch[0]    = pitch;
+        for (int i = 1; i < 4; i++) {
+            tdata->rsx_surface.colorLocation[i] = GCM_LOCATION_RSX;
+            tdata->rsx_surface.colorOffset[i] = tdata->offset;
+            tdata->rsx_surface.colorPitch[i] = 64;
+        }
+        tdata->rsx_surface.depthFormat   = GCM_SURFACE_ZETA_Z16;
+        tdata->rsx_surface.depthLocation = GCM_LOCATION_RSX;
+        tdata->rsx_surface.depthOffset   = data->depth_offset;
+        tdata->rsx_surface.depthPitch    = data->depth_pitch;
+        tdata->rsx_surface.width  = texture->w;
+        tdata->rsx_surface.height = texture->h;
+        tdata->rsx_surface.x = 0;
+        tdata->rsx_surface.y = 0;
+    }
+
     texture->internal = (void *)tdata;
 
     SDL_SetSurfaceColorMod(tdata->surface, (Uint8)texture->color.r, (Uint8)texture->color.g,
@@ -239,6 +264,8 @@ static bool PS3_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     if (SDL_MUSTLOCK(surface)) {
         SDL_LockSurface(surface);
     }
+
+    // TODO: use RSX Surface to transfer.
 
     const int bpp = SDL_BYTESPERPIXEL(texture->format);
     const int row_bytes = rect->w * bpp;
@@ -353,6 +380,15 @@ void PS3_DrawTexturedQuad(PS3_RenderData *data, PS3_TextureData *tdata,
 
 static bool PS3_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+    PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
+
+    if (texture) {
+        PS3_TextureData *tdata = (PS3_TextureData *)texture->internal;
+        rsxSetSurface(data->context, &tdata->rsx_surface);
+    } else {
+        rsxSetSurface(data->context, &data->surface);
+    }
+
     return true;
 }
 
@@ -515,7 +551,7 @@ static void PS3_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
     PS3_RenderData *data = (PS3_RenderData *)renderer->internal;
 
-    // Setup screen
+    // Setup screen.
     rsxSetColorMask(data->context, GCM_COLOR_MASK_B |
                                    GCM_COLOR_MASK_G |
                                    GCM_COLOR_MASK_R |
@@ -523,9 +559,9 @@ static void PS3_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     rsxSetColorMaskMrt(data->context,0);
 
-    u16 x,y,w,h;
+    u16 x, y, w, h;
     f32 min, max;
-    f32 scale[4],offset[4];
+    f32 scale[4], offset[4];
 
     x = 0;
     y = 0;
@@ -543,14 +579,14 @@ static void PS3_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
     offset[3] = 0.0f;
 
     rsxSetViewport(data->context,x, y, w, h, min, max, scale, offset);
-    rsxSetScissor(data->context,x,y,w,h);
+    rsxSetScissor(data->context, x, y, w, h);
 
     // Disable depth for 2D.
     rsxSetDepthTestEnable(data->context, GCM_FALSE);
     rsxSetDepthFunc(data->context, GCM_LESS);
-    rsxSetShadeModel(data->context,GCM_SHADE_MODEL_SMOOTH);
+    rsxSetShadeModel(data->context, GCM_SHADE_MODEL_SMOOTH);
     rsxSetDepthWriteEnable(data->context, 0);
-    rsxSetFrontFace(data->context,GCM_FRONTFACE_CCW);
+    rsxSetFrontFace(data->context, GCM_FRONTFACE_CCW);
 
     // Clear screen.
     Uint8 cr = (Uint8)SDL_roundf(SDL_clamp(cmd->data.color.color.r * cmd->data.color.color_scale, 0.0f, 1.0f) * 255.0f);
@@ -569,7 +605,7 @@ static void PS3_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
                                    GCM_CLEAR_S |
                                    GCM_CLEAR_Z);
 
-    rsxSetZMinMaxControl(data->context,GCM_FALSE, GCM_TRUE, GCM_FALSE);
+    rsxSetZMinMaxControl(data->context, GCM_FALSE, GCM_TRUE, GCM_FALSE);
 }
 
 static bool PS3_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
@@ -740,8 +776,8 @@ static bool PS3_RenderPresent(SDL_Renderer *renderer)
     rsxSetWriteCommandLabel(data->context, GCM_BUFFER_STATUS_INDEX + data->curr_fb, BUFFER_BUSY);
 
     // Set render target
-    data->surface.colorOffset[0]    = data->color_offset[data->curr_fb];
-    rsxSetSurface(data->context,&data->surface);
+    data->surface.colorOffset[0] = data->color_offset[data->curr_fb];
+    rsxSetSurface(data->context, &data->surface);
 
     return true;
 }

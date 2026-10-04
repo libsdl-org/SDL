@@ -77,6 +77,7 @@ typedef struct PS3_TextureData
 {
     SDL_Surface *surface;
     gcmTexture   rsx_texture;
+    gcmSurface   rsx_surface;
     u32          offset;
 } PS3_TextureData;
 
