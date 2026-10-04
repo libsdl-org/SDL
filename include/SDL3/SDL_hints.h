@@ -3641,7 +3641,7 @@ extern "C" {
  * - "24" (default)
  * - "16"
  *
- * \since This hint is available since SDL 3.6.0.
+ * \since This hint is available since SDL 3.4.20.
  */
 #define SDL_HINT_PS2_GS_COLOR_DEPTH "SDL_PS2_GS_COLOR_DEPTH"
 
