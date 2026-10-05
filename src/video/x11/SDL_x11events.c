@@ -2169,7 +2169,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     // WM_STATE: 0=Withdrawn, 1=Normal, 3=Iconic
                     Uint32 state = *(Uint32 *)prop_data;
 
-                    if (state == 0 || state == 3) { // Withdrawn or Iconic
+                    if ((state == 0 || state == 3) && !data->window->is_hiding && !(data->window->flags & SDL_WINDOW_HIDDEN)) {
+                        // Withdrawn or Iconic
                         if (!(data->window->flags & SDL_WINDOW_MINIMIZED)) {
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);
