@@ -51,12 +51,12 @@ extern "C" {
  * Locale data is split into a spoken language, like English, and an optional
  * country, like Canada.
  *
- * Language strings are ISO-639 language specifiers (such as "en" for
- * English, "de" for German, etc). Country strings are ISO-3166 country codes
- * (such as "US" for the United States, "CA" for Canada, etc). The country might
- * be NULL if there's no specific guidance on them (so you might have
- * `{ "en", "US" }` for American English, but `{ "en", NULL }` means "English
- * language, generically"). Language strings are never NULL.
+ * Language strings are ISO-639 language specifiers (such as "en" for English,
+ * "de" for German, etc). Country strings are ISO-3166 country codes (such as
+ * "US" for the United States, "CA" for Canada, etc). The country might be
+ * NULL if there's no specific guidance on them (so you might have `{ "en",
+ * "US" }` for American English, but `{ "en", NULL }` means "English language,
+ * generically"). Language strings are never NULL.
  *
  * Please note that not all of these strings are 2 characters; some are three
  * or more.
@@ -103,9 +103,9 @@ typedef struct SDL_Locale
  * supply this information at all.
  *
  * Note that this information is merely guidance; some platforms don't supply
- * it, some only supply a single language ever, some don't ever provide country
- * information, etc. Be prepared to receive surprising results and plan to have
- * fallbacks.
+ * it, some only supply a single language ever, some don't ever provide
+ * country information, etc. Be prepared to receive surprising results and
+ * plan to have fallbacks.
  *
  * This might be a "slow" call that has to query the operating system. It's
  * best to ask for this once and save the results. However, this list can
