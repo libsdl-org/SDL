@@ -1859,6 +1859,8 @@ SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE accel
 
 SDL_SetSurfaceRLE() takes an bool to enable and disable RLE acceleration.
 
+SDL_PremultiplyAlpha() takes an extra bool parameter ("linear"). For SDL2 compatibility, pass false for this parameter.
+
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns bool
 * SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
