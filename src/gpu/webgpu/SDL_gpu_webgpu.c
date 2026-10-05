@@ -3206,7 +3206,7 @@ static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_G
     desc.addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u];
     desc.addressModeV = SDLToWebGPU_AddressMode[createInfo->address_mode_v];
     desc.addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w];
-    desc.compare = SDLToWebGPU_CompareFunc[createInfo->compare_op];
+    desc.compare = createInfo->enable_compare ? SDLToWebGPU_CompareFunc[createInfo->compare_op] : WGPUCompareFunction_Undefined;
 
     desc.lodMaxClamp = createInfo->max_lod == 0 ? 32.0f : createInfo->max_lod;
     desc.lodMinClamp = createInfo->min_lod < 0 ? 0 : createInfo->min_lod;
