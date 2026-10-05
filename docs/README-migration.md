@@ -1117,6 +1117,10 @@ Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
+## SDL_locale.h
+
+SDL_GetPreferredLocales() now returns a NULL-terminated array of pointers, instead of an array of structs where the last struct has its fields set to NULL, and also can optionally report the count of the array. The returned pointer is still disposed of by the caller with a single SDL_free() call, that will take care of all the strings and structs in one block.
+
 ## SDL_log.h
 
 SDL_Log() no longer prints a log prefix by default for SDL_LOG_PRIORITY_INFO and below. The log prefixes can be customized with SDL_SetLogPriorityPrefix().
