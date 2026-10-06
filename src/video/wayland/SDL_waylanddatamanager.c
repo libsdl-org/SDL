@@ -192,18 +192,9 @@ static SDL_MimeDataList *MIMEDataListFind(struct wl_list *list, const char *mime
     return found;
 }
 
-static bool MIMEDataListAdd(struct wl_list *list, const char *mime_type, const void *buffer, size_t length)
+static bool MIMEDataListAdd(struct wl_list *list, const char *mime_type)
 {
     bool result = true;
-    void *internal_buffer = NULL;
-
-    if (buffer) {
-        internal_buffer = SDL_malloc(length);
-        if (!internal_buffer) {
-            return false;
-        }
-        SDL_memcpy(internal_buffer, buffer, length);
-    }
 
     SDL_MimeDataList *mime_data = MIMEDataListFind(list, mime_type);
 
@@ -211,25 +202,16 @@ static bool MIMEDataListAdd(struct wl_list *list, const char *mime_type, const v
         mime_data = SDL_calloc(1, sizeof(*mime_data));
         if (!mime_data) {
             result = false;
-        } else {
-            WAYLAND_wl_list_insert(list, &(mime_data->link));
-
-            const size_t mime_type_length = SDL_strlen(mime_type) + 1;
-            mime_data->mime_type = SDL_malloc(mime_type_length);
-            if (!mime_data->mime_type) {
-                result = false;
-            } else {
-                SDL_memcpy(mime_data->mime_type, mime_type, mime_type_length);
-            }
         }
-    }
+        WAYLAND_wl_list_insert(list, &(mime_data->link));
 
-    if (mime_data && buffer && length > 0) {
-        SDL_free(mime_data->data);
-        mime_data->data = internal_buffer;
-        mime_data->length = length;
-    } else {
-        SDL_free(internal_buffer);
+        const size_t mime_type_length = SDL_strlen(mime_type) + 1;
+        mime_data->mime_type = SDL_malloc(mime_type_length);
+        if (!mime_data->mime_type) {
+            result = false;
+        } else {
+            SDL_memcpy(mime_data->mime_type, mime_type, mime_type_length);
+        }
     }
 
     return result;
@@ -241,7 +223,6 @@ static void MIMEDataListFree(struct wl_list *list)
     SDL_MimeDataList *next = NULL;
 
     wl_list_for_each_safe (mime_data, next, list, link) {
-        SDL_free(mime_data->data);
         SDL_free(mime_data->mime_type);
         SDL_free(mime_data);
     }
@@ -694,12 +675,12 @@ void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *off
 
 bool Wayland_DataOfferAddMIME(SDL_WaylandDataOffer *offer, const char *mime_type)
 {
-    return MIMEDataListAdd(&offer->mimes, mime_type, NULL, 0);
+    return MIMEDataListAdd(&offer->mimes, mime_type);
 }
 
 bool Wayland_PrimarySelectionOfferAddMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type)
 {
-    return MIMEDataListAdd(&offer->mimes, mime_type, NULL, 0);
+    return MIMEDataListAdd(&offer->mimes, mime_type);
 }
 
 bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type)

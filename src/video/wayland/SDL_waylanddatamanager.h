@@ -38,8 +38,6 @@ typedef struct SDL_WaylandPrimarySelectionDevice SDL_WaylandPrimarySelectionDevi
 typedef struct
 {
     char *mime_type;
-    void *data;
-    size_t length;
     struct wl_list link;
 } SDL_MimeDataList;
 
