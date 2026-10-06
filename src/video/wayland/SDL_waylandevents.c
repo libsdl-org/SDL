@@ -2704,7 +2704,7 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         data_offer->offer = id;
         data_offer->data_device = data_device;
         data_offer->read_fd = -1;
-        WAYLAND_wl_list_init(&(data_offer->mimes));
+        WAYLAND_wl_array_init(&(data_offer->mimes));
         wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -3002,7 +3002,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
         primary_selection_device->seat->display->current_primary_selection_seat = primary_selection_device->seat;
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
-        WAYLAND_wl_list_init(&(primary_selection_offer->mimes));
+        WAYLAND_wl_array_init(&(primary_selection_offer->mimes));
         zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
         zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
     }

@@ -174,58 +174,36 @@ static ssize_t ReadPipe(int fd, void **buffer, size_t *total_length, Sint64 time
     return bytes_read;
 }
 
-static SDL_MimeDataList *MIMEDataListFind(struct wl_list *list, const char *mime_type)
+static bool MIMEDataListHasType(struct wl_array *list, const char *mime_type)
 {
-    SDL_MimeDataList *found = NULL;
-
-    SDL_MimeDataList *item = NULL;
-    wl_list_for_each (item, list, link) {
-        if (!item->mime_type) {
-            continue;
-        }
-
-        if (SDL_strcmp(item->mime_type, mime_type) == 0) {
-            found = item;
-            break;
+    const char **item;
+    wl_array_for_each(item, list) {
+        if (SDL_strcmp(*item, mime_type) == 0) {
+            return true;
         }
     }
-    return found;
+
+    return false;
 }
 
-static bool MIMEDataListAdd(struct wl_list *list, const char *mime_type)
+static bool MIMEDataListAdd(struct wl_array *list, const char *mime_type)
 {
-    bool result = true;
-
-    SDL_MimeDataList *mime_data = MIMEDataListFind(list, mime_type);
-
-    if (!mime_data) {
-        mime_data = SDL_calloc(1, sizeof(*mime_data));
-        if (!mime_data) {
-            result = false;
-        }
-        WAYLAND_wl_list_insert(list, &(mime_data->link));
-
-        const size_t mime_type_length = SDL_strlen(mime_type) + 1;
-        mime_data->mime_type = SDL_malloc(mime_type_length);
-        if (!mime_data->mime_type) {
-            result = false;
-        } else {
-            SDL_memcpy(mime_data->mime_type, mime_type, mime_type_length);
-        }
+    if (!MIMEDataListHasType(list, mime_type)) {
+        char **item = WAYLAND_wl_array_add(list, sizeof(char *));
+        *item = SDL_strdup(mime_type);
     }
 
-    return result;
+    return true;
 }
 
-static void MIMEDataListFree(struct wl_list *list)
+static void MIMEDataListFree(struct wl_array *list)
 {
-    SDL_MimeDataList *mime_data = NULL;
-    SDL_MimeDataList *next = NULL;
-
-    wl_list_for_each_safe (mime_data, next, list, link) {
-        SDL_free(mime_data->mime_type);
-        SDL_free(mime_data);
+    char **item;
+    wl_array_for_each(item, list) {
+        SDL_free(*item);
     }
+
+    WAYLAND_wl_array_release(list);
 }
 
 static void data_source_handle_target(void *data, struct wl_data_source *wl_data_source, const char *mime_type)
@@ -546,20 +524,16 @@ static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bo
         size_t alloc_size = 0;
 
         // Do a first pass to compute allocation size.
-        SDL_MimeDataList *item = NULL;
-        wl_list_for_each(item, &offer->mimes, link) {
-            if (!item->mime_type) {
-                continue;
-            }
-
+        const char **item;
+        wl_array_for_each(item, &offer->mimes) {
             // If origin metadata is found, queue a check and wait for confirmation that this offer isn't recursive.
-            if (check_origin && SDL_strcmp(item->mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
-                DataOfferCheckSource(offer, item->mime_type);
+            if (check_origin && SDL_strcmp(*item, SDL_DATA_ORIGIN_MIME) == 0) {
+                DataOfferCheckSource(offer, *item);
                 return;
             }
 
             ++num_formats;
-            alloc_size += SDL_strlen(item->mime_type) + 1;
+            alloc_size += SDL_strlen(*item) + 1;
         }
 
         alloc_size += (num_formats + 1) * sizeof(char *);
@@ -576,13 +550,13 @@ static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bo
 
         item = NULL;
         int i = 0;
-        wl_list_for_each(item, &offer->mimes, link) {
-            if (!item->mime_type) {
+        wl_array_for_each(item, &offer->mimes) {
+            if (!item) {
                 continue;
             }
 
             new_mime_types[i++] = strPtr;
-            const size_t len = SDL_strlcpy(strPtr, item->mime_type, alloc_size) + 1;
+            const size_t len = SDL_strlcpy(strPtr, *item, alloc_size) + 1;
             strPtr += len;
             alloc_size -= len;
         }
@@ -685,22 +659,18 @@ bool Wayland_PrimarySelectionOfferAddMIME(SDL_WaylandPrimarySelectionOffer *offe
 
 bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type)
 {
-    bool found = false;
-
     if (offer) {
-        found = MIMEDataListFind(&offer->mimes, mime_type) != NULL;
+        return MIMEDataListHasType(&offer->mimes, mime_type);
     }
-    return found;
+    return false;
 }
 
 bool Wayland_PrimarySelectionOfferHasMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type)
 {
-    bool found = false;
-
     if (offer) {
-        found = MIMEDataListFind(&offer->mimes, mime_type) != NULL;
+        return MIMEDataListHasType(&offer->mimes, mime_type);
     }
-    return found;
+    return false;
 }
 
 void Wayland_DataOfferDestroy(SDL_WaylandDataOffer *offer)

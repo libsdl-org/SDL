@@ -35,12 +35,6 @@
 typedef struct SDL_WaylandDataDevice SDL_WaylandDataDevice;
 typedef struct SDL_WaylandPrimarySelectionDevice SDL_WaylandPrimarySelectionDevice;
 
-typedef struct
-{
-    char *mime_type;
-    struct wl_list link;
-} SDL_MimeDataList;
-
 typedef struct SDL_WaylandUserdata
 {
     void *data;
@@ -68,7 +62,7 @@ typedef struct
 typedef struct
 {
     struct wl_data_offer *offer;
-    struct wl_list mimes;
+    struct wl_array mimes;
     SDL_WaylandDataDevice *data_device;
 
     // Callback data for queued receive.
@@ -79,7 +73,7 @@ typedef struct
 typedef struct
 {
     struct zwp_primary_selection_offer_v1 *offer;
-    struct wl_list mimes;
+    struct wl_array mimes;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
 } SDL_WaylandPrimarySelectionOffer;
 
