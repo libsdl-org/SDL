@@ -351,8 +351,8 @@ ssize_t Wayland_DataSourceSend(SDL_WaylandDataSource *source, const char *mime_t
     if (SDL_strcmp(mime_type, SDL_DATA_ORIGIN_MIME) == 0) {
         data = source->data_device->id_str;
         length = SDL_strlen(source->data_device->id_str);
-    } else if (source->callback) {
-        data = source->callback(source->userdata.data, mime_type, &length);
+    } else if (source->data_callback) {
+        data = source->data_callback(source->userdata.data, mime_type, &length);
     }
 
     return SendData(data, length, fd);
@@ -363,26 +363,28 @@ ssize_t Wayland_PrimarySelectionSourceSend(SDL_WaylandPrimarySelectionSource *so
     const void *data = NULL;
     size_t length = 0;
 
-    if (source->callback) {
-        data = source->callback(source->userdata.data, mime_type, &length);
+    if (source->data_callback) {
+        data = source->data_callback(source->userdata.data, mime_type, &length);
     }
 
     return SendData(data, length, fd);
 }
 
-void Wayland_DataSourceSetCallback(SDL_WaylandDataSource *source, SDL_ClipboardDataCallback callback, void *userdata, Uint32 sequence)
+void Wayland_DataSourceSetCallback(SDL_WaylandDataSource *source, SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata, Uint32 sequence)
 {
     if (source) {
-        source->callback = callback;
+        source->data_callback = data_callback;
+        source->cleanup_callback = cleanup_callback;
         source->userdata.sequence = sequence;
         source->userdata.data = userdata;
     }
 }
 
-void Wayland_PrimarySelectionSourceSetCallback(SDL_WaylandPrimarySelectionSource *source, SDL_ClipboardDataCallback callback, void *userdata)
+void Wayland_PrimarySelectionSourceSetCallback(SDL_WaylandPrimarySelectionSource *source, SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata)
 {
     if (source) {
-        source->callback = callback;
+        source->data_callback = data_callback;
+        source->cleanup_callback = cleanup_callback;
         source->userdata.sequence = 0;
         source->userdata.data = userdata;
     }
@@ -408,8 +410,8 @@ void *Wayland_DataSourceGetData(SDL_WaylandDataSource *source, const char *mime_
 
     if (!source) {
         SDL_SetError("Invalid data source");
-    } else if (source->callback) {
-        const void *internal_buffer = source->callback(source->userdata.data, mime_type, length);
+    } else if (source->data_callback) {
+        const void *internal_buffer = source->data_callback(source->userdata.data, mime_type, length);
         buffer = CloneDataBuffer(internal_buffer, length);
     }
 
@@ -423,8 +425,8 @@ void *Wayland_PrimarySelectionSourceGetData(SDL_WaylandPrimarySelectionSource *s
 
     if (!source) {
         SDL_SetError("Invalid primary selection source");
-    } else if (source->callback) {
-        const void *internal_buffer = source->callback(source->userdata.data, mime_type, length);
+    } else if (source->data_callback) {
+        const void *internal_buffer = source->data_callback(source->userdata.data, mime_type, length);
         buffer = CloneDataBuffer(internal_buffer, length);
     }
 
@@ -441,8 +443,8 @@ void Wayland_DataSourceDestroy(SDL_WaylandDataSource *source)
         wl_data_source_destroy(source->source);
         if (source->userdata.sequence) {
             SDL_CancelClipboardData(source->userdata.sequence);
-        } else {
-            SDL_free(source->userdata.data);
+        } else if (source->cleanup_callback) {
+            source->cleanup_callback(source->userdata.data);
         }
         SDL_free(source);
     }
@@ -456,8 +458,8 @@ void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSource *so
             primary_selection_device->selection_source = NULL;
         }
         zwp_primary_selection_source_v1_destroy(source->source);
-        if (source->userdata.sequence == 0) {
-            SDL_free(source->userdata.data);
+        if (source->cleanup_callback) {
+            source->cleanup_callback(source->userdata.data);
         }
         SDL_free(source);
     }

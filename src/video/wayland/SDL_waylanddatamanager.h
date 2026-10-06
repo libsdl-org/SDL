@@ -45,24 +45,25 @@ typedef struct
 
 typedef struct SDL_WaylandUserdata
 {
-    Uint32 sequence;
     void *data;
+    Uint32 sequence;
 } SDL_WaylandUserdata;
 
 typedef struct
 {
     struct wl_data_source *source;
     SDL_WaylandDataDevice *data_device;
-    SDL_ClipboardDataCallback callback;
+    SDL_ClipboardDataCallback data_callback;
+    SDL_ClipboardCleanupCallback cleanup_callback;
     SDL_WaylandUserdata userdata;
 } SDL_WaylandDataSource;
 
 typedef struct
 {
     struct zwp_primary_selection_source_v1 *source;
-    SDL_WaylandDataDevice *data_device;
     SDL_WaylandPrimarySelectionDevice *primary_selection_device;
-    SDL_ClipboardDataCallback callback;
+    SDL_ClipboardDataCallback data_callback;
+    SDL_ClipboardCleanupCallback cleanup_callback;
     SDL_WaylandUserdata userdata;
 } SDL_WaylandPrimarySelectionSource;
 
@@ -117,8 +118,8 @@ extern SDL_WaylandDataSource *Wayland_DataSourceCreate(SDL_VideoData *video_data
 extern SDL_WaylandPrimarySelectionSource *Wayland_PrimarySelectionSourceCreate(SDL_VideoData *video_data);
 extern ssize_t Wayland_DataSourceSend(SDL_WaylandDataSource *source, const char *mime_type, int fd);
 extern ssize_t Wayland_PrimarySelectionSourceSend(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, int fd);
-extern void Wayland_DataSourceSetCallback(SDL_WaylandDataSource *source, SDL_ClipboardDataCallback callback, void *userdata, Uint32 sequence);
-extern void Wayland_PrimarySelectionSourceSetCallback(SDL_WaylandPrimarySelectionSource *source, SDL_ClipboardDataCallback callback, void *userdata);
+extern void Wayland_DataSourceSetCallback(SDL_WaylandDataSource *source, SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata, Uint32 sequence);
+extern void Wayland_PrimarySelectionSourceSetCallback(SDL_WaylandPrimarySelectionSource *source, SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata);
 extern void *Wayland_DataSourceGetData(SDL_WaylandDataSource *source, const char *mime_type, size_t *length);
 extern void *Wayland_PrimarySelectionSourceGetData(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, size_t *length);
 extern void Wayland_DataSourceDestroy(SDL_WaylandDataSource *source);
