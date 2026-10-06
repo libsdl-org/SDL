@@ -1008,7 +1008,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety It is safe to call this function from any thread.
+ * \threadsafety Do not change the same SDL_AudioStream's bindings from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1029,7 +1029,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, S
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety It is safe to call this function from any thread.
+ * \threadsafety Do not change the same SDL_AudioStream's bindings from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1052,7 +1052,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SD
  *                NULL.
  * \param num_streams number streams listed in the `streams` array.
  *
- * \threadsafety It is safe to call this function from any thread.
+ * \threadsafety Do not change the same SDL_AudioStream's bindings from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -1068,7 +1068,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream * const 
  *
  * \param stream an audio stream to unbind from a device. Can be NULL.
  *
- * \threadsafety It is safe to call this function from any thread.
+ * \threadsafety Do not change the same SDL_AudioStream's bindings from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  *

@@ -360,6 +360,9 @@ struct SDL_AudioDevice
     // true if this physical device is currently opened by the backend.
     bool currently_opened;
 
+    // true if next audio device thread iteration should update stream formats.
+    bool stream_format_update;
+
     // Properties!
     SDL_PropertiesID props;
 
