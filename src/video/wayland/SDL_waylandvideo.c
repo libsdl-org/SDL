@@ -72,6 +72,7 @@
 #include "single-pixel-buffer-v1-client-protocol.h"
 #include "xdg-session-management-v1-client-protocol.h"
 #include "xdg-toplevel-tag-v1-client-protocol.h"
+#include "xdg-toplevel-drag-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
 #include <libdecor.h>
@@ -1528,6 +1529,8 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         d->xdg_session_manager = wl_registry_bind(d->registry, id, &xdg_session_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, xdg_toplevel_tag_manager_v1_interface.name) == 0) {
         d->xdg_toplevel_tag_manager = wl_registry_bind(d->registry, id, &xdg_toplevel_tag_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, xdg_toplevel_drag_manager_v1_interface.name) == 0) {
+        d->xdg_toplevel_drag_manager = wl_registry_bind(d->registry, id, &xdg_toplevel_drag_manager_v1_interface, 1);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, wl_fixes_interface.name) == 0) {

@@ -90,6 +90,7 @@ struct SDL_VideoData
     struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
     struct xdg_session_manager_v1 *xdg_session_manager;
     struct xdg_toplevel_tag_manager_v1 *xdg_toplevel_tag_manager;
+    struct xdg_toplevel_drag_manager_v1 *xdg_toplevel_drag_manager;
 
     struct xdg_session_v1 *xdg_session;
     struct xkb_context *xkb_context;

@@ -27,7 +27,7 @@
 
 #include "../video/SDL_sysvideo.h" // for SDL_Window internals.
 
-static bool SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, float x, float y)
+static bool SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *source, const char *data, SDL_Window *drag_window, float x, float y)
 {
     static bool app_is_dropping = false;
     static float last_drop_x = 0;
@@ -70,6 +70,9 @@ static bool SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const c
                 return false;
             }
         }
+        if (drag_window) {
+            event.drop.dropWindowID = drag_window ? drag_window->id : 0;
+        }
         event.drop.windowID = window ? window->id : 0;
 
         if (evtype == SDL_EVENT_DROP_POSITION) {
@@ -96,20 +99,25 @@ static bool SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const c
 
 bool SDL_SendDropFile(SDL_Window *window, const char *source, const char *file)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, source, file, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_FILE, source, file, NULL, 0, 0);
 }
 
-bool SDL_SendDropPosition(SDL_Window *window, float x, float y)
+bool SDL_SendDropPosition(SDL_Window *window, float x, float y, SDL_Window *drag_window)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, NULL, x, y);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_POSITION, NULL, NULL, drag_window, x, y);
 }
 
 bool SDL_SendDropText(SDL_Window *window, const char *text)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, NULL, text, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_TEXT, NULL, text, NULL, 0, 0);
+}
+
+bool SDL_SendDropWindow(SDL_Window *window, SDL_Window *drop_window)
+{
+    return SDL_SendDrop(window, SDL_EVENT_DROP_WINDOW, NULL, NULL, drop_window, 0, 0);
 }
 
 bool SDL_SendDropComplete(SDL_Window *window)
 {
-    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, NULL, 0, 0);
+    return SDL_SendDrop(window, SDL_EVENT_DROP_COMPLETE, NULL, NULL, NULL, 0, 0);
 }

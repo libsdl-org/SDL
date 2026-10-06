@@ -655,6 +655,8 @@ struct SDL_VideoData
     UINT WM_TASKBAR_BUTTON_CREATED;
     ITaskbarList3 *taskbar_list;
 #endif
+
+    SDL_Window *implicit_drag;
 };
 
 extern bool g_WindowsEnableMessageLoop;
