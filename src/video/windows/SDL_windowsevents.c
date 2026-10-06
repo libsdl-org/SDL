@@ -760,7 +760,21 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         return;
     }
 
-    bool down = !(rawkeyboard->Flags & RI_KEY_BREAK);
+    bool down;
+    switch (rawkeyboard->Message) {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+        down = true;
+        break;
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+        down = false;
+        break;
+    default:
+        down = !(rawkeyboard->Flags & RI_KEY_BREAK);
+        break;
+    }
+
     SDL_Scancode code;
     USHORT rawcode = rawkeyboard->MakeCode;
     if (data->pending_E1_key_sequence) {
