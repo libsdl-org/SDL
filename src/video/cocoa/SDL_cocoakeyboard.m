@@ -383,9 +383,51 @@ void Cocoa_SetTextInputRect(_THIS, const SDL_Rect *rect)
     [data.fieldEdit setInputRect:rect];
 }
 
+#define isBitSet(x,y) ((x & y) == y)
+
+static void HandleModifiersIfDifferent(_THIS, unsigned int modflags){
+
+    SDL_Keymod currentMod;
+
+    currentMod = SDL_GetModState();
+
+    if(isBitSet(currentMod, KMOD_LSHIFT) != isBitSet(modflags, NX_DEVICELSHIFTKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_LCTRL) != isBitSet(modflags, NX_DEVICELCTLKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_LALT) != isBitSet(modflags, NX_DEVICELALTKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_LGUI) != isBitSet(modflags, NX_DEVICELCMDKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_LGUI, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_RSHIFT) != isBitSet(modflags, NX_DEVICERSHIFTKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_RSHIFT, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_RCTRL) != isBitSet(modflags, NX_DEVICERCTLKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_RCTRL, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_RALT) != isBitSet(modflags, NX_DEVICERALTKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_RALT, modflags);
+    }
+
+    if(isBitSet(currentMod, KMOD_RGUI) != isBitSet(modflags, NX_DEVICERCMDKEYMASK)){
+        HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
+    }
+}
+
 void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     unsigned short scancode;
+    unsigned int modflags;
     SDL_Scancode code;
     SDL_VideoData *data = _this ? ((__bridge SDL_VideoData *) _this->driverdata) : nil;
     if (!data) {
@@ -409,12 +451,16 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         code = SDL_SCANCODE_UNKNOWN;
     }
 
+    modflags = (unsigned int)[event modifierFlags];
+
     switch ([event type]) {
     case NSEventTypeKeyDown:
         if (![event isARepeat]) {
             /* See if we need to rebuild the keyboard layout */
             UpdateKeymap(data, SDL_TRUE);
         }
+
+        HandleModifiersIfDifferent(_this, modflags);
 
         SDL_SendKeyboardKey(SDL_PRESSED, code);
 #ifdef DEBUG_SCANCODES
@@ -439,7 +485,6 @@ void Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         break;
     case NSEventTypeFlagsChanged: {
         // see if the new modifierFlags mean any existing keys should be pressed/released...
-        const unsigned int modflags = (unsigned int)[event modifierFlags];
         HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
         HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
         HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
