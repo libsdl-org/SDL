@@ -25,6 +25,13 @@
 
 #include "../SDL_main_callbacks.h"
 
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc)
+{
+    // We leave `result` alone, so if SDL_AppEvent didn't set something else, SDL_APP_CONTINUE will signify the app is terminating in an unexpected way during SDL_AppQuit.
+    const SDL_AppResult result = (SDL_AppResult) SDL_GetAtomicInt(apprc);
+    SDL_QuitMainCallbacks(result);  // we need to call this directly because we won't be returning from here.
+}
+
 void SDL_OpenHarmonyOnFrameCallback(void)   // src/core/openharmony calls this when our XComponent is ready for a new frame, and we call SDL_AppIterate here
 {
     if (SDL_HasMainCallbacks()) {  // ignore this if we're using SDL_main().

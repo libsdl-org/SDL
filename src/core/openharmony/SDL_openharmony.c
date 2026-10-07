@@ -936,6 +936,8 @@ static napi_value SDL_JS_UIAbility_OnDestroy(napi_env env, napi_callback_info in
     SDL_SendQuit();
     SDL_OnApplicationWillTerminate();
 
+    // !!! FIXME: clean this stuff up elsewhere (and maybe clean up more of it).
+    // !!! FIXME: alternately: Clean up _none_ of it because the process is about to go away anyhow.
     if (commonevent_subscriber) {
         OH_CommonEvent_UnSubscribe(commonevent_subscriber);
         OH_CommonEvent_DestroySubscriber(commonevent_subscriber);
