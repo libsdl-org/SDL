@@ -85,6 +85,7 @@ class SdlPlatform(Enum):
     OpenBSD = "openbsd"
     NGage = "ngage"
     DJGPP = "djgpp"
+    HarmonyOS = "harmonyos"
 
 
 class Msys2Platform(Enum):
@@ -116,10 +117,12 @@ class JobSpec:
     xcode: bool = False
     android_mk: bool = False
     android_gradle: bool = False
+    harmonyos_hvigor: bool = False
     lean: bool = False
     android_arch: Optional[str] = None
     android_abi: Optional[str] = None
     android_platform: Optional[int] = None
+    openharmony_platform: Optional[str] = None
     msys2_platform: Optional[Msys2Platform] = None
     intel: Optional[IntelCompiler] = None
     apple_framework: Optional[bool] = None
@@ -179,6 +182,7 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "djgpp": JobSpec(name="DOS (DJGPP)",                                    priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
+    "harmonyos-hvigor": JobSpec(name="HarmonyOS/OpenHarmony (hvigor)",      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.HarmonyOS,   artifact=None,                     no_cmake=True, harmonyos_hvigor=True ),
 }
 
 
@@ -241,6 +245,7 @@ class JobDetails:
     android_ndk: bool = False
     android_mk: bool = False
     android_gradle: bool = False
+    harmonyos_hvigor: bool = False
     minidump: bool = False
     intel: bool = False
     msys2_msystem: str = ""
@@ -316,6 +321,7 @@ class JobDetails:
             "android-apks": my_shlex_join(self.android_apks),
             "android-gradle": self.android_gradle,
             "android-mk": self.android_mk,
+            "harmonyos-hvigor": self.harmonyos_hvigor,
             "werror": self.werror,
             "sudo": self.sudo,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
@@ -912,6 +918,12 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.run_tests = False
             job.test_pkg_config = False
             job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
+        case SdlPlatform.HarmonyOS:
+            job.harmonyos_hvigor = spec.harmonyos_hvigor
+            job.run_tests = False
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
+            job.apt_packages = []
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
