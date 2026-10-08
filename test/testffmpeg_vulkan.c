@@ -976,12 +976,9 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
         if (drm_desc->nb_layers == 2) {
             switch (drm_desc->layers[1].format) {
             case DRM_FORMAT_GR88:
-                format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
-                break;
             case DRM_FORMAT_RG88:
                 format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV21);
+                SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_NV12);
                 break;
             default:
                 break;
@@ -992,6 +989,7 @@ static SDL_Texture *CreateVulkanVideoTexturePixFmtDRMPrime(VulkanVideoContext *c
         if (drm_desc->nb_layers == 2) {
             switch (drm_desc->layers[1].format) {
             case DRM_FORMAT_GR1616:
+            case DRM_FORMAT_RG1616:
                 format = VK_FORMAT_G10X6_B10X6R10X6_2PLANE_420_UNORM_3PACK16;
                 SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_FORMAT_NUMBER, SDL_PIXELFORMAT_P010);
                 break;
