@@ -954,7 +954,7 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
         imageCreateInfo.queueFamilyIndexCount = 0;
         imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-        if (VULKAN_VkFormatGetNumPlanes(format) > 0) {
+        if (VULKAN_VkFormatGetNumPlanes(format) > 1) {
             // We'll take image views with a different format
             imageCreateInfo.flags |= VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT;
         }
