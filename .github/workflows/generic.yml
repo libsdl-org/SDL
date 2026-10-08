@@ -110,6 +110,10 @@ jobs:
         uses: ./.github/actions/setup-djgpp-toolchain
         id: setup-djgpp-toolchain
         if: ${{ matrix.platform.platform == 'djgpp' }}
+      - name: 'Set up HarmonyOS toolchain'
+        uses: ./.github/actions/setup-harmonyos-toolchain
+        id: setup-harmonyos-toolchain
+        if: ${{ matrix.platform.platform == 'harmonyos' }}
       - name: 'Setup Intel oneAPI toolchain'
         id: intel
         if: ${{ matrix.platform.intel }}
@@ -395,6 +399,13 @@ jobs:
         run: |
           cd build-cmake/org.libsdl.testspriteminimal
           ./gradlew -i assembleRelease -PBUILD_WITH_CMAKE=1
+      - name: 'Build HarmonyOS app (hvigor)'
+        if: ${{ matrix.platform.harmonyos-hvigor }}
+        # the unmodified openharmony-project tries to compile "myapp.c" and expects the root of the SDL source tree to be located at "SDL" inside that project tree. Add symlinks to make this work out, then build with our helper script, which runs hvigorw.
+        run: |
+          ln -sf ../../../../.. openharmony-project/entry/src/main/cpp/SDL
+          ln -sf SDL/test/testdynaudioreopen.c openharmony-project/entry/src/main/cpp/myapp.c
+          ./build-scripts/harmonyos-tool.sh openharmony-project --clean --build
       - name: 'Build (xcode)'
         if: ${{ matrix.platform.xcode-sdk != '' }}
         run: |
