@@ -1071,6 +1071,9 @@ static VkResult VULKAN_AllocateImageView(VULKAN_RenderData *rendererData, VkImag
         aspectMask = (VkImageAspectFlags)(VK_IMAGE_ASPECT_PLANE_0_BIT << plane);
     }
 
+    // We're only going to use image views for sampling and rendering
+    imageUsage &= (VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+
     VkImageViewCreateInfo imageViewCreateInfo = { 0 };
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.image = image;
