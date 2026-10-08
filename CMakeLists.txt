@@ -1614,7 +1614,7 @@ if(ANDROID)
       get_property(sdl3_jar_location TARGET SDL3-jar PROPERTY JAR_FILE)
       set_property(TARGET SDL3__Jar PROPERTY JAR_FILE "${sdl3_jar_location}")
       set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
-      string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
+      string(REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
       add_custom_command(
         OUTPUT "${javasourcesjar}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${javasourcesjar}" ${sdl_relative_java_sources}
