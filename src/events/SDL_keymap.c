@@ -22,6 +22,7 @@
 
 #include "SDL_keymap_c.h"
 #include "SDL_keyboard_c.h"
+#include "../stdlib/SDL_sysstdlib.h"
 
 static SDL_Keycode SDL_GetDefaultKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate);
 static SDL_Scancode SDL_GetDefaultScancodeFromKey(SDL_Keycode key, SDL_Keymod *modstate);
@@ -1104,10 +1105,6 @@ SDL_Scancode SDL_GetScancodeFromName(const char *name)
 
 const char *SDL_GetKeyName(SDL_Keycode key)
 {
-    const bool uppercase = true;
-    char name[8];
-    char *end;
-
     if (key & SDLK_SCANCODE_MASK) {
         return SDL_GetScancodeName((SDL_Scancode)(key & ~SDLK_SCANCODE_MASK));
     }
@@ -1137,26 +1134,42 @@ const char *SDL_GetKeyName(SDL_Keycode key)
     case SDLK_DELETE:
         return SDL_GetScancodeName(SDL_SCANCODE_DELETE);
     default:
-        if (uppercase) {
-            // SDL_Keycode is defined as the unshifted key on the keyboard,
-            // but the key name is defined as the letter printed on that key,
-            // which is usually the shifted capital letter.
-            if (key > 0x7F || (key >= 'a' && key <= 'z')) {
+        {
+            /* SDL_Keycode is defined as the unshifted key on the keyboard,
+             * but the key name is defined as the letter printed on that key,
+             * which is usually the shifted capital letter.
+             *
+             * The Latin-1 Supplemental block contains symbols often found on ISO keyboards
+             * that should not be shifted:
+             *  - The first 64 characters (0x80-0xBF)
+             *  - The multiplication symbol (0xD7)
+             *  - The division symbol (0xF7)
+             *
+             * In other cases, the shifted keycode is case folded back to the lowercase form to
+             * ensure the shifted symbol is actually the uppercase variant.
+             */
+            if ((key >= 'a' && key <= 'z') || (key > 0xBF && key != 0xD7 && key != 0xF7)) {
                 SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
                 SDL_Keymod modstate;
-                SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
-                if (scancode != SDL_SCANCODE_UNKNOWN && !(modstate & SDL_KMOD_SHIFT)) {
-                    SDL_Keycode capital = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_SHIFT);
-                    if (capital > 0x7F || (capital >= 'A' && capital <= 'Z')) {
-                        key = capital;
+                const SDL_Scancode scancode = SDL_GetKeymapScancode(keymap, key, &modstate);
+                if (scancode != SDL_SCANCODE_UNKNOWN && !(modstate & (SDL_KMOD_SHIFT | SDL_KMOD_LEVEL5))) {
+                    const SDL_Keycode capital = SDL_GetKeymapKeycode(keymap, scancode, SDL_KMOD_SHIFT | (modstate & SDL_KMOD_MODE));
+
+                    if (key != capital) {
+                        // Make sure this is actually a capitalized version of the symbol.
+                        Uint32 folded[3];
+                        if (SDL_CaseFoldUnicode(capital, folded) == 1 && folded[0] == key) {
+                            key = capital;
+                        }
                     }
                 }
             }
-        }
 
-        end = SDL_UCS4ToUTF8(key, name);
-        *end = '\0';
-        return SDL_GetPersistentString(name);
+            char name[8];
+            char *end = SDL_UCS4ToUTF8(key, name);
+            *end = '\0';
+            return SDL_GetPersistentString(name);
+        }
     }
 }
 
