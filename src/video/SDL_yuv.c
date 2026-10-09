@@ -228,16 +228,14 @@ static bool GetYUVConversionType(SDL_Colorspace colorspace, int w, int h, int bi
                 } else {
                     *yuv_type = YCBCR_601_FULL;
                 }
-                return true;
             } else {
                 if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
                     *yuv_type = YCBCR_709_LIMITED;
                 } else {
                     *yuv_type = YCBCR_709_FULL;
                 }
-                return true;
             }
-            break;
+			return true;
         case 10:
         case 16:
             if (SDL_ISCOLORSPACE_FULL_RANGE(colorspace)) {
