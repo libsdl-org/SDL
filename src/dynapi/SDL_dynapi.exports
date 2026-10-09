@@ -1315,3 +1315,5 @@ _SDL_GetOpenHarmonySDKVersion
 _SDL_GetOpenHarmonyInternalStoragePath
 _SDL_RequestOpenHarmonyPermission
 _SDL_GetAudioDeviceProperties
+_SDL_SetSoftwareRendererWindow
+_SDL_SetSoftwareRendererSurface

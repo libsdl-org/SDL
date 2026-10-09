@@ -419,8 +419,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * create a software renderer, but they are intended to be used with an
  * SDL_Window as the final destination and not an SDL_Surface.
  *
- * \param surface the SDL_Surface structure representing the surface where
- *                rendering is done.
+ * \param surface the surface where rendering is done, may be NULL.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -429,8 +428,44 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DestroyRenderer
+ * \sa SDL_SetSoftwareRendererSurface
+ * \sa SDL_SetSoftwareRendererWindow
  */
 extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
+
+/**
+ * Associate a software renderer with a window.
+ *
+ * \param renderer the rendering context.
+ * \param window the window where rendering is displayed.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererWindow(SDL_Renderer *renderer, SDL_Window *window);
+
+/**
+ * Associate a software renderer with a surface.
+ *
+ * \param renderer the rendering context.
+ * \param surface the surface where rendering is done.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 /**
  * Get the renderer associated with a window.
