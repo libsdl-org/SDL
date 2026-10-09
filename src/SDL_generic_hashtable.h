@@ -22,48 +22,48 @@
 #include "SDL_internal.h"
 #include <SDL3/SDL_stdinc.h>
 
-#ifndef HASHTABLE_NAME
-#error HASHTABLE_NAME is not set
+#ifndef SDL_HASHTABLE_NAME
+#error SDL_HASHTABLE_NAME is not set
 #endif
 
-#ifndef HASHTABLE_KEY
-#error HASHTABLE_KEY is not set
+#ifndef SDL_HASHTABLE_KEY
+#error SDL_HASHTABLE_KEY is not set
 #endif
 
-#ifndef HASHTABLE_HASH_KEY
-#error HASHTABLE_HASH_KEY is not set
+#ifndef SDL_HASHTABLE_HASH_KEY
+#error SDL_HASHTABLE_HASH_KEY is not set
 #endif
 
-#ifndef HASHTABLE_KEYS_EQUAL
-#error HASHTABLE_KEYS_EQUAL is not set
+#ifndef SDL_HASHTABLE_KEYS_EQUAL
+#error SDL_HASHTABLE_KEYS_EQUAL is not set
 #endif
 
-#ifndef HASHTABLE_FREE_ITEM
-#ifdef HASHTABLE_VALUE
-#define HASHTABLE_FREE_ITEM(userdata, key, value) \
+#ifndef SDL_HASHTABLE_FREE_ITEM
+#ifdef SDL_HASHTABLE_VALUE
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) \
     (void)userdata; \
     (void)key; \
     (void)value;
 #else
-#define HASHTABLE_FREE_ITEM(userdata, key) \
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key) \
     (void)userdata; \
     (void)key;
 #endif
 #endif
 
-#ifndef HASHTABLE_MAX_LOAD
-#define HASHTABLE_MAX_LOAD 128
+#ifndef SDL_HASHTABLE_MAX_LOAD
+#define SDL_HASHTABLE_MAX_LOAD 128
 #endif
 
-#define CONCAT(a, b)        a##_##b
+#define CONCAT(a, b)        a##b
 #define EXPAND_CONCAT(a, b) CONCAT(a, b)
-#define ADD_PREFIX(name)    EXPAND_CONCAT(HASHTABLE_NAME, name)
+#define ADD_PREFIX(name)    EXPAND_CONCAT(SDL_HASHTABLE_NAME, name)
 
 typedef struct ADD_PREFIX(HashItem)
 {
-    HASHTABLE_KEY key;
-#ifdef HASHTABLE_VALUE
-    HASHTABLE_VALUE value;
+    SDL_HASHTABLE_KEY key;
+#ifdef SDL_HASHTABLE_VALUE
+    SDL_HASHTABLE_VALUE value;
 #endif
     Uint32 hash;
     Uint32 probe_len; // equals to 0 when item is not live
@@ -72,16 +72,16 @@ typedef struct ADD_PREFIX(HashItem)
 // Anything larger than this will cause integer overflow
 #define MAX_HASHTABLE_SIZE (((Uint32)1) << SDL_MostSignificantBitIndex32(0x80000000u / sizeof(ADD_PREFIX(HashItem))))
 
-typedef struct HASHTABLE_NAME
+typedef struct SDL_HASHTABLE_NAME
 {
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_RWLock *lock;
 #endif
     ADD_PREFIX(HashItem) *table;
     void *userdata;
     Uint32 hash_mask;
     Uint32 num_occupied_slots;
-} HASHTABLE_NAME;
+} SDL_HASHTABLE_NAME;
 
 static SDL_INLINE Uint32 ADD_PREFIX(internal_hash_buckets_from_estimate)(int estimated_capacity)
 {
@@ -98,17 +98,17 @@ static SDL_INLINE Uint32 ADD_PREFIX(internal_hash_buckets_from_estimate)(int est
     return SDL_min(buckets, MAX_HASHTABLE_SIZE);
 }
 
-static SDL_INLINE void ADD_PREFIX(Destroy)(HASHTABLE_NAME *table);
+static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table);
 
-static SDL_INLINE HASHTABLE_NAME *ADD_PREFIX(Create)(int estimated_capacity, void *userdata)
+static SDL_INLINE SDL_HASHTABLE_NAME *ADD_PREFIX(Create)(int estimated_capacity, void *userdata)
 {
     const Uint32 num_buckets = ADD_PREFIX(internal_hash_buckets_from_estimate)(estimated_capacity);
-    HASHTABLE_NAME *table = (HASHTABLE_NAME *)SDL_calloc(1, sizeof(HASHTABLE_NAME));
+    SDL_HASHTABLE_NAME *table = (SDL_HASHTABLE_NAME *)SDL_calloc(1, sizeof(SDL_HASHTABLE_NAME));
     if (!table) {
         return NULL;
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     table->lock = SDL_CreateRWLock();
     if (!table->lock) {
         ADD_PREFIX(Destroy)(table);
@@ -137,7 +137,7 @@ static SDL_INLINE Uint32 ADD_PREFIX(internal_get_probe_length)(Uint32 zero_idx, 
     return actual_idx - zero_idx + 1;
 }
 
-static SDL_INLINE ADD_PREFIX(HashItem) * ADD_PREFIX(internal_find_item)(const HASHTABLE_NAME *ht, HASHTABLE_KEY key, Uint32 hash)
+static SDL_INLINE ADD_PREFIX(HashItem) * ADD_PREFIX(internal_find_item)(const SDL_HASHTABLE_NAME *ht, SDL_HASHTABLE_KEY key, Uint32 hash)
 {
     Uint32 hash_mask = ht->hash_mask;
     ADD_PREFIX(HashItem) *table = ht->table;
@@ -152,7 +152,7 @@ static SDL_INLINE ADD_PREFIX(HashItem) * ADD_PREFIX(internal_find_item)(const HA
         }
 
         Uint32 item_hash = item->hash;
-        if (item_hash == hash && HASHTABLE_KEYS_EQUAL(ht->userdata, item->key, key)) {
+        if (item_hash == hash && SDL_HASHTABLE_KEYS_EQUAL(ht->userdata, item->key, key)) {
             return item;
         }
 
@@ -201,15 +201,15 @@ static SDL_INLINE void ADD_PREFIX(internal_insert_item)(ADD_PREFIX(HashItem) * i
     }
 }
 
-static SDL_INLINE void ADD_PREFIX(internal_delete_item)(HASHTABLE_NAME *ht, ADD_PREFIX(HashItem) * item)
+static SDL_INLINE void ADD_PREFIX(internal_delete_item)(SDL_HASHTABLE_NAME *ht, ADD_PREFIX(HashItem) * item)
 {
     const Uint32 hash_mask = ht->hash_mask;
     ADD_PREFIX(HashItem) *table = ht->table;
 
-#ifdef HASHTABLE_VALUE
-    HASHTABLE_FREE_ITEM(ht->userdata, item->key, item->value);
+#ifdef SDL_HASHTABLE_VALUE
+    SDL_HASHTABLE_FREE_ITEM(ht->userdata, item->key, item->value);
 #else
-    HASHTABLE_FREE_ITEM(ht->userdata, item->key);
+    SDL_HASHTABLE_FREE_ITEM(ht->userdata, item->key);
 #endif
 
     SDL_assert(ht->num_occupied_slots > 0);
@@ -232,7 +232,7 @@ static SDL_INLINE void ADD_PREFIX(internal_delete_item)(HASHTABLE_NAME *ht, ADD_
     }
 }
 
-static SDL_INLINE bool ADD_PREFIX(internal_resize)(HASHTABLE_NAME *ht, Uint32 new_size)
+static SDL_INLINE bool ADD_PREFIX(internal_resize)(SDL_HASHTABLE_NAME *ht, Uint32 new_size)
 {
     const Uint32 new_hash_mask = new_size - 1;
     ADD_PREFIX(HashItem) *new_table = (ADD_PREFIX(HashItem) *)SDL_calloc(new_size, sizeof(*new_table));
@@ -259,14 +259,14 @@ static SDL_INLINE bool ADD_PREFIX(internal_resize)(HASHTABLE_NAME *ht, Uint32 ne
     return true;
 }
 
-static SDL_INLINE bool ADD_PREFIX(internal_maybe_resize)(HASHTABLE_NAME *ht)
+static SDL_INLINE bool ADD_PREFIX(internal_maybe_resize)(SDL_HASHTABLE_NAME *ht)
 {
     const Uint32 capacity = ht->hash_mask + 1;
     if (capacity >= MAX_HASHTABLE_SIZE) {
         return false;
     }
 
-    const Uint32 resize_threshold = (Uint32)((HASHTABLE_MAX_LOAD * (Uint64)capacity) >> 8);
+    const Uint32 resize_threshold = (Uint32)((SDL_HASHTABLE_MAX_LOAD * (Uint64)capacity) >> 8);
     if (ht->num_occupied_slots > resize_threshold) {
         return ADD_PREFIX(internal_resize)(ht, capacity * 2);
     }
@@ -274,10 +274,10 @@ static SDL_INLINE bool ADD_PREFIX(internal_maybe_resize)(HASHTABLE_NAME *ht)
     return true;
 }
 
-#ifdef HASHTABLE_VALUE
-static SDL_INLINE bool ADD_PREFIX(Insert)(HASHTABLE_NAME *table, HASHTABLE_KEY key, HASHTABLE_VALUE value, bool replace)
+#ifdef SDL_HASHTABLE_VALUE
+static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value, bool replace)
 #else
-static SDL_INLINE bool ADD_PREFIX(Insert)(HASHTABLE_NAME *table, HASHTABLE_KEY key, bool replace)
+static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, bool replace)
 #endif
 {
     if (!table) {
@@ -286,11 +286,11 @@ static SDL_INLINE bool ADD_PREFIX(Insert)(HASHTABLE_NAME *table, HASHTABLE_KEY k
 
     bool result = false;
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForWriting(table->lock);
 #endif
 
-    const Uint32 hash = HASHTABLE_HASH_KEY(table->userdata, key);
+    const Uint32 hash = SDL_HASHTABLE_HASH_KEY(table->userdata, key);
     ADD_PREFIX(HashItem) *item = ADD_PREFIX(internal_find_item)(table, key, hash);
     bool do_insert = true;
 
@@ -307,7 +307,7 @@ static SDL_INLINE bool ADD_PREFIX(Insert)(HASHTABLE_NAME *table, HASHTABLE_KEY k
         ADD_PREFIX(HashItem)
         new_item;
         new_item.key = key;
-#ifdef HASHTABLE_VALUE
+#ifdef SDL_HASHTABLE_VALUE
         new_item.value = value;
 #endif
         new_item.hash = hash;
@@ -323,31 +323,31 @@ static SDL_INLINE bool ADD_PREFIX(Insert)(HASHTABLE_NAME *table, HASHTABLE_KEY k
         }
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return result;
 }
 
-#ifdef HASHTABLE_VALUE
-static SDL_INLINE bool ADD_PREFIX(Find)(const HASHTABLE_NAME *table, HASHTABLE_KEY key, HASHTABLE_VALUE *value)
+#ifdef SDL_HASHTABLE_VALUE
+static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE *value)
 #else
-static SDL_INLINE bool ADD_PREFIX(Find)(const HASHTABLE_NAME *table, HASHTABLE_KEY key)
+static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key)
 #endif
 {
     if (!table) {
         return SDL_InvalidParamError("table");
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForReading(table->lock);
 #endif
 
     bool result = false;
-    const Uint32 hash = HASHTABLE_HASH_KEY(table->userdata, key);
+    const Uint32 hash = SDL_HASHTABLE_HASH_KEY(table->userdata, key);
     ADD_PREFIX(HashItem) *i = ADD_PREFIX(internal_find_item)(table, key, hash);
     if (i) {
-#ifdef HASHTABLE_VALUE
+#ifdef SDL_HASHTABLE_VALUE
         if (value) {
             *value = i->value;
         }
@@ -355,43 +355,43 @@ static SDL_INLINE bool ADD_PREFIX(Find)(const HASHTABLE_NAME *table, HASHTABLE_K
         result = true;
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return result;
 }
 
-static SDL_INLINE bool ADD_PREFIX(Remove)(HASHTABLE_NAME *table, const HASHTABLE_KEY key)
+static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, const SDL_HASHTABLE_KEY key)
 {
     if (!table) {
         return SDL_InvalidParamError("table");
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForWriting(table->lock);
 #endif
 
     bool result = false;
-    const Uint32 hash = HASHTABLE_HASH_KEY(table->userdata, key);
+    const Uint32 hash = SDL_HASHTABLE_HASH_KEY(table->userdata, key);
     ADD_PREFIX(HashItem) *item = ADD_PREFIX(internal_find_item)(table, key, hash);
     if (item) {
         ADD_PREFIX(internal_delete_item)(table, item);
         result = true;
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return result;
 }
 
-#ifdef HASHTABLE_VALUE
-typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const HASHTABLE_NAME *table, HASHTABLE_KEY key, HASHTABLE_VALUE value);
+#ifdef SDL_HASHTABLE_VALUE
+typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value);
 #else
-typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const HASHTABLE_NAME *table, HASHTABLE_KEY key);
+typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key);
 #endif
 
-static SDL_INLINE bool ADD_PREFIX(Iterate)(const HASHTABLE_NAME *table, ADD_PREFIX(IterateCallback) callback, void *userdata)
+static SDL_INLINE bool ADD_PREFIX(Iterate)(const SDL_HASHTABLE_NAME *table, ADD_PREFIX(IterateCallback) callback, void *userdata)
 {
     if (!table) {
         return SDL_InvalidParamError("table");
@@ -400,7 +400,7 @@ static SDL_INLINE bool ADD_PREFIX(Iterate)(const HASHTABLE_NAME *table, ADD_PREF
         return SDL_InvalidParamError("callback");
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForReading(table->lock);
 #endif
     ADD_PREFIX(HashItem) *end = table->table + (table->hash_mask + 1);
@@ -408,7 +408,7 @@ static SDL_INLINE bool ADD_PREFIX(Iterate)(const HASHTABLE_NAME *table, ADD_PREF
 
     for (ADD_PREFIX(HashItem) *item = table->table; item < end; item++) {
         if (item->probe_len != 0) {
-#ifdef HASHTABLE_VALUE
+#ifdef SDL_HASHTABLE_VALUE
             bool res = callback(userdata, table, item->key, item->value);
 #else
             bool res = callback(userdata, table, item->key);
@@ -419,48 +419,48 @@ static SDL_INLINE bool ADD_PREFIX(Iterate)(const HASHTABLE_NAME *table, ADD_PREF
         }
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return true;
 }
 
-static SDL_INLINE bool ADD_PREFIX(Empty)(HASHTABLE_NAME *table)
+static SDL_INLINE bool ADD_PREFIX(Empty)(SDL_HASHTABLE_NAME *table)
 {
     if (!table) {
         return SDL_InvalidParamError("table");
     }
 
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForReading(table->lock);
 #endif
     const bool retval = (table->num_occupied_slots == 0);
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return retval;
 }
 
-static SDL_INLINE void ADD_PREFIX(internal_destroy_all)(HASHTABLE_NAME *table)
+static SDL_INLINE void ADD_PREFIX(internal_destroy_all)(SDL_HASHTABLE_NAME *table)
 {
     void *userdata = table->userdata;
     ADD_PREFIX(HashItem) *end = table->table + (table->hash_mask + 1);
     for (ADD_PREFIX(HashItem) *i = table->table; i < end; ++i) {
         if (i->probe_len != 0) {
             i->probe_len = 0;
-#ifdef HASHTABLE_VALUE
-            HASHTABLE_FREE_ITEM(userdata, i->key, i->value);
+#ifdef SDL_HASHTABLE_VALUE
+            SDL_HASHTABLE_FREE_ITEM(userdata, i->key, i->value);
 #else
-            HASHTABLE_FREE_ITEM(userdata, i->key);
+            SDL_HASHTABLE_FREE_ITEM(userdata, i->key);
 #endif
         }
     }
 }
 
-static SDL_INLINE void ADD_PREFIX(Clear)(HASHTABLE_NAME *table)
+static SDL_INLINE void ADD_PREFIX(Clear)(SDL_HASHTABLE_NAME *table)
 {
     if (table) {
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
         SDL_LockRWLockForWriting(table->lock);
 #endif
         if(table->table) {
@@ -468,13 +468,13 @@ static SDL_INLINE void ADD_PREFIX(Clear)(HASHTABLE_NAME *table)
         }
         SDL_memset(table->table, 0, sizeof(*table->table) * (table->hash_mask + 1));
         table->num_occupied_slots = 0;
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
         SDL_UnlockRWLock(table->lock);
 #endif
     }
 }
 
-static SDL_INLINE void ADD_PREFIX(Destroy)(HASHTABLE_NAME *table)
+static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
 {
     if (table) {
         if(table->table) {
@@ -482,21 +482,21 @@ static SDL_INLINE void ADD_PREFIX(Destroy)(HASHTABLE_NAME *table)
             SDL_free(table->table);
             table->table = NULL;
         }
-#ifdef HASHTABLE_THREAD_SAFE
+#ifdef SDL_HASHTABLE_THREAD_SAFE
         SDL_DestroyRWLock(table->lock);
 #endif
         SDL_free(table);
     }
 }
 
-#undef HASHTABLE_NAME
-#undef HASHTABLE_KEY
-#undef HASHTABLE_VALUE
-#undef HASHTABLE_HASH_KEY
-#undef HASHTABLE_KEYS_EQUAL
-#undef HASHTABLE_FREE_ITEM
-#undef HASHTABLE_THREAD_SAFE
-#undef HASHTABLE_MAX_LOAD
+#undef SDL_HASHTABLE_NAME
+#undef SDL_HASHTABLE_KEY
+#undef SDL_HASHTABLE_VALUE
+#undef SDL_HASHTABLE_HASH_KEY
+#undef SDL_HASHTABLE_KEYS_EQUAL
+#undef SDL_HASHTABLE_FREE_ITEM
+#undef SDL_HASHTABLE_THREAD_SAFE
+#undef SDL_HASHTABLE_MAX_LOAD
 
 #undef CONCAT
 #undef EXPAND_CONCAT
