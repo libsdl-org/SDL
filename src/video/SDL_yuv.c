@@ -192,7 +192,7 @@ bool SDL_CalculateYUVSize(SDL_PixelFormat format, int w, int h, size_t *size, si
 
 #ifdef SDL_HAVE_YUV
 
-static bool GetYUVConversionType(SDL_Colorspace colorspace, YCbCrType *yuv_type)
+static bool GetYUVConversionType(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel, YCbCrType *yuv_type)
 {
     if (SDL_ISCOLORSPACE_MATRIX_BT601(colorspace)) {
         if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
@@ -216,6 +216,37 @@ static bool GetYUVConversionType(SDL_Colorspace colorspace, YCbCrType *yuv_type)
         if (SDL_ISCOLORSPACE_FULL_RANGE(colorspace)) {
             *yuv_type = YCBCR_2020_NCL_FULL;
             return true;
+        }
+    }
+
+    if (SDL_COLORSPACEMATRIX(colorspace) == SDL_MATRIX_COEFFICIENTS_UNSPECIFIED) {
+        switch (bits_per_pixel) {
+        case 8:
+            if (h <= YUV_SD_THRESHOLD) {
+                if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                    *yuv_type = YCBCR_601_LIMITED;
+                } else {
+                    *yuv_type = YCBCR_601_FULL;
+                }
+                return true;
+            } else {
+                if (SDL_ISCOLORSPACE_LIMITED_RANGE(colorspace)) {
+                    *yuv_type = YCBCR_709_LIMITED;
+                } else {
+                    *yuv_type = YCBCR_709_FULL;
+                }
+                return true;
+            }
+            break;
+        case 10:
+        case 16:
+            if (SDL_ISCOLORSPACE_FULL_RANGE(colorspace)) {
+                *yuv_type = YCBCR_2020_NCL_FULL;
+                return true;
+            }
+            break;
+        default:
+            break;
         }
     }
 
@@ -683,7 +714,7 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
         return false;
     }
 
-    if (!GetYUVConversionType(src_colorspace, &yuv_type)) {
+    if (!GetYUVConversionType(src_colorspace, width, height, 8, &yuv_type)) {
         return false;
     }
 
@@ -1254,7 +1285,7 @@ bool SDL_ConvertPixels_RGB_to_YUV(int width, int height,
 {
     YCbCrType yuv_type = YCBCR_601_LIMITED;
 
-    if (!GetYUVConversionType(dst_colorspace, &yuv_type)) {
+    if (!GetYUVConversionType(dst_colorspace, width, height, 8, &yuv_type)) {
         return false;
     }
 
