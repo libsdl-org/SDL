@@ -1871,14 +1871,9 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     texture_colorspace = surface_colorspace;
 
     if (surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
-        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-        if (SDL_ISPIXELFORMAT_FLOAT(format)) {
-            texture_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-        } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
-            texture_colorspace = SDL_COLORSPACE_HDR10;
-        } else {
-            texture_colorspace = SDL_COLORSPACE_SRGB;
-        }
+        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ ||
+        (SDL_ISPIXELFORMAT_FOURCC(surface->format) && !SDL_ISPIXELFORMAT_FOURCC(format))) {
+        texture_colorspace = SDL_GetDefaultColorspaceForFormat(format);
     }
 
     props = SDL_CreateProperties();
