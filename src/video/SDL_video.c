@@ -4527,6 +4527,8 @@ bool SDL_AddWindowRenderer(SDL_Window *window, SDL_Renderer *renderer)
 
     window->renderers = renderers;
     window->renderers[window->num_renderers++] = renderer;
+
+    SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
     return true;
 }
 
@@ -4540,6 +4542,11 @@ void SDL_RemoveWindowRenderer(SDL_Window *window, SDL_Renderer *renderer)
             --window->num_renderers;
             break;
         }
+    }
+
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    if (SDL_GetPointerProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL) == renderer) {
+        SDL_ClearProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER);
     }
 }
 
