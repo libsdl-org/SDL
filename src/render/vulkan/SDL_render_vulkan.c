@@ -2664,8 +2664,6 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         texture->format == SDL_PIXELFORMAT_NV12 ||
         texture->format == SDL_PIXELFORMAT_NV21 ||
         texture->format == SDL_PIXELFORMAT_P010) {
-        const uint32_t YUV_SD_THRESHOLD = 576;
-
         // Check that we have VK_KHR_sampler_ycbcr_conversion support
         if (!rendererData->supportsKHRSamplerYCbCrConversion) {
             return SDL_SetError("YUV textures require a Vulkan device that supports VK_KHR_sampler_ycbcr_conversion");
