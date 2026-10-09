@@ -713,9 +713,7 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     SDL_strlcpy(displaydata->connector_name, display_name, sizeof(displaydata->connector_name));
 
     bool gamescope = false;
-    // The gamescope SDR white level is actually dynamic based on display settings and ambient light
-    // We don't have access to that info, so we'll disable this for now.
-    MonitorInfo *info = NULL; //GetMonitorInfo(dpy, screen, outputid, &gamescope);
+    MonitorInfo *info = GetMonitorInfo(dpy, screen, outputid, &gamescope);
 
     SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
     SetXRandRDisplayName(info, display_name, display_name_size, display_mm_width, display_mm_height);
@@ -730,6 +728,11 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
 
     if (info) {
         float SDR_white_level;
+
+        // The gamescope SDR white level is actually dynamic based on display settings and ambient light
+        // We don't have access to that info, so we'll disable this for now.
+        gamescope = false;
+
         if (gamescope) {
             SDR_white_level = GetGamescopeSDRWhiteLevel(dpy, screen);
         } else {
