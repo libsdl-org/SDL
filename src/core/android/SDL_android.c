@@ -3111,7 +3111,7 @@ bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mo
 
     fileName = GetAssetPath(fileName);
 
-    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
+    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_RANDOM);
     if (!asset) {
         return SDL_SetError("Couldn't open asset '%s'", fileName);
     }
