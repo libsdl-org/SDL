@@ -852,7 +852,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                             // In absolute mode, we get touch events alongside the mouse clicks, and handle those elsewhere. 
                             // In relative mode, we ONLY get the ACTION_BUTTON_PRESS/ACTION_BUTTON_RELEASE, so if we don't consume them they
                             // will be turned into key events for Enter or Select or Back or something similar.
-                            SDLActivity.onNativeMouse(buttonState, action, x, y, checkRelativeEvent(event));
+                            SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
                             consumed = true;                            
                         }
                         break;
