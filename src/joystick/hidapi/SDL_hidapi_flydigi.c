@@ -57,6 +57,12 @@ enum
 #define SENSOR_INTERVAL_VADER5_PRO_RATE_HZ        500
 #define SENSOR_INTERVAL_VADER5_PRO_NS            (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER5_PRO_RATE_HZ)
 
+#define SENSOR_INTERVAL_DIREWOLF4_DONGLE_RATE_HZ 1000
+#define SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_DIREWOLF4_DONGLE_RATE_HZ)
+
+#define SENSOR_INTERVAL_DIREWOLF4_WIRED_RATE_HZ  500
+#define SENSOR_INTERVAL_DIREWOLF4_WIRED_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_DIREWOLF4_WIRED_RATE_HZ)
+
 /* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 295hz */
 #define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     295
 #define SENSOR_INTERVAL_APEX5_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
@@ -97,6 +103,9 @@ typedef struct
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
     float accelScale;
     float gyroScale;
+    float gyroYawScale;
+    float gyroRollScale;
+    Sint8 gyroSign[3];
     Uint64 next_heartbeat;
     Uint64 last_packet;
     Uint8 last_state[USB_PACKET_LENGTH];
@@ -178,6 +187,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         break;
     case 130:
         controller_type = SDL_FLYDIGI_VADER5_PRO;
+        break;
+    case 132:
+        controller_type = SDL_FLYDIGI_DIREWOLF_4;
         break;
     case 133:
     case 134:
@@ -266,6 +278,12 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale = DEG2RAD(72000.0f);
+        ctx->gyroYawScale = DEG2RAD(72000.0f);
+        ctx->gyroRollScale = DEG2RAD(1200.0f);
+        ctx->gyroSign[0] = -1;
+        ctx->gyroSign[1] = -1;
+        ctx->gyroSign[2] = -1;
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER4_PRO:
@@ -273,6 +291,12 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale = DEG2RAD(72000.0f);
+        ctx->gyroYawScale = DEG2RAD(72000.0f);
+        ctx->gyroRollScale = DEG2RAD(1200.0f);
+        ctx->gyroSign[0] = -1;
+        ctx->gyroSign[1] = -1;
+        ctx->gyroSign[2] = -1;
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER5_PRO:
@@ -284,6 +308,19 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
         ctx->gyroScale = DEG2RAD(2000.0f);
         ctx->sensor_timestamp_step_ns = SENSOR_INTERVAL_VADER5_PRO_NS;
+        break;
+    case SDL_FLYDIGI_DIREWOLF_4:
+        HIDAPI_SetDeviceName(device, "Flydigi Direwolf 4");
+        ctx->has_cz = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale = DEG2RAD(134000.0f);
+        ctx->gyroYawScale = DEG2RAD(131000.0f);
+        ctx->gyroRollScale = DEG2RAD(2030.0f);
+        ctx->gyroSign[0] = -1;
+        ctx->gyroSign[1] = -1;
+        ctx->gyroSign[2] = -1;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS : SENSOR_INTERVAL_DIREWOLF4_WIRED_NS;
         break;
     default:
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Unknown FlyDigi controller with ID %d, name '%s'", ctx->deviceID, device->name);
@@ -851,13 +888,16 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
 
         // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
         // As result, roll has a different scaling factor than pitch and yaw.
-        // These values were estimated using the testcontroller tool in lieux of hard data sheet references.
-        const float flPitchAndYawScale = DEG2RAD(72000.0f);
-        const float flRollScale = DEG2RAD(1200.0f);
+        // The scales are per-model and even per-axis, so they are set per device
+        // in the identity switch (the Vader 3/4 Pro carry the 72000/1200
+        // estimates. RemapVal maps the full int16 range to +/- the scale.
+        const float flPitchScale = ctx->gyroScale;
+        const float flYawScale = ctx->gyroYawScale;
+        const float flRollScale = ctx->gyroRollScale;
 
-        values[0] = HIDAPI_RemapVal(-1.0f * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[1] = HIDAPI_RemapVal(-1.0f * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flPitchAndYawScale, flPitchAndYawScale);
-        values[2] = HIDAPI_RemapVal(-1.0f * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+        values[0] = HIDAPI_RemapVal((float)ctx->gyroSign[0] * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchScale, flPitchScale);
+        values[1] = HIDAPI_RemapVal((float)ctx->gyroSign[1] * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flYawScale, flYawScale);
+        values[2] = HIDAPI_RemapVal((float)ctx->gyroSign[2] * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
