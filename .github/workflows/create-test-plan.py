@@ -93,6 +93,7 @@ class Msys2Platform(Enum):
     Mingw64 = "mingw64"
     Clang64 = "clang64"
     Ucrt64 = "ucrt64"
+    Msys = "msys"
 
 
 class IntelCompiler(Enum):
@@ -140,7 +141,8 @@ JOB_SPECS = {
     "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
     "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
-    "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,        artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
+    "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
+    "msys2-msys": JobSpec(name="Windows (msys2, msys)",                     priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-msys",               msys2_platform=Msys2Platform.Msys, ),
     "cygwin": JobSpec(name="Cygwin",                                        priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Cygwin,      artifact="SDL-cygwin", ),
     "msvc-x64": JobSpec(name="Windows (MSVC, x64)",                         priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x64",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC/SDL.sln", ),
     "msvc-x86": JobSpec(name="Windows (MSVC, x86)",                         priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x86",             msvc_arch=MsvcArch.X86,   msvc_project="VisualC/SDL.sln", ),
@@ -194,6 +196,7 @@ class StaticLibType(Enum):
 class SharedLibType(Enum):
     WIN32 = "SDL3.dll"
     CYGDLL = "cygSDL3.dll"
+    MSYSDLL = "msys-SDL3.dll"
     SO_0 = "libSDL3.so.0"
     SO = "libSDL3.so"
     DYLIB = "libSDL3.0.dylib"
@@ -814,19 +817,32 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 "mingw64": "mingw-w64-x86_64",
                 "clang64": "mingw-w64-clang-x86_64",
                 "ucrt64": "mingw-w64-ucrt-x86_64",
+                "msys": "",
             }[spec.msys2_platform.value]
-            job.msys2_packages.extend([
-                f"{msys2_env}-cc",
-                f"{msys2_env}-cmake",
-                f"{msys2_env}-ninja",
-                f"{msys2_env}-pkg-config",
-            ])
-            if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
-                job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
-                job.msys2_packages.append(f"{msys2_env}-perl")
-                job.msys2_packages.append(f"{msys2_env}-ffmpeg")
-            if job.ccache:
-                job.msys2_packages.append(f"{msys2_env}-ccache")
+            if spec.msys2_platform in (Msys2Platform.Msys, ):
+                job.msys2_packages.append("gcc")
+                job.msys2_packages.append("cmake")
+                job.msys2_packages.append("ninja")
+                job.msys2_packages.append("pkg-config")
+                job.msys2_packages.append("perl")
+                job.msys2_packages.append("gdb") # FIXME: remove when testprocess passes
+                job.shared_lib = SharedLibType.MSYSDLL
+                job.static_lib = StaticLibType.A
+                job.cmake_arguments.append("-DSDLTEST_GDB=ON") # FIXME: remove when testprocess passes
+                job.cmake_arguments.append("-DSDL_TESTS_TIMEOUT_MULTIPLIER=2")
+                if job.ccache:
+                    job.msys2_packages.append("ccache")
+            else:
+                job.msys2_packages.append(f"{msys2_env}-cc")
+                job.msys2_packages.append(f"{msys2_env}-cmake")
+                job.msys2_packages.append(f"{msys2_env}-ninja")
+                job.msys2_packages.append(f"{msys2_env}-pkg-config")
+                if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
+                    job.msys2_packages.append(f"{msys2_env}-ffmpeg")
+                    job.msys2_packages.append(f"{msys2_env}-perl")
+                    job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
+                if job.ccache:
+                    job.msys2_packages.append(f"{msys2_env}-ccache")
         case SdlPlatform.Cygwin:
             job.ccache = False # Missing evict-older-than option
             job.clang_tidy = False # error finding files [clang-diagnostic-error] cause might be space in command path
