@@ -21,7 +21,7 @@
 #include "SDL_internal.h"
 #include "SDL3/SDL_revision.h"
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_VIDEO_DRIVER_X11)
 #include "core/windows/SDL_windows.h"
 #else
 #include <unistd.h> // _exit(), etc.
@@ -69,7 +69,7 @@
 
 // Initialization/Cleanup routines
 #include "timer/SDL_timer_c.h"
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_VIDEO_DRIVER_X11)
 extern bool SDL_HelperWindowCreate(void);
 extern void SDL_HelperWindowDestroy(void);
 #endif
@@ -377,7 +377,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
     Cocoa_RegisterNotificationDelegate();
 #endif
 
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_VIDEO_DRIVER_X11)
     if (flags & (SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK)) {
         if (!SDL_HelperWindowCreate()) {
             goto quit_and_error;
@@ -724,7 +724,7 @@ void SDL_Quit(void)
     SDL_bInMainQuit = true;
 
     // Quit all subsystems
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_VIDEO_DRIVER_X11)
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_ALL_SUBSYSTEM_FLAGS);
