@@ -836,7 +836,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                        SDLActivity.onNativeMouse(0, action, x, y, false);
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, false);
                         consumed = true;
                         break;
 
@@ -852,10 +852,9 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                             // In absolute mode, we get touch events alongside the mouse clicks, and handle those elsewhere. 
                             // In relative mode, we ONLY get the ACTION_BUTTON_PRESS/ACTION_BUTTON_RELEASE, so if we don't consume them they
                             // will be turned into key events for Enter or Select or Back or something similar.
-                            SDLActivity.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
+                            SDLActivity.onNativeMouse(buttonState, action, x, y, checkRelativeEvent(event));
                             consumed = true;                            
                         }
-
                         break;
 
                     default:
