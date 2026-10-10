@@ -301,50 +301,42 @@ done:
 bool SDL_SYS_CreateDirectory(const char *path)
 {
     int rc;
+    const char *mkdir_path = path;
+    char *apath = NULL;
 
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
+    if (*path != '/') {
 #ifdef SDL_PLATFORM_ANDROID
-    if (*path == '/') {
-        rc = mkdir(path, 0770);
-    } else {
-        char *apath = NULL;
         SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
-        if (!apath) {
-            return false;
-        }
-        rc = mkdir(apath, 0770);
-        SDL_free(apath);
-    }
 #elif defined(SDL_PLATFORM_IOS)
-    if (*path == '/') {
-        rc = mkdir(path, 0770);
-    } else {
         char *base = SDL_GetPrefPath("", "");
         if (!base) {
             return false;
         }
 
-        char *apath = NULL;
         SDL_asprintf(&apath, "%s%s", base, path);
         SDL_free(base);
+#endif
         if (!apath) {
             return false;
         }
-        rc = mkdir(apath, 0770);
-        SDL_free(apath);
+        mkdir_path = apath;
     }
-#else
-    rc = mkdir(path, 0770);
 #endif
+    rc = mkdir(mkdir_path, 0770);
     if (rc < 0) {
         const int origerrno = errno;
         if (origerrno == EEXIST) {
             struct stat statbuf;
-            if ((stat(path, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
+            if ((stat(mkdir_path, &statbuf) == 0) && (S_ISDIR(statbuf.st_mode))) {
+                SDL_free(apath);
                 return true;  // it already exists and it's a directory, consider it success.
             }
         }
+        SDL_free(apath);
         return SDL_SetError("Can't create directory: %s", strerror(origerrno));
     }
+    SDL_free(apath);
     return true;
 }
 
