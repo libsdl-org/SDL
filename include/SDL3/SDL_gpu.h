@@ -2616,6 +2616,10 @@ extern SDL_DECLSPEC SDL_GPUShaderFormat SDLCALL SDL_GetGPUShaderFormats(SDL_GPUD
  * Driver Branch: promo490_3_Google
  * ```
  *
+ * `SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER`: Contains the maximum number of
+ * views that can be used with `SDL_BeginMultiViewGPURenderPass`. If multiview
+ * rendering is not available, this will be set to 1.
+ *
  * \param device a GPU context to query.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
@@ -2630,6 +2634,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
 #define SDL_PROP_GPU_DEVICE_DRIVER_NAME_STRING        "SDL.gpu.device.driver_name"
 #define SDL_PROP_GPU_DEVICE_DRIVER_VERSION_STRING     "SDL.gpu.device.driver_version"
 #define SDL_PROP_GPU_DEVICE_DRIVER_INFO_STRING        "SDL.gpu.device.driver_info"
+#define SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER     "SDL.gpu.device.max_view_count"
 
 
 /* State Creation */
@@ -3631,6 +3636,42 @@ extern SDL_DECLSPEC SDL_GPURenderPass * SDLCALL SDL_BeginGPURenderPass(
     const SDL_GPUColorTargetInfo *color_target_infos,
     Uint32 num_color_targets,
     const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info);
+
+/**
+ * Begins a multi-view render pass on a command buffer.
+ *
+ * Multi-view rendering allows you to render to multiple slices of
+ * an array texture without duplicated draw calls, such as for single-pass stereo,
+ * reflection cubemaps, or split-screen. The color and depth-stencil targets must
+ * point to array textures.
+ *
+ * layer_or_depth_plane and resolve_layer must be zero.
+ *
+ * The view index can be accessed in vertex shaders with SV_ViewID in HLSL,
+ * ViewIndex in SPIR-V, and [[amplification_id]] in MSL.
+ *
+ * \param command_buffer a command buffer.
+ * \param color_target_infos an array of texture subresources with
+ *                           corresponding clear values and load/store ops.
+ * \param num_color_targets the number of color targets in the
+ *                          color_target_infos array.
+ * \param depth_stencil_target_info a texture subresource with corresponding
+ *                                  clear value and load/store ops, may be
+ *                                  NULL.
+ * \param view_count the number of views to render.
+ * \returns a render pass handle.
+ *
+ * \since This function is available since SDL 3.x.0.
+ *
+ * \sa SDL_BeginGPURenderPass
+ * \sa SDL_EndGPURenderPass
+ */
+extern SDL_DECLSPEC SDL_GPURenderPass * SDLCALL SDL_BeginMultiViewGPURenderPass(
+    SDL_GPUCommandBuffer *command_buffer,
+    const SDL_GPUColorTargetInfo *color_target_infos,
+    Uint32 num_color_targets,
+    const SDL_GPUDepthStencilTargetInfo *depth_stencil_target_info,
+    Uint32 view_count);
 
 /**
  * Binds a graphics pipeline on a render pass to be used in rendering.

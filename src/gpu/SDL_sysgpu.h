@@ -40,6 +40,7 @@
 #define MAX_COLOR_TARGET_BINDINGS      8
 #define MAX_PRESENT_COUNT              16
 #define MAX_FRAMES_IN_FLIGHT           3
+#define MAX_VIEW_COUNT                 6
 
 // Common Structs
 
@@ -789,7 +790,8 @@ struct SDL_GPUDevice
         SDL_GPUCommandBuffer *commandBuffer,
         const SDL_GPUColorTargetInfo *colorTargetInfos,
         Uint32 numColorTargets,
-        const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo);
+        const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+        Uint32 viewMask);
 
     void (*BindGraphicsPipeline)(
         SDL_GPUCommandBuffer *commandBuffer,
