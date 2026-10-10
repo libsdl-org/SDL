@@ -19,24 +19,59 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_main_callbacks.h"
 
-// Add your platform here if you define a custom SDL_RunApp() implementation
-#if !defined(SDL_PLATFORM_WIN32) && \
-    !defined(SDL_PLATFORM_GDK) && \
-    !defined(SDL_PLATFORM_IOS) && \
-    !defined(SDL_PLATFORM_TVOS) && \
-    !defined(SDL_PLATFORM_EMSCRIPTEN) && \
-    !defined(SDL_PLATFORM_PSP) && \
-    !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_PS3) && \
-    !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+#ifdef SDL_THREAD_PS3
 
-int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
+// An implementation of mutexes using semaphores
+
+#include <sys/mutex.h>
+
+struct SDL_Mutex
 {
-    (void)reserved;
-    return SDL_CallMainFunction(argc, argv, mainFunction);
+    sys_mutex_t id;
+};
+
+SDL_Mutex *SDL_CreateMutex(void)
+{
+
+    SDL_Mutex *mutex = (SDL_Mutex *)SDL_malloc(sizeof(*mutex));
+    if (!mutex)
+        return NULL;
+
+    sys_mutex_attr_t attr;
+    sysMutexAttrInitialize(attr);
+    attr.attr_recursive = SYS_MUTEX_ATTR_RECURSIVE;
+
+    int ret = sysMutexCreate(&mutex->id, &attr);
+    if (ret != 0) {
+        SDL_free(mutex);
+        return NULL;
+    }
+
+    return mutex;
 }
 
-#endif
+void SDL_DestroyMutex(SDL_Mutex *mutex)
+{
+    if (mutex) {
+        sysMutexDestroy(mutex->id);
+        SDL_free(mutex);
+    }
+}
+
+void SDL_LockMutex(SDL_Mutex *mutex)
+{
+    sysMutexLock(mutex->id, 0);
+}
+
+void SDL_UnlockMutex(SDL_Mutex *mutex)
+{
+    sysMutexUnlock(mutex->id);
+}
+
+bool SDL_TryLockMutex(SDL_Mutex *mutex)
+{
+    return sysMutexTryLock(mutex->id) == 0;
+}
+
+#endif // SDL_THREAD_PS3
