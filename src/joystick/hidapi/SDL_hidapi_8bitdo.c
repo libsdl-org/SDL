@@ -162,6 +162,7 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_PRO_3:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
         case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS:
+        case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G:
         case USB_PRODUCT_8BITDO_ULTIMATE3:
             return true;
         default:
@@ -198,8 +199,9 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         }
-    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
-        // The Ultimate 2C Wireless controller has an 11 byte report with no sensor or rumble support
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
+               device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G) {
+        // The Ultimate 2C Wireless controller has no sensor or rumble support
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         // Supported by default
         ctx->sensors_supported = true;
@@ -354,7 +356,8 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
 		// This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
-    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
+               device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS;
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE3_BUTTONS;
@@ -729,6 +732,69 @@ static void HIDAPI_Driver8BitDo_HandleStatePacket(SDL_Joystick *joystick, SDL_Dr
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
+static void HIDAPI_Driver8BitDo_Handle2CStatePacket(SDL_Joystick *joystick, SDL_Driver8BitDo_Context *ctx, Uint8 *data, int size)
+{
+    Sint16 axis;
+    Uint64 timestamp = SDL_GetTicksNS();
+
+    if (ctx->last_state[3] != data[3]) {
+        Uint8 hat;
+        switch (data[3]) {
+        case 0: hat = SDL_HAT_UP; break;
+        case 1: hat = SDL_HAT_RIGHTUP; break;
+        case 2: hat = SDL_HAT_RIGHT; break;
+        case 3: hat = SDL_HAT_RIGHTDOWN; break;
+        case 4: hat = SDL_HAT_DOWN; break;
+        case 5: hat = SDL_HAT_LEFTDOWN; break;
+        case 6: hat = SDL_HAT_LEFT; break;
+        case 7: hat = SDL_HAT_LEFTUP; break;
+        default: hat = SDL_HAT_CENTERED; break;
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
+
+    if (ctx->last_state[1] != data[1]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH,          ((data[1] & 0x01) != 0)); // A
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST,           ((data[1] & 0x02) != 0)); // B
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_L4,      ((data[1] & 0x04) != 0)); // L4
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST,           ((data[1] & 0x08) != 0)); // X
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH,          ((data[1] & 0x10) != 0)); // Y
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_8BITDO_R4,      ((data[1] & 0x20) != 0)); // R4
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER,  ((data[1] & 0x40) != 0)); // LB
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[1] & 0x80) != 0)); // RB
+    }
+
+    if (ctx->last_state[2] != data[2]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK,        ((data[2] & 0x04) != 0)); // Minus
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START,       ((data[2] & 0x08) != 0)); // Plus
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE,       ((data[2] & 0x10) != 0)); // Power / Home
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK,  ((data[2] & 0x20) != 0)); // L3
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[2] & 0x40) != 0)); // R3
+    }
+
+#define READ_STICK_AXIS(offset)     (data[offset] == 0x7f ? 0 : (Sint16)HIDAPI_RemapVal((float)((int)data[offset] - 0x7f), -0x7f, 0xff - 0x7f, SDL_MIN_SINT16, SDL_MAX_SINT16))
+
+    axis = READ_STICK_AXIS(4);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
+    axis = READ_STICK_AXIS(5);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
+    axis = READ_STICK_AXIS(6);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    axis = READ_STICK_AXIS(7);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+#undef READ_STICK_AXIS
+
+#define READ_TRIGGER_AXIS(offset)     (Sint16)(((int)data[offset] * 257) - 32768)
+
+    axis = READ_TRIGGER_AXIS(9);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, axis);
+    axis = READ_TRIGGER_AXIS(8);
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER, axis);
+#undef READ_TRIGGER_AXIS
+
+    SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
+}
+
 static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)device->context;
@@ -750,7 +816,9 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (size == 9) {
+        if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G && size == 64) {
+            HIDAPI_Driver8BitDo_Handle2CStatePacket(joystick, ctx, data, size);
+        } else if (size == 9) {
             // Old firmware USB report for the SF30 Pro and SN30 Pro controllers
             HIDAPI_Driver8BitDo_HandleOldStatePacket(joystick, ctx, data, size);
         } else {
