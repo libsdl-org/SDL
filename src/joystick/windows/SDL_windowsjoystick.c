@@ -331,26 +331,21 @@ void WINDOWS_JoystickQuit(void);
 
 static bool WINDOWS_JoystickInit(void)
 {
-    if (!SDL_XINPUT_JoystickInit()) {
-        WINDOWS_JoystickQuit();
-        return false;
-    }
-
-    if (!SDL_DINPUT_JoystickInit()) {
-        WINDOWS_JoystickQuit();
-        return false;
-    }
-
     WIN_InitDeviceNotification();
+
+    SDL_XINPUT_JoystickInit();
+    SDL_DINPUT_JoystickInit();
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, true);
     if (s_bJoystickThread) {
         if (!SDL_StartJoystickThread()) {
+            WINDOWS_JoystickQuit();
             return false;
         }
     } else {
         if (!SDL_CreateDeviceNotification(&s_notification_data)) {
+            WINDOWS_JoystickQuit();
             return false;
         }
     }
@@ -360,6 +355,7 @@ static bool WINDOWS_JoystickInit(void)
     // On Xbox, force create the joystick thread for device detection (since other methods don't work
     s_bJoystickThread = true;
     if (!SDL_StartJoystickThread()) {
+        WINDOWS_JoystickQuit();
         return false;
     }
 #endif
