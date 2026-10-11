@@ -445,8 +445,23 @@ function(SDL_PrintSummary)
 endfunction()
 
 function(SDL_missing_dependency NAME OPTION)
+  if(DEFINED ${OPTION})
+    set(_SDL_OPTION_VALUE "${${OPTION}}")
+    string(TOUPPER "${_SDL_OPTION_VALUE}" _SDL_OPTION_VALUE_UPPER)
+
+    if(_SDL_OPTION_VALUE_UPPER MATCHES "^(OFF|FALSE|NO|0|)$")
+      message(STATUS "Dependency ${NAME} is disabled via ${OPTION}=${_SDL_OPTION_VALUE_UPPER}")
+      return()
+    endif()
+
+    if(NOT ${${OPTION}})
+      message(STATUS "Dependency ${NAME} is disabled via ${OPTION}=OFF")
+      return()
+    endif()
+  endif()
+
   if(LINUX)
-    message( FATAL_ERROR
+    message(FATAL_ERROR
       "Couldn't find dependency package for ${NAME}. Please install the needed packages or configure with -D${OPTION}=OFF"
       "\n"
       "The full set of dependencies is available at "
@@ -454,7 +469,7 @@ function(SDL_missing_dependency NAME OPTION)
       "\n"
     )
   else()
-    message( FATAL_ERROR
+    message(FATAL_ERROR)
       "Couldn't find dependency package for ${NAME}. Please install the needed packages or configure with -D${OPTION}=OFF"
     )
   endif()
