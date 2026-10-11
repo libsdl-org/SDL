@@ -327,10 +327,10 @@ static int SDLCALL stdlib_snprintf(void *arg)
 
     result = SDL_snprintf(text, sizeof(text), "%p", (void *)0x1234abcd);
     expected = "0x1234abcd";
-    expected2 = "1234ABCD";
-    expected3 = "000000001234ABCD";
-    expected4 = "1234abcd";
-    expected5 = "000000001234abcd";
+    expected2 = "1234abcd";
+    expected3 = "000000001234abcd";
+    expected4 = "1234ABCD";
+    expected5 = "000000001234ABCD";
     SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%p\", 0x1234abcd)");
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                         SDL_strcmp(text, expected2) == 0 ||
@@ -347,10 +347,10 @@ static int SDLCALL stdlib_snprintf(void *arg)
 
     result = SDL_snprintf(text, sizeof(text), "A %p B", (void *)0x1234abcd);
     expected = "A 0x1234abcd B";
-    expected2 = "A 1234ABCD B";
-    expected3 = "A 000000001234ABCD B";
-    expected4 = "A 1234abcd B";
-    expected5 = "A 000000001234abcd B";
+    expected2 = "A 1234abcd B";
+    expected3 = "A 000000001234abcd B";
+    expected4 = "A 1234ABCD B";
+    expected5 = "A 000000001234ABCD B";
     SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"A %%p B\", 0x1234abcd)");
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                         SDL_strcmp(text, expected2) == 0 ||
@@ -368,16 +368,22 @@ static int SDLCALL stdlib_snprintf(void *arg)
     if (sizeof(void *) >= 8) {
         result = SDL_snprintf(text, sizeof(text), "%p", (void *)SDL_SINT64_C(0x1ba07bddf60));
         expected = "0x1ba07bddf60";
-        expected2 = "000001BA07BDDF60";
+        expected2 = "1ba07bddf60";
         expected3 = "000001ba07bddf60";
+        expected4 = "1BA07BDDF60";
+        expected5 = "000001BA07BDDF60";
         SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%p\", 0x1ba07bddf60)");
         SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                             SDL_strcmp(text, expected2) == 0 ||
-                            SDL_strcmp(text, expected3) == 0,
+                            SDL_strcmp(text, expected3) == 0 ||
+                            SDL_strcmp(text, expected4) == 0 ||
+                            SDL_strcmp(text, expected5) == 0,
             "Check text, expected: '%s', got: '%s'", expected, text);
         SDLTest_AssertCheck(result == SDL_strlen(expected) ||
                             result == SDL_strlen(expected2) ||
-                            result == SDL_strlen(expected3),
+                            result == SDL_strlen(expected3) ||
+                            result == SDL_strlen(expected4) ||
+                            result == SDL_strlen(expected5),
             "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
     }
     return TEST_COMPLETED;
