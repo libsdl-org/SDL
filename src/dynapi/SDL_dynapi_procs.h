@@ -1352,4 +1352,4 @@ SDL_DYNAPI_PROC(bool,SDL_RequestOpenHarmonyPermission,(const char *a,SDL_Request
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetAudioDeviceProperties,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_SetSoftwareRendererWindow,(SDL_Renderer *a,SDL_Window *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetSoftwareRendererSurface,(SDL_Renderer *a,SDL_Surface *b),(a,b),return)
-SDL_DYNAPI_PROC(void,SDL_SetTrayMenuShownCallback,(SDL_TrayMenu *a,SDL_TrayMenuShownCallback b,void *c),(a,b,c),)
+SDL_DYNAPI_PROC(SDL_TrayMenu*,SDL_CreateTrayMenuWithProperties,(SDL_PropertiesID a),(a),return)

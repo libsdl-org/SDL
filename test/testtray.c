@@ -648,7 +648,11 @@ int main(int argc, char **argv)
         goto clean_all;                                           \
     }
 
-    SDL_TrayMenu *menu = SDL_CreateTrayMenu(tray);
+    SDL_PropertiesID traymenu_props = SDL_CreateProperties();
+    SDL_SetPointerProperty(traymenu_props, SDL_PROP_TRAY_MENU_CREATE_TRAY_POINTER, tray);
+    SDL_SetPointerProperty(traymenu_props, SDL_PROP_TRAY_MENU_CREATE_SHOWN_CALLBACK_POINTER, tray_menu_shown);
+    SDL_TrayMenu *menu = SDL_CreateTrayMenuWithProperties(traymenu_props);
+    SDL_DestroyProperties(traymenu_props);
     CHECK(menu);
 
     SDL_TrayMenu *menu2 = SDL_CreateTrayMenu(tray2);
@@ -671,7 +675,6 @@ int main(int argc, char **argv)
 
     SDL_SetTrayEntryCallback(entry_quit, tray_quit, NULL);
     SDL_SetTrayEntryCallback(entry_close, tray_close, trays);
-    SDL_SetTrayMenuShownCallback(menu, tray_menu_shown, NULL);
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 

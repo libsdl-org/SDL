@@ -260,6 +260,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetTrayTooltip(SDL_Tray *tray, const char *
  * \sa SDL_CreateTray
  * \sa SDL_GetTrayMenu
  * \sa SDL_GetTrayMenuParentTray
+ * \sa SDL_CreateTrayMenuWithProperties
  */
 extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
 
@@ -284,8 +285,50 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTrayMenu(SDL_Tray *tray);
  * \sa SDL_InsertTrayEntryAt
  * \sa SDL_GetTraySubmenu
  * \sa SDL_GetTrayMenuParentEntry
+ * \sa SDL_CreateTrayMenuWithProperties
  */
 extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *entry);
+
+/**
+ * Create a menu for a system tray icon or entry.
+ *
+ * This should be called at most once per tray icon/entry.
+ *
+ * A menu does not need to be destroyed; it will be destroyed with the tray.
+ *
+ * These are the supported properties:
+ *
+ * - `SDL_PROP_TRAY_MENU_CREATE_TRAY_POINTER`: a pointer to the parent tray
+ *   entry the menu should be created for. Must be provided if and only if
+ *   `SDL_PROP_TRAY_MENU_CREATE_ENTRY_POINTER` is not provided.
+ * - `SDL_PROP_TRAY_MENU_CREATE_ENTRY_POINTER`: a pointer to the parent tray
+ *   icon the menu should be created for. Must be provided if and only if
+ *   `SDL_PROP_TRAY_MENU_CREATE_TRAY_POINTER` is not provided.
+ * - `SDL_PROP_TRAY_MENU_CREATE_USERDATA_POINTER`: an optional pointer to
+ *   associate with the menu, which will be passed to click callbacks. May be
+ *   NULL.
+ * - `SDL_PROP_TRAY_MENU_CREATE_SHOWN_CALLBACK_POINTER`: an
+ *   SDL_TrayMenuShownCallback to be invoked when the tray menu is shown or
+ *   hidden. May be NULL.
+ *
+ * \param props the properties to use.
+ * \returns the newly created menu.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayMenu
+ * \sa SDL_CreateTraySubmenu
+ * \sa SDL_GetTrayMenu
+ */
+extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTrayMenuWithProperties(SDL_PropertiesID props);
+
+#define SDL_PROP_TRAY_MENU_CREATE_TRAY_POINTER                 "SDL.tray.menu.create.tray"
+#define SDL_PROP_TRAY_MENU_CREATE_ENTRY_POINTER                "SDL.tray.menu.create.entry"
+#define SDL_PROP_TRAY_MENU_CREATE_USERDATA_POINTER             "SDL.tray.menu.create.userdata"
+#define SDL_PROP_TRAY_MENU_CREATE_SHOWN_CALLBACK_POINTER       "SDL.tray.menu.create.shown_callback"
 
 /**
  * Gets a previously created tray menu.
@@ -308,6 +351,7 @@ extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_CreateTraySubmenu(SDL_TrayEntry *
  *
  * \sa SDL_CreateTray
  * \sa SDL_CreateTrayMenu
+ * \sa SDL_CreateTrayMenuWithProperties
  */
 extern SDL_DECLSPEC SDL_TrayMenu * SDLCALL SDL_GetTrayMenu(SDL_Tray *tray);
 
@@ -528,24 +572,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
  * \sa SDL_InsertTrayEntryAt
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata);
-
-/**
- * Sets a callback to be invoked when the menu is shown or hidden.
- *
- * \param menu the menu to be updated.
- * \param callback a callback to be invoked when the menu is shown or hidden.
- * \param userdata an optional pointer to pass extra data to the callback when
- *                 it will be invoked.
- *
- * \threadsafety This function should be called on the thread that created the
- *               tray.
- *
- * \since This function is available since SDL 3.6.0.
- *
- * \sa SDL_GetTraySubmenu
- * \sa SDL_TrayMenuShownCallback
- */
-extern SDL_DECLSPEC void SDLCALL SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata);
 
 /**
  * Simulate a click on a tray entry.

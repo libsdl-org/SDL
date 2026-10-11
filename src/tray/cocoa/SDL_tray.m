@@ -455,23 +455,34 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
     return entry->submenu;
 }
 
-void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+SDL_TrayMenu *SDL_CreateTrayMenuWithProperties(SDL_PropertiesID props)
 {
-    CHECK_PARAM(!menu) {
-        SDL_InvalidParamError("menu");
-        return;
+    SDL_Tray *tray = (SDL_Tray *)SDL_GetPointerProperty(props, SDL_PROP_TRAY_MENU_CREATE_TRAY_POINTER, NULL);
+    SDL_TrayEntry *entry = (SDL_TrayEntry *)SDL_GetPointerProperty(props, SDL_PROP_TRAY_MENU_CREATE_ENTRY_POINTER, NULL);
+    void *userdata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_MENU_CREATE_USERDATA_POINTER, NULL);
+    SDL_TrayMenuShownCallback callback = (SDL_TrayMenuShownCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_MENU_CREATE_SHOWN_CALLBACK_POINTER, NULL);
+
+    SDL_TrayMenu *menu = NULL;
+
+    if (entry && tray) {
+        SDL_SetError("Cannot create a tray menu with both a tray icon and a tray entry");
+        return NULL;
+    } else if (tray) {
+        menu = SDL_CreateTrayMenu(tray);
+    } else if (entry) {
+        menu = SDL_CreateTraySubmenu(entry);
+    } else {
+        SDL_SetError("Tray icon or tray entry required");
+        return NULL;
     }
 
-    if (!callback) {
-        menu->nsmenu.delegate = NULL;
-        menu->delegate = NULL;
-        return;
+    if (menu && callback) {
+        SDLMenuDelegate *delegate = [[SDLMenuDelegate alloc] initWithCallback:callback userdata:userdata menu:menu];
+        menu->delegate = delegate;
+        menu->nsmenu.delegate = delegate;
     }
 
-    SDLMenuDelegate *delegate = [[SDLMenuDelegate alloc] initWithCallback:callback userdata:userdata menu:menu];
-
-    menu->delegate = delegate;
-    menu->nsmenu.delegate = delegate;
+    return menu;
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)

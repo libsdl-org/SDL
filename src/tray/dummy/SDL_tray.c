@@ -67,6 +67,12 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
     return NULL;
 }
 
+SDL_TrayMenu *SDL_CreateTrayMenuWithProperties(SDL_PropertiesID props)
+{
+    SDL_InvalidParamError("props");
+    return NULL;
+}
+
 SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
 {
     return NULL;
