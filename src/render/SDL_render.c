@@ -1036,6 +1036,7 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 
 static bool SDL_UpdateSoftwareRendererOutput(SDL_Renderer *renderer, SDL_Window *window, SDL_Surface *surface)
 {
+#ifdef SDL_VIDEO_RENDER_SW
     CHECK_RENDERER_MAGIC(renderer, false);
 
     CHECK_PARAM(!renderer->software) {
@@ -1137,6 +1138,9 @@ static bool SDL_UpdateSoftwareRendererOutput(SDL_Renderer *renderer, SDL_Window 
     SDL_ClearError();
 
     return true;
+#else
+    return SDL_Unsupported();
+#endif
 }
 
 bool SDL_SetSoftwareRendererWindow(SDL_Renderer *renderer, SDL_Window *window)
