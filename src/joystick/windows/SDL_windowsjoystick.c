@@ -54,6 +54,7 @@
 
 // local variables
 static bool s_bJoystickThread = false;
+static bool s_bDeviceNotificationInitialized = false;
 static SDL_Condition *s_condJoystickThread = NULL;
 static SDL_Mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_joystickThread = NULL;
@@ -342,6 +343,7 @@ static bool WINDOWS_JoystickInit(void)
     }
 
     WIN_InitDeviceNotification();
+    s_bDeviceNotificationInitialized = true;
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     s_bJoystickThread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_THREAD, true);
@@ -672,7 +674,12 @@ void WINDOWS_JoystickQuit(void)
     SDL_DINPUT_JoystickQuit();
     SDL_XINPUT_JoystickQuit();
 
-    WIN_QuitDeviceNotification();
+    /* refcounted and shared with the video subsystem: only release what
+    WINDOWS_JoystickInit() actually took */
+    if (s_bDeviceNotificationInitialized) {
+        s_bDeviceNotificationInitialized = false;
+        WIN_QuitDeviceNotification();
+    }
 }
 
 static bool WINDOWS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
