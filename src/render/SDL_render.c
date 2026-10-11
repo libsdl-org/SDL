@@ -153,6 +153,15 @@ static const SDL_RenderDriver *render_drivers[] = {
 };
 #endif // !SDL_RENDER_DISABLED
 
+
+#define SDL_HASHTABLE_NAME SDL_RendererPaletteMap   // map SDL_Palette => SDL_TexturePalette.
+#define SDL_HASHTABLE_KEY SDL_Palette *
+#define SDL_HASHTABLE_VALUE SDL_TexturePalette *
+#define SDL_HASHTABLE_HASH_KEY_POINTER 1  // provide the hashing and key match code for us.
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) SDL_free(value)
+#include "../SDL_hashtable_template.h"
+
+
 static SDL_Renderer *SDL_renderers;
 
 static const int rect_index_order[] = { 0, 1, 2, 0, 2, 3 };
@@ -1300,7 +1309,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
 
-    renderer->palettes = SDL_CreateHashTable(0, false, SDL_HashPointer, SDL_KeyMatchPointer, SDL_DestroyHashValue, NULL);
+    renderer->palettes = SDL_RendererPaletteMapCreate(0, NULL);
     if (!renderer->palettes) {
         goto error;
     }
@@ -2059,7 +2068,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
                 if (texture->palette->refcount == 0) {
                     FlushRenderCommandsIfPaletteNeeded(renderer, texture->palette);
                     renderer->DestroyPalette(renderer, texture->palette);
-                    SDL_RemoveFromHashTable(renderer->palettes, texture->public_palette);
+                    SDL_RendererPaletteMapRemove(renderer->palettes, texture->public_palette);
                 }
                 texture->palette = NULL;
             }
@@ -2072,7 +2081,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
             ++texture->public_palette->refcount;
 
             if (!texture->native) {
-                if (SDL_FindInHashTable(renderer->palettes, palette, (const void **)&texture->palette)) {
+                if (SDL_RendererPaletteMapFind(renderer->palettes, palette, &texture->palette)) {
                     ++texture->palette->refcount;
                 } else {
                     SDL_TexturePalette *texture_palette = (SDL_TexturePalette *)SDL_calloc(1, sizeof(*texture_palette));
@@ -2088,7 +2097,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
                     texture->palette = texture_palette;
                     texture->palette->refcount = 1;
 
-                    if (!SDL_InsertIntoHashTable(renderer->palettes, palette, texture->palette, false)) {
+                    if (!SDL_RendererPaletteMapInsert(renderer->palettes, palette, texture->palette, false)) {
                         SDL_SetTexturePalette(texture, NULL);
                         return false;
                     }
@@ -5837,8 +5846,8 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     // Free palette cache, which should be empty now
     if (renderer->palettes) {
-        SDL_assert(SDL_HashTableEmpty(renderer->palettes));
-        SDL_DestroyHashTable(renderer->palettes);
+        SDL_assert(SDL_RendererPaletteMapEmpty(renderer->palettes));
+        SDL_RendererPaletteMapDestroy(renderer->palettes);
         renderer->palettes = NULL;
     }
 

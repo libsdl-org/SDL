@@ -36,12 +36,9 @@ typedef struct GPU_PipelineParameters
     SDL_GPUShader *custom_frag_shader;
 } GPU_PipelineParameters;
 
-typedef struct GPU_PipelineCache
-{
-    SDL_HashTable *table;
-} GPU_PipelineCache;
+typedef struct GPU_PipelineCache GPU_PipelineCache;
 
-extern bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device);
+extern bool GPU_InitPipelineCache(GPU_PipelineCache **cache, SDL_GPUDevice *device);
 extern void GPU_DestroyPipelineCache(GPU_PipelineCache *cache);
 extern SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GPUDevice *device, const GPU_PipelineParameters *params);
 

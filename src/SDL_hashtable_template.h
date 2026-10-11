@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,11 +30,11 @@
 #error SDL_HASHTABLE_KEY is not set
 #endif
 
-#ifndef SDL_HASHTABLE_HASH_KEY
+#if !defined(SDL_HASHTABLE_HASH_KEY) && !defined(SDL_HASHTABLE_HASH_KEY_POINTER) && !defined(SDL_HASHTABLE_HASH_KEY_STRING)
 #error SDL_HASHTABLE_HASH_KEY is not set
 #endif
 
-#ifndef SDL_HASHTABLE_KEYS_EQUAL
+#if !defined(SDL_HASHTABLE_KEYS_EQUAL) && !defined(SDL_HASHTABLE_HASH_KEY_POINTER) && !defined(SDL_HASHTABLE_HASH_KEY_STRING)
 #error SDL_HASHTABLE_KEYS_EQUAL is not set
 #endif
 
@@ -82,6 +82,71 @@ typedef struct SDL_HASHTABLE_NAME
     Uint32 hash_mask;
     Uint32 num_occupied_slots;
 } SDL_HASHTABLE_NAME;
+
+
+#ifdef SDL_HASHTABLE_HASH_KEY_POINTER
+// simplifed version of murmur3 hash in src/stdlib/SDL_murmur3.c, inlined here on request for speed and convenience.
+static SDL_INLINE Uint32 ADD_PREFIX(HashPointer)(const SDL_HASHTABLE_KEY key)
+{
+    Uint32 hash;
+    Uint32 k;
+    #ifdef __LP64__
+    SDL_assert(sizeof (key) == 8);
+    k = (Uint32)(((uintptr_t)key) >> 32);  // top bits of pointer.
+    k *= 0xcc9e2d51;
+    k = (k << 15) | (k >> 17);
+    k *= 0x1b873593;
+    hash = (k << 13) | (k >> 19);
+    hash = hash * 5 + 0xe6546b64;
+    #else
+    SDL_assert(sizeof (key) == 4);
+    hash = 0;
+    #endif
+    k = (Uint32)(((uintptr_t)key));  // bottom bits of pointer.
+    k *= 0xcc9e2d51;
+    k = (k << 15) | (k >> 17);
+    k *= 0x1b873593;
+    hash ^= k;
+    hash = (hash << 13) | (hash >> 19);
+    hash = hash * 5 + 0xe6546b64;
+    hash ^= sizeof (key);
+    hash ^= hash >> 16;
+    hash *= 0x85ebca6b;
+    hash ^= hash >> 13;
+    hash *= 0xc2b2ae35;
+    hash ^= hash >> 16;
+    return hash;
+}
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) ADD_PREFIX(HashPointer)(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (((void *) a) == ((void *) b))
+#endif
+
+#ifdef SDL_HASHTABLE_HASH_KEY_STRING
+// this is djb's xor hashing function.
+static SDL_INLINE Uint32 ADD_PREFIX(HashString)(const char *key)
+{
+    Uint32 hash = 5381;
+    char ch;
+    while ((ch = *(key++)) != 0) {
+        hash = ((hash << 5) + hash) ^ ch;
+    }
+    return hash;
+}
+
+static SDL_INLINE bool ADD_PREFIX(KeyMatchString)(const char *a, const char *b)
+{
+    if (a == b) {
+        return true; // same pointer, must match.
+    } else if (!a || !b) {
+        return false; // one pointer is NULL (and first test shows they aren't the same pointer), must not match.
+    } else if (a[0] != b[0]) {
+        return false; // we know they don't match
+    }
+    return (SDL_strcmp(a, b) == 0); // Check against actual string contents.
+}
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) ADD_PREFIX(HashString)(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) ADD_PREFIX(KeyMatchString)(a, b)
+#endif
 
 static SDL_INLINE Uint32 ADD_PREFIX(internal_hash_buckets_from_estimate)(int estimated_capacity)
 {
@@ -329,12 +394,44 @@ static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTAB
     return result;
 }
 
+static SDL_INLINE bool ADD_PREFIX(FindKey)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_KEY *actual_key)
+{
+    if (!table) {
+        return SDL_InvalidParamError("table");
+    }
+
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+    SDL_LockRWLockForReading(table->lock);
+#endif
+
+    bool result = false;
+    const Uint32 hash = SDL_HASHTABLE_HASH_KEY(table->userdata, key);
+    ADD_PREFIX(HashItem) *i = ADD_PREFIX(internal_find_item)(table, key, hash);
+    if (i) {
+        if (actual_key) {
+            *actual_key = i->key;
+        }
+        result = true;
+    }
+
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+    SDL_UnlockRWLock(table->lock);
+#endif
+    return result;
+}
+
 #ifdef SDL_HASHTABLE_VALUE
 static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE *value)
 #else
 static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key)
 #endif
 {
+#ifdef SDL_HASHTABLE_VALUE
+    if (value) {
+        *value = (SDL_HASHTABLE_VALUE) 0;  // quiets compiler warnings. this currently assumes SDL_HASHTABLE_VALUE is some sort of plain old data that can be a zero.
+    }
+#endif
+
     if (!table) {
         return SDL_InvalidParamError("table");
     }
@@ -361,7 +458,7 @@ static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HAS
     return result;
 }
 
-static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, const SDL_HASHTABLE_KEY key)
+static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key)
 {
     if (!table) {
         return SDL_InvalidParamError("table");
@@ -386,9 +483,9 @@ static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, const SDL_H
 }
 
 #ifdef SDL_HASHTABLE_VALUE
-typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value);
+typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value);
 #else
-typedef bool(SDLCALL *ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key);
+typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key);
 #endif
 
 static SDL_INLINE bool ADD_PREFIX(Iterate)(const SDL_HASHTABLE_NAME *table, ADD_PREFIX(IterateCallback) callback, void *userdata)
@@ -425,33 +522,38 @@ static SDL_INLINE bool ADD_PREFIX(Iterate)(const SDL_HASHTABLE_NAME *table, ADD_
     return true;
 }
 
-static SDL_INLINE bool ADD_PREFIX(Empty)(SDL_HASHTABLE_NAME *table)
+static SDL_INLINE Uint32 ADD_PREFIX(Count)(const SDL_HASHTABLE_NAME *table)
 {
     if (!table) {
-        return SDL_InvalidParamError("table");
+        SDL_InvalidParamError("table");
+        return 0;
     }
 
 #ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_LockRWLockForReading(table->lock);
 #endif
-    const bool retval = (table->num_occupied_slots == 0);
+    const Uint32 retval = table->num_occupied_slots;
 #ifdef SDL_HASHTABLE_THREAD_SAFE
     SDL_UnlockRWLock(table->lock);
 #endif
     return retval;
 }
 
+static SDL_INLINE bool ADD_PREFIX(Empty)(const SDL_HASHTABLE_NAME *table)
+{
+    return (ADD_PREFIX(Count)(table) == 0);
+}
+
 static SDL_INLINE void ADD_PREFIX(internal_destroy_all)(SDL_HASHTABLE_NAME *table)
 {
-    void *userdata = table->userdata;
     ADD_PREFIX(HashItem) *end = table->table + (table->hash_mask + 1);
     for (ADD_PREFIX(HashItem) *i = table->table; i < end; ++i) {
         if (i->probe_len != 0) {
             i->probe_len = 0;
 #ifdef SDL_HASHTABLE_VALUE
-            SDL_HASHTABLE_FREE_ITEM(userdata, i->key, i->value);
+            SDL_HASHTABLE_FREE_ITEM(table->userdata, i->key, i->value);
 #else
-            SDL_HASHTABLE_FREE_ITEM(userdata, i->key);
+            SDL_HASHTABLE_FREE_ITEM(table->userdata, i->key);
 #endif
         }
     }
@@ -474,6 +576,43 @@ static SDL_INLINE void ADD_PREFIX(Clear)(SDL_HASHTABLE_NAME *table)
     }
 }
 
+static SDL_INLINE SDL_HASHTABLE_KEY *ADD_PREFIX(FlattenKeys)(const SDL_HASHTABLE_NAME *table, int *count)
+{
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+    SDL_LockRWLockForReading(table->lock);
+#endif
+
+    SDL_assert(table->num_occupied_slots <= 0x7FFFFFFF);  // check whether casting to int would overflow.
+    const int total = (int) table->num_occupied_slots;
+    if (count) {
+        *count = total;
+    }
+
+    SDL_HASHTABLE_KEY *retval = (SDL_HASHTABLE_KEY *) SDL_malloc((total + 1) * sizeof (SDL_HASHTABLE_KEY));
+    if (retval) {
+        ADD_PREFIX(HashItem) *end = table->table + (table->hash_mask + 1);
+        Uint32 num_iterated = 0;
+        for (ADD_PREFIX(HashItem) *item = table->table; item < end; item++) {
+            if (item->probe_len != 0) {
+                retval[num_iterated] = item->key;
+                if (++num_iterated >= table->num_occupied_slots) {
+                    break;
+                }
+            }
+        }
+        retval[total] = (SDL_HASHTABLE_KEY) 0;  // this currently assumes SDL_HASHTABLE_KEY is some sort of plain old data that can be a zero.
+    }
+
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+    SDL_UnlockRWLock(table->lock);
+#endif
+
+    return retval;
+}
+
+// (We don't current offer FlattenValues, but it would be trivial to implement.)
+
+
 static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
 {
     if (table) {
@@ -493,6 +632,8 @@ static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
 #undef SDL_HASHTABLE_KEY
 #undef SDL_HASHTABLE_VALUE
 #undef SDL_HASHTABLE_HASH_KEY
+#undef SDL_HASHTABLE_HASH_KEY_POINTER
+#undef SDL_HASHTABLE_HASH_KEY_STRING
 #undef SDL_HASHTABLE_KEYS_EQUAL
 #undef SDL_HASHTABLE_FREE_ITEM
 #undef SDL_HASHTABLE_THREAD_SAFE

@@ -56,11 +56,15 @@ static char **environ;
 #endif
 
 
-struct SDL_Environment
-{
-    SDL_Mutex *lock;   // !!! FIXME: reuse SDL_HashTable's lock.
-    SDL_HashTable *strings;
-};
+#define SDL_HASHTABLE_NAME SDL_Environment   // map string => string.
+#define SDL_HASHTABLE_KEY const char *
+#define SDL_HASHTABLE_VALUE const char *
+#define SDL_HASHTABLE_HASH_KEY_STRING 1  // provide the hashing and key match code for us.
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) SDL_free((void *) key)   // value and key are both allocated as one string with a null char splitting them.
+#define SDL_HASHTABLE_THREAD_SAFE 1
+#include "../SDL_hashtable_template.h"
+
+
 static SDL_Environment *SDL_environment;
 
 SDL_Environment *SDL_GetEnvironment(void)
@@ -88,21 +92,8 @@ void SDL_QuitEnvironment(void)
 
 SDL_Environment *SDL_CreateEnvironment(bool populated)
 {
-    SDL_Environment *env = SDL_calloc(1, sizeof(*env));
+    SDL_Environment *env = SDL_EnvironmentCreate(0, NULL);
     if (!env) {
-        return NULL;
-    }
-
-    env->lock = SDL_CreateMutex();
-    if (!env->lock) {
-        SDL_free(env);
-        return NULL;
-    }
-
-    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
-    if (!env->strings) {
-        SDL_DestroyMutex(env->lock);
-        SDL_free(env);
         return NULL;
     }
 
@@ -128,7 +119,7 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                     *ptr = (char) SDL_toupper((int) *ptr);  // the only UTF-8 bytes that don't have the high-bit set are single-byte ASCII chars, so SDL_toupper will leave multichar stuff alone.
                 }
 
-                SDL_InsertIntoHashTable(env->strings, variable, value, true);
+                SDL_EnvironmentInsert(env, variable, value, true);
             }
             FreeEnvironmentStringsW(strings);
         }
@@ -159,7 +150,7 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
 #endif
 
-                SDL_InsertIntoHashTable(env->strings, variable, value, true);
+                SDL_EnvironmentInsert(env, variable, value, true);
             }
         }
 #endif // SDL_PLATFORM_WINDOWS && !SDL_PLATFORM_CYGWIN
@@ -171,23 +162,9 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
 const char *SDL_GetEnvironmentVariable(SDL_Environment *env, const char *name)
 {
     const char *result = NULL;
-
-    if (!env) {
-        return NULL;
-    } else if (!name || *name == '\0') {
-        return NULL;
+    if (name && SDL_EnvironmentFind(env, name, &result)) {
+        result = SDL_GetPersistentString(result);
     }
-
-    SDL_LockMutex(env->lock);
-    {
-        const char *value;
-
-        if (SDL_FindInHashTable(env->strings, name, (const void **)&value)) {
-            result = SDL_GetPersistentString(value);
-        }
-    }
-    SDL_UnlockMutex(env->lock);
-
     return result;
 }
 
@@ -197,10 +174,10 @@ typedef struct CountEnvStringsData
     size_t length;
 } CountEnvStringsData;
 
-static bool SDLCALL CountEnvStrings(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+static bool SDLCALL CountEnvStrings(void *userdata, const SDL_Environment *table, const char *key, const char *value)
 {
     CountEnvStringsData *data = (CountEnvStringsData *) userdata;
-    data->length += SDL_strlen((const char *) key) + 1 + SDL_strlen((const char *) value) + 1;
+    data->length += SDL_strlen(key) + SDL_strlen(value) + 2;
     data->count++;
     return true;  // keep iterating.
 }
@@ -212,11 +189,9 @@ typedef struct CopyEnvStringsData
     size_t count;
 } CopyEnvStringsData;
 
-static bool SDLCALL CopyEnvStrings(void *userdata, const SDL_HashTable *table, const void *vkey, const void *vvalue)
+static bool SDLCALL CopyEnvStrings(void *userdata, const SDL_Environment *table, const char *key, const char *value)
 {
     CopyEnvStringsData *data = (CopyEnvStringsData *) userdata;
-    const char *key = (const char *) vkey;
-    const char *value = (const char *) vvalue;
     size_t len;
 
     len = SDL_strlen(key);
@@ -243,11 +218,11 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
         return NULL;
     }
 
-    SDL_LockMutex(env->lock);
+    SDL_LockRWLockForReading(env->lock);  // grab this upfront so we can count/allocate and then copy without it changing in between.
     {
         // First pass, get the size we need for all the strings
         CountEnvStringsData countdata = { 0, 0 };
-        SDL_IterateHashTable(env->strings, CountEnvStrings, &countdata);
+        SDL_EnvironmentIterate(env, CountEnvStrings, &countdata);
 
         // Allocate memory for the strings
         result = (char **)SDL_malloc((countdata.count + 1) * sizeof(*result) + countdata.length);
@@ -255,12 +230,12 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
             // Second pass, copy the strings
             char *string = (char *)(result + countdata.count + 1);
             CopyEnvStringsData cpydata = { result, string, 0 };
-            SDL_IterateHashTable(env->strings, CopyEnvStrings, &cpydata);
+            SDL_EnvironmentIterate(env, CopyEnvStrings, &cpydata);
             SDL_assert(countdata.count == cpydata.count);
             result[cpydata.count] = NULL;
         }
     }
-    SDL_UnlockMutex(env->lock);
+    SDL_UnlockRWLock(env->lock);
 
     return result;
 }
@@ -279,29 +254,23 @@ bool SDL_SetEnvironmentVariable(SDL_Environment *env, const char *name, const ch
         return SDL_InvalidParamError("value");
     }
 
-    SDL_LockMutex(env->lock);
-    {
-        char *string = NULL;
-        if (SDL_asprintf(&string, "%s=%s", name, value) > 0) {
-            const size_t len = SDL_strlen(name);
-            string[len] = '\0';
-            const char *origname = name;
-            name = string;
-            value = string + len + 1;
-            result = SDL_InsertIntoHashTable(env->strings, name, value, overwrite);
-            if (!result) {
-                SDL_free(string);
-                if (!overwrite) {
-                    const void *existing_value = NULL;
-                    // !!! FIXME: InsertIntoHashTable does this lookup too, maybe we should have a means to report that, to avoid duplicate work?
-                    if (SDL_FindInHashTable(env->strings, origname, &existing_value)) {
-                        result = true;  // it already existed, and we refused to overwrite it. Call it success.
-                    }
+    char *string = NULL;
+    if (SDL_asprintf(&string, "%s=%s", name, value) > 0) {
+        const size_t len = SDL_strlen(name);
+        string[len] = '\0';
+        const char *origname = name;
+        name = string;
+        value = string + len + 1;
+        result = SDL_EnvironmentInsert(env, name, value, overwrite);
+        if (!result) {
+            SDL_free(string);
+            if (!overwrite) {
+                if (SDL_EnvironmentFind(env, origname, NULL)) {
+                    result = true;  // it already existed, and we refused to overwrite it. Call it success.
                 }
             }
         }
     }
-    SDL_UnlockMutex(env->lock);
 
     return result;
 }
@@ -317,29 +286,19 @@ bool SDL_UnsetEnvironmentVariable(SDL_Environment *env, const char *name)
         return SDL_InvalidParamError("name");
     }
 
-    SDL_LockMutex(env->lock);
-    {
-        const void *value;
-        if (SDL_FindInHashTable(env->strings, name, &value)) {
-            result = SDL_RemoveFromHashTable(env->strings, name);
-        } else {
-            result = true;
-        }
+    result = SDL_EnvironmentRemove(env, name);
+    if (!result && !SDL_EnvironmentFind(env, name, NULL)) {
+        result = true;  // already wasn't there, we're good.
     }
-    SDL_UnlockMutex(env->lock);
 
     return result;
 }
 
 void SDL_DestroyEnvironment(SDL_Environment *env)
 {
-    if (!env || env == SDL_environment) {
-        return;
+    if (env && (env != SDL_environment)) {
+        SDL_EnvironmentDestroy(env);
     }
-
-    SDL_DestroyMutex(env->lock);
-    SDL_DestroyHashTable(env->strings);
-    SDL_free(env);
 }
 
 // Put a variable into the environment

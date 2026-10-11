@@ -144,8 +144,17 @@ Uint32 SDL_GetNextObjectID(void)
     return id;
 }
 
+
+#define SDL_HASHTABLE_NAME SDL_Objects
+#define SDL_HASHTABLE_KEY void *   // any SDL object of any type
+#define SDL_HASHTABLE_VALUE SDL_ObjectType
+#define SDL_HASHTABLE_HASH_KEY_POINTER 1
+#define SDL_HASHTABLE_THREAD_SAFE 1
+#include "SDL_hashtable_template.h"
+
+
 static SDL_InitState SDL_objects_init;
-static SDL_HashTable *SDL_objects;
+static SDL_Objects *SDL_objects;
 bool SDL_object_validation = true;
 
 static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -171,22 +180,12 @@ static void SDLCALL SDL_InvalidParamChecksChanged(void *userdata, const char *na
     SDL_object_validation = validation_enabled;
 }
 
-static Uint32 SDLCALL SDL_HashObject(void *unused, const void *key)
-{
-    return (Uint32)(uintptr_t)key;
-}
-
-static bool SDL_KeyMatchObject(void *unused, const void *a, const void *b)
-{
-    return (a == b);
-}
-
 void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
 {
     SDL_assert(object != NULL);
 
     if (SDL_ShouldInit(&SDL_objects_init)) {
-        SDL_objects = SDL_CreateHashTable(0, true, SDL_HashObject, SDL_KeyMatchObject, NULL, NULL);
+        SDL_objects = SDL_ObjectsCreate(0, NULL);
         const bool initialized = (SDL_objects != NULL);
         SDL_SetInitialized(&SDL_objects_init, initialized);
         if (!initialized) {
@@ -196,20 +195,20 @@ void SDL_SetObjectValid(void *object, SDL_ObjectType type, bool valid)
     }
 
     if (valid) {
-        SDL_InsertIntoHashTable(SDL_objects, object, (void *)(uintptr_t)type, true);
+        SDL_ObjectsInsert(SDL_objects, object, type, true);
     } else {
-        SDL_RemoveFromHashTable(SDL_objects, object);
+        SDL_ObjectsRemove(SDL_objects, object);
     }
 }
 
 bool SDL_FindObject(void *object, SDL_ObjectType type)
 {
-    const void *object_type;
-    if (!SDL_FindInHashTable(SDL_objects, object, &object_type)) {
+    SDL_ObjectType object_type = SDL_OBJECT_TYPE_UNKNOWN;
+    if (!SDL_ObjectsFind(SDL_objects, object, &object_type)) {
         return false;
     }
 
-    return (((SDL_ObjectType)(uintptr_t)object_type) == type);
+    return (object_type == type);
 }
 
 typedef struct GetOneObjectData
@@ -220,10 +219,10 @@ typedef struct GetOneObjectData
     int num_objects;
 } GetOneObjectData;
 
-static bool SDLCALL GetOneObject(void *userdata, const SDL_HashTable *table, const void *object, const void *object_type)
+static bool SDLCALL GetOneObject(void *userdata, const SDL_Objects *table, void *object, SDL_ObjectType object_type)
 {
     GetOneObjectData *data = (GetOneObjectData *) userdata;
-    if ((SDL_ObjectType)(uintptr_t)object_type == data->type) {
+    if (object_type == data->type) {
         if (data->num_objects < data->count) {
             data->objects[data->num_objects] = (void *)object;
         }
@@ -232,15 +231,14 @@ static bool SDLCALL GetOneObject(void *userdata, const SDL_HashTable *table, con
     return true;  // keep iterating.
 }
 
-
 int SDL_GetObjects(SDL_ObjectType type, void **objects, int count)
 {
     GetOneObjectData data = { type, objects, count, 0 };
-    SDL_IterateHashTable(SDL_objects, GetOneObject, &data);
+    SDL_ObjectsIterate(SDL_objects, GetOneObject, &data);
     return data.num_objects;
 }
 
-static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_HashTable *table, const void *object, const void *object_type)
+static bool SDLCALL LogOneLeakedObject(void *userdata, const SDL_Objects *table, void *object, SDL_ObjectType object_type)
 {
     const char *type = "unknown object";
     switch ((SDL_ObjectType)(uintptr_t)object_type) {
@@ -267,11 +265,11 @@ void SDL_SetObjectsInvalid(void)
 {
     if (SDL_ShouldQuit(&SDL_objects_init)) {
         // Log any leaked objects
-        SDL_IterateHashTable(SDL_objects, LogOneLeakedObject, NULL);
-        SDL_DestroyHashTable(SDL_objects);
+        SDL_ObjectsIterate(SDL_objects, LogOneLeakedObject, NULL);
+        SDL_ObjectsDestroy(SDL_objects);
         SDL_objects = NULL;
-        SDL_SetInitialized(&SDL_objects_init, false);
         SDL_RemoveHintCallback(SDL_HINT_INVALID_PARAM_CHECKS, SDL_InvalidParamChecksChanged, NULL);
+        SDL_SetInitialized(&SDL_objects_init, false);
     }
 }
 
@@ -418,6 +416,57 @@ bool SDL_IsURI(const char *uri)
     return false;
 }
 
+#define SDL_HASHTABLE_NAME SDL_StringCache
+#define SDL_HASHTABLE_KEY const char *
+#define SDL_HASHTABLE_HASH_KEY_STRING 1
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key) SDL_free((void *) key)
+#define SDL_HASHTABLE_THREAD_SAFE 1
+#include "SDL_hashtable_template.h"
+
+static SDL_InitState SDL_string_cache_init;
+static SDL_StringCache *SDL_string_cache = NULL;
+
+// This is for persisting strings from any thread that need to live until SDL_Quit() is called.
+
+const char *SDL_CacheString(const char *str)
+{
+    if (SDL_ShouldInit(&SDL_string_cache_init)) {
+        SDL_string_cache = SDL_StringCacheCreate(0, NULL);
+        SDL_SetInitialized(&SDL_string_cache_init, SDL_string_cache != NULL);
+    }
+
+    if (!SDL_string_cache) {
+        return NULL;
+    }
+
+    const char *retval = NULL;
+    if (str && !SDL_StringCacheFindKey(SDL_string_cache, str, &retval)) {
+        char *cpy = SDL_strdup(str);
+        if (cpy) {
+            retval = cpy;
+            if (!SDL_StringCacheInsert(SDL_string_cache, cpy, false)) {
+                SDL_StringCacheFindKey(SDL_string_cache, str, &retval);  // maybe something else beat us in a race, try to get this from the hashtable again.
+                if (retval) {
+                    SDL_free(cpy);
+                } else {
+                    retval = cpy; // If the hash table insert fails, at least we can return the string we allocated
+                }
+            }
+        }
+    }
+    return retval;
+}
+
+void SDL_DestroyStringCache(void)
+{
+    if (SDL_ShouldQuit(&SDL_string_cache_init)) {
+        SDL_StringCacheDestroy(SDL_string_cache);
+        SDL_string_cache = NULL;
+        SDL_SetInitialized(&SDL_string_cache_init, false);
+    }
+}
+
+
 // This is a set of per-thread persistent strings that we can return from the SDL API.
 // This is used for short strings that might persist past the lifetime of the object
 // they are related to.
@@ -426,8 +475,7 @@ static SDL_TLSID SDL_string_storage;
 
 static void SDL_FreePersistentStrings( void *value )
 {
-    SDL_HashTable *strings = (SDL_HashTable *)value;
-    SDL_DestroyHashTable(strings);
+    SDL_StringCacheDestroy((SDL_StringCache *) value);
 }
 
 const char *SDL_GetPersistentString(const char *string)
@@ -439,25 +487,24 @@ const char *SDL_GetPersistentString(const char *string)
         return "";
     }
 
-    SDL_HashTable *strings = (SDL_HashTable *)SDL_GetTLS(&SDL_string_storage);
+    SDL_StringCache *strings = (SDL_StringCache *)SDL_GetTLS(&SDL_string_storage);
     if (!strings) {
-        strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashValue, NULL);
+        strings = SDL_StringCacheCreate(0, NULL);
         if (!strings) {
             return NULL;
         }
-
         SDL_SetTLS(&SDL_string_storage, strings, SDL_FreePersistentStrings);
     }
 
     const char *result;
-    if (!SDL_FindInHashTable(strings, string, (const void **)&result)) {
+    if (!SDL_StringCacheFindKey(strings, string, &result)) {
         char *new_string = SDL_strdup(string);
         if (!new_string) {
             return NULL;
         }
 
         // If the hash table insert fails, at least we can return the string we allocated
-        SDL_InsertIntoHashTable(strings, new_string, new_string, false);
+        SDL_StringCacheInsert(strings, new_string, false);
         result = new_string;
     }
     return result;

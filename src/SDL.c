@@ -756,6 +756,8 @@ void SDL_Quit(void)
 
     SDL_QuitMainThread();
 
+    SDL_DestroyStringCache();
+
     SDL_bInMainQuit = false;
 }
 
