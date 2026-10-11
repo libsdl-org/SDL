@@ -1540,6 +1540,7 @@ void WIN_UnclipCursorForWindow(SDL_Window *window) {
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
+    SDL_VideoData *videodata = data->videodata;
     if (data->in_title_click || data->focus_click_pending || data->postpone_clipcursor) {
         return;
     }
@@ -1623,6 +1624,41 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         } else if (!win_is_grabbed) {
             WIN_UnclipCursorForWindow(window);
             return;
+        }
+    } else if (videodata->dpi_unaware_context_declared) {
+        /* Windows has a rounding bug when a DPI unaware context and fractional scale value
+         * are used that will cause the cursor coordinates to jitter across a confining edge
+         * while dragging along it, which can cause spurious pointer enter/leave events when the
+         * clip rect matches the window bounds. Move the sides of the clip rect in by 1 in each
+         * dimension to prevent rapid focus switching when the cursor is at the window edge.
+         *
+         * NOTE: Remove or bypass this if Microsoft ever fixes the issue.
+         */
+
+        // Temporarily set the thread to per-monitor awareness v2 to get the display DPI.
+        if (videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
+            HMONITOR hmon = MonitorFromWindow(data->hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hmon) {
+                UINT hdpi_uint, vdpi_uint;
+                if (videodata->GetDpiForMonitor(hmon, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+                    const float scale = (float)hdpi_uint / (float)USER_DEFAULT_SCREEN_DPI;
+                    if (scale != SDL_floorf(scale)) {
+                        if (target.left < target.right) {
+                            target.left += 1;
+                        }
+                        if (target.right > target.left) {
+                            target.right -= 1;
+                        }
+                        if (target.top < target.bottom) {
+                            target.top += 1;
+                        }
+                        if (target.bottom > target.top) {
+                            target.bottom -= 1;
+                        }
+                    }
+                }
+            }
+            videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
         }
     }
 
