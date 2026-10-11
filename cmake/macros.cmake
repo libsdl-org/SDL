@@ -462,7 +462,7 @@ function(SDL_missing_dependency NAME OPTION)
 
   if(LINUX)
     message(FATAL_ERROR
-      "Couldn't find dependency package for ${NAME}. Please install the needed packages or configure with -D${OPTION}=OFF"
+      "${_SDL_MISSING_DEPENDENCY_MESSAGE}"
       "\n"
       "The full set of dependencies is available at "
       "https://wiki.libsdl.org/SDL3/README-linux#build-dependencies "
