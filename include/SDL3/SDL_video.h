@@ -1568,13 +1568,19 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   headroom above the SDR white point. This property can change dynamically
  *   when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the value of SDR white in the
- *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the
- *   SDR white level in scRGB colorspace, and on Apple platforms this is
- *   always 1.0 for EDR content. This property can change dynamically when
- *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows and Wayland, this
+ *   corresponds to the SDR white level in scRGB colorspace based on
+ *   Microsoft's interpretation where R=G=B=1 is 80 nits, so multiplying the
+ *   white level by 80 will give the maximum luminance for SDR content. On
+ *   Apple platforms this is always 1.0 for EDR content. This property can
+ *   change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the additional high dynamic range
- *   that can be displayed, in terms of the SDR white point. When HDR is not
- *   enabled, this will be 1.0. This property can change dynamically when
+ *   that can be displayed, in terms of the SDR white point. The maximum value
+ *   that can be displayed in the SDL_COLORSPACE_SRGB_LINEAR colorspace will be
+ *   `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT * SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`.
+ *   On Windows and Wayland systems, the maximum luminance for HDR content will
+ *   the maximum value multiplied by 80 nits. When HDR is not enabled, this will
+ *   be 1.0. This property can change dynamically when
  *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  *
  * On Android:

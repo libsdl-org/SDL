@@ -171,8 +171,14 @@ static void image_description_info_handle_luminances(void *data,
                                                      uint32_t reference_lum)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
-    state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
-    state->HDR.SDR_white_level = (float)reference_lum / 80.0f;
+    if (max_lum > reference_lum) {
+        state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
+		// Compositors generally follow the Microsoft interpretation of scRGB where R=G=B=1 is 80 nits.
+        state->HDR.SDR_white_level = (float)reference_lum / 80.0f;
+    } else {
+        state->HDR.HDR_headroom = 1.0f;
+        state->HDR.SDR_white_level = 1.0f;
+	}
 }
 
 static void image_description_info_handle_target_primaries(void *data,
