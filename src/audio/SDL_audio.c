@@ -1570,7 +1570,7 @@ SDL_AudioDeviceID *SDL_GetAudioRecordingDevices(int *count)
 
 typedef struct FindAudioDeviceByCallbackData
 {
-    bool (*callback)(SDL_AudioDevice *device, void *userdata);
+    bool (*callback)(void *userdata, SDL_AudioDevice *device);
     void *userdata;
     SDL_AudioDevice *retval;
 } FindAudioDeviceByCallbackData;
@@ -1581,7 +1581,7 @@ static bool SDLCALL FindAudioDeviceByCallback(void *userdata, const SDL_HashTabl
     const SDL_AudioDeviceID devid = (SDL_AudioDeviceID) (uintptr_t) key;
     SDL_assert(SDL_IsAudioDevicePhysical(devid));  // should only be iterating device_hash_physical.
     SDL_AudioDevice *device = (SDL_AudioDevice *) value;
-    if (data->callback(device, data->userdata)) {  // found it?
+    if (data->callback(data->userdata, device)) {  // found it?
         data->retval = device;
         SDL_assert(data->retval->instance_id == devid);
         return false;  // stop iterating, we found it.
@@ -1589,8 +1589,7 @@ static bool SDLCALL FindAudioDeviceByCallback(void *userdata, const SDL_HashTabl
     return true;  // keep iterating.
 }
 
-// !!! FIXME: SDL convention is for userdata to come first in the callback's params. Fix this at some point.
-SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata)
+SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(void *userdata, SDL_AudioDevice *device), void *userdata)
 {
     if (!SDL_GetCurrentAudioDriver()) {
         SDL_SetError("Audio subsystem is not initialized");
@@ -1609,7 +1608,7 @@ SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_Audi
     return data.retval;
 }
 
-static bool TestDeviceHandleCallback(SDL_AudioDevice *device, void *handle)
+static bool TestDeviceHandleCallback(void *handle, SDL_AudioDevice *device)
 {
     return device->handle == handle;
 }

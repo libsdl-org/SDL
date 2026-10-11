@@ -51,7 +51,7 @@ typedef struct SDLCoreAudioHandle
     bool recording;
 } SDLCoreAudioHandle;
 
-static bool TestCoreAudioDeviceHandleCallback(SDL_AudioDevice *device, void *handle)
+static bool TestCoreAudioDeviceHandleCallback(void *handle, SDL_AudioDevice *device)
 {
     const SDLCoreAudioHandle *a = (const SDLCoreAudioHandle *) device->handle;
     const SDLCoreAudioHandle *b = (const SDLCoreAudioHandle *) handle;
@@ -327,7 +327,7 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audi
 
 static bool session_active = false;
 
-static bool PauseOneAudioDevice(SDL_AudioDevice *device, void *userdata)
+static bool PauseOneAudioDevice(void *userdata, SDL_AudioDevice *device)
 {
     if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
         AudioQueuePause(device->hidden->audioQueue);
@@ -340,7 +340,7 @@ static void PauseAudioDevices(void)
     (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneAudioDevice, NULL);
 }
 
-static bool ResumeOneAudioDevice(SDL_AudioDevice *device, void *userdata)
+static bool ResumeOneAudioDevice(void *userdata, SDL_AudioDevice *device)
 {
     if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
         AudioQueueStart(device->hidden->audioQueue, NULL);
@@ -403,7 +403,7 @@ typedef struct
     int recording;
 } CountOpenAudioDevicesData;
 
-static bool CountOpenAudioDevices(SDL_AudioDevice *device, void *userdata)
+static bool CountOpenAudioDevices(void *userdata, SDL_AudioDevice *device)
 {
     CountOpenAudioDevicesData *data = (CountOpenAudioDevicesData *) userdata;
     if (device->hidden != NULL) {  // assume it's open if hidden != NULL

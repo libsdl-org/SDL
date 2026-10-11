@@ -903,14 +903,14 @@ static void ServerInfoCallback(pa_context *c, const pa_server_info *i, void *dat
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
 
-static bool FindAudioDeviceByIndex(SDL_AudioDevice *device, void *userdata)
+static bool FindAudioDeviceByIndex(void *userdata, SDL_AudioDevice *device)
 {
     const uint32_t idx = (uint32_t) (uintptr_t) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
     return (handle->device_index == idx);
 }
 
-static bool FindAudioDeviceByPath(SDL_AudioDevice *device, void *userdata)
+static bool FindAudioDeviceByPath(void *userdata, SDL_AudioDevice *device)
 {
     const char *path = (const char *) userdata;
     const PulseDeviceHandle *handle = (const PulseDeviceHandle *) device->handle;
