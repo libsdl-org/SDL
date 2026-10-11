@@ -2060,6 +2060,10 @@ void SDL_BindGPUVertexBuffers(
         SDL_InvalidParamError("bindings");
         return;
     }
+    CHECK_PARAM(first_binding + num_bindings > MAX_VERTEX_BUFFERS) {
+        SDL_SetError("first_binding + num_bindings exceeds MAX_VERTEX_BUFFERS");
+        return;
+    }
 
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
