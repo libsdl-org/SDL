@@ -72,6 +72,7 @@ struct SDL_Tray {
     SDL_TrayClickCallback left_click_callback;
     SDL_TrayClickCallback right_click_callback;
     SDL_TrayClickCallback middle_click_callback;
+    // TODO: someone told me that you can use a custom view to handle mouse scrolls :)
 };
 
 @implementation SDLTrayClickHandler
@@ -634,6 +635,26 @@ SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
     }
 
     return menu->parent_tray;
+}
+
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    return SDL_TRAYSTATUS_VISIBLE; // Dummy implementation
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    return SDL_TRAYSTATUS_VISIBLE; // Dummy implementation
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
 }
 
 void SDL_DestroyTray(SDL_Tray *tray)

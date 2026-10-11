@@ -142,6 +142,26 @@ SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
     return NULL;
 }
 
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    return SDL_TRAYSTATUS_INVALID;
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    return SDL_TRAYSTATUS_INVALID;
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
 void SDL_DestroyTray(SDL_Tray *tray)
 {
 }

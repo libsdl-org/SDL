@@ -49,9 +49,15 @@ typedef struct SDL_TrayDBus
     SDL_TrayClickCallback l_cb;
     SDL_TrayClickCallback r_cb;
     SDL_TrayClickCallback m_cb;
+    SDL_TrayScrollCallback scroll_cb;
     void *udata;
 
     bool block;
+
+    SDL_TrayStatus vis_state;
+    char *icon_desc;
+    char *tooltip_desc;
+    int delta_normalization;
 } SDL_TrayDBus;
 
 typedef struct SDL_TrayMenuDBus
@@ -73,7 +79,7 @@ typedef struct SDL_TrayEntryDBus
 #define SNI_WATCHER_PATH      "/StatusNotifierWatcher"
 #define SNI_WATCHER_INTERFACE "org.kde.StatusNotifierWatcher"
 #define SNI_OBJECT_PATH       "/StatusNotifierItem"
-static const char *sni_introspect = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\r\n<node>\r\n  <interface name=\"org.kde.StatusNotifierItem\">\r\n\r\n    <property name=\"Category\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Id\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Title\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Status\" type=\"s\" access=\"read\"/>\r\n    <property name=\"WindowId\" type=\"i\" access=\"read\"/>\r\n\r\n    <!-- An additional path to add to the theme search path to find the icons specified above. -->\r\n    <property name=\"IconThemePath\" type=\"s\" access=\"read\"/>\r\n    <property name=\"Menu\" type=\"o\" access=\"read\"/>\r\n    <property name=\"ItemIsMenu\" type=\"b\" access=\"read\"/>\r\n\r\n\r\n    <!-- main icon -->\r\n    <!-- names are preferred over pixmaps -->\r\n    <property name=\"IconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <!--struct containing width, height and image data-->\r\n    <property name=\"IconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n    <property name=\"OverlayIconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <property name=\"OverlayIconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n\r\n    <!-- Requesting attention icon -->\r\n    <property name=\"AttentionIconName\" type=\"s\" access=\"read\"/>\r\n\r\n    <!--same definition as image-->\r\n    <property name=\"AttentionIconPixmap\" type=\"a(iiay)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\r\n    </property>\r\n\r\n    <property name=\"AttentionMovieName\" type=\"s\" access=\"read\"/>\r\n\r\n\r\n\r\n    <!-- tooltip data -->\r\n\r\n    <!--(iiay) is an image-->\r\n    <property name=\"ToolTip\" type=\"(sa(iiay)ss)\" access=\"read\">\r\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusToolTipStruct\"/>\r\n    </property>\r\n\r\n    <method name=\"ProvideXdgActivationToken\">\r\n        <arg name=\"token\" type=\"s\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <!-- interaction: the systemtray wants the application to do something -->\r\n    <method name=\"ContextMenu\">\r\n        <!-- we\'re passing the coordinates of the icon, so the app knows where to put the popup window -->\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"Activate\">\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"SecondaryActivate\">\r\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\r\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <method name=\"Scroll\">\r\n      <arg name=\"delta\" type=\"i\" direction=\"in\"/>\r\n      <arg name=\"orientation\" type=\"s\" direction=\"in\"/>\r\n    </method>\r\n\r\n    <!-- Signals: the client wants to change something in the status-->\r\n    <signal name=\"NewTitle\">\r\n    </signal>\r\n\r\n    <signal name=\"NewIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewAttentionIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewOverlayIcon\">\r\n    </signal>\r\n\r\n    <signal name=\"NewMenu\">\r\n    </signal>\r\n\r\n    <signal name=\"NewToolTip\">\r\n    </signal>\r\n\r\n    <signal name=\"NewStatus\">\r\n      <arg name=\"status\" type=\"s\"/>\r\n    </signal>\r\n\r\n  </interface>\r\n</node>";
+static const char *sni_introspect = "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" \"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n<node>\n  <interface name=\"org.kde.StatusNotifierItem\">\n\n    <property name=\"Category\" type=\"s\" access=\"read\"/>\n    <property name=\"Id\" type=\"s\" access=\"read\"/>\n    <property name=\"Title\" type=\"s\" access=\"read\"/>\n    <property name=\"Status\" type=\"s\" access=\"read\"/>\n    <property name=\"WindowId\" type=\"i\" access=\"read\"/>\n\n    <!-- An additional path to add to the theme search path to find the icons specified above. -->\n    <property name=\"IconThemePath\" type=\"s\" access=\"read\"/>\n    <property name=\"Menu\" type=\"o\" access=\"read\"/>\n    <property name=\"ItemIsMenu\" type=\"b\" access=\"read\"/>\n\n\n    <!-- main icon -->\n    <!-- names are preferred over pixmaps -->\n    <property name=\"IconName\" type=\"s\" access=\"read\"/>\n\n    <!--struct containing width, height and image data-->\n    <property name=\"IconPixmap\" type=\"a(iiay)\" access=\"read\">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\n    </property>\n\n    <property name=\"OverlayIconName\" type=\"s\" access=\"read\"/>\n\n    <property name=\"OverlayIconPixmap\" type=\"a(iiay)\" access=\"read\">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\n    </property>\n\n\n    <!-- Requesting attention icon -->\n    <property name=\"AttentionIconName\" type=\"s\" access=\"read\"/>\n\n    <!--same definition as image-->\n    <property name=\"AttentionIconPixmap\" type=\"a(iiay)\" access=\"read\">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusImageVector\"/>\n    </property>\n\n    <property name=\"AttentionMovieName\" type=\"s\" access=\"read\"/>\n\n    <!-- Copied here from libayatana-appindicator\'s version of the XML, the XML we use, the one from KSNI, does not have it -->\n    <property name=\"IconAccessibleDesc\" type=\"s\" access=\"read\" />\n\n    <!-- tooltip data -->\n\n    <!--(iiay) is an image-->\n    <property name=\"ToolTip\" type=\"(sa(iiay)ss)\" access=\"read\">\n      <annotation name=\"org.qtproject.QtDBus.QtTypeName\" value=\"KDbusToolTipStruct\"/>\n    </property>\n\n    <method name=\"ProvideXdgActivationToken\">\n        <arg name=\"token\" type=\"s\" direction=\"in\"/>\n    </method>\n\n    <!-- interaction: the systemtray wants the application to do something -->\n    <method name=\"ContextMenu\">\n        <!-- we\'re passing the coordinates of the icon, so the app knows where to put the popup window -->\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\n    </method>\n\n    <method name=\"Activate\">\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\n    </method>\n\n    <method name=\"SecondaryActivate\">\n        <arg name=\"x\" type=\"i\" direction=\"in\"/>\n        <arg name=\"y\" type=\"i\" direction=\"in\"/>\n    </method>\n\n    <method name=\"Scroll\">\n      <arg name=\"delta\" type=\"i\" direction=\"in\"/>\n      <arg name=\"orientation\" type=\"s\" direction=\"in\"/>\n    </method>\n\n    <!-- Signals: the client wants to change something in the status-->\n    <signal name=\"NewTitle\">\n    </signal>\n\n    <signal name=\"NewIcon\">\n    </signal>\n\n    <signal name=\"NewAttentionIcon\">\n    </signal>\n\n    <signal name=\"NewOverlayIcon\">\n    </signal>\n\n    <signal name=\"NewMenu\">\n    </signal>\n\n    <signal name=\"NewToolTip\">\n    </signal>\n\n    <signal name=\"NewStatus\">\n      <arg name=\"status\" type=\"s\"/>\n    </signal>\n\n  </interface>\n</node>";
 
 static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tray_dbus, SDL_TrayDriverDBus *driver, DBusMessage *msg)
 {
@@ -122,7 +128,17 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
     key = "Status";
-    value = "Active";
+    switch (tray_dbus->vis_state) {
+        case SDL_TRAYSTATUS_HIDDEN:
+            value = "Passive";
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            value = "NeedsAttention";
+            break;
+        default:
+            value = "Active";
+            break;
+    }
     driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
     driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
     driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
@@ -135,6 +151,15 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
     driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
     driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
     driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
+    driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
+    driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
+
+    key = "IconAccessibleDesc";
+    value = tray_dbus->icon_desc ? tray_dbus->icon_desc : empty;
+    driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
+    driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
+    driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+    driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
     driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
     driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
 
@@ -203,6 +228,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
 
     if (tray_dbus->tooltip) {
         key = "ToolTip";
+        value = tray_dbus->tooltip_desc ? tray_dbus->tooltip_desc : empty;
         driver->dbus->message_iter_open_container(&dict_iter, DBUS_TYPE_DICT_ENTRY, NULL, &entry_iter);
         driver->dbus->message_iter_append_basic(&entry_iter, DBUS_TYPE_STRING, &key);
         driver->dbus->message_iter_open_container(&entry_iter, DBUS_TYPE_VARIANT, "(sa(iiay)ss)", &variant_iter);
@@ -211,7 +237,7 @@ static DBusHandlerResult TrayHandleGetAllProps(SDL_Tray *tray, SDL_TrayDBus *tra
         driver->dbus->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(iiay)", &array_iter);
         driver->dbus->message_iter_close_container(&struct_iter, &array_iter);
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &tray_dbus->tooltip);
-        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
+        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&variant_iter, &struct_iter);
         driver->dbus->message_iter_close_container(&entry_iter, &variant_iter);
         driver->dbus->message_iter_close_container(&dict_iter, &entry_iter);
@@ -259,13 +285,28 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "Status")) {
-        value = "Active";
+        switch (tray_dbus->vis_state) {
+            case SDL_TRAYSTATUS_HIDDEN:
+                value = "Passive";
+                break;
+            case SDL_TRAYSTATUS_IMPORTANT:
+                value = "NeedsAttention";
+                break;
+            default:
+                value = "Active";
+                break;
+        }
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "IconName")) {
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
         driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &empty);
+        driver->dbus->message_iter_close_container(&iter, &variant_iter);
+    } else if (!SDL_strcmp(property, "IconAccessibleDesc")) {
+        value = tray_dbus->icon_desc ? tray_dbus->icon_desc : empty;
+        driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "s", &variant_iter);
+        driver->dbus->message_iter_append_basic(&variant_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "ItemIsMenu")) {
         if (menu_dbus && menu_dbus->menu_path) {
@@ -306,13 +347,14 @@ static DBusHandlerResult TrayHandleGetProp(SDL_Tray *tray, SDL_TrayDBus *tray_db
     } else if (!SDL_strcmp(property, "ToolTip") && tray_dbus->tooltip) {
         DBusMessageIter struct_iter, array_iter;
 
+        value = tray_dbus->tooltip_desc ? tray_dbus->tooltip_desc : empty;
         driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_VARIANT, "(sa(iiay)ss)", &variant_iter);
         driver->dbus->message_iter_open_container(&variant_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter);
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
         driver->dbus->message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "(iiay)", &array_iter);
         driver->dbus->message_iter_close_container(&struct_iter, &array_iter);
         driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &tray_dbus->tooltip);
-        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &empty);
+        driver->dbus->message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &value);
         driver->dbus->message_iter_close_container(&variant_iter, &struct_iter);
         driver->dbus->message_iter_close_container(&iter, &variant_iter);
     } else if (!SDL_strcmp(property, "WindowId")) {
@@ -388,7 +430,37 @@ static DBusHandlerResult TrayMessageHandler(DBusConnection *connection, DBusMess
         driver->dbus->error_init(&err);
         driver->dbus->message_get_args(msg, &err, DBUS_TYPE_INT32, &delta, DBUS_TYPE_STRING, &orientation, DBUS_TYPE_INVALID);
         if (!driver->dbus->error_is_set(&err)) {
-            /* Scroll callback support will come later :) */
+            SDL_TrayScrollFlags scroll_flags;
+
+            /* Both the freedesktop draft pages and the XML introspection files in both the KStatusNotifierItem and Ayatana implementations of SNI show the scrolling orientation values being all lowercase. */
+            /* However, some desktops, at the very least MATE, seem to capitalize the first letter of the orientation string for some unknown reason... */
+            SDL_strlwr(orientation);
+
+            if (!SDL_strcmp(orientation, "vertical")) {
+                scroll_flags = SDL_TRAYSCROLL_VERTICAL;
+            } else if (!SDL_strcmp(orientation, "horizontal")) {
+                scroll_flags = SDL_TRAYSCROLL_HORIZONTAL;
+            } else {
+                scroll_flags = 0;
+            }
+            
+            /* See the documentation for SDL_HINT_TRAY_SNI_SCROLL_NORMALIZATION for why this is done. */
+            switch (tray_dbus->delta_normalization) {
+                case 1:
+                   delta = delta / 120;
+                   break;
+                case 2:
+                   break;
+                default:
+                   if (!(delta % 120)) {
+                     delta = delta / 120;
+                   }
+                   break;
+            }
+
+            if (tray_dbus->scroll_cb) {
+                tray_dbus->scroll_cb(tray_dbus->udata, tray, delta, scroll_flags);
+            }
         } else {
             driver->dbus->error_free(&err);
         }
@@ -410,6 +482,7 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     SDL_Surface *icon;
     const char *tooltip;
     const char *object_path;
+    const char *delta_normalization_hint;
     char *register_name;
     DBusObjectPathVTable vtable;
     DBusError err;
@@ -515,8 +588,19 @@ SDL_Tray *CreateTray(SDL_TrayDriver *driver, SDL_PropertiesID props)
     tray_dbus->l_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray_dbus->r_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray_dbus->m_cb = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray_dbus->scroll_cb = (SDL_TrayScrollCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, NULL);
     tray_dbus->udata = SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_USERDATA_POINTER, NULL);
 
+    tray_dbus->vis_state = SDL_TRAYSTATUS_VISIBLE;
+    tray_dbus->icon_desc = NULL;
+    tray_dbus->tooltip_desc = NULL;
+
+    tray_dbus->delta_normalization = 0;
+    delta_normalization_hint = SDL_GetHint(SDL_HINT_TRAY_SNI_SCROLL_NORMALIZATION);
+    if (delta_normalization_hint) {
+        tray_dbus->delta_normalization = SDL_atoi(delta_normalization_hint);
+    }
+    
     return tray;
 }
 
@@ -584,6 +668,14 @@ void DestroyTray(SDL_Tray *tray)
     /* Destroy icon and tooltip */
     SDL_free(tray_dbus->tooltip);
     SDL_DestroySurface(tray_dbus->surface);
+
+    if (tray_dbus->icon_desc) {
+        SDL_free(tray_dbus->icon_desc);
+    }
+
+    if (tray_dbus->tooltip_desc) {
+        SDL_free(tray_dbus->tooltip_desc);
+    }
 
     /* Destroy the menus and entries */
     if (tray->menu) {
@@ -666,6 +758,147 @@ void SetTrayTooltip(SDL_Tray *tray, const char *text)
     driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
     driver->dbus->connection_flush(tray_dbus->connection);
     driver->dbus->message_unref(signal);
+}
+
+SDL_TrayStatus SetVisState(SDL_Tray *tray, SDL_TrayStatus state)
+{
+    SDL_TrayDBus *tray_dbus;
+    SDL_TrayDriverDBus *driver;
+    DBusMessage *signal;
+    const char *value;
+
+    driver = (SDL_TrayDriverDBus *)tray->driver->internal;
+    tray_dbus = (SDL_TrayDBus *)tray->internal;
+
+    if (state == SDL_TRAYSTATUS_INVALID || state == SDL_TRAYSTATUS_UNKNOWN) {
+        return tray_dbus->vis_state;
+    } else {
+        tray_dbus->vis_state = state;
+    }
+
+    switch (tray_dbus->vis_state) {
+        case SDL_TRAYSTATUS_HIDDEN:
+            value = "Passive";
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            value = "NeedsAttention";
+            break;
+        default:
+            value = "Active";
+            break;
+    }
+
+    signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewStatus");
+    driver->dbus->message_append_args(signal, DBUS_TYPE_STRING, &value, DBUS_TYPE_INVALID);
+    driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+    driver->dbus->connection_flush(tray_dbus->connection);
+    driver->dbus->message_unref(signal);
+
+    return tray_dbus->vis_state;
+}
+
+SDL_TrayStatus GetVisState(SDL_Tray *tray)
+{
+    return ((SDL_TrayDBus *)tray->internal)->vis_state;
+}
+
+bool SetMiscProp(SDL_Tray *tray, Uint32 property, va_list args) {
+    SDL_TrayDBus *tray_dbus;
+    SDL_TrayDriverDBus *driver;
+
+    driver = (SDL_TrayDriverDBus *)tray->driver->internal;
+    tray_dbus = (SDL_TrayDBus *)tray->internal;
+
+    switch (property) {
+        case SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION: {
+            DBusMessage *signal;
+            const char *val;
+
+            val = va_arg(args, const char *);
+            if (val) {
+                tray_dbus->tooltip_desc = SDL_strdup(val);
+            }
+
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewToolTip");
+            driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+            driver->dbus->connection_flush(tray_dbus->connection);
+            driver->dbus->message_unref(signal);
+            return true;
+            break;
+        }
+        case SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION: {
+            DBusMessage *signal;
+            const char *val;
+
+            val = va_arg(args, const char *);
+            if (val) {
+                tray_dbus->icon_desc = SDL_strdup(val);
+            }
+
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, "org.freedesktop.DBus.Properties", "PropertiesChanged");
+            if (signal) {
+                DBusMessageIter iter, dict, ientry, value;
+                const char *iface;
+                const char *prop;
+
+                iface = SNI_INTERFACE;
+                prop = "IconAccessibleDesc";
+                driver->dbus->message_iter_init_append(signal, &iter);
+                driver->dbus->message_iter_append_basic(&iter, DBUS_TYPE_STRING, &iface);
+                driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &dict);
+                driver->dbus->message_iter_open_container(&dict, DBUS_TYPE_DICT_ENTRY, NULL, &ientry);
+                driver->dbus->message_iter_append_basic(&ientry, DBUS_TYPE_STRING, &prop);
+                driver->dbus->message_iter_open_container(&ientry, DBUS_TYPE_VARIANT, "s", &value);
+                driver->dbus->message_iter_append_basic(&value, DBUS_TYPE_STRING, &tray_dbus->icon_desc);
+                driver->dbus->message_iter_close_container(&ientry, &value);
+                driver->dbus->message_iter_close_container(&dict, &ientry);
+                driver->dbus->message_iter_close_container(&iter, &dict);
+                driver->dbus->message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "s", &dict);
+                driver->dbus->message_iter_close_container(&iter, &dict);
+                driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+                driver->dbus->connection_flush(tray_dbus->connection);
+                driver->dbus->message_unref(signal);
+            }
+
+            signal = driver->dbus->message_new_signal(SNI_OBJECT_PATH, SNI_INTERFACE, "NewIcon");
+            driver->dbus->connection_send(tray_dbus->connection, signal, NULL);
+            driver->dbus->connection_flush(tray_dbus->connection);
+            driver->dbus->message_unref(signal);
+            return true;
+            break;
+        }
+        default:
+            return false;
+            break;
+    }
+}
+
+bool GetMiscProp(SDL_Tray *tray, Uint32 property, va_list args) {
+    SDL_TrayDBus *tray_dbus;
+
+    tray_dbus = (SDL_TrayDBus *)tray->internal;
+
+    switch (property) {
+        case SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION: {
+            const char **pval;
+
+            pval = va_arg(args, const char **);
+            *pval = tray_dbus->tooltip_desc;
+            return true;
+            break;
+        }
+        case SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION: {
+            const char **pval;
+
+            pval = va_arg(args, const char **);
+            *pval = tray_dbus->icon_desc;
+            return true;
+            break;
+        }
+        default:
+            return false;
+            break;
+    }
 }
 
 SDL_TrayMenu *CreateTrayMenu(SDL_Tray *tray)
@@ -1194,6 +1427,10 @@ SDL_TrayDriver *SDL_Tray_CreateDBusDriver(void)
     driver->SetTrayEntryEnabled = SetTrayEntryEnabled;
     driver->GetTrayEntryEnabled = GetTrayEntryEnabled;
     driver->ClickTrayEntry = ClickTrayEntry;
+    driver->SetTrayStatus = SetVisState;
+    driver->GetTrayStatus = GetVisState;
+    driver->SetMiscProp = SetMiscProp;
+    driver->GetMiscProp = GetMiscProp;
     driver->DestroyDriver = DestroyDriver;
 
     return driver;
