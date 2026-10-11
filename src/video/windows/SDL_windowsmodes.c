@@ -941,6 +941,20 @@ void WIN_RefreshDisplays(SDL_VideoDevice *_this)
     }
 }
 
+void WIN_RefreshDisplayHDRStates(SDL_VideoDevice *_this)
+{
+#ifdef HAVE_DXGI1_6_H
+    int i;
+    for (i = 0; i < _this->num_displays; ++i) {
+        SDL_VideoDisplay *display = _this->displays[i];
+        SDL_DisplayData *internal = display->internal;
+        SDL_HDROutputProperties HDR;
+        WIN_GetHDRProperties(_this, internal->MonitorHandle, &HDR);
+        SDL_SetDisplayHDRProperties(display, &HDR);
+    }
+#endif
+}
+
 void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this)
 {
     // This almost never happens, so just go ahead and send update events for all displays
