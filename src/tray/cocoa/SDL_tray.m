@@ -40,6 +40,15 @@ struct SDL_Tray;
 - (void)stopMonitoringMiddleClicks;
 @end
 
+@interface SDLMenuDelegate : NSObject<NSMenuDelegate>
+@property (nonatomic, assign) SDL_TrayMenuShownCallback callback;
+@property (nonatomic, assign) void *userdata;
+@property (nonatomic, assign) SDL_TrayMenu *tray_menu;
+- (instancetype)initWithCallback:(SDL_TrayMenuShownCallback) cb
+                        userdata:(void *)udata
+                            menu:(SDL_TrayMenu *)menu;
+@end
+
 struct SDL_TrayMenu {
     NSMenu *nsmenu;
 
@@ -48,6 +57,8 @@ struct SDL_TrayMenu {
 
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
+
+    SDLMenuDelegate *delegate;
 };
 
 struct SDL_TrayEntry {
@@ -149,6 +160,33 @@ struct SDL_Tray {
         [NSEvent removeMonitor:self.middleClickMonitor];
         self.middleClickMonitor = nil;
     }
+}
+
+@end
+
+@implementation SDLMenuDelegate
+
+- (instancetype)initWithCallback:(SDL_TrayMenuShownCallback) cb
+                        userdata:(void *)udata
+                            menu:(SDL_TrayMenu *)menu
+{
+    self = [super init];
+
+    self.callback = cb;
+    self.userdata = udata;
+    self.tray_menu = menu;
+
+    return self;
+}
+
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    self.callback(self.userdata, self.tray_menu, true);
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    self.callback(self.userdata, self.tray_menu, false);
 }
 
 @end
@@ -415,6 +453,25 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
     }
 
     return entry->submenu;
+}
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    CHECK_PARAM(!menu) {
+        SDL_InvalidParamError("menu");
+        return;
+    }
+
+    if (!callback) {
+        menu->nsmenu.delegate = NULL;
+        menu->delegate = NULL;
+        return;
+    }
+
+    SDLMenuDelegate *delegate = [[SDLMenuDelegate alloc] initWithCallback:callback userdata:userdata menu:menu];
+
+    menu->delegate = delegate;
+    menu->nsmenu.delegate = delegate;
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
