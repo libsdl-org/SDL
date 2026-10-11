@@ -706,7 +706,7 @@ static void GatherCameraSpecs(const char *devid, CameraFormatAddData *add_data, 
     pACameraMetadata_free(metadata);
 }
 
-static bool FindAndroidCameraByID(SDL_Camera *device, void *userdata)
+static bool FindAndroidCameraByID(void *userdata, SDL_Camera *device)
 {
     const char *devid = (const char *) userdata;
     return (SDL_strcmp(devid, (const char *) device->handle) == 0);

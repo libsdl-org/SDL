@@ -37,7 +37,7 @@ extern SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, 
 extern void SDL_CameraDisconnected(SDL_Camera *device);
 
 // Find an SDL_Camera, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device, void *userdata), void *userdata);
+extern SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(void *userdata, SDL_Camera *device), void *userdata);
 
 // Backends should call this when the user has approved/denied access to a camera.
 extern void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved);

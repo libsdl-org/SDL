@@ -532,7 +532,7 @@ static bool OHAUDIO_OpenDevice(SDL_AudioDevice *device)
     return BuildOHAudioStream(device);
 }
 
-static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
+static bool PauseOneDevice(void *userdata, SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = (struct SDL_PrivateAudioData *)device->hidden;
     if (hidden) {
