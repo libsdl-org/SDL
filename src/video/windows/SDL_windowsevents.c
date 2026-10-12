@@ -1795,7 +1795,6 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
     case WM_WINDOWPOSCHANGING:
 
-        SDL_Log("Changing");
         if (data->expected_resize) {
             returnCode = 0;
         } else if (data->in_modal_loop) {
