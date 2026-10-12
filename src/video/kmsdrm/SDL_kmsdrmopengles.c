@@ -475,7 +475,7 @@ static bool KMSDRM_GLES_SwapWindowLegacy(SDL_VideoDevice *_this, SDL_Window *win
         // so in this specific case just retry without the async flag. If it still fails after that, oh well.
         if ((ret == -EINVAL) && (flip_flags & DRM_MODE_PAGE_FLIP_ASYNC)) {
             flip_flags &= ~DRM_MODE_PAGE_FLIP_ASYNC;
-            ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc->crtc_id, fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
+            ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc.crtc->crtc_id, fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
         }
 
         if (ret == 0) {
