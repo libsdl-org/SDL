@@ -514,12 +514,13 @@ SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, int num
             p->type = SDL_EVENT_CAMERA_DEVICE_ADDED;
             p->devid = device->instance_id;
             p->next = NULL;
-            SDL_LockRWLockForWriting(camera_driver.device_map->lock);
+            SDL_RWLock *rwlock = SDL_CameraDeviceMapGetRWLock(camera_driver.device_map);
+            SDL_LockRWLockForWriting(rwlock);
             SDL_assert(camera_driver.pending_events_tail != NULL);
             SDL_assert(camera_driver.pending_events_tail->next == NULL);
             camera_driver.pending_events_tail->next = p;
             camera_driver.pending_events_tail = p;
-            SDL_UnlockRWLock(camera_driver.device_map->lock);
+            SDL_UnlockRWLock(rwlock);
         }
     }
 
@@ -577,12 +578,13 @@ void SDL_CameraDisconnected(SDL_Camera *device)
 
     if (first_disconnect) {
         if (pending.next) {  // NULL if event is disabled or disaster struck.
-            SDL_LockRWLockForWriting(camera_driver.device_map->lock);
+            SDL_RWLock *rwlock = SDL_CameraDeviceMapGetRWLock(camera_driver.device_map);
+            SDL_LockRWLockForWriting(rwlock);
             SDL_assert(camera_driver.pending_events_tail != NULL);
             SDL_assert(camera_driver.pending_events_tail->next == NULL);
             camera_driver.pending_events_tail->next = pending.next;
             camera_driver.pending_events_tail = pending_tail;
-            SDL_UnlockRWLock(camera_driver.device_map->lock);
+            SDL_UnlockRWLock(rwlock);
         }
     }
 }
@@ -615,12 +617,13 @@ void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved)
     ReleaseCamera(device);
 
     if (pending.next) {  // NULL if event is disabled or disaster struck.
-        SDL_LockRWLockForWriting(camera_driver.device_map->lock);
+        SDL_RWLock *rwlock = SDL_CameraDeviceMapGetRWLock(camera_driver.device_map);
+        SDL_LockRWLockForWriting(rwlock);
         SDL_assert(camera_driver.pending_events_tail != NULL);
         SDL_assert(camera_driver.pending_events_tail->next == NULL);
         camera_driver.pending_events_tail->next = pending.next;
         camera_driver.pending_events_tail = pending_tail;
-        SDL_UnlockRWLock(camera_driver.device_map->lock);
+        SDL_UnlockRWLock(rwlock);
     }
 }
 
@@ -1401,12 +1404,13 @@ void SDL_QuitCamera(void)
 
     SDL_SetAtomicInt(&camera_driver.shutting_down, 1);
 
-    SDL_LockRWLockForWriting(camera_driver.device_map->lock);
+    SDL_RWLock *rwlock = SDL_CameraDeviceMapGetRWLock(camera_driver.device_map);
+    SDL_LockRWLockForWriting(rwlock);
     SDL_CameraDeviceMap *device_map = camera_driver.device_map;
     camera_driver.device_map = NULL;
     SDL_PendingCameraEvent *pending_events = camera_driver.pending_events.next;
     camera_driver.pending_events.next = NULL;
-    SDL_UnlockRWLock(device_map->lock);
+    SDL_UnlockRWLock(rwlock);
 
     SDL_PendingCameraEvent *pending_next = NULL;
     for (SDL_PendingCameraEvent *i = pending_events; i; i = pending_next) {
@@ -1541,20 +1545,21 @@ void SDL_UpdateCamera(void)
         return;
     }
 
-    SDL_LockRWLockForReading(camera_driver.device_map->lock);
+    SDL_RWLock *rwlock = SDL_CameraDeviceMapGetRWLock(camera_driver.device_map);
+    SDL_LockRWLockForReading(rwlock);
     SDL_PendingCameraEvent *pending_events = camera_driver.pending_events.next;
-    SDL_UnlockRWLock(camera_driver.device_map->lock);
+    SDL_UnlockRWLock(rwlock);
 
     if (!pending_events) {
         return;  // nothing to do, check next time.
     }
 
     // okay, let's take this whole list of events so we can dump the lock, and new ones can queue up for a later update.
-    SDL_LockRWLockForWriting(camera_driver.device_map->lock);
+    SDL_LockRWLockForWriting(rwlock);
     pending_events = camera_driver.pending_events.next;  // in case this changed...
     camera_driver.pending_events.next = NULL;
     camera_driver.pending_events_tail = &camera_driver.pending_events;
-    SDL_UnlockRWLock(camera_driver.device_map->lock);
+    SDL_UnlockRWLock(rwlock);
 
     SDL_PendingCameraEvent *pending_next = NULL;
     for (SDL_PendingCameraEvent *i = pending_events; i; i = pending_next) {

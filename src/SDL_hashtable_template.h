@@ -59,31 +59,6 @@
 #define EXPAND_CONCAT(a, b) CONCAT(a, b)
 #define ADD_PREFIX(name)    EXPAND_CONCAT(SDL_HASHTABLE_NAME, name)
 
-typedef struct ADD_PREFIX(HashItem)
-{
-    SDL_HASHTABLE_KEY key;
-#ifdef SDL_HASHTABLE_VALUE
-    SDL_HASHTABLE_VALUE value;
-#endif
-    Uint32 hash;
-    Uint32 probe_len; // equals to 0 when item is not live
-} ADD_PREFIX(HashItem);
-
-// Anything larger than this will cause integer overflow
-#define MAX_HASHTABLE_SIZE (((Uint32)1) << SDL_MostSignificantBitIndex32(0x80000000u / sizeof(ADD_PREFIX(HashItem))))
-
-typedef struct SDL_HASHTABLE_NAME
-{
-#ifdef SDL_HASHTABLE_THREAD_SAFE
-    SDL_RWLock *lock;
-#endif
-    ADD_PREFIX(HashItem) *table;
-    void *userdata;
-    Uint32 hash_mask;
-    Uint32 num_occupied_slots;
-} SDL_HASHTABLE_NAME;
-
-
 #ifdef SDL_HASHTABLE_HASH_KEY_POINTER
 // simplifed version of murmur3 hash in src/stdlib/SDL_murmur3.c, inlined here on request for speed and convenience.
 static SDL_INLINE Uint32 ADD_PREFIX(HashPointer)(const SDL_HASHTABLE_KEY key)
@@ -147,6 +122,213 @@ static SDL_INLINE bool ADD_PREFIX(KeyMatchString)(const char *a, const char *b)
 #define SDL_HASHTABLE_HASH_KEY(userdata, key) ADD_PREFIX(HashString)(key)
 #define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) ADD_PREFIX(KeyMatchString)(a, b)
 #endif
+
+typedef struct SDL_HASHTABLE_NAME SDL_HASHTABLE_NAME;
+
+#ifdef SDL_HASHTABLE_VALUE
+typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value);
+#else
+typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key);
+#endif
+
+
+// For those trying to save _every_ byte in the final binary: for SDL_LEAN_AND_MEAN builds, we make _one_ instance
+// of all the templated code, that operates on void pointers, etc, and do some magic to make it work here.
+// This way, you don't get code bloat, at the cost of losing optimizations from inlining and type customization.
+#if defined(SDL_LEAN_AND_MEAN) && !defined(SDL_HASHTABLE_NO_LEAN_AND_MEAN)
+typedef struct SDL_LeanAndMeanHashTable SDL_LeanAndMeanHashTable;
+
+typedef bool (*SDL_LeanAndMeanHashTableHashKeyFn)(void *userdata, void *key);
+typedef bool (*SDL_LeanAndMeanHashTableKeysEqualFn)(void *userdata, void *va, void *vb);
+typedef void (*SDL_LeanAndMeanHashTableFreeItemFn)(void *userdata, void *vkey, void *vvalue);
+
+// wrap our inline code in functions so the generic version can use them through callbacks.
+static bool ADD_PREFIX(LeanAndMeanHashKey)(void *userdata, void *key)
+{
+    SDL_HASHTABLE_KEY k = (SDL_HASHTABLE_KEY)(uintptr_t)key;
+    return (SDL_HASHTABLE_HASH_KEY(userdata, k));
+}
+
+static bool ADD_PREFIX(LeanAndMeanKeysEqual)(void *userdata, void *va, void *vb)
+{
+    SDL_HASHTABLE_KEY a = (SDL_HASHTABLE_KEY)(uintptr_t)va;
+    SDL_HASHTABLE_KEY b = (SDL_HASHTABLE_KEY)(uintptr_t)vb;
+    return (SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b));
+}
+
+static void ADD_PREFIX(LeanAndMeanFreeItem)(void *userdata, void *vkey, void *vvalue)
+{
+    SDL_HASHTABLE_KEY key = (SDL_HASHTABLE_KEY)(uintptr_t)vkey; (void) key;
+    #ifdef SDL_HASHTABLE_VALUE
+    SDL_HASHTABLE_VALUE value = (SDL_HASHTABLE_VALUE)(uintptr_t)vvalue; (void) value;
+    SDL_HASHTABLE_FREE_ITEM(userdata, key, value);
+    #else
+    SDL_HASHTABLE_FREE_ITEM(userdata, key);
+    #endif
+}
+
+// Actual inline entry points, that call real, single-instance, generic functions...
+
+static SDL_INLINE SDL_HASHTABLE_NAME *ADD_PREFIX(Create)(int estimated_capacity, void *userdata)
+{
+    #ifdef SDL_HASHTABLE_THREAD_SAFE
+    const bool thread_safe = true;
+    #else
+    const bool thread_safe = false;
+    #endif
+    extern SDL_LeanAndMeanHashTable *SDL_LeanAndMeanGenericHashTableCreate(int estimated_capacity, void *userdata, bool thread_safe, SDL_LeanAndMeanHashTableHashKeyFn hashfn, SDL_LeanAndMeanHashTableKeysEqualFn keyseqfn, SDL_LeanAndMeanHashTableFreeItemFn freefn);
+    return (SDL_HASHTABLE_NAME *) SDL_LeanAndMeanGenericHashTableCreate(estimated_capacity, userdata, thread_safe, ADD_PREFIX(LeanAndMeanHashKey), ADD_PREFIX(LeanAndMeanKeysEqual), ADD_PREFIX(LeanAndMeanFreeItem));
+}
+
+#ifdef SDL_HASHTABLE_VALUE
+static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value, bool replace)
+#else
+static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, bool replace)
+#endif
+{
+    extern bool SDL_LeanAndMeanGenericHashTableInsert(SDL_LeanAndMeanHashTable *table, void *key, void *value, bool replace);
+    #ifdef SDL_HASHTABLE_VALUE
+    return SDL_LeanAndMeanGenericHashTableInsert((SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key, (void *)(uintptr_t)value, replace);
+    #else
+    return SDL_LeanAndMeanGenericHashTableInsert((SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key, NULL, replace);
+    #endif
+}
+
+static SDL_INLINE bool ADD_PREFIX(FindKey)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_KEY *actual_key)
+{
+    extern bool SDL_LeanAndMeanGenericHashTableFindKey(const SDL_LeanAndMeanHashTable *table, void *key, void **actual_key);
+    void *ptr = NULL;
+    const bool retval = SDL_LeanAndMeanGenericHashTableFindKey((const SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key, &ptr);
+    if (actual_key) {
+        *actual_key = ((SDL_HASHTABLE_KEY)(uintptr_t) (retval ? ptr : NULL));
+    }
+    return retval;
+}
+
+#ifdef SDL_HASHTABLE_VALUE
+static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE *value)
+#else
+static SDL_INLINE bool ADD_PREFIX(Find)(const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key)
+#endif
+{
+    extern bool SDL_LeanAndMeanGenericHashTableFind(const SDL_LeanAndMeanHashTable *table, void *key, void **value);
+    #ifdef SDL_HASHTABLE_VALUE
+    void *ptr = NULL;
+    const bool retval = SDL_LeanAndMeanGenericHashTableFind((const SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key, &ptr);
+    if (value) {
+        *value = ((SDL_HASHTABLE_VALUE)(uintptr_t) (retval ? ptr : NULL));
+    }
+    #else
+    const bool retval = SDL_LeanAndMeanGenericHashTableFind((const SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key, NULL);
+    #endif
+    return retval;
+}
+
+static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key)
+{
+    extern bool SDL_LeanAndMeanGenericHashTableRemove(SDL_LeanAndMeanHashTable *table, void *key);
+    return SDL_LeanAndMeanGenericHashTableRemove((SDL_LeanAndMeanHashTable *) table, (void *)(uintptr_t)key);
+}
+
+typedef struct ADD_PREFIX(IterateData)
+{
+    ADD_PREFIX(IterateCallback) callback;
+    void *userdata;
+} ADD_PREFIX(IterateData);
+
+typedef bool(*SDL_LeanAndMeanHashTableIterateCallback)(void *userdata, const SDL_LeanAndMeanHashTable *table, void *key, void *value);
+
+static bool ADD_PREFIX(LeanAndMeanIterateCallback)(void *userdata, const SDL_LeanAndMeanHashTable *table, void *key, void *value)
+{
+    ADD_PREFIX(IterateData) *data = (ADD_PREFIX(IterateData) *) userdata;
+    #ifdef SDL_HASHTABLE_VALUE
+    return data->callback(data->userdata, (const SDL_HASHTABLE_NAME *) table, (SDL_HASHTABLE_KEY)(uintptr_t) key, (SDL_HASHTABLE_VALUE)(uintptr_t) value);
+    #else
+    return data->callback(data->userdata, (const SDL_HASHTABLE_NAME *) table, (SDL_HASHTABLE_KEY)(uintptr_t) key);
+    #endif
+}
+
+static SDL_INLINE bool ADD_PREFIX(Iterate)(const SDL_HASHTABLE_NAME *table, ADD_PREFIX(IterateCallback) callback, void *userdata)
+{
+    extern bool SDL_LeanAndMeanGenericHashTableIterate(const SDL_LeanAndMeanHashTable *table, SDL_LeanAndMeanHashTableIterateCallback callback, void *userdata);
+    ADD_PREFIX(IterateData) cbdata = { callback, userdata };
+    return SDL_LeanAndMeanGenericHashTableIterate((const SDL_LeanAndMeanHashTable *) table, ADD_PREFIX(LeanAndMeanIterateCallback), &cbdata);
+}
+
+static SDL_INLINE Uint32 ADD_PREFIX(Count)(const SDL_HASHTABLE_NAME *table)
+{
+    extern bool SDL_LeanAndMeanGenericHashTableCount(const SDL_LeanAndMeanHashTable *table);
+    return SDL_LeanAndMeanGenericHashTableCount((const SDL_LeanAndMeanHashTable *) table);
+}
+
+static SDL_INLINE void ADD_PREFIX(Clear)(SDL_HASHTABLE_NAME *table)
+{
+    extern void SDL_LeanAndMeanGenericHashTableClear(SDL_LeanAndMeanHashTable *table);
+    SDL_LeanAndMeanGenericHashTableClear((SDL_LeanAndMeanHashTable *) table);
+}
+
+static SDL_INLINE SDL_HASHTABLE_KEY *ADD_PREFIX(FlattenKeys)(const SDL_HASHTABLE_NAME *table, int *count)
+{
+    extern void **SDL_LeanAndMeanGenericHashTableFlattenKeys(const SDL_LeanAndMeanHashTable *table, int *count);
+    SDL_assert(sizeof (SDL_HASHTABLE_KEY) <= sizeof (void *));
+    int total = 0;
+    void **vretval = SDL_LeanAndMeanGenericHashTableFlattenKeys((const SDL_LeanAndMeanHashTable *) table, &total);
+    if (count) {
+        *count = total;
+    }
+    if (vretval) {
+        if (sizeof (SDL_HASHTABLE_KEY) < sizeof (void *)) {
+            SDL_HASHTABLE_KEY *dst = (SDL_HASHTABLE_KEY *) vretval;
+            void **src = vretval;
+            for (int i = 0; i < total; i++) {
+                dst[i] = (SDL_HASHTABLE_KEY)(uintptr_t) src[i];
+            }
+            dst[total] = (SDL_HASHTABLE_KEY) 0;
+        }
+    }
+    return (SDL_HASHTABLE_KEY *) vretval;
+}
+
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+static SDL_INLINE SDL_RWLock * ADD_PREFIX(GetRWLock)(const SDL_HASHTABLE_NAME *table)
+{
+    extern SDL_RWLock *SDL_LeanAndMeanGenericHashTableGetRWLock(const SDL_LeanAndMeanHashTable *table);
+    return SDL_LeanAndMeanGenericHashTableGetRWLock((const SDL_LeanAndMeanHashTable *) table);
+}
+#endif
+
+static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
+{
+    extern void SDL_LeanAndMeanGenericHashTableDestroy(SDL_LeanAndMeanHashTable *table);
+    SDL_LeanAndMeanGenericHashTableDestroy((SDL_LeanAndMeanHashTable *) table);
+}
+
+
+#else  // the normal, inlined, non-SDL_LEAN_AND_MEAN version.
+
+typedef struct ADD_PREFIX(HashItem)
+{
+    SDL_HASHTABLE_KEY key;
+#ifdef SDL_HASHTABLE_VALUE
+    SDL_HASHTABLE_VALUE value;
+#endif
+    Uint32 hash;
+    Uint32 probe_len; // equals to 0 when item is not live
+} ADD_PREFIX(HashItem);
+
+// Anything larger than this will cause integer overflow
+#define MAX_HASHTABLE_SIZE (((Uint32)1) << SDL_MostSignificantBitIndex32(0x80000000u / sizeof(ADD_PREFIX(HashItem))))
+
+struct SDL_HASHTABLE_NAME
+{
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+    SDL_RWLock *lock;
+#endif
+    ADD_PREFIX(HashItem) *table;
+    void *userdata;
+    Uint32 hash_mask;
+    Uint32 num_occupied_slots;
+};
 
 static SDL_INLINE Uint32 ADD_PREFIX(internal_hash_buckets_from_estimate)(int estimated_capacity)
 {
@@ -482,12 +664,6 @@ static SDL_INLINE bool ADD_PREFIX(Remove)(SDL_HASHTABLE_NAME *table, SDL_HASHTAB
     return result;
 }
 
-#ifdef SDL_HASHTABLE_VALUE
-typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key, SDL_HASHTABLE_VALUE value);
-#else
-typedef bool(*ADD_PREFIX(IterateCallback))(void *userdata, const SDL_HASHTABLE_NAME *table, SDL_HASHTABLE_KEY key);
-#endif
-
 static SDL_INLINE bool ADD_PREFIX(Iterate)(const SDL_HASHTABLE_NAME *table, ADD_PREFIX(IterateCallback) callback, void *userdata)
 {
     if (!table) {
@@ -537,11 +713,6 @@ static SDL_INLINE Uint32 ADD_PREFIX(Count)(const SDL_HASHTABLE_NAME *table)
     SDL_UnlockRWLock(table->lock);
 #endif
     return retval;
-}
-
-static SDL_INLINE bool ADD_PREFIX(Empty)(const SDL_HASHTABLE_NAME *table)
-{
-    return (ADD_PREFIX(Count)(table) == 0);
 }
 
 static SDL_INLINE void ADD_PREFIX(internal_destroy_all)(SDL_HASHTABLE_NAME *table)
@@ -612,6 +783,13 @@ static SDL_INLINE SDL_HASHTABLE_KEY *ADD_PREFIX(FlattenKeys)(const SDL_HASHTABLE
 
 // (We don't current offer FlattenValues, but it would be trivial to implement.)
 
+#ifdef SDL_HASHTABLE_THREAD_SAFE
+static SDL_INLINE SDL_RWLock * ADD_PREFIX(GetRWLock)(const SDL_HASHTABLE_NAME *table)
+{
+    return table ? table->lock : NULL;
+}
+#endif
+
 
 static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
 {
@@ -627,6 +805,18 @@ static SDL_INLINE void ADD_PREFIX(Destroy)(SDL_HASHTABLE_NAME *table)
         SDL_free(table);
     }
 }
+
+#endif  // inline verses smaller-but-slower
+
+
+// normal and lean-and-mean versions can both use this code...
+
+static SDL_INLINE bool ADD_PREFIX(Empty)(const SDL_HASHTABLE_NAME *table)
+{
+    return (ADD_PREFIX(Count)(table) == 0);
+}
+
+
 
 #undef SDL_HASHTABLE_NAME
 #undef SDL_HASHTABLE_KEY

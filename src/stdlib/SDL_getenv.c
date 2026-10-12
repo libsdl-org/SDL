@@ -218,7 +218,8 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
         return NULL;
     }
 
-    SDL_LockRWLockForReading(env->lock);  // grab this upfront so we can count/allocate and then copy without it changing in between.
+    SDL_RWLock *rwlock = SDL_EnvironmentGetRWLock(env);
+    SDL_LockRWLockForReading(rwlock);  // grab this upfront so we can count/allocate and then copy without it changing in between.
     {
         // First pass, get the size we need for all the strings
         CountEnvStringsData countdata = { 0, 0 };
@@ -235,7 +236,7 @@ char **SDL_GetEnvironmentVariables(SDL_Environment *env)
             result[cpydata.count] = NULL;
         }
     }
-    SDL_UnlockRWLock(env->lock);
+    SDL_UnlockRWLock(rwlock);
 
     return result;
 }

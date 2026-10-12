@@ -673,3 +673,113 @@ void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
 }
+
+
+
+// The lean-and-mean generic hashtable. See the SDL_LEAN_AND_MEAN section of SDL_hashtable_template.h for an explanation.
+#ifdef SDL_LEAN_AND_MEAN
+
+typedef bool (*SDL_LeanAndMeanHashTableHashKeyFn)(void *userdata, void *key);
+typedef bool (*SDL_LeanAndMeanHashTableKeysEqualFn)(void *userdata, void *va, void *vb);
+typedef void (*SDL_LeanAndMeanHashTableFreeItemFn)(void *userdata, void *vkey, void *vvalue);
+
+typedef struct SDL_LeanAndMeanHashTableUserData
+{
+    SDL_LeanAndMeanHashTableHashKeyFn hashfn;
+    SDL_LeanAndMeanHashTableKeysEqualFn keyseqlfn;
+    SDL_LeanAndMeanHashTableFreeItemFn nukefn;
+    void *udata;
+} SDL_LeanAndMeanHashTableUserData;
+
+#define SDL_HASHTABLE_NO_LEAN_AND_MEAN 1
+#define SDL_HASHTABLE_NAME SDL_LeanAndMeanHashTable
+#define SDL_HASHTABLE_KEY void *
+#define SDL_HASHTABLE_VALUE void *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) (((SDL_LeanAndMeanHashTableUserData *) userdata)->hashfn(((SDL_LeanAndMeanHashTableUserData *) userdata)->udata, key))
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (((SDL_LeanAndMeanHashTableUserData *) userdata)->keyseqlfn(((SDL_LeanAndMeanHashTableUserData *) userdata)->udata, a, b))
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) ((SDL_LeanAndMeanHashTableUserData *) userdata)->nukefn(((SDL_LeanAndMeanHashTableUserData *) userdata)->udata, key, value)
+#define SDL_HASHTABLE_THREAD_SAFE 1  // always have the lock; we'll NULL it out if needed.
+#include "SDL_hashtable_template.h"
+
+SDL_LeanAndMeanHashTable *SDL_LeanAndMeanGenericHashTableCreate(int estimated_capacity, void *userdata, bool thread_safe, SDL_LeanAndMeanHashTableHashKeyFn hashfn, SDL_LeanAndMeanHashTableKeysEqualFn keyseqlfn, SDL_LeanAndMeanHashTableFreeItemFn nukefn)
+{
+    SDL_LeanAndMeanHashTableUserData *data = (SDL_LeanAndMeanHashTableUserData *) SDL_calloc(1, sizeof (*data));
+    if (!data) {
+        return NULL;
+    }
+    data->hashfn = hashfn;
+    data->keyseqlfn = keyseqlfn;
+    data->nukefn = nukefn;
+    data->udata = userdata;
+
+    SDL_LeanAndMeanHashTable *retval = SDL_LeanAndMeanHashTableCreate(estimated_capacity, data);
+    if (!retval) {
+        SDL_free(data);
+        return NULL;
+    }
+
+    // Just get rid of the rwlock, so any attempts to lock it become no-ops.
+    if (!thread_safe) {
+        SDL_DestroyRWLock(retval->lock);
+        retval->lock = NULL;
+    }
+
+    return retval;
+}
+
+
+bool SDL_LeanAndMeanGenericHashTableInsert(SDL_LeanAndMeanHashTable *table, void *key, void *value, bool replace)
+{
+    return SDL_LeanAndMeanHashTableInsert(table, key, value, replace);
+}
+
+bool SDL_LeanAndMeanGenericHashTableFindKey(const SDL_LeanAndMeanHashTable *table, void *key, void **actual_key)
+{
+    return SDL_LeanAndMeanHashTableFindKey(table, key, actual_key);
+}
+
+bool SDL_LeanAndMeanGenericHashTableFind(const SDL_LeanAndMeanHashTable *table, void *key, void **value)
+{
+    return SDL_LeanAndMeanHashTableFind(table, key, value);
+}
+
+bool SDL_LeanAndMeanGenericHashTableRemove(SDL_LeanAndMeanHashTable *table, void *key)
+{
+    return SDL_LeanAndMeanHashTableRemove(table, key);
+}
+
+bool SDL_LeanAndMeanGenericHashTableIterate(const SDL_LeanAndMeanHashTable *table, SDL_LeanAndMeanHashTableIterateCallback callback, void *userdata)
+{
+    return SDL_LeanAndMeanHashTableIterate(table, callback, userdata);
+}
+
+bool SDL_LeanAndMeanGenericHashTableCount(const SDL_LeanAndMeanHashTable *table)
+{
+    return SDL_LeanAndMeanHashTableCount(table);
+}
+
+void SDL_LeanAndMeanGenericHashTableClear(SDL_LeanAndMeanHashTable *table)
+{
+    SDL_LeanAndMeanHashTableClear(table);
+}
+
+void **SDL_LeanAndMeanGenericHashTableFlattenKeys(const SDL_LeanAndMeanHashTable *table, int *count)
+{
+    return SDL_LeanAndMeanHashTableFlattenKeys(table, count);
+}
+
+SDL_RWLock *SDL_LeanAndMeanGenericHashTableGetRWLock(const SDL_LeanAndMeanHashTable *table)
+{
+    return SDL_LeanAndMeanHashTableGetRWLock(table);
+}
+
+void SDL_LeanAndMeanGenericHashTableDestroy(SDL_LeanAndMeanHashTable *table)
+{
+    if (table) {
+        void *data = table->userdata;
+        SDL_LeanAndMeanHashTableDestroy(table);
+        SDL_free(data);
+    }
+}
+#endif
+
