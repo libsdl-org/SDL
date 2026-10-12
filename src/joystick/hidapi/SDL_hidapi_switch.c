@@ -978,8 +978,8 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
 
 static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 pLeftStickCal[9];
-    Uint8 pRightStickCal[9];
+    Uint8 pLeftStickCal[9]  = {0,0,0,0,0,0,0,0,0};
+    Uint8 pRightStickCal[9] = {0,0,0,0,0,0,0,0,0};
     bool have_left_stick_cal = false, have_right_stick_cal = false;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
