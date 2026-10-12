@@ -159,8 +159,8 @@ bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
         Wayland_DestroyWindowFramebuffer(_this, window);
     }
 
-    const int w = wind->current.pixel_width;
-    const int h = wind->current.pixel_height;
+    int w, h;
+    SDL_GetWindowSizeInPixels(window, &w, &h);
 
     Wayland_Framebuffer *framebuffer = SDL_calloc(1, sizeof(Wayland_Framebuffer));
     if (!framebuffer) {
@@ -216,6 +216,9 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     SDL_WindowData *wind = window->internal;
     Wayland_Framebuffer *framebuffer = wind->framebuffer;
 
+    int w, h;
+    SDL_GetWindowSizeInPixels(window, &w, &h);
+
     // Process the presentation queue, as a buffer release event may have already occurred.
     if (WAYLAND_wl_display_dispatch_queue_pending(viddata->display, wind->presentation.queue) < 0) {
         return false;
@@ -244,7 +247,7 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     }
 
     // Copy the image data.
-    SDL_memcpy(buffer->mem, framebuffer->pixels, wind->current.pixel_width * wind->current.pixel_height * 4);
+    SDL_memcpy(buffer->mem, framebuffer->pixels, w * h * 4);
 
     if (framebuffer->vsync) {
         Wayland_WaitForSwapInterval(wind);
