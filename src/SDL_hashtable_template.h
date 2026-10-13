@@ -386,7 +386,7 @@ static SDL_INLINE Uint32 ADD_PREFIX(internal_get_probe_length)(Uint32 zero_idx, 
 
 static SDL_INLINE ADD_PREFIX(HashItem) * ADD_PREFIX(internal_find_item)(const SDL_HASHTABLE_NAME *ht, SDL_HASHTABLE_KEY key, Uint32 hash)
 {
-    Uint32 hash_mask = ht->hash_mask;
+    const Uint32 hash_mask = ht->hash_mask;
     ADD_PREFIX(HashItem) *table = ht->table;
     Uint32 i = hash & hash_mask;
     Uint32 probe_len = 0;
@@ -419,7 +419,7 @@ static SDL_INLINE void ADD_PREFIX(internal_insert_item)(ADD_PREFIX(HashItem) * i
 
         if (candidate->probe_len == 0) {
             // Found an empty slot. Put it here and we're done.
-            *candidate = *item_to_insert;
+            SDL_copyp(candidate, item_to_insert);
 
             const Uint32 probe_len = ADD_PREFIX(internal_get_probe_length)(candidate->hash & hash_mask, idx, num_buckets);
             candidate->probe_len = probe_len;
@@ -436,9 +436,9 @@ static SDL_INLINE void ADD_PREFIX(internal_insert_item)(ADD_PREFIX(HashItem) * i
             // Evict it and put our item in its place, then continue looking for a new spot for the displaced item.
             // This algorithm significantly reduces clustering in the table, making lookups take very few probes.
 
-            temp_item = *candidate;
-            *candidate = *item_to_insert;
-            *item_to_insert = temp_item;
+            SDL_copyp(&temp_item, candidate);
+            SDL_copyp(candidate, item_to_insert);
+            SDL_copyp(item_to_insert, &temp_item);
 
             SDL_assert(new_probe_len == ADD_PREFIX(internal_get_probe_length)(candidate->hash & hash_mask, idx, num_buckets));
             candidate->probe_len = new_probe_len;
@@ -473,7 +473,7 @@ static SDL_INLINE void ADD_PREFIX(internal_delete_item)(SDL_HASHTABLE_NAME *ht, 
             return;
         }
 
-        *item = *next_item;
+        SDL_copyp(item, next_item);
         item->probe_len -= 1;
         item = next_item;
     }
@@ -551,8 +551,7 @@ static SDL_INLINE bool ADD_PREFIX(Insert)(SDL_HASHTABLE_NAME *table, SDL_HASHTAB
     }
 
     if (do_insert) {
-        ADD_PREFIX(HashItem)
-        new_item;
+        ADD_PREFIX(HashItem) new_item;
         new_item.key = key;
 #ifdef SDL_HASHTABLE_VALUE
         new_item.value = value;
