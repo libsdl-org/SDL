@@ -1861,6 +1861,10 @@ void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device)
 {
     device->silence_value = SDL_GetSilenceValueForFormat(device->spec.format);
     device->buffer_size = device->sample_frames * SDL_AUDIO_FRAMESIZE(device->spec);
+}
+
+static void UpdateAudioWorkBufferSize(SDL_AudioDevice *device)
+{
     device->work_buffer_size = device->sample_frames * sizeof (float) * device->spec.channels;
     device->work_buffer_size = SDL_max(device->buffer_size, device->work_buffer_size);  // just in case we end up with a 64-bit audio format at some point.
 }
@@ -1938,6 +1942,7 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     device->FlushRecording = current_audio.impl.FlushRecording;
     device->sample_frames = SDL_GetDefaultSampleFramesFromFreq(device->spec.freq);
     SDL_UpdatedAudioDeviceFormat(device);  // start this off sane.
+    UpdateAudioWorkBufferSize(device);
 
     SDL_LogDebug(SDL_LOG_CATEGORY_AUDIO, "AUDIO: attempt to open %s device '%s' at spec (%s,%d,%d)", devtypestr, device->name, GetShortAudioFormatName(spec.format), spec.channels, spec.freq);
 
@@ -1949,6 +1954,7 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     }
 
     SDL_UpdatedAudioDeviceFormat(device);  // in case the backend changed things and forgot to call this.
+    UpdateAudioWorkBufferSize(device);
 
     // Allocate a scratch audio buffer
     device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
@@ -2648,11 +2654,16 @@ bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SD
 
     device->sample_frames = new_sample_frames;
     SDL_UpdatedAudioDeviceFormat(device);
-    if (device->work_buffer && (device->work_buffer_size > orig_work_buffer_size)) {
-        SDL_aligned_free(device->work_buffer);
-        device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
-        if (!device->work_buffer) {
-            kill_device = true;
+    UpdateAudioWorkBufferSize(device);
+
+    bool reallocate_work_buffer = (device->work_buffer_size > orig_work_buffer_size);
+    if (reallocate_work_buffer) {
+        if (device->work_buffer) {
+            SDL_aligned_free(device->work_buffer);
+            device->work_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+            if (!device->work_buffer) {
+                kill_device = true;
+            }
         }
 
         if (device->postmix_buffer) {
@@ -2662,14 +2673,17 @@ bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, const SD
                 kill_device = true;
             }
         }
+    }
 
+    bool needs_mix_buffer = (device->spec.format != SDL_AUDIO_F32);
+    if (!needs_mix_buffer) {
         SDL_aligned_free(device->mix_buffer);
         device->mix_buffer = NULL;
-        if (device->spec.format != SDL_AUDIO_F32) {
-            device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
-            if (!device->mix_buffer) {
-                kill_device = true;
-            }
+    } else if (reallocate_work_buffer || !device->mix_buffer) {
+        SDL_aligned_free(device->mix_buffer);
+        device->mix_buffer = (Uint8 *)SDL_aligned_alloc(SDL_GetSIMDAlignment(), device->work_buffer_size);
+        if (!device->mix_buffer) {
+            kill_device = true;
         }
     }
 
