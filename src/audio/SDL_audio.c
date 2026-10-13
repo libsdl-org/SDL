@@ -1932,6 +1932,7 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
         return true;  // carry on with the reconfigured device!
     }
 
+    SDL_copyp(&device->spec, &spec);  // this is what current_audio.impl.OpenDevice() will use for the requested format.  !!! FIXME: maybe we should move this to a param instead of changing state, though.
 
     // These start with the backend's implementation, but we might swap them out with zombie versions later.
     device->WaitDevice = current_audio.impl.WaitDevice;
