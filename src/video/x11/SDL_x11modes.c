@@ -728,6 +728,11 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
 
     if (info) {
         float SDR_white_level;
+
+        // The gamescope SDR white level is actually dynamic based on display settings and ambient light
+        // We don't have access to that info, so we'll disable this for now.
+        gamescope = false;
+
         if (gamescope) {
             SDR_white_level = GetGamescopeSDRWhiteLevel(dpy, screen);
         } else {

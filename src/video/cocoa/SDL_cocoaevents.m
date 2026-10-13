@@ -111,6 +111,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                                                           [NSNumber numberWithBool:momentumScrollSupported], @"AppleMomentumScrollSupported",
                                                           [NSNumber numberWithBool:pressAndHoldEnabled], @"ApplePressAndHoldEnabled",
                                                           [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
+                                                          [NSNumber numberWithBool:NO], @"NSScreenLayoutAdjustOnWindowMove",
                                                           nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 }

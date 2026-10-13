@@ -2318,6 +2318,48 @@ static int SDLCALL render_testColorspaceSRGB(void *arg)
     return TEST_COMPLETED;
 }
 
+/**
+ * Tests software renderer functionality
+ */
+static int SDLCALL render_testSoftware(void *arg)
+{
+    SDL_Renderer *software = SDL_CreateSoftwareRenderer(NULL);
+    SDLTest_AssertPass("SDL_CreateSoftwareRenderer()");
+    SDLTest_AssertCheck(software != NULL, "Check SDL_CreateSoftwareRenderer result: %s", software != NULL ? "success" : SDL_GetError());
+
+    // Verify that we can't attach a software renderer to a window with an existing renderer
+    SDLTest_AssertPass("Trying to attach to a window with an existing renderer");
+    CHECK_FUNC(!SDL_SetSoftwareRendererWindow, (software, window));
+
+    // Verify that we can attach a software renderer to a window without an existing renderer
+    SDLTest_AssertPass("Trying to attach to a window without an existing renderer");
+    SDL_DestroyRenderer(renderer);
+    renderer = software;
+    CHECK_FUNC(SDL_SetSoftwareRendererWindow, (renderer, window));
+
+    // Verify that we can attach to a surface
+    SDLTest_AssertPass("Trying to attach to a surface");
+    SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_RGBA8888);
+    SDLTest_AssertCheck(surface != NULL, "Check SDL_CreateSurface result: %s", surface != NULL ? "success" : SDL_GetError());
+    CHECK_FUNC(SDL_SetSoftwareRendererSurface, (renderer, surface));
+
+    // Verify that destroying a surface in use doesn't crash
+    SDLTest_AssertPass("Destroying a surface in use");
+    SDL_DestroySurface(surface);
+    CHECK_FUNC(SDL_RenderFillRect, (renderer, NULL));
+    CHECK_FUNC(SDL_RenderPresent, (renderer));
+
+    // Verify that we can attach to a window again
+    SDLTest_AssertPass("Trying to attach to a window");
+    CHECK_FUNC(SDL_SetSoftwareRendererWindow, (renderer, window));
+
+    // Verify that we can set a NULL window
+    SDLTest_AssertPass("Setting a NULL window should succeed");
+    CHECK_FUNC(SDL_SetSoftwareRendererWindow, (renderer, NULL));
+
+    return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Render test cases */
@@ -2397,6 +2439,10 @@ static const SDLTest_TestCaseReference renderTestColorspaceSRGB = {
     render_testColorspaceSRGB, "render_testColorspaceSRGB", "Tests colorspace support (linear -> sRGB)", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestSoftware = {
+    render_testSoftware, "render_testSoftware", "Tests software renderer support", TEST_ENABLED
+};
+
 /* Sequence of Render test cases */
 static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestGetNumRenderDrivers,
@@ -2418,6 +2464,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestRGBSurfaceNoAlpha,
     &renderTestColorspaceLinear,
     &renderTestColorspaceSRGB,
+    &renderTestSoftware,
     NULL
 };
 

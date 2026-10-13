@@ -71,7 +71,7 @@ static void GatherCameraSpecs(Sint32 devid, CameraFormatAddData *add_data, char 
     }
 }
 
-static bool FindVitaCameraByID(SDL_Camera *device, void *userdata)
+static bool FindVitaCameraByID(void *userdata, SDL_Camera *device)
 {
     Sint32 devid = (Sint32) userdata;
     return (devid == (Sint32)device->handle);

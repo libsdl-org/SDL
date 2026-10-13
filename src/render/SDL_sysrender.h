@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */

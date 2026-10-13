@@ -530,7 +530,7 @@ static void GatherCameraSpecs(AVCaptureDevice *device, CameraFormatAddData *add_
     }
 }
 
-static bool FindCoreMediaCameraByUniqueID(SDL_Camera *device, void *userdata)
+static bool FindCoreMediaCameraByUniqueID(void *userdata, SDL_Camera *device)
 {
     NSString *uniqueid = (__bridge NSString *) userdata;
     AVCaptureDevice *avdev = (__bridge AVCaptureDevice *) device->handle;

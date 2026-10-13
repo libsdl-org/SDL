@@ -41,7 +41,9 @@ struct SDL_PrivateAudioData
     int num_buffers;
     Uint8 *mixbuf;          // Raw mixing buffer
     size_t mixbuf_bytes;    // num_buffers * device->buffer_size
+    size_t callback_offset;
     size_t callback_bytes;
+    size_t processed_offset;
     size_t processed_bytes;
     SDL_Semaphore *semaphore;
     SDL_AtomicInt error_callback_triggered;
@@ -132,12 +134,12 @@ static void ReadDataCallback(OH_AudioCapturer *capturer, void *userData, void *a
     struct SDL_PrivateAudioData *hidden = device->hidden;
     const size_t framesize = SDL_AUDIO_FRAMESIZE(device->spec);
     const size_t callback_bytes = (size_t) numBytes;
-    size_t old_buffer_index = hidden->callback_bytes / device->buffer_size;
     const Uint8 *input = (const Uint8 *)audioData;
     const size_t available_bytes = hidden->mixbuf_bytes - (hidden->callback_bytes - hidden->processed_bytes);
     const size_t size = SDL_min(available_bytes, callback_bytes);
-    const size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
+    const size_t offset = hidden->callback_offset;
     const size_t end = (offset + size) % hidden->mixbuf_bytes;
+    const size_t old_buffer_offset = (offset % device->buffer_size);
 
     SDL_assert(size <= hidden->mixbuf_bytes);
     (void) framesize;  // only used in macros that bubble out of release code, etc.
@@ -153,6 +155,7 @@ static void ReadDataCallback(OH_AudioCapturer *capturer, void *userData, void *a
     }
 
     SDL_MemoryBarrierRelease();  // the other half of this is in OHAUDIO_RecordDevice().
+    hidden->callback_offset = end;
     hidden->callback_bytes += size;
 
     if (size < callback_bytes) {
@@ -160,11 +163,11 @@ static void ReadDataCallback(OH_AudioCapturer *capturer, void *userData, void *a
     }
 
     // tell the audio thread to pull this data in.
-    const size_t new_buffer_index = hidden->callback_bytes / device->buffer_size;
-    while (old_buffer_index < new_buffer_index) {
+    size_t completed_buffers = (old_buffer_offset + size) / device->buffer_size;
+    while (completed_buffers > 0) {
         // Trigger audio processing
         SDL_SignalSemaphore(hidden->semaphore);
-        ++old_buffer_index;
+        --completed_buffers;
     }
 }
 
@@ -174,12 +177,12 @@ static OH_AudioData_Callback_Result WriteDataCallback(OH_AudioRenderer *renderer
     struct SDL_PrivateAudioData *hidden = device->hidden;
     const size_t framesize = SDL_AUDIO_FRAMESIZE(device->spec);
     const size_t callback_bytes = (size_t) numBytes;
-    size_t old_buffer_index = hidden->callback_bytes / device->buffer_size;
     Uint8 *output = (Uint8 *)audioData;
     const size_t available_bytes = (hidden->processed_bytes - hidden->callback_bytes);
     const size_t size = SDL_min(available_bytes, callback_bytes);
-    const size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
+    const size_t offset = hidden->callback_offset;
     const size_t end = (offset + size) % hidden->mixbuf_bytes;
+    const size_t old_buffer_offset = (offset % device->buffer_size);
 
     SDL_assert(size <= hidden->mixbuf_bytes);
     (void) framesize;  // only used in macros that bubble out of release code, etc.
@@ -194,6 +197,7 @@ static OH_AudioData_Callback_Result WriteDataCallback(OH_AudioRenderer *renderer
         SDL_memcpy(&output[0], &hidden->mixbuf[offset], partial);
         SDL_memcpy(&output[partial], &hidden->mixbuf[0], end);
     }
+    hidden->callback_offset = end;
     hidden->callback_bytes += size;
 
     if (size < callback_bytes) {
@@ -202,11 +206,11 @@ static OH_AudioData_Callback_Result WriteDataCallback(OH_AudioRenderer *renderer
     }
 
     // tell the audio thread to generate more data, so we're ready to memcpy it when this callback runs again.
-    const size_t new_buffer_index = hidden->callback_bytes / device->buffer_size;
-    while (old_buffer_index < new_buffer_index) {
+    size_t completed_buffers = (old_buffer_offset + size) / device->buffer_size;
+    while (completed_buffers > 0) {
         // Trigger audio processing
         SDL_SignalSemaphore(hidden->semaphore);
-        ++old_buffer_index;
+        --completed_buffers;
     }
 
     return AUDIO_DATA_CALLBACK_RESULT_VALID;
@@ -215,8 +219,7 @@ static OH_AudioData_Callback_Result WriteDataCallback(OH_AudioRenderer *renderer
 static Uint8 *OHAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
-    return &hidden->mixbuf[offset];
+    return &hidden->mixbuf[hidden->processed_offset];
 }
 
 static bool OHAUDIO_WaitDevice(SDL_AudioDevice *device)
@@ -254,6 +257,10 @@ static bool RecoverOHAudioDevice(SDL_AudioDevice *device)
     SDL_copyp(&prevspec, &device->spec);
 
     if (!BuildOHAudioStream(device)) {
+        // Restore the buffer sizes that match the allocated buffers, so we don't crash
+        device->sample_frames = prev_sample_frames;
+        SDL_copyp(&device->spec, &prevspec);
+        SDL_UpdatedAudioDeviceFormat(device);
         return false;  // oh well, we tried.
     }
 
@@ -284,6 +291,7 @@ static bool OHAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int
         }
     } else {
         SDL_MemoryBarrierRelease();
+        hidden->processed_offset = (hidden->processed_offset + buflen) % hidden->mixbuf_bytes;
         hidden->processed_bytes += buflen;
     }
     return true;
@@ -300,9 +308,9 @@ static int OHAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int bufle
     }
 
     SDL_assert(buflen == device->buffer_size);  // If this isn't true, we need to change semaphore trigger logic and account for wrapping copies here
-    size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
     SDL_MemoryBarrierAcquire();
-    SDL_memcpy(buffer, &hidden->mixbuf[offset], buflen);
+    SDL_memcpy(buffer, &hidden->mixbuf[hidden->processed_offset], buflen);
+    hidden->processed_offset = (hidden->processed_offset + buflen) % hidden->mixbuf_bytes;
     hidden->processed_bytes += buflen;
     return buflen;
 }
@@ -477,8 +485,10 @@ static bool BuildOHAudioStream(SDL_AudioDevice *device)
     if (!hidden->mixbuf) {
         return false;
     }
-    hidden->processed_bytes = 0;
+    hidden->callback_offset = 0;
     hidden->callback_bytes = 0;
+    hidden->processed_offset = 0;
+    hidden->processed_bytes = 0;
 
     hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers - 1);
     if (!hidden->semaphore) {
@@ -532,7 +542,7 @@ static bool OHAUDIO_OpenDevice(SDL_AudioDevice *device)
     return BuildOHAudioStream(device);
 }
 
-static bool PauseOneDevice(SDL_AudioDevice *device, void *userdata)
+static bool PauseOneDevice(void *userdata, SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = (struct SDL_PrivateAudioData *)device->hidden;
     if (hidden) {
