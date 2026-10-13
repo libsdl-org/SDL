@@ -254,6 +254,10 @@ static bool RecoverOHAudioDevice(SDL_AudioDevice *device)
     SDL_copyp(&prevspec, &device->spec);
 
     if (!BuildOHAudioStream(device)) {
+        // Restore the buffer sizes that match the allocated buffers, so we don't crash
+        device->sample_frames = prev_sample_frames;
+        SDL_copyp(&device->spec, &prevspec);
+        SDL_UpdatedAudioDeviceFormat(device);
         return false;  // oh well, we tried.
     }
 
