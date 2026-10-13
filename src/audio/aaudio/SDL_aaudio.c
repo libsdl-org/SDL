@@ -38,7 +38,9 @@ struct SDL_PrivateAudioData
     int num_buffers;
     Uint8 *mixbuf;          // Raw mixing buffer
     size_t mixbuf_bytes;    // num_buffers * device->buffer_size
+    size_t callback_offset;
     size_t callback_bytes;
+    size_t processed_offset;
     size_t processed_bytes;
     SDL_Semaphore *semaphore;
     SDL_AtomicInt error_callback_triggered;
@@ -104,15 +106,20 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
     struct SDL_PrivateAudioData *hidden = device->hidden;
     size_t framesize = SDL_AUDIO_FRAMESIZE(device->spec);
     size_t callback_bytes = numFrames * framesize;
-    size_t old_buffer_index = hidden->callback_bytes / device->buffer_size;
+    size_t available_bytes;
+    if (device->recording) {
+        available_bytes = hidden->mixbuf_bytes - (hidden->callback_bytes - hidden->processed_bytes);
+    } else {
+        available_bytes = (hidden->processed_bytes - hidden->callback_bytes);
+    }
+    size_t size = SDL_min(available_bytes, callback_bytes);
+    size_t offset = hidden->callback_offset;
+    size_t end = (offset + size) % hidden->mixbuf_bytes;
+    size_t old_buffer_offset = (offset % device->buffer_size);
+    SDL_assert(size <= hidden->mixbuf_bytes);
 
     if (device->recording) {
         const Uint8 *input = (const Uint8 *)audioData;
-        size_t available_bytes = hidden->mixbuf_bytes - (hidden->callback_bytes - hidden->processed_bytes);
-        size_t size = SDL_min(available_bytes, callback_bytes);
-        size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
-        size_t end = (offset + size) % hidden->mixbuf_bytes;
-        SDL_assert(size <= hidden->mixbuf_bytes);
 
 //LOGI("Recorded %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->callback_bytes / framesize, hidden->processed_bytes / framesize);
 
@@ -125,6 +132,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         }
 
         SDL_MemoryBarrierRelease();
+        hidden->callback_offset = end;
         hidden->callback_bytes += size;
 
         if (size < callback_bytes) {
@@ -132,11 +140,6 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         }
     } else {
         Uint8 *output = (Uint8 *)audioData;
-        size_t available_bytes = (hidden->processed_bytes - hidden->callback_bytes);
-        size_t size = SDL_min(available_bytes, callback_bytes);
-        size_t offset = hidden->callback_bytes % hidden->mixbuf_bytes;
-        size_t end = (offset + size) % hidden->mixbuf_bytes;
-        SDL_assert(size <= hidden->mixbuf_bytes);
 
 //LOGI("Playing %zu frames, %zu available, %zu max (%zu written, %zu read)", callback_bytes / framesize, available_bytes / framesize, hidden->mixbuf_bytes / framesize, hidden->processed_bytes / framesize, hidden->callback_bytes / framesize);
 
@@ -148,6 +151,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
             SDL_memcpy(&output[0], &hidden->mixbuf[offset], partial);
             SDL_memcpy(&output[partial], &hidden->mixbuf[0], end);
         }
+        hidden->callback_offset = end;
         hidden->callback_bytes += size;
 
         if (size < callback_bytes) {
@@ -156,11 +160,11 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
         }
     }
 
-    size_t new_buffer_index = hidden->callback_bytes / device->buffer_size;
-    while (old_buffer_index < new_buffer_index) {
+    size_t completed_buffers = (old_buffer_offset + size) / device->buffer_size;
+    while (completed_buffers > 0) {
         // Trigger audio processing
         SDL_SignalSemaphore(hidden->semaphore);
-        ++old_buffer_index;
+        --completed_buffers;
     }
 
     return AAUDIO_CALLBACK_RESULT_CONTINUE;
@@ -169,8 +173,7 @@ static aaudio_data_callback_result_t AAUDIO_dataCallback(AAudioStream *stream, v
 static Uint8 *AAUDIO_GetDeviceBuf(SDL_AudioDevice *device, int *bufsize)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
-    size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
-    return &hidden->mixbuf[offset];
+    return &hidden->mixbuf[hidden->processed_offset];
 }
 
 static bool AAUDIO_WaitDevice(SDL_AudioDevice *device)
@@ -243,6 +246,7 @@ static bool AAUDIO_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int 
         }
     } else {
         SDL_MemoryBarrierRelease();
+        hidden->processed_offset = (hidden->processed_offset + buflen) % hidden->mixbuf_bytes;
         hidden->processed_bytes += buflen;
     }
     return true;
@@ -259,9 +263,9 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     }
 
     SDL_assert(buflen == device->buffer_size);  // If this isn't true, we need to change semaphore trigger logic and account for wrapping copies here
-    size_t offset = (hidden->processed_bytes % hidden->mixbuf_bytes);
     SDL_MemoryBarrierAcquire();
-    SDL_memcpy(buffer, &hidden->mixbuf[offset], buflen);
+    SDL_memcpy(buffer, &hidden->mixbuf[hidden->processed_offset], buflen);
+    hidden->processed_offset = (hidden->processed_offset + buflen) % hidden->mixbuf_bytes;
     hidden->processed_bytes += buflen;
     return buflen;
 }
@@ -423,8 +427,10 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     if (!hidden->mixbuf) {
         return false;
     }
-    hidden->processed_bytes = 0;
+    hidden->callback_offset = 0;
     hidden->callback_bytes = 0;
+    hidden->processed_offset = 0;
+    hidden->processed_bytes = 0;
 
     hidden->semaphore = SDL_CreateSemaphore(recording ? 0 : hidden->num_buffers - 1);
     if (!hidden->semaphore) {
