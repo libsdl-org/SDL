@@ -325,7 +325,7 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
 
     WIN_AdjustWindowRect(window, &x, &y, &w, &h, rect_type);
 
-    data->expected_resize = true;
+    data->expected_resize = !(flags & SWP_NOSIZE);
     if (SetWindowPos(hwnd, top, x, y, w, h, flags) == 0) {
         result = WIN_SetError("SetWindowPos()");
     }
