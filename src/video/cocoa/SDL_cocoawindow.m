@@ -883,6 +883,8 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
+    // Deprecated in macOS 10.12.2 in favor of allowedTouchTypes; the equivalent would be:
+    // view.allowedTouchTypes |= NSTouchTypeMaskIndirect;
     [view setAcceptsTouchEvents:YES];
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -2434,6 +2436,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, NSWindow
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
+        // Deprecated in macOS 10.14, where it no longer does anything, but SDL still supports macOS 10.13.
         [nswindow setOneShot:NO];
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -3375,7 +3378,7 @@ void Cocoa_AcceptDragAndDrop(SDL_Window *window, bool accept)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #endif
-            // UTTypeFileURL / UTTypeUTF8PlainText don't exist before macOS 11.0.
+            // Deprecated in macOS 12.0; their replacements, UTTypeFileURL and UTTypeUTF8PlainText, don't exist before macOS 11.0.
             [data.nswindow registerForDraggedTypes:@[ (NSString *)kUTTypeFileURL,
                                                       (NSString *)kUTTypeUTF8PlainText ]];
 #ifdef __clang__

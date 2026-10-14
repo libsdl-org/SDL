@@ -53,6 +53,7 @@
     } else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 11.0 and iOS 14.0; its replacement, UNNotificationPresentationOptionBanner, doesn't exist before then.
         completionHandler(UNNotificationPresentationOptionAlert + UNNotificationPresentationOptionSound);
 #pragma clang diagnostic pop
     }

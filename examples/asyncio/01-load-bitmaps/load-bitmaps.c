@@ -48,7 +48,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     /* Load some .png files asynchronously from wherever the app is being run from, put them in the same queue. */
     for (i = 0; i < SDL_arraysize(pngs); i++) {
         char *path = NULL;
-
 #ifdef SWIFT_PACKAGE
         extern bool SwiftPackage_GetLibraryBundleResource(const char *name, char *buffer, int size);
 
@@ -60,7 +59,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 #else
         SDL_asprintf(&path, "%s%s", SDL_GetBasePath(), pngs[i]);  /* allocate a string of the full file path */
 #endif
-
         /* you _should) check for failure, but we'll just go on without files here. */
         SDL_LoadFileAsync(path, queue, (void *) pngs[i]);  /* attach the filename as app-specific data, so we can see it later. */
         SDL_free(path);

@@ -246,7 +246,7 @@
 #ifdef SDL_SWIFTPM_POWER_ENABLED
 #ifdef SDL_PLATFORM_MACOS
 #define SDL_POWER_MACOSX 1
-#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+#elif defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_VISIONOS)
 #define SDL_POWER_UIKIT 1
 #endif
 #else
@@ -309,7 +309,7 @@
 #undef SDL_SENSOR_PRIVATE
 
 #ifdef SDL_SWIFTPM_SENSOR_ENABLED
-#if defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)
+#if (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_TVOS)) || defined(SDL_PLATFORM_VISIONOS)
 #define SDL_SENSOR_COREMOTION 1
 #else
 #define SDL_SENSOR_DUMMY 1
@@ -438,7 +438,7 @@
 #define SDL_VIDEO_DISABLED 1
 #endif
 
-#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS) || defined(SDL_PLATFORM_VISIONOS)
 #define SDL_VIDEO_DRIVER_UIKIT 1    // Always enabled because the uikit code always requires it even if video is disabled.
 #endif
 

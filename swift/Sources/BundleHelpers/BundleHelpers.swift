@@ -21,16 +21,6 @@
 
 import Foundation
 
-@c(SwiftPackage_GetMainBundleResourceDirectory)
-public func getMainBundleResourceDirectory(_ buffer: UnsafeMutablePointer<CChar>?, _ size: CInt) -> CBool {
-	getBundleResourceDirectory(bundle: .main, buffer: buffer, size: size)
-}
-
-@c(SwiftPackage_GetMainBundleResource)
-public func getMainBundleResource(_ name: UnsafePointer<CChar>?, _ buffer: UnsafeMutablePointer<CChar>?, _ size: CInt) -> CBool {
-	getBundleResource(bundle: .main, name: name, buffer: buffer, size: size)
-}
-
 public func getBundleResourceDirectory(bundle: Bundle, buffer: UnsafeMutablePointer<CChar>?, size: CInt) -> CBool {
 	guard let buffer, let url = bundle.resourceURL else {
 		return false
