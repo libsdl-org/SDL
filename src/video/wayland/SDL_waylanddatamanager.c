@@ -229,6 +229,10 @@ static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_sou
 
 static void data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
 {
+    SDL_WaylandDataSource *source = data;
+    if (source) {
+        Wayland_DataSourceDestroy(source);
+    }
 }
 
 static void data_source_handle_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action)
