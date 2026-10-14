@@ -21,12 +21,11 @@
 
 // Shadows <SDL3/SDL_revision.h>, which would otherwise define SDL_REVISION as "".
 //
-// Package.swift force-includes this file (-include) ahead of every translation unit,
-// so it claims SDL's SDL_revision_h_ guard first; when the real header is reached
-// later, the guard suppresses it. SDL_revision_swiftpm.h is generated per-build by
-// BuildSDLRevisionHeaderPlugin -- the SwiftPM equivalent of CMake's configure_file()
-// on include/build_config/SDL_revision.h.cmake -- and is found via the -I contributed
-// by the plugin's build command.
+// Any target whose sources include <SDL3/SDL_revision.h> must force-include this file
+// (-include) in Package.swift, so that it claims SDL's SDL_revision_h_ guard first; when
+// the real header is reached later, the guard suppresses it. SDL_revision_swiftpm.h is
+// generated per-build by BuildSDLRevisionHeaderPlugin and is found via the -I
+// contributed by the plugin's build command.
 
 #ifndef SDL_revision_h_
 #define SDL_revision_h_
