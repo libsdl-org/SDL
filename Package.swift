@@ -823,6 +823,7 @@ let package = Package(
 		.macOS(.v13),
 		.tvOS(.v15),
 		.visionOS(.v26),
+		.watchOS("99.0"),
 	],
 	products: [
 		.library(name: "SimpleDirectMediaLayer", targets: ["SimpleDirectMediaLayer"]),
@@ -1591,7 +1592,7 @@ let package = Package(
 			dependencies: [
 				.target(name: "joystick_driver_hidapi", condition: .when(platforms: [.iOS, .macCatalyst, .macOS, .tvOS], traits: [TraitDescription.enableJoystickDriverHIDAPI.name])),
 				.target(name: "joystick_driver_iokit", condition: .when(platforms: [.macOS], traits: [TraitDescription.enableJoystickDriverIOKit.name])),
-				.target(name: "joystick_driver_mfi", condition: .when(platforms: [.iOS, .macCatalyst, .macOS, .tvOS, .visionOS])),	// Unfortunately, the core always needs this when the joystick is enabled.
+				.target(name: "joystick_driver_mfi", condition: .when(platforms: [.iOS, .macCatalyst, .macOS, .tvOS, .visionOS], traits: [TraitDescription.enableJoystickDriverMFI.name])),
 				.target(name: "joystick_driver_virtual", condition: .when(traits: [TraitDescription.enableJoystickDriverVirtual.name])),
 			],
 			sources: ["swift/Sources/joystick/src"],
