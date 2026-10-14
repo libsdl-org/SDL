@@ -966,6 +966,7 @@ let package = Package(
 			dependencies: [
 				.target(name: "uikit"),
 
+
 				// Audio Subsystem Default Dependencies
 
 				.target(name: "audio", condition: .when(traits: [TraitDescription.enableDefaultAudio.name])),
@@ -1145,6 +1146,7 @@ let package = Package(
 			dependencies: [
 				.target(name: "apple"),
 				.target(name: "posix"),
+
 
 				// Audio Subsystem Default Dependencies
 
@@ -1328,6 +1330,7 @@ let package = Package(
 			name: "visionOS",
 			dependencies: [
 				.target(name: "uikit"),
+
 
 				// Audio Subsystem Default Dependencies
 
@@ -1579,6 +1582,7 @@ let package = Package(
 				.linkedFramework("CoreBluetooth", .when(platforms: [.iOS, .macCatalyst, .tvOS])),
 			]
 		),
+
 
 		// Joystick Subsystem Targets
 
@@ -1835,6 +1839,7 @@ let package = Package(
 		.sdlTestExecutable(name: "childprocess"),
 		.sdlTestExecutable(name: "pretest"),
 		.sdlTestExecutable(name: "testatomic"),
+		.sdlTestExecutable(name: "testaudioinfo"),
 		.sdlTestExecutable(name: "testautomation", additionalSources: [
 			"testautomation_audio.c",
 			"testautomation_blit.c",
@@ -1865,10 +1870,12 @@ let package = Package(
 			"testautomation_video.c",
 		], additionalCSettings: buildDependentCSettings),
 		.sdlTestExecutable(name: "testbounds"),
+		.sdlTestExecutable(name: "testdisplayinfo"),
 		.sdlTestExecutable(name: "testerror"),
 		.sdlTestExecutable(name: "testevdev", additionalCSettings: buildDependentCSettings),
 		.sdlTestExecutable(name: "testfile"),
 		.sdlTestExecutable(name: "testfilesystem"),
+		.sdlTestExecutable(name: "testkeys"),
 		.sdlTestExecutable(name: "testlocale"),
 		.sdlTestExecutable(name: "testplatform"),
 		.sdlTestExecutable(name: "testpower"),
@@ -1891,7 +1898,6 @@ let package = Package(
 		.sdlTestExecutable(name: "testasyncio", additionalDependencies: ["testutils", "TestResources"]),
 		.sdlTestExecutable(name: "testaudio", additionalDependencies: ["testutils", "TestResources"]),
 		.sdlTestExecutable(name: "testaudiohotplug", additionalDependencies: ["testutils", "TestResources"]),
-		.sdlTestExecutable(name: "testaudioinfo"),
 		.sdlTestExecutable(name: "testaudiorecording"),
 		.sdlTestExecutable(name: "testaudiostreamdynamicresample", additionalDependencies: ["testutils", "TestResources"]),
 		.sdlTestExecutable(name: "testcamera"),
@@ -1901,7 +1907,6 @@ let package = Package(
 		.sdlTestExecutable(name: "testcustomcursor"),
 		.sdlTestExecutable(name: "testdescriptor", additionalCSettings: buildDependentCSettings + [.define("DEBUG_DESCRIPTOR")]),
 		.sdlTestExecutable(name: "testdialog"),
-		.sdlTestExecutable(name: "testdisplayinfo"),
 		.sdlTestExecutable(name: "testdlopennote", additionalDependencies: ["testutils"]),
 		.sdlTestExecutable(name: "testdraw"),
 		.sdlTestExecutable(name: "testdrawchessboard"),
@@ -1950,7 +1955,6 @@ let package = Package(
 		.sdlTestExecutable(name: "testiconv", additionalDependencies: ["testutils", "TestResources"]),
 		.sdlTestExecutable(name: "testime", additionalDependencies: ["testutils", "TestResources"]),
 		.sdlTestExecutable(name: "testintersections"),
-		.sdlTestExecutable(name: "testkeys"),
 		.sdlTestExecutable(name: "testloadso"),
 		.sdlTestExecutable(name: "testlock"),
 		.sdlTestExecutable(name: "testmanymouse"),

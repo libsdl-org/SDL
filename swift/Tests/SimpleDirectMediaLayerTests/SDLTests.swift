@@ -39,6 +39,10 @@ struct `SDL Tests` {
 		try await Self.runTest(name: "testatomic", timeout: .seconds(20))
 	}
 
+	@Test func testaudioinfo() async throws {
+		try await Self.runTest(name: "testaudioinfo")
+	}
+
 	@Test func testautomation() async throws {
 		try await Self.runTest(name: "testautomation", timeout: .seconds(120))
 	}
@@ -49,6 +53,10 @@ struct `SDL Tests` {
 
 	@Test func testbounds() async throws {
 		try await Self.runTest(name: "testbounds")
+	}
+
+	@Test func testdisplayinfo() async throws {
+		try await Self.runTest(name: "testdisplayinfo")
 	}
 
 	@Test func testerror() async throws {
@@ -65,6 +73,10 @@ struct `SDL Tests` {
 
 	@Test func testfilesystem() async throws {
 		try await Self.runTest(name: "testfilesystem")
+	}
+
+	@Test func testkeys() async throws {
+		try await Self.runTest(name: "testkeys")
 	}
 
 	@Test func testlocale() async throws {
