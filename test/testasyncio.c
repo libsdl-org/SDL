@@ -90,12 +90,13 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
 
 #ifdef SWIFT_PACKAGE
-    char resourceDirectory[512];
+    char resourceDirectory[2048];
 
     if (!pngs || (pngcount == 0)) {
         extern bool SwiftPackage_GetLibraryBundleResourceDirectory(char *buffer, int size);
 
-        if (SwiftPackage_GetLibraryBundleResourceDirectory(resourceDirectory, 512)) {
+        if (SwiftPackage_GetLibraryBundleResourceDirectory(resourceDirectory, 2047)) {
+            SDL_strlcat(resourceDirectory, "/", sizeof(resourceDirectory));
             base = resourceDirectory;
             pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
         }
