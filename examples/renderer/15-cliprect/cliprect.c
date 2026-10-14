@@ -72,6 +72,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_free(png_path);
         return SDL_APP_FAILURE;
     }
+
     SDL_free(png_path);  /* done with this, the file is loaded. */
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
