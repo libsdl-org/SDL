@@ -188,7 +188,11 @@ static UIImage *SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     // A launch screen may not exist. Fall back to launch images in that case.
     if (screenname) {
         @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // Deprecated in visionOS 1.0, which won't support loading Interface Builder files in a future version.
             self.view = [bundle loadNibNamed:screenname owner:self options:nil][0];
+#pragma clang diagnostic pop
         }
         @catch (NSException *exception) {
             /* If a launch screen name is specified but it fails to load, iOS
@@ -628,7 +632,11 @@ API_AVAILABLE(ios(13.0))
 #else
         CGRect viewFrame = [UIScreen mainScreen].bounds;
 #endif
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in iOS, tvOS and visionOS 26.0 in favor of -initWithWindowScene:, but the launch window isn't created with a window scene.
         launchWindow = [[UIWindow alloc] initWithFrame:viewFrame];
+#pragma clang diagnostic pop
 
         /* We don't want the launch window immediately hidden when a real SDL
          * window is shown - we fade it out ourselves when we're ready. */

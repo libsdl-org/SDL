@@ -329,8 +329,8 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
         for (NSRunningApplication *i in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            // Deprecated in macOS 10.14. I'm not sure that this should even be called anymore on that platform, but still can if the was migrated from
-            // macOS <14.0.
+            // NSApplicationActivateIgnoringOtherApps is deprecated in macOS 14.0 and has no
+            // effect there, but this is still needed when running on earlier versions.
             [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
 #pragma clang diagnostic pop
             break;

@@ -60,6 +60,7 @@ provideDataForType:(NSPasteboardType)type
         NSData *data;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
         mimeType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)type, kUTTagClassMIMEType);
 #pragma clang diagnostic pop
         callbackData = m_callback(m_userdata, [(__bridge NSString *)mimeType UTF8String], &size);
@@ -183,6 +184,7 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
                 CFStringRef mimeType = CFStringCreateWithCString(NULL, _this->clipboard_mime_types[i], kCFStringEncodingUTF8);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
                 CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
 #pragma clang diagnostic pop
                 CFRelease(mimeType);
@@ -229,6 +231,7 @@ static CFStringRef GetUTIType(const char *tag)
         CFStringRef mimeType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
         utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
 #pragma clang diagnostic pop
         CFRelease(mimeType);

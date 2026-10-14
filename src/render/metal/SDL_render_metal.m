@@ -2619,7 +2619,19 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
 #endif
 
         // https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
-#if defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
+
+        // We special case visionOS to do the right thing, but the correct solution is to have all of the OSes check the supportsFamily
+#if defined(SDL_PLATFORM_VISIONOS)
+        if ([mtldevice supportsFamily:MTLGPUFamilyApple10]) {
+            maxtexsize = 32768;
+        } else if ([mtldevice supportsFamily:MTLGPUFamilyApple3]) {
+            maxtexsize = 16384;
+        } else if ([mtldevice supportsFamily:MTLGPUFamilyApple1]) {
+            maxtexsize = 8192;
+        } else {
+            maxtexsize = 4096;
+        }
+#elif defined(SDL_PLATFORM_MACOS) || TARGET_OS_MACCATALYST
         maxtexsize = 16384;
 #elif defined(SDL_PLATFORM_TVOS)
         if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
