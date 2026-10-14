@@ -98,6 +98,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         if (SwiftPackage_GetLibraryBundleResourceDirectory(resourceDirectory, 2047)) {
             SDL_strlcat(resourceDirectory, "/", sizeof(resourceDirectory));
             base = resourceDirectory;
+            SDL_free(pngs);
             pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
         }
     }
