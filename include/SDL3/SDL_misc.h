@@ -77,8 +77,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OpenURL(const char *url);
  *
  * This encodes a string according to RFC3986 section 2, using
  * "percent-encoding," which is the act of turning a single byte into a
- * three-character sequence. For example, a space character (ASCII 32, or 0x20)
- * is converted into the string "%20".
+ * three-character sequence. For example, a space character (ASCII 32, or
+ * 0x20) is converted into the string "%20".
  *
  * Only certain bytes are encoded. What RFC3986 calls "unreserved characters"
  * are not: low-ASCII alphanumeric chars, and four others: `=._~`.
@@ -103,10 +103,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_OpenURL(const char *url);
  * and not encoded. Passing NULL is valid and adds no characters to the list.
  *
  * \param str the string to encode.
- * \param no_encode_chars a string of extra characters that are not to be encoded.
- * \returns the encoded string or NULL on failure; call SDL_GetError() for more
- *          information. This should be freed with SDL_free() when it is no
- *          longer needed.
+ * \param no_encode_chars a string of extra characters that are not to be
+ *                        encoded.
+ * \returns the encoded string or NULL on failure; call SDL_GetError() for
+ *          more information. This should be freed with SDL_free() when it is
+ *          no longer needed.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
