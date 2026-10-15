@@ -844,6 +844,10 @@ let package = Package(
 		.sdlTarget(
 			name: "SimpleDirectMediaLayer",
 			dependencies: [
+				// A hack to build the revision header first
+
+				.target(name: "revision_header"),
+
 
 				// Platform Dependencies
 
@@ -925,9 +929,6 @@ let package = Package(
 			additionalLinkerSettings: [
 				.linkedLibrary("usb-1.0", .when(platforms: [.macOS], traits: [TraitDescription.enableHIDAPILibUSB.name]))
 			],
-			plugins: [
-				"BuildSDLRevisionHeaderPlugin",
-			]
 		),
 
 		// We need a wrapper target for this to use the exported symbols list properly
@@ -2125,8 +2126,29 @@ let package = Package(
 		.plugin(
 			name: "BuildSDLRevisionHeaderPlugin",
 			capability: .buildTool(),
+			dependencies: [
+				.target(name: "BuildSDLRevisionHeader"),
+			],
 			path: "swift/Sources/BuildSDLRevisionHeaderPlugin"
 		),
 
+
+		// MARK: - Build Tools used by Build Plugins
+
+		.executableTarget(
+			name: "BuildSDLRevisionHeader",
+			path: "swift/Sources/BuildSDLRevisionHeader"
+		),
+
+
+		// MARK: - This is a hack to build the revision header before SimpleDirectMediaLayer sees it since it doesn't wait for the plugin
+
+		.target(
+			name: "revision_header",
+			path: "swift/Sources/revision_header",
+			plugins: [
+				"BuildSDLRevisionHeaderPlugin",
+			]
+		),
 	]
 )

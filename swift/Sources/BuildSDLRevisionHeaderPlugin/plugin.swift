@@ -25,35 +25,40 @@ import Foundation
 @main
 struct BuildSDLRevisionHeaderPlugin: BuildToolPlugin {
 	func createBuildCommands(context: PackagePlugin.PluginContext, target: any PackagePlugin.Target) async throws -> [PackagePlugin.Command] {
-		let emptyURL = context.pluginWorkDirectoryURL.appending(path: "empty")
+		let buildSDLRevisionScriptURL = context.package.directoryURL.appending(path: "swift/Scripts/BuildSDLRevision.swift")
+		let revisionURL = context.pluginWorkDirectoryURL.appending(path: "buildSDLRevision/SDL_revision.txt")
+		let emptyPrebuildCommandOutputURL = context.pluginWorkDirectoryURL.appending(path: "emptyPrebuildCommandOutput")
+		let buildRevisionHeaderToolURL = try context.tool(named: "BuildSDLRevisionHeader").url
 		let headerURL = context.pluginWorkDirectoryURL.appending(path: "include/SDL_revision_swiftpm.h")
 		let passThrough = ["PATH", "DEVELOPER_DIR"]
-		let arguments = [
-			context.package.directoryURL.appending(path: "swift/Scripts/BuildSDLRevisionHeader.swift").path(percentEncoded: false),
-			context.package.directoryURL.path(percentEncoded: false),
-			headerURL.path(percentEncoded: false)
-		]
 		let environment = ProcessInfo.processInfo.environment.filter { passThrough.contains($0.key) }
 
-		try FileManager.default.createDirectory(
-			at: emptyURL,
-			withIntermediateDirectories: true)
+		try FileManager.default.createDirectory(at: emptyPrebuildCommandOutputURL, withIntermediateDirectories: true)
 
 		return [
 			.prebuildCommand(
-				displayName: "BuildSDLRevisionHeader",
+				displayName: "BuildSDLRevision",
 				executable: try context.tool(named: "swift").url,
-				arguments: arguments,
+				arguments: [
+					buildSDLRevisionScriptURL.path(percentEncoded: false),
+					context.package.directoryURL.path(percentEncoded: false),
+					revisionURL.path(percentEncoded: false)
+				],
 				environment: environment,
-				outputFilesDirectory: emptyURL
+				outputFilesDirectory: emptyPrebuildCommandOutputURL
 			),
 
-			// We have to add a build command here so that the include directory is picked up by a -I. We use a no-op command.
-			// This is all part of the experimentalCGen.
 			.buildCommand(
-				displayName: "Add Include for BuildSDLRevisionHeader",
-				executable: URL(filePath: "/usr/bin/true"),
-				arguments: [],
+				displayName: "BuildSDLRevisionHeader",
+				executable: buildRevisionHeaderToolURL,
+				arguments: [
+					revisionURL.path(percentEncoded: false),
+					headerURL.path(percentEncoded: false),
+				],
+				inputFiles: [
+					revisionURL,
+					buildRevisionHeaderToolURL
+				],
 				outputFiles: [
 					headerURL,
 				]
