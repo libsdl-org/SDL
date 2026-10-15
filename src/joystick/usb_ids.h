@@ -167,6 +167,7 @@
 #define USB_PRODUCT_RED_OCTANE_XB1_STAGE_TOUR_DRUMS       0xD300
 #define USB_PRODUCT_SAITEK_CYBORG_V3                      0xf622
 #define USB_PRODUCT_SANTROLLER_SANTROLLER                 0x2882
+#define USB_PRODUCT_SANTROLLER_SANTROLLER_V2              0x2883
 #define USB_PRODUCT_SCEA_PS3_GH_GUITAR                    0x0100
 #define USB_PRODUCT_SCEA_PS3_GH_DRUMS                     0x0120
 #define USB_PRODUCT_SCEA_PS3_RB_GUITAR                    0x0200
