@@ -108,7 +108,10 @@ static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y
 
     SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
-    SDL_memcpy(image->pixels, surface->pixels, (size_t)surface->h * surface->pitch);
+    SDL_PremultiplyAlpha(surface->w, surface->h,
+                         surface->format, surface->pixels, surface->pitch,
+                         SDL_PIXELFORMAT_ARGB8888, image->pixels,
+                         surface->w * 4, false);
 
     cursor = X11_XcursorImageLoadCursor(display, image);
 
@@ -142,7 +145,10 @@ static Cursor X11_CreateAnimatedXCursorCursor(SDL_CursorFrameInfo *frames, int n
 
         SDL_assert(frames[i].surface->format == SDL_PIXELFORMAT_ARGB8888);
         SDL_assert(frames[i].surface->pitch == frames[i].surface->w * 4);
-        SDL_memcpy(image->pixels, frames[i].surface->pixels, (size_t)frames[i].surface->h * frames[i].surface->pitch);
+        SDL_PremultiplyAlpha(frames[i].surface->w, frames[i].surface->h,
+                             frames[i].surface->format, frames[i].surface->pixels, frames[i].surface->pitch,
+                             SDL_PIXELFORMAT_ARGB8888, image->pixels,
+                             frames[i].surface->w * 4, false);
 
         images->images[i] = image;
         images->nimage++;
