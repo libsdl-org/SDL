@@ -119,38 +119,26 @@ static Uint8 HIDAPI_DriverSantroller_TranslateOldSubType(Uint16 version)
 {
     // Old firmware used slightly different subtypes so we need to translate them to the current ones
     switch (version >> 8) {
-    case 1:
-        return SDL_SANTROLLER_SUB_TYPE_GAMEPAD;
-    case 2:
-        return SDL_SANTROLLER_SUB_TYPE_DANCEPAD;
-    case 3:
-        return SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR;
-    case 4:
-        return SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR;
-    case 5:
-        return SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS;
-    case 6:
-        return SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS;
-    case 7:
-        return SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR;
-    case 8:
-        return SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE;
-    case 9:
-        return SDL_SANTROLLER_SUB_TYPE_STAGE_KIT;
-    case 16:
-        return SDL_SANTROLLER_SUB_TYPE_PRO_KEYS;
-    case 17:
-        return SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG;
-    case 18:
-        return SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE;
+    case SDL_SANTROLLER_SUB_TYPE_GAMEPAD:
+    case SDL_SANTROLLER_SUB_TYPE_DANCEPAD:
+    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR:
+    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR:
+    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS:
+    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS:
+    case SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR:
+    case SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE:
+    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
+    case SDL_SANTROLLER_SUB_TYPE_PRO_KEYS:
+    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG:
+    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE:
+    case SDL_SANTROLLER_SUB_TYPE_TAIKO:
+        return version >> 8;
     case 21:
         return SDL_SANTROLLER_SUB_TYPE_DISNEY_INFINITY;
     case 22:
         return SDL_SANTROLLER_SUB_TYPE_SKYLANDERS;
     case 23:
         return SDL_SANTROLLER_SUB_TYPE_LEGO_DIMENSIONS;
-    case 24:
-        return SDL_SANTROLLER_SUB_TYPE_TAIKO;
     default:
         return SDL_SANTROLLER_SUB_TYPE_GAMEPAD;
     }
