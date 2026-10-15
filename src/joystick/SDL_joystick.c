@@ -3546,7 +3546,7 @@ bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id)
 
 bool SDL_IsJoystickSantrollerController(Uint16 vendor_id, Uint16 product_id)
 {
-    return vendor_id == USB_VENDOR_PID_CODES && product_id == USB_PRODUCT_SANTROLLER_SANTROLLER;
+    return vendor_id == USB_VENDOR_PID_CODES && (product_id == USB_PRODUCT_SANTROLLER_SANTROLLER || product_id == USB_PRODUCT_SANTROLLER_SANTROLLER_V2);
 }
 
 bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id)
