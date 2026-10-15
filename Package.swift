@@ -92,7 +92,7 @@ extension Target {
 // When SwiftPM resolves SDL as a dependency, it evaluates this manifest with only Package.swift available, so the
 // sources can't be listed. The targets' file lists aren't needed then, and SwiftPM evaluates the manifest again
 // from the checked-out sources before building.
-let isSourceTreeAvailable = FileManager.default.fileExists(atPath: FilePath(Context.packageDirectory).appending("src/SDL.c").string)
+let isSourceTreeAvailable = FileManager.default.fileExists(atPath: FilePath(Context.packageDirectory).appending("swift/Sources/SimpleDirectMediaLayer").string)
 
 func contentsOfDirectory(path: String, relativeTo basePath: String = Context.packageDirectory, files: Bool = false, withExtensions extensions: [String]? = nil, directories: Bool = false, except: [String] = []) -> [String] {
 	guard isSourceTreeAvailable else {
