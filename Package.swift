@@ -1835,7 +1835,44 @@ let package = Package(
 		),
 
 
-		// MARK: - SDL Test Executables used by SimpleDirectMediaLayerTests
+		// MARK: - testutils Library used by SDL Test Executables
+
+		.target(
+			name: "testutils",
+			dependencies: [
+				.target(name: "TestResources")
+			],
+			path: ".",
+			exclude: createExcludePaths(for: ".", keeping: ["test/testutils.c"]),
+			sources: [
+				"test/testutils.c",
+			],
+			publicHeadersPath: "swift/Sources/testutils/include",
+			cSettings: [
+				.headerSearchPath("include"),
+			],
+		),
+
+
+		// MARK: - Resource Files used by SDL Test Executables
+
+		.target(
+			name: "TestResources",
+			dependencies: [
+				.target(name: "BundleHelpers")
+			],
+			path: ".",
+			exclude:
+				createExcludePaths(for: ".", keeping: ["swift/Sources/TestResources"])
+			+ contentsOfDirectory(path: "test", files: true, withExtensions: ["c", "cpp", "dat", "h", "hlsl", "in", "m", "markdown", "sh", "txt", "xbm", ""], directories: true, except: ["moose.dat", "utf8.txt"]),
+			sources: [
+				"swift/Sources/TestResources",
+			],
+			resources: (contentsOfDirectory(path: "test", files: true, withExtensions: ["png", "wav", "csv", "hex"]) + ["test/moose.dat", "test/utf8.txt"]).map { .copy($0) }
+		),
+
+
+		// MARK: - SDL Test Executables used by SimpleDirectMediaLayerTests.SDLTests
 
 		.sdlTestExecutable(name: "childprocess"),
 		.sdlTestExecutable(name: "pretest"),
@@ -1913,9 +1950,7 @@ let package = Package(
 		.sdlTestExecutable(name: "testdrawchessboard"),
 		.sdlTestExecutable(name: "testdropfile"),
 		.sdlTestExecutable(name: "testdynaudioreopen", additionalDependencies: ["testutils", "TestResources"]),
-		
-		// We have to special case testffmpeg to handle ffmpeg being installed or not.
-		.executableTarget(
+		.executableTarget( // We have to special case testffmpeg to handle ffmpeg being installed or not.
 			name: "testffmpeg",
 			dependencies: [
 				.target(name: "SimpleDirectMediaLayer"),
@@ -1936,7 +1971,6 @@ let package = Package(
 				.linkedFramework("CoreVideo", .when(platforms: [.macOS], traits: [TraitDescription.enableTestFFmpeg.name])),
 			],
 		),
-
 		.sdlTestExecutable(name: "testgeometry", additionalDependencies: ["testutils"]),
 		.sdlTestExecutable(
 			name: "testgl",
@@ -2005,40 +2039,34 @@ let package = Package(
 		.sdlTestExecutable(name: "testwm"),
 
 
-		// MARK: - Resource Files used by Standalone SDL Test Executables
+		// MARK: - Resource Files used by SDL Example Executables
 
 		.target(
-			name: "TestResources",
+			name: "ExampleResources",
 			dependencies: [
 				.target(name: "BundleHelpers")
 			],
 			path: ".",
-			exclude:
-				createExcludePaths(for: ".", keeping: ["swift/Sources/TestResources"])
-				+ contentsOfDirectory(path: "test", files: true, withExtensions: ["c", "cpp", "dat", "h", "hlsl", "in", "m", "markdown", "sh", "txt", "xbm", ""], directories: true, except: ["moose.dat", "utf8.txt"]),
+			exclude: createExcludePaths(for: ".", keeping: [
+				"swift/Sources/ExampleResources",
+				"test/sample.png",
+				"test/gamepad_front.png",
+				"test/speaker.png",
+				"test/icon2x.png",
+				"test/sample.wav",
+				"test/sword.wav",
+			]),
 			sources: [
-				"swift/Sources/TestResources",
+				"swift/Sources/ExampleResources",
 			],
-			resources: (contentsOfDirectory(path: "test", files: true, withExtensions: ["png", "wav", "csv", "hex"]) + ["test/moose.dat", "test/utf8.txt"]).map { .copy($0) }
-		),
-
-
-		// MARK: - testutils Library used by SDL Test Executables
-
-		.target(
-			name: "testutils",
-			dependencies: [
-				.target(name: "TestResources")
-			],
-			path: ".",
-			exclude: createExcludePaths(for: ".", keeping: ["test/testutils.c"]),
-			sources: [
-				"test/testutils.c",
-			],
-			publicHeadersPath: "swift/Sources/testutils/include",
-			cSettings: [
-				.headerSearchPath("include"),
-			],
+			resources: [
+				.copy("test/sample.png"),
+				.copy("test/gamepad_front.png"),
+				.copy("test/speaker.png"),
+				.copy("test/icon2x.png"),
+				.copy("test/sample.wav"),
+				.copy("test/sword.wav"),
+			]
 		),
 
 
@@ -2082,37 +2110,6 @@ let package = Package(
 		.sdlExampleExecutable(name: "renderer-textures", sources: ["renderer/06-textures/textures.c"], additionalDependencies: ["ExampleResources"]),
 		.sdlExampleExecutable(name: "renderer-viewport", sources: ["renderer/14-viewport/viewport.c"], additionalDependencies: ["ExampleResources"]),
 		.sdlExampleExecutable(name: "storage-user", sources: ["storage/01-user/user.c"]),
-
-
-		// MARK: - Resource Files used by SDL Example Executables
-
-		.target(
-			name: "ExampleResources",
-			dependencies: [
-				.target(name: "BundleHelpers")
-			],
-			path: ".",
-			exclude: createExcludePaths(for: ".", keeping: [
-				"swift/Sources/ExampleResources",
-				"test/sample.png",
-				"test/gamepad_front.png",
-				"test/speaker.png",
-				"test/icon2x.png",
-				"test/sample.wav",
-				"test/sword.wav",
-			]),
-			sources: [
-				"swift/Sources/ExampleResources",
-			],
-			resources: [
-				.copy("test/sample.png"),
-				.copy("test/gamepad_front.png"),
-				.copy("test/speaker.png"),
-				.copy("test/icon2x.png"),
-				.copy("test/sample.wav"),
-				.copy("test/sword.wav"),
-			]
-		),
 
 
 		// MARK: - Bundle Helpers used by TestResources and ExampleResources
