@@ -45,7 +45,7 @@ targets: [
 ]
 ```
 
-Then use SDL from Swift with `import SimpleDirectMediaLayer`, or from C and Objective-C with `#include <SDL3/SDL.h>`.
+Then use SDL from Swift with `import SDL3`, or from C and Objective-C with `#include <SDL3/SDL.h>`.
 
 In an Xcode project, add the package with File > Add Package Dependencies.
 

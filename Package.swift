@@ -1820,7 +1820,7 @@ let package = Package(
 			swiftSettings: [
 				.unsafeFlags([
 					"-import-objc-header", "\(Context.packageDirectory)/src/video/uikit/SDL_UIKitBridge-swift.h",	// Uses Xcode's bridging header
-					"-Xcc", "-fmodule-name=SimpleDirectMediaLayer",	// We need this to keep SDL_INTERNAL working
+					"-Xcc", "-fmodule-name=SDL3",	// We need this to keep SDL_INTERNAL working
 					"-Xcc", "-I\(Context.packageDirectory)/include",
 					"-Xcc", "-I\(Context.packageDirectory)/swift/Sources/include/build_config",
 					"-Xcc", "-I\(Context.packageDirectory)/include/build_config",

@@ -1,4 +1,4 @@
-module SimpleDirectMediaLayer {
+module SDL3 {
 	umbrella header "SDL3/SDL.h"
 
 	textual header "SDL3/SDL_begin_code.h"
