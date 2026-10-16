@@ -96,6 +96,31 @@ static void *GetTextURIsFromURLs(NSPasteboard *pasteboard, size_t *size)
     }
 }
 
+static void SetURLsFromTextURIs(SDL_VideoDevice *_this, NSPasteboard *pasteboard)
+{
+    @autoreleasepool {
+        size_t size = 0;
+        const char *urls = _this->clipboard_callback(_this->clipboard_userdata, "text/uri-list", &size);
+        if (urls) {
+            char *str = SDL_strdup(urls);
+            if (str) {
+                NSMutableArray *array = [NSMutableArray new];
+                char *saveptr = NULL;
+                char *token = SDL_strtok_r(str, "\r\n", &saveptr);
+                while (token) {
+                    NSURL *url = [NSURL URLWithString:[NSString stringWithUTF8String:token]];
+                    if (url && [url isFileURL]) {
+                        [array addObject:url];
+                    }
+                    token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                }
+                [pasteboard writeObjects:array];
+                SDL_free(str);
+            }
+        }
+    }
+}
+
 static char **GetMimeTypes(int *pnformats)
 {
     NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
@@ -221,6 +246,7 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
         Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith: _this->clipboard_callback userData: _this->clipboard_userdata];
         BOOL itemResult = FALSE;
         BOOL writeResult = FALSE;
+        BOOL appendURLs = FALSE;
 
         if (_this->clipboard_callback) {
             for (int i = 0; i < _this->num_clipboard_mime_types; i++) {
@@ -230,6 +256,10 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
 
                 [utiTypes addObject: (__bridge NSString *)utiType];
                 CFRelease(utiType);
+
+                if (SDL_strcmp(_this->clipboard_mime_types[i], "text/uri-list") == 0) {
+                    appendURLs = TRUE;
+                }
             }
             itemResult = [newItem setDataProvider: provider forTypes: utiTypes];
             if (itemResult == FALSE) {
@@ -240,6 +270,9 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
             writeResult = [pasteboard writeObjects: @[newItem]];
             if (writeResult == FALSE) {
                 return SDL_SetError("Unable to set clipboard data");
+            }
+            if (appendURLs) {
+                SetURLsFromTextURIs(_this, pasteboard);
             }
         } else {
             [pasteboard clearContents];
