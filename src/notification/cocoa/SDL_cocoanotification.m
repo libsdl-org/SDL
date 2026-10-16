@@ -101,18 +101,27 @@ static bool ShouldEnableNotifications(void)
      * FIXME: These functions are deprecated, find a modern way.
      */
     CFBundleRef bundle = CFBundleGetMainBundle();
-    CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle); // FIXME: This is a leak!
+    CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle);
+
+    if (!bundleUrl) {
+        return false;
+    }
 
     CFStringRef uti;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) /* FIXME: This is a leak! */ &&
-        uti && UTTypeConformsTo(uti, kUTTypeApplicationBundle)) {
-        return true;
+    bool success = CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL);
+    CFRelease(bundleUrl);
+    if (success) {
+        bool result = uti && UTTypeConformsTo(uti, kUTTypeApplicationBundle);
+        if (uti) {
+            CFRelease(uti);
+        }
+        return result;
+    } else {
+        return false;
     }
 #pragma clang diagnostic pop
-
-    return false;
 #else
     // iOS can always enable notificaions.
     return true;

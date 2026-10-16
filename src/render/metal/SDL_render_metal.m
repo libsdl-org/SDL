@@ -30,9 +30,11 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+#ifdef SDL_PLATFORM_MACOS
+#import <AppKit/NSView.h>
+#endif
 #ifdef SDL_VIDEO_DRIVER_COCOA
 #import <AppKit/NSWindow.h>
-#import <AppKit/NSView.h>
 #endif
 #ifdef SDL_VIDEO_DRIVER_UIKIT
 #import <UIKit/UIKit.h>

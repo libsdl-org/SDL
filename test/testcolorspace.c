@@ -81,7 +81,7 @@ static void UpdateHDRState(void)
 
     if (HDR_enabled) {
         props = SDL_GetRendererProperties(renderer);
-        colorspace = SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
+        colorspace = (SDL_Colorspace) SDL_GetNumberProperty(props, SDL_PROP_RENDERER_OUTPUT_COLORSPACE_NUMBER, SDL_COLORSPACE_SRGB);
         if (colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
             colorspace != SDL_COLORSPACE_HDR10) {
             SDL_Log("Run with --colorspace linear to display HDR colors");

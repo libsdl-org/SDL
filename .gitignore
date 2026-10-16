@@ -69,6 +69,7 @@ Xcode/build.xcconfig
 # for SwiftPM
 .build/
 .swiftpm/
+Package.resolved
 
 # for Visual Studio Code
 .vscode/
