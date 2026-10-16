@@ -814,6 +814,18 @@ static void RenderGradientDrawing(void)
     DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
     SDL_SetRenderColorScale(renderer, 1.0f);
     y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    /* Vertex colors are interpolated in the colorspace of the output */
+    if (colorspace == SDL_COLORSPACE_SRGB) {
+        DrawText(x, y, "Interpolating in sRGB space, so this is darker than the texture gradient");
+        y += TEXT_LINE_ADVANCE;
+    } else {
+        DrawText(x, y, "Interpolating in linear space, so this matches the texture gradient");
+        y += TEXT_LINE_ADVANCE;
+    }
 }
 
 static SDL_Texture *CreateGradientTexture(int width, float start, float end)
@@ -884,6 +896,18 @@ static void RenderGradientTexture(void)
     /* The gradient texture is in the linear colorspace, so we can use the HDR_headroom value directly */
     DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, HDR_headroom);
     y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    /* The texture contains linear values, so it looks the same in every output colorspace */
+    if (colorspace == SDL_COLORSPACE_SRGB) {
+        DrawText(x, y, "Rendering linear values, so this is lighter than the drawn gradient");
+        y += TEXT_LINE_ADVANCE;
+    } else {
+        DrawText(x, y, "Rendering linear values, so this matches the drawn gradient");
+        y += TEXT_LINE_ADVANCE;
+    }
 }
 
 float PQfromNits(float v)
