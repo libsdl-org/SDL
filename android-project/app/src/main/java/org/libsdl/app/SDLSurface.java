@@ -281,7 +281,18 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 y = motionListener.getEventY(event, i);
                 relative = motionListener.inRelativeMode();
 
-                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
+                if ((event.getFlags() & MotionEvent.FLAG_CANCELED) == 0) {
+                    // Some Android versions will generate a spurious ACTION_CANCEL if we switch between
+                    // absolute mouse and relative mouse mode. As this message contains no button state,
+                    // it would break our 'see if any buttons have changed' logic. 
+                    //
+                    // However, every Android variant I've seen that does this sets FLAG_CANCELED correctly
+                    // (to mean 'discard previous events' for anything that had absolute mouse movement). 
+                    //
+                    // So, we can ignore any event that has FLAG_CANCELED that's a mouse touch event.
+                    //
+                    SDLActivity.onNativeMouse(buttonState, action, x, y, relative);                    
+                }
             } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
                 pointerId = event.getPointerId(i);
                 x = event.getX(i);
