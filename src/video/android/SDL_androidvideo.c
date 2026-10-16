@@ -56,14 +56,19 @@ static void Android_VideoQuit(SDL_VideoDevice *_this);
 
 // Android driver bootstrap functions
 
-// These are filled in with real values in Android_SetScreenResolution on init (before SDL_main())
+// These are filled in with real values in VideoInit()
 int Android_SurfaceWidth = 0;
 int Android_SurfaceHeight = 0;
 static int Android_DeviceWidth = 0;
 static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
-float Android_ScreenDensity = 1.0f;
+static float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
+static int Init_CurrentRotation = 0;
+static int Init_NaturalOrientation = 0;
+static bool Init_DarkModeEnabled = false;
+
+
 static SDL_DisplayOrientation Android_ScreenOrientation = SDL_ORIENTATION_UNKNOWN;
 int Android_SafeInsetLeft = 0;
 int Android_SafeInsetRight = 0;
@@ -178,6 +183,27 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     SDL_VideoDisplay *display;
     SDL_DisplayMode mode;
 
+    bool ret = true;
+
+    ret &= Android_JNI_ReadInt("mAndroid_SurfaceWidth", &Android_SurfaceWidth);
+    ret &= Android_JNI_ReadInt("mAndroid_SurfaceHeight", &Android_SurfaceHeight);
+    ret &= Android_JNI_ReadInt("mAndroid_DeviceWidth", &Android_DeviceWidth);
+    ret &= Android_JNI_ReadInt("mAndroid_DeviceHeight", &Android_DeviceHeight);
+    ret &= Android_JNI_ReadFloat("mAndroid_ScreenDensity", &Android_ScreenDensity);
+    ret &= Android_JNI_ReadFloat("mAndroid_ScreenRate", &Android_ScreenRate);
+
+    ret &= Android_JNI_ReadInt("mInit_NaturalOrientation", &Init_NaturalOrientation);
+    ret &= Android_JNI_ReadInt("mInit_CurrentRotation", &Init_CurrentRotation);
+    ret &= Android_JNI_ReadBoolean("mInit_DarkModeEnabled", &Init_DarkModeEnabled);
+
+    // Failed to read at least one of SDLActivity value.
+    if (!ret) {
+        return false;
+    }
+
+    // set 'rotation' to get 'orientation'
+    Android_SetRotation(Init_CurrentRotation);
+
     videodata->isPaused = false;
     videodata->isPausing = false;
 
@@ -192,7 +218,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
         return false;
     }
     display = SDL_GetVideoDisplay(displayID);
-    display->natural_orientation = Android_JNI_GetDisplayNaturalOrientation();
+    display->natural_orientation = Init_NaturalOrientation;
     display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
 
@@ -201,6 +227,8 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     Android_InitTouch();
 
     Android_InitMouse();
+
+    Android_SetDarkMode(Init_DarkModeEnabled);
 
     // We're done!
     return true;
@@ -219,7 +247,7 @@ void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int device
     Android_SurfaceHeight = surfaceHeight;
     Android_DeviceWidth = deviceWidth;
     Android_DeviceHeight = deviceHeight;
-    Android_ScreenDensity = (density > 0.0f) ? density : 1.0f;
+    Android_ScreenDensity = density;
     Android_ScreenRate = rate;
 }
 
@@ -281,8 +309,43 @@ static void Android_SendOrientationUpdate(void)
     }
 }
 
-void Android_SetOrientation(SDL_DisplayOrientation orientation)
+SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void)
 {
+    return Init_NaturalOrientation;
+}
+
+SDL_DisplayOrientation Android_JNI_GetDisplayCurrentOrientation(void)
+{
+    return Android_ScreenOrientation;
+}
+
+void Android_SetRotation(int rotation)
+{
+    SDL_DisplayOrientation orientation;
+
+    // 'orientation' is needed before SDL_Init.
+    if (Android_JNI_GetDisplayCurrentOrientation() == SDL_ORIENTATION_LANDSCAPE) {
+        rotation += 90;
+    }
+
+    switch (rotation % 360) {
+        case 0:
+            orientation = SDL_ORIENTATION_PORTRAIT;
+            break;
+        case 90:
+            orientation = SDL_ORIENTATION_LANDSCAPE;
+            break;
+        case 180:
+            orientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+            break;
+        case 270:
+            orientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+            break;
+        default:
+            orientation = SDL_ORIENTATION_UNKNOWN;
+            break;
+    }
+
     Android_ScreenOrientation = orientation;
     Android_SendOrientationUpdate();
 }
@@ -312,17 +375,22 @@ void Android_SendResize(SDL_Window *window)
     if (window) {
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, Android_SurfaceWidth, Android_SurfaceHeight);
     }
+
+    // onNativeResize() should probably merged in to onNativeSurfaceChanged() so that
+    // both RPC commands are executed atomically without user app trying to render inbetween
+    // (and so Android_NativeSurfaceResized is called from Android_NativeSurfaceChanged())
+    Android_NativeSurfaceResized(window);
 }
 
-void Android_SetWindowSafeAreaInsets(int left, int right, int top, int bottom)
+void Android_SetWindowSafeAreaInsets(SDL_Window *window, int left, int right, int top, int bottom)
 {
     Android_SafeInsetLeft = left;
     Android_SafeInsetRight = right;
     Android_SafeInsetTop = top;
     Android_SafeInsetBottom = bottom;
 
-    if (Android_Window) {
-        SDL_SetWindowSafeAreaInsets(Android_Window, left, right, top, bottom);
+    if (window) {
+        SDL_SetWindowSafeAreaInsets(window, left, right, top, bottom);
     }
 }
 

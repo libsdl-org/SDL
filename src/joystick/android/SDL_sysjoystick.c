@@ -66,7 +66,7 @@ static int numjoysticks = 0;
  * This code manipulation is done to get a sequential list of codes.
  * FIXME: This is only suited for the case where we use a fixed number of buttons determined by ANDROID_MAX_NBUTTONS
  */
-static int keycode_to_SDL(int keycode)
+int Android_keycode_to_SDL(int keycode)
 {
     // FIXME: If this function gets too unwieldy in the future, replace with a lookup table
     int button = 0;
@@ -172,7 +172,7 @@ static int keycode_to_SDL(int keycode)
     return button;
 }
 
-static int scancode_to_SDL(int scancode)
+int Android_scancode_to_SDL(int scancode)
 {
     int button = 0;
     switch (scancode) {
@@ -226,9 +226,9 @@ bool Android_OnPadDown(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
-    int button = keycode_to_SDL(keycode);
+    int button = Android_keycode_to_SDL(keycode);
     if (button < 0) {
-        button = scancode_to_SDL(scancode);
+        button = Android_scancode_to_SDL(scancode);
     }
     if (button >= 0) {
         SDL_LockJoysticks();
@@ -249,9 +249,9 @@ bool Android_OnPadUp(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
     SDL_joylist_item *item;
-    int button = keycode_to_SDL(keycode);
+    int button = Android_keycode_to_SDL(keycode);
     if (button < 0) {
-        button = scancode_to_SDL(scancode);
+        button = Android_scancode_to_SDL(scancode);
     }
     if (button >= 0) {
         SDL_LockJoysticks();
