@@ -164,7 +164,7 @@ static bool X11_InitIM(SDL_VideoData *videodata)
         destroyed_callback.client_data = (XPointer)videodata;
         destroyed_callback.callback = (XIMProc)im_destroyed_handler;
 
-        X11_XSetIMValues(im, XNDestroyCallback, &destroyed_callback, NULL);
+        X11_XSetIMValues(im, XNDestroyCallback, &destroyed_callback, (char *)NULL);
 
         /* Attach the new IC to any existing windows.
          *

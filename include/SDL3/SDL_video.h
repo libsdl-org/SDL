@@ -1392,6 +1392,9 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
  *   [README-wayland](README-wayland) for more information.
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN` - true if the
+ *   application wants to enable custom border inset window properties. See
+ *   [README-wayland](README-wayland) for more information.
  *
  * These are additional supported properties on Windows:
  *
@@ -1399,6 +1402,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   window, if you want to wrap an existing window.
  * - `SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER`: optional,
  *   another window to share pixel format with, useful for OpenGL windows
+ * - `SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER`: the window style
+ *   (WS_EX_*) flags to use instead of the defaults.
  *
  * These are additional supported properties with X11:
  *
@@ -1492,8 +1497,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING            "SDL.window.create.wayland.window_id"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN       "SDL.window.create.wayland.enable_insets"
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
+#define SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER               "SDL.window.create.win32.style_ex"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
@@ -1577,6 +1584,15 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER`: the EGLSurface associated with
  *   the window
  *
+ * On OpenHarmony/HarmonyOS:
+ *
+ * - `SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER`: the OH_NativeXComponent
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER`: the OHNativeWindow
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER`: the EGLSurface associated
+ *   with the window
+ *
  * On iOS:
  *
  * - `SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER`: the `(__unsafe_unretained)`
@@ -1641,6 +1657,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * show/hide calls. They will be null if the window is hidden and must be
  * queried each time it is shown.
  *
+ * Note: The `border_inset_*` properties can be set by the application when
+ * client-side decorations such as shadows or invisible resize borders extend
+ * beyond the visible frame (see docs/README-wayland.md for details).
+ *
  * - `SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER`: the wl_display associated with
  *   the window
  * - `SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER`: the wl_surface associated with
@@ -1665,6 +1685,14 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   associated with the window
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER`: the xdg_positioner
  *   associated with the window, in popup mode
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_LEFT_NUMBER`: the left border inset
+ *   of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_TOP_NUMBER`: the top border inset
+ *   of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_RIGHT_NUMBER`: the right border
+ *   inset of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_BOTTOM_NUMBER`: the bottom border
+ *   inset of the visible window
  *
  * On X11:
  *
@@ -1704,6 +1732,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT                          "SDL.window.HDR_headroom"
 #define SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER                      "SDL.window.android.window"
 #define SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER                     "SDL.window.android.surface"
+#define SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER              "SDL.window.openharmony.xcomponent"
+#define SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER                  "SDL.window.openharmony.window"
+#define SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER                 "SDL.window.openharmony.surface"
 #define SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER                        "SDL.window.uikit.window"
 #define SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER                 "SDL.window.uikit.metal_view_tag"
 #define SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER             "SDL.window.uikit.opengl.framebuffer"
@@ -1733,6 +1764,10 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING   "SDL.window.wayland.xdg_toplevel_export_handle"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER                   "SDL.window.wayland.xdg_popup"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER              "SDL.window.wayland.xdg_positioner"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_LEFT_NUMBER            "SDL.window.wayland.border_inset_left"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_TOP_NUMBER             "SDL.window.wayland.border_inset_top"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_RIGHT_NUMBER           "SDL.window.wayland.border_inset_right"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_BOTTOM_NUMBER          "SDL.window.wayland.border_inset_bottom"
 #define SDL_PROP_WINDOW_X11_DISPLAY_POINTER                         "SDL.window.x11.display"
 #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"

@@ -23,6 +23,7 @@
 #include "../SDL_main_callbacks.h"
 #include "../../video/SDL_sysvideo.h"
 
+// !!! FIXME: does this ifndef need to be here?
 #ifndef SDL_PLATFORM_IOS
 
 static Uint64 callback_rate_increment = 0;
@@ -43,6 +44,12 @@ static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name
             callback_rate_increment = 0;
         }
     }
+}
+
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc)
+{
+    // if the app hasn't explicit set a termination result, call it a success and be done with it.
+    SDL_CompareAndSwapAtomicInt(apprc, SDL_APP_CONTINUE, SDL_APP_SUCCESS);
 }
 
 static SDL_AppResult GenericIterateMainCallbacks(void)

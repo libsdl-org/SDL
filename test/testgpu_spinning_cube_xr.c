@@ -185,8 +185,8 @@ typedef struct {
     Uint32 image_count;
 } VRSwapchain;
 
-/* Depth buffer format - use D24 for wide compatibility */
-static const SDL_GPUTextureFormat DEPTH_FORMAT = SDL_GPU_TEXTUREFORMAT_D24_UNORM;
+/* Depth buffer format, default to D24, but fall down to D16 if D24 is unsupported on this hardware. */
+static SDL_GPUTextureFormat depth_format = SDL_GPU_TEXTUREFORMAT_D24_UNORM;
 
 static VRSwapchain *vr_swapchains = NULL;
 static XrView *xr_views = NULL;
@@ -392,7 +392,7 @@ static bool create_pipeline(SDL_GPUTextureFormat color_format)
                 .format = color_format
             }},
             .has_depth_stencil_target = true,
-            .depth_stencil_format = DEPTH_FORMAT
+            .depth_stencil_format = depth_format
         },
         .depth_stencil_state = {
             .enable_depth_test = true,
@@ -584,6 +584,15 @@ static bool create_swapchains(void)
     /* Use first available format (typically sRGB)
      * Note: Could iterate with: while (formats[i] != SDL_GPU_TEXTUREFORMAT_INVALID) */
     SDL_GPUTextureFormat swapchain_format = formats[0];
+
+    for (int i = 0; i < num_formats; i++) {
+        // Prefer an 8-bit sRGB format, if available, using the order the runtime wants first.
+        if (formats[i] == SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB || formats[i] == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB) {
+            swapchain_format = formats[i];
+            break;
+        }
+    }
+
     SDL_Log("Using swapchain format: %d (of %d available)", swapchain_format, num_formats);
     
     /* Log all available formats for debugging */
@@ -591,6 +600,11 @@ static bool create_swapchains(void)
         SDL_Log("  Available format [%d]: %d", f, formats[f]);
     }
     SDL_free(formats);
+
+    if (!SDL_GPUTextureSupportsFormat(gpu_device, depth_format, SDL_GPU_TEXTURETYPE_2D, SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
+        // This format is *guarenteed* to be supported.
+        depth_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
+    }
 
     for (Uint32 i = 0; i < view_count; i++) {
         xr_views[i].type = XR_TYPE_VIEW;
@@ -642,7 +656,7 @@ static bool create_swapchains(void)
          * for proper z-ordering without requiring XR_KHR_composition_layer_depth. */
         SDL_GPUTextureCreateInfo depth_info = {
             .type = SDL_GPU_TEXTURETYPE_2D,
-            .format = DEPTH_FORMAT,
+            .format = depth_format,
             .width = swapchain_info.width,
             .height = swapchain_info.height,
             .layer_count_or_depth = 1,

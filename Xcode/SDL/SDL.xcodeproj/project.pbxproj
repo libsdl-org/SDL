@@ -41,6 +41,7 @@
 		0000481D255AF155B42C0000 /* SDL_sysfsops.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000F4E6AA3EF99DA3C80000 /* SDL_sysfsops.c */; };
 		0000494CC93F3E624D3C0000 /* SDL_systime.c in Sources */ = {isa = PBXBuildFile; fileRef = 00003F472C51CE7DF6160000 /* SDL_systime.c */; };
 		00004D0B73767647AD550000 /* SDL_asyncio_generic.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000FB02CDE4BE34A87E0000 /* SDL_asyncio_generic.c */; };
+		000076D3980E0431F8620000 /* SDL_hidapi_xbox360bb.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */; };
 		000080903BC03006F24E0000 /* SDL_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 00002B010DB1A70931C20000 /* SDL_filesystem.c */; };
 		00009183ED11C92F23FC0000 /* SDL_notification.c in Sources */ = {isa = PBXBuildFile; fileRef = 000059D16599F687D87B0000 /* SDL_notification.c */; };
 		000095FA1BDE436CF3AF0000 /* SDL_time.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000641A9BAC11AB3FBE0000 /* SDL_time.c */; };
@@ -572,7 +573,6 @@
 		F3FD042E2C9B755700824C4C /* SDL_hidapi_nintendo.h in Headers */ = {isa = PBXBuildFile; fileRef = F3FD042C2C9B755700824C4C /* SDL_hidapi_nintendo.h */; };
 		F3FD042F2C9B755700824C4C /* SDL_hidapi_steam_hori.c in Sources */ = {isa = PBXBuildFile; fileRef = F3FD042D2C9B755700824C4C /* SDL_hidapi_steam_hori.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; platformFilters = (ios, maccatalyst, macos, tvos, ); settings = {ATTRIBUTES = (Required, ); }; };
-		000076D3980E0431F8620000 /* SDL_hidapi_xbox360bb.c in Sources */ = {isa = PBXBuildFile; fileRef = 0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -624,6 +624,7 @@
 		0000BB287BA0A0178C1A0000 /* SDL_sysmain_callbacks.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_sysmain_callbacks.m; sourceTree = "<group>"; };
 		0000CCA310B73A7B59910000 /* SDL_cocoapen.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoapen.m; sourceTree = "<group>"; };
 		0000D6CCB566B8AE47FE0000 /* SDL_notificationevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_notificationevents.c; sourceTree = "<group>"; };
+		0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360bb.c; sourceTree = "<group>"; };
 		0000F4E6AA3EF99DA3C80000 /* SDL_sysfsops.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysfsops.c; sourceTree = "<group>"; };
 		0000F6C6A072ED4E3D660000 /* SDL_dialog_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dialog_utils.c; sourceTree = "<group>"; };
 		0000FA7334391F6720820000 /* SDL_notificationevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_notificationevents_c.h; sourceTree = "<group>"; };
@@ -1183,7 +1184,6 @@
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
-		0000E85E176D78EFBFDC0000 /* SDL_hidapi_xbox360bb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_hidapi_xbox360bb.c; path = SDL_hidapi_xbox360bb.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -3293,7 +3293,7 @@
 					/usr/X11R6/include,
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3303,7 +3303,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 3.5.0;
 				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL3;
@@ -3311,7 +3311,7 @@
 				STRIP_STYLE = "non-global";
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				TVOS_DEPLOYMENT_TARGET = 11.0;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
@@ -3362,7 +3362,7 @@
 					/usr/X11R6/include,
 				);
 				INFOPLIST_FILE = "Info-Framework.plist";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -3372,7 +3372,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 3.5.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "$(CONFIG_FRAMEWORK_LDFLAGS)";
@@ -3381,7 +3381,7 @@
 				STRIP_INSTALLED_PRODUCT = NO;
 				SUPPORTED_PLATFORMS = "xrsimulator xros macosx iphonesimulator iphoneos appletvsimulator appletvos";
 				SUPPORTS_MACCATALYST = YES;
-				TVOS_DEPLOYMENT_TARGET = 11.0;
+				TVOS_DEPLOYMENT_TARGET = 15.0;
 				XROS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;

@@ -113,6 +113,10 @@ bool Android_JNI_FileClose(void *userdata);
 bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
 
+#define SDL_PlatformEnumerateAssetDirectory Android_JNI_EnumerateAssetDirectory
+#define SDL_GetPlatformInternalStoragePath SDL_GetAndroidInternalStoragePath
+#define SDL_PlatformGetAssetPathInfo Android_JNI_GetAssetPathInfo
+
 // Environment support
 void Android_JNI_GetManifestEnvironmentVariables(void);
 int Android_JNI_OpenFileDescriptor(const char *uri, const char *mode);

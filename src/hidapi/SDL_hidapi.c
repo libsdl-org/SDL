@@ -1177,7 +1177,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             }
             return true;
         } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
-                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER || product_id == USB_PRODUCT_FLYDIGI_V2_APEX6)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }

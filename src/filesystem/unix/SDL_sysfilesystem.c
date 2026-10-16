@@ -42,6 +42,10 @@
 #include <sys/sysctl.h>
 #endif
 
+#if defined(SDL_PLATFORM_QNXNTO)
+#include <process.h>
+#endif
+
 static char *readSymLink(const char *path)
 {
     char *result = NULL;
@@ -71,7 +75,7 @@ static char *readSymLink(const char *path)
     return NULL;
 }
 
-#ifdef SDL_PLATFORM_OPENBSD
+#if defined(SDL_PLATFORM_OPENBSD) && !defined(HAVE_GETEXECPATH)
 static char *search_path_for_binary(const char *bin)
 {
     const char *envr_real = SDL_getenv("PATH");
@@ -216,6 +220,11 @@ static char *GetExePath(void)
         result = readSymLink("/proc/curproc/exe");
 #elif defined(SDL_PLATFORM_SOLARIS)
         result = readSymLink("/proc/self/path/a.out");
+#elif defined(SDL_PLATFORM_QNXNTO)
+        char exe_path[PATH_MAX];
+        if (_cmdname(exe_path) != NULL) {
+            result = SDL_strdup(exe_path);
+        }
 #else
         result = readSymLink("/proc/self/exe"); // linux.
         if (!result) {

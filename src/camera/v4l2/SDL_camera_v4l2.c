@@ -672,7 +672,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     return true;
 }
 
-static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
+static bool FindV4L2CameraByBusInfoCallback(void *userdata, SDL_Camera *device)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
@@ -897,7 +897,7 @@ static void V4L2_FreeDeviceHandle(SDL_Camera *device)
 }
 
 #ifdef SDL_USE_LIBUDEV
-static bool FindV4L2CameraByPathCallback(SDL_Camera *device, void *userdata)
+static bool FindV4L2CameraByPathCallback(void *userdata, SDL_Camera *device)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->path, (const char *) userdata) == 0);

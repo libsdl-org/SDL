@@ -167,7 +167,7 @@ function(add_sdl_test_executable TARGET)
     if(AST_NEEDS_RESOURCES)
         list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
-    if(ANDROID)
+    if(ANDROID OR OHOS)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
@@ -353,6 +353,7 @@ endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c NAME83 chkkeys)
 add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
+add_sdl_test_executable(testdynaudioreopen NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES testdynaudioreopen.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c NAME83 surround)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c NAME83 resample)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c NAME83 audioinf)
@@ -489,7 +490,7 @@ if(EMSCRIPTEN)
 endif()
 add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c NAME83 bounds)
 add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c NAME83 custcurs)
-add_sdl_test_executable(testvulkan SOURCES testvulkan.c NAME83 vulkan)
+add_sdl_test_executable(testvulkan MAIN_CALLBACKS SOURCES testvulkan.c NAME83 vulkan)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c NAME83 offscrn)
 add_sdl_test_executable(testpopup SOURCES testpopup.c NAME83 popup)
 add_sdl_test_executable(testdialog SOURCES testdialog.c NAME83 dialog)
@@ -888,11 +889,16 @@ if(ANDROID AND TARGET SDL3::Jar)
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
 
+            set(native_libs ${TEST})
+            if(SDL_TESTS_LINK_SHARED)
+                list(APPEND native_libs SDL3::SDL3-shared)
+            endif()
+
             sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
                 APK_IN ${TEST}-apk-linked
                 OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
                 ASSETS ${RESOURCE_FILES}
-                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                NATIVE_LIBS ${native_libs}
                 DEX ${TEST}-dex
             )
 

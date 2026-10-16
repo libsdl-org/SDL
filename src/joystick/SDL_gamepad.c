@@ -1300,8 +1300,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                     // Vader 5 has additional shoulder macro buttons and a circle button
                     SDL_strlcat(mapping_string, "misc4:b17,misc5:b18,misc6:b19", sizeof(mapping_string));
                 }
-            } else if (guid.data[15] == SDL_FLYDIGI_APEX5) {
-                // Apex 5 has additional shoulder macro buttons
+            } else if (guid.data[15] == SDL_FLYDIGI_APEX5 || guid.data[15] == SDL_FLYDIGI_APEX6) {
+                // Apex 5 and Apex 6 have additional shoulder macro buttons
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
         } else if (SDL_IsJoystickGameSirController(vendor, product) &&
@@ -1313,6 +1313,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             }
         } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
             SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,paddle3:b14,paddle4:b13,", sizeof(mapping_string));
+        } else if (vendor == USB_VENDOR_8BITDO && product == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS) {
+            SDL_strlcat(mapping_string, "paddle1:b12,paddle2:b11,", sizeof(mapping_string));
         } else {
             switch (SDL_GetGamepadTypeFromGUID(guid, NULL)) {
             case SDL_GAMEPAD_TYPE_PS4:
@@ -3473,7 +3475,12 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                 bool valid_output_range;
 
                 if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
+                    const int input_axis = binding->input.axis.axis;
+                    /* Missing axes return zero, which would normalize to a half-pressed trigger. */
+                    if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
+                        continue;
+                    }
+                    value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
                     if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
                         valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
                     } else {

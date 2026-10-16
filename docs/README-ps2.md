@@ -22,6 +22,7 @@ cmake --install build
 ## Hints
 - `SDL_HINT_PS2_GS_WIDTH`: Width of the framebuffer. Defaults to 640.
 - `SDL_HINT_PS2_GS_HEIGHT`: Height of the framebuffer. Defaults to 448.
+- `SDL_HINT_PS2_GS_COLOR_DEPTH`: Color depth of the framebuffer. Can be "32", "24" or "16". Defaults to 24.
 - `SDL_HINT_PS2_GS_PROGRESSIVE`: Whether to use progressive, instead of interlaced. Defaults to 0.
 - `SDL_HINT_PS2_GS_MODE`: Regional standard of the signal. "NTSC" (60hz), "PAL" (50hz) or "" (the console's region, default).
 

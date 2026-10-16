@@ -1,8 +1,10 @@
 
 layout (set = 0, binding = 1) Texture2D texture0 : register(t0);
 layout (set = 0, binding = 2) Texture2D texture1 : register(t1);
+layout (set = 0, binding = 3) Texture2D texture2 : register(t2);
 SamplerState sampler0 : register(s0);
 SamplerState sampler1 : register(s1);
+SamplerState sampler2 : register(s2);
 
 struct PixelShaderInput
 {
@@ -22,6 +24,9 @@ static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_PALETTE_NEAREST = 3;
 static const float TEXTURETYPE_PALETTE_LINEAR = 4;
 static const float TEXTURETYPE_PALETTE_PIXELART = 5;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
@@ -40,6 +45,11 @@ layout (set = 0, binding = 0) cbuffer Constants : register(b1)
     float tonemap_factor1;
     float tonemap_factor2;
     float sdr_white_point;
+
+    float4 Yoffset;
+    float4 Rcoeff;
+    float4 Gcoeff;
+    float4 Bcoeff;
 };
 
 static const float3x3 mat709to2020 = {
@@ -218,14 +228,13 @@ float4 GetInputColor(PixelShaderInput input)
 {
     float4 rgba;
 
-    if (texture_type == TEXTURETYPE_RGB) {
+    if (texture_type == TEXTURETYPE_NONE) {
+        rgba = 1.0;
+    } else if (texture_type == TEXTURETYPE_RGB) {
         rgba = texture0.Sample(sampler0, input.tex);
-// NVIDIA drivers crash when trying to use SampleGrad() on a texture with YCbCr conversion
-#ifndef BROKEN_YCbCr_NVIDIA
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
-#endif
     } else if (texture_type == TEXTURETYPE_PALETTE_NEAREST) {
         rgba = SamplePaletteNearest(input.tex);
     } else if (texture_type == TEXTURETYPE_PALETTE_LINEAR) {
@@ -233,6 +242,37 @@ float4 GetInputColor(PixelShaderInput input)
     } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = SamplePaletteLinear(uv);
+    } else if (texture_type == TEXTURETYPE_NV12) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.yz = texture1.Sample(sampler1, input.tex).rg;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
+    } else if (texture_type == TEXTURETYPE_NV21) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.yz = texture1.Sample(sampler1, input.tex).gr;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
+    } else if (texture_type == TEXTURETYPE_YUV) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.y = texture1.Sample(sampler1, input.tex).r;
+        yuv.z = texture2.Sample(sampler2, input.tex).r;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
     } else {
         // Error!
         rgba.r = 1.0;

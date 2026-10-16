@@ -155,8 +155,8 @@ static bool DISKAUDIO_OpenDevice(SDL_AudioDevice *device)
 
 static void DISKAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording)
 {
-    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, (void *)0x1);
-    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, (void *)0x2);
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, NULL, (void *)0x1);
+    *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, NULL, (void *)0x2);
 }
 
 static bool DISKAUDIO_Init(SDL_AudioDriverImpl *impl)

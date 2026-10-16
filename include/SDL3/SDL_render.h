@@ -419,8 +419,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * create a software renderer, but they are intended to be used with an
  * SDL_Window as the final destination and not an SDL_Surface.
  *
- * \param surface the SDL_Surface structure representing the surface where
- *                rendering is done.
+ * \param surface the surface where rendering is done, may be NULL.
  * \returns a valid rendering context or NULL if there was an error; call
  *          SDL_GetError() for more information.
  *
@@ -429,8 +428,44 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_GetGPURendererDevice(SDL_Rendere
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_DestroyRenderer
+ * \sa SDL_SetSoftwareRendererSurface
+ * \sa SDL_SetSoftwareRendererWindow
  */
 extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateSoftwareRenderer(SDL_Surface *surface);
+
+/**
+ * Associate a software renderer with a window.
+ *
+ * \param renderer the rendering context.
+ * \param window the window where rendering is displayed.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererWindow(SDL_Renderer *renderer, SDL_Window *window);
+
+/**
+ * Associate a software renderer with a surface.
+ *
+ * \param renderer the rendering context.
+ * \param surface the surface where rendering is done.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               renderer.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateSoftwareRenderer
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetSoftwareRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 
 /**
  * Get the renderer associated with a window.
@@ -803,9 +838,31 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  * With the vulkan renderer:
  *
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER`: the VkImage associated
- *   with the texture, if you want to wrap an existing texture.
+ *   with the texture, if you want to wrap an existing texture. For NV12 style
+ *   textures this can be a single two plane VkImage holding both the Y and UV
+ *   planes, and for YUV style textures it is the VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER`: the VkImage
+ *   associated with the UV plane of an NV12 texture, if you want to wrap an
+ *   existing texture.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated
+ *   with the U plane of a YUV texture, if you want to wrap an existing
+ *   texture.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER`: the VkImage associated
+ *   with the V plane of a YUV texture, if you want to wrap an existing
+ *   texture.
  * - `SDL_PROP_TEXTURE_CREATE_VULKAN_LAYOUT_NUMBER`: the VkImageLayout for the
  *   VkImage, defaults to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER`: additional VK_IMAGE_USAGE
+ *   bits that should be used when creating the texture. VkImage, defaults to
+ *   VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL.
+ * - `SDL_PROP_TEXTURE_CREATE_VULKAN_ANDROID_HARDWARE_BUFFER_POINTER`: the
+ *   AHardwareBuffer to sample from, if you want to use an existing Android
+ *   hardware buffer as the texture. You must use SDL_PIXELFORMAT_EXTERNAL_OES
+ *   for the texture format. You can't directly update the texture or use it
+ *   as a render target. If the Android buffer contents change, you must
+ *   recreate the texture to pick up the changes. The texture holds a
+ *   reference to the buffer, so you can release your own reference once the
+ *   texture has been created.
  *
  * With the GPU renderer:
  *
@@ -868,7 +925,12 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_U_NUMBER      "SDL.texture.create.opengles2.texture_u"
 #define SDL_PROP_TEXTURE_CREATE_OPENGLES2_TEXTURE_V_NUMBER      "SDL.texture.create.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_NUMBER           "SDL.texture.create.vulkan.texture"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_U_NUMBER         "SDL.texture.create.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER        "SDL.texture.create.vulkan.texture_uv"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_V_NUMBER         "SDL.texture.create.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_CREATE_VULKAN_LAYOUT_NUMBER            "SDL.texture.create.vulkan.layout"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_USAGE_NUMBER             "SDL.texture.create.vulkan.usage"
+#define SDL_PROP_TEXTURE_CREATE_VULKAN_ANDROID_HARDWARE_BUFFER_POINTER "SDL.texture.create.vulkan.android_hardware_buffer"
 #define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_POINTER             "SDL.texture.create.gpu.texture"
 #define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_UV_POINTER          "SDL.texture.create.gpu.texture_uv"
 #define SDL_PROP_TEXTURE_CREATE_GPU_TEXTURE_U_POINTER           "SDL.texture.create.gpu.texture_u"
@@ -931,7 +993,15 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  * With the vulkan renderer:
  *
  * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER`: the VkImage associated with the
- *   texture
+ *   texture. For NV12 style textures this is the single two plane VkImage
+ *   holding both the Y and UV planes, and for YUV style textures it is the
+ *   VkImage holding the Y plane.
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_NUMBER`: the VkImage associated with
+ *   the UV plane of an NV12 texture, if it was created with separate planes.
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER`: the VkImage associated with
+ *   the U plane of a YUV texture
+ * - `SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER`: the VkImage associated with
+ *   the V plane of a YUV texture
  *
  * With the opengl renderer:
  *
@@ -1014,6 +1084,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetTextureProperties(SDL_Textur
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_V_NUMBER         "SDL.texture.opengles2.texture_v"
 #define SDL_PROP_TEXTURE_OPENGLES2_TEXTURE_TARGET_NUMBER    "SDL.texture.opengles2.target"
 #define SDL_PROP_TEXTURE_VULKAN_TEXTURE_NUMBER              "SDL.texture.vulkan.texture"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_UV_NUMBER           "SDL.texture.vulkan.texture_uv"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_U_NUMBER            "SDL.texture.vulkan.texture_u"
+#define SDL_PROP_TEXTURE_VULKAN_TEXTURE_V_NUMBER            "SDL.texture.vulkan.texture_v"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_POINTER                "SDL.texture.gpu.texture"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_UV_POINTER             "SDL.texture.gpu.texture_uv"
 #define SDL_PROP_TEXTURE_GPU_TEXTURE_U_POINTER              "SDL.texture.gpu.texture_u"
@@ -1798,6 +1871,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertEventToRenderCoordinates(SDL_Rendere
  *
  * \sa SDL_GetRenderViewport
  * \sa SDL_RenderViewportSet
+ * \sa SDL_SetRenderViewportFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, const SDL_Rect *rect);
 
@@ -1816,10 +1890,58 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewport(SDL_Renderer *renderer, c
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GetRenderViewportFloat
  * \sa SDL_RenderViewportSet
  * \sa SDL_SetRenderViewport
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, SDL_Rect *rect);
+
+/**
+ * Set the drawing area for rendering on the current target.
+ *
+ * Drawing will clip to this area (separately from any clipping done with
+ * SDL_SetRenderClipRect), and the top left of the area will become coordinate
+ * (0, 0) for future drawing commands.
+ *
+ * The area's width and height must be >= 0.
+ *
+ * Each render target has its own viewport. This function sets the viewport
+ * for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect the SDL_FRect structure representing the drawing area, or NULL
+ *             to set the viewport to the entire target.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetRenderViewportFloat
+ * \sa SDL_RenderViewportSet
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderViewportFloat(SDL_Renderer *renderer, const SDL_FRect *rect);
+
+/**
+ * Get the drawing area for the current target.
+ *
+ * Each render target has its own viewport. This function gets the viewport
+ * for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure filled in with the current drawing area.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_RenderViewportSet
+ * \sa SDL_SetRenderViewportFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewportFloat(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Return whether an explicit rectangle was set as the viewport.
@@ -1839,7 +1961,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderViewport(SDL_Renderer *renderer, S
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRenderViewport
+ * \sa SDL_GetRenderViewportFloat
  * \sa SDL_SetRenderViewport
+ * \sa SDL_SetRenderViewportFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderViewportSet(SDL_Renderer *renderer);
 
@@ -1883,6 +2007,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderSafeArea(SDL_Renderer *renderer, S
  *
  * \sa SDL_GetRenderClipRect
  * \sa SDL_RenderClipEnabled
+ * \sa SDL_SetRenderClipRectFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, const SDL_Rect *rect);
 
@@ -1902,10 +2027,53 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRect(SDL_Renderer *renderer, c
  *
  * \since This function is available since SDL 3.2.0.
  *
+ * \sa SDL_GetRenderClipRectFloat
  * \sa SDL_RenderClipEnabled
  * \sa SDL_SetRenderClipRect
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, SDL_Rect *rect);
+
+/**
+ * Set the clip rectangle for rendering on the specified target.
+ *
+ * Each render target has its own clip rectangle. This function sets the
+ * cliprect for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure representing the clip area, relative to
+ *             the viewport, or NULL to disable clipping.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetRenderClipRectFloat
+ * \sa SDL_RenderClipEnabled
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderClipRectFloat(SDL_Renderer *renderer, const SDL_FRect *rect);
+
+/**
+ * Get the clip rectangle for the current target.
+ *
+ * Each render target has its own clip rectangle. This function gets the
+ * cliprect for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect an SDL_FRect structure filled in with the current clipping area
+ *             or an empty rectangle if clipping is disabled.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_RenderClipEnabled
+ * \sa SDL_SetRenderClipRectFloat
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRectFloat(SDL_Renderer *renderer, SDL_FRect *rect);
 
 /**
  * Get whether clipping is enabled on the given render target.
@@ -1922,7 +2090,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderClipRect(SDL_Renderer *renderer, S
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetRenderClipRect
+ * \sa SDL_GetRenderClipRectFloat
  * \sa SDL_SetRenderClipRect
+ * \sa SDL_SetRenderClipRectFloat
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_RenderClipEnabled(SDL_Renderer *renderer);
 

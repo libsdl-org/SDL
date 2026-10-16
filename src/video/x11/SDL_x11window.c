@@ -323,13 +323,10 @@ SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Wi
         }
 
         if (fullscreen == 1) {
-            if (window->flags & SDL_WINDOW_FULLSCREEN) {
-                // Pick whatever state the window expects
-                flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
-            } else {
-                // Assume we're fullscreen desktop
-                flags |= SDL_WINDOW_FULLSCREEN;
-            }
+            flags |= SDL_WINDOW_FULLSCREEN;
+        } else if (!videodata->net_wm) {
+            // If there's no window manager, use whatever the window reports.
+            flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
         }
 
         if (maximized == 3) {
@@ -1836,9 +1833,6 @@ void X11_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 // This asks the Window Manager to handle fullscreen for us. This is the modern way.
 static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
-    CHECK_WINDOW_DATA(window);
-    CHECK_DISPLAY_DATA(_display);
-
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = _display->internal;
     Display *display = data->videodata->display;
@@ -1961,9 +1955,80 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
     return SDL_FULLSCREEN_PENDING;
 }
 
+static SDL_FullscreenResult X11_SetWindowFullscreenLegacy(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, bool fullscreen)
+{
+    SDL_WindowData *data = window->internal;
+    SDL_DisplayData *displaydata = _display->internal;
+    Display *display = data->videodata->display;
+    const int screen = displaydata->screen;
+
+    if (!data->was_shown && fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+        return SDL_FULLSCREEN_SUCCEEDED;
+    }
+
+    // Flush any pending fullscreen events.
+    if (data->pending_operation & (X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE)) {
+        X11_SyncWindow(_this, window);
+    }
+
+    // No window manager? Just make the window the size of the display.
+    SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
+    if (fullscreen) {
+        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+            /* Compiz refuses fullscreen toggle if we're not resizable, so update the hints so we
+             * can be resized to the fullscreen resolution (or reset so we're not resizable again).
+             */
+            XSizeHints *sizehints = X11_XAllocSizeHints();
+            long flags = 0;
+            X11_XGetWMNormalHints(display, data->xwindow, sizehints, &flags);
+            // we are going fullscreen so turn the flags off
+            sizehints->flags &= ~(PMinSize | PMaxSize | PAspect);
+            X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+            X11_XFree(sizehints);
+        }
+
+        SetWindowBordered(display, screen, data->xwindow, false);
+
+        SDL_Rect rect;
+        X11_GetDisplayBounds(_this, _display, &rect);
+
+        data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+        data->expected.x = rect.x;
+        data->expected.y = rect.y;
+        data->expected.w = rect.w;
+        data->expected.h = rect.h;
+        X11_XMoveWindow(display, data->xwindow, rect.x, rect.y);
+        X11_XResizeWindow(display, data->xwindow, rect.w, rect.h);
+        X11_XRaiseWindow(display, data->xwindow);
+    } else {
+        data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+        data->expected.x = window->windowed.x;
+        data->expected.y = window->windowed.y;
+        data->expected.w = window->windowed.w;
+        data->expected.h = window->windowed.h;
+        X11_XResizeWindow(display, data->xwindow, window->windowed.w, window->windowed.h);
+        X11_XMoveWindow(display, data->xwindow, window->windowed.x, window->windowed.y);
+
+        SetWindowBordered(display, screen, data->xwindow, (window->flags & SDL_WINDOW_BORDERLESS) == 0);
+        X11_SetWindowMinMax(data->window, false);
+    }
+
+    X11_XFlush(display);
+
+    return SDL_FULLSCREEN_PENDING;
+}
+
 SDL_FullscreenResult X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
-    return X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
+    CHECK_WINDOW_DATA(window);
+    CHECK_DISPLAY_DATA(_display);
+
+    SDL_VideoData *data = _this->internal;
+    if (data->net_wm) {
+        return X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
+    }
+
+    return X11_SetWindowFullscreenLegacy(_this, window, _display, fullscreen != SDL_FULLSCREEN_OP_LEAVE);
 }
 
 typedef struct

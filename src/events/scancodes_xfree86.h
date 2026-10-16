@@ -312,7 +312,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 129, 0x081 */   SDL_SCANCODE_AGAIN,              // Redo
     /* 130, 0x082 */   SDL_SCANCODE_AC_PROPERTIES,      // SunProps
     /* 131, 0x083 */   SDL_SCANCODE_UNDO,               // Undo
-    /* 132, 0x084 */   SDL_SCANCODE_UNKNOWN,            // SunFront
+    /* 132, 0x084 */   SDL_SCANCODE_FRONT,              // SunFront
     /* 133, 0x085 */   SDL_SCANCODE_COPY,               // XF86Copy
     /* 134, 0x086 */   SDL_SCANCODE_AC_OPEN,            // SunOpen, XF86Open
     /* 135, 0x087 */   SDL_SCANCODE_PASTE,              // XF86Paste
@@ -414,7 +414,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /* 231, 0x0e7 */   SDL_SCANCODE_UNKNOWN,            // XF86Send
     /* 232, 0x0e8 */   SDL_SCANCODE_UNKNOWN,            // XF86Reply
     /* 233, 0x0e9 */   SDL_SCANCODE_UNKNOWN,            // XF86MailForward
-    /* 234, 0x0ea */   SDL_SCANCODE_UNKNOWN,            // XF86Save
+    /* 234, 0x0ea */   SDL_SCANCODE_AC_SAVE,            // XF86Save
     /* 235, 0x0eb */   SDL_SCANCODE_UNKNOWN,            // XF86Documents
     /* 236, 0x0ec */   SDL_SCANCODE_UNKNOWN,            // XF86Battery
     /* 237, 0x0ed */   SDL_SCANCODE_UNKNOWN,            // XF86Bluetooth
