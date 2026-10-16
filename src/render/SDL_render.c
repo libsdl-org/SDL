@@ -858,7 +858,17 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
-        renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+            // The Vulkan drivers don't set luminance for HDR10 swapchains, so the
+            // protocol default reference white of 203 nits is used. For linear
+            // swapchains, NVIDIA uses a reference white of 203 nits and Mesa uses
+            // 80 nits. Eventually we'll use VK_COLOR_SPACE_PASS_THROUGH_EXT and
+            // define the reference white ourselves, so always use 203 for now.
+            const float SDR_reference_white_nits = 203.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else {
+            renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        }
         renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
     } else {
         renderer->SDR_white_point = 1.0f;
