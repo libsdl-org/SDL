@@ -322,6 +322,7 @@ typedef struct
     VULKAN_Buffer stagingBuffer;
     int width;
     int height;
+    bool srgb_view;
     const float *YCbCr_matrix;
 
     // YCbCr conversion support
@@ -596,6 +597,18 @@ static VkFormat VULKAN_GetVkImageFormat(SDL_PixelFormat format, Uint32 output_co
             }
         }
         return VK_FORMAT_UNDEFINED;
+    }
+}
+
+static bool VkFormatIsSRGB(VkFormat format)
+{
+    switch (format) {
+    case VK_FORMAT_B8G8R8A8_SRGB:
+    case VK_FORMAT_R8G8B8A8_SRGB:
+    case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -3037,7 +3050,9 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     VkResult result;
     int numImages = VULKAN_GetFormatImageCount(texture->format);
     int numImageViews = VULKAN_GetFormatImageViewCount(texture->format);
-    VkFormat textureFormat = VULKAN_GetVkImageFormat(texture->format, renderer->output_colorspace);
+    // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+    const Uint32 format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+    VkFormat textureFormat = VULKAN_GetVkImageFormat(texture->format, format_colorspace);
     VkFormat chromaFormat = textureFormat;
     uint32_t width = texture->w;
     uint32_t height = texture->h;
@@ -3056,6 +3071,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         return false;
     }
     texture->internal = textureData;
+    textureData->srgb_view = VkFormatIsSRGB(textureFormat);
 
     if (texture->format == SDL_PIXELFORMAT_EXTERNAL_OES) {
         SDL_zero(externalBufferInfo);
@@ -3227,8 +3243,8 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
         numImages = 2;
         chromaWidth = (width / 2);
         chromaHeight = (height / 2);
-        textureFormat = VULKAN_GetVkImageViewFormat(texture->format, 0, renderer->output_colorspace);
-        chromaFormat = VULKAN_GetVkImageViewFormat(texture->format, 1, renderer->output_colorspace);
+        textureFormat = VULKAN_GetVkImageViewFormat(texture->format, 0, format_colorspace);
+        chromaFormat = VULKAN_GetVkImageViewFormat(texture->format, 1, format_colorspace);
         imageCreateProperties[1] = SDL_PROP_TEXTURE_CREATE_VULKAN_TEXTURE_UV_NUMBER;
     }
 
@@ -3248,7 +3264,7 @@ static bool VULKAN_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, S
     bool usePlaneViews = (numImageViews > numImages);
     int imageIndex = 0;
     for (int i = 0; i < numImageViews; ++i) {
-        VkFormat imageViewFormat = VULKAN_GetVkImageViewFormat(texture->format, i, renderer->output_colorspace);
+        VkFormat imageViewFormat = VULKAN_GetVkImageViewFormat(texture->format, i, format_colorspace);
         int imagePlane = usePlaneViews ? i : -1;
         result = VULKAN_AllocateImageView(rendererData, textureData->images[imageIndex].image, imagePlane, imageViewFormat, usage, imageViewSwizzle, samplerYcbcrConversion, &textureData->imageViews[i]);
         if (result != VK_SUCCESS) {
@@ -3995,35 +4011,21 @@ static bool VULKAN_UpdateClipRect(SDL_Renderer *renderer)
     return true;
 }
 
-// Returns true if the texture sampler converts this format from sRGB to linear
-// This needs to match the formats with sRGB variants in vk_format_map
-static bool SamplerConvertsSRGB(Uint32 format, Uint32 output_colorspace)
+// Returns the input type for sRGB textures, based on whether the sampler converts them to linear
+static float GetSRGBInputType(SDL_Renderer *renderer, bool srgb_view)
 {
-    if (output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
-        output_colorspace != SDL_COLORSPACE_HDR10) {
-        return false;
+    if (SDL_RenderingLinearSpace(renderer)) {
+        if (!srgb_view) {
+            // The shader needs to convert from sRGB to linear
+            return INPUTTYPE_SRGB;
+        }
+    } else {
+        if (srgb_view) {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
     }
-
-    switch (format) {
-    case SDL_PIXELFORMAT_BGRA32:
-    case SDL_PIXELFORMAT_RGBA32:
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    case SDL_PIXELFORMAT_ABGR8888:
-#endif
-        return true;
-    default:
-        return false;
-    }
-}
-
-static float GetSRGBInputType(SDL_Renderer *renderer, Uint32 format)
-{
-    if (SDL_RenderingLinearSpace(renderer) &&
-        !SamplerConvertsSRGB(format, renderer->output_colorspace)) {
-        // The shader needs to convert from sRGB to linear
-        return INPUTTYPE_SRGB;
-    }
-    // The sampler will convert from sRGB to linear on load if working in linear colorspace
+    // The texture is already in the colorspace we're rendering in
     return INPUTTYPE_UNSPECIFIED;
 }
 
@@ -4056,8 +4058,11 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
                 SDL_assert(!"Unknown scale mode");
                 break;
             }
-            // The palette is stored in an RGBA32 texture
-            constants->input_type = GetSRGBInputType(renderer, SDL_PIXELFORMAT_RGBA32);
+            {
+                // The palette is stored in an RGBA32 texture
+                const VkFormat paletteFormat = VULKAN_GetVkImageFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+                constants->input_type = GetSRGBInputType(renderer, VkFormatIsSRGB(paletteFormat));
+            }
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -4094,7 +4099,7 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
                        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
-                constants->input_type = GetSRGBInputType(renderer, texture->format);
+                constants->input_type = GetSRGBInputType(renderer, textureData->srgb_view);
             }
             break;
         }

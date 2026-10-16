@@ -719,16 +719,20 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             }
         }
 
+        // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+        const SDL_Colorspace format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+        const bool use_srgb = (format_colorspace == SDL_COLORSPACE_SRGB_LINEAR || format_colorspace == SDL_COLORSPACE_HDR10);
+
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            if (UseSRGBTextureFormats(renderer)) {
+            if (use_srgb) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatRGBA8Unorm;
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            if (UseSRGBTextureFormats(renderer)) {
+            if (use_srgb) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
@@ -1489,7 +1493,7 @@ typedef struct
     PixelShaderConstants shader_constants;
 } METAL_DrawStateCache;
 
-static float GetSRGBInputType(const SDL_Texture *texture, float texture_type)
+static float GetSRGBInputType(SDL_Renderer *renderer, const SDL_Texture *texture, float texture_type)
 {
     if (texture_type == TEXTURETYPE_YUV ||
         texture_type == TEXTURETYPE_NV12 ||
@@ -1510,8 +1514,13 @@ static float GetSRGBInputType(const SDL_Texture *texture, float texture_type)
     switch (mtltexture.pixelFormat) {
     case MTLPixelFormatRGBA8Unorm_sRGB:
     case MTLPixelFormatBGRA8Unorm_sRGB:
-        // The sampler will convert from sRGB to linear on load
-        return INPUTTYPE_UNSPECIFIED;
+        if (SDL_RenderingLinearSpace(renderer)) {
+            // The sampler will convert from sRGB to linear on load
+            return INPUTTYPE_UNSPECIFIED;
+        } else {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
     default:
         // The shader needs to convert from sRGB if necessary
         return INPUTTYPE_SRGB;
@@ -1587,7 +1596,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
-            constants->input_type = GetSRGBInputType(texture, constants->texture_type);
+            constants->input_type = GetSRGBInputType(renderer, texture, constants->texture_type);
             break;
         }
 

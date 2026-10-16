@@ -124,6 +124,7 @@ typedef struct
     SIZE_T mainSRVIndex;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureRenderTargetView;
     DXGI_FORMAT mainTextureFormat;
+    bool srgb_view;
     ID3D12Resource *stagingBuffer;
     D3D12_RESOURCE_STATES stagingResourceState;
     const float *YCbCr_matrix;
@@ -350,6 +351,18 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(SDL_PixelFormat format, Uin
             }
         }
         return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+static bool DXGIFormatIsSRGB(DXGI_FORMAT format)
+{
+    switch (format) {
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -1622,7 +1635,9 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_TextureData *textureData;
     HRESULT result;
-    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, renderer->output_colorspace);
+    // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+    const Uint32 format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, format_colorspace);
     D3D12_RESOURCE_DESC textureDesc;
     D3D12_HEAP_PROPERTIES heapProps;
     D3D12_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
@@ -1641,6 +1656,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
 
     texture->internal = textureData;
+    textureData->srgb_view = DXGIFormatIsSRGB(textureFormat);
     textureData->mainTextureFormat = textureFormat;
 
     SDL_zero(textureDesc);
@@ -1807,7 +1823,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     SDL_zero(resourceViewDesc);
     resourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, renderer->output_colorspace);
+    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, format_colorspace);
     resourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
@@ -2634,33 +2650,21 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
     return true;
 }
 
-// Returns true if the texture sampler converts this format from sRGB to linear
-// This needs to match the formats with sRGB variants in dxgi_format_map
-static bool SamplerConvertsSRGB(Uint32 format, Uint32 output_colorspace)
+// Returns the input type for sRGB textures, based on whether the sampler converts them to linear
+static float GetSRGBInputType(SDL_Renderer *renderer, bool srgb_view)
 {
-    if (output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
-        output_colorspace != SDL_COLORSPACE_HDR10) {
-        return false;
+    if (SDL_RenderingLinearSpace(renderer)) {
+        if (!srgb_view) {
+            // The shader needs to convert from sRGB to linear
+            return INPUTTYPE_SRGB;
+        }
+    } else {
+        if (srgb_view) {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
     }
-
-    switch (format) {
-    case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_ABGR8888:
-    case SDL_PIXELFORMAT_XRGB8888:
-        return true;
-    default:
-        return false;
-    }
-}
-
-static float GetSRGBInputType(SDL_Renderer *renderer, Uint32 format)
-{
-    if (SDL_RenderingLinearSpace(renderer) &&
-        !SamplerConvertsSRGB(format, renderer->output_colorspace)) {
-        // The shader needs to convert from sRGB to linear
-        return INPUTTYPE_SRGB;
-    }
-    // The sampler will convert from sRGB to linear on load if working in linear colorspace
+    // The texture is already in the colorspace we're rendering in
     return INPUTTYPE_UNSPECIFIED;
 }
 
@@ -2692,8 +2696,11 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
                 SDL_assert(!"Unknown scale mode");
                 break;
             }
-            // The palette is stored in an RGBA32 texture
-            constants->input_type = GetSRGBInputType(renderer, SDL_PIXELFORMAT_RGBA32);
+            {
+                // The palette is stored in an RGBA32 texture
+                const DXGI_FORMAT paletteFormat = SDLPixelFormatToDXGITextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+                constants->input_type = GetSRGBInputType(renderer, DXGIFormatIsSRGB(paletteFormat));
+            }
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -2729,7 +2736,7 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
-                constants->input_type = GetSRGBInputType(renderer, texture->format);
+                constants->input_type = GetSRGBInputType(renderer, textureData->srgb_view);
             }
             break;
         }

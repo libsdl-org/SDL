@@ -53,6 +53,7 @@ enum
     StageDrawBackground,
     StageTextureBackground,
     StageTargetBackground,
+    StageTargetDrawing,
     StageTextureFormats,
     StageBlendDrawing,
     StageBlendTexture,
@@ -419,6 +420,85 @@ static bool ColorMatches(const SDL_Color *c, int r, int g, int b, int epsilon)
         return true;
     }
     return false;
+}
+
+static void RenderTargetDrawing(void)
+{
+    /* Clear one render target to 50% gray, fill another with 50% gray, and blend white at 50% over black in a third.
+     * The window is split into thirds showing each of the targets, which should all be 50% gray.
+     * The render targets are sRGB, so they should behave like an sRGB swap chain,
+     * including blending in sRGB space, whatever the output colorspace.
+     */
+    SDL_Texture *cleared = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture *filled = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture *blended = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_FRect rect;
+
+    SDL_SetRenderTarget(renderer, cleared);
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderTarget(renderer, filled);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderFillRect(renderer, NULL);
+
+    SDL_SetRenderTarget(renderer, blended);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+    SDL_RenderFillRect(renderer, NULL);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    /* Fill the output with the render targets */
+    SDL_SetRenderTarget(renderer, NULL);
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = WINDOW_WIDTH / 3;
+    rect.h = WINDOW_HEIGHT;
+    SDL_RenderTexture(renderer, cleared, NULL, &rect);
+    rect.x += rect.w;
+    SDL_RenderTexture(renderer, filled, NULL, &rect);
+    rect.x += rect.w;
+    SDL_RenderTexture(renderer, blended, NULL, &rect);
+    SDL_DestroyTexture(cleared);
+    SDL_DestroyTexture(filled);
+    SDL_DestroyTexture(blended);
+
+    /* Check the rendered pixels */
+    SDL_Color c1, c2, c3;
+    if (!ReadPixel(WINDOW_WIDTH / 6, WINDOW_HEIGHT / 2, &c1) ||
+        !ReadPixel(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, &c2) ||
+        !ReadPixel((WINDOW_WIDTH * 5) / 6, WINDOW_HEIGHT / 2, &c3)) {
+        return;
+    }
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Clear, Fill and Blend in Render Targets");
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Cleared target written: 0x808080, read: 0x%.2x%.2x%.2x", c1.r, c1.g, c1.b);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Filled target written: 0x808080, read: 0x%.2x%.2x%.2x", c2.r, c2.g, c2.b);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Blended target written: 0x808080, read: 0x%.2x%.2x%.2x", c3.r, c3.g, c3.b);
+    y += TEXT_LINE_ADVANCE;
+    if (c1.r != 128 || c2.r != 128) {
+        DrawText(x, y, "Incorrect render target color");
+        y += TEXT_LINE_ADVANCE;
+    }
+    if (ColorMatches(&c3, 128, 128, 128, 1)) {
+        DrawText(x, y, "Correct blend color, blending in sRGB space");
+    } else if (ColorMatches(&c3, 188, 188, 188, 1)) {
+        DrawText(x, y, "Incorrect blend color, blending in linear space");
+    } else {
+        DrawText(x, y, "Incorrect blend color, unknown reason");
+    }
+    y += TEXT_LINE_ADVANCE;
 }
 
 static SDL_Texture *CreateGrayFormatTexture(SDL_PixelFormat format, SDL_Color *expected)
@@ -946,6 +1026,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         break;
     case StageTargetBackground:
         RenderTargetBackground();
+        break;
+    case StageTargetDrawing:
+        RenderTargetDrawing();
         break;
     case StageTextureFormats:
         RenderTextureFormats();

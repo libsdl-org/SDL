@@ -301,7 +301,9 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
         break;
     }
-    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+    // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+    const SDL_Colorspace format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+    if (format_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
         switch (format) {
         case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
             format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
@@ -875,15 +877,24 @@ static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, 
     return data->samplers[key];
 }
 
+// Returns the input type for sRGB textures, based on whether the sampler converts them to linear
 static float GetSRGBInputType(SDL_Renderer *renderer, SDL_GPUTextureFormat format)
 {
-    if (SDL_RenderingLinearSpace(renderer) &&
-        format != SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB &&
-        format != SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB) {
-        // The shader needs to convert from sRGB to linear
-        return INPUTTYPE_SRGB;
+    const bool srgb_view = (format == SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB ||
+                            format == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB);
+
+    if (SDL_RenderingLinearSpace(renderer)) {
+        if (!srgb_view) {
+            // The shader needs to convert from sRGB to linear
+            return INPUTTYPE_SRGB;
+        }
+    } else {
+        if (srgb_view) {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
     }
-    // The sampler will convert from sRGB to linear on load if working in linear colorspace
+    // The texture is already in the colorspace we're rendering in
     return INPUTTYPE_UNSPECIFIED;
 }
 
@@ -912,8 +923,11 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
             SDL_assert(!"Unknown scale mode");
             break;
         }
-        // The palette is stored in an RGBA32 texture
-        constants->input_type = GetSRGBInputType(renderer, SDL_GetGPUTextureFormatFromPixelFormat(SDL_PIXELFORMAT_RGBA32));
+        {
+            // The palette is stored in an RGBA32 texture
+            const SDL_GPUTextureFormat palette_format = SDL_GetGPUTextureFormatFromPixelFormat(SDL_PIXELFORMAT_RGBA32);
+            constants->input_type = GetSRGBInputType(renderer, palette_format);
+        }
         break;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
