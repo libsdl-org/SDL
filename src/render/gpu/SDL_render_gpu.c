@@ -1853,7 +1853,13 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
         ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
 
-        SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
+        if (!SDL_WindowSupportsGPUSwapchainComposition(data->device, window, data->swapchain.composition)) {
+            return SDL_SetError("Unsupported output colorspace");
+        }
+
+        if (!SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode)) {
+            return false;
+        }
 
         SDL_SetGPUAllowedFramesInFlight(data->device, 1);
 

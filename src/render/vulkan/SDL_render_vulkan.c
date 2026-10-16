@@ -2485,11 +2485,13 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         desiredColorSpace = VK_COLOR_SPACE_HDR10_ST2084_EXT;
     }
 
+    bool foundDesiredFormat = false;
     if ((rendererData->surfaceFormatsCount == 1) &&
         (rendererData->surfaceFormats[0].format == VK_FORMAT_UNDEFINED)) {
         // aren't any preferred formats, so we pick
         rendererData->surfaceFormat.colorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
         rendererData->surfaceFormat.format = desiredFormat;
+        foundDesiredFormat = (desiredColorSpace == VK_COLORSPACE_SRGB_NONLINEAR_KHR);
     } else {
         rendererData->surfaceFormat = rendererData->surfaceFormats[0];
         rendererData->surfaceFormat.colorSpace = rendererData->surfaceFormats[0].colorSpace;
@@ -2497,9 +2499,15 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
             if (rendererData->surfaceFormats[i].format == desiredFormat &&
                 rendererData->surfaceFormats[i].colorSpace == desiredColorSpace) {
                 rendererData->surfaceFormat = rendererData->surfaceFormats[i];
+                foundDesiredFormat = true;
                 break;
             }
         }
+    }
+    if (!foundDesiredFormat &&
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
+        SET_ERROR_MESSAGE("Unsupported output colorspace");
+        return VK_ERROR_FORMAT_NOT_SUPPORTED;
     }
 
     rendererData->swapchainSize.width = SDL_clamp((uint32_t)w,
