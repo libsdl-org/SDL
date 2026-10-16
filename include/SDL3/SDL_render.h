@@ -531,9 +531,18 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetRendererName(SDL_Renderer *rende
  *   describing the colorspace for output to the display, defaults to
  *   SDL_COLORSPACE_SRGB.
  * - `SDL_PROP_RENDERER_HDR_ENABLED_BOOLEAN`: true if the output colorspace is
- *   SDL_COLORSPACE_SRGB_LINEAR or SDL_COLORSPACE_HDR10 and the renderer has HDR headroom. This property can change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent or the HDR headroom is adjusted with SDL_SetRenderHDRHeadroom().
- * - `SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT`: the scale factor being applied to color values so that 1.0 is displayed as SDR white. This property can change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT`: the maximum brightness that can be displayed, as a multiple of SDR white. When HDR is not enabled or there is no additional headroom, this will be 1.0. This property can change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent or the value is set with SDL_SetRenderHDRHeadroom().
+ *   SDL_COLORSPACE_SRGB_LINEAR or SDL_COLORSPACE_HDR10 and the renderer has
+ *   HDR headroom. This property can change dynamically when
+ *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent or the HDR headroom is
+ *   adjusted with SDL_SetRenderHDRHeadroom().
+ * - `SDL_PROP_RENDERER_SDR_WHITE_POINT_FLOAT`: the scale factor being applied
+ *   to color values so that 1.0 is displayed as SDR white. This property can
+ *   change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ * - `SDL_PROP_RENDERER_HDR_HEADROOM_FLOAT`: the maximum brightness that can
+ *   be displayed, as a multiple of SDR white. When HDR is not enabled or
+ *   there is no additional headroom, this will be 1.0. This property can
+ *   change dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent or the
+ *   value is set with SDL_SetRenderHDRHeadroom().
  *
  * With the direct3d renderer:
  *
@@ -746,8 +755,17 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureFromSurface(SDL_Rende
  * - `SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER`: an SDL_Palette to use with
  *   palettized texture formats. This can be set later with
  *   SDL_SetTexturePalette()
- * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point textures, this defines the value of 100% diffuse white, with higher values being displayed in the High Dynamic Range headroom. For HDR10 textures this is in nits and defaults to 203. For floating point textures this is a linear value and defaults to 1.0.
- * - `SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point textures, this defines the maximum dynamic range used by the content, as a multiple of the SDR white point. This would be equivalent to maxCLL / SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT for HDR10 content. If this is defined and larger than the output HDR headroom, the content will be tone mapped to fit.
+ * - `SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating
+ *   point textures, this defines the value of 100% diffuse white, with higher
+ *   values being displayed in the High Dynamic Range headroom. For HDR10
+ *   textures this is in nits and defaults to 203. For floating point textures
+ *   this is a linear value and defaults to 1.0.
+ * - `SDL_PROP_TEXTURE_CREATE_HDR_HEADROOM_FLOAT`: for HDR10 and floating
+ *   point textures, this defines the maximum dynamic range used by the
+ *   content, as a multiple of the SDR white point. This would be equivalent
+ *   to maxCLL / SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT for HDR10
+ *   content. If this is defined and larger than the output HDR headroom, the
+ *   content will be tone mapped to fit.
  *
  * With the direct3d11 renderer:
  *
@@ -932,8 +950,17 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_CreateTextureWithProperties(SDL_Re
  *   SDL_TextureAccess.
  * - `SDL_PROP_TEXTURE_WIDTH_NUMBER`: the width of the texture in pixels.
  * - `SDL_PROP_TEXTURE_HEIGHT_NUMBER`: the height of the texture in pixels.
- * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point textures, this defines the value of 100% diffuse white, with higher values being displayed in the High Dynamic Range headroom. For HDR10 textures this is in nits and defaults to 203. For floating point textures this is a linear value and defaults to 1.0.
- * - `SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point textures, this defines the maximum dynamic range used by the content, as a multiple of the SDR white point. If this is defined and larger than the output HDR headroom, the content will be tone mapped to fit. This defaults to 1.0 for SDR textures, and there is no default (and no tone mapping) for floating point and HDR10 textures.
+ * - `SDL_PROP_TEXTURE_SDR_WHITE_POINT_FLOAT`: for HDR10 and floating point
+ *   textures, this defines the value of 100% diffuse white, with higher
+ *   values being displayed in the High Dynamic Range headroom. For HDR10
+ *   textures this is in nits and defaults to 203. For floating point textures
+ *   this is a linear value and defaults to 1.0.
+ * - `SDL_PROP_TEXTURE_HDR_HEADROOM_FLOAT`: for HDR10 and floating point
+ *   textures, this defines the maximum dynamic range used by the content, as
+ *   a multiple of the SDR white point. If this is defined and larger than the
+ *   output HDR headroom, the content will be tone mapped to fit. This
+ *   defaults to 1.0 for SDR textures, and there is no default (and no tone
+ *   mapping) for floating point and HDR10 textures.
  *
  * With the direct3d11 renderer:
  *
@@ -2259,9 +2286,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderColorScale(SDL_Renderer *renderer,
 /**
  * Set the HDR headroom for render output.
  *
- * The HDR headroom is used to set the HDR metadata for HDR10 output and for tone mapping textures that are set to a higher headroom.
+ * The HDR headroom is used to set the HDR metadata for HDR10 output and for
+ * tone mapping textures that are set to a higher headroom.
  *
- * By default the HDR headroom comes from the window associated with the renderer, but this function allows you to override that and set a specific value.
+ * By default the HDR headroom comes from the window associated with the
+ * renderer, but this function allows you to override that and set a specific
+ * value.
  *
  * \param renderer the rendering context.
  * \param headroom the HDR headroom to use, or 0 to use the window headroom.
@@ -2280,7 +2310,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderHDRHeadroom(SDL_Renderer *renderer
  * Get the HDR headroom used for render output.
  *
  * \param renderer the rendering context.
- * \param headroom a pointer filled in with the HDR headroom being used for rendering.
+ * \param headroom a pointer filled in with the HDR headroom being used for
+ *                 rendering.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
