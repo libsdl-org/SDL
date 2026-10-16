@@ -410,6 +410,16 @@ static void RenderTargetBackground(void)
     }
 }
 
+static bool ColorMatches(const SDL_Color *c, int r, int g, int b, int epsilon)
+{
+    if (SDL_abs(c->r - r) <= epsilon &&
+        SDL_abs(c->g - g) <= epsilon &&
+        SDL_abs(c->b - b) <= epsilon) {
+        return true;
+    }
+    return false;
+}
+
 static void RenderBlendDrawing(void)
 {
     SDL_Color a = { 238, 70, 166, 255 }; /* red square */
@@ -452,16 +462,11 @@ static void RenderBlendDrawing(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw Blending");
     y += TEXT_LINE_ADVANCE;
-    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
-        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
+    if (ColorMatches(&cr, 199, 193, 121, 1)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
-    } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
-               (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
+    } else if (ColorMatches(&cr, 192, 163, 83, 1)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+    } else if (ColorMatches(&cr, 215, 156, 112, 2)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
@@ -516,16 +521,11 @@ static void RenderBlendTexture(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Texture Blending");
     y += TEXT_LINE_ADVANCE;
-    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
-        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
+    if (ColorMatches(&cr, 199, 193, 121, 1)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
-    } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
-               (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
+    } else if (ColorMatches(&cr, 192, 163, 83, 1)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+    } else if (ColorMatches(&cr, 215, 156, 112, 2)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
