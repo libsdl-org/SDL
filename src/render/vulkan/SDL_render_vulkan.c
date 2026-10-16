@@ -163,6 +163,7 @@ typedef void (*pfnAHardwareBuffer_describe)(const AHardwareBuffer *, AHardwareBu
     VULKAN_OPTIONAL_INSTANCE_FUNCTION(vkGetPhysicalDeviceProperties2KHR)            \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkCreateSamplerYcbcrConversionKHR)              \
     VULKAN_OPTIONAL_DEVICE_FUNCTION(vkDestroySamplerYcbcrConversionKHR)             \
+    VULKAN_OPTIONAL_DEVICE_FUNCTION(vkSetHdrMetadataEXT)                            \
     ANDROID_OPTIONAL_DEVICE_FUNCTION(vkGetAndroidHardwareBufferPropertiesANDROID)   \
 
 #define VULKAN_DEVICE_FUNCTION(name)            static PFN_##name name = NULL;
@@ -415,6 +416,7 @@ typedef struct
     VULKAN_YUVPipeline *yuvPipelineCache;
 
     bool supportsEXTSwapchainColorspace;
+    bool supportsEXTHdrMetadata;
     bool supportsKHRGetPhysicalDeviceProperties2;
     bool supportsKHRSamplerYCbCrConversion;
     bool supportsKHRExternalMemoryCapabilities;
@@ -635,6 +637,7 @@ static VULKAN_YUVPipeline *VULKAN_GetYUVPipeline(VULKAN_RenderData *rendererData
 static void VULKAN_CleanupYUVPipeline(VULKAN_RenderData *rendererData, VULKAN_YUVPipeline *pipeline);
 static VkSurfaceTransformFlagBitsKHR VULKAN_GetRotationForCurrentRenderTarget(VULKAN_RenderData *rendererData);
 static bool VULKAN_IsDisplayRotated90Degrees(VkSurfaceTransformFlagBitsKHR rotation);
+static void VULKAN_UpdateHDRMetadata(SDL_Renderer *renderer);
 
 static void VULKAN_DestroyAll(SDL_Renderer *renderer)
 {
@@ -1972,33 +1975,29 @@ static bool VULKAN_ValidationLayersFound(void)
 // Create resources that depend on the device.
 static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_PropertiesID create_props)
 {
-    /* The list of extension names, in dependency order.
-     * If there are extension blocks that are not dependent upon each other, you'll need
-     * to dynamically build the list of extension names instead of using this array.
-     */
-    static const char *const deviceExtensionNames[] = {
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    static const char *const YCbCrDeviceExtensionNames[] = {
         // VK_KHR_sampler_ycbcr_conversion + dependent extensions
-#define YCBCR_EXTENSION_OFFSET 1
-#define YCBCR_EXTENSION_COUNT 5
         VK_KHR_SAMPLER_YCBCR_CONVERSION_EXTENSION_NAME,
         VK_KHR_MAINTENANCE1_EXTENSION_NAME,
         VK_KHR_MAINTENANCE2_EXTENSION_NAME,
         VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
         VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+    };
 #ifdef SDL_PLATFORM_ANDROID
+    static const char *const AndroidMemoryDeviceExtensionNames[] = {
         // VK_ANDROID_external_memory_android_hardware_buffer + dependent extensions
-#define ANDROID_EXTENSION_OFFSET (YCBCR_EXTENSION_OFFSET + YCBCR_EXTENSION_COUNT)
-#define ANDROID_EXTENSION_COUNT 4
         VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME,
         VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
         VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
         VK_EXT_QUEUE_FAMILY_FOREIGN_EXTENSION_NAME,
+    };
+#define ANDROID_EXTENSION_COUNT SDL_arraysize(AndroidMemoryDeviceExtensionNames)
 #else
 #define ANDROID_EXTENSION_COUNT 0
 #endif
+    static const char *const HdrMetadataExtensionNames[] = {
+        VK_EXT_HDR_METADATA_EXTENSION_NAME
     };
-    SDL_COMPILE_TIME_ASSERT(deviceExtensionNames, SDL_arraysize(deviceExtensionNames) == (YCBCR_EXTENSION_OFFSET + YCBCR_EXTENSION_COUNT + ANDROID_EXTENSION_COUNT));
 
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VkResult result = VK_SUCCESS;
@@ -2023,7 +2022,6 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     }
 
     // Check for colorspace extension
-    rendererData->supportsEXTSwapchainColorspace = VK_FALSE;
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
         rendererData->supportsEXTSwapchainColorspace = VULKAN_InstanceExtensionFound(rendererData, VK_EXT_SWAPCHAIN_COLOR_SPACE_EXTENSION_NAME);
@@ -2119,17 +2117,23 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
     }
 
     if (rendererData->supportsKHRGetPhysicalDeviceProperties2 &&
-        VULKAN_DeviceExtensionsFound(rendererData, YCBCR_EXTENSION_COUNT, &deviceExtensionNames[YCBCR_EXTENSION_OFFSET])) {
+        VULKAN_DeviceExtensionsFound(rendererData, SDL_arraysize(YCbCrDeviceExtensionNames), YCbCrDeviceExtensionNames)) {
         rendererData->supportsKHRSamplerYCbCrConversion = true;
     }
 
 #ifdef SDL_PLATFORM_ANDROID
     if (rendererData->supportsKHRSamplerYCbCrConversion &&
         rendererData->supportsKHRExternalMemoryCapabilities &&
-        VULKAN_DeviceExtensionsFound(rendererData, ANDROID_EXTENSION_COUNT, &deviceExtensionNames[ANDROID_EXTENSION_OFFSET])) {
+        VULKAN_DeviceExtensionsFound(rendererData, SDL_arraysize(AndroidMemoryDeviceExtensionNames), AndroidMemoryDeviceExtensionNames)) {
         rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer = true;
     }
 #endif
+
+    // Check for HDR metadata extension
+    if (renderer->output_colorspace == SDL_COLORSPACE_HDR10 &&
+        VULKAN_DeviceExtensionsFound(rendererData, SDL_arraysize(HdrMetadataExtensionNames), HdrMetadataExtensionNames)) {
+        rendererData->supportsEXTHdrMetadata = true;
+    }
 
     // Create Vulkan device
     rendererData->device = (VkDevice)SDL_GetPointerProperty(create_props, SDL_PROP_RENDERER_CREATE_VULKAN_DEVICE_POINTER, NULL);
@@ -2145,16 +2149,30 @@ static VkResult VULKAN_CreateDeviceResources(SDL_Renderer *renderer, SDL_Propert
         deviceCreateInfo.queueCreateInfoCount = 0;
         deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfo;
         deviceCreateInfo.pEnabledFeatures = NULL;
-        deviceCreateInfo.enabledExtensionCount = 1;
+
+        uint32_t enabledExtensionCount = 0;
+        const char *enabledExtensionNames[1 + SDL_arraysize(YCbCrDeviceExtensionNames) + ANDROID_EXTENSION_COUNT + SDL_arraysize(HdrMetadataExtensionNames)];
+        enabledExtensionNames[enabledExtensionCount++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
         if (rendererData->supportsKHRSamplerYCbCrConversion) {
-            deviceCreateInfo.enabledExtensionCount += YCBCR_EXTENSION_COUNT;
+            for (int i = 0; i < SDL_arraysize(YCbCrDeviceExtensionNames); ++i) {
+                enabledExtensionNames[enabledExtensionCount++] = YCbCrDeviceExtensionNames[i];
+            }
         }
 #ifdef SDL_PLATFORM_ANDROID
         if (rendererData->supportsANDROIDExternalMemoryAndroidHardwareBuffer) {
-            deviceCreateInfo.enabledExtensionCount += ANDROID_EXTENSION_COUNT;
+            for (int i = 0; i < SDL_arraysize(AndroidMemoryDeviceExtensionNames); ++i) {
+                enabledExtensionNames[enabledExtensionCount++] = AndroidMemoryDeviceExtensionNames[i];
+            }
         }
 #endif
-        deviceCreateInfo.ppEnabledExtensionNames = deviceExtensionNames;
+        if (rendererData->supportsEXTHdrMetadata) {
+            for (int i = 0; i < SDL_arraysize(HdrMetadataExtensionNames); ++i) {
+                enabledExtensionNames[enabledExtensionCount++] = HdrMetadataExtensionNames[i];
+            }
+        }
+        SDL_assert(enabledExtensionCount <= SDL_arraysize(enabledExtensionNames));
+        deviceCreateInfo.enabledExtensionCount = enabledExtensionCount;
+        deviceCreateInfo.ppEnabledExtensionNames = enabledExtensionNames;
 
         deviceQueueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         deviceQueueCreateInfo[0].queueFamilyIndex = rendererData->graphicsQueueFamilyIndex;
@@ -2770,6 +2788,8 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     rendererData->currentConstantBufferIndex = 0;
 
     VULKAN_AcquireNextSwapchainImage(renderer);
+
+    VULKAN_UpdateHDRMetadata(renderer);
 
     SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
     SDL_SetNumberProperty(props, SDL_PROP_RENDERER_VULKAN_SWAPCHAIN_IMAGE_COUNT_NUMBER, rendererData->swapchainImageCount);
@@ -5213,6 +5233,40 @@ static bool VULKAN_SetVSync(SDL_Renderer *renderer, const int vsync)
     return true;
 }
 
+static void VULKAN_UpdateHDRMetadata(SDL_Renderer *renderer)
+{
+    VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_HDR10 ||
+        !rendererData->supportsEXTHdrMetadata || !vkSetHdrMetadataEXT ||
+        rendererData->swapchain == VK_NULL_HANDLE) {
+        return;
+    }
+
+    // Set BT.2020 primaries with a D65 white point and our max content luminance
+    float maxLuminance = SDL_GetRendererMaxLuminance(renderer);
+    if (maxLuminance <= 0.0f) {
+        return;
+    }
+
+    VkHdrMetadataEXT metadata;
+    SDL_zero(metadata);
+    metadata.sType = VK_STRUCTURE_TYPE_HDR_METADATA_EXT;
+    metadata.displayPrimaryRed.x = 0.708f;
+    metadata.displayPrimaryRed.y = 0.292f;
+    metadata.displayPrimaryGreen.x = 0.170f;
+    metadata.displayPrimaryGreen.y = 0.797f;
+    metadata.displayPrimaryBlue.x = 0.131f;
+    metadata.displayPrimaryBlue.y = 0.046f;
+    metadata.whitePoint.x = 0.3127f;
+    metadata.whitePoint.y = 0.3290f;
+    metadata.maxLuminance = maxLuminance;
+    metadata.minLuminance = 0.0f;
+    metadata.maxContentLightLevel = maxLuminance;
+    metadata.maxFrameAverageLightLevel = 0.0f;
+    vkSetHdrMetadataEXT(rendererData->device, 1, &rendererData->swapchain, &metadata);
+}
+
 static bool VULKAN_TextureFormatSupported(VkPhysicalDevice physicalDevice, VkFormat format)
 {
     VkImageFormatProperties properties;
@@ -5288,6 +5342,7 @@ static bool VULKAN_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SD
     renderer->DestroyTexture = VULKAN_DestroyTexture;
     renderer->DestroyRenderer = VULKAN_DestroyRenderer;
     renderer->SetVSync = VULKAN_SetVSync;
+    renderer->UpdateHDRMetadata = VULKAN_UpdateHDRMetadata;
     renderer->internal = rendererData;
     VULKAN_InvalidateCachedState(renderer);
 

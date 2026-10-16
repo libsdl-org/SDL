@@ -288,6 +288,7 @@ static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9
 #pragma GCC diagnostic pop
 #endif
 
+static void D3D12_UpdateHDRMetadata(SDL_Renderer *renderer);
 static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState);
 
 static UINT D3D12_Align(UINT location, UINT alignment)
@@ -1309,6 +1310,8 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         SDL_SetError("Unsupported output colorspace");
         result = DXGI_ERROR_UNSUPPORTED;
     }
+
+    D3D12_UpdateHDRMetadata(renderer);
 
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
 
@@ -3559,6 +3562,40 @@ static bool D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return true;
 }
 
+static void D3D12_UpdateHDRMetadata(SDL_Renderer *renderer)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_HDR10 ||
+        !data->swapChain) {
+        return;
+    }
+
+    // Set BT.2020 primaries with a D65 white point and our max content luminance
+    float maxLuminance = SDL_GetRendererMaxLuminance(renderer);
+    if (maxLuminance <= 0.0f) {
+        return;
+    }
+
+    DXGI_HDR_METADATA_HDR10 metadata;
+    SDL_zero(metadata);
+    metadata.RedPrimary[0] = 35400;
+    metadata.RedPrimary[1] = 14600;
+    metadata.GreenPrimary[0] = 8500;
+    metadata.GreenPrimary[1] = 39850;
+    metadata.BluePrimary[0] = 6550;
+    metadata.BluePrimary[1] = 2300;
+    metadata.WhitePoint[0] = 15635;
+    metadata.WhitePoint[1] = 16450;
+    metadata.MaxMasteringLuminance = (UINT)maxLuminance;
+    metadata.MinMasteringLuminance = 0;
+    metadata.MaxContentLightLevel = (UINT16)maxLuminance;
+    metadata.MaxFrameAverageLightLevel = 0;
+    IDXGISwapChain4_SetHDRMetaData(data->swapChain, DXGI_HDR_METADATA_TYPE_HDR10, sizeof(metadata), &metadata);
+#endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
+}
+
 bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *data;
@@ -3612,6 +3649,7 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->SetVSync = D3D12_SetVSync;
+    renderer->UpdateHDRMetadata = D3D12_UpdateHDRMetadata;
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     renderer->GDKSuspendRenderer = D3D12_GDKSuspendRenderer;
     renderer->GDKResumeRenderer = D3D12_GDKResumeRenderer;

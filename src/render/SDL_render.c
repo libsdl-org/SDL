@@ -198,6 +198,15 @@ void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
     }
 }
 
+float SDL_GetRendererMaxLuminance(SDL_Renderer *renderer)
+{
+    float luminance = (SCRGB_NITS * renderer->SDR_white_point * renderer->HDR_headroom);
+    if (luminance > 10000.0f) {
+        luminance = 10000.0f;
+    }
+    return luminance;
+}
+
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 {
 #if 0
@@ -873,6 +882,9 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
+    }
+    if (renderer->UpdateHDRMetadata) {
+        renderer->UpdateHDRMetadata(renderer);
     }
 
     if (renderer->HDR_headroom > 1.0f) {
