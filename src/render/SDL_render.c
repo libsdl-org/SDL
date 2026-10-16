@@ -844,6 +844,10 @@ static void UpdateColorScale(SDL_Renderer *renderer)
     float SDR_white_point;
     if (renderer->target) {
         SDR_white_point = renderer->target->SDR_white_point;
+        if (SDL_COLORSPACETRANSFER(renderer->target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+            // HDR10 textures specify their SDR white point in nits
+            SDR_white_point /= SCRGB_NITS;
+        }
     } else {
         SDR_white_point = renderer->SDR_white_point;
     }
@@ -5655,11 +5659,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_Texture *parent = SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_PARENT_POINTER, NULL);
             SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
 
-            if (SDL_COLORSPACETRANSFER(target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * SCRGB_NITS);
-            } else {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
-            }
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format
