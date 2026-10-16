@@ -118,6 +118,8 @@ static void CreateRenderer(void)
     renderer_name = SDL_GetRendererName(renderer);
     SDL_Log("Created renderer %s", renderer_name);
 
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+
     UpdateHDRState();
 }
 
@@ -187,10 +189,13 @@ static bool ReadPixel(int x, int y, SDL_Color *c)
 {
     SDL_Surface *surface;
     SDL_Rect r;
+    SDL_FRect output;
     bool result = false;
 
-    r.x = x;
-    r.y = y;
+    /* Reading pixels uses output coordinates, so convert from the logical presentation */
+    SDL_GetRenderLogicalPresentationRect(renderer, &output);
+    r.x = (int)(output.x + (x + 0.5f) * output.w / WINDOW_WIDTH);
+    r.y = (int)(output.y + (y + 0.5f) * output.h / WINDOW_HEIGHT);
     r.w = 1;
     r.h = 1;
 
@@ -880,7 +885,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         }
     }
 
-    window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;
