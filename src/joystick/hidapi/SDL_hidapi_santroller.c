@@ -90,6 +90,7 @@ enum
 #define SANTROLLER_DEVICE_CAPABILITY_RUMBLE               0x08
 #define SANTROLLER_DEVICE_CAPABILITY_DPAD_AS_BUTTONS      0x10
 #define SANTROLLER_DEVICE_CAPABILITY_Y_AXIS_INVERTED      0x20
+#define SANTROLLER_DEVICE_CAPABILITY_EUPHORIA_LED         0x40
 
 typedef struct
 {
@@ -103,6 +104,7 @@ typedef struct
 
     bool player_leds_supported;
     bool joystick_rgb_supported;
+    bool euphoria_led_supported;
     bool instrument_led_supported;
     bool rumble_supported;
     bool dpad_as_buttons;
@@ -243,10 +245,11 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
                 ctx->sub_type = data[1];
                 ctx->player_leds_supported = (data[2] & SANTROLLER_DEVICE_CAPABILITY_STANDARD_PLAYER_LEDS) != 0;
                 ctx->joystick_rgb_supported = (data[2] & SANTROLLER_DEVICE_CAPABILITY_JOYSTICK_RGB) != 0;
+                ctx->euphoria_led_supported = (data[2] & SANTROLLER_DEVICE_CAPABILITY_EUPHORIA_LED) != 0;
                 ctx->instrument_led_supported = (data[2] & SANTROLLER_DEVICE_CAPABILITY_INSTRUMENT_LED) != 0;
                 ctx->dpad_as_buttons = (data[2] & SANTROLLER_DEVICE_CAPABILITY_DPAD_AS_BUTTONS) != 0; 
                 ctx->y_axis_inverted = (data[2] & SANTROLLER_DEVICE_CAPABILITY_Y_AXIS_INVERTED) != 0;
-                ctx->rumble_supported = ctx->sub_type == SDL_SANTROLLER_SUB_TYPE_GAMEPAD;
+                ctx->rumble_supported = (data[2] & SANTROLLER_DEVICE_CAPABILITY_RUMBLE) != 0;
                 ctx->new_format = true;
                 ctx->buttons_count = 12;
                 ctx->axes_count = 6;
@@ -429,6 +432,8 @@ static Uint32 HIDAPI_DriverSantroller_GetJoystickCapabilities(SDL_HIDAPI_Device 
 
     if (ctx->joystick_rgb_supported) {
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
+    } else if (ctx->euphoria_led_supported) {
+        caps |= SDL_JOYSTICK_CAP_MONO_LED;
     }
 
     return caps;
@@ -443,6 +448,16 @@ static bool HIDAPI_DriverSantroller_SetJoystickLED(SDL_HIDAPI_Device *device, SD
         Uint8 playerReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_RGB_LED, red, green, blue};
 
         SDL_hid_write(device->dev, playerReport, sizeof(playerReport));
+
+        return true;
+    }
+
+    if (ctx->euphoria_led_supported) {
+        // The euphoria LED is set with a rumble command that has equal values
+        Uint8 brightness = SDL_max(red, SDL_max(green, blue));
+        Uint8 euphoriaReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_RUMBLE, brightness, brightness };
+
+        SDL_hid_write(device->dev, euphoriaReport, sizeof(euphoriaReport));
 
         return true;
     }
