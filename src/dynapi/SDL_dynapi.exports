@@ -1318,3 +1318,5 @@ _SDL_GetAudioDeviceProperties
 _SDL_SetSoftwareRendererWindow
 _SDL_SetSoftwareRendererSurface
 _SDL_EncodeURL
+_SDL_SetRenderHDRHeadroom
+_SDL_GetRenderHDRHeadroom

@@ -878,7 +878,11 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
         } else {
             renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
         }
-        renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+        if (renderer->HDR_headroom_override > 0.0f) {
+            renderer->HDR_headroom = renderer->HDR_headroom_override;
+        } else {
+            renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+        }
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
@@ -3671,6 +3675,33 @@ bool SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
 
     if (scale) {
         *scale = renderer->desired_color_scale;
+    }
+    return true;
+}
+
+bool SDL_SetRenderHDRHeadroom(SDL_Renderer *renderer, float headroom)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    CHECK_PARAM(headroom < 1.0f && headroom != 0.0f) {
+        return SDL_InvalidParamError("headroom");
+    }
+
+    renderer->HDR_headroom_override = headroom;
+    UpdateHDRProperties(renderer);
+    return true;
+}
+
+bool SDL_GetRenderHDRHeadroom(SDL_Renderer *renderer, float *headroom)
+{
+    if (headroom) {
+        *headroom = 1.0f;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (headroom) {
+        *headroom = renderer->HDR_headroom;
     }
     return true;
 }

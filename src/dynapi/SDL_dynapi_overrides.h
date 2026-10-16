@@ -1345,3 +1345,5 @@
 #define SDL_SetSoftwareRendererWindow SDL_SetSoftwareRendererWindow_REAL
 #define SDL_SetSoftwareRendererSurface SDL_SetSoftwareRendererSurface_REAL
 #define SDL_EncodeURL SDL_EncodeURL_REAL
+#define SDL_SetRenderHDRHeadroom SDL_SetRenderHDRHeadroom_REAL
+#define SDL_GetRenderHDRHeadroom SDL_GetRenderHDRHeadroom_REAL

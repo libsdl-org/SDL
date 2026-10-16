@@ -328,6 +328,7 @@ struct SDL_Renderer
     SDL_Colorspace output_colorspace;
     float SDR_white_point;
     float HDR_headroom;
+    float HDR_headroom_override;
 
     float desired_color_scale;
     float color_scale;
