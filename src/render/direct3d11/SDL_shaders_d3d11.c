@@ -54,10 +54,6 @@
 #include "D3D11_PixelShader_Textures_PQ.h"
 #undef g_main
 
-#define g_main D3D11_PixelShader_Textures_Simple
-#include "D3D11_PixelShader_Textures_Simple.h"
-#undef g_main
-
 #define g_main D3D11_VertexShader
 #include "D3D11_VertexShader.h"
 #undef g_main
@@ -74,7 +70,6 @@ static struct
     { D3D11_PixelShader_Textures, sizeof(D3D11_PixelShader_Textures) },
     { D3D11_PixelShader_Advanced, sizeof(D3D11_PixelShader_Advanced) },
     { D3D11_PixelShader_Textures_PQ, sizeof(D3D11_PixelShader_Textures_PQ) },
-    { D3D11_PixelShader_Textures_Simple, sizeof(D3D11_PixelShader_Textures_Simple) },
 };
 SDL_COMPILE_TIME_ASSERT(D3D11_shaders, SDL_arraysize(D3D11_shaders) == NUM_SHADERS);
 

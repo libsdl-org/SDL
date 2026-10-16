@@ -34,7 +34,6 @@ typedef enum
     SHADER_RGB,
     SHADER_ADVANCED,
     SHADER_RGB_PQ,
-    SHADER_RGB_SIMPLE,
     NUM_SHADERS
 } D3D12_Shader;
 
