@@ -911,14 +911,6 @@ static SDL_Texture *CreateHDR10Texture(int width, float max_nits)
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 1);
-    // The white point for HDR10 textures is the SDR white level in nits
-    if (SDR_white_level > 1.0f) {
-        // We'll match the current display SDR white level so we don't get any scaling here
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * SCRGB_NITS);
-    } else {
-        // ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, 203.0f);
-    }
     texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
