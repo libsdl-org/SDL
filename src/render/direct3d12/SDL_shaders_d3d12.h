@@ -33,7 +33,6 @@ typedef enum
     SHADER_SOLID_PQ,
     SHADER_RGB,
     SHADER_ADVANCED,
-    SHADER_RGB_PQ,
     NUM_SHADERS
 } D3D12_Shader;
 

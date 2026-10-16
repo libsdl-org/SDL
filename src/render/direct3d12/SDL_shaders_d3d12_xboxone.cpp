@@ -47,10 +47,6 @@
 #include "D3D12_PixelShader_Advanced_One.h"
 #undef g_main
 
-#define g_main D3D12_PixelShader_Textures_PQ
-#include "D3D12_PixelShader_Textures_PQ_One.h"
-#undef g_main
-
 
 #define g_mainColor D3D12_VertexShader_Colors
 #include "D3D12_VertexShader_Color_One.h"
@@ -96,9 +92,6 @@ static struct
       D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
       ROOTSIG_TEXTURE },
     { D3D12_PixelShader_Advanced, sizeof(D3D12_PixelShader_Advanced),
-      D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
-      ROOTSIG_ADVANCED },
-    { D3D12_PixelShader_Textures_PQ, sizeof(D3D12_PixelShader_Textures_PQ),
       D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
       ROOTSIG_ADVANCED },
 };
