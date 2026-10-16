@@ -871,6 +871,13 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+#ifdef SDL_PLATFORM_APPLE
+        if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            // Apple platforms display PQ 100 nits as SDR white (EDR 1.0)
+            const float SDR_reference_white_nits = 100.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else
+#endif
         if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
             // The Vulkan drivers don't set luminance for HDR10 swapchains, so the
             // protocol default reference white of 203 nits is used. For linear
