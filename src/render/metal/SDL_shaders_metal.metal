@@ -188,12 +188,13 @@ float4 GetOutputColor(float4 rgba, constant ShaderConstants &c, float4 vertex_co
         rgb = PQtoLinear(rgb, c.sdr_white_point);
         rgb2020 = true;
     } else if (c.input_type == INPUTTYPE_SRGB) {
-        if (c.output_type != OUTPUTTYPE_SRGB && c.texture_type != TEXTURETYPE_RGB) {
-            // RGB textures have already been converted to linear by the sampler
+        if (c.output_type != OUTPUTTYPE_SRGB) {
             rgb.r = sRGBtoLinear(rgb.r);
             rgb.g = sRGBtoLinear(rgb.g);
             rgb.b = sRGBtoLinear(rgb.b);
         }
+    } else if (c.input_type == INPUTTYPE_UNSPECIFIED) {
+        // The sampler has already converted to linear if necessary
     } else if (c.input_type != INPUTTYPE_SCRGB) {
         // Unexpected input type, use magenta error color
         return float4(1.0, 0.0, 1.0, 1.0);
@@ -221,7 +222,8 @@ float4 GetOutputColor(float4 rgba, constant ShaderConstants &c, float4 vertex_co
 
     rgb *= c.color_scale;
 
-    if (c.output_type == OUTPUTTYPE_SRGB && c.input_type != INPUTTYPE_SRGB) {
+    if (c.output_type == OUTPUTTYPE_SRGB &&
+        (c.input_type == INPUTTYPE_SCRGB || c.input_type == INPUTTYPE_HDR10)) {
         rgb.r = sRGBfromLinear(rgb.r);
         rgb.g = sRGBfromLinear(rgb.g);
         rgb.b = sRGBfromLinear(rgb.b);

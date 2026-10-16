@@ -1440,7 +1440,7 @@ static const float TEXTURETYPE_NV12 = 6;
 static const float TEXTURETYPE_NV21 = 7;
 static const float TEXTURETYPE_YUV = 8;
 
-//static const float INPUTTYPE_UNSPECIFIED = 0;
+static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
@@ -1488,6 +1488,35 @@ typedef struct
     bool shader_constants_dirty;
     PixelShaderConstants shader_constants;
 } METAL_DrawStateCache;
+
+static float GetSRGBInputType(const SDL_Texture *texture, float texture_type)
+{
+    if (texture_type == TEXTURETYPE_YUV ||
+        texture_type == TEXTURETYPE_NV12 ||
+        texture_type == TEXTURETYPE_NV21) {
+        // YUV textures are converted to sRGB in the shader
+        return INPUTTYPE_SRGB;
+    }
+
+    id<MTLTexture> mtltexture;
+    if (texture->palette) {
+        SDL3METAL_PaletteData *palettedata = (__bridge SDL3METAL_PaletteData *)texture->palette->internal;
+        mtltexture = palettedata.mtltexture;
+    } else {
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        mtltexture = texturedata.mtltexture;
+    }
+
+    switch (mtltexture.pixelFormat) {
+    case MTLPixelFormatRGBA8Unorm_sRGB:
+    case MTLPixelFormatBGRA8Unorm_sRGB:
+        // The sampler will convert from sRGB to linear on load
+        return INPUTTYPE_UNSPECIFIED;
+    default:
+        // The shader needs to convert from sRGB if necessary
+        return INPUTTYPE_SRGB;
+    }
+}
 
 static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
 {
@@ -1558,7 +1587,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
-            constants->input_type = INPUTTYPE_SRGB;
+            constants->input_type = GetSRGBInputType(texture, constants->texture_type);
             break;
         }
 

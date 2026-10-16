@@ -2172,6 +2172,36 @@ static ID3D11RenderTargetView *D3D11_GetCurrentRenderTargetView(SDL_Renderer *re
     }
 }
 
+// Returns true if the texture sampler converts this format from sRGB to linear
+// This needs to match the formats with sRGB variants in dxgi_format_map
+static bool SamplerConvertsSRGB(Uint32 format, Uint32 output_colorspace)
+{
+    if (output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+        output_colorspace != SDL_COLORSPACE_HDR10) {
+        return false;
+    }
+
+    switch (format) {
+    case SDL_PIXELFORMAT_ARGB8888:
+    case SDL_PIXELFORMAT_ABGR8888:
+    case SDL_PIXELFORMAT_XRGB8888:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static float GetSRGBInputType(SDL_Renderer *renderer, Uint32 format)
+{
+    if (SDL_RenderingLinearSpace(renderer) &&
+        !SamplerConvertsSRGB(format, renderer->output_colorspace)) {
+        // The shader needs to convert from sRGB to linear
+        return INPUTTYPE_SRGB;
+    }
+    // The sampler will convert from sRGB to linear on load if working in linear colorspace
+    return INPUTTYPE_UNSPECIFIED;
+}
+
 static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, D3D11_PixelShaderConstants *constants)
 {
     float output_headroom;
@@ -2200,6 +2230,8 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
                 SDL_assert(!"Unknown scale mode");
                 break;
             }
+            // The palette is stored in an RGBA32 texture
+            constants->input_type = GetSRGBInputType(renderer, SDL_PIXELFORMAT_RGBA32);
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -2235,8 +2267,7 @@ static void D3D11_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
-                // The sampler will convert from sRGB to linear on load if working in linear colorspace
-                constants->input_type = INPUTTYPE_UNSPECIFIED;
+                constants->input_type = GetSRGBInputType(renderer, texture->format);
             }
             break;
         }

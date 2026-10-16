@@ -3995,6 +3995,38 @@ static bool VULKAN_UpdateClipRect(SDL_Renderer *renderer)
     return true;
 }
 
+// Returns true if the texture sampler converts this format from sRGB to linear
+// This needs to match the formats with sRGB variants in vk_format_map
+static bool SamplerConvertsSRGB(Uint32 format, Uint32 output_colorspace)
+{
+    if (output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+        output_colorspace != SDL_COLORSPACE_HDR10) {
+        return false;
+    }
+
+    switch (format) {
+    case SDL_PIXELFORMAT_BGRA32:
+    case SDL_PIXELFORMAT_RGBA32:
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    case SDL_PIXELFORMAT_ABGR8888:
+#endif
+        return true;
+    default:
+        return false;
+    }
+}
+
+static float GetSRGBInputType(SDL_Renderer *renderer, Uint32 format)
+{
+    if (SDL_RenderingLinearSpace(renderer) &&
+        !SamplerConvertsSRGB(format, renderer->output_colorspace)) {
+        // The shader needs to convert from sRGB to linear
+        return INPUTTYPE_SRGB;
+    }
+    // The sampler will convert from sRGB to linear on load if working in linear colorspace
+    return INPUTTYPE_UNSPECIFIED;
+}
+
 static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, VULKAN_PixelShaderConstants *constants)
 {
     float output_headroom;
@@ -4024,6 +4056,8 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
                 SDL_assert(!"Unknown scale mode");
                 break;
             }
+            // The palette is stored in an RGBA32 texture
+            constants->input_type = GetSRGBInputType(renderer, SDL_PIXELFORMAT_RGBA32);
             break;
         case SDL_PIXELFORMAT_YV12:
         case SDL_PIXELFORMAT_IYUV:
@@ -4060,8 +4094,7 @@ static void VULKAN_SetupShaderConstants(SDL_Renderer *renderer, const SDL_Render
                        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
-                // The sampler will convert from sRGB to linear on load if working in linear colorspace
-                constants->input_type = INPUTTYPE_UNSPECIFIED;
+                constants->input_type = GetSRGBInputType(renderer, texture->format);
             }
             break;
         }
