@@ -52,6 +52,8 @@ enum
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE2,
     SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TOUCHPAD,
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_TRIGGER_CLICK,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TRIGGER_CLICK,
     SDL_GAMEPAD_NUM_TRITON_BUTTONS,
 };
 
@@ -191,6 +193,10 @@ static void HIDAPI_DriverSteamTriton_HandleGenericState(SDL_DriverSteamTriton_Co
                                ((pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_CLICK) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
                                ((pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_CLICK) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TRIGGER_CLICK,
+                               ((pTritonReport->buttons & TRITON_LEFT_TRIGGER_CLICK) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TRIGGER_CLICK,
+                               ((pTritonReport->buttons & TRITON_RIGHT_TRIGGER_CLICK) != 0));
 
         SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,
                                  ((pTritonReport->buttons & TRITON_RIGHT_JOYSTICK_TOUCH) != 0));
@@ -647,6 +653,39 @@ static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *devic
         }
         return true;
     }
+
+    // Haptic effects use short HID output reports, unlike the feature reports above
+    if (data && size > 0) {
+        const Uint8 report_id = *(const Uint8 *)data;
+        int expected_size = 0;
+
+        // Accept only known haptic report IDs and their fixed sizes
+        switch (report_id) {
+        case ID_OUT_REPORT_HAPTIC_PULSE:
+            expected_size = HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_COMMAND:
+            expected_size = HID_HAPTIC_COMMAND_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_LFO_TONE:
+            expected_size = HID_HAPTIC_LFO_TONE_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_LOG_SWEEP:
+            expected_size = HID_HAPTIC_LOG_SWEEP_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_SCRIPT:
+            expected_size = HID_HAPTIC_SCRIPT_REPORT_BYTES;
+            break;
+        default:
+            break;
+        }
+
+        if (size == expected_size) {
+            // Require the complete output report to be written
+            return SDL_hid_write(device->dev, data, size) == size;
+        }
+    }
+
     return SDL_Unsupported();
 }
 
