@@ -75,6 +75,10 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mHeight = 1.0f;
 
         mIsSurfaceReady = false;
+        if (Build.VERSION.SDK_INT >= 26) {
+            // We can use CapturedPointerListener and avoid many shenanigans and problems
+            setOnCapturedPointerListener(SDLActivity.getMotionListener());
+        }
     }
 
     protected void handlePause() {
@@ -281,7 +285,13 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 y = motionListener.getEventY(event, i);
                 relative = motionListener.inRelativeMode();
 
-                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
+                // Android will generate a spurious ACTION_CANCEL containing no button state if we switch 
+                // between absolute and relative mode. While we want ACTION_CANCEL for mouse when it
+                // comes from the generic motion listener, we do NOT want it here.
+                if (action != MotionEvent.ACTION_CANCEL) {
+                    SDLActivity.onNativeMouse(buttonState, action, x, y, relative);                 
+                }
+
             } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
                 pointerId = event.getPointerId(i);
                 x = event.getX(i);

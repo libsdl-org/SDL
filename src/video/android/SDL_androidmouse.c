@@ -30,16 +30,22 @@
 #include "../../core/android/SDL_android.h"
 
 // See Android's MotionEvent class for constants
-#define ACTION_DOWN       0
-#define ACTION_UP         1
-#define ACTION_MOVE       2
-#define ACTION_HOVER_MOVE 7
-#define ACTION_SCROLL     8
-#define BUTTON_PRIMARY    1
-#define BUTTON_SECONDARY  2
-#define BUTTON_TERTIARY   4
-#define BUTTON_BACK       8
-#define BUTTON_FORWARD    16
+#define ACTION_DOWN           0
+#define ACTION_UP             1
+#define ACTION_MOVE           2
+#define ACTION_CANCEL         3
+#define ACTION_HOVER_MOVE     7
+#define ACTION_SCROLL         8
+#define ACTION_HOVER_ENTER    9
+#define ACTION_HOVER_EXIT     10
+#define ACTION_BUTTON_PRESS   11
+#define ACTION_BUTTON_RELEASE 12
+
+#define BUTTON_PRIMARY        1
+#define BUTTON_SECONDARY      2
+#define BUTTON_TERTIARY       4
+#define BUTTON_BACK           8
+#define BUTTON_FORWARD        16
 
 struct SDL_CursorData
 {
@@ -208,7 +214,8 @@ static Uint8 TranslateButton(int state)
 
 void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, bool relative)
 {
-    int changes;
+    int changes_press;
+    int changes_release;
     Uint8 button;
 
     if (!window) {
@@ -216,22 +223,6 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     }
 
     switch (action) {
-    case ACTION_DOWN:
-        changes = state & ~last_state;
-        button = TranslateButton(changes);
-        last_state = state;
-        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
-        SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, true);
-        break;
-
-    case ACTION_UP:
-        changes = last_state & ~state;
-        button = TranslateButton(changes);
-        last_state = state;
-        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
-        SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, false);
-        break;
-
     case ACTION_MOVE:
     case ACTION_HOVER_MOVE:
         SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
@@ -241,9 +232,52 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         SDL_SendMouseWheel(0, window, SDL_DEFAULT_MOUSE_ID, x, y, SDL_MOUSEWHEEL_NORMAL);
         break;
 
+    case ACTION_UP:
+    case ACTION_DOWN:
+    case ACTION_BUTTON_PRESS:
+    case ACTION_BUTTON_RELEASE:
+    case ACTION_CANCEL:
+    case ACTION_HOVER_ENTER:
+    case ACTION_HOVER_EXIT:
+        // Some Android versions will send mouse buttons as ACTION_BUTTON_PRESS and 
+        // ACTION_BUTTON_RELEASE. Some will use ACTION_DOWN and ACTION_UP.
+        //
+        // Some will send ACTION_HOVER_EXIT when a button is pressed (to go into 
+        // drag/move mode) and ACTION_HOVER_ENTER when the button is released (to 
+        // go back into hover mode).
+        //
+        // Some will send ACTION_BUTTON_PRESS on a click and drag, but ACTION_CANCEL
+        // when the button is released.
+        //
+        // Some will, in fact, cluster a BUTTON_PRIMARY release and BUTTON_SECONDARY 
+        // press into the same message, simply changing the button state.
+        //
+        // To ensure we work correctly on as many Android variants as possible, we
+        // take the button state on any of these and generate press/release events
+        // ourselves as needed when the button state changes.
+
+        changes_press = state & ~last_state;
+        changes_release = last_state & ~state;
+
+        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
+
+        if (changes_press) {
+            button = TranslateButton(changes_press);
+            SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, true);
+            last_state = state;
+        }
+
+        if (changes_release) {
+            button = TranslateButton(changes_release);
+            SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, false);
+            last_state = state;
+        }
+        break;        
+
     default:
         break;
     }
+
 }
 
 #endif // SDL_VIDEO_DRIVER_ANDROID
