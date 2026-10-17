@@ -1654,6 +1654,7 @@ let package = Package(
 			additionalLinkerSettings: [
 				.linkedFramework("Security", .when(platforms: [.iOS, .macCatalyst, .macOS, .visionOS])),
 				.linkedFramework("UserNotifications", .when(platforms: [.iOS, .macCatalyst, .macOS, .visionOS])),
+				.linkedFramework("UniformTypeIdentifiers", .when(platforms: [.macOS])),
 			]
 		),
 
