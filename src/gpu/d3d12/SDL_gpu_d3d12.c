@@ -4354,7 +4354,8 @@ static void D3D12_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
 
@@ -4487,6 +4488,11 @@ static void D3D12_BeginRenderPass(
         rtvs,
         false,
         (depthStencilTargetInfo == NULL) ? NULL : &dsv);
+
+    if (viewCount != 0) {
+        // TODO: What to do when viewCount > D3D12_MAX_VIEW_INSTANCE_COUNT?
+        ID3D12GraphicsCommandList_SetViewInstanceMask((1u << viewCount) - 1);
+    }
 
     // Set sensible default states
     SDL_GPUViewport defaultViewport;
@@ -9582,6 +9588,12 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
         SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "D3D12 Adapter: %s", deviceName);
     }
     SDL_free(deviceName);
+
+    // TODO: Does D3D12 have a way of querying the real max view instance count?
+    SDL_SetNumberProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+        D3D12_MAX_VIEW_INSTANCE_COUNT);
 
     // Record driver version
     char driverVer[64];
