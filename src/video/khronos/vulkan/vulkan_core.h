@@ -61,7 +61,7 @@ extern "C" {
 
 //#define VK_API_VERSION VK_MAKE_API_VERSION(0, 1, 0, 0) // Patch version should always be set to 0
 // Version of this file
-#define VK_HEADER_VERSION 364
+#define VK_HEADER_VERSION 365
 // Complete version of this file
 #define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)
 
@@ -1473,6 +1473,7 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_FLAGS_FEATURES_KHR = 1000668004,
     VK_STRUCTURE_TYPE_IMAGE_STENCIL_USAGE_2_CREATE_INFO_KHR = 1000668005,
     VK_STRUCTURE_TYPE_SHARED_PRESENT_SURFACE_CAPABILITIES_2_KHR = 1000668006,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_COOPERATIVE_MATRIX_LAYOUTS_FEATURES_ARM = 1000670000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OCP_MICROSCALING_TYPES_FEATURES_EXT = 1000672000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_MIXED_FLOAT_DOT_PRODUCT_FEATURES_VALVE = 1000673000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_THROTTLE_HINT_FEATURES_SEC = 1000674000,
@@ -26947,6 +26948,20 @@ typedef struct VkPhysicalDeviceShaderSubgroupPartitionedFeaturesEXT {
     void*              pNext;
     VkBool32           shaderSubgroupPartitioned;
 } VkPhysicalDeviceShaderSubgroupPartitionedFeaturesEXT;
+
+
+
+// VK_ARM_cooperative_matrix_layouts is a preprocessor guard. Do not pass it to API calls.
+#define VK_ARM_cooperative_matrix_layouts 1
+
+#define VK_ARM_COOPERATIVE_MATRIX_LAYOUTS_SPEC_VERSION 1
+#define VK_ARM_COOPERATIVE_MATRIX_LAYOUTS_EXTENSION_NAME "VK_ARM_cooperative_matrix_layouts"
+
+typedef struct VkPhysicalDeviceCooperativeMatrixLayoutsFeaturesARM {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           cooperativeMatrixArmLayouts;
+} VkPhysicalDeviceCooperativeMatrixLayoutsFeaturesARM;
 
 
 
