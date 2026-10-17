@@ -1242,6 +1242,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean setActivityTitle(String title) {
         // Called from SDLMain() thread and can't directly affect the view
+        if (mSingleton == null) {
+            return false;
+        }
+
         return mSingleton.sendCommand(COMMAND_CHANGE_TITLE, title);
     }
 
@@ -1249,6 +1253,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static void setWindowStyle(boolean fullscreen) {
+        if (mSingleton == null) {
+            return;
+        }
+
         // Called from SDLMain() thread and can't directly affect the view
         mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
     }
