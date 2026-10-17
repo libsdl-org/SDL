@@ -1,0 +1,36 @@
+module SDL3 {
+	umbrella header "SDL3/SDL.h"
+
+	textual header "SDL3/SDL_begin_code.h"
+	textual header "SDL3/SDL_close_code.h"
+	textual header "SDL3/SDL_copying.h"
+	textual header "SDL3/SDL_egl.h"
+	textual header "SDL3/SDL_intrin.h"
+	textual header "SDL3/SDL_main.h"
+	textual header "SDL3/SDL_main_impl.h"
+	textual header "SDL3/SDL_opengl.h"
+	textual header "SDL3/SDL_opengl_glext.h"
+	textual header "SDL3/SDL_opengles.h"
+	textual header "SDL3/SDL_opengles2.h"
+	textual header "SDL3/SDL_opengles2_gl2.h"
+	textual header "SDL3/SDL_opengles2_gl2ext.h"
+	textual header "SDL3/SDL_opengles2_gl2platform.h"
+	textual header "SDL3/SDL_opengles2_khrplatform.h"
+	textual header "SDL3/SDL_openxr.h"
+	textual header "SDL3/SDL_revision.h"
+	textual header "SDL3/SDL_vulkan.h"
+
+	exclude header "SDL3/SDL_test.h"
+	exclude header "SDL3/SDL_test_assert.h"
+	exclude header "SDL3/SDL_test_common.h"
+	exclude header "SDL3/SDL_test_compare.h"
+	exclude header "SDL3/SDL_test_crc32.h"
+	exclude header "SDL3/SDL_test_font.h"
+	exclude header "SDL3/SDL_test_fuzzer.h"
+	exclude header "SDL3/SDL_test_harness.h"
+	exclude header "SDL3/SDL_test_log.h"
+	exclude header "SDL3/SDL_test_md5.h"
+	exclude header "SDL3/SDL_test_memory.h"
+
+	export *
+}

@@ -5,6 +5,7 @@ SDL supports a number of development environments:
 - [Visual Studio on Windows](docs/INTRO-visualstudio.md)
 - [gcc on Windows](docs/INTRO-mingw.md)
 - [Xcode on Apple platforms](docs/INTRO-xcode.md)
+- [Swift Package Manager on Apple platforms](docs/INTRO-swiftpm.md)
 - [Android Studio](docs/INTRO-androidstudio.md)
 - [Emscripten for web](docs/INTRO-emscripten.md)
 

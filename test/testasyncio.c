@@ -88,6 +88,22 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     base = SDL_GetBasePath();
     pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
+
+#ifdef SWIFT_PACKAGE
+    char resourceDirectory[2048];
+
+    if (!pngs || (pngcount == 0)) {
+        extern bool SwiftPackage_GetLibraryBundleResourceDirectory(char *buffer, int size);
+
+        if (SwiftPackage_GetLibraryBundleResourceDirectory(resourceDirectory, 2047)) {
+            SDL_strlcat(resourceDirectory, "/", sizeof(resourceDirectory));
+            base = resourceDirectory;
+            SDL_free(pngs);
+            pngs = SDL_GlobDirectory(base, "*.png", SDL_GLOB_CASEINSENSITIVE, &pngcount);
+        }
+    }
+#endif
+
     if (!pngs || (pngcount == 0)) {
         SDL_Log("No PNG files found.");
         return SDL_APP_FAILURE;

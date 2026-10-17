@@ -48,6 +48,13 @@
 
 #include <SDL3/SDL_main.h>
 
+#ifdef SWIFT_PACKAGE
+#define SDL_ParseReportDescriptor   SwiftPackage_SDL_ParseReportDescriptor
+#define SDL_DescriptorHasUsage   SwiftPackage_SDL_DescriptorHasUsage
+#define SDL_DestroyDescriptor   SwiftPackage_SDL_DestroyDescriptor
+#define SDL_ReadReportData   SwiftPackage_SDL_ReadReportData
+#endif
+
 #include "../src/joystick/hidapi/SDL_report_descriptor.h"
 #include "../src/joystick/hidapi/SDL_report_descriptor.c"
 
