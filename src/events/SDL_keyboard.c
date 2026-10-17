@@ -57,10 +57,15 @@ typedef struct SDL_Keyboard
     Uint64 hardware_timestamp;
 } SDL_Keyboard;
 
+typedef struct SDL_KeyboardDeviceInfo
+{
+    SDL_KeyboardID id;
+    char *name;
+} SDL_KeyboardDeviceInfo;
+
 static SDL_Keyboard SDL_keyboard;
 static int SDL_keyboard_count;
-static SDL_KeyboardID *SDL_keyboards;
-static SDL_HashTable *SDL_keyboard_names;
+static SDL_KeyboardDeviceInfo *SDL_keyboards;
 static bool SDL_keyboard_quitting;
 
 static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -88,11 +93,7 @@ static void SDLCALL SDL_KeycodeOptionsChanged(void *userdata, const char *name, 
 // Public functions
 bool SDL_InitKeyboard(void)
 {
-    SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS,
-                        SDL_KeycodeOptionsChanged, &SDL_keyboard);
-
-    SDL_keyboard_names = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
-
+    SDL_AddHintCallback(SDL_HINT_KEYCODE_OPTIONS, SDL_KeycodeOptionsChanged, &SDL_keyboard);
     return true;
 }
 
@@ -110,7 +111,7 @@ bool SDL_IsKeyboard(Uint16 vendor, Uint16 product, int num_keys)
 static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
 {
     for (int i = 0; i < SDL_keyboard_count; ++i) {
-        if (keyboardID == SDL_keyboards[i]) {
+        if (keyboardID == SDL_keyboards[i].id) {
             return i;
         }
     }
@@ -119,7 +120,7 @@ static int SDL_GetKeyboardIndex(SDL_KeyboardID keyboardID)
 
 void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 {
-    int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
+    const int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index >= 0) {
         // We already know about this keyboard
         return;
@@ -127,18 +128,14 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 
     SDL_assert(keyboardID != 0);
 
-    SDL_KeyboardID *keyboards = (SDL_KeyboardID *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
+    SDL_KeyboardDeviceInfo *keyboards = (SDL_KeyboardDeviceInfo *)SDL_realloc(SDL_keyboards, (SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (!keyboards) {
         return;
     }
-    keyboards[SDL_keyboard_count] = keyboardID;
+    keyboards[SDL_keyboard_count].id = keyboardID;
+    keyboards[SDL_keyboard_count].name = SDL_strdup(name ? name : "Keyboard");
     SDL_keyboards = keyboards;
     ++SDL_keyboard_count;
-
-    if (!name) {
-        name = "Keyboard";
-    }
-    SDL_InsertIntoHashTable(SDL_keyboard_names, (const void *)(uintptr_t)keyboardID, SDL_strdup(name), true);
 
     SDL_Event event;
     SDL_zero(event);
@@ -149,12 +146,13 @@ void SDL_AddKeyboard(SDL_KeyboardID keyboardID, const char *name)
 
 void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID)
 {
-    int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
+    const int keyboard_index = SDL_GetKeyboardIndex(keyboardID);
     if (keyboard_index < 0) {
         // We don't know about this keyboard
         return;
     }
 
+    SDL_free(SDL_keyboards[keyboard_index].name);
     if (keyboard_index != SDL_keyboard_count - 1) {
         SDL_memmove(&SDL_keyboards[keyboard_index], &SDL_keyboards[keyboard_index + 1], (SDL_keyboard_count - keyboard_index - 1) * sizeof(SDL_keyboards[keyboard_index]));
     }
@@ -186,7 +184,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
         }
 
         for (i = 0; i < SDL_keyboard_count; ++i) {
-            keyboards[i] = SDL_keyboards[i];
+            keyboards[i] = SDL_keyboards[i].id;
         }
         keyboards[i] = 0;
     } else {
@@ -201,16 +199,19 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     const char *name = NULL;
+    int keyboard_index;
 
     switch (instance_id) {
     case SDL_GLOBAL_KEYBOARD_ID:
         name = "Keyboard";
         break;
     default:
-        if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+        keyboard_index = SDL_GetKeyboardIndex(instance_id);
+        if (keyboard_index < 0) {
             SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
             return NULL;
         }
+        name = SDL_keyboards[keyboard_index].name;
         if (!name) {
             // SDL_strdup() failed during insert
             SDL_OutOfMemory();
@@ -885,13 +886,10 @@ void SDL_QuitKeyboard(void)
     SDL_keyboard_quitting = true;
 
     for (int i = SDL_keyboard_count; i--;) {
-        SDL_RemoveKeyboard(SDL_keyboards[i]);
+        SDL_RemoveKeyboard(SDL_keyboards[i].id);
     }
     SDL_free(SDL_keyboards);
     SDL_keyboards = NULL;
-
-    SDL_DestroyHashTable(SDL_keyboard_names);
-    SDL_keyboard_names = NULL;
 
     const Uint32 keymap_flags = SDL_GetKeymapFlags(SDL_keyboard.keymap);
     if (keymap_flags & SDL_KEYMAP_AUTO_RELEASE) {

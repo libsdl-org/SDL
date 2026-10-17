@@ -89,7 +89,14 @@ SDL_FORCE_INLINE bool SDL_ObjectValid(void *object, SDL_ObjectType type)
     return SDL_FindObject(object, type);
 }
 
+// returns a copy of `string` that lives until SDL_Quit() is called.
+extern const char *SDL_CacheString(const char *string);
+
+// returns a copy of `string` that lives until the calling thread terminates.
 extern const char *SDL_GetPersistentString(const char *string);
+
+// Should only be called by SDL.c, for cleanup.
+extern void SDL_DestroyStringCache(void);
 
 extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_name, const char *product_name, const char *default_name);
 

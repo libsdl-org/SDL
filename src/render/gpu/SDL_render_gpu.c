@@ -93,7 +93,7 @@ typedef struct GPU_RenderData
     bool external_device;
     SDL_GPUDevice *device;
     GPU_Shaders shaders;
-    GPU_PipelineCache pipeline_cache;
+    GPU_PipelineCache *pipeline_cache;
 
     struct
     {
@@ -1099,7 +1099,7 @@ static void Draw(
         pipe_params.attachment_format = data->backbuffer.format;
     }
 
-    SDL_GPUGraphicsPipeline *pipe = GPU_GetPipeline(&data->pipeline_cache, &data->shaders, data->device, &pipe_params);
+    SDL_GPUGraphicsPipeline *pipe = GPU_GetPipeline(data->pipeline_cache, &data->shaders, data->device, &pipe_params);
     if (!pipe) {
         return;
     }
@@ -1698,7 +1698,8 @@ static void GPU_DestroyRenderer(SDL_Renderer *renderer)
     }
 
     ReleaseVertexBuffer(data);
-    GPU_DestroyPipelineCache(&data->pipeline_cache);
+    GPU_DestroyPipelineCache(data->pipeline_cache);
+    data->pipeline_cache = NULL;
 
     if (data->device) {
         GPU_ReleaseShaders(&data->shaders, data->device);

@@ -34,6 +34,8 @@ extern "C" {
 
 #define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
 
+typedef struct SDL_RendererPaletteMap SDL_RendererPaletteMap;
+
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
@@ -322,7 +324,7 @@ struct SDL_Renderer
     SDL_Mutex *target_mutex;
 
     // The list of palettes
-    SDL_HashTable *palettes;
+    SDL_RendererPaletteMap *palettes;
 
     SDL_Colorspace current_colorspace;
     SDL_Colorspace output_colorspace;

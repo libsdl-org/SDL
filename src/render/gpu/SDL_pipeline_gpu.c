@@ -27,34 +27,23 @@
 
 #include "../SDL_sysrender.h"
 
-static Uint32 SDLCALL HashPipelineCacheKey(void *userdata, const void *key)
-{
-    const GPU_PipelineParameters *params = (const GPU_PipelineParameters *) key;
-    return SDL_murmur3_32(params, sizeof(*params), 0);
-}
+#define SDL_HASHTABLE_NAME GPU_PipelineCache
+#define SDL_HASHTABLE_KEY GPU_PipelineParameters *
+#define SDL_HASHTABLE_VALUE SDL_GPUGraphicsPipeline *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) SDL_murmur3_32(key, sizeof(*key), 0)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (SDL_memcmp(a, b, sizeof (*a)) == 0)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { SDL_ReleaseGPUGraphicsPipeline((SDL_GPUDevice *) userdata, value); SDL_free(key); }
+#include "../../SDL_hashtable_template.h"
 
-static bool SDLCALL MatchPipelineCacheKey(void *userdata, const void *a, const void *b)
+bool GPU_InitPipelineCache(GPU_PipelineCache **cache, SDL_GPUDevice *device)
 {
-    return (SDL_memcmp(a, b, sizeof (GPU_PipelineParameters)) == 0);
-}
-
-static void SDLCALL DestroyPipelineCacheHashItem(void *userdata, const void *key, const void *value)
-{
-    SDL_GPUGraphicsPipeline *pipeline = (SDL_GPUGraphicsPipeline *) value;
-    SDL_GPUDevice *device = (SDL_GPUDevice *) userdata;
-    SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-    SDL_free((GPU_PipelineParameters *) key);
-}
-
-bool GPU_InitPipelineCache(GPU_PipelineCache *cache, SDL_GPUDevice *device)
-{
-    cache->table = SDL_CreateHashTable(0, false, HashPipelineCacheKey, MatchPipelineCacheKey, DestroyPipelineCacheHashItem, device);
-    return (cache->table != NULL);
+    *cache = GPU_PipelineCacheCreate(0, device);
+    return (*cache != NULL);
 }
 
 void GPU_DestroyPipelineCache(GPU_PipelineCache *cache)
 {
-    SDL_DestroyHashTable(cache->table);
+    GPU_PipelineCacheDestroy(cache);
 }
 
 static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders *shaders, const GPU_PipelineParameters *params)
@@ -140,10 +129,11 @@ static SDL_GPUGraphicsPipeline *MakePipeline(SDL_GPUDevice *device, GPU_Shaders 
     return SDL_CreateGPUGraphicsPipeline(device, &pci);
 }
 
+// !!! FIXME `cache` already has `device`.
 SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *shaders, SDL_GPUDevice *device, const GPU_PipelineParameters *params)
 {
     SDL_GPUGraphicsPipeline *pipeline = NULL;
-    if (!SDL_FindInHashTable(cache->table, params, (const void **) &pipeline)) {
+    if (!GPU_PipelineCacheFind(cache, (GPU_PipelineParameters *) params, &pipeline)) {
         bool inserted = false;
         // !!! FIXME: why don't we have an SDL_alloc_copy function/macro?
         GPU_PipelineParameters *paramscpy = (GPU_PipelineParameters *) SDL_malloc(sizeof (*paramscpy));
@@ -151,7 +141,7 @@ SDL_GPUGraphicsPipeline *GPU_GetPipeline(GPU_PipelineCache *cache, GPU_Shaders *
             SDL_copyp(paramscpy, params);
             pipeline = MakePipeline(device, shaders, params);
             if (pipeline) {
-                inserted = SDL_InsertIntoHashTable(cache->table, paramscpy, pipeline, false);
+                inserted = GPU_PipelineCacheInsert(cache, paramscpy, pipeline, false);
             }
         }
 

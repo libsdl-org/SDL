@@ -259,8 +259,6 @@ extern "C" {
 #endif
 
 #include "SDL_utils_c.h"
-#include "SDL_hashtable.h"
-
 
 /* SDL_ExitProcess is not declared in any public header, although
    it is shared between some parts of SDL, because we don't want

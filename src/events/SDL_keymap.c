@@ -24,12 +24,12 @@
 #include "SDL_keyboard_c.h"
 #include "../stdlib/SDL_sysstdlib.h"
 
-#define SDL_HASHTABLE_NAME                     SDL_KeycodeMap
-#define SDL_HASHTABLE_KEY                      Uint32 // Keycode or scancode + modifiers
-#define SDL_HASHTABLE_VALUE                    Uint32 // Keycode or scancode + modifiers
-#define SDL_HASHTABLE_HASH_KEY(unused, key)    (key)  // It's already a unique 32-bit value.
-#define SDL_HASHTABLE_KEYS_EQUAL(unused, a, b) (a == b)
-#include "../SDL_generic_hashtable.h"
+#define SDL_HASHTABLE_NAME SDL_KeycodeMap
+#define SDL_HASHTABLE_KEY Uint32    // Keycode or scancode + modifiers
+#define SDL_HASHTABLE_VALUE Uint32  // Keycode or scancode + modifiers
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) (key)   // it's already a unique 32-bit value.
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (a == b)
+#include "../SDL_hashtable_template.h"
 
 struct SDL_Keymap
 {

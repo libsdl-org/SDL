@@ -26,6 +26,41 @@
 #include "SDL_pixels_c.h"
 #include "SDL_RLEaccel_c.h"
 
+#define SDL_HASHTABLE_NAME SDL_PaletteMap
+#define SDL_HASHTABLE_KEY Uint32  // RGBA value.
+#define SDL_HASHTABLE_VALUE Uint8  // index into palette, 0-255.
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) (key)  // it's already a unique 32-bit value.
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (a == b)
+#include "../SDL_hashtable_template.h"
+
+// extremely simplifed version of murmur3 hash in src/stdlib/SDL_murmur3.c, inlined here for speed.
+static SDL_INLINE Uint32 HashPixelFormat(const SDL_PixelFormat fmt)
+{
+    Uint32 hash = (Uint32) fmt;
+    hash *= 0xcc9e2d51;
+    hash = (hash << 15) | (hash >> 17);
+    hash *= 0x1b873593;
+    hash = (hash << 13) | (hash >> 19);
+    hash = hash * 5 + 0xe6546b64;
+    hash ^= sizeof (hash);
+    hash ^= hash >> 16;
+    hash *= 0x85ebca6b;
+    hash ^= hash >> 13;
+    hash *= 0xc2b2ae35;
+    hash ^= hash >> 16;
+    return hash;
+}
+
+#define SDL_HASHTABLE_NAME SDL_FormatDetailsMap
+#define SDL_HASHTABLE_KEY SDL_PixelFormat
+#define SDL_HASHTABLE_VALUE SDL_PixelFormatDetails *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) HashPixelFormat(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (a == b)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) SDL_free(value)
+#define SDL_HASHTABLE_THREAD_SAFE 1
+#include "../SDL_hashtable_template.h"
+
+
 // Lookup tables to expand partial bytes to the full 0..255 range
 
 // This is the code used to generate the lookup tables below:
@@ -715,7 +750,7 @@ SDL_PixelFormat SDL_GetPixelFormatForMasks(int bpp, Uint32 Rmask, Uint32 Gmask, 
 }
 
 static SDL_InitState SDL_format_details_init;
-static SDL_HashTable *SDL_format_details;
+static SDL_FormatDetailsMap *SDL_format_details;
 
 static bool SDL_InitPixelFormatDetails(SDL_PixelFormatDetails *details, SDL_PixelFormat format)
 {
@@ -789,7 +824,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
     SDL_PixelFormatDetails *details;
 
     if (SDL_ShouldInit(&SDL_format_details_init)) {
-        SDL_format_details = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
+        SDL_format_details = SDL_FormatDetailsMapCreate(0, NULL);
         if (!SDL_format_details) {
             SDL_SetInitialized(&SDL_format_details_init, false);
             return NULL;
@@ -797,7 +832,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
         SDL_SetInitialized(&SDL_format_details_init, true);
     }
 
-    if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
+    if (SDL_FormatDetailsMapFind(SDL_format_details, format, &details)) {
         return details;
     }
 
@@ -812,10 +847,10 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
         return NULL;
     }
 
-    if (!SDL_InsertIntoHashTable(SDL_format_details, (const void *)(uintptr_t)format, (void *)details, false)) {
+    if (!SDL_FormatDetailsMapInsert(SDL_format_details, format, details, false)) {
         SDL_free(details);
         // uh...did another thread beat us to inserting this?
-        if (SDL_FindInHashTable(SDL_format_details, (const void *)(uintptr_t)format, (const void **)&details)) {
+        if (SDL_FormatDetailsMapFind(SDL_format_details, format, &details)) {
             return details;
         }
         return NULL;  // oh well.
@@ -827,7 +862,7 @@ const SDL_PixelFormatDetails *SDL_GetPixelFormatDetails(SDL_PixelFormat format)
 void SDL_QuitPixelFormatDetails(void)
 {
     if (SDL_ShouldQuit(&SDL_format_details_init)) {
-        SDL_DestroyHashTable(SDL_format_details);
+        SDL_FormatDetailsMapDestroy(SDL_format_details);
         SDL_format_details = NULL;
         SDL_SetInitialized(&SDL_format_details_init, false);
     }
@@ -1294,20 +1329,17 @@ static Uint8 SDL_FindColor(const SDL_Palette *pal, Uint8 r, Uint8 g, Uint8 b, Ui
     return pixelvalue;
 }
 
-Uint8 SDL_LookupRGBAColor(SDL_HashTable *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
+Uint8 SDL_LookupRGBAColor(SDL_PaletteMap *palette_map, Uint32 pixelvalue, const SDL_Palette *pal)
 {
     Uint8 color_index = 0;
     if (pal) {
-        const void *value;
-        if (SDL_FindInHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, &value)) {
-            color_index = (Uint8)(uintptr_t)value;
-        } else {
-            Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
-            Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
-            Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
-            Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
+        if (!SDL_PaletteMapFind(palette_map, pixelvalue, &color_index)) {
+            const Uint8 r = (Uint8)((pixelvalue >> 24) & 0xFF);
+            const Uint8 g = (Uint8)((pixelvalue >> 16) & 0xFF);
+            const Uint8 b = (Uint8)((pixelvalue >>  8) & 0xFF);
+            const Uint8 a = (Uint8)((pixelvalue >>  0) & 0xFF);
             color_index = SDL_FindColor(pal, r, g, b, a);
-            SDL_InsertIntoHashTable(palette_map, (const void *)(uintptr_t)pixelvalue, (const void *)(uintptr_t)color_index, true);
+            SDL_PaletteMapInsert(palette_map, pixelvalue, color_index, true);
         }
     }
     return color_index;
@@ -1625,10 +1657,8 @@ void SDL_InvalidateMap(SDL_BlitMap *map)
         SDL_free(map->info.table);
         map->info.table = NULL;
     }
-    if (map->info.palette_map) {
-        SDL_DestroyHashTable(map->info.palette_map);
-        map->info.palette_map = NULL;
-    }
+    SDL_PaletteMapDestroy(map->info.palette_map);
+    map->info.palette_map = NULL;
 }
 
 bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
@@ -1682,7 +1712,7 @@ bool SDL_MapSurface(SDL_Surface *src, SDL_Surface *dst)
     } else {
         if (SDL_ISPIXELFORMAT_INDEXED(dstfmt->format)) {
             // BitField --> Palette
-            map->info.palette_map = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, NULL, NULL);
+            map->info.palette_map = SDL_PaletteMapCreate(0, NULL);
         } else {
             // BitField --> BitField
             if (srcfmt == dstfmt) {

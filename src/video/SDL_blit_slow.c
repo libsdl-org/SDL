@@ -69,7 +69,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     const SDL_Palette *src_pal = info->src_pal;
     const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     const SDL_Palette *dst_pal = info->dst_pal;
-    SDL_HashTable *palette_map = info->palette_map;
+    SDL_PaletteMap *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
@@ -821,7 +821,7 @@ void SDL_Blit_Slow_Float(SDL_BlitInfo *info)
     const SDL_Palette *src_pal = info->src_pal;
     const SDL_PixelFormatDetails *dst_fmt = info->dst_fmt;
     const SDL_Palette *dst_pal = info->dst_pal;
-    SDL_HashTable *palette_map = info->palette_map;
+    SDL_PaletteMap *palette_map = info->palette_map;
     int srcbpp = src_fmt->bytes_per_pixel;
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;

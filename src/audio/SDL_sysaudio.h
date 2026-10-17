@@ -52,6 +52,7 @@
 
 #define SDL_MAX_CHANNELMAP_CHANNELS 8  // !!! FIXME: if SDL ever supports more channels, clean this out and make those parts dynamic.
 
+typedef struct SDL_AudioDeviceMap SDL_AudioDeviceMap;
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 typedef struct SDL_LogicalAudioDevice SDL_LogicalAudioDevice;
 
@@ -188,8 +189,9 @@ typedef struct SDL_AudioDriver
     const char *desc;  // The description of this audio driver
     SDL_AudioDriverImpl impl; // the backend's interface
     SDL_RWLock *subsystem_rwlock;  // A rwlock that protects several things in the audio subsystem (device hashtables, etc).
-    SDL_HashTable *device_hash_physical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
-    SDL_HashTable *device_hash_logical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_LogicalAudioDevice*.
+    // !!! FIXME: does this need to be separate hash tables?
+    SDL_AudioDeviceMap *device_map_physical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_AudioDevice*.
+    SDL_AudioDeviceMap *device_map_logical;  // the collection of currently-available audio devices (recording and playback), for mapping SDL_AudioDeviceID to an SDL_LogicalAudioDevice*.
     SDL_AudioStream *existing_streams;  // a list of all existing SDL_AudioStreams.
     SDL_AudioDeviceID default_playback_device_id;
     SDL_AudioDeviceID default_recording_device_id;
