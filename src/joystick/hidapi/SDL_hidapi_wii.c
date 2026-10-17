@@ -23,10 +23,15 @@
 #ifdef SDL_JOYSTICK_HIDAPI
 
 #include "../../SDL_hints_c.h"
+#include "../../events/SDL_mouse_c.h"
+// clang-format off
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 #include "SDL_hidapi_nintendo.h"
+// clang-format on
+#include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_stdinc.h>
 
 #ifdef SDL_JOYSTICK_HIDAPI_WII
 
@@ -51,6 +56,9 @@
 #define WII_MOTIONPLUS_MODE_STANDARD 0x04
 #define WII_MOTIONPLUS_MODE_NUNCHUK  0x05
 #define WII_MOTIONPLUS_MODE_GAMEPAD  0x07
+
+#define WII_IR_X_MAX 1023.0f
+#define WII_IR_Y_MAX 767.0f
 
 typedef enum
 {
@@ -122,9 +130,11 @@ typedef struct
 {
     Uint8 rgucBaseButtons[2];
     Uint8 rgucAccelerometer[3];
+    Uint8 rgucIR[10];
     Uint8 rgucExtension[21];
     bool hasBaseButtons;
     bool hasAccelerometer;
+    bool hasIR;
     Uint8 ucNExtensionBytes;
 } WiiButtonData;
 
@@ -154,6 +164,14 @@ typedef struct
     Uint64 m_ulLastStatus;
     Uint64 m_ulNextMotionPlusCheck;
     bool m_bDisconnected;
+    bool m_bIREnabled;
+    Sint32 m_iIRSensitivity;
+    SDL_Point m_IRLastPoints[2];
+    float m_fLastPosition[2];
+    bool m_bSpeakerEnabled;
+    Sint32 m_iSpeakerFormat;
+    Sint32 m_iSpeakerSampleRate;
+    Sint32 m_iSpeakerVolume;
 
     StickCalibrationData m_StickCalibrationData[6];
 } SDL_DriverWii_Context;
@@ -557,15 +575,31 @@ static EWiiInputReportIDs GetButtonPacketType(SDL_DriverWii_Context *ctx)
     case k_eWiiExtensionControllerType_Nunchuk:
     case k_eWiiExtensionControllerType_Gamepad:
         if (ctx->m_bReportSensors) {
-            return k_eWiiInputReportIDs_ButtonData5;
+            if (ctx->m_bIREnabled) {
+                return k_eWiiInputReportIDs_ButtonData7;
+            } else {
+                return k_eWiiInputReportIDs_ButtonData5;
+            }
         } else {
-            return k_eWiiInputReportIDs_ButtonData2;
+            if (ctx->m_bIREnabled) {
+                return k_eWiiInputReportIDs_ButtonData6;
+            } else {
+                return k_eWiiInputReportIDs_ButtonData2;
+            }
         }
     default:
         if (ctx->m_bReportSensors) {
-            return k_eWiiInputReportIDs_ButtonData5;
+            if (ctx->m_bIREnabled) {
+                return k_eWiiInputReportIDs_ButtonData7;
+            } else {
+                return k_eWiiInputReportIDs_ButtonData5;
+            }
         } else {
-            return k_eWiiInputReportIDs_ButtonData0;
+            if (ctx->m_bIREnabled) {
+                return k_eWiiInputReportIDs_ButtonData6;
+            } else {
+                return k_eWiiInputReportIDs_ButtonData0;
+            }
         }
     }
 }
@@ -589,6 +623,52 @@ static bool RequestButtonPacketType(SDL_DriverWii_Context *ctx, EWiiInputReportI
 static void ResetButtonPacketType(SDL_DriverWii_Context *ctx)
 {
     RequestButtonPacketType(ctx, GetButtonPacketType(ctx));
+}
+
+static const Uint8 IR_SENSITIVITY_BLOCK_1_PRESETS[5][9] = {
+    { 0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0x64, 0x00, 0xFE },
+    { 0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0x96, 0x00, 0xB4 },
+    { 0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0xaa, 0x00, 0x64 },
+    { 0x02, 0x00, 0x00, 0x71, 0x01, 0x00, 0xc8, 0x00, 0x36 },
+    { 0x07, 0x00, 0x00, 0x71, 0x01, 0x00, 0x72, 0x00, 0x20 }
+};
+
+static const Uint8 IR_SENSITIVITY_BLOCK_2_PRESETS[5][2] = {
+    { 0xFD, 0x05 },
+    { 0xB3, 0x04 },
+    { 0x63, 0x03 },
+    { 0x35, 0x03 },
+    { 0x1F, 0x03 },
+};
+
+// IR Initialization as Documented on https://wiibrew.org/wiki/Wiimote#Initialization
+static void IRSetup(SDL_DriverWii_Context *ctx)
+{
+    const Uint8 value = 0x08;
+    const Uint8 *sensitivity_block1 = IR_SENSITIVITY_BLOCK_1_PRESETS[ctx->m_iIRSensitivity - 1];
+    const Uint8 *sensitivity_block2 = IR_SENSITIVITY_BLOCK_2_PRESETS[ctx->m_iIRSensitivity - 1];
+    // We only request 10 IR Bytes, Basic Mode.
+    const Uint8 modeNumber = 1;
+    Uint8 data[2];
+
+    if (!ctx->m_bIREnabled) {
+        return;
+    }
+
+    data[0] = k_eWiiOutputReportIDs_IRCameraEnable;
+    data[1] = 0x04 | ctx->m_bRumbleActive;
+    WriteOutput(ctx, data, sizeof(data), true);
+
+    data[0] = k_eWiiOutputReportIDs_IRCameraEnable2;
+    data[1] = 0x04 | ctx->m_bRumbleActive;
+    WriteOutput(ctx, data, sizeof(data), true);
+
+    WriteRegister(ctx, 0xB00030, &value, sizeof(value), true);
+    WriteRegister(ctx, 0xB00000, sensitivity_block1, 9, true);
+    WriteRegister(ctx, 0xB0001A, sensitivity_block2, 2, true);
+    WriteRegister(ctx, 0xB00033, &modeNumber, sizeof(modeNumber), true);
+    WriteRegister(ctx, 0xB00030, &value, sizeof(value), true);
+    ResetButtonPacketType(ctx);
 }
 
 static void InitStickCalibrationData(SDL_DriverWii_Context *ctx)
@@ -772,6 +852,142 @@ static void HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL
     UpdateSlotLED(ctx);
 }
 
+static inline Sint32 GetHintInt(const char *name, Sint32 default_value)
+{
+    const char *hint_value = SDL_GetHint(name);
+    if (!hint_value) {
+        return default_value;
+    } else {
+        return SDL_atoi(hint_value);
+    }
+}
+
+void IRHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    bool bIREnabled = SDL_GetHintBoolean(name, false);
+    if (ctx->m_bIREnabled != bIREnabled) {
+        if (ctx->m_bIREnabled && !bIREnabled) {
+            SDL_RemoveMouse((SDL_MouseID)(uintptr_t)ctx->joystick);
+        } else {
+            SDL_AddMouse((SDL_MouseID)(uintptr_t)ctx->joystick, "Nintendo Wii Remote");
+        }
+        ctx->m_bIREnabled = bIREnabled;
+        SDL_RemoveMouse((SDL_MouseID)(uintptr_t)ctx->joystick);
+        IRSetup(ctx);
+    }
+}
+
+void IRSensitivityHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    int iIRSensitivity = GetHintInt(name, 3);
+    if (ctx->m_iIRSensitivity != iIRSensitivity) {
+        ctx->m_iIRSensitivity = iIRSensitivity;
+        IRSetup(ctx);
+    }
+}
+
+// Speaker Initialization as Documented on https://wiibrew.org/wiki/Wiimote#Initialization_Sequence
+void SpeakerSetup(SDL_DriverWii_Context *ctx)
+{
+    Uint8 data[2];
+
+    data[0] = k_eWiiOutputReportIDs_SpeakerEnable;
+    if (ctx->m_bSpeakerEnabled) {
+        data[1] = 0x04 | ctx->m_bRumbleActive;
+    } else {
+        data[1] = 0x00 | ctx->m_bRumbleActive;
+    }
+    WriteOutput(ctx, data, sizeof(data), true);
+
+    data[0] = k_eWiiOutputReportIDs_SpeakerMute;
+    data[1] = 0x04 | ctx->m_bRumbleActive;
+    WriteOutput(ctx, data, sizeof(data), true);
+
+    Uint8 value = 0x01;
+    WriteRegister(ctx, 0xA20009, &value, sizeof(value), true);
+
+    value = 0x08;
+    WriteRegister(ctx, 0xA20001, &value, sizeof(value), true);
+
+    Uint8 speaker_format;
+    Uint8 speaker_volume;
+    Uint16 speaker_sample_rate;
+    if (ctx->m_iSpeakerFormat == 1) {
+        speaker_format = 0x00;
+        speaker_volume = SDL_clamp(0, 64, (Uint8)speaker_volume);
+        speaker_sample_rate = SDL_Swap16LE(6000000 / ctx->m_iSpeakerSampleRate);
+    } else {
+        speaker_format = 0x40;
+        speaker_volume = (Uint8)ctx->m_iSpeakerVolume;
+        speaker_sample_rate = SDL_Swap16LE(12000000 / ctx->m_iSpeakerSampleRate);
+    }
+
+    Uint8 config[7];
+    config[0] = 0;
+    config[1] = speaker_format;
+    config[2] = (speaker_sample_rate & 0xFF);
+    config[3] = (speaker_sample_rate >> 8) & 0xFF;
+    config[4] = speaker_volume;
+    config[5] = 0;
+    config[6] = 0;
+    WriteRegister(ctx, 0xA20001, config, sizeof(config), true);
+
+    value = 0x01;
+    WriteRegister(ctx, 0xA20008, &value, sizeof(value), true);
+
+    data[0] = k_eWiiOutputReportIDs_SpeakerMute;
+    data[1] = 0x00 | ctx->m_bRumbleActive;
+    WriteOutput(ctx, data, sizeof(data), true);
+}
+
+void SpeakerHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    int bSpeakerEnabled = SDL_GetHintBoolean(name, true);
+    if (ctx->m_bSpeakerEnabled != bSpeakerEnabled) {
+        ctx->m_bSpeakerEnabled = bSpeakerEnabled;
+        SpeakerSetup(ctx);
+    }
+}
+
+void SpeakerFormatHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    int iSpeakerFormat = GetHintInt(name, 0);
+    if (ctx->m_iSpeakerFormat != iSpeakerFormat) {
+        ctx->m_iSpeakerFormat = iSpeakerFormat;
+        SpeakerSetup(ctx);
+    }
+}
+
+void SpeakerSampleRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    int iSpeakerSampleRate = GetHintInt(name, 3000);
+    if (ctx->m_iSpeakerSampleRate != iSpeakerSampleRate) {
+        ctx->m_iSpeakerSampleRate = iSpeakerSampleRate;
+        SpeakerSetup(ctx);
+    }
+}
+
+void SpeakerVolumeHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
+
+    int iSpeakerVolume = GetHintInt(name, 255);
+    if (ctx->m_iSpeakerVolume != iSpeakerVolume) {
+        ctx->m_iSpeakerVolume = iSpeakerVolume;
+        SpeakerSetup(ctx);
+    }
+}
+
 static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
@@ -807,6 +1023,29 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
                         SDL_PlayerLEDHintChanged, ctx);
+
+    // IR Hints
+    ctx->m_bIREnabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_IR, false);
+    ctx->m_iIRSensitivity = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY, 3);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_IR, IRHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY, IRSensitivityHintChanged, ctx);
+    if (ctx->m_bIREnabled) {
+        IRSetup(ctx);
+        SDL_AddMouse((SDL_MouseID)(uintptr_t)joystick, "Nintendo Wii Remote");
+    }
+
+    // Speaker Hints
+    ctx->m_bSpeakerEnabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER, true);
+    ctx->m_iSpeakerFormat = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT, 0);
+    ctx->m_iSpeakerSampleRate = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE, 2000);
+    ctx->m_iSpeakerVolume = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME, 255);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER, SpeakerHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT, SpeakerFormatHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE, SpeakerSampleRateHintChanged, ctx);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME, SpeakerVolumeHintChanged, ctx);
+    if (ctx->m_bSpeakerEnabled) {
+        SpeakerSetup(ctx);
+    }
 
     // Initialize the joystick capabilities
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
@@ -856,6 +1095,17 @@ static bool HIDAPI_DriverWii_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joyst
 
 static bool HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
+    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
+
+    if (ctx->m_bSpeakerEnabled && 20 >= size) {
+        Uint8 report[22];
+        memset((void *)report, 0, sizeof(report));
+        report[0] = k_eWiiOutputReportIDs_SpeakerData;
+        report[1] = (Uint8)(size << 3);
+        SDL_memcpy(&report[2], data, size);
+        WriteOutput(ctx, report, sizeof(report), false);
+        return true;
+    }
     return SDL_Unsupported();
 }
 
@@ -1121,6 +1371,46 @@ static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *
     }
 }
 
+static inline uint16_t Unpack10(uint8_t low, uint8_t high_byte, uint8_t shift) {
+    return low | ((uint16_t)((high_byte >> shift) & 0x03) << 8);
+}
+
+// Based on https://wiibrew.org/wiki/Wiimote/Pointing#Pointing_position
+static void HandleWiiRemoteIRData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
+{
+    int i;
+    SDL_Point points[2];
+
+    if (!data->hasIR || !ctx->m_bIREnabled)
+        return;
+    
+    points[0].x = Unpack10(data->rgucIR[0], data->rgucIR[2], 4);
+    points[0].y = Unpack10(data->rgucIR[1], data->rgucIR[2], 6);
+    points[1].x = Unpack10(data->rgucIR[3], data->rgucIR[2], 0);
+    points[1].y = Unpack10(data->rgucIR[4], data->rgucIR[2], 2);
+
+    for (i = 0; i < 2; i++) {
+        if (points[i].x > 0 && points[i].x < WII_IR_X_MAX && points[i].y > 0 && points[i].y < WII_IR_X_MAX) {
+            ctx->m_IRLastPoints[i].x = points[i].x;
+            ctx->m_IRLastPoints[i].y = points[i].y;
+        }
+
+        float middle_x = ((ctx->m_IRLastPoints[1].x + ctx->m_IRLastPoints[0].x) / 2.0f) / WII_IR_X_MAX;
+        float middle_y = ((ctx->m_IRLastPoints[1].y + ctx->m_IRLastPoints[0].y) / 2.0f) / WII_IR_Y_MAX;
+
+        // Position = (1 - Midpoint.x, Midpoint.y);
+        float position_x = 1 - middle_x;
+        float position_y = middle_y;
+        // SDL_Log("Wii Point 0 %i %i", points[0].x, points[0].y);
+        // SDL_Log("Wii Point 1 %i %i", points[1].x, points[1].y);
+        // SDL_Log("Wii Remote %i Pointer Position %f %f", SDL_GetJoystickPlayerIndex(joystick), position_x, position_y);
+        SDL_SendMouseMotion(ctx->timestamp, NULL, (SDL_MouseID)(uintptr_t)joystick, true, (position_x*WII_IR_X_MAX) - (ctx->m_fLastPosition[0]*WII_IR_X_MAX), (position_y*WII_IR_Y_MAX) - (ctx->m_fLastPosition[1]*WII_IR_Y_MAX));
+
+        ctx->m_fLastPosition[0] = position_x;
+        ctx->m_fLastPosition[1] = position_y;
+    }
+}
+
 static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
 {
     /* Wii remote maps really badly to a normal controller
@@ -1300,6 +1590,7 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
     }
 
     HandleWiiRemoteButtonData(ctx, joystick, data);
+    HandleWiiRemoteIRData(ctx, joystick, data);
     switch (ctx->m_eExtensionControllerType) {
     case k_eWiiExtensionControllerType_Nunchuk:
         HandleNunchuckButtonData(ctx, joystick, data);
@@ -1326,6 +1617,12 @@ static void GetAccelerometer(WiiButtonData *dst, const Uint8 *src)
 {
     SDL_memcpy(dst->rgucAccelerometer, src, 3);
     dst->hasAccelerometer = true;
+}
+
+static void GetIR(WiiButtonData *dst, const Uint8 *src)
+{
+    SDL_memcpy(dst->rgucIR, src, 10);
+    dst->hasIR = true;
 }
 
 static void GetExtensionData(WiiButtonData *dst, const Uint8 *src, int size)
@@ -1445,11 +1742,14 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
 
     // FIXME: This should see if the data format is compatible rather than equal
     if (eExpectedReport != ctx->m_rgucReadBuffer[0]) {
-        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode to %d", eExpectedReport);
-        RequestButtonPacketType(ctx, eExpectedReport);
+        if (!(eExpectedReport == k_eWiiInputReportIDs_ButtonData7 &&
+              ctx->m_rgucReadBuffer[0] == k_eWiiInputReportIDs_ButtonData6)) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Resetting report mode from %" SDL_PRIX32 " to %" SDL_PRIX32 "", ctx->m_rgucReadBuffer[0], eExpectedReport);
+            IRSetup(ctx);
+            RequestButtonPacketType(ctx, eExpectedReport);
+        }
     }
 
-    // IR camera data is not supported
     SDL_zero(data);
     switch (ctx->m_rgucReadBuffer[0]) {
     case k_eWiiInputReportIDs_ButtonData0: // 30 BB BB
@@ -1459,6 +1759,7 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
     case k_eWiiInputReportIDs_ButtonData3: // 33 BB BB AA AA AA II II II II II II II II II II II II
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
         GetAccelerometer(&data, ctx->m_rgucReadBuffer + 3);
+        // No GetIR call because we don't configure it to handle Extended Mode
         break;
     case k_eWiiInputReportIDs_ButtonData2: // 32 BB BB EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
@@ -1475,10 +1776,13 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
         break;
     case k_eWiiInputReportIDs_ButtonData6: // 36 BB BB II II II II II II II II II II EE EE EE EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
+        GetIR(&data, ctx->m_rgucReadBuffer + 3);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 13, 9);
         break;
     case k_eWiiInputReportIDs_ButtonData7: // 37 BB BB AA AA AA II II II II II II II II II II EE EE EE EE EE EE
         GetBaseButtons(&data, ctx->m_rgucReadBuffer + 1);
+        GetAccelerometer(&data, ctx->m_rgucReadBuffer + 3);
+        GetIR(&data, ctx->m_rgucReadBuffer + 6);
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 16, 6);
         break;
     case k_eWiiInputReportIDs_ButtonDataD: // 3d EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE
@@ -1486,6 +1790,10 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
         break;
     case k_eWiiInputReportIDs_ButtonDataE:
     case k_eWiiInputReportIDs_ButtonDataF:
+    // This was happening to me sometimes and Wiimote wouldn't work without me adding this here
+    case k_eWiiInputReportIDs_Acknowledge: 
+        HandleResponse(ctx, joystick);
+        break;
     default:
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Unsupported button data type %02x", ctx->m_rgucReadBuffer[0]);
         return;
@@ -1583,7 +1891,23 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
-                        SDL_PlayerLEDHintChanged, ctx);
+                           SDL_PlayerLEDHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
+                           IRHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
+                           IRSensitivityHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER,
+                           SpeakerHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT,
+                           SpeakerFormatHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE,
+                           SpeakerSampleRateHintChanged, ctx);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME,
+                           SpeakerVolumeHintChanged, ctx);
+
+    if (ctx->m_bIREnabled) {
+        SDL_RemoveMouse((SDL_MouseID)(uintptr_t)joystick);
+    }
 
     ctx->joystick = NULL;
 }
