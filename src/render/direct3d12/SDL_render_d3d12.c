@@ -593,6 +593,9 @@ static void D3D12_GDKResumeRenderer(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     data->commandQueue->ResumeX();
+    data->d3dDevice->SetFrameIntervalX(NULL, D3D12XBOX_FRAME_INTERVAL_60_HZ, 1, D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    data->d3dDevice->ScheduleFrameEventX(D3D12XBOX_FRAME_EVENT_ORIGIN, 0, NULL, D3D12XBOX_SCHEDULE_FRAME_EVENT_FLAG_NONE);
+    D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
 }
 
 #endif

@@ -7270,6 +7270,20 @@ static bool D3D12_SetAllowedFramesInFlight(
         }
     }
 
+#if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // Update the frame interval
+    HRESULT res;
+    res = renderer->device->SetFrameIntervalX(
+        NULL,
+        D3D12XBOX_FRAME_INTERVAL_60_HZ,
+        allowedFramesInFlight,
+        D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    if (FAILED(res)) {
+        SDL_SetError("Could not set frame interval: %X", res);
+        return false;
+    }
+#endif
+
     return true;
 }
 
@@ -10016,7 +10030,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -10114,7 +10128,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not set frame interval: %X", res);
