@@ -259,6 +259,8 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         changes_press = state & ~last_state;
         changes_release = last_state & ~state;
 
+        SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
+
         if (changes_press) {
             button = TranslateButton(changes_press);
             SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, true);
