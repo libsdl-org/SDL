@@ -1367,8 +1367,9 @@ static bool HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device *de
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
-            if (SDL_strncmp(name, "NES Controller", 14) == 0 ||
-                SDL_strncmp(name, "HVC Controller", 14) == 0) {
+            if (name &&
+                (SDL_strncmp(name, "NES Controller", 14) == 0 ||
+                 SDL_strncmp(name, "HVC Controller", 14) == 0)) {
                 return true;
             }
         }
