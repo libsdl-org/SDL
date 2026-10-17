@@ -531,6 +531,7 @@ extern VideoBootStrap UIKIT_bootstrap;
 extern VideoBootStrap Android_bootstrap;
 extern VideoBootStrap OPENHARMONY_bootstrap;
 extern VideoBootStrap PS2_bootstrap;
+extern VideoBootStrap PS3_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
