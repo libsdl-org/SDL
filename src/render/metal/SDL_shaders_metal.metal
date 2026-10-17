@@ -25,9 +25,14 @@ using namespace metal;
 #define INPUTTYPE_SCRGB         2
 #define INPUTTYPE_HDR10         3
 
+#define OUTPUTTYPE_UNSPECIFIED  0
+#define OUTPUTTYPE_SRGB         1
+#define OUTPUTTYPE_SCRGB        2
+#define OUTPUTTYPE_HDR10        3
+
 struct ShaderConstants
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -43,6 +48,20 @@ struct YUVDecode
 {
     float3 offset;
     float3x3 matrix;
+};
+
+constant float SCRGB_NITS = 80.0;
+
+constant float3x3 mat709to2020 = {
+    { 0.627404, 0.329283, 0.043313 },
+    { 0.069097, 0.919541, 0.011362 },
+    { 0.016391, 0.088013, 0.895595 }
+};
+
+constant float3x3 mat2020to709 = {
+    { 1.660496, -0.587656, -0.072840 },
+    { -0.124547, 1.132895, -0.008348 },
+    { -0.018154, -0.100597, 1.118751 }
 };
 
 float sRGBtoLinear(float v)
@@ -78,36 +97,29 @@ float3 PQtoLinear(float3 v, float sdr_white_point)
     return (10000.0 * pow(abs(num / den), oo_m1) / sdr_white_point);
 }
 
-float3 ApplyTonemap(float3 v, float input_type, float tonemap_method, float tonemap_factor1, float tonemap_factor2)
+float3 PQfromNits(float3 v)
 {
-    const float3x3 mat709to2020 = {
-        { 0.627404, 0.329283, 0.043313 },
-        { 0.069097, 0.919541, 0.011362 },
-        { 0.016391, 0.088013, 0.895595 }
-    };
-    const float3x3 mat2020to709 = {
-        { 1.660496, -0.587656, -0.072840 },
-        { -0.124547, 1.132895, -0.008348 },
-        { -0.018154, -0.100597, 1.118751 }
-    };
+    const float c1 = 0.8359375;
+    const float c2 = 18.8515625;
+    const float c3 = 18.6875;
+    const float m1 = 0.1593017578125;
+    const float m2 = 78.84375;
 
+    float3 y = clamp(v / 10000.0, 0.0, 1.0);
+    float3 num = c1 + c2 * pow(y, m1);
+    float3 den = 1.0 + c3 * pow(y, m1);
+    return pow(num / den, m2);
+}
+
+float3 ApplyTonemap(float3 v, float tonemap_method, float tonemap_factor1, float tonemap_factor2)
+{
     if (tonemap_method == TONEMAP_LINEAR) {
         v *= tonemap_factor1;
     } else if (tonemap_method == TONEMAP_CHROME) {
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.2020 colorspace for tone mapping
-            v = v * mat709to2020;
-        }
-
         float vmax = max(v.r, max(v.g, v.b));
         if (vmax > 0.0) {
             float scale = (1.0 + tonemap_factor1 * vmax) / (1.0 + tonemap_factor2 * vmax);
             v *= scale;
-        }
-
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.709 colorspace after tone mapping
-            v = v * mat2020to709;
         }
     }
     return v;
@@ -157,82 +169,71 @@ float2 GetPixelArtUV(float2 uv, float4 texel_size)
     return (floor(tx) + 0.5 + txOffset) * texel_size.xy;
 }
 
-float4 GetOutputColorSimple(float4 rgba, float color_scale)
+float4 GetOutputColorSimple(constant ShaderConstants &c, float4 vertex_color)
 {
-    float4 output;
-
-    output.rgb = rgba.rgb * color_scale;
-    output.a = rgba.a;
-
-    return output;
-}
-
-float3 GetOutputColorFromSRGB(float3 rgb, float scRGB_output, float color_scale)
-{
-    float3 output;
-
-    if (scRGB_output) {
-        rgb.r = sRGBtoLinear(rgb.r);
-        rgb.g = sRGBtoLinear(rgb.g);
-        rgb.b = sRGBtoLinear(rgb.b);
+    float4 output = float4(c.color_scale, c.color_scale, c.color_scale, 1.0) * vertex_color;
+    if (c.output_type == OUTPUTTYPE_HDR10) {
+        output.rgb = PQfromNits(output.rgb * SCRGB_NITS);
     }
-
-    output = rgb * color_scale;
-
     return output;
 }
 
-float3 GetOutputColorFromLinear(float3 rgb, float scRGB_output, float color_scale)
+float4 GetOutputColor(float4 rgba, constant ShaderConstants &c, float4 vertex_color)
 {
-    float3 output;
+    float3 rgb = rgba.rgb;
+    bool rgb2020 = false;
 
-    output = rgb * color_scale;
-
-    if (!scRGB_output) {
-        output.r = sRGBfromLinear(output.r);
-        output.g = sRGBfromLinear(output.g);
-        output.b = sRGBfromLinear(output.b);
-        output = clamp(output, 0.0, 1.0);
-    }
-
-    return output;
-}
-
-float4 GetOutputColor(float4 rgba, constant ShaderConstants &c)
-{
-    const float3x3 mat2020to709 = {
-        { 1.660496, -0.587656, -0.072840 },
-        { -0.124547, 1.132895, -0.008348 },
-        { -0.018154, -0.100597, 1.118751 }
-    };
-    float4 output;
-
+    // Convert the input to linear values, unless we're staying in sRGB space
     if (c.input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = PQtoLinear(rgba.rgb, c.sdr_white_point);
-    }
-
-    if (c.tonemap_method != TONEMAP_NONE) {
-        rgba.rgb = ApplyTonemap(rgba.rgb, c.input_type, c.tonemap_method, c.tonemap_factor1, c.tonemap_factor2);
-    }
-
-    if (c.input_type == INPUTTYPE_SRGB) {
-        if (c.texture_type == TEXTURETYPE_RGB) {
-            // The sampler has already converted to linear if necessary
-            output.rgb = rgba.rgb * c.color_scale;
-        } else {
-            output.rgb = GetOutputColorFromSRGB(rgba.rgb, c.scRGB_output, c.color_scale);
+        rgb = PQtoLinear(rgb, c.sdr_white_point);
+        rgb2020 = true;
+    } else if (c.input_type == INPUTTYPE_SRGB) {
+        if (c.output_type != OUTPUTTYPE_SRGB) {
+            rgb.r = sRGBtoLinear(rgb.r);
+            rgb.g = sRGBtoLinear(rgb.g);
+            rgb.b = sRGBtoLinear(rgb.b);
         }
-    } else if (c.input_type == INPUTTYPE_SCRGB) {
-        output.rgb = GetOutputColorFromLinear(rgba.rgb, c.scRGB_output, c.color_scale);
-    } else if (c.input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = rgba.rgb * mat2020to709;
-        output.rgb = GetOutputColorFromLinear(rgba.rgb, c.scRGB_output, c.color_scale);
-    } else {
+    } else if (c.input_type == INPUTTYPE_UNSPECIFIED) {
+        // The sampler has already converted to linear if necessary
+    } else if (c.input_type != INPUTTYPE_SCRGB) {
         // Unexpected input type, use magenta error color
-        output.rgb = float3(1.0, 0.0, 1.0);
+        return float4(1.0, 0.0, 1.0, 1.0);
     }
-    output.a = rgba.a;
 
+    // Tone mapping is done in the BT.2020 colorspace
+    if (c.tonemap_method != TONEMAP_NONE) {
+        if (!rgb2020) {
+            rgb = rgb * mat709to2020;
+            rgb2020 = true;
+        }
+        rgb = ApplyTonemap(rgb, c.tonemap_method, c.tonemap_factor1, c.tonemap_factor2);
+    }
+
+    // Convert to the output color primaries
+    if (c.output_type == OUTPUTTYPE_HDR10) {
+        if (!rgb2020) {
+            rgb = rgb * mat709to2020;
+        }
+    } else {
+        if (rgb2020) {
+            rgb = rgb * mat2020to709;
+        }
+    }
+
+    rgb *= c.color_scale;
+
+    if (c.output_type == OUTPUTTYPE_SRGB &&
+        (c.input_type == INPUTTYPE_SCRGB || c.input_type == INPUTTYPE_HDR10)) {
+        rgb.r = sRGBfromLinear(rgb.r);
+        rgb.g = sRGBfromLinear(rgb.g);
+        rgb.b = sRGBfromLinear(rgb.b);
+        rgb = clamp(rgb, 0.0, 1.0);
+    }
+
+    float4 output = float4(rgb, rgba.a) * vertex_color;
+    if (c.output_type == OUTPUTTYPE_HDR10) {
+        output.rgb = PQfromNits(output.rgb * SCRGB_NITS);
+    }
     return output;
 }
 
@@ -263,7 +264,7 @@ vertex SolidVertexOutput SDL_Solid_vertex(SolidVertexInput in [[stage_in]],
 fragment float4 SDL_Solid_fragment(SolidVertexInput in [[stage_in]],
                                    constant ShaderConstants &c [[buffer(0)]])
 {
-    return GetOutputColorSimple(1.0, c.color_scale) * in.color;
+    return GetOutputColorSimple(c, in.color);
 }
 
 struct CopyVertexInput
@@ -311,7 +312,7 @@ fragment float4 SDL_Palette_fragment(CopyVertexOutput vert [[stage_in]],
         // Unexpected texture type, use magenta error color
         rgba = float4(1.0, 0.0, 1.0, 1.0);
     }
-    return GetOutputColor(rgba, c) * vert.color;
+    return GetOutputColor(rgba, c, vert.color);
 }
 
 fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
@@ -330,7 +331,7 @@ fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
         // Unexpected texture type, use magenta error color
         rgba = float4(1.0, 0.0, 1.0, 1.0);
     }
-    return GetOutputColor(rgba, c) * vert.color;
+    return GetOutputColor(rgba, c, vert.color);
 }
 
 fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
@@ -350,7 +351,7 @@ fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
     rgba.rgb = (yuv + decode.offset) * decode.matrix;
     rgba.a = 1.0;
 
-    return GetOutputColor(rgba, c) * vert.color;
+    return GetOutputColor(rgba, c, vert.color);
 }
 
 fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
@@ -379,5 +380,5 @@ fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
     }
     rgba.a = 1.0;
 
-    return GetOutputColor(rgba, c) * vert.color;
+    return GetOutputColor(rgba, c, vert.color);
 }

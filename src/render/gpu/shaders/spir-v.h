@@ -1,4 +1,5 @@
 #include "color.frag.spv.h"
+#include "color_pq.frag.spv.h"
 #include "linepoint.vert.spv.h"
 #include "texture_advanced.frag.spv.h"
 #include "texture_rgb.frag.spv.h"

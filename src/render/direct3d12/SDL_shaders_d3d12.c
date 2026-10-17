@@ -45,14 +45,6 @@
 #include "D3D12_PixelShader_Advanced.h"
 #undef g_main
 
-#define g_main D3D12_PixelShader_Textures_PQ
-#include "D3D12_PixelShader_Textures_PQ.h"
-#undef g_main
-
-#define g_main D3D12_PixelShader_Textures_Simple
-#include "D3D12_PixelShader_Textures_Simple.h"
-#undef g_main
-
 
 #define g_mainColor D3D12_VertexShader_Colors
 #include "D3D12_VertexShader_Color.h"
@@ -100,12 +92,6 @@ static struct
     { D3D12_PixelShader_Advanced, sizeof(D3D12_PixelShader_Advanced),
       D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
       ROOTSIG_ADVANCED },
-    { D3D12_PixelShader_Textures_PQ, sizeof(D3D12_PixelShader_Textures_PQ),
-      D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
-      ROOTSIG_ADVANCED },
-    { D3D12_PixelShader_Textures_Simple, sizeof(D3D12_PixelShader_Textures_Simple),
-      D3D12_VertexShader_Textures, sizeof(D3D12_VertexShader_Textures),
-      ROOTSIG_TEXTURE },
 };
 SDL_COMPILE_TIME_ASSERT(D3D12_shaders, SDL_arraysize(D3D12_shaders) == NUM_SHADERS);
 

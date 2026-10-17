@@ -44,7 +44,7 @@ typedef struct GPU_SimpleFragmentShaderUniformData
 
 typedef struct GPU_AdvancedFragmentShaderUniformData
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -83,6 +83,10 @@ static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
+
+static const float OUTPUTTYPE_SRGB = 1;
+static const float OUTPUTTYPE_SCRGB = 2;
+static const float OUTPUTTYPE_HDR10 = 3;
 
 typedef struct GPU_RenderData
 {
@@ -301,7 +305,9 @@ static bool GPU_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
         format = SDL_GetGPUTextureFormatFromPixelFormat(texture->format);
         break;
     }
-    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+    // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+    const SDL_Colorspace format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+    if (format_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
         switch (format) {
         case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
             format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
@@ -875,13 +881,44 @@ static SDL_GPUSampler *GetSampler(GPU_RenderData *data, SDL_PixelFormat format, 
     return data->samplers[key];
 }
 
+// Returns the input type for sRGB textures, based on whether the sampler converts them to linear
+static float GetSRGBInputType(SDL_Renderer *renderer, SDL_GPUTextureFormat format)
+{
+    const bool srgb_view = (format == SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB ||
+                            format == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB);
+
+    if (SDL_RenderingLinearSpace(renderer)) {
+        if (!srgb_view) {
+            // The shader needs to convert from sRGB to linear
+            return INPUTTYPE_SRGB;
+        }
+    } else {
+        if (srgb_view) {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
+    }
+    // The texture is already in the colorspace we're rendering in
+    return INPUTTYPE_UNSPECIFIED;
+}
+
 static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, GPU_AdvancedFragmentShaderUniformData *constants)
 {
     float output_headroom;
 
     SDL_zerop(constants);
 
-    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
+    switch (renderer->current_colorspace) {
+    case SDL_COLORSPACE_SRGB_LINEAR:
+        constants->output_type = OUTPUTTYPE_SCRGB;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        constants->output_type = OUTPUTTYPE_HDR10;
+        break;
+    default:
+        constants->output_type = OUTPUTTYPE_SRGB;
+        break;
+    }
     constants->color_scale = cmd->data.draw.color_scale;
 
     switch (texture->format) {
@@ -899,6 +936,11 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
         default:
             SDL_assert(!"Unknown scale mode");
             break;
+        }
+        {
+            // The palette is stored in an RGBA32 texture
+            const SDL_GPUTextureFormat palette_format = SDL_GetGPUTextureFormatFromPixelFormat(SDL_PIXELFORMAT_RGBA32);
+            constants->input_type = GetSRGBInputType(renderer, palette_format);
         }
         break;
     case SDL_PIXELFORMAT_YV12:
@@ -947,8 +989,7 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
         } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
             constants->input_type = INPUTTYPE_HDR10;
         } else {
-            // The sampler will convert from sRGB to linear on load if working in linear colorspace
-            constants->input_type = INPUTTYPE_UNSPECIFIED;
+            constants->input_type = GetSRGBInputType(renderer, ((GPU_TextureData *)texture->internal)->format);
         }
         break;
     }
@@ -984,7 +1025,7 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
 }
 
 static void Draw(
-    GPU_RenderData *data, SDL_RenderCommand *cmd,
+    SDL_Renderer *renderer, GPU_RenderData *data, SDL_RenderCommand *cmd,
     Uint32 num_verts,
     Uint32 offset,
     SDL_GPUPrimitiveType prim)
@@ -1000,18 +1041,21 @@ static void Draw(
     GPU_FragmentShaderID f_shader;
     GPU_SimpleFragmentShaderUniformData simple_constants = { cmd->data.draw.color_scale };
     GPU_AdvancedFragmentShaderUniformData advanced_constants;
+    const bool HDR10_output = (renderer->current_colorspace == SDL_COLORSPACE_HDR10);
 
     if (prim == SDL_GPU_PRIMITIVETYPE_TRIANGLELIST) {
         SDL_Texture *texture = cmd->data.draw.texture;
         if (texture) {
             v_shader = VERT_SHADER_TRI_TEXTURE;
 
-            CalculateAdvancedShaderConstants(texture->renderer, cmd, texture, &advanced_constants);
+            CalculateAdvancedShaderConstants(renderer, cmd, texture, &advanced_constants);
             if ((advanced_constants.texture_type == TEXTURETYPE_RGB ||
                  advanced_constants.texture_type == TEXTURETYPE_RGBA) &&
                 advanced_constants.input_type == INPUTTYPE_UNSPECIFIED &&
-                advanced_constants.tonemap_method == TONEMAP_NONE) {
-                if (texture->format == SDL_PIXELFORMAT_RGBA32 || texture->format == SDL_PIXELFORMAT_BGRA32) {
+                advanced_constants.tonemap_method == TONEMAP_NONE &&
+                !HDR10_output) {
+                if (texture->format == SDL_PIXELFORMAT_RGBA32 ||
+                    texture->format == SDL_PIXELFORMAT_BGRA32) {
                     f_shader = FRAG_SHADER_TEXTURE_RGBA;
                 } else {
                     f_shader = FRAG_SHADER_TEXTURE_RGB;
@@ -1021,11 +1065,19 @@ static void Draw(
             }
         } else {
             v_shader = VERT_SHADER_TRI_COLOR;
-            f_shader = FRAG_SHADER_COLOR;
+            if (HDR10_output) {
+                f_shader = FRAG_SHADER_COLOR_PQ;
+            } else {
+                f_shader = FRAG_SHADER_COLOR;
+            }
         }
     } else {
         v_shader = VERT_SHADER_LINEPOINT;
-        f_shader = FRAG_SHADER_COLOR;
+        if (HDR10_output) {
+            f_shader = FRAG_SHADER_COLOR_PQ;
+        } else {
+            f_shader = FRAG_SHADER_COLOR;
+        }
     }
 
     if (custom_frag_shader) {
@@ -1271,6 +1323,13 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             color.r *= cmd->data.color.color_scale;
             color.g *= cmd->data.color.color_scale;
             color.b *= cmd->data.color.color_scale;
+
+            if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+                color.r = SDL_PQfromNits(color.r * SCRGB_NITS);
+                color.g = SDL_PQfromNits(color.g * SCRGB_NITS);
+                color.b = SDL_PQfromNits(color.b * SCRGB_NITS);
+            }
+
             data->state.color_attachment.clear_color = color;
             data->state.color_attachment.load_op = SDL_GPU_LOADOP_CLEAR;
             break;
@@ -1292,7 +1351,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 
             if (count > 2) {
                 // joined lines cannot be grouped
-                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINESTRIP);
+                Draw(renderer, data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINESTRIP);
             } else {
                 // let's group non joined lines
                 SDL_RenderCommand *finalcmd = cmd;
@@ -1321,7 +1380,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                     }
                 }
 
-                Draw(data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINELIST);
+                Draw(renderer, data, cmd, count, offset, SDL_GPU_PRIMITIVETYPE_LINELIST);
                 cmd = finalcmd; // skip any copy commands we just combined in here.
             }
             break;
@@ -1373,7 +1432,7 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
             } else {
                 prim = SDL_GPU_PRIMITIVETYPE_POINTLIST;
             }
-            Draw(data, cmd, count, offset, prim);
+            Draw(renderer, data, cmd, count, offset, prim);
 
             cmd = finalcmd; // skip any copy commands we just combined in here.
             break;
@@ -1726,8 +1785,8 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
     SDL_SetupRendererColorspace(renderer, create_props);
 
     if (renderer->output_colorspace != SDL_COLORSPACE_SRGB &&
-        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR
-        /*&& renderer->output_colorspace != SDL_COLORSPACE_HDR10*/) {
+        renderer->output_colorspace != SDL_COLORSPACE_SRGB_LINEAR &&
+        renderer->output_colorspace != SDL_COLORSPACE_HDR10) {
         return SDL_SetError("Unsupported output colorspace");
     }
 
@@ -1853,7 +1912,13 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         int vsync = (int)SDL_GetNumberProperty(create_props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
         ChoosePresentMode(data->device, window, vsync, &data->swapchain.present_mode);
 
-        SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode);
+        if (!SDL_WindowSupportsGPUSwapchainComposition(data->device, window, data->swapchain.composition)) {
+            return SDL_SetError("Unsupported output colorspace");
+        }
+
+        if (!SDL_SetGPUSwapchainParameters(data->device, window, data->swapchain.composition, data->swapchain.present_mode)) {
+            return false;
+        }
 
         SDL_SetGPUAllowedFramesInFlight(data->device, 1);
 
