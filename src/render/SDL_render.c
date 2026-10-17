@@ -198,6 +198,15 @@ void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
     }
 }
 
+float SDL_GetRendererMaxLuminance(SDL_Renderer *renderer)
+{
+    float luminance = (SCRGB_NITS * renderer->SDR_white_point * renderer->HDR_headroom);
+    if (luminance > 10000.0f) {
+        luminance = 10000.0f;
+    }
+    return luminance;
+}
+
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
 {
 #if 0
@@ -835,6 +844,10 @@ static void UpdateColorScale(SDL_Renderer *renderer)
     float SDR_white_point;
     if (renderer->target) {
         SDR_white_point = renderer->target->SDR_white_point;
+        if (SDL_COLORSPACETRANSFER(renderer->target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+            // HDR10 textures specify their SDR white point in nits
+            SDR_white_point /= SCRGB_NITS;
+        }
     } else {
         SDR_white_point = renderer->SDR_white_point;
     }
@@ -858,11 +871,35 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
-        renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
-        renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+#ifdef SDL_PLATFORM_APPLE
+        if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            // Apple platforms display PQ 100 nits as SDR white (EDR 1.0)
+            const float SDR_reference_white_nits = 100.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else
+#endif
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+            // The Vulkan drivers don't set luminance for HDR10 swapchains, so the
+            // protocol default reference white of 203 nits is used. For linear
+            // swapchains, NVIDIA uses a reference white of 203 nits and Mesa uses
+            // 80 nits. Eventually we'll use VK_COLOR_SPACE_PASS_THROUGH_EXT and
+            // define the reference white ourselves, so always use 203 for now.
+            const float SDR_reference_white_nits = 203.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else {
+            renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        }
+        if (renderer->HDR_headroom_override > 0.0f) {
+            renderer->HDR_headroom = renderer->HDR_headroom_override;
+        } else {
+            renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+        }
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
+    }
+    if (renderer->UpdateHDRMetadata) {
+        renderer->UpdateHDRMetadata(renderer);
     }
 
     if (renderer->HDR_headroom > 1.0f) {
@@ -3653,6 +3690,33 @@ bool SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
     return true;
 }
 
+bool SDL_SetRenderHDRHeadroom(SDL_Renderer *renderer, float headroom)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    CHECK_PARAM(headroom < 1.0f && headroom != 0.0f) {
+        return SDL_InvalidParamError("headroom");
+    }
+
+    renderer->HDR_headroom_override = headroom;
+    UpdateHDRProperties(renderer);
+    return true;
+}
+
+bool SDL_GetRenderHDRHeadroom(SDL_Renderer *renderer, float *headroom)
+{
+    if (headroom) {
+        *headroom = 1.0f;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (headroom) {
+        *headroom = renderer->HDR_headroom;
+    }
+    return true;
+}
+
 bool SDL_SetRenderDrawBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
     CHECK_RENDERER_MAGIC(renderer, false);
@@ -5602,11 +5666,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_Texture *parent = SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_PARENT_POINTER, NULL);
             SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
 
-            if (SDL_COLORSPACETRANSFER(target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * SCRGB_NITS);
-            } else {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
-            }
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format

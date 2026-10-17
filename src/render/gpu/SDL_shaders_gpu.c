@@ -152,6 +152,14 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_DXIL60(texture_advanced_frag_dxil)
         SHADER_METAL(texture_advanced_frag_msl)
     },
+    [FRAG_SHADER_COLOR_PQ] = {
+        .num_samplers = 0,
+        .num_uniform_buffers = 1,
+        SHADER_PRIVATE(color_pq_frag_private)
+        SHADER_SPIRV(color_pq_frag_spv)
+        SHADER_DXIL60(color_pq_frag_dxil)
+        SHADER_METAL(color_pq_frag_msl)
+    },
 };
 // clang-format on
 

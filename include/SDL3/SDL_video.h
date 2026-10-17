@@ -1567,15 +1567,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN`: true if the window has HDR
  *   headroom above the SDR white point. This property can change dynamically
  *   when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the value of SDR white in the
- *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the
- *   SDR white level in scRGB colorspace, and on Apple platforms this is
- *   always 1.0 for EDR content. This property can change dynamically when
+ * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the scale factor to apply to an
+ *   sRGB value of 1.0 to display it as SDR white in
+ *   SDL_COLORSPACE_SRGB_LINEAR. On Windows this corresponds to the SDR white
+ *   level in scRGB colorspace. On Apple platforms this is always 1.0 for EDR
+ *   content. This property can change dynamically when
  *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the additional high dynamic range
- *   that can be displayed, in terms of the SDR white point. When HDR is not
- *   enabled, this will be 1.0. This property can change dynamically when
- *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the maximum brightness that can be
+ *   displayed, as a multiple of SDR white. When HDR is not enabled or there
+ *   is no additional headroom, this will be 1.0. This property can change
+ *   dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  *
  * On Android:
  *
