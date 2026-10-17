@@ -1418,7 +1418,7 @@ static bool HIDAPI_DriverSwitch_IsSupportedDevice(SDL_HIDAPI_Device *device, con
        controller to continually attempt to reconnect is to filter it out by manufacturer/product string.
        Note that the controller does have a different product string when connected over Bluetooth.
      */
-    if (SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
+    if (name && SDL_strcmp(name, "HORI Wireless Switch Pad") == 0) {
         return false;
     }
 
