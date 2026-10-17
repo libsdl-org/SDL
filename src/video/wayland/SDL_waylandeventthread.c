@@ -28,6 +28,24 @@
 
 #include <errno.h>
 
+typedef struct Wayland_Job
+{
+    Wayland_JobThreadCallback callback;
+    Wayland_JobThreadCleanup cleanup;
+    void *userdata;
+    Wayland_JobId id;
+} Wayland_Job;
+
+struct Wayland_JobThreadContext
+{
+    SDL_Thread *thread;
+    SDL_Mutex *lock;
+    SDL_Condition *cond;
+    struct wl_array jobs;
+    Wayland_JobId id_counter;
+    bool should_exit;
+};
+
 struct Wayland_EventThreadContext
 {
     SDL_VideoData *wayland_data;
@@ -204,6 +222,166 @@ void Wayland_UnlockEventThread(Wayland_EventThreadContext *context)
 {
     if (context) {
         SDL_UnlockMutex(context->dispatch_lock);
+    }
+}
+
+static int SDLCALL Wayland_JobThreadFunc(void *data)
+{
+    Wayland_JobThreadContext *context = (Wayland_JobThreadContext *)data;
+    while (!context->should_exit) {
+        SDL_LockMutex(context->lock);
+        if (!context->jobs.size) {
+            SDL_WaitCondition(context->cond, context->lock);
+        }
+
+        Wayland_Job *job;
+        wl_array_for_each (job, &context->jobs) {
+            if (job->id) {
+                job->callback(job->userdata);
+                if (job->cleanup) {
+                    job->cleanup(job->userdata, false);
+                }
+            }
+        }
+
+        context->jobs.size = 0;
+        SDL_UnlockMutex(context->lock);
+    }
+
+    return 0;
+}
+
+extern Wayland_JobThreadContext *Wayland_CreateJobThread()
+{
+    Wayland_JobThreadContext *context = SDL_calloc(1, sizeof(Wayland_JobThreadContext));
+    if (!context) {
+        return NULL;
+    }
+
+    WAYLAND_wl_array_init(&context->jobs);
+
+    context->lock = SDL_CreateMutex();
+    if (!context->lock) {
+        goto cleanup;
+    }
+
+    context->cond = SDL_CreateCondition();
+    if (!context->cond) {
+        goto cleanup;
+    }
+
+    context->thread = SDL_CreateThread(Wayland_JobThreadFunc, "wl_job_thread", context);
+    if (!context->thread) {
+        goto cleanup;
+    }
+
+    return context;
+
+cleanup:
+    if (context->lock) {
+        SDL_DestroyMutex(context->lock);
+    }
+
+    if (context->cond) {
+        SDL_DestroyCondition(context->cond);
+    }
+
+    WAYLAND_wl_array_release(&context->jobs);
+    SDL_free(context);
+
+    return NULL;
+}
+
+static void job_thread_exit(void *data)
+{
+    Wayland_JobThreadContext *context = (Wayland_JobThreadContext *)data;
+    context->should_exit = true;
+}
+
+extern void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
+{
+    if (!context) {
+        return;
+    }
+
+    // Dispatch the exit job to unblock the thread and set the exit condition.
+    Wayland_JobThreadAddJob(context, job_thread_exit, NULL, context, NULL);
+
+    // Wait for the thread to return; all jobs will be complete at this point.
+    SDL_WaitThread(context->thread, NULL);
+
+    // Cleanup.
+    WAYLAND_wl_array_release(&context->jobs);
+    SDL_DestroyCondition(context->cond);
+    SDL_DestroyMutex(context->lock);
+    SDL_free(context);
+}
+
+bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context,
+                             Wayland_JobThreadCallback callback, Wayland_JobThreadCleanup cleanup,
+                             void *userdata, Wayland_JobId *id)
+{
+    if (!context || !callback) {
+        return false;
+    }
+
+    SDL_LockMutex(context->lock);
+    Wayland_Job *job = WAYLAND_wl_array_add(&context->jobs, sizeof(Wayland_Job));
+    if (job) {
+        job->id = context->id_counter++;
+        if (!job->id) {
+            job->id = context->id_counter++;
+        }
+        if (id) {
+            *id = job->id;
+        }
+
+        job->callback = callback;
+        job->cleanup = cleanup;
+        job->userdata = userdata;
+
+        SDL_SignalCondition(context->cond);
+        SDL_UnlockMutex(context->lock);
+
+        return true;
+    }
+
+    SDL_UnlockMutex(context->lock);
+    return false;
+}
+
+void Wayland_JobThreadCancelJob(Wayland_JobThreadContext *context, Wayland_JobId id)
+{
+    if (!context || !id) {
+        return;
+    }
+
+    SDL_LockMutex(context->lock);
+
+    Wayland_Job *job;
+    wl_array_for_each(job, &context->jobs) {
+        if (job->id == id) {
+            job->id = 0;
+            if (job->cleanup) {
+                job->cleanup(job->userdata, true);
+            }
+        }
+    }
+
+    SDL_UnlockMutex(context->lock);
+}
+
+void Wayland_LockJobThread(Wayland_JobThreadContext *context)
+{
+    if (context) {
+        SDL_LockMutex(context->lock);
+    }
+}
+
+void Wayland_UnlockJobThread(Wayland_JobThreadContext *context)
+{
+    if (context) {
+        SDL_UnlockMutex(context->lock);
     }
 }
 

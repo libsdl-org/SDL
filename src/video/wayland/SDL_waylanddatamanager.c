@@ -37,14 +37,11 @@
 #include "SDL_waylanddatamanager.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 
-/* This is arbitrary, but reading while polling should block for less than a frame, to
- * prevent hanging while pumping events.
- *
- * When querying the clipboard data directly, a larger value is needed to avoid timing
- * out if the source needs to process or transfer a large amount of data.
+/* This value is arbitrary, but needs to be long enough to allow the remote end to
+ * wake up and do any necessary processing of the data before sending it. In some
+ * cases, this can be multiple seconds.
  */
-#define DEFAULT_PIPE_TIMEOUT_NS SDL_MS_TO_NS(14)
-#define EXTENDED_PIPE_TIMEOUT_NS SDL_MS_TO_NS(5000)
+#define DEFAULT_PIPE_TIMEOUT_NS SDL_MS_TO_NS(5000)
 
 /* sigtimedwait() is an optional part of POSIX.1-2001, and OpenBSD doesn't implement it.
  * Based on https://comp.unix.programmer.narkive.com/rEDH0sPT/sigtimedwait-implementation
@@ -608,10 +605,8 @@ bool Wayland_DataOfferRequestDataFromSelf(SDL_WaylandDataOffer *offer, const cha
     return true;
 }
 
-void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout)
+void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length)
 {
-    const Sint64 timeout = extended_timeout ? EXTENDED_PIPE_TIMEOUT_NS : DEFAULT_PIPE_TIMEOUT_NS;
-
     int pipefd[2];
     void *buffer = NULL;
     *length = 0;
@@ -629,7 +624,7 @@ void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_typ
 
         WAYLAND_wl_display_flush(data_device->seat->display->display);
 
-        while (ReadPipe(pipefd[0], &buffer, length, timeout) > 0) {
+        while (ReadPipe(pipefd[0], &buffer, length, DEFAULT_PIPE_TIMEOUT_NS) > 0) {
         }
         close(pipefd[0]);
     } else {
@@ -662,7 +657,7 @@ void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *off
 
         WAYLAND_wl_display_flush(primary_selection_device->seat->display->display);
 
-        while (ReadPipe(pipefd[0], &buffer, length, EXTENDED_PIPE_TIMEOUT_NS) > 0) {
+        while (ReadPipe(pipefd[0], &buffer, length, DEFAULT_PIPE_TIMEOUT_NS) > 0) {
         }
         close(pipefd[0]);
 
@@ -689,7 +684,7 @@ bool Wayland_PrimarySelectionOfferAddMIME(SDL_WaylandPrimarySelectionOffer *offe
 
 bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type)
 {
-    if (offer) {
+    if (offer && mime_type) {
         return MIMEDataListHasType(&offer->mimes, mime_type);
     }
     return false;
@@ -697,7 +692,7 @@ bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type
 
 bool Wayland_PrimarySelectionOfferHasMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type)
 {
-    if (offer) {
+    if (offer && mime_type) {
         return MIMEDataListHasType(&offer->mimes, mime_type);
     }
     return false;

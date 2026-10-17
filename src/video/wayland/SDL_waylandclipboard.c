@@ -90,7 +90,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
         if (data_device->selection_source) {
             buffer = SDL_GetInternalClipboardData(_this, mime_type, length);
         } else if (Wayland_DataOfferHasMIME(data_device->selection_offer, mime_type)) {
-            buffer = Wayland_DataOfferReceive(data_device->selection_offer, mime_type, length, true);
+            buffer = Wayland_DataOfferReceive(data_device->selection_offer, mime_type, length);
         }
     }
 
