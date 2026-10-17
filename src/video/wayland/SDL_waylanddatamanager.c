@@ -229,6 +229,10 @@ static void data_source_handle_dnd_drop_performed(void *data, struct wl_data_sou
 
 static void data_source_handle_dnd_finished(void *data, struct wl_data_source *wl_data_source)
 {
+    SDL_WaylandDataSource *source = data;
+    if (source) {
+        Wayland_DataSourceDestroy(source);
+    }
 }
 
 static void data_source_handle_action(void *data, struct wl_data_source *wl_data_source, uint32_t dnd_action)
@@ -458,38 +462,9 @@ static void offer_source_done_handler(void *data, struct wl_callback *callback, 
     }
 }
 
-static struct wl_callback_listener offer_source_listener = {
+static const struct wl_callback_listener offer_source_listener = {
     offer_source_done_handler
 };
-
-static void DataOfferCheckSource(SDL_WaylandDataOffer *offer, const char *mime_type)
-{
-    int pipefd[2];
-
-    if (!offer) {
-        return;
-    }
-    SDL_WaylandDataDevice *data_device = offer->data_device;
-
-    if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == 0) {
-        if (offer->callback) {
-            wl_callback_destroy(offer->callback);
-        }
-        if (offer->read_fd >= 0) {
-            close(offer->read_fd);
-        }
-
-        offer->read_fd = pipefd[0];
-
-        wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
-        close(pipefd[1]);
-
-        offer->callback = wl_display_sync(offer->data_device->seat->display->display);
-        wl_callback_add_listener(offer->callback, &offer_source_listener, offer);
-
-        WAYLAND_wl_display_flush(data_device->seat->display->display);
-    }
-}
 
 static void UpdateSeatOffers(SDL_WaylandDataDevice *data_device)
 {
@@ -528,7 +503,7 @@ static void SelectionOfferNotifyFromMIMEs(SDL_WaylandDataDevice *data_device, bo
         wl_array_for_each(item, &offer->mimes) {
             // If origin metadata is found, queue a check and wait for confirmation that this offer isn't recursive.
             if (check_origin && SDL_strcmp(*item, SDL_DATA_ORIGIN_MIME) == 0) {
-                DataOfferCheckSource(offer, *item);
+                Wayland_DataOfferRequestDataFromSelf(offer, *item, &offer_source_listener, offer);
                 return;
             }
 
@@ -576,6 +551,61 @@ void Wayland_DataDeviceSetSelectionOffer(SDL_WaylandDataDevice *data_device, SDL
     if (notify) {
         SelectionOfferNotifyFromMIMEs(data_device, true);
     }
+}
+
+void *Wayland_DataOfferGetDataFromSelf(SDL_WaylandDataOffer *offer, size_t *length)
+{
+    if (!offer) {
+        SDL_SetError("Invalid data offer");
+        return NULL;
+    }
+
+    if (offer->read_fd < 0) {
+        SDL_SetError("Pipe closed");
+        return NULL;
+    }
+
+    // The timeout is 0, as the data will already be in the pipe if it is from this process.
+    void *buffer = NULL;
+    while (ReadPipe(offer->read_fd, &buffer, length, 0) > 0) {
+    }
+
+    return buffer;
+}
+
+bool Wayland_DataOfferRequestDataFromSelf(SDL_WaylandDataOffer *offer, const char *mime_type, const struct wl_callback_listener *completion_listener, void *userdata)
+{
+    int pipefd[2];
+
+    if (!offer) {
+        SDL_SetError("Invalid data offer");
+        return false;
+    }
+
+    SDL_WaylandDataDevice *data_device = offer->data_device;
+    if (offer->read_fd >= 0) {
+        close(offer->read_fd);
+        offer->read_fd = -1;
+    }
+    if (offer->callback) {
+        wl_callback_destroy(offer->callback);
+        offer->callback = NULL;
+    }
+
+    if (pipe2(pipefd, O_CLOEXEC | O_NONBLOCK) == 0) {
+        offer->read_fd = pipefd[0];
+        wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
+        close(pipefd[1]);
+
+        offer->callback = wl_display_sync(data_device->seat->display->display);
+        wl_callback_add_listener(offer->callback, completion_listener, userdata);
+
+        WAYLAND_wl_display_flush(data_device->seat->display->display);
+    } else {
+        return SDL_SetError("Could not create pipe");
+    }
+
+    return true;
 }
 
 void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout)

@@ -118,6 +118,8 @@ extern void Wayland_DataSourceDestroy(SDL_WaylandDataSource *source);
 extern void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSource *source);
 
 // Wayland Data / Primary Selection Offer - (Receiving)
+extern bool Wayland_DataOfferRequestDataFromSelf(SDL_WaylandDataOffer *offer, const char *mime_type, const struct wl_callback_listener *completion_listener, void *userdata);
+extern void *Wayland_DataOfferGetDataFromSelf(SDL_WaylandDataOffer *offer, size_t *length);
 extern void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout);
 extern void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type, size_t *length);
 extern bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type);

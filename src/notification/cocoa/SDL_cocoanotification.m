@@ -29,7 +29,7 @@
 #include "../../events/SDL_notificationevents_c.h"
 #include "../../video/SDL_surface_c.h"
 
-#import <Foundation/Foundation.h>
+#import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <UserNotifications/UNNotification.h>
 #import <UserNotifications/UNNotificationAction.h>
 #import <UserNotifications/UNNotificationAttachment.h>
@@ -95,24 +95,41 @@ static SDLNotificationDelegate *delegate;
 static bool ShouldEnableNotifications(void)
 {
 #if defined(SDL_PLATFORM_MACOS)
-    /* Notifications outside of an app bundle are unsupported, and will crash with an
+    /* Notifications outside an app bundle are unsupported, and will crash with an
      * unhandled exception error, deep within a system library.
-     *
-     * FIXME: These functions are deprecated, find a modern way.
      */
-    CFBundleRef bundle = CFBundleGetMainBundle();
-    CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle); // FIXME: This is a leak!
+    if (@available(macOS 11, *)) {
+        @autoreleasepool {
+            NSBundle *bundle = [NSBundle mainBundle];
+            NSURL *bundleUrl = [bundle bundleURL];
 
-    CFStringRef uti;
+            UTType *type = nil;
+            if ([bundleUrl getResourceValue:&type forKey:NSURLContentTypeKey error:nil] &&
+                type && [type conformsToType:UTTypeApplicationBundle]) {
+                return true;
+            }
+
+            return false;
+        }
+    } else {
+        // Deprecated pre-macOS 11 method.
+        CFBundleRef bundle = CFBundleGetMainBundle();
+        CFURLRef bundleUrl = CFBundleCopyBundleURL(bundle);
+        bool ret = false;
+
+        CFStringRef uti = NULL;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) /* FIXME: This is a leak! */ &&
-        uti && UTTypeConformsTo(uti, kUTTypeApplicationBundle)) {
-        return true;
-    }
+        // Deprecated in macOS 12.0; the UTType replacement above doesn't exist before macOS 11.0.
+        if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) && uti) {
+            ret = UTTypeConformsTo(uti, kUTTypeApplicationBundle);
+            CFRelease(uti);
+        }
 #pragma clang diagnostic pop
 
-    return false;
+        CFRelease(bundleUrl);
+        return ret;
+    }
 #else
     // iOS can always enable notificaions.
     return true;

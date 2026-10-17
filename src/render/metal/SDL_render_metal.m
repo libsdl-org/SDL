@@ -638,6 +638,13 @@ size_t GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, in
     return 0;
 }
 
+// Return true if we want the texture sampler to convert to linear values on read
+static bool UseSRGBTextureFormats(SDL_Renderer *renderer)
+{
+    return (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+            renderer->output_colorspace == SDL_COLORSPACE_HDR10);
+}
+
 static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
     @autoreleasepool {
@@ -647,7 +654,7 @@ static bool METAL_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
         id<MTLTexture> mtltexture = nil;
         SDL3METAL_PaletteData *palettedata;
 
-        if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        if (UseSRGBTextureFormats(renderer)) {
             pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
         } else {
             pixfmt = MTLPixelFormatRGBA8Unorm;
@@ -712,16 +719,20 @@ static bool METAL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
             }
         }
 
+        // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+        const SDL_Colorspace format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+        const bool use_srgb = (format_colorspace == SDL_COLORSPACE_SRGB_LINEAR || format_colorspace == SDL_COLORSPACE_HDR10);
+
         switch (texture->format) {
         case SDL_PIXELFORMAT_ABGR8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (use_srgb) {
                 pixfmt = MTLPixelFormatRGBA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatRGBA8Unorm;
             }
             break;
         case SDL_PIXELFORMAT_ARGB8888:
-            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+            if (use_srgb) {
                 pixfmt = MTLPixelFormatBGRA8Unorm_sRGB;
             } else {
                 pixfmt = MTLPixelFormatBGRA8Unorm;
@@ -1433,14 +1444,19 @@ static const float TEXTURETYPE_NV12 = 6;
 static const float TEXTURETYPE_NV21 = 7;
 static const float TEXTURETYPE_YUV = 8;
 
-//static const float INPUTTYPE_UNSPECIFIED = 0;
+static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
 
+//static const float OUTPUTTYPE_UNSPECIFIED = 0;
+static const float OUTPUTTYPE_SRGB = 1;
+static const float OUTPUTTYPE_SCRGB = 2;
+static const float OUTPUTTYPE_HDR10 = 3;
+
 typedef struct
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -1477,13 +1493,57 @@ typedef struct
     PixelShaderConstants shader_constants;
 } METAL_DrawStateCache;
 
+static float GetSRGBInputType(SDL_Renderer *renderer, const SDL_Texture *texture, float texture_type)
+{
+    if (texture_type == TEXTURETYPE_YUV ||
+        texture_type == TEXTURETYPE_NV12 ||
+        texture_type == TEXTURETYPE_NV21) {
+        // YUV textures are converted to sRGB in the shader
+        return INPUTTYPE_SRGB;
+    }
+
+    id<MTLTexture> mtltexture;
+    if (texture->palette) {
+        SDL3METAL_PaletteData *palettedata = (__bridge SDL3METAL_PaletteData *)texture->palette->internal;
+        mtltexture = palettedata.mtltexture;
+    } else {
+        SDL3METAL_TextureData *texturedata = (__bridge SDL3METAL_TextureData *)texture->internal;
+        mtltexture = texturedata.mtltexture;
+    }
+
+    switch (mtltexture.pixelFormat) {
+    case MTLPixelFormatRGBA8Unorm_sRGB:
+    case MTLPixelFormatBGRA8Unorm_sRGB:
+        if (SDL_RenderingLinearSpace(renderer)) {
+            // The sampler will convert from sRGB to linear on load
+            return INPUTTYPE_UNSPECIFIED;
+        } else {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
+    default:
+        // The shader needs to convert from sRGB if necessary
+        return INPUTTYPE_SRGB;
+    }
+}
+
 static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, PixelShaderConstants *constants)
 {
     float output_headroom;
 
     SDL_zerop(constants);
 
-    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
+    switch (renderer->current_colorspace) {
+    case SDL_COLORSPACE_SRGB_LINEAR:
+        constants->output_type = OUTPUTTYPE_SCRGB;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        constants->output_type = OUTPUTTYPE_HDR10;
+        break;
+    default:
+        constants->output_type = OUTPUTTYPE_SRGB;
+        break;
+    }
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
@@ -1536,7 +1596,7 @@ static void SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand
             constants->input_type = INPUTTYPE_HDR10;
             break;
         default:
-            constants->input_type = INPUTTYPE_SRGB;
+            constants->input_type = GetSRGBInputType(renderer, texture, constants->texture_type);
             break;
         }
 
@@ -1898,6 +1958,13 @@ static bool METAL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
                     color.r *= cmd->data.color.color_scale;
                     color.g *= cmd->data.color.color_scale;
                     color.b *= cmd->data.color.color_scale;
+
+                    if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
+                        color.r = SDL_PQfromNits(color.r * SCRGB_NITS);
+                        color.g = SDL_PQfromNits(color.g * SCRGB_NITS);
+                        color.b = SDL_PQfromNits(color.b * SCRGB_NITS);
+                    }
+
                     MTLClearColor mtlcolor = MTLClearColorMake(color.r, color.g, color.b, color.a);
 
                     // get new command encoder, set up with an initial clear operation.
@@ -2123,6 +2190,9 @@ static SDL_Surface *METAL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rec
         case MTLPixelFormatRGB10A2Unorm:
             format = SDL_PIXELFORMAT_ABGR2101010;
             break;
+        case MTLPixelFormatBGR10A2Unorm:
+            format = SDL_PIXELFORMAT_ARGB2101010;
+            break;
         case MTLPixelFormatRGBA16Float:
             format = SDL_PIXELFORMAT_RGBA64_FLOAT;
             break;
@@ -2343,6 +2413,7 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         id<MTLCommandBuffer> cmdbuffer;
         id<MTLBlitCommandEncoder> blitcmd;
         bool scRGB_supported = false;
+        bool HDR10_supported = false;
 
         // Note: matrices are column major.
         float identitytransform[16] = {
@@ -2391,9 +2462,14 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
         if (@available(macos 10.11, iOS 16.0, *)) {
             scRGB_supported = true;
         }
+        if (@available(macos 11.0, iOS 16.0, *)) {
+            HDR10_supported = true;
+        }
 #endif
         if (renderer->output_colorspace != SDL_COLORSPACE_SRGB) {
             if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR && scRGB_supported) {
+                // This colorspace is supported
+            } else if (renderer->output_colorspace == SDL_COLORSPACE_HDR10 && HDR10_supported) {
                 // This colorspace is supported
             } else {
                 return SDL_SetError("Unsupported output colorspace");
@@ -2478,6 +2554,18 @@ static bool METAL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
             CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(name);
             layer.colorspace = colorspace;
             CGColorSpaceRelease(colorspace);
+        } else if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            if (@available(macos 11.0, iOS 16.0, *)) {
+                layer.wantsExtendedDynamicRangeContent = YES;
+                layer.pixelFormat = MTLPixelFormatBGR10A2Unorm;
+
+                const CFStringRef name = kCGColorSpaceITUR_2100_PQ;
+                CGColorSpaceRef colorspace = CGColorSpaceCreateWithName(name);
+                layer.colorspace = colorspace;
+                CGColorSpaceRelease(colorspace);
+            } else {
+                SDL_assert(!"Logic error, HDR10 is not actually supported");
+            }
         }
 #endif // !SDL_PLATFORM_TVOS
 

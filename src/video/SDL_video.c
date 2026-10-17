@@ -1236,6 +1236,10 @@ void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputP
 
     SDL_copyp(&display->HDR, &HDR_clamped);
 
+	if (changed) {
+		SDL_SetBooleanProperty(display->props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, display->HDR.HDR_headroom > 1.0f);
+	}
+
     if (changed && !SDL_DriverSendsHDRChanges(_this)) {
         for (SDL_Window *w = display->device->windows; w; w = w->next) {
             if (GetDisplayForWindow(w) == display->id) {

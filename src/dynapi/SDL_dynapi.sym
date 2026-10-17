@@ -1319,6 +1319,8 @@ SDL3_0.0.0 {
     SDL_SetSoftwareRendererWindow;
     SDL_SetSoftwareRendererSurface;
     SDL_EncodeURL;
+    SDL_SetRenderHDRHeadroom;
+    SDL_GetRenderHDRHeadroom;
     # extra symbols go here (don't modify this line)
   local: *;
 };
