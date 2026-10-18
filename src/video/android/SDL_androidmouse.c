@@ -53,6 +53,8 @@ struct SDL_CursorData
     int system_cursor;
 };
 
+static const char k_aAndroidButtons[] = { BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_TERTIARY, BUTTON_BACK, BUTTON_FORWARD };
+
 // Last known Android mouse button state (includes all buttons)
 static int last_state;
 
@@ -236,7 +238,6 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     case ACTION_DOWN:
     case ACTION_BUTTON_PRESS:
     case ACTION_BUTTON_RELEASE:
-    case ACTION_CANCEL:
     case ACTION_HOVER_ENTER:
     case ACTION_HOVER_EXIT:
         // Some Android versions will send mouse buttons as ACTION_BUTTON_PRESS and 
@@ -245,9 +246,6 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         // Some will send ACTION_HOVER_EXIT when a button is pressed (to go into 
         // drag/move mode) and ACTION_HOVER_ENTER when the button is released (to 
         // go back into hover mode).
-        //
-        // Some will send ACTION_BUTTON_PRESS on a click and drag, but ACTION_CANCEL
-        // when the button is released.
         //
         // Some will, in fact, cluster a BUTTON_PRIMARY release and BUTTON_SECONDARY 
         // press into the same message, simply changing the button state.
@@ -261,15 +259,25 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
 
         SDL_SendMouseMotion(0, window, SDL_DEFAULT_MOUSE_ID, relative, x, y);
 
+        // Some versions of Android will send multiple mouse buttons in a single
+        // event, so read it bit-by-bit.
         if (changes_press) {
-            button = TranslateButton(changes_press);
-            SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, true);
+            for (int i = 0; i < sizeof(k_aAndroidButtons); i++) {
+                if (changes_press & k_aAndroidButtons[i]) {
+                    button = TranslateButton(k_aAndroidButtons[i]);
+                    SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, true);
+                }
+            }
             last_state = state;
         }
 
         if (changes_release) {
-            button = TranslateButton(changes_release);
-            SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, false);
+            for (int i = 0; i < sizeof(k_aAndroidButtons); i++) {
+                if (changes_release & k_aAndroidButtons[i]) {
+                    button = TranslateButton(k_aAndroidButtons[i]);
+                    SDL_SendMouseButton(0, window, SDL_DEFAULT_MOUSE_ID, button, false);
+                }
+            }
             last_state = state;
         }
         break;        
@@ -277,7 +285,6 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
     default:
         break;
     }
-
 }
 
 #endif // SDL_VIDEO_DRIVER_ANDROID

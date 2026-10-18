@@ -864,7 +864,6 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, Vi
                     default:
                         break;
                 }
-
             } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
                 switch (action) {
                     case MotionEvent.ACTION_HOVER_ENTER:
@@ -1008,7 +1007,6 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
         int action = event.getActionMasked();
 
         SDLActivity.onNativeMouse(buttonState, action, x, y, true);
-
         return true;
     }
 
