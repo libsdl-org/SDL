@@ -507,7 +507,18 @@ static bool GetRootWindowFloatProperty(Display *dpy, int screen, const char *nam
     return false;
 }
 
-static float GetGamescopeSDRWhiteLevel(Display *dpy, int screen)
+static bool IsSteamDeckOLEDDisplay(const MonitorInfo *info)
+{
+    if (SDL_strcmp(info->manufacturer_code, "VLV") == 0) {
+        // These are the Samsung and BOE panels used in the Steam Deck OLED
+        if (info->product_code == 0x3003 || info->product_code == 0x3004) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static float GetGamescopeSDRWhiteLevel(Display *dpy, int screen, const MonitorInfo *info)
 {
     // These properties are currently only available on X display :0
     // If this changes, please remove the XCloseDisplay() call below.
@@ -521,10 +532,29 @@ static float GetGamescopeSDRWhiteLevel(Display *dpy, int screen)
     bool external_display = false;
     if (GetRootWindowBoolProperty(dpy, screen, "GAMESCOPE_DISPLAY_IS_EXTERNAL", &external_display) &&
         external_display) {
+        // Gamescope outputs PQ to external displays, with SDR content at this brightness
         GetRootWindowFloatProperty(dpy, screen, "GAMESCOPE_SDR_ON_HDR_CONTENT_BRIGHTNESS", &SDR_white_level);
+    } else if (IsSteamDeckOLEDDisplay(info)) {
+        /* Gamescope drives the Steam Deck OLED panel with gamma 2.2, mapping PQ content relative
+           to the panel's maximum brightness (1000 nits). When HDR content is shown, Steam raises
+           the backlight and applies input gains so that HDR content is 3x the brightness of SDR
+           content, which puts the SDR white level at 1/3 of the maximum brightness, regardless
+           of the brightness setting.
+
+           The backlight can go up to 1000/600 of its SDR maximum, so the headroom actually
+           available for HDR content is 3.0 until the brightness slider reaches its HDR range,
+           tapering down to 1.67 at maximum brightness, and gamescope clips HDR content above
+           that.
+
+           We report the full 3.0 from the panel's maximum brightness, since content rarely reaches
+           the top of that range.
+
+           These values depend on Steam's backlight policy, and should eventually come from gamescope.
+        */
+        SDR_white_level = (float)info->max_luminance / 3.0f;
     } else {
-        // We're using the Steam Deck internal display, which has an SDR white level of 500 nits
-        SDR_white_level = 500.0f;
+        // We don't know the SDR white level for other internal displays
+        SDR_white_level = 0.0f;
     }
 
     // Closing the display opened above
@@ -729,12 +759,9 @@ static bool X11_FillXRandRDisplayInfo(SDL_VideoDevice *_this, Display *dpy, int 
     if (info) {
         float SDR_white_level;
 
-        // The gamescope SDR white level is actually dynamic based on display settings and ambient light
-        // We don't have access to that info, so we'll disable this for now.
-        gamescope = false;
-
+        // Note that the gamescope values aren't updated if the display settings change while we're running
         if (gamescope) {
-            SDR_white_level = GetGamescopeSDRWhiteLevel(dpy, screen);
+            SDR_white_level = GetGamescopeSDRWhiteLevel(dpy, screen, info);
         } else {
             // Support for HDR on X11 seems spotty, let's disable this for now
             SDR_white_level = 0.0f;
