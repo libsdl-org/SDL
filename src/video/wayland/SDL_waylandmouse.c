@@ -1016,13 +1016,9 @@ static void Wayland_CursorStateSetCursor(SDL_WaylandCursorState *state, const Wa
         state->current_cursor = cursor_data;
 
         if (!state->surface) {
-            if (viddata->event_thread_context) {
-                struct wl_compositor *compositor_wrapper = Wayland_CreateEventThreadProxyWrapper(viddata->event_thread_context, viddata->compositor);
-                state->surface = wl_compositor_create_surface(compositor_wrapper);
-                WAYLAND_wl_proxy_wrapper_destroy(compositor_wrapper);
-            } else {
-                state->surface = wl_compositor_create_surface(viddata->compositor);
-            }
+            struct wl_compositor *compositor_wrapper = Wayland_CreateEventThreadProxyWrapper(viddata->event_thread_context, viddata->compositor);
+            state->surface = wl_compositor_create_surface(compositor_wrapper);
+            WAYLAND_wl_proxy_wrapper_destroy(compositor_wrapper);
         }
 
         struct wl_buffer *buffer = Wayland_CursorStateGetFrame(state, 0);

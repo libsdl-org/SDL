@@ -147,7 +147,7 @@ cleanup:
 
 void Wayland_DestroyEventThread(Wayland_EventThreadContext *context)
 {
-    if (context->thread) {
+    if (context) {
         // Dispatch the exit event to unblock the thread and signal it to exit.
         struct wl_display *display = context->wayland_data->display;
         struct wl_proxy *display_wrapper = Wayland_CreateEventThreadProxyWrapper(context, display);
@@ -185,12 +185,11 @@ void Wayland_DestroyEventThread(Wayland_EventThreadContext *context)
 void *Wayland_CreateEventThreadProxyWrapper(Wayland_EventThreadContext *context, void *obj)
 {
     struct wl_proxy *wrapper = WAYLAND_wl_proxy_create_wrapper(obj);
-    if (wrapper) {
+    if (wrapper && context) {
         WAYLAND_wl_proxy_set_queue(wrapper, context->queue);
-        return wrapper;
     }
 
-    return NULL;
+    return wrapper;
 }
 
 void Wayland_LockEventThread(Wayland_EventThreadContext *context)
