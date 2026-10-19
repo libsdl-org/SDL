@@ -1001,8 +1001,8 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     public boolean onCapturedPointer(View view, MotionEvent event) {
 
         // Captured Pointer events are *always* relative
-        float x = getEventX(event, i);
-        float y = getEventY(event, i);
+        float x = event.getX();
+        float y = event.getY();
         int buttonState = event.getButtonState();
         int action = event.getActionMasked();
 
