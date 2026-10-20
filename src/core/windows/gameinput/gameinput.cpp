@@ -63,6 +63,40 @@ namespace GameInput {
 
 
 //
+//  GDK Compatibility
+//
+
+/* SDL modifications: use typedef for c++98 copatibility */
+typedef DWORD (WINAPI * Gi_GetFileVersionInfoSizeWFn)(
+    _In_ LPCWSTR lptstrFilename,
+    _Out_opt_ LPDWORD lpdwHandle);
+
+typedef BOOL (WINAPI * Gi_GetFileVersionInfoWFn)(
+    _In_ LPCWSTR lptstrFilename,
+    _Reserved_ DWORD dwHandle,
+    _In_ DWORD dwLen,
+    _Out_writes_bytes_(dwLen) LPVOID lpData);
+
+typedef BOOL (WINAPI * Gi_VerQueryValueWFn)(
+    _In_ LPCVOID pBlock,
+    _In_ LPCWSTR lpSubBlock,
+    _Outptr_result_buffer_(_Inexpressible_("buffer can be PWSTR or DWORD*")) LPVOID* lplpBuffer,
+    _Out_ PUINT puLen);
+
+typedef LSTATUS (WINAPI * Gi_RegGetValueWFn)(
+    _In_ HKEY hkey,
+    _In_opt_ LPCWSTR lpSubKey,
+    _In_opt_ LPCWSTR lpValue,
+    _In_ DWORD dwFlags,
+    _Out_opt_ LPDWORD pdwType,
+    _Out_writes_bytes_to_opt_(*pcbData, *pcbData) PVOID pvData,
+    _Inout_opt_ LPDWORD pcbData);
+
+static const DWORD GI_RRF_RT_REG_SZ = 0x00000002;
+static const DWORD GI_RRF_SUBKEY_WOW6432KEY = 0x00020000;
+
+
+//
 //  Constants
 //
 
@@ -93,15 +127,6 @@ static HMODULE g_versionDll = nullptr;
 #define RETURN_LAST_ERROR_IF(condition) { bool _condition = (condition); if(_condition) { RETURN_WIN32(GetLastError()); } }
 #define RETURN_LAST_ERROR_IF_NULL(ptr) RETURN_LAST_ERROR_IF((ptr) == NULL)
 
-#define RETURN_NTSTATUS(status) { NTSTATUS _value = (status); return NT_SUCCESS(_value) ? S_OK : (HRESULT)((_value) | FACILITY_NT_BIT); }
-#define RETURN_IF_NTSTATUS_FAILED(status) { NTSTATUS _status = (status); if (!NT_SUCCESS(_status)) { RETURN_NTSTATUS(_status); } }
-
-#define FAIL_FAST_HR(hr) { __fastfail(hr); }
-#define FAIL_FAST() FAIL_FAST_HR(E_UNEXPECTED)
-#define FAIL_FAST_IF(condition) { if (condition) { FAIL_FAST_HR(E_UNEXPECTED); } }
-#define FAIL_FAST_IF_FAILED(x) { HRESULT _hr = (x); if (FAILED(_hr)) { FAIL_FAST_HR(_hr); } }
-#define FAIL_FAST_IF_WIN32_BOOL_FALSE(condition) { if (condition == FALSE) { FAIL_FAST_HR(HRESULT_FROM_WIN32(GetLastError())); } }
-
 
 //
 //  Containers
@@ -112,7 +137,7 @@ class Vector
 {
 public:
     Vector()
-        : m_data(nullptr)
+        : m_data(nullptr) /* SDL modification: c++98 compatibility */
         , m_count(0)
         , m_capacity(0)
     {
@@ -246,11 +271,6 @@ public:
         return m_string;
     }
 
-    const T& GetFront() const noexcept
-    {
-        return m_string[0];
-    }
-
     const T& GetBack() const noexcept
     {
         return m_string[m_string.GetCount() - 1];
@@ -260,8 +280,7 @@ private:
     Vector<T> m_string;
 };
 
-typedef String<wchar_t> WString;
-typedef String<char> AString;
+typedef String<wchar_t> WString; /* SDL modification: c++98 compatibility */
 
 
 //
@@ -291,7 +310,7 @@ static HRESULT LoadSystemModuleProc(
 
     if (*module == nullptr)
     {
-        *module = LoadLibraryEx(path, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+        *module = LoadLibraryExW(path, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
         RETURN_LAST_ERROR_IF_NULL(*module);
     }
 
@@ -303,11 +322,11 @@ static HRESULT LoadSystemModuleProc(
 static HRESULT GetSystemDirectory(
     _Inout_ WString* systemDir) noexcept
 {
-    uint32_t length = ::GetSystemDirectory(nullptr, 0);
+    uint32_t length = ::GetSystemDirectoryW(nullptr, 0);
     RETURN_LAST_ERROR_IF(length == 0);
     RETURN_IF_FAILED(systemDir->Resize(length));
 
-    length = ::GetSystemDirectory(*systemDir, length) + 1;
+    length = ::GetSystemDirectoryW(*systemDir, length) + 1;
     RETURN_LAST_ERROR_IF(length == 0);
     RETURN_IF_FAILED(systemDir->Resize(length));
 
@@ -328,7 +347,7 @@ static HRESULT GetApplicationDirectory(
         RETURN_IF_FAILED(appDir->Resize(capacity));
 
         SetLastError(ERROR_SUCCESS);
-        length = ::GetModuleFileName(nullptr, *appDir, capacity + 1);
+        length = ::GetModuleFileNameW(nullptr, *appDir, capacity + 1);
         RETURN_LAST_ERROR_IF(length == 0);
 
         if (GetLastError() != ERROR_INSUFFICIENT_BUFFER)
@@ -360,11 +379,18 @@ static HRESULT GetApplicationDirectory(
 static HRESULT GetRedistDirectory(
     _Inout_ WString* redistDir) noexcept
 {
-    static const wchar_t* RedistDirRegPath = L"SOFTWARE\\Microsoft\\GameInput";
-    static const wchar_t* RedistDirValueName = L"RedistDir";
+    static const wchar_t RedistDirRegPath[] = L"SOFTWARE\\Microsoft\\GameInput"; /* SDL modification: c++98 compatibility */
 
-    typedef LONG (WINAPI *RegGetValueW_t)(HKEY,LPCWSTR,LPCWSTR,DWORD,LPDWORD,PVOID,LPDWORD);
-    RegGetValueW_t regGetValue = nullptr;
+#if defined(_M_IX86)
+    // RedistDir names the 64-bit folder and cannot be repurposed - copies of this file
+    // are statically linked into shipped titles. RedistDirX86 is additive instead, so
+    // an installer predating it simply fails the lookup and the caller moves on.
+    static const wchar_t RedistDirValueName[] = L"RedistDirX86"; /* SDL modification: c++98 compatibility */
+#else
+    static const wchar_t RedistDirValueName[] = L"RedistDir"; /* SDL modification: c++98 compatibility */
+#endif
+
+    Gi_RegGetValueWFn regGetValue = nullptr;
     RETURN_IF_FAILED(LoadSystemModuleProc(
         &g_advapi32Dll,
         L"advapi32.dll",
@@ -376,7 +402,7 @@ static HRESULT GetRedistDirectory(
         HKEY_LOCAL_MACHINE,
         RedistDirRegPath,
         RedistDirValueName,
-        RRF_RT_REG_SZ | RRF_SUBKEY_WOW6432KEY,
+        GI_RRF_RT_REG_SZ | GI_RRF_SUBKEY_WOW6432KEY,
         nullptr,
         nullptr,
         &cbSize)));
@@ -387,7 +413,7 @@ static HRESULT GetRedistDirectory(
         HKEY_LOCAL_MACHINE,
         RedistDirRegPath,
         RedistDirValueName,
-        RRF_RT_REG_SZ | RRF_SUBKEY_WOW6432KEY,
+        GI_RRF_RT_REG_SZ | GI_RRF_SUBKEY_WOW6432KEY,
         nullptr,
         *redistDir,
         &cbSize)));
@@ -403,24 +429,21 @@ static HRESULT GetFileVersion(
 {
     *version = 0;
 
-    typedef DWORD (WINAPI *GetFileVersionInfoSizeW_t)(LPCWSTR,LPDWORD);
-    GetFileVersionInfoSizeW_t getFileVersionInfoSize = nullptr;
+    Gi_GetFileVersionInfoSizeWFn getFileVersionInfoSize = nullptr;
     RETURN_IF_FAILED(LoadSystemModuleProc(
         &g_versionDll,
         L"version.dll",
         "GetFileVersionInfoSizeW",
         &getFileVersionInfoSize));
 
-    typedef BOOL (WINAPI *GetFileVersionInfoW_t)(LPCWSTR,DWORD,DWORD,LPVOID);
-    GetFileVersionInfoW_t getFileVersionInfo = nullptr;
+    Gi_GetFileVersionInfoWFn getFileVersionInfo = nullptr;
     RETURN_IF_FAILED(LoadSystemModuleProc(
         &g_versionDll,
         L"version.dll",
         "GetFileVersionInfoW",
         &getFileVersionInfo));
 
-    typedef BOOL (WINAPI *VerQueryValueW_t)(LPCVOID,LPCWSTR,LPVOID*,PUINT);
-    VerQueryValueW_t verQueryValue = nullptr;
+    Gi_VerQueryValueWFn verQueryValue = nullptr;
     RETURN_IF_FAILED(LoadSystemModuleProc(
         &g_versionDll,
         L"version.dll",
@@ -539,23 +562,43 @@ static HRESULT LoadGameInputDll(
         SUCCEEDED(PathJoin(systemDir, L"GameInput.dll", &inboxPath)) &&
         GetFileInfo(inboxPath, &inboxVersion);
 
+    // GameInputRedist.dll can be found in System32 and Program Files;
+    // check both locations for improved compatibility.
+
+    WString redistDir;
     WString redistPath;
     uint64_t redistVersion = 0;
+
+#if defined(_M_IX86)
+    // Only the 64-bit redist is ever deployed to the system directory, and copies of it
+    // exist in SysWOW64, which is where a 32-bit process resolves that directory. Probe
+    // the architecture-specific Program Files location first so a wrong-bitness file
+    // cannot mask it and leave the loader with a module it is unable to load.
+
+    bool validRedist =
+        SUCCEEDED(GetRedistDirectory(&redistDir)) &&
+        SUCCEEDED(PathJoin(redistDir, L"GameInputRedist.dll", &redistPath)) &&
+        GetFileInfo(redistPath, &redistVersion);
+
+    if (!validRedist)
+    {
+        validRedist =
+            SUCCEEDED(PathJoin(systemDir, L"GameInputRedist.dll", &redistPath)) &&
+            GetFileInfo(redistPath, &redistVersion);
+    }
+#else
     bool validRedist =
         SUCCEEDED(PathJoin(systemDir, L"GameInputRedist.dll", &redistPath)) &&
         GetFileInfo(redistPath, &redistVersion);
 
     if (!validRedist)
     {
-        // GameInputRedist.dll can be found in System32 and Program Files;
-        // check both locations for improved compatibility.
-
-        WString redistDir;
         validRedist =
             SUCCEEDED(GetRedistDirectory(&redistDir)) &&
             SUCCEEDED(PathJoin(redistDir, L"GameInputRedist.dll", &redistPath)) &&
             GetFileInfo(redistPath, &redistVersion);
     }
+#endif
 
     WString appDir;
     WString sideloadedPath;
@@ -589,7 +632,7 @@ static HRESULT LoadGameInputDll(
 
     RETURN_HR_IF_NULL(HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND), path);
 
-    *module = LoadLibrary(path);
+    *module = LoadLibraryW(path);
     RETURN_LAST_ERROR_IF_NULL(*module);
 
     return S_OK;
