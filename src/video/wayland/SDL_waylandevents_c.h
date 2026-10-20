@@ -24,6 +24,8 @@
 #ifndef SDL_waylandevents_h_
 #define SDL_waylandevents_h_
 
+typedef struct SDL_WaylandSeat SDL_WaylandSeat;
+
 #include "../../events/SDL_keymap_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_pen_c.h"
@@ -118,12 +120,12 @@ typedef struct SDL_WaylandPenTool  // a stylus, etc, on a tablet.
     struct wl_list link;
 } SDL_WaylandPenTool;
 
-typedef struct SDL_WaylandSeat
+struct SDL_WaylandSeat
 {
     SDL_VideoData *display;
     struct wl_seat *wl_seat;
-    SDL_WaylandDataDevice *data_device;
-    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
+    Wayland_DataDevice *data_device;
+    Wayland_PrimarySelectionDevice *primary_selection_device;
     char *name;
     struct wl_list link;
 
@@ -269,8 +271,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_tablet_seat_v2 *wl_tablet_seat;
         struct wl_list tool_list;
     } tablet;
-} SDL_WaylandSeat;
-
+};
 
 extern Uint64 Wayland_GetTouchTimestamp(struct SDL_WaylandSeat *seat, Uint32 wl_timestamp_ms);
 
