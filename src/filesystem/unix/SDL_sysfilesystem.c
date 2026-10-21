@@ -42,6 +42,10 @@
 #include <sys/sysctl.h>
 #endif
 
+#if defined(SDL_PLATFORM_QNXNTO)
+#include <process.h>
+#endif
+
 static char *readSymLink(const char *path)
 {
     char *result = NULL;
@@ -71,7 +75,7 @@ static char *readSymLink(const char *path)
     return NULL;
 }
 
-#ifdef SDL_PLATFORM_OPENBSD
+#if defined(SDL_PLATFORM_OPENBSD) && !defined(HAVE_GETEXECPATH)
 static char *search_path_for_binary(const char *bin)
 {
     const char *envr_real = SDL_getenv("PATH");
@@ -138,6 +142,15 @@ static char *GetExePath(void)
     }
 #endif
 #ifdef SDL_PLATFORM_OPENBSD
+#ifdef HAVE_GETEXECPATH
+    char fullpath[PATH_MAX];
+    if (getexecpath(fullpath, sizeof(fullpath)) == 0) {
+        result = SDL_strdup(fullpath);
+        if (!result) {
+            return NULL;
+        }
+    }
+#else
     // Please note that this will fail if the process was launched with a relative path and $PWD + the cwd have changed, or argv is altered. So don't do that. Or add a new sysctl to OpenBSD.
     char **cmdline;
     size_t len;
@@ -194,6 +207,7 @@ static char *GetExePath(void)
         SDL_free(cmdline);
     }
 #endif
+#endif
 
     // is a Linux-style /proc filesystem available?
     if (!result && (access("/proc", F_OK) == 0)) {
@@ -206,6 +220,11 @@ static char *GetExePath(void)
         result = readSymLink("/proc/curproc/exe");
 #elif defined(SDL_PLATFORM_SOLARIS)
         result = readSymLink("/proc/self/path/a.out");
+#elif defined(SDL_PLATFORM_QNXNTO)
+        char exe_path[PATH_MAX];
+        if (_cmdname(exe_path) != NULL) {
+            result = SDL_strdup(exe_path);
+        }
 #else
         result = readSymLink("/proc/self/exe"); // linux.
         if (!result) {

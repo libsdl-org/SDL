@@ -534,7 +534,7 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
         // Drop events that don't change state
         if (xrel == 0.0f && yrel == 0.0f && prel == 0.0f) {
     #if 0
-            printf("Touch event didn't change state - dropped!\n");
+            SDL_Log("Touch event didn't change state - dropped!");
     #endif
             SDL_UnlockTouch();
             return;

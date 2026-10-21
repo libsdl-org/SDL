@@ -2151,7 +2151,7 @@ run_test(void)
             unsigned long rel[NBITS(REL_MAX)];
         } caps;
 
-        printf("%s...\n", t->name);
+        SDL_Log("%s...", t->name);
 
         SDL_memset(&caps, '\0', sizeof(caps));
         SDL_memcpy(caps.props, t->props, sizeof(t->props));
@@ -2184,28 +2184,28 @@ run_test(void)
                                             caps.keys, caps.rel);
 
         if (actual == t->expected) {
-            printf("\tOK\n");
+            SDL_Log("\tOK");
         } else {
-            printf("\tExpected 0x%08x\n", t->expected);
+            SDL_Log("\tExpected 0x%08x", t->expected);
 
             for (j = 0; device_classes[j].code != 0; j++) {
                 if (t->expected & device_classes[j].code) {
-                    printf("\t\t%s\n", device_classes[j].name);
+                    SDL_Log("\t\t%s", device_classes[j].name);
                 }
             }
 
-            printf("\tGot      0x%08x\n", actual);
+            SDL_Log("\tGot      0x%08x", actual);
 
             for (j = 0; device_classes[j].code != 0; j++) {
                 if (actual & device_classes[j].code) {
-                    printf("\t\t%s\n", device_classes[j].name);
+                    SDL_Log("\t\t%s", device_classes[j].name);
                 }
             }
 
             if (t->todo) {
-                printf("\tKnown issue, ignoring: %s\n", t->todo);
+                SDL_Log("\tKnown issue, ignoring: %s", t->todo);
             } else {
-                printf("\tFailed\n");
+                SDL_Log("\tFailed");
                 success = 0;
             }
         }
@@ -2219,7 +2219,7 @@ run_test(void)
 static int
 run_test(void)
 {
-    printf("SDL compiled without evdev capability check.\n");
+    SDL_Log("SDL compiled without evdev capability check.");
     return 1;
 }
 

@@ -283,7 +283,11 @@ static void GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     }
 #endif
 
-    if (!GAMEINPUT_InternalIsGamepad(info) && raw_type == SDL_GAMEINPUT_RAWTYPE_NONE) {
+    if (GAMEINPUT_InternalIsGamepad(info)) {
+        if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
+            goto done;
+        }
+    } else if (raw_type == SDL_GAMEINPUT_RAWTYPE_NONE) {
 #if defined(SDL_JOYSTICK_DINPUT)
         // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
         if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true)) {

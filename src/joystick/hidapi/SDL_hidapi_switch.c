@@ -978,8 +978,8 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
 
 static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 pLeftStickCal[9];
-    Uint8 pRightStickCal[9];
+    Uint8 pLeftStickCal[9]  = {0,0,0,0,0,0,0,0,0};
+    Uint8 pRightStickCal[9] = {0,0,0,0,0,0,0,0,0};
     bool have_left_stick_cal = false, have_right_stick_cal = false;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
@@ -1367,8 +1367,9 @@ static bool HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device *de
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
-            if (SDL_strncmp(name, "NES Controller", 14) == 0 ||
-                SDL_strncmp(name, "HVC Controller", 14) == 0) {
+            if (name &&
+                (SDL_strncmp(name, "NES Controller", 14) == 0 ||
+                 SDL_strncmp(name, "HVC Controller", 14) == 0)) {
                 return true;
             }
         }

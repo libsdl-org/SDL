@@ -78,6 +78,7 @@
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS            0x301b    // mode switch to BT
 #define USB_PRODUCT_8BITDO_ULTIMATE3                      0x202f    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
@@ -93,6 +94,7 @@
 #define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3            0x1846
 #define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
+#define USB_PRODUCT_FLYDIGI_V2_APEX6                      0x2502
 #define USB_PRODUCT_FLYDIGI_V2_VADER                      0x2401
 #define USB_PRODUCT_GAMESIR_GAMEPAD_G7_PRO_8K             0x10B8 // Wired/2.4G/Bluetooth 8K mode
 #define USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K          0x103C // Wired/2.4G/Bluetooth Tarantula 8K
@@ -191,6 +193,7 @@
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER             0x0719
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY1 0x02a9
 #define USB_PRODUCT_XBOX360_WIRELESS_RECEIVER_THIRDPARTY2 0x0291
+#define USB_PRODUCT_XBOX360_BIGBUTTON_RECEIVER            0x02a0
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE                     0x0b0a
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLUETOOTH           0x0b0c
 #define USB_PRODUCT_XBOX_ONE_ADAPTIVE_BLE                 0x0b21

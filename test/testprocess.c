@@ -197,8 +197,8 @@ static int SDLCALL process_testInheritedEnv(void *arg)
     int exit_code;
     char random_env1[64];
     char random_env2[64];
-    static const char *const TEST_ENV_KEY1 = "testprocess_inherited_var";
-    static const char *const TEST_ENV_KEY2 = "testprocess_other_var";
+    static const char *const TEST_ENV_KEY1 = "TESTPROCESS_INHERITED_VAR";
+    static const char *const TEST_ENV_KEY2 = "TESTPROCESS_OTHER_VAR";
     char *test_env_val1 = NULL;
     char *test_env_val2 = NULL;
     char *buffer = NULL;
@@ -269,8 +269,8 @@ static int SDLCALL process_testNewEnv(void *arg)
     int exit_code;
     char random_env1[64];
     char random_env2[64];
-    static const char *const TEST_ENV_KEY1 = "testprocess_inherited_var";
-    static const char *const TEST_ENV_KEY2 = "testprocess_other_var";
+    static const char *const TEST_ENV_KEY1 = "TESTPROCESS_INHERITED_VAR";
+    static const char *const TEST_ENV_KEY2 = "TESTPROCESS_OTHER_VAR";
     char *test_env_val1 = NULL;
     char *test_env_val2 = NULL;
     char *buffer = NULL;

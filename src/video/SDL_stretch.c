@@ -285,15 +285,6 @@ typedef struct color_t
     Uint8 d;
 } color_t;
 
-#if 0
-static void printf_64(const char *str, void *var)
-{
-    uint8_t *val = (uint8_t *)var;
-    printf(" *   %s: %02x %02x %02x %02x _ %02x %02x %02x %02x\n",
-           str, val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
-}
-#endif
-
 /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
 
 static SDL_INLINE void INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint32 *dst)
@@ -376,15 +367,6 @@ static bool scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch, Ui
 }
 
 #ifdef SDL_SSE2_INTRINSICS
-
-#if 0
-static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
-{
-    uint16_t *val = (uint16_t *)&var;
-    printf(" *   %s: %04x %04x %04x %04x _ %04x %04x %04x %04x\n",
-           str, val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
-}
-#endif
 
 static SDL_INLINE int hasSSE2(void)
 {

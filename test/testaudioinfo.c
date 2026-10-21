@@ -32,11 +32,16 @@ print_devices(bool recording)
         int i;
         SDL_Log("Found %d %s device%s:", n, typestr, n != 1 ? "s" : "");
         for (i = 0; i < n; i++) {
-            const char *name = SDL_GetAudioDeviceName(devices[i]);
-            if (name) {
-                SDL_Log("  %d: %s", i, name);
+            const char *str = SDL_GetAudioDeviceName(devices[i]);
+            if (str) {
+                SDL_Log("  %d: %s", i, str);
             } else {
-                SDL_Log("  %d Error: %s", i, SDL_GetError());
+                SDL_Log("  %d SDL_GetAudioDeviceName() Error: %s", i, SDL_GetError());
+            }
+
+            str = SDL_GetStringProperty(SDL_GetAudioDeviceProperties(devices[i]), SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING, NULL);;
+            if (str) {
+                SDL_Log("     Unique ID: '%s'", str);
             }
 
             if (SDL_GetAudioDeviceFormat(devices[i], &spec, &frames)) {

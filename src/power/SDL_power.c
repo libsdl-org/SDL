@@ -62,6 +62,9 @@ static SDL_GetPowerInfo_Impl implementations[] = {
 #ifdef SDL_POWER_ANDROID // handles Android.
     SDL_GetPowerInfo_Android,
 #endif
+#ifdef SDL_POWER_OPENHARMONY  // handles HarmonyOS/OpenHarmony
+    SDL_GetPowerInfo_OpenHarmony,
+#endif
 #ifdef SDL_POWER_PSP // handles PSP.
     SDL_GetPowerInfo_PSP,
 #endif

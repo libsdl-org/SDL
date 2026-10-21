@@ -28,6 +28,36 @@
 
 #include <errno.h>
 
+typedef enum Wayland_JobStatus
+{
+    JOB_STATUS_WAITING = 0,
+    JOB_STATUS_RUNNING,
+    JOB_STATUS_SIGNAL_PENDING,
+    JOB_STATUS_SIGNALED,
+    JOB_STATUS_CANCELED
+} Wayland_JobStatus;
+
+typedef struct Wayland_Job
+{
+    Wayland_JobThreadCallback callback;
+    void *userdata;
+    Wayland_JobID id;
+    Wayland_JobStatus status;
+
+    struct wl_list link;
+} Wayland_Job;
+
+struct Wayland_JobThreadContext
+{
+    SDL_Thread *thread;
+    SDL_Mutex *queue_lock;
+    SDL_Mutex *completion_lock;
+    SDL_Condition *cond;
+    struct wl_list jobs;
+    Wayland_JobID id_counter;
+    bool should_exit;
+};
+
 struct Wayland_EventThreadContext
 {
     SDL_VideoData *wayland_data;
@@ -147,7 +177,7 @@ cleanup:
 
 void Wayland_DestroyEventThread(Wayland_EventThreadContext *context)
 {
-    if (context->thread) {
+    if (context) {
         // Dispatch the exit event to unblock the thread and signal it to exit.
         struct wl_display *display = context->wayland_data->display;
         struct wl_proxy *display_wrapper = Wayland_CreateEventThreadProxyWrapper(context, display);
@@ -185,12 +215,11 @@ void Wayland_DestroyEventThread(Wayland_EventThreadContext *context)
 void *Wayland_CreateEventThreadProxyWrapper(Wayland_EventThreadContext *context, void *obj)
 {
     struct wl_proxy *wrapper = WAYLAND_wl_proxy_create_wrapper(obj);
-    if (wrapper) {
+    if (wrapper && context) {
         WAYLAND_wl_proxy_set_queue(wrapper, context->queue);
-        return wrapper;
     }
 
-    return NULL;
+    return wrapper;
 }
 
 void Wayland_LockEventThread(Wayland_EventThreadContext *context)
@@ -205,6 +234,187 @@ void Wayland_UnlockEventThread(Wayland_EventThreadContext *context)
     if (context) {
         SDL_UnlockMutex(context->dispatch_lock);
     }
+}
+
+static int SDLCALL Wayland_JobThreadFunc(void *data)
+{
+    Wayland_JobThreadContext *context = (Wayland_JobThreadContext *)data;
+
+    SDL_LockMutex(context->queue_lock);
+    while (!context->should_exit) {
+        if (WAYLAND_wl_list_empty(&context->jobs)) {
+            SDL_WaitCondition(context->cond, context->queue_lock);
+        }
+
+        Wayland_Job *job, *job_temp;
+        wl_list_for_each_safe (job, job_temp, &context->jobs, link) {
+            if (job->status == JOB_STATUS_WAITING) {
+                job->status = JOB_STATUS_RUNNING;
+            }
+
+            // Don't block queue operations while dispatching the job.
+            SDL_UnlockMutex(context->queue_lock);
+
+            // If the job was cancelled, just remove it.
+            if (job->status == JOB_STATUS_RUNNING) {
+                job->callback(job->userdata);
+
+                // Signal completion to the waiting thread.
+                SDL_LockMutex(context->completion_lock);
+                if (job->status == JOB_STATUS_SIGNAL_PENDING) {
+                    SDL_SignalCondition(context->cond);
+                }
+                job->status = JOB_STATUS_SIGNALED;
+                SDL_UnlockMutex(context->completion_lock);
+            }
+
+            SDL_LockMutex(context->queue_lock);
+
+            WAYLAND_wl_list_remove(&job->link);
+            SDL_free(job);
+        }
+    }
+    SDL_UnlockMutex(context->queue_lock);
+
+    return 0;
+}
+
+extern Wayland_JobThreadContext *Wayland_CreateJobThread()
+{
+    Wayland_JobThreadContext *context = SDL_calloc(1, sizeof(Wayland_JobThreadContext));
+    if (!context) {
+        return NULL;
+    }
+
+    WAYLAND_wl_list_init(&context->jobs);
+
+    context->queue_lock = SDL_CreateMutex();
+    if (!context->queue_lock) {
+        goto cleanup;
+    }
+
+    context->completion_lock = SDL_CreateMutex();
+    if (!context->completion_lock) {
+        goto cleanup;
+    }
+
+    context->cond = SDL_CreateCondition();
+    if (!context->cond) {
+        goto cleanup;
+    }
+
+    context->thread = SDL_CreateThread(Wayland_JobThreadFunc, "wl_job_thread", context);
+    if (!context->thread) {
+        goto cleanup;
+    }
+
+    return context;
+
+cleanup:
+    if (context->queue_lock) {
+        SDL_DestroyMutex(context->queue_lock);
+    }
+
+    if (context->completion_lock) {
+        SDL_DestroyMutex(context->completion_lock);
+    }
+
+    if (context->cond) {
+        SDL_DestroyCondition(context->cond);
+    }
+
+    SDL_free(context);
+
+    return NULL;
+}
+
+static void job_thread_exit(void *data)
+{
+    Wayland_JobThreadContext *context = (Wayland_JobThreadContext *)data;
+    context->should_exit = true;
+}
+
+extern void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
+{
+    if (!context) {
+        return;
+    }
+
+    // Dispatch the exit job to unblock the thread and set the exit condition.
+    Wayland_JobThreadAddJob(context, job_thread_exit, context, NULL);
+
+    // Wait for the thread to return; all jobs will be complete at this point.
+    SDL_WaitThread(context->thread, NULL);
+
+    // Cleanup.
+    SDL_DestroyCondition(context->cond);
+    SDL_DestroyMutex(context->queue_lock);
+    SDL_DestroyMutex(context->completion_lock);
+    SDL_free(context);
+}
+
+bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context, Wayland_JobThreadCallback callback, void *userdata, Wayland_JobID *id)
+{
+    if (!callback) {
+        return false;
+    }
+
+    if (context) {
+        SDL_LockMutex(context->queue_lock);
+        Wayland_Job *job = SDL_calloc(1, sizeof(Wayland_Job));
+        if (job) {
+            job->id = context->id_counter++;
+            if (id) {
+                *id = job->id;
+            }
+
+            job->callback = callback;
+            job->userdata = userdata;
+
+            WAYLAND_wl_list_insert(context->jobs.prev, &job->link);
+
+            SDL_SignalCondition(context->cond);
+            SDL_UnlockMutex(context->queue_lock);
+
+            return true;
+        }
+
+        SDL_UnlockMutex(context->queue_lock);
+        return false;
+    } else {
+        // No thread? Just run the job.
+        callback(userdata);
+    }
+
+    return true;
+}
+
+void Wayland_JobThreadCancelJob(Wayland_JobThreadContext *context, Wayland_JobID id)
+{
+    if (!context) {
+        return;
+    }
+
+    SDL_LockMutex(context->queue_lock);
+
+    Wayland_Job *job;
+    wl_list_for_each (job, &context->jobs, link) {
+        if (job->id == id) {
+            SDL_LockMutex(context->completion_lock);
+            if (job->status == JOB_STATUS_WAITING) {
+                // In the queue, waiting to run; mark as cancelled.
+                job->status = JOB_STATUS_CANCELED;
+            } else if (job->status == JOB_STATUS_RUNNING) {
+                // The job is running; wait for completion.
+                job->status = JOB_STATUS_SIGNAL_PENDING;
+                SDL_WaitCondition(context->cond, context->completion_lock);
+            }
+            SDL_UnlockMutex(context->completion_lock);
+            break;
+        }
+    }
+
+    SDL_UnlockMutex(context->queue_lock);
 }
 
 #endif // SDL_VIDEO_DRIVER_WAYLAND

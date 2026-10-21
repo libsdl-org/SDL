@@ -102,6 +102,12 @@ static void Wayland_SeatUpdateKeyboardGrab(SDL_WaylandSeat *seat);
 
 typedef struct
 {
+    Uint32 key;
+    SDL_Scancode scancode;
+} Wayland_ReservedKey;
+
+typedef struct
+{
     SDL_TouchID id;
     wl_fixed_t fx;
     wl_fixed_t fy;
@@ -1613,21 +1619,17 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
 
     // Look up the scancode for hardware keyboards. Virtual keyboards get the scancode from the keysym.
     if (!seat->keyboard.is_virtual) {
-        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, (key - 8));
-        if (scancode == SDL_SCANCODE_UNKNOWN) {
-            return;
-        }
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, key - 8);
     }
 
     for (xkb_layout_index_t layout = 0; layout < seat->keyboard.xkb.num_layouts; ++layout) {
         const xkb_level_index_t num_levels = WAYLAND_xkb_keymap_num_levels_for_key(seat->keyboard.xkb.keymap, key, layout);
         for (xkb_level_index_t level = 0; level < num_levels; ++level) {
             if (WAYLAND_xkb_keymap_key_get_syms_by_level(seat->keyboard.xkb.keymap, key, layout, level, &syms) > 0) {
-                /* If the keyboard is virtual or the key didn't have a corresponding hardware scancode, try to
-                 * look it up from the keysym. If there is still no corresponding scancode, skip this mapping
-                 * for now, as it will be dynamically added with a reserved scancode on first use.
+                /* If the keyboard is virtual, try to look up the scancode from the keysym. If there is still no corresponding
+                 * scancode, skip this mapping for now, as it will be dynamically added with a reserved scancode on first use.
                  */
-                if (scancode == SDL_SCANCODE_UNKNOWN) {
+                if (scancode == SDL_SCANCODE_UNKNOWN && seat->keyboard.is_virtual) {
                     scancode = SDL_GetScancodeFromKeySym(syms[0], key);
                     if (scancode == SDL_SCANCODE_UNKNOWN) {
                         continue;
@@ -1653,6 +1655,22 @@ static void Wayland_KeymapIterator(struct xkb_keymap *keymap, xkb_keycode_t key,
                                                (xkb_mod_masks[mask] & seat->keyboard.xkb.caps_mask ? SDL_KMOD_CAPS : 0);
 
                     SDL_Keycode keycode = SDL_GetKeyCodeFromKeySym(syms[0], key, sdl_mod);
+
+                    /* For hardware keyboards, map unknown keys with valid keycodes to the reserved scancode range.
+                     * Reserved codes are always assigned from layout zero to avoid potential overlap.
+                     */
+                    if (keycode != SDLK_UNKNOWN && scancode == SDL_SCANCODE_UNKNOWN) {
+                        scancode = SDL_GetKeymapNextReservedScancode(seat->keyboard.sdl_keymap[0]);
+                        if (level) {
+                            // Make sure the base level always has this scancode mapped, since it is a unique key.
+                            SDL_SetKeymapEntry(seat->keyboard.sdl_keymap[layout], scancode, 0, SDLK_UNKNOWN);
+                        }
+                        Wayland_ReservedKey *res = WAYLAND_wl_array_add(&seat->keyboard.reserved_scancodes, sizeof(Wayland_ReservedKey));
+                        if (res) {
+                            res->scancode = scancode;
+                            res->key = key - 8;
+                        }
+                    }
 
                     if (!keycode) {
                         switch (scancode) {
@@ -1728,6 +1746,8 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
     SDL_free(seat->keyboard.sdl_keymap);
     seat->keyboard.sdl_keymap = NULL;
+    WAYLAND_wl_array_release(&seat->keyboard.reserved_scancodes);
+    WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
     seat->keyboard.xkb.num_layouts = 0;
 
 #if SDL_XKBCOMMON_CHECK_VERSION(1, 10, 0)
@@ -1782,6 +1802,8 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         if (!seat->keyboard.sdl_keymap) {
             return;
         }
+
+        WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
 
         for (xkb_layout_index_t i = 0; i < seat->keyboard.xkb.num_layouts; ++i) {
             seat->keyboard.sdl_keymap[i] = SDL_CreateKeymap(false);
@@ -1856,18 +1878,26 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
     }
 }
 
-/*
- * Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
+/* Virtual keyboards can have arbitrary layouts, arbitrary scancodes/keycodes, etc...
  * Key presses from these devices must be looked up by their keysym value.
  */
-static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, uint32_t key, const xkb_keysym_t **syms)
+static SDL_Scancode Wayland_GetScancodeForKey(SDL_WaylandSeat *seat, Uint32 key, const xkb_keysym_t **syms)
 {
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
 
     if (!seat->keyboard.is_virtual) {
-        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_XFREE86_2, key);
-    }
-    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        scancode = SDL_GetScancodeFromTable(SDL_SCANCODE_TABLE_LINUX, key);
+
+        // No table entry? Check the reserved list.
+        if (scancode == SDL_SCANCODE_UNKNOWN) {
+            Wayland_ReservedKey *i;
+            wl_array_for_each(i, &seat->keyboard.reserved_scancodes) {
+                if (i->key == key) {
+                    return i->scancode;
+                }
+            }
+        }
+    } else {
         const xkb_keysym_t *keysym;
         if (WAYLAND_xkb_state_key_get_syms(seat->keyboard.xkb.state, key + 8, &keysym) > 0) {
             scancode = SDL_GetScancodeFromKeySym(keysym[0], key + 8);
@@ -2020,7 +2050,7 @@ static void Wayland_ReconcileModifiers(SDL_WaylandSeat *seat, bool key_pressed)
 
 static void Wayland_HandleModifierKeys(SDL_WaylandSeat *seat, SDL_Scancode scancode, bool pressed)
 {
-    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false);
+    const SDL_Keycode keycode = SDL_GetKeyFromScancode(scancode, seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers, false);
     SDL_Keymod mod;
 
     /* SDL clients expect modifier state to be activated at the same time as the
@@ -2084,6 +2114,8 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
         // Enter event for a destroyed surface.
         return;
     }
+
+    Wayland_UpdateImplicitGrabSerial(seat, serial);
 
     SDL_WindowData *window = Wayland_GetWindowDataForOwnedSurface(surface);
     if (!window) {
@@ -2198,6 +2230,9 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     if (SDL_GetMouseFocus() == window->sdlwindow && !window->pointer_focus_count && !window->active_touch_count) {
         SDL_SetMouseFocus(NULL);
     }
+
+    // The spec says that data offers are no longer valid when keyboard focus is lost.
+    Wayland_DataDeviceSetSelectionOffer(seat->data_device, NULL);
 }
 
 static bool keyboard_input_get_text(char text[8], const SDL_WaylandSeat *seat, uint32_t key, bool down, bool *handled_by_ime)
@@ -2464,6 +2499,8 @@ static void Wayland_SeatDestroyKeyboard(SDL_WaylandSeat *seat)
         seat->keyboard.sdl_keymap = NULL;
     }
 
+    WAYLAND_wl_array_release(&seat->keyboard.reserved_scancodes);
+
     if (seat->keyboard.key_inhibitor) {
         zwp_keyboard_shortcuts_inhibitor_v1_destroy(seat->keyboard.key_inhibitor);
     }
@@ -2574,6 +2611,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !seat->keyboard.wl_keyboard) {
         seat->keyboard.wl_keyboard = wl_seat_get_keyboard(wl_seat);
+        WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
         wl_keyboard_set_user_data(seat->keyboard.wl_keyboard, seat);
         wl_keyboard_add_listener(seat->keyboard.wl_keyboard, &keyboard_listener, seat);
 
@@ -2666,7 +2704,7 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         data_offer->offer = id;
         data_offer->data_device = data_device;
         data_offer->read_fd = -1;
-        WAYLAND_wl_list_init(&(data_offer->mimes));
+        WAYLAND_wl_array_init(&(data_offer->mimes));
         wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -2682,7 +2720,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
     SDL_WaylandDataDevice *data_device = data;
     SDL_WindowData *window = surface ? Wayland_GetWindowDataForOwnedSurface(surface) : NULL;
     data_device->has_mime_file = false;
-    data_device->has_mime_text = false;
+    data_device->text_mime_type = NULL;
 
     data_device->drag_serial = serial;
 
@@ -2692,32 +2730,30 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
     }
 
     if (data_device->drag_offer && window && window->accepts_drag_and_drop) {
-        // TODO: SDL Support more mime types
 #ifdef SDL_USE_LIBDBUS
         if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_PORTAL_MIME)) {
             data_device->has_mime_file = true;
-            data_device->mime_type = FILE_PORTAL_MIME;
             wl_data_offer_accept(id, serial, FILE_PORTAL_MIME);
         }
 #endif
         if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_MIME)) {
             data_device->has_mime_file = true;
-            data_device->mime_type = FILE_MIME;
             wl_data_offer_accept(id, serial, FILE_MIME);
         }
 
-        size_t mime_count = 0;
-        const char *const *text_mime_types = Wayland_GetTextMimeTypes(SDL_GetVideoDevice(), &mime_count);
-        for (size_t i = 0; i < mime_count; ++i) {
-            if (Wayland_DataOfferHasMIME(data_device->drag_offer, text_mime_types[i])) {
-                data_device->has_mime_text = true;
-                data_device->mime_type = text_mime_types[i];
-                wl_data_offer_accept(id, serial, text_mime_types[i]);
-                break;
+        if (!data_device->has_mime_file) {
+            size_t mime_count = 0;
+            const char *const *text_mime_types = Wayland_GetTextMimeTypes(SDL_GetVideoDevice(), &mime_count);
+            for (size_t i = 0; i < mime_count; ++i) {
+                if (Wayland_DataOfferHasMIME(data_device->drag_offer, text_mime_types[i])) {
+                    data_device->text_mime_type = text_mime_types[i];
+                    wl_data_offer_accept(id, serial, text_mime_types[i]);
+                    break;
+                }
             }
         }
 
-        if (data_device->has_mime_file || data_device->has_mime_text) {
+        if (data_device->has_mime_file || data_device->text_mime_type) {
             // SDL only supports "copy" style drag and drop
             if (wl_data_offer_get_version(data_device->drag_offer->offer) >= WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION) {
                 wl_data_offer_set_actions(data_device->drag_offer->offer, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
@@ -2797,7 +2833,7 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
                      -1, -1);
     }
     data_device->has_mime_file = false;
-    data_device->has_mime_text = false;
+    data_device->text_mime_type = NULL;
 }
 
 static void data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
@@ -2805,7 +2841,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
 {
     SDL_WaylandDataDevice *data_device = data;
 
-    if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->has_mime_text)) {
+    if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->text_mime_type)) {
         SDL_WindowData *window_data = data_device->dnd_window->internal;
         double dx = wl_fixed_to_double(x);
         double dy = wl_fixed_to_double(y);
@@ -2836,21 +2872,32 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
     }
 }
 
-static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
+static void drop_cleanup_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
 {
-    SDL_WaylandDataDevice *data_device = data;
+    Wayland_DropData *drop = (Wayland_DropData *)data;
 
-    if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->has_mime_text)) {
-        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x in window %d serial %d",
-                     WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
-                     SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
-        // TODO: SDL Support more mime types
+    wl_callback_destroy(drop->cleanup_callback);
+    WAYLAND_wl_list_remove(&drop->link);
+    SDL_free(drop);
+}
+
+static const struct wl_callback_listener drop_cleanup_listener = {
+    drop_cleanup_handler
+};
+
+static void drop_dispatch_handler(void *data)
+{
+    Wayland_DropData *drop = (Wayland_DropData *)data;
+    SDL_WaylandDataOffer *offer = drop->offer;
+    SDL_WaylandDataDevice *data_device = offer->data_device;
+
+    if (drop->dnd_window) {
         size_t length;
         bool drop_handled = false;
+
 #ifdef SDL_USE_LIBDBUS
-        if (Wayland_DataOfferHasMIME(data_device->drag_offer, FILE_PORTAL_MIME)) {
-            void *buffer = Wayland_DataOfferReceive(data_device->drag_offer, FILE_PORTAL_MIME, &length, false);
+        if (Wayland_DataOfferHasMIME(offer, FILE_PORTAL_MIME)) {
+            void *buffer = Wayland_DataOfferReceive(offer, FILE_PORTAL_MIME, &length);
             if (buffer) {
                 SDL_DBusContext *dbus = SDL_DBus_GetContext();
                 if (dbus) {
@@ -2858,12 +2905,10 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
                     char **paths = SDL_DBus_DocumentsPortalRetrieveFiles(buffer, &path_count);
                     // If dropped files contain a directory the list is empty
                     if (paths && path_count > 0) {
-                        int i;
-                        for (i = 0; i < path_count; i++) {
-                            SDL_SendDropFile(data_device->dnd_window, NULL, paths[i]);
+                        for (int i = 0; i < path_count; i++) {
+                            SDL_SendDropFile(drop->dnd_window, NULL, paths[i]);
                         }
                         dbus->free_string_array(paths);
-                        SDL_SendDropComplete(data_device->dnd_window);
                         drop_handled = true;
                     }
                 }
@@ -2871,61 +2916,90 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
             }
         }
 #endif
-        /* If XDG document portal fails fallback.
-         * When running a flatpak sandbox this will most likely be a list of
-         * non paths that are not visible to the application
+        /* If the XDG document portal fails, fall back to text/uri-list, if available.
+         * When running inside of a flatpak sandbox, this will most likely be a list of
+         * non-paths that are not visible to the application.
          */
         if (!drop_handled) {
-            void *buffer = Wayland_DataOfferReceive(data_device->drag_offer, data_device->mime_type, &length, false);
-            if (data_device->has_mime_file) {
+            if (Wayland_DataOfferHasMIME(offer, FILE_MIME)) {
+                void *buffer = Wayland_DataOfferReceive(offer, FILE_MIME, &length);
                 if (buffer) {
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
                     while (token) {
                         if (SDL_URIToLocal(token, token) >= 0) {
-                            SDL_SendDropFile(data_device->dnd_window, NULL, token);
+                            SDL_SendDropFile(drop->dnd_window, NULL, token);
                         }
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
                     SDL_free(buffer);
-                    SDL_SendDropComplete(data_device->dnd_window);
-                } else {
-                    SDL_SendDropComplete(data_device->dnd_window);
+                    drop_handled = true;
                 }
-                drop_handled = true;
-            } else if (data_device->has_mime_text) {
+            } else if (Wayland_DataOfferHasMIME(offer, drop->text_mime_type)) {
+                void *buffer = Wayland_DataOfferReceive(offer, drop->text_mime_type, &length);
                 if (buffer) {
                     char *saveptr = NULL;
                     char *token = SDL_strtok_r((char *)buffer, "\r\n", &saveptr);
                     while (token) {
-                        SDL_SendDropText(data_device->dnd_window, token);
+                        SDL_SendDropText(drop->dnd_window, token);
                         token = SDL_strtok_r(NULL, "\r\n", &saveptr);
                     }
                     SDL_free(buffer);
-                    SDL_SendDropComplete(data_device->dnd_window);
-                } else {
-                    /* Even though there has been a valid data offer,
-                     *  and there have been valid Enter, Motion, and Drop callbacks,
-                     *  Wayland_data_offer_receive may return an empty buffer,
-                     *  because the data is actually in the primary selection device,
-                     *  not in the data device.
-                     */
-                    SDL_SendDropComplete(data_device->dnd_window);
+                    drop_handled = true;
                 }
-                drop_handled = true;
             }
         }
 
-        if (drop_handled && wl_data_offer_get_version(data_device->drag_offer->offer) >= WL_DATA_OFFER_FINISH_SINCE_VERSION) {
-            wl_data_offer_finish(data_device->drag_offer->offer);
+        if (drop_handled && wl_data_offer_get_version(offer->offer) >= WL_DATA_OFFER_FINISH_SINCE_VERSION) {
+            wl_data_offer_finish(offer->offer);
+        }
+
+        SDL_SendDropComplete(drop->dnd_window);
+    }
+
+    Wayland_DataOfferDestroy(drop->offer);
+    drop->offer = NULL;
+
+    // Queue a cleanup event to delete the drop object on the event queue thread.
+    drop->cleanup_callback = wl_display_sync(data_device->seat->display->display);
+    wl_callback_add_listener(drop->cleanup_callback, &drop_cleanup_listener, drop);
+}
+
+static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
+{
+    SDL_WaylandDataDevice *data_device = data;
+
+    if (data_device->drag_offer && data_device->dnd_window &&
+        (data_device->has_mime_file || data_device->text_mime_type)) {
+        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
+                     ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x in window %d serial %d",
+                     WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
+                     SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
+
+        Wayland_JobThreadContext *ctx = data_device->seat->display->job_thread_context;
+
+        /* Dispatch the read on the event thread, as the remote end may be slow to respond,
+         * and we don't want to block the main event loop for an excessive time.
+         */
+        Wayland_DropData *drop = SDL_calloc(1, sizeof(Wayland_DropData));
+        if (drop) {
+            drop->offer = data_device->drag_offer;
+            drop->dnd_window = data_device->dnd_window;
+            drop->text_mime_type = data_device->text_mime_type;
+
+            WAYLAND_wl_list_insert(&data_device->pending_drops, &drop->link);
+            Wayland_JobThreadAddJob(ctx, drop_dispatch_handler, drop, &drop->id);
+        } else {
+            Wayland_DataOfferDestroy(data_device->drag_offer);
         }
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x serial %d",
                      -1, -1);
+
+        Wayland_DataOfferDestroy(data_device->drag_offer);
     }
 
-    Wayland_DataOfferDestroy(data_device->drag_offer);
     data_device->drag_offer = NULL;
 }
 
@@ -2943,13 +3017,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
                  ". In data_device_listener . data_device_handle_selection on data_offer 0x%08x",
                  (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)id) : -1));
 
-    // Don't notify when clearing the old selection offer if doing so will inadvertently clear the selection source.
-    const bool notify = offer || (!offer && data_device->selection_offer && (!data_device->selection_offer->callback || !data_device->selection_source));
-    Wayland_DataOfferDestroy(data_device->selection_offer);
-    data_device->selection_offer = offer;
-    if (notify) {
-        Wayland_DataOfferNotifyFromMIMEs(offer, true);
-    }
+    Wayland_DataDeviceSetSelectionOffer(data_device, offer);
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -2970,7 +3038,7 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
         primary_selection_device->seat->display->current_primary_selection_seat = primary_selection_device->seat;
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
-        WAYLAND_wl_list_init(&(primary_selection_offer->mimes));
+        WAYLAND_wl_array_init(&(primary_selection_offer->mimes));
         zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
         zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
     }
@@ -3119,13 +3187,14 @@ static void Wayland_SeatCreateDataDevice(SDL_WaylandSeat *seat)
 
     if (!data_device->data_device) {
         SDL_free(data_device);
-    } else {
-        Wayland_DataDeviceSetID(data_device);
-        wl_data_device_set_user_data(data_device->data_device, data_device);
-        wl_data_device_add_listener(data_device->data_device,
-                                    &data_device_listener, data_device);
-        seat->data_device = data_device;
+        return;
     }
+
+    Wayland_DataDeviceSetID(data_device);
+    WAYLAND_wl_list_init(&data_device->pending_drops);
+    wl_data_device_set_user_data(data_device->data_device, data_device);
+    wl_data_device_add_listener(data_device->data_device, &data_device_listener, data_device);
+    seat->data_device = data_device;
 }
 
 void Wayland_DisplayInitDataDeviceManager(SDL_VideoData *display)
@@ -3381,6 +3450,7 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
 
     const Uint64 timestamp = Wayland_AdjustEventTimestampBase(Wayland_EventTimestampMSToNS(time));
     SDL_Window *window = sdltool->focus ? sdltool->focus->sdlwindow : NULL;
+    const bool is_eraser = sdltool->info.subtype == SDL_PEN_TYPE_ERASER;
 
     if (sdltool->frame.have_proximity && sdltool->frame.in_proximity) {
         SDL_SendPenProximity(timestamp, instance_id, window, true, true);
@@ -3393,14 +3463,14 @@ static void tablet_tool_handle_frame(void *data, struct zwp_tablet_tool_v2 *tool
     if (sdltool->frame.have_motion && sdltool->frame.tool_state) {
         if (sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN) {
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
-            SDL_SendPenTouch(timestamp, instance_id, window, false, true);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, is_eraser, true);
         } else {
-            SDL_SendPenTouch(timestamp, instance_id, window, false, false); // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, is_eraser, false);
             SDL_SendPenMotion(timestamp, instance_id, window, sdltool->frame.x, sdltool->frame.y);
         }
     } else {
         if (sdltool->frame.tool_state) {
-            SDL_SendPenTouch(timestamp, instance_id, window, false, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN);  // !!! FIXME: how do we know what tip is in use?
+            SDL_SendPenTouch(timestamp, instance_id, window, is_eraser, sdltool->frame.tool_state == WAYLAND_TABLET_TOOL_STATE_DOWN);
         }
 
         if (sdltool->frame.have_motion) {
@@ -3547,6 +3617,7 @@ void Wayland_DisplayCreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, 
     // Keep the seats in the order in which they were added.
     WAYLAND_wl_list_insert(display->seat_list.prev, &seat->link);
 
+    WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
     WAYLAND_wl_list_init(&seat->touch.points);
     WAYLAND_wl_list_init(&seat->tablet.tool_list);
     seat->wl_seat = wl_seat;
@@ -3599,6 +3670,21 @@ void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_
                 }
             }
         }
+
+        // Cancel any pending drop events.
+        Wayland_DropData *drop, *drop_temp;
+        wl_list_for_each_safe (drop, drop_temp, &seat->data_device->pending_drops, link) {
+            if (drop->dnd_window == window->sdlwindow) {
+                Wayland_JobThreadCancelJob(display->job_thread_context, drop->id);
+
+                if (drop->cleanup_callback) {
+                    wl_callback_destroy(drop->cleanup_callback);
+                }
+                Wayland_DataOfferDestroy(drop->offer);
+                WAYLAND_wl_list_remove(&drop->link);
+                SDL_free(drop);
+            }
+        }
     }
 }
 
@@ -3620,6 +3706,20 @@ void Wayland_SeatDestroy(SDL_WaylandSeat *seat, bool shutting_down)
         if (seat->data_device->drag_offer) {
             Wayland_DataOfferDestroy(seat->data_device->drag_offer);
         }
+
+        // Free any remaining drop events.
+        Wayland_DropData *drop, *drop_temp;
+        wl_list_for_each_safe (drop, drop_temp, &seat->data_device->pending_drops, link) {
+            Wayland_JobThreadCancelJob(seat->display->job_thread_context, drop->id);
+
+            if (drop->cleanup_callback) {
+                wl_callback_destroy(drop->cleanup_callback);
+            }
+            Wayland_DataOfferDestroy(drop->offer);
+            WAYLAND_wl_list_remove(&drop->link);
+            SDL_free(drop);
+        }
+
         if (seat->data_device->data_device) {
             if (wl_data_device_get_version(seat->data_device->data_device) >= WL_DATA_DEVICE_RELEASE_SINCE_VERSION) {
                 wl_data_device_release(seat->data_device->data_device);
@@ -3880,8 +3980,6 @@ void Wayland_UpdateImplicitGrabSerial(SDL_WaylandSeat *seat, Uint32 serial)
     if (serial > seat->last_implicit_grab_serial) {
         seat->last_implicit_grab_serial = serial;
         seat->display->last_implicit_grab_seat = seat;
-        Wayland_DataDeviceSetSerial(seat->data_device, serial);
-        Wayland_PrimarySelectionDeviceSetSerial(seat->primary_selection_device, serial);
     }
 }
 

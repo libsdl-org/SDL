@@ -69,3 +69,11 @@ extern SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(JavaVM *vm, void *reserved);
 #if !defined(SDL_PLATFORM_LINUX)
 extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
 #endif /* !SDL_PLATFORM_LINUX */
+
+#if !defined(SDL_PLATFORM_OPENHARMONY)
+typedef void *SDL_RequestOpenHarmonyPermissionCallback;
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(const char *permission, SDL_RequestOpenHarmonyPermissionCallback cb, void *userdata);
+#endif
+

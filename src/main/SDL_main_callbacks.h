@@ -27,6 +27,9 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func app
 SDL_AppResult SDL_IterateMainCallbacks(bool pump_events);
 void SDL_QuitMainCallbacks(SDL_AppResult result);
 
+// This lets some platforms do platform-specific magic in response to SDL_EVENT_TERMINATING. Can change current AppResult if necessary, or maybe terminate the process without returning.
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc);
+
 // Check args and call the main function
 extern int SDL_CallMainFunction(int argc, char *argv[], SDL_main_func mainFunction);
 

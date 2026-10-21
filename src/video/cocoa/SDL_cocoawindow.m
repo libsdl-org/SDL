@@ -41,7 +41,7 @@
 #endif
 
 #ifdef DEBUG_COCOAWINDOW
-#define DLog(fmt, ...) printf("%s: " fmt "\n", SDL_FUNCTION, ##__VA_ARGS__)
+#define DLog(fmt, ...) SDL_Log("%s: " fmt, SDL_FUNCTION, ##__VA_ARGS__)
 #else
 #define DLog(...) \
     do {          \
@@ -1929,6 +1929,7 @@ static void Cocoa_SendMouseButtonClicks(SDL_Mouse *mouse, NSEvent *theEvent, SDL
         //if ([_data.listener isInFullscreenSpace]) {
             int posx = 0, posy = 0;
             SDL_GetWindowPosition(window, &posx, &posy);
+            SDL_RelativeToGlobalForWindow(window, posx, posy, &posx, &posy);
             SDL_GetGlobalMouseState(&x, &y);
             x -= posx;
             y -= posy;

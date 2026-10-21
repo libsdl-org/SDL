@@ -208,10 +208,8 @@ static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, 
     renderer->SupportsBlendMode = VITA_GXM_SupportsBlendMode;
     renderer->CreateTexture = VITA_GXM_CreateTexture;
     renderer->UpdateTexture = VITA_GXM_UpdateTexture;
-#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VITA_GXM_UpdateTextureYUV;
     renderer->UpdateTextureNV = VITA_GXM_UpdateTextureNV;
-#endif
     renderer->LockTexture = VITA_GXM_LockTexture;
     renderer->UnlockTexture = VITA_GXM_UnlockTexture;
     renderer->SetRenderTarget = VITA_GXM_SetRenderTarget;
@@ -299,10 +297,8 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     texture->internal = vita_texture;
 
-#ifdef SDL_HAVE_YUV
     vita_texture->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
     vita_texture->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
-#endif
 
     return true;
 }
@@ -340,11 +336,9 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     Uint8 *dst;
     int row, length, dpitch;
 
-#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv || vita_texture->nv12) {
         VITA_GXM_SetYUVProfile(renderer, texture);
     }
-#endif
 
     VITA_GXM_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
@@ -359,7 +353,6 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
     }
 
-#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv) {
         Uint8 *Udst;
         Uint8 *Vdst;
@@ -421,13 +414,11 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         }
     }
-#endif
 
     data->drawstate.texture = NULL;
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,
@@ -561,7 +552,6 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
     return true;
 }
 
-#endif
 
 static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect, void **pixels, int *pitch)

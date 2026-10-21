@@ -62,6 +62,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     switch (event->type) {
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        SDL_SetClipboardData(ClipboardDataCallback, NULL, NULL, mime_types, SDL_arraysize(mime_types));
+        break;
+
     case SDL_EVENT_KEY_DOWN:
         if (event->key.key == SDLK_ESCAPE) {
             return SDL_APP_SUCCESS;
@@ -223,7 +227,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     float x = 4.0f;
     float y = 4.0f;
-    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+C to copy content to the clipboard (Alt+C to clear)");
+    SDL_RenderDebugText(renderer, x, y, "Press Ctrl+C (or tap/click) to copy content to the clipboard (Alt+C to clear)");
     y += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * 2;
     SDL_RenderDebugText(renderer, x, y, "Press Ctrl+P to set the primary selection text (Alt+P to clear)");
     y += SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * 2;

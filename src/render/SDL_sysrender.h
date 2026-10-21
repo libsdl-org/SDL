@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
@@ -52,9 +54,9 @@ typedef struct SDL_RenderViewState
 {
     int pixel_w;
     int pixel_h;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_Rect pixel_viewport;
-    SDL_Rect clip_rect;
+    SDL_FRect clip_rect;
     SDL_Rect pixel_clip_rect;
     bool clipping_enabled;
     SDL_FPoint scale;
@@ -252,7 +254,6 @@ struct SDL_Renderer
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,
                          int pitch);
-#ifdef SDL_HAVE_YUV
     bool (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect,
                             const Uint8 *Yplane, int Ypitch,
@@ -262,7 +263,6 @@ struct SDL_Renderer
                            const SDL_Rect *rect,
                            const Uint8 *Yplane, int Ypitch,
                            const Uint8 *UVplane, int UVpitch);
-#endif
     bool (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                        const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
@@ -274,6 +274,8 @@ struct SDL_Renderer
     void (*DestroyRenderer)(SDL_Renderer *renderer);
 
     bool (*SetVSync)(SDL_Renderer *renderer, int vsync);
+
+    void (*UpdateHDRMetadata)(SDL_Renderer *renderer);
 
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
@@ -326,6 +328,7 @@ struct SDL_Renderer
     SDL_Colorspace output_colorspace;
     float SDR_white_point;
     float HDR_headroom;
+    float HDR_headroom_override;
 
     float desired_color_scale;
     float color_scale;
@@ -413,6 +416,8 @@ extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID
      renderer->current_colorspace == SDL_COLORSPACE_HDR10)
 
 extern void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color);
+
+extern float SDL_GetRendererMaxLuminance(SDL_Renderer *renderer);
 
 // Blend mode functions
 extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);

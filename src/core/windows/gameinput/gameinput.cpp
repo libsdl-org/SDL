@@ -47,6 +47,7 @@
 #define memcpy_s(DST, DST_SIZE, SRC, SRC_SIZE) SDL_memcpy(DST, SRC, SDL_min(DST_SIZE, SRC_SIZE))
 #define wcscpy_s(DST, DST_SIZE, SRC) SDL_wcslcpy(DST, SRC, DST_SIZE)
 #define wcscat_s(DST, DST_SIZE, SRC) SDL_wcslcat(DST, SRC, DST_SIZE)
+#define wcslen(S) SDL_wcslen(S)
 
 #if __cplusplus < 2011003L
 #define noexcept

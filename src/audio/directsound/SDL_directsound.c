@@ -185,11 +185,10 @@ static BOOL CALLBACK FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVO
             if (cpyguid) {
                 SDL_copyp(cpyguid, guid);
 
-                /* Note that spec is NULL, because we are required to connect to the
-                 * device before getting the channel mask and output format, making
-                 * this information inaccessible at enumeration time
-                 */
-                SDL_AudioDevice *device = SDL_AddAudioDevice(data->recording, str, NULL, cpyguid);
+                // Note that spec is NULL, because we are required to connect to the
+                // device before getting the channel mask and output format, making
+                // this information inaccessible at enumeration time
+                SDL_AudioDevice *device = SDL_AddAudioDevice(data->recording, str, NULL, NULL, cpyguid);
                 if (device && data->default_device && data->default_device_guid) {
                     if (SDL_memcmp(cpyguid, data->default_device_guid, sizeof (GUID)) == 0) {
                         *data->default_device = device;

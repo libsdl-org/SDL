@@ -1366,7 +1366,6 @@ static void Blit_RGB565_32(SDL_BlitInfo *info, const Uint32 *map)
 // This is the code used to generate the lookup tables below:
 #if 0
 #include <SDL3/SDL.h>
-#include <stdio.h>
 
 #define GENERATE_SHIFTS
 
@@ -1377,6 +1376,7 @@ static Uint32 Calculate(int v, int bits, int vmax, int shift)
 #elif defined(GENERATE_ROUND)
     return (Uint32)SDL_roundf(v * 255.0f / vmax) << shift;
 #elif defined(GENERATE_SHIFTS)
+    (void)vmax;
     switch (bits) {
     case 1:
         v = (v << 7) | (v << 6) | (v << 5) | (v << 4) | (v << 3) | (v << 2) | (v << 1) | v;
@@ -1424,32 +1424,36 @@ static void GenerateLUT(SDL_PixelFormat src, SDL_PixelFormat dst)
     const char *dst_name = SDL_GetPixelFormatName(dst) + 16;
     const SDL_PixelFormatDetails *sfmt = SDL_GetPixelFormatDetails(src);
     const SDL_PixelFormatDetails *dfmt = SDL_GetPixelFormatDetails(dst);
-    int i;
+    SDL_IOStream *io = SDL_IOFromDynamicMem();
+    size_t i;
 
-    for (i = 0; i < 256; ++i) {
+    for (i = 0; i < 256u; ++i) {
         lut[i * 2] = CalculateARGB(i, sfmt, dfmt);
         lut[i * 2 + 1] = CalculateARGB(i << 8, sfmt, dfmt);
     }
 
-    printf("// Special optimized blit for %s -> %s\n\n", src_name, dst_name);
-    printf("static const Uint32 %s_%s_LUT[%d] = {", src_name, dst_name, (int)SDL_arraysize(lut));
+    SDL_IOprintf(io, "// Special optimized blit for %s -> %s\n\n", src_name, dst_name);
+    SDL_IOprintf(io, "static const Uint32 %s_%s_LUT[%d] = {", src_name, dst_name, (int)SDL_arraysize(lut));
     for (i = 0; i < SDL_arraysize(lut); ++i) {
         if ((i % 8) == 0) {
-            printf("\n    ");
+            SDL_IOprintf(io, "\n    ");
         }
-        printf("0x%.8x", lut[i]);
+        SDL_IOprintf(io, "0x%.8x", lut[i]);
         if (i < (SDL_arraysize(lut) - 1)) {
-            printf(",");
+            SDL_IOprintf(io, ",");
             if (((i + 1) % 8) != 0) {
-                printf(" ");
+                SDL_IOprintf(io, " ");
             }
         }
     }
-    printf("\n};\n\n");
+    SDL_Log("%s\n};\n\n", (const char *)SDL_GetPointerProperty(SDL_GetIOProperties(io), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, NULL));
+    SDL_CloseIO(io);
 }
 
 int main(int argc, char *argv[])
 {
+    (void)argc;
+    (void)argv;
     GenerateLUT(SDL_PIXELFORMAT_RGB565, SDL_PIXELFORMAT_ARGB8888);
     GenerateLUT(SDL_PIXELFORMAT_RGB565, SDL_PIXELFORMAT_ABGR8888);
     GenerateLUT(SDL_PIXELFORMAT_RGB565, SDL_PIXELFORMAT_RGBA8888);

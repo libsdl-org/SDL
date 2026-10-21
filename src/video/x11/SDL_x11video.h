@@ -137,7 +137,6 @@ struct SDL_VideoData
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
-    SDL_XInput2DeviceInfo *mouse_device_info;
     unsigned long xinput_last_button_serial;
     unsigned long xinput_last_key_serial;
     int xinput_last_keyboard_device;

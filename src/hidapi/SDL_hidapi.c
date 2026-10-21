@@ -861,6 +861,7 @@ static const struct {
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT },
     { USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH2_PRO },
+    { USB_VENDOR_MICROSOFT, USB_PRODUCT_XBOX360_BIGBUTTON_RECEIVER },
 };
 
 static bool RequiresLibUSB(Uint16 vendor, Uint16 product, bool libusb_xbox)
@@ -1176,7 +1177,7 @@ bool SDL_HIDAPI_ShouldIgnoreDevice(int bus, Uint16 vendor_id, Uint16 product_id,
             }
             return true;
         } else if (vendor_id == USB_VENDOR_FLYDIGI_V2 &&
-                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER)) {
+                    (product_id == USB_PRODUCT_FLYDIGI_V2_APEX || product_id == USB_PRODUCT_FLYDIGI_V2_VADER || product_id == USB_PRODUCT_FLYDIGI_V2_APEX6)) {
             if (usage_page == USB_USAGEPAGE_VENDOR_FLYDIGI) {
                 return false;
             }

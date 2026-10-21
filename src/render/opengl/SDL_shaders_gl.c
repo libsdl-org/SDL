@@ -443,7 +443,6 @@ static struct {
         "#version 130\n"
     },
 
-#ifdef SDL_HAVE_YUV
     // SHADER_YUV
     {
         // vertex shader
@@ -494,7 +493,6 @@ static struct {
         // fragment version
         NULL
     },
-#endif // SDL_HAVE_YUV
 };
 
 /* *INDENT-ON* */ // clang-format on
@@ -709,10 +707,8 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
         shader == SHADER_RGB_PIXELART ||
         shader == SHADER_RGBA_PIXELART) {
         shader_params_len = 4 * sizeof(float);
-#ifdef SDL_HAVE_YUV
     } else if (shader >= SHADER_YUV) {
         shader_params_len = 16 * sizeof(float);
-#endif
     }
     SDL_assert(!shader_params || shader_params_len > 0);
 
@@ -729,7 +725,6 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
             }
         }
 
-#ifdef SDL_HAVE_YUV
         if (shader >= SHADER_YUV) {
             // YUV shader params are Yoffset, 0, Rcoeff, 0, Gcoeff, 0, Bcoeff, 0
             location = ctx->glGetUniformLocationARB(program, "Yoffset");
@@ -749,7 +744,6 @@ void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader, const float *shade
                 ctx->glUniform3fARB(location, shader_params[12], shader_params[13], shader_params[14]);
             }
         }
-#endif // SDL_HAVE_YUV
 
         if (!ctx->shader_params[shader]) {
             ctx->shader_params[shader] = (float *)SDL_malloc(shader_params_len);

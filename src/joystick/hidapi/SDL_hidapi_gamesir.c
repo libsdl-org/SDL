@@ -137,6 +137,12 @@ static bool HIDAPI_DriverGameSir_IsEnabled(void)
 
 static bool HIDAPI_DriverGameSir_IsSupportedDevice(SDL_HIDAPI_Device *device, const char *name, SDL_GamepadType type, Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, int interface_class, int interface_subclass, int interface_protocol)
 {
+    if (vendor_id == USB_VENDOR_GAMESIR &&
+        product_id == USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K &&
+        device && device->version <= 553) {
+        // This controller needs a firmware update
+        return false;
+    }
     return SDL_IsJoystickGameSirController(vendor_id, product_id);
 }
 

@@ -239,10 +239,9 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
      * https://forums.developer.apple.com/thread/65337 */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
-#pragma clang diagnostic pop
+
+    UIInterfaceOrientation orient = UIKit_GetInterfaceOrientation();
+
     BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
                     !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
     BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
@@ -259,6 +258,26 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     return frame;
 }
 #endif // SDL_PLATFORM_VISIONOS
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 27000
+    if (@available(iOS 27.0, *)) {
+        UIWindowScene *windowScene = UIKit_GetActiveWindowScene();
+        if (windowScene != nil) {
+            return windowScene.effectiveGeometry.interfaceOrientation;
+        }
+        return UIInterfaceOrientationUnknown;
+    }
+#endif
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
+}
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
 
 UIWindowScene *UIKit_GetActiveWindowScene(void)
 {

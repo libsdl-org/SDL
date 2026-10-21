@@ -137,6 +137,7 @@ typedef struct SDL_WaylandSeat
         struct zwp_keyboard_shortcuts_inhibitor_v1 *key_inhibitor;
         SDL_WindowData *focus;
         SDL_Keymap **sdl_keymap;
+        struct wl_array reserved_scancodes;
         char *current_locale;
 
         SDL_WaylandKeyboardRepeat repeat;
@@ -295,12 +296,13 @@ extern void Wayland_DisplayUpdateKeyboardGrabs(SDL_VideoData *display, SDL_Windo
 extern void Wayland_DisplayRemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowData *window);
 
 /* The implicit grab serial needs to be updated on:
+ * - Gaining keyboard focus
  * - Keyboard key down/up
  * - Mouse button down
  * - Touch event down
  * - Tablet tool down
  * - Tablet tool button down/up
  */
-extern void Wayland_UpdateImplicitGrabSerial(struct SDL_WaylandSeat *seat, Uint32 serial);
+extern void Wayland_UpdateImplicitGrabSerial(SDL_WaylandSeat *seat, Uint32 serial);
 
 #endif // SDL_waylandevents_h_

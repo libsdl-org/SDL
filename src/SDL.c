@@ -61,6 +61,9 @@
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
+#ifdef SDL_PLATFORM_OPENHARMONY
+#include "core/openharmony/SDL_openharmony.h"
+#endif
 
 #define SDL_ALL_SUBSYSTEM_FLAGS ~0U
 
@@ -803,6 +806,8 @@ const char *SDL_GetPlatform(void)
     return "Nokia N-Gage";
 #elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
+#elif defined(SDL_PLATFORM_OPENHARMONY)
+    return "OpenHarmony";
 #elif defined(SDL_PLATFORM_OS2)
     return "OS/2";
 #elif defined(SDL_PLATFORM_OSF)
@@ -867,6 +872,8 @@ SDL_FormFactor SDL_GetDeviceFormFactor(void)
     return SDL_FORMFACTOR_PRIVATE;
 #elif defined(SDL_PLATFORM_ANDROID)
     return SDL_GetAndroidDeviceFormFactor();
+#elif defined(SDL_PLATFORM_OPENHARMONY)
+    return SDL_GetOpenHarmonyDeviceFormFactor();
 #elif defined(SDL_PLATFORM_IOS)
     extern SDL_FormFactor SDL_GetUIKitDeviceFormFactor(void);
     return SDL_GetUIKitDeviceFormFactor();

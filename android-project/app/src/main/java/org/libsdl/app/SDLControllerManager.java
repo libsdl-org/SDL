@@ -810,7 +810,7 @@ class SDLHapticHandler {
     }
 }
 
-class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
+class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, View.OnCapturedPointerListener {
     protected static final int SDL_PEN_DEVICE_TYPE_UNKNOWN = 0;
     protected static final int SDL_PEN_DEVICE_TYPE_DIRECT = 1;
     protected static final int SDL_PEN_DEVICE_TYPE_INDIRECT = 2;
@@ -830,20 +830,35 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
             int toolType = event.getToolType(i);
 
             if (toolType == MotionEvent.TOOL_TYPE_MOUSE) {
+                int buttonState = event.getButtonState();
+                boolean isRelative = checkRelativeEvent(event);
+
+                if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */ && isRelative) {
+                    // We'll be using the onCapturedPointer event handler instead, so
+                    // just bounce.
+                    return false;
+                }
+
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                        SDLActivity.onNativeMouse(0, action, x, y, false);
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, false);
                         consumed = true;
                         break;
 
-                    case MotionEvent.ACTION_HOVER_MOVE:
+                    case MotionEvent.ACTION_HOVER_MOVE:     // Absolute mode mouse movement
+                    case MotionEvent.ACTION_MOVE:           // Relative mode mouse movement
+                    case MotionEvent.ACTION_BUTTON_PRESS:
+                    case MotionEvent.ACTION_BUTTON_RELEASE:
+                    case MotionEvent.ACTION_CANCEL:         // Mouse drag ended (e.g. button released)
+                    case MotionEvent.ACTION_HOVER_ENTER:
+                    case MotionEvent.ACTION_HOVER_EXIT:
                         x = getEventX(event, i);
                         y = getEventY(event, i);
 
-                        SDLActivity.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
-                        consumed = true;
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
+                        consumed = true;                            
                         break;
 
                     default:
@@ -910,6 +925,12 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
     int getPenDeviceType(InputDevice penDevice) {
         return SDL_PEN_DEVICE_TYPE_UNKNOWN;
     }
+
+    @Override
+    public boolean onCapturedPointer(View view, MotionEvent event) {
+        // We can't use captured pointer listener until API 26 or later.
+        return false;
+    }
 }
 
 class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
@@ -974,6 +995,19 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     @Override
     boolean inRelativeMode() {
         return mRelativeModeEnabled;
+    }
+
+    @Override
+    public boolean onCapturedPointer(View view, MotionEvent event) {
+
+        // Captured Pointer events are *always* relative
+        float x = event.getX();
+        float y = event.getY();
+        int buttonState = event.getButtonState();
+        int action = event.getActionMasked();
+
+        SDLActivity.onNativeMouse(buttonState, action, x, y, true);
+        return true;
     }
 
     @Override

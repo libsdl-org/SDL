@@ -78,6 +78,7 @@ include("${SDL3_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
+include("${SDL3_SOURCE_DIR}/cmake/PreseedOpenHarmonyCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedHaikuCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedDOSCache.cmake")
@@ -322,7 +323,7 @@ dep_option(SDL_SSE4_2              "Use SSE4.2 assembly routines" ON "SDL_ASSEMB
 dep_option(SDL_MMX                 "Use MMX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_X86 OR SDL_CPU_X64" OFF)
 dep_option(SDL_ALTIVEC             "Use Altivec assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_POWERPC32 OR SDL_CPU_POWERPC64" OFF)
 dep_option(SDL_ARMNEON             "Use NEON assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
-dep_option(SDL_ARMSVE2             "Use SVE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM64" OFF)
+dep_option(SDL_ARMSVE2             "Use SVE2 assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_ARM64 AND NOT OHOS" OFF)
 dep_option(SDL_LSX                 "Use LSX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 dep_option(SDL_LASX                "Use LASX assembly routines" ON "SDL_ASSEMBLY;SDL_CPU_LOONGARCH64" OFF)
 
@@ -385,7 +386,7 @@ dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SD
 dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;APPLE" OFF)
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
-dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN" OFF)
+dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN OR OHOS" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
 dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
@@ -1225,6 +1226,7 @@ if(SDL_LIBC)
 
   if(NOT WINDOWS)
     check_symbol_exists(fdatasync "unistd.h" HAVE_FDATASYNC)
+    check_symbol_exists(getexecpath "unistd.h" HAVE_GETEXECPATH)
     check_symbol_exists(gethostname "unistd.h" HAVE_GETHOSTNAME)
     check_symbol_exists(getpagesize "unistd.h" HAVE_GETPAGESIZE)
     check_symbol_exists(getresgid "unistd.h" HAVE_GETRESGID)
@@ -1674,7 +1676,7 @@ if(ANDROID)
       set(path_android_jar "${SDL_ANDROID_PLATFORM_ROOT}/android.jar")
       set(android_java_sources_root "${SDL3_SOURCE_DIR}/android-project/app/src/main/java")
       file(GLOB SDL_JAVA_SOURCES "${android_java_sources_root}/org/libsdl/app/*.java")
-      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8;-source;1.8;-target;1.8")
       add_jar(SDL3-jar
         SOURCES ${SDL_JAVA_SOURCES}
         INCLUDE_JARS "${path_android_jar}"
@@ -1687,7 +1689,7 @@ if(ANDROID)
       get_property(sdl3_jar_location TARGET SDL3-jar PROPERTY JAR_FILE)
       set_property(TARGET SDL3__Jar PROPERTY JAR_FILE "${sdl3_jar_location}")
       set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
-      string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
+      string(REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
       add_custom_command(
         OUTPUT "${javasourcesjar}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${javasourcesjar}" ${sdl_relative_java_sources}
@@ -1721,6 +1723,170 @@ if(ANDROID)
   endif()
   if(TARGET SDL3-static)
     target_link_options(SDL3-static INTERFACE "-Wl,-u,JNI_OnLoad")
+  endif()
+
+elseif(OHOS)  # OpenHarmony/HarmonyOS
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/core/openharmony/*.c"
+    "${SDL3_SOURCE_DIR}/src/core/openharmony/*.h"
+  )
+
+  sdl_link_dependency(openharmonycore LIBS libace_napi.z.so libace_ndk.z.so deviceinfo_ndk.z rawfile.z hilog_ndk.z ohcommonevent)
+
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/main/openharmony/*.c"
+    "${SDL3_SOURCE_DIR}/src/main/openharmony/*.h"
+  )
+  set(HAVE_SDL_MAIN_CALLBACKS TRUE)
+
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/misc/openharmony/*.c"
+    "${SDL3_SOURCE_DIR}/src/misc/openharmony/*.h"
+  )
+  set(HAVE_SDL_MISC TRUE)
+
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_OHAUDIO 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/audio/ohaudio/*.c"
+      "${SDL3_SOURCE_DIR}/src/audio/ohaudio/*.h"
+    )
+
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+
+  set(SDL_FILESYSTEM_OPENHARMONY 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/filesystem/openharmony/*.c"
+    "${SDL3_SOURCE_DIR}/src/filesystem/openharmony/*.h"
+  )
+  sdl_link_dependency(openharmonyfs LIBS ability_runtime)
+  set(HAVE_SDL_FILESYSTEM TRUE)
+
+  set(SDL_FSOPS_POSIX 1)
+  sdl_sources("${SDL3_SOURCE_DIR}/src/filesystem/posix/SDL_sysfsops.c")
+  set(HAVE_SDL_FSOPS TRUE)
+
+if (False)   # !!! FIXME
+  if(SDL_HAPTIC)
+    set(SDL_HAPTIC_OPENHARMONY 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/haptic/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/haptic/openharmony/*.h"
+    )
+    set(HAVE_SDL_HAPTIC TRUE)
+  endif()
+
+  # !!! FIXME: any chance HIDAPI would work here?
+  CheckHIDAPI()
+
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_OPENHARMONY 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/joystick/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/joystick/openharmony/*.h"
+    )
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+endif()
+
+  set(SDL_LOADSO_DLOPEN 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.c"
+    "${SDL3_SOURCE_DIR}/src/loadso/dlopen/*.h"
+  )
+  set(HAVE_SDL_LOADSO TRUE)
+
+  if(SDL_POWER)
+    set(SDL_POWER_OPENHARMONY 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/power/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/power/openharmony/*.h"
+    )
+    sdl_link_dependency(openharmonypower LIBS ohbattery_info)
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/locale/openharmony/*.c"
+    "${SDL3_SOURCE_DIR}/src/locale/openharmony/*.h"
+  )
+  set(HAVE_SDL_LOCALE TRUE)
+
+  set(SDL_TIME_UNIX 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/time/unix/*.c"
+    "${SDL3_SOURCE_DIR}/src/time/unix/*.h"
+  )
+  set(HAVE_SDL_TIME TRUE)
+
+  set(SDL_TIMER_UNIX 1)
+  sdl_glob_sources(
+    "${SDL3_SOURCE_DIR}/src/timer/unix/*.c"
+    "${SDL3_SOURCE_DIR}/src/timer/unix/*.h"
+  )
+  set(HAVE_SDL_TIMERS TRUE)
+
+if(False)
+  if(SDL_SENSOR)
+    set(SDL_SENSOR_OPENHARMONY 1)
+    set(HAVE_SDL_SENSORS TRUE)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/sensor/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/sensor/openharmony/*.h"
+    )
+  endif()
+endif()
+
+  if(SDL_CAMERA)
+    set(SDL_CAMERA_DRIVER_OPENHARMONY 1)
+    set(HAVE_CAMERA TRUE)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/camera/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/camera/openharmony/*.h"
+    )
+    sdl_link_dependency(openharmonycamera LIBS ohcamera ohimage image_receiver native_image native_buffer)
+  endif()
+
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_OPENHARMONY 1)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/video/openharmony/*.c"
+      "${SDL3_SOURCE_DIR}/src/video/openharmony/*.h"
+    )
+    set(HAVE_SDL_VIDEO TRUE)
+    sdl_link_dependency(openharmonyvideo LIBS native_display_manager pasteboard udmf)
+
+    # Core stuff
+    # find_library(ANDROID_DL_LIBRARY dl)
+    # FIXME failing dlopen https://github.com/android-ndk/ndk/issues/929
+# !!! FIXME
+#    sdl_link_dependency(android_video LIBS dl log android)
+    sdl_compile_definitions(PRIVATE "GL_GLEXT_PROTOTYPES")
+
+    #enable gles
+    if(SDL_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+      #sdl_link_dependency(opengles LIBS GLESv3)
+    endif()
+
+    if(SDL_VULKAN)
+      set(SDL_VIDEO_VULKAN 1)
+      set(HAVE_VULKAN TRUE)
+      if(SDL_RENDER_VULKAN)
+        set(SDL_VIDEO_RENDER_VULKAN 1)
+        set(HAVE_RENDER_VULKAN TRUE)
+      endif()
+    endif()
+  endif()
+
+  CheckPTHREAD()
+
+  if(SDL_CLOCK_GETTIME)
+    set(HAVE_CLOCK_GETTIME 1)
   endif()
 
 elseif(EMSCRIPTEN)
@@ -2672,7 +2838,6 @@ elseif(APPLE)
         "${SDL3_SOURCE_DIR}/src/joystick/darwin/*.c"
         "${SDL3_SOURCE_DIR}/src/joystick/darwin/*.h"
       )
-      set_property(SOURCE ${MFI_JOYSTICK_SOURCES} APPEND_STRING PROPERTY COMPILE_FLAGS " -fobjc-weak")
       check_objc_source_compiles("
           #include <AvailabilityMacros.h>
           #include <TargetConditionals.h>
@@ -3598,7 +3763,7 @@ if (SDL_DIALOG)
   if(ANDROID)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/android/SDL_androiddialog.c)
     set(HAVE_SDL_DIALOG TRUE)
-  elseif(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+  elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_unixdialog.c)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_portaldialog.c)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_portaldialog.h)
@@ -3608,7 +3773,7 @@ if (SDL_DIALOG)
   elseif(HAIKU)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/haiku/SDL_haikudialog.cc)
     set(HAVE_SDL_DIALOG TRUE)
-  elseif(WINDOWS)
+  elseif(WINDOWS OR CYGWIN)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/windows/SDL_windowsdialog.c)
     set(HAVE_SDL_DIALOG TRUE)
   elseif(MACOS)
@@ -3616,7 +3781,7 @@ if (SDL_DIALOG)
     set(HAVE_SDL_DIALOG TRUE)
   endif()
 endif()
-if(UNIX AND NOT APPLE AND NOT RISCOS AND NOT HAIKU)
+if(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_zenitymessagebox.h)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_zenitymessagebox.c)
 endif()

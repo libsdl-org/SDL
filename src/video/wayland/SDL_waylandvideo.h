@@ -99,6 +99,7 @@ struct SDL_VideoData
     struct SDL_WaylandSeat *current_data_offer_seat;
     struct SDL_WaylandSeat *current_primary_selection_seat;
     Wayland_EventThreadContext *event_thread_context;
+    Wayland_JobThreadContext *job_thread_context;
 
     SDL_DisplayData **output_list;
     int output_count;
@@ -119,6 +120,7 @@ struct SDL_DisplayData
     struct Wayland_ColorInfoState *color_info_state;
     char *wl_output_name;
     double scale_factor;
+    int integer_scale_factor; // The integer scale factor set by wl_output.
     Uint32 registry_id;
 
     struct

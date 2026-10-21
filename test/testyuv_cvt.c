@@ -237,10 +237,10 @@ static void ConvertRGBtoPlanar1x1(Uint32 format, Uint8 *src, int pitch, Uint8 *o
     U = (Y + h * w * yuv_bytes_per_pixel);
     V = (U + h * w * yuv_bytes_per_pixel);
     switch (format) {
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
         yuv_bits = 8;
         break;
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I4FL:
         yuv_bits = 16;
         break;
     default:
@@ -252,7 +252,7 @@ static void ConvertRGBtoPlanar1x1(Uint32 format, Uint8 *src, int pitch, Uint8 *o
         for (x = 0; x < w; ++x) {
             RGBtoYUV(rgb, 8, yuv, yuv_bits, mode, monochrome, luminance);
             rgb += 3;
-            if (format == SDL_PIXELFORMAT_P408) {
+            if (format == SDL_PIXELFORMAT_I444) {
                 *Y = (Uint8)yuv[0];
                 *U = (Uint8)yuv[1];
                 *V = (Uint8)yuv[2];
@@ -277,112 +277,123 @@ static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *o
     Uint8 *rgb1, *rgb2;
     int rgb_row_advance = (pitch - w * 3) + pitch;
     int UV_advance;
+    int yuv_bits;
+    int yuv_bytes_per_pixel = SDL_BYTESPERPIXEL(format);
 
     rgb1 = src;
     rgb2 = src + pitch;
 
     Y1 = out;
-    Y2 = Y1 + w;
+    Y2 = Y1 + w * yuv_bytes_per_pixel;
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
+        yuv_bits = 8;
         V = (Y1 + h * w);
         U = V + ((h + 1) / 2) * ((w + 1) / 2);
         UV_advance = 1;
         break;
     case SDL_PIXELFORMAT_IYUV:
+        yuv_bits = 8;
         U = (Y1 + h * w);
         V = U + ((h + 1) / 2) * ((w + 1) / 2);
         UV_advance = 1;
         break;
     case SDL_PIXELFORMAT_NV12:
+        yuv_bits = 8;
         U = (Y1 + h * w);
         V = U + 1;
         UV_advance = 2;
         break;
     case SDL_PIXELFORMAT_NV21:
+        yuv_bits = 8;
         V = (Y1 + h * w);
         U = V + 1;
         UV_advance = 2;
+        break;
+    case SDL_PIXELFORMAT_I0FL:
+        yuv_bits = 16;
+        U = (Y1 + h * w * yuv_bytes_per_pixel);
+        V = U + ((h + 1) / 2) * ((w + 1) / 2) * yuv_bytes_per_pixel;
+        UV_advance = 1;
         break;
     default:
         SDL_assert(!"Unsupported planar YUV format");
         return;
     }
 
+#define COPY_VALUE(X, V, ADVANCE)             \
+    do {                                      \
+        if (format == SDL_PIXELFORMAT_I0FL) { \
+            *(Uint16 *)X = (Uint16)V;         \
+        } else {                              \
+            *X = (Uint8)V;                    \
+        }                                     \
+        X += ADVANCE * yuv_bytes_per_pixel;   \
+    } while (0)
+
     for (y = 0; y < (h - 1); y += 2) {
         for (x = 0; x < (w - 1); x += 2) {
-            RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[0], yuv_bits, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            COPY_VALUE(Y1, yuv[0][0], 1);
 
-            RGBtoYUV(rgb1, 8, yuv[1], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[1], yuv_bits, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[1][0];
+            COPY_VALUE(Y1, yuv[1][0], 1);
 
-            RGBtoYUV(rgb2, 8, yuv[2], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb2, 8, yuv[2], yuv_bits, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[2][0];
+            COPY_VALUE(Y2, yuv[2][0], 1);
 
-            RGBtoYUV(rgb2, 8, yuv[3], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb2, 8, yuv[3], yuv_bits, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[3][0];
+            COPY_VALUE(Y2, yuv[3][0], 1);
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[1][1] + yuv[2][1] + yuv[3][1]) / 4.0f + 0.5f);
-            U += UV_advance;
-
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[1][2] + yuv[2][2] + yuv[3][2]) / 4.0f + 0.5f);
-            V += UV_advance;
+            COPY_VALUE(U, SDL_floorf((yuv[0][1] + yuv[1][1] + yuv[2][1] + yuv[3][1]) / 4.0f + 0.5f), UV_advance);
+            COPY_VALUE(V, SDL_floorf((yuv[0][2] + yuv[1][2] + yuv[2][2] + yuv[3][2]) / 4.0f + 0.5f), UV_advance);
         }
         /* Last column */
         if (x == (w - 1)) {
-            RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[0], yuv_bits, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            COPY_VALUE(Y1, yuv[0][0], 1);
 
-            RGBtoYUV(rgb2, 8, yuv[2], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb2, 8, yuv[2], yuv_bits, mode, monochrome, luminance);
             rgb2 += 3;
-            *Y2++ = (Uint8)yuv[2][0];
+            COPY_VALUE(Y2, yuv[2][0], 1);
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[2][1]) / 2.0f + 0.5f);
-            U += UV_advance;
-
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[2][2]) / 2.0f + 0.5f);
-            V += UV_advance;
+            COPY_VALUE(U, SDL_floorf((yuv[0][1] + yuv[2][1]) / 2.0f + 0.5f), UV_advance);
+            COPY_VALUE(V, SDL_floorf((yuv[0][2] + yuv[2][2]) / 2.0f + 0.5f), UV_advance);
         }
-        Y1 += w;
-        Y2 += w;
+        Y1 += w * yuv_bytes_per_pixel;
+        Y2 += w * yuv_bytes_per_pixel;
         rgb1 += rgb_row_advance;
         rgb2 += rgb_row_advance;
     }
     /* Last row */
     if (y == (h - 1)) {
         for (x = 0; x < (w - 1); x += 2) {
-            RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[0], yuv_bits, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[0][0];
+            COPY_VALUE(Y1, yuv[0][0], 1);
 
-            RGBtoYUV(rgb1, 8, yuv[1], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[1], yuv_bits, mode, monochrome, luminance);
             rgb1 += 3;
-            *Y1++ = (Uint8)yuv[1][0];
+            COPY_VALUE(Y1, yuv[1][0], 1);
 
-            *U = (Uint8)SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f);
-            U += UV_advance;
-
-            *V = (Uint8)SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f);
-            V += UV_advance;
+            COPY_VALUE(U, SDL_floorf((yuv[0][1] + yuv[1][1]) / 2.0f + 0.5f), UV_advance);
+            COPY_VALUE(V, SDL_floorf((yuv[0][2] + yuv[1][2]) / 2.0f + 0.5f), UV_advance);
         }
         /* Last column */
         if (x == (w - 1)) {
             RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
-            *Y1++ = (Uint8)yuv[0][0];
+            COPY_VALUE(Y1, yuv[0][0], 1);
 
-            *U = (Uint8)yuv[0][1];
-            U += UV_advance;
-
-            *V = (Uint8)yuv[0][2];
-            V += UV_advance;
+            COPY_VALUE(U, yuv[0][1], UV_advance);
+            COPY_VALUE(V, yuv[0][2], UV_advance);
         }
     }
+#undef COPY_VALUE
 }
 
 static Uint16 Pack10to16(int v)
@@ -564,8 +575,8 @@ static void ConvertRGBtoPacked4(Uint32 format, Uint8 *src, int pitch, Uint8 *out
 bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, int h, YUV_CONVERSION_MODE mode, int monochrome, int luminance)
 {
     switch (format) {
-    case SDL_PIXELFORMAT_P408:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
         ConvertRGBtoPlanar1x1(format, src, pitch, out, w, h, mode, monochrome, luminance);
         return true;
     case SDL_PIXELFORMAT_P010:
@@ -575,6 +586,7 @@ bool ConvertRGBtoYUV(Uint32 format, Uint8 *src, int pitch, Uint8 *out, int w, in
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
+    case SDL_PIXELFORMAT_I0FL:
         ConvertRGBtoPlanar2x2(format, src, pitch, out, w, h, mode, monochrome, luminance);
         return true;
     case SDL_PIXELFORMAT_YUY2:
@@ -591,11 +603,12 @@ int CalculateYUVPitch(Uint32 format, int width)
 {
     switch (format) {
     case SDL_PIXELFORMAT_P010:
-    case SDL_PIXELFORMAT_P416:
+    case SDL_PIXELFORMAT_I0FL:
+    case SDL_PIXELFORMAT_I4FL:
         return width * 2;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-    case SDL_PIXELFORMAT_P408:
+    case SDL_PIXELFORMAT_I444:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         return width;

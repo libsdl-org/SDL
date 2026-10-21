@@ -983,7 +983,7 @@ static void GatherCameraSpecs(IMFMediaSource *source, CameraFormatAddData *add_d
     IMFPresentationDescriptor_Release(presentdesc);
 }
 
-static bool FindMediaFoundationCameraBySymlink(SDL_Camera *device, void *userdata)
+static bool FindMediaFoundationCameraBySymlink(void *userdata, SDL_Camera *device)
 {
     return (SDL_strcmp((const char *) device->handle, (const char *) userdata) == 0);
 }

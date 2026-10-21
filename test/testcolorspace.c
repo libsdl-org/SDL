@@ -53,6 +53,8 @@ enum
     StageDrawBackground,
     StageTextureBackground,
     StageTargetBackground,
+    StageTargetDrawing,
+    StageTextureFormats,
     StageBlendDrawing,
     StageBlendTexture,
     StageGradientDrawing,
@@ -117,6 +119,8 @@ static void CreateRenderer(void)
 
     renderer_name = SDL_GetRendererName(renderer);
     SDL_Log("Created renderer %s", renderer_name);
+
+    SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     UpdateHDRState();
 }
@@ -187,10 +191,13 @@ static bool ReadPixel(int x, int y, SDL_Color *c)
 {
     SDL_Surface *surface;
     SDL_Rect r;
+    SDL_FRect output;
     bool result = false;
 
-    r.x = x;
-    r.y = y;
+    /* Reading pixels uses output coordinates, so convert from the logical presentation */
+    SDL_GetRenderLogicalPresentationRect(renderer, &output);
+    r.x = (int)(output.x + (x + 0.5f) * output.w / WINDOW_WIDTH);
+    r.y = (int)(output.y + (y + 0.5f) * output.h / WINDOW_HEIGHT);
     r.w = 1;
     r.h = 1;
 
@@ -405,6 +412,223 @@ static void RenderTargetBackground(void)
     }
 }
 
+static bool ColorMatches(const SDL_Color *c, int r, int g, int b, int epsilon)
+{
+    if (SDL_abs(c->r - r) <= epsilon &&
+        SDL_abs(c->g - g) <= epsilon &&
+        SDL_abs(c->b - b) <= epsilon) {
+        return true;
+    }
+    return false;
+}
+
+static void RenderTargetDrawing(void)
+{
+    /* Clear one render target to 50% gray, fill another with 50% gray, and blend white at 50% over black in a third.
+     * The window is split into thirds showing each of the targets, which should all be 50% gray.
+     * The render targets are sRGB, so they should behave like an sRGB swap chain,
+     * including blending in sRGB space, whatever the output colorspace.
+     */
+    SDL_Texture *cleared = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture *filled = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture *blended = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_FRect rect;
+
+    SDL_SetRenderTarget(renderer, cleared);
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderTarget(renderer, filled);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderFillRect(renderer, NULL);
+
+    SDL_SetRenderTarget(renderer, blended);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 128);
+    SDL_RenderFillRect(renderer, NULL);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
+
+    /* Fill the output with the render targets */
+    SDL_SetRenderTarget(renderer, NULL);
+    rect.x = 0.0f;
+    rect.y = 0.0f;
+    rect.w = WINDOW_WIDTH / 3;
+    rect.h = WINDOW_HEIGHT;
+    SDL_RenderTexture(renderer, cleared, NULL, &rect);
+    rect.x += rect.w;
+    SDL_RenderTexture(renderer, filled, NULL, &rect);
+    rect.x += rect.w;
+    SDL_RenderTexture(renderer, blended, NULL, &rect);
+    SDL_DestroyTexture(cleared);
+    SDL_DestroyTexture(filled);
+    SDL_DestroyTexture(blended);
+
+    /* Check the rendered pixels */
+    SDL_Color c1, c2, c3;
+    if (!ReadPixel(WINDOW_WIDTH / 6, WINDOW_HEIGHT / 2, &c1) ||
+        !ReadPixel(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2, &c2) ||
+        !ReadPixel((WINDOW_WIDTH * 5) / 6, WINDOW_HEIGHT / 2, &c3)) {
+        return;
+    }
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: Clear, Fill and Blend in Render Targets");
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Cleared target written: 0x808080, read: 0x%.2x%.2x%.2x", c1.r, c1.g, c1.b);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Filled target written: 0x808080, read: 0x%.2x%.2x%.2x", c2.r, c2.g, c2.b);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Blended target written: 0x808080, read: 0x%.2x%.2x%.2x", c3.r, c3.g, c3.b);
+    y += TEXT_LINE_ADVANCE;
+    if (c1.r != 128 || c2.r != 128) {
+        DrawText(x, y, "Incorrect render target color");
+        y += TEXT_LINE_ADVANCE;
+    }
+    if (ColorMatches(&c3, 128, 128, 128, 1)) {
+        DrawText(x, y, "Correct blend color, blending in sRGB space");
+    } else if (ColorMatches(&c3, 188, 188, 188, 1)) {
+        DrawText(x, y, "Incorrect blend color, blending in linear space");
+    } else {
+        DrawText(x, y, "Incorrect blend color, unknown reason");
+    }
+    y += TEXT_LINE_ADVANCE;
+}
+
+static SDL_Texture *CreateGrayFormatTexture(SDL_PixelFormat format, SDL_Color *expected)
+{
+    SDL_Surface *surface;
+    SDL_Texture *texture;
+
+    /* Fill a surface with 50% gray, which may not be exactly representable in this format */
+    surface = SDL_CreateSurface(4, 4, format);
+    if (!surface) {
+        return NULL;
+    }
+    SDL_FillSurfaceRect(surface, NULL, SDL_MapSurfaceRGB(surface, 128, 128, 128));
+    SDL_ReadSurfacePixel(surface, 0, 0, &expected->r, &expected->g, &expected->b, &expected->a);
+
+    texture = SDL_CreateTexture(renderer, format, SDL_TEXTUREACCESS_STATIC, surface->w, surface->h);
+    if (texture) {
+        SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
+    }
+    SDL_DestroySurface(surface);
+
+    return texture;
+}
+
+static SDL_Texture *CreateGrayPaletteTexture(SDL_Color *expected)
+{
+    SDL_Color gray = { 128, 128, 128, 255 };
+    Uint8 pixels[4 * 4];
+    SDL_Palette *palette;
+    SDL_Texture *texture;
+
+    palette = SDL_CreatePalette(256);
+    if (!palette) {
+        return NULL;
+    }
+    SDL_SetPaletteColors(palette, &gray, 0, 1);
+    SDL_zeroa(pixels);
+
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_INDEX8, SDL_TEXTUREACCESS_STATIC, 4, 4);
+    if (texture) {
+        SDL_SetTexturePalette(texture, palette);
+        SDL_UpdateTexture(texture, NULL, pixels, 4);
+    }
+    SDL_DestroyPalette(palette);
+
+    *expected = gray;
+    return texture;
+}
+
+static void DrawTextureFormat(float x, float *y, SDL_Texture *texture, SDL_ScaleMode scale_mode, const char *label, const SDL_Color *expected)
+{
+    const float swatch_width = 48.0f;
+    const float swatch_height = 12.0f;
+    SDL_FRect rect = { x, *y, swatch_width, swatch_height };
+    SDL_Color c;
+
+    if (!texture) {
+        DrawText(x + swatch_width + 8.0f, *y, "%-20s couldn't create texture", label);
+        *y += TEXT_LINE_ADVANCE;
+        return;
+    }
+
+    SDL_SetTextureScaleMode(texture, scale_mode);
+    SDL_RenderTexture(renderer, texture, NULL, &rect);
+    if (!ReadPixel((int)(x + swatch_width / 2), (int)(*y + swatch_height / 2), &c)) {
+        return;
+    }
+
+    if (ColorMatches(&c, expected->r, expected->g, expected->b, 1)) {
+        DrawText(x + swatch_width + 8.0f, *y, "%-20s 0x%.2x%.2x%.2x", label, c.r, c.g, c.b);
+    } else {
+        DrawText(x + swatch_width + 8.0f, *y, "%-20s 0x%.2x%.2x%.2x, expected 0x%.2x%.2x%.2x",
+                 label, c.r, c.g, c.b, expected->r, expected->g, expected->b);
+    }
+    *y += TEXT_LINE_ADVANCE;
+}
+
+static void RenderTextureFormats(void)
+{
+    /* Draw 50% gray textures in each supported format and scale mode.
+     * In linear colorspaces, formats without sRGB variants and palettes need special handling.
+     */
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    SDL_RenderClear(renderer);
+
+    float x = TEXT_START_X;
+    float y = TEXT_START_Y;
+    DrawText(x, y, "%s %s", renderer_name, colorspace_name);
+    y += TEXT_LINE_ADVANCE;
+    DrawText(x, y, "Test: 50%% Gray Texture Formats");
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    SDL_Texture *texture;
+    SDL_Color expected;
+
+    texture = CreateGrayFormatTexture(SDL_PIXELFORMAT_RGBA32, &expected);
+    DrawTextureFormat(x, &y, texture, SDL_SCALEMODE_PIXELART, "RGBA32 (pixel art)", &expected);
+    SDL_DestroyTexture(texture);
+
+    texture = CreateGrayPaletteTexture(&expected);
+    DrawTextureFormat(x, &y, texture, SDL_SCALEMODE_NEAREST, "INDEX8 (nearest)", &expected);
+    DrawTextureFormat(x, &y, texture, SDL_SCALEMODE_LINEAR, "INDEX8 (linear)", &expected);
+    DrawTextureFormat(x, &y, texture, SDL_SCALEMODE_PIXELART, "INDEX8 (pixel art)", &expected);
+    SDL_DestroyTexture(texture);
+
+    const SDL_PixelFormat *formats = (const SDL_PixelFormat *)SDL_GetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_TEXTURE_FORMATS_POINTER, NULL);
+    if (formats) {
+        for (int i = 0; formats[i] != SDL_PIXELFORMAT_UNKNOWN; ++i) {
+            SDL_PixelFormat format = formats[i];
+
+            /* Only test SDR packed RGB formats, which are in the sRGB colorspace by default */
+            if (SDL_ISPIXELFORMAT_FOURCC(format) ||
+                SDL_ISPIXELFORMAT_INDEXED(format) ||
+                SDL_ISPIXELFORMAT_10BIT(format) ||
+                SDL_ISPIXELFORMAT_FLOAT(format)) {
+                continue;
+            }
+
+            const char *name = SDL_GetPixelFormatName(format);
+            if (SDL_strncmp(name, "SDL_PIXELFORMAT_", 16) == 0) {
+                name += 16;
+            }
+            texture = CreateGrayFormatTexture(format, &expected);
+            DrawTextureFormat(x, &y, texture, SDL_SCALEMODE_LINEAR, name, &expected);
+            SDL_DestroyTexture(texture);
+        }
+    }
+}
+
 static void RenderBlendDrawing(void)
 {
     SDL_Color a = { 238, 70, 166, 255 }; /* red square */
@@ -447,16 +671,11 @@ static void RenderBlendDrawing(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Draw Blending");
     y += TEXT_LINE_ADVANCE;
-    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
-        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
+    if (ColorMatches(&cr, 199, 193, 121, 1)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
-    } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
-               (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
+    } else if (ColorMatches(&cr, 192, 163, 83, 1)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+    } else if (ColorMatches(&cr, 215, 156, 112, 2)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
@@ -511,16 +730,11 @@ static void RenderBlendTexture(void)
     y += TEXT_LINE_ADVANCE;
     DrawText(x, y, "Test: Texture Blending");
     y += TEXT_LINE_ADVANCE;
-    if ((cr.r == 199 && cr.g == 193 && cr.b == 121) ||
-        (cr.r == 199 && cr.g == 193 && cr.b == 120)) {
+    if (ColorMatches(&cr, 199, 193, 121, 1)) {
         DrawText(x, y, "Correct blend color, blending in linear space");
-    } else if ((cr.r == 192 && cr.g == 163 && cr.b == 83) ||
-               (cr.r == 191 && cr.g == 162 && cr.b == 82)) {
+    } else if (ColorMatches(&cr, 192, 163, 83, 1)) {
         DrawText(x, y, "Correct blend color, blending in sRGB space");
-    } else if ((cr.r == 214 && cr.g == 156 && cr.b == 113) ||
-               (cr.r == 214 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 155 && cr.b == 113) ||
-               (cr.r == 215 && cr.g == 154 && cr.b == 112)) {
+    } else if (ColorMatches(&cr, 215, 156, 112, 2)) {
         DrawText(x, y, "Correct blend color, blending in PQ space");
     } else {
         DrawText(x, y, "Incorrect blend color (%d,%d,%d), unknown reason", cr.r, cr.g, cr.b);
@@ -600,6 +814,18 @@ static void RenderGradientDrawing(void)
     DrawGradient(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, 1.0f);
     SDL_SetRenderColorScale(renderer, 1.0f);
     y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    /* Vertex colors are interpolated in the colorspace of the output */
+    if (colorspace == SDL_COLORSPACE_SRGB) {
+        DrawText(x, y, "Interpolating in sRGB space, so this is darker than the texture gradient");
+        y += TEXT_LINE_ADVANCE;
+    } else {
+        DrawText(x, y, "Interpolating in linear space, so this matches the texture gradient");
+        y += TEXT_LINE_ADVANCE;
+    }
 }
 
 static SDL_Texture *CreateGradientTexture(int width, float start, float end)
@@ -670,6 +896,18 @@ static void RenderGradientTexture(void)
     /* The gradient texture is in the linear colorspace, so we can use the HDR_headroom value directly */
     DrawGradientTexture(x, y, WINDOW_WIDTH - 2 * x, 64.0f, 0.0f, HDR_headroom);
     y += 64.0f;
+
+    y += TEXT_LINE_ADVANCE;
+    y += TEXT_LINE_ADVANCE;
+
+    /* The texture contains linear values, so it looks the same in every output colorspace */
+    if (colorspace == SDL_COLORSPACE_SRGB) {
+        DrawText(x, y, "Rendering linear values, so this is lighter than the drawn gradient");
+        y += TEXT_LINE_ADVANCE;
+    } else {
+        DrawText(x, y, "Rendering linear values, so this matches the drawn gradient");
+        y += TEXT_LINE_ADVANCE;
+    }
 }
 
 float PQfromNits(float v)
@@ -697,14 +935,6 @@ static SDL_Texture *CreateHDR10Texture(int width, float max_nits)
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, width);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, 1);
-    // The white point for HDR10 textures is the SDR white level in nits
-    if (SDR_white_level > 1.0f) {
-        // We'll match the current display SDR white level so we don't get any scaling here
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, SDR_white_level * SCRGB_NITS);
-    } else {
-        // ITU-R BT.2408-6 recommends using an SDR white point of 203 nits.
-        SDL_SetFloatProperty(props, SDL_PROP_TEXTURE_CREATE_SDR_WHITE_POINT_FLOAT, 203.0f);
-    }
     texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
@@ -813,6 +1043,12 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     case StageTargetBackground:
         RenderTargetBackground();
         break;
+    case StageTargetDrawing:
+        RenderTargetDrawing();
+        break;
+    case StageTextureFormats:
+        RenderTextureFormats();
+        break;
     case StageBlendDrawing:
         RenderBlendDrawing();
         break;
@@ -880,7 +1116,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         }
     }
 
-    window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    window = SDL_CreateWindow("SDL colorspace test", WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_HIGH_PIXEL_DENSITY);
     if (!window) {
         SDL_Log("Couldn't create window: %s", SDL_GetError());
         return SDL_APP_FAILURE;

@@ -46,6 +46,7 @@ static SDL_Window *FindSDLWindowForNSWindow(NSWindow *win)
 - (void)terminate:(id)sender;
 - (void)sendEvent:(NSEvent *)theEvent;
 
++ (void)registerEarlyUserDefaults;
 + (void)registerUserDefaults;
 
 @end
@@ -102,6 +103,15 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     [super sendEvent:theEvent];
 }
 
++ (void)registerEarlyUserDefaults
+{
+    // NSApplicationUpdateCycleEnabled only takes effect when set prior to NSApp initialization
+    NSDictionary *appDefaults = [[NSDictionary alloc] initWithObjectsAndKeys:
+                                                          [NSNumber numberWithBool:NO], @"NSApplicationUpdateCycleEnabled",
+                                                          nil];
+    [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
+}
+
 + (void)registerUserDefaults
 {
     BOOL momentumScrollSupported = (BOOL)SDL_GetHintBoolean(SDL_HINT_MAC_SCROLL_MOMENTUM, false);
@@ -111,6 +121,7 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
                                                           [NSNumber numberWithBool:momentumScrollSupported], @"AppleMomentumScrollSupported",
                                                           [NSNumber numberWithBool:pressAndHoldEnabled], @"ApplePressAndHoldEnabled",
                                                           [NSNumber numberWithBool:YES], @"ApplePersistenceIgnoreState",
+                                                          [NSNumber numberWithBool:NO], @"NSScreenLayoutAdjustOnWindowMove",
                                                           nil];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 }
@@ -514,6 +525,9 @@ void Cocoa_RegisterApp(void)
         // This can get called more than once! Be careful what you initialize!
 
         if (NSApp == nil) {
+            // Apply defaults that must be set before NSApp initialization
+            [SDL3Application registerEarlyUserDefaults];
+
             [SDL3Application sharedApplication];
             SDL_assert(NSApp != nil);
 
