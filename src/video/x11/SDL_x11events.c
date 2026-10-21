@@ -852,7 +852,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         SDL_zero(sevent);
         sevent.xany.type = SelectionNotify;
         sevent.xselection.selection = req->selection;
-        sevent.xselection.target = None;
+        sevent.xselection.target = req->target;
         sevent.xselection.property = None; // tell them no by default
         sevent.xselection.requestor = req->requestor;
         sevent.xselection.time = req->time;
