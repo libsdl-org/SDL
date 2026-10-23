@@ -106,15 +106,6 @@ static int CreateTempFD(off_t size)
     return fd;
 }
 
-static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
-{
-    // NOP
-}
-
-static struct wl_buffer_listener buffer_listener = {
-    buffer_handle_release
-};
-
 struct Wayland_SHMPool
 {
     struct wl_shm_pool *shm_pool;
@@ -171,7 +162,6 @@ struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int widt
 
     *data = (Uint8 *)shmPool->shm_pool_memory + shmPool->offset;
     struct wl_buffer *buffer = wl_shm_pool_create_buffer(shmPool->shm_pool, shmPool->offset, width, height, width * 4, SHM_FMT);
-    wl_buffer_add_listener(buffer, &buffer_listener, shmPool);
 
     shmPool->offset += width * height * 4;
 
