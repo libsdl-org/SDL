@@ -641,14 +641,13 @@ macro(WaylandProtocolGen _SCANNER _CODE_MODE _XML _PROTL)
 endmacro()
 
 # Requires:
-# - EGL
 # - PkgCheckModules
 # Optional:
 # - SDL_WAYLAND_SHARED opt
 # - HAVE_SDL_LOADSO opt
 macro(CheckWayland)
   if(SDL_WAYLAND)
-    set(WAYLAND_PKG_CONFIG_SPEC "wayland-client>=1.18" wayland-egl wayland-cursor egl "xkbcommon>=0.5.0")
+    set(WAYLAND_PKG_CONFIG_SPEC "wayland-client>=1.18" wayland-egl wayland-cursor "xkbcommon>=0.5.0")
     if(PKG_CONFIG_FOUND)
       pkg_check_modules(PC_WAYLAND IMPORTED_TARGET ${WAYLAND_PKG_CONFIG_SPEC})
     else()
@@ -677,6 +676,12 @@ macro(CheckWayland)
           endif()
         endif()
       endif()
+    endif()
+
+    # OpenGL presentation on Wayland requires EGL.
+    if ((HAVE_OPENGL OR HAVE_OPENGLES) AND NOT HAVE_OPENGL_EGL)
+      message(STATUS "EGL not found and is required for OpenGL presentation on Wayland; disabling")
+      set(WAYLAND_FOUND FALSE)
     endif()
 
     if(WAYLAND_FOUND)
