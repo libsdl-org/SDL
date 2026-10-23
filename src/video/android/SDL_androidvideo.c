@@ -192,6 +192,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     ret &= Android_JNI_ReadInt("mAndroid_DeviceHeight", &Android_DeviceHeight);
     ret &= Android_JNI_ReadFloat("mAndroid_ScreenDensity", &Android_ScreenDensity);
     ret &= Android_JNI_ReadFloat("mAndroid_ScreenRate", &Android_ScreenRate);
+    ret &= Android_JNI_ReadFloat("mInit_ScreenHeadroom", &Android_ScreenHDRHeadroom);
 
     ret &= Android_JNI_ReadInt("mInit_NaturalOrientation", &Init_NaturalOrientation);
     ret &= Android_JNI_ReadInt("mInit_CurrentRotation", &Init_CurrentRotation);

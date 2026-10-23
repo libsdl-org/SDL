@@ -61,6 +61,7 @@
     public static int mAndroid_DeviceHeight;
     public static float mAndroid_ScreenDensity;
     public static float mAndroid_ScreenRate;
+    public static float mInit_ScreenHeadroom;
     public static int mInit_CurrentRotation;
     public static int mInit_NaturalOrientation;
     public static boolean mInit_DarkModeEnabled;
