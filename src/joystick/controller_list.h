@@ -413,6 +413,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02da ), k_eControllerType_XBoxOneController, "PDP Xbox Series X Afterglow" },	// PDP Xbox Series X Afterglow
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02d6 ), k_eControllerType_XBoxOneController, "Victrix Gambit Tournament Controller" },	// Victrix Gambit Tournament Controller
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x02d9 ), k_eControllerType_XBoxOneController, "PDP Xbox Series X Midnight Blue" },	// PDP Xbox Series X Midnight Blue
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0338 ), k_eControllerType_XBoxOneController, "PDP Afterglow Wave Controller" },	// PDP Afterglow Wave Wired Controller for Xbox
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0063 ), k_eControllerType_XBoxOneController, NULL },	// Hori Real Arcade Pro Hayabusa (USA) Xbox One
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0067 ), k_eControllerType_XBoxOneController, NULL },	// HORIPAD ONE
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0078 ), k_eControllerType_XBoxOneController, NULL },	// Hori Real Arcade Pro V Kai Xbox One
