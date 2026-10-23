@@ -279,9 +279,58 @@ UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
 }
 #endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
 
+#ifndef SDL_PLATFORM_VISIONOS
+// Find a foreground scene, optionally on a specific screen and a specific role, preferring an active one.
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role) API_AVAILABLE(ios(13.0), tvos(13.0));
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role)
+{
+    NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+    UIWindowScene *foregroundScene = nil;
+
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+
+        UIWindowScene *windowScene = (UIWindowScene *)scene;
+        if (screen && windowScene.screen != screen) {
+            continue;
+        }
+        if (role && ![windowScene.session.role isEqualToString:role]) {
+            continue;
+        }
+
+        if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+            foregroundScene = windowScene;
+            break;
+        }
+        if (windowScene.activationState == UISceneActivationStateForegroundInactive && !foregroundScene) {
+            foregroundScene = windowScene;
+        }
+    }
+    return foregroundScene;
+}
+
+UIWindowScene *UIKit_GetWindowSceneForScreen(UIScreen *screen)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        return UIKit_FindForegroundWindowScene(screen, nil);
+    }
+    return nil;
+}
+#endif // !SDL_PLATFORM_VISIONOS
+
 UIWindowScene *UIKit_GetActiveWindowScene(void)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
+#ifndef SDL_PLATFORM_VISIONOS
+        // Return the application scene, if possible
+        UIWindowScene *applicationScene = UIKit_FindForegroundWindowScene(nil, UIWindowSceneSessionRoleApplication);
+        if (applicationScene) {
+            return applicationScene;
+        }
+#endif
+
         NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
 
         // First, try to find an active foreground scene

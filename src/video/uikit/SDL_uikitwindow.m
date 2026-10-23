@@ -192,6 +192,12 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         UIWindow *uiwindow = nil;
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             UIWindowScene *scene = (__bridge UIWindowScene *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER, NULL);
+#ifndef SDL_PLATFORM_VISIONOS
+            if (!scene) {
+                // Use the scene on the window's display, if there is one
+                scene = UIKit_GetWindowSceneForScreen(data.uiscreen);
+            }
+#endif
             if (!scene) {
                 scene = UIKit_GetActiveWindowScene();
             }
