@@ -240,20 +240,25 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * This is a workaround until a better solution can be found.
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
-     * https://forums.developer.apple.com/thread/65337 */
+     * https://forums.developer.apple.com/thread/65337
+     *
+     * On iOS 13 and newer the window bounds match the interface orientation,
+     * which may not be known yet at launch, and iPadOS 26 doesn't let resizable
+     * applications lock the orientation, so we use the window bounds as-is there.
+     */
+    if (!UIKit_IsSystemVersionAtLeast(13.0)) {
+        UIInterfaceOrientation orientation = UIKit_GetInterfaceOrientation();
+        BOOL landscape = UIInterfaceOrientationIsLandscape(orientation) ||
+                         !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
+        BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
-    UIInterfaceOrientation orient = UIKit_GetInterfaceOrientation();
-
-    BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
-                    !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
-    BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
-
-    /* The orientation flip doesn't make sense when the window is smaller
-     * than the screen (iPad Split View, for example). */
-    if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
-        float height = frame.size.width;
-        frame.size.width = frame.size.height;
-        frame.size.height = height;
+        /* The orientation flip doesn't make sense when the window is smaller
+         * than the screen (iPad Split View, for example). */
+        if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
+            float height = frame.size.width;
+            frame.size.width = frame.size.height;
+            frame.size.height = height;
+        }
     }
 #endif
 
@@ -264,7 +269,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
 {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 27000
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270000
     if (@available(iOS 27.0, *)) {
         UIWindowScene *windowScene = UIKit_GetActiveWindowScene();
         if (windowScene != nil) {
