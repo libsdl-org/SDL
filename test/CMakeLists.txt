@@ -271,8 +271,8 @@ if(LIBC_HAS_SIGNAL_H)
     add_definitions(-DHAVE_SIGNAL_H)
 endif()
 
-check_include_file(libudev.h HAVE_LIBUDEV_H)
-if(HAVE_LIBUDEV_H)
+check_include_file(libudev.h HAVE_LIBUDEV_HEADER)
+if(HAVE_LIBUDEV_HEADER)
     add_definitions(-DHAVE_LIBUDEV_H)
 endif()
 
