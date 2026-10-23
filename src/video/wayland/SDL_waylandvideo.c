@@ -762,6 +762,8 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->CreateWindowFramebuffer = Wayland_CreateWindowFramebuffer;
     device->UpdateWindowFramebuffer = Wayland_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = Wayland_DestroyWindowFramebuffer;
+    device->SetWindowFramebufferVSync = Wayland_SetWindowFramebufferVSync;
+    device->GetWindowFramebufferVSync = Wayland_GetWindowFramebufferVSync;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
