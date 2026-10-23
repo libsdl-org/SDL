@@ -606,7 +606,7 @@ static HRESULT GameInputCreateWithVersion(
         RETURN_IF_FAILED(LoadGameInputDll(&g_gameInputDll));
     }
 
-    typedef HRESULT (*GameInputInitializeFn)(
+    typedef HRESULT (__stdcall *GameInputInitializeFn)(
         _In_ REFIID riid,
         _COM_Outptr_ LPVOID* ppv);
 
