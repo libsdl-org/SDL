@@ -128,6 +128,7 @@ struct SDL_WindowData
     struct xdg_toplevel_session_v1 *xdg_toplevel_session;
 
     struct Wayland_ColorInfoState *color_info_state;
+    struct Wayland_Framebuffer *framebuffer;
 
     SDL_AtomicInt swap_interval_ready;
 

@@ -35,6 +35,8 @@
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandvideo.h"
+
+#include "SDL_waylandframebuffer.h"
 #include "SDL_waylandvulkan.h"
 #include "SDL_waylandwindow.h"
 
@@ -756,6 +758,10 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->UpdateTextInputArea = Wayland_UpdateTextInputArea;
+
+    device->CreateWindowFramebuffer = Wayland_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = Wayland_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = Wayland_DestroyWindowFramebuffer;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
