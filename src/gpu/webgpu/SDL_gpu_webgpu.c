@@ -10,6 +10,8 @@
 // FIXME: We create a WebGPU surface through the video backend, but we destroy it through the GPU backend?
 // FIXME: I'm pretty sure 2D array mipmap generation is broken?
 
+#include "SDL_internal.h"
+
 #ifdef SDL_GPU_WEBGPU
 
 #include "../SDL_sysgpu.h"
