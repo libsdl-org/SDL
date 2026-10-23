@@ -28,8 +28,12 @@
 
 typedef struct Wayland_Framebuffer Wayland_Framebuffer;
 
+extern void Wayland_WaitForSwapInterval(SDL_WindowData *wind);
+
 extern bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
 extern bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
 extern void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Wayland_SetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync);
+extern bool Wayland_GetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int *vsync);
 
 #endif // SDL_waylandframebuffer_h_
