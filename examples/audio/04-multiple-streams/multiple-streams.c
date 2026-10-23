@@ -31,9 +31,20 @@ static bool init_sound(const char *fname, Sound *sound)
     char *wav_path = NULL;
 
     /* Load the .wav files from wherever the app is being run from. */
+#ifdef SWIFT_PACKAGE
+    extern bool SwiftPackage_GetLibraryBundleResource(const char *name, char *buffer, int size);
+
+    wav_path = SDL_malloc(4096);
+    if (!SwiftPackage_GetLibraryBundleResource(fname, wav_path, 4096)) {
+        SDL_free(wav_path);
+        wav_path = NULL;
+    }
+#else
     SDL_asprintf(&wav_path, "%s%s", SDL_GetBasePath(), fname);  /* allocate a string of the full file path */
+#endif
     if (!SDL_LoadWAV(wav_path, &spec, &sound->wav_data, &sound->wav_data_len)) {
         SDL_Log("Couldn't load .wav file: %s", SDL_GetError());
+        SDL_free(wav_path);
         return false;
     }
 

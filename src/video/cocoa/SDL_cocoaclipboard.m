@@ -58,7 +58,11 @@ provideDataForType:(NSPasteboardType)type
         CFStringRef mimeType;
         const void *callbackData;
         NSData *data;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
         mimeType = UTTypeCopyPreferredTagWithClass((__bridge CFStringRef)type, kUTTagClassMIMEType);
+#pragma clang diagnostic pop
         callbackData = m_callback(m_userdata, [(__bridge NSString *)mimeType UTF8String], &size);
         CFRelease(mimeType);
         if (callbackData == NULL || size == 0) {
@@ -251,7 +255,11 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
         if (_this->clipboard_callback) {
             for (int i = 0; i < _this->num_clipboard_mime_types; i++) {
                 CFStringRef mimeType = CFStringCreateWithCString(NULL, _this->clipboard_mime_types[i], kCFStringEncodingUTF8);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
                 CFStringRef utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+#pragma clang diagnostic pop
                 CFRelease(mimeType);
 
                 [utiTypes addObject: (__bridge NSString *)utiType];
@@ -301,7 +309,11 @@ static CFStringRef GetUTIType(const char *tag)
     CFStringRef utiType;
     if (IsMimeType(tag)) {
         CFStringRef mimeType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 12.0; its replacement, UTType, doesn't exist before macOS 11.0.
         utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
+#pragma clang diagnostic pop
         CFRelease(mimeType);
     } else {
         utiType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
