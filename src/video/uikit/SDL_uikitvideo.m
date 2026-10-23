@@ -163,11 +163,15 @@ static bool UIKit_VideoInit(SDL_VideoDevice *_this)
 
     UIKit_InitClipboard(_this);
 
+    UIKit_InitWindowFocus();
+
     return true;
 }
 
 static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
+    UIKit_QuitWindowFocus();
+
     UIKit_QuitClipboard(_this);
 
     SDL_QuitGCKeyboard();
