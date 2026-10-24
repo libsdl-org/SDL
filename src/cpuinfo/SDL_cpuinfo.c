@@ -154,30 +154,12 @@ static int CPU_haveCPUID(void)
 "        jz      1f                  # Processor=80486                 \n"
 "        movl    $1,%0               # We have CPUID support           \n"
 "1:                                                                    \n"
-    : "=m" (has_CPUID)
+    : "+r" (has_CPUID)
     :
-    : "%eax", "%ecx"
+    : "%eax", "%ecx", "cc"
     );
 #elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__) && !defined(__arm64ec__)
-/* Technically, if this is being compiled under __x86_64__ then it has
-   CPUid by definition.  But it's nice to be able to prove it.  :)      */
-    __asm__ (
-"        pushfq                      # Get original EFLAGS             \n"
-"        popq    %%rax                                                 \n"
-"        movq    %%rax,%%rcx                                           \n"
-"        xorl    $0x200000,%%eax     # Flip ID bit in EFLAGS           \n"
-"        pushq   %%rax               # Save new EFLAGS value on stack  \n"
-"        popfq                       # Replace current EFLAGS value    \n"
-"        pushfq                      # Get new EFLAGS                  \n"
-"        popq    %%rax               # Store new EFLAGS in EAX         \n"
-"        xorl    %%ecx,%%eax         # Can not toggle ID bit,          \n"
-"        jz      1f                  # Processor=80486                 \n"
-"        movl    $1,%0               # We have CPUID support           \n"
-"1:                                                                    \n"
-    : "=m" (has_CPUID)
-    :
-    : "%rax", "%rcx"
-    );
+    has_CPUID = 1;
 #elif defined(_MSC_VER) && defined(_M_IX86)
     __asm {
         pushfd                      ; Get original EFLAGS
