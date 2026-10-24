@@ -191,7 +191,7 @@ void Android_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 
             if (data->native_window) {
-                ANativeWindow_release(data->native_window);
+//                ANativeWindow_release(data->native_window);
             }
             SDL_free(window->internal);
             window->internal = NULL;

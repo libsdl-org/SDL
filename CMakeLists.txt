@@ -1485,6 +1485,19 @@ if(SDL_VIDEO)
   endif()
 endif()
 
+if (ANDROID)
+# build native_app_glue as a static lib
+    add_library(native_app_glue STATIC ${ANDROID_NDK}/sources/android/native_app_glue/android_native_app_glue.c)
+
+    target_include_directories(SDL3-shared PRIVATE ${ANDROID_NDK}/sources/android/native_app_glue)
+
+    # Export ANativeActivity_onCreate(),
+    # Refer to: https://github.com/android-ndk/ndk/issues/381.
+    string(APPEND CMAKE_SHARED_LINKER_FLAGS " -u ANativeActivity_onCreate")
+    sdl_link_dependency(SDL3 LIBS native_app_glue)
+endif()
+
+
 # Platform-specific options and settings
 if(ANDROID)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake/android")

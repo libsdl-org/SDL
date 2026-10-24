@@ -74,12 +74,337 @@ static void checkJNIReady(void);
 *******************************************************************************/
 #include <jni.h>
 
+static void register_all_methods(JNIEnv *env);
+static JavaVM *mJavaVM = NULL;
+
+
+
+#include <android/sensor.h>
+#include <android/log.h>
+#include <android_native_app_glue.h>
+
+static void NativeActivity_nativeSetupJNI(JNIEnv *env, struct android_app *state);
+static void NativeActivity_register_all_methods(struct android_app *state);
+
+static bool NativeActivity_Destroyed = false;
+static bool NativeActivity_Focus = false;
+static bool NativeActivity_Animating = true;
+static struct android_app *NativeActivity_state = NULL;
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(
+    JNIEnv *env, jclass jcls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
+    JNIEnv *env, jclass jcls);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(
+    JNIEnv *env, jclass jcls);
+
+
+
+static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
+
+    //    auto* engine = (struct engine*)app->userData;
+    switch (cmd) {
+        /**
+         * Command from main thread: the AInputQueue has changed.  Upon processing
+         * this command, android_app->inputQueue will be updated to the new queue
+         * (or NULL).
+         */
+        case APP_CMD_INPUT_CHANGED:
+            SDL_Log("APP_CMD_INPUT_CHANGED");
+            break;
+
+
+            /**
+             * Command from main thread: a new ANativeWindow is ready for use.  Upon
+             * receiving this command, android_app->window will contain the new window
+             * surface.
+             */
+        case APP_CMD_INIT_WINDOW:
+            SDL_Log("APP_CMD_INIT_WINDOW");
+
+            SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(NULL, 0);
+            SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(NULL, 0);
+            NativeActivity_Animating = true;
+
+            break;
+
+            /**
+             * Command from main thread: the existing ANativeWindow needs to be
+             * terminated.  Upon receiving this command, android_app->window still
+             * contains the existing window; after calling android_app_exec_cmd
+             * it will be set to NULL.
+             */
+        case APP_CMD_TERM_WINDOW:
+            SDL_Log("APP_CMD_TERM_WINDOW");
+            SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(NULL, 0);
+            NativeActivity_Animating = false;
+            break;
+
+            /**
+             * Command from main thread: the current ANativeWindow has been resized.
+             * Please redraw with its new size.
+             */
+        case APP_CMD_WINDOW_RESIZED:
+            SDL_Log("APP_CMD_WINDOW_RESIZED");
+            break;
+
+            /**
+             * Command from main thread: the system needs that the current ANativeWindow
+             * be redrawn.  You should redraw the window before handing this to
+             * android_app_exec_cmd() in order to avoid transient drawing glitches.
+             */
+        case APP_CMD_WINDOW_REDRAW_NEEDED:
+            SDL_Log("APP_CMD_WINDOW_REDRAW_NEEDED");
+            break;
+
+            /**
+             * Command from main thread: the content area of the window has changed,
+             * such as from the soft input window being shown or hidden.  You can
+             * find the new content rect in android_app::contentRect.
+             */
+        case APP_CMD_CONTENT_RECT_CHANGED:
+            SDL_Log("APP_CMD_CONTENT_RECT_CHANGED");
+            break;
+
+            /**
+             * Command from main thread: the app's activity window has gained
+             * input focus.
+             */
+        case APP_CMD_GAINED_FOCUS:
+            {
+                extern void Android_OnResume();
+                SDL_Log("APP_CMD_GAINED_FOCUS");
+                SDL_ShowWindow(Android_Window);
+                Android_OnResume();
+                NativeActivity_Focus = true;
+            }
+            break;
+
+            /**
+             * Command from main thread: the app's activity window has lost
+             * input focus.
+             */
+        case APP_CMD_LOST_FOCUS:
+            {
+                extern void Android_OnPause();
+                SDL_Log("APP_CMD_LOST_FOCUS");
+                SDL_HideWindow(Android_Window);
+                Android_OnPause();
+                NativeActivity_Focus = false;
+            }
+            break;
+
+            /**
+             * Command from main thread: the current device configuration has changed.
+             */
+        case APP_CMD_CONFIG_CHANGED:
+            SDL_Log("APP_CMD_CONFIG_CHANGED");
+            break;
+
+            /**
+             * Command from main thread: the system is running low on memory.
+             * Try to reduce your memory use.
+             */
+        case APP_CMD_LOW_MEMORY:
+            SDL_Log("APP_CMD_LOW_MEMORY");
+            break;
+
+            /**
+             * Command from main thread: the app's activity has been started.
+             */
+        case APP_CMD_START:
+            SDL_Log("APP_CMD_START");
+            break;
+
+            /**
+             * Command from main thread: the app's activity has been resumed.
+             */
+        case APP_CMD_RESUME:
+            SDL_Log("APP_CMD_RESUME");
+            break;
+
+            /**
+             * Command from main thread: the app should generate a new saved state
+             * for itself, to restore from later if needed.  If you have saved state,
+             * allocate it with malloc and place it in android_app.savedState with
+             * the size in android_app.savedStateSize.  The will be freed for you
+             * later.
+             */
+        case APP_CMD_SAVE_STATE:
+            SDL_Log("APP_CMD_SAVE_STATE");
+            break;
+
+            /**
+             * Command from main thread: the app's activity has been paused.
+             */
+        case APP_CMD_PAUSE:
+            SDL_Log("APP_CMD_PAUSE");
+            break;
+
+            /**
+             * Command from main thread: the app's activity has been stopped.
+             */
+        case APP_CMD_STOP:
+            SDL_Log("APP_CMD_STOP");
+            break;
+
+            /**
+             * Command from main thread: the app's activity is being destroyed,
+             * and waiting for the app thread to clean up and exit before proceeding.
+             */
+        case APP_CMD_DESTROY:
+            SDL_Log("APP_CMD_DESTROY");
+            NativeActivity_Destroyed = true;
+            break;
+
+        default:
+            SDL_Log("engine_handle_cmd. Command %d not handled !!!", cmd);
+            break;
+    }
+}
+
+static int32_t engine_handle_input(struct android_app* app, AInputEvent* event) {
+    SDL_Log("engine_handle_input ... ");
+
+    //   auto* engine = (struct engine*)app->userData;
+    if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
+        /*
+           engine->animating = 1;
+           engine->state.x = AMotionEvent_getX(event, 0);
+           engine->state.y = AMotionEvent_getY(event, 0);
+           */
+        return 1;
+    }
+    return 0;
+}
+
+void NativeActivity_PumpEvents(Sint64 timeoutNS) {
+    int ident = 0;
+    //int timeoutMillis = NativeActivity_Animating ? 0 : -1;
+    int timeoutMillis = 0;
+    int outFd = 0;
+
+    int events = 0;
+    struct android_poll_source *source = NULL;
+    while ((ident = ALooper_pollOnce(timeoutMillis, &outFd, &events, (void **)&source)) >= 0) {
+
+        // Process this event.
+        if (source != NULL) {
+            source->process(NativeActivity_state, source);
+        }
+    }
+}
+
+bool NativeActivity_WaitActiveAndLockActivity(void)
+{
+
+retry:
+    NativeActivity_PumpEvents(0);
+
+    if (NativeActivity_Destroyed) {
+        SDL_SetError("Android activity has been destroyed");
+        return false;
+    }
+
+    if (NativeActivity_Focus) {
+        return true;
+    } else {
+        goto retry;
+    }
+}
+
+/**
+ * This is the main entry point of a native application that is using
+ * android_native_app_glue.  It runs in its own thread, with its own
+ * event loop for receiving input events and doing other things.
+ */
+
+
+void android_main(struct android_app* state) {
+
+    SDL_Log("Starting.. SDLNativeActivity android_main()");
+
+
+    SDL_SetLogPriorities(SDL_LOG_PRIORITY_DEBUG);
+
+    NativeActivity_state = state;
+
+    if (state->activity->vm) {
+        mJavaVM = state->activity->vm;
+
+        // this also attachs the thread to the jvm
+        JNIEnv *env = Android_JNI_GetEnv();
+
+        if (env) {
+            NativeActivity_nativeSetupJNI(env, state);
+            NativeActivity_register_all_methods(state);
+        } else {
+            SDL_Log("no JNIEnv");
+        }
+    } else {
+       SDL_Log("SDLNativeActivity without VM");
+    }
+
+    state->onAppCmd = engine_handle_cmd;
+    state->onInputEvent = engine_handle_input;
+
+
+    // simplified nativeRunMain
+    const char *library_file = "libtestsprite.so";
+    const char *function_name = "SDL_main";
+
+    void *library_handle;
+
+    library_handle = dlopen(library_file, RTLD_GLOBAL);
+
+    if (library_handle == NULL) {
+        /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
+           In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
+        const char *library_name = SDL_strrchr(library_file, '/');
+        if (library_name && *library_name) {
+            library_name += 1;
+            library_handle = dlopen(library_name, RTLD_GLOBAL);
+        }
+    }
+
+    if (library_handle) {
+        SDL_main_func SDL_main;
+
+        SDL_main = (SDL_main_func)dlsym(library_handle, function_name);
+        if (SDL_main) {
+            // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
+            //   https://github.com/love2d/love-android/issues/24
+            // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
+            char *argv[2];
+            argv[0] = "app_process";
+            argv[1] = NULL;
+            int argc = 1;
+
+            // Run the application.
+            SDL_RunApp(argc, argv, SDL_main, NULL);
+        } else {
+            SDL_Log("nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+        }
+
+        dlclose(library_handle);
+
+    } else {
+        SDL_Log("nativeRunMain(): Couldn't load library %s", library_file);
+    }
+
+    // Do not issue an exit or the whole application will terminate instead of just the SDL thread
+    // exit(status);
+}
+
+
+
 /*******************************************************************************
                                Globals
 *******************************************************************************/
 static pthread_key_t mThreadKey;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
-static JavaVM *mJavaVM = NULL;
 
 // Main activity
 static jclass mActivityClass;
@@ -580,6 +905,68 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
         return JNI_VERSION_1_4;
     }
 
+    register_all_methods(env);
+
+    return JNI_VERSION_1_4;
+}
+
+// Note: loadClass requires dot notation, e.g. "org.libsdl.app.SDLActivity"
+// use the class loader for the NativeActivity
+jclass NativeActivity_getClass(struct android_app *state, const char *classname)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    jclass activityClass = (*env)->GetObjectClass(env, state->activity->clazz);
+    jmethodID midGetClassLoader = (*env)->GetMethodID(env, activityClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+    jobject classLoader = (*env)->CallObjectMethod(env, state->activity->clazz, midGetClassLoader);
+
+    jclass classLoaderClass = (*env)->FindClass(env, "java/lang/ClassLoader");
+    jmethodID midLoadClass = (*env)->GetMethodID(env, classLoaderClass, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+    jstring className = (*env)->NewStringUTF(env, classname);
+    jclass sdl_class = (*env)->CallObjectMethod(env, classLoader, midLoadClass, className);
+
+    (*env)->DeleteLocalRef(env, className);
+    (*env)->DeleteLocalRef(env, classLoaderClass);
+    (*env)->DeleteLocalRef(env, classLoader);
+    (*env)->DeleteLocalRef(env, activityClass);
+
+    if (!sdl_class) {
+        SDL_Log("NativeActivity fails to find class %s. hasCode=true in AndroidManifest.xml ?", classname);
+    }
+
+    return sdl_class;
+}
+
+// Note: loadClass requires dot notation, e.g. "org.libsdl.app.SDLActivity"
+// use the class loader for the NativeActivity
+static void NativeActivity_register_methods(struct android_app *state, const char *classname, JNINativeMethod *methods, int nb)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    jclass clazz = NativeActivity_getClass(state, classname);
+    if (!clazz || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
+        SDL_Log("Failed to register methods of %s", classname);
+        return;
+    }
+}
+
+static void NativeActivity_nativeSetupJNI(JNIEnv *env, struct android_app *state)
+{
+    SDL_Log("NativeActivity_nativeSetupJNI()");
+    jclass cls;
+    cls = NativeActivity_getClass(state, "org.libsdl.app.SDLActivity");
+    SDL_JAVA_INTERFACE(nativeSetupJNI)(env, cls);
+    cls = NativeActivity_getClass(state, "org.libsdl.app.SDLAudioManager");
+    SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(env, cls);
+#ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
+    cls = NativeActivity_getClass(state, "org.libsdl.app.SDLControllerManager");
+    SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(env, cls);
+#endif
+}
+
+
+static void register_all_methods(JNIEnv *env)
+{
     register_methods(env, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
 #ifndef SDL_VIDEO_DISABLED
     register_methods(env, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
@@ -593,8 +980,23 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 #ifndef SDL_HIDAPI_DISABLED
     register_methods(env, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
 #endif
+}
 
-    return JNI_VERSION_1_4;
+static void NativeActivity_register_all_methods(struct android_app *state)
+{
+            NativeActivity_register_methods(state, "org/libsdl/app/SDLActivity", SDLActivity_tab, SDL_arraysize(SDLActivity_tab));
+#ifndef SDL_VIDEO_DISABLED
+            NativeActivity_register_methods(state, "org/libsdl/app/SDLInputConnection", SDLInputConnection_tab, SDL_arraysize(SDLInputConnection_tab));
+#endif
+#ifndef SDL_AUDIO_DISABLED
+            NativeActivity_register_methods(state, "org/libsdl/app/SDLAudioManager", SDLAudioManager_tab, SDL_arraysize(SDLAudioManager_tab));
+#endif
+#ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
+            NativeActivity_register_methods(state, "org/libsdl/app/SDLControllerManager", SDLControllerManager_tab, SDL_arraysize(SDLControllerManager_tab));
+#endif
+#ifndef SDL_HIDAPI_DISABLED
+            NativeActivity_register_methods(state, "org/libsdl/app/HIDDeviceManager", HIDDeviceManager_tab, SDL_arraysize(HIDDeviceManager_tab));
+#endif
 }
 
 void checkJNIReady(void)
@@ -1339,7 +1741,7 @@ retry:
 
         if (data->native_window) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(Android_Window), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
-            ANativeWindow_release(data->native_window);
+            //ANativeWindow_release(data->native_window);
             data->native_window = NULL;
         }
 
@@ -2249,6 +2651,9 @@ static bool PrepareAPK(void)
 
 static void Internal_Android_Create_AssetManager(void)
 {
+#if 1
+    asset_manager = NativeActivity_state->activity->assetManager;
+#else
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
     JNIEnv *env = Android_JNI_GetEnv();
     jmethodID mid;
@@ -2283,16 +2688,21 @@ static void Internal_Android_Create_AssetManager(void)
     }
 
     LocalReferenceHolder_Cleanup(&refs);
+#endif
 }
 
 static void Internal_Android_Destroy_AssetManager(void)
 {
+#if 1
+    // NativeActivity
+#else
     JNIEnv *env = Android_JNI_GetEnv();
 
     if (asset_manager) {
         (*env)->DeleteGlobalRef(env, javaAssetManagerRef);
         asset_manager = NULL;
     }
+#endif
 
     if (APKRootNode) {
         FreeAPKNode(APKRootNode);
@@ -2913,6 +3323,7 @@ bool Android_JNI_SuspendScreenSaver(bool suspend)
 
 ANativeWindow *Android_JNI_GetNativeWindow(void)
 {
+#if 0
     ANativeWindow *anw = NULL;
     jobject s;
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2924,6 +3335,16 @@ ANativeWindow *Android_JNI_GetNativeWindow(void)
     }
 
     return anw;
+#else
+    //
+    ANativeWindow *nw = NativeActivity_state->window;
+    if (nw) {
+        Android_SurfaceWidth = ANativeWindow_getWidth(nw);
+        Android_SurfaceHeight = ANativeWindow_getHeight(nw);
+    }
+
+    return nw;
+#endif
 }
 
 SDL_DisplayOrientation Android_JNI_GetDisplayNaturalOrientation(void)
