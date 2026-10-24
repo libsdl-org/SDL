@@ -41,6 +41,7 @@ extern bool SDL_SensorsLocked(void);
 extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
 
 extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_event_lock);
+extern bool SDL_TryLockSensors(void) SDL_TRY_ACQUIRE(true, SDL_event_lock);
 extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_event_lock);
 
 // Function to return whether there are any sensors opened by the application

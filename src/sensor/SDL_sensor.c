@@ -73,6 +73,15 @@ void SDL_LockSensors(void)
     ++SDL_sensors_locked;
 }
 
+bool SDL_TryLockSensors(void)
+{
+    if (SDL_TryLockMutex(SDL_event_lock)) {
+        ++SDL_sensors_locked;
+        return true;
+    }
+    return false;
+}
+
 void SDL_UnlockSensors(void)
 {
     --SDL_sensors_locked;
