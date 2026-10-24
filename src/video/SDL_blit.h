@@ -53,6 +53,8 @@ extern const Uint16 SDL_expand_byte_10[];
 #define SDL_CPU_ALTIVEC_PREFETCH   0x00000008
 #define SDL_CPU_ALTIVEC_NOPREFETCH 0x00000010
 
+typedef struct SDL_PaletteMap SDL_PaletteMap;
+
 typedef struct
 {
     SDL_Surface *src_surface;
@@ -71,7 +73,7 @@ typedef struct
     const SDL_PixelFormatDetails *dst_fmt;
     const SDL_Palette *dst_pal;
     Uint8 *table;
-    SDL_HashTable *palette_map;
+    SDL_PaletteMap *palette_map;
     int flags;
     Uint32 colorkey;
     Uint8 r, g, b, a;

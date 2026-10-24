@@ -904,11 +904,6 @@ typedef struct RenderPassDepthStencilTargetDescription
     SDL_GPUStoreOp stencilStoreOp;
 } RenderPassDepthStencilTargetDescription;
 
-typedef struct CommandPoolHashTableKey
-{
-    SDL_ThreadID threadID;
-} CommandPoolHashTableKey;
-
 typedef struct RenderPassHashTableKey
 {
     RenderPassColorTargetDescription colorTargetDescriptions[MAX_COLOR_TARGET_BINDINGS];
@@ -918,11 +913,6 @@ typedef struct RenderPassHashTableKey
     RenderPassDepthStencilTargetDescription depthStencilTargetDescription;
     VkSampleCountFlagBits sampleCount;
 } RenderPassHashTableKey;
-
-typedef struct VulkanRenderPassHashTableValue
-{
-    VkRenderPass handle;
-} VulkanRenderPassHashTableValue;
 
 typedef struct FramebufferHashTableKey
 {
@@ -1123,6 +1113,13 @@ typedef struct VulkanFeatures
 
 // Context
 
+typedef struct VulkanCommandPoolHashTable VulkanCommandPoolHashTable;
+typedef struct VulkanRenderPassHashTable VulkanRenderPassHashTable;
+typedef struct VulkanFramebufferHashTable VulkanFramebufferHashTable;
+typedef struct VulkanGraphicsPipelineResourceLayoutHashTable VulkanGraphicsPipelineResourceLayoutHashTable;
+typedef struct VulkanComputePipelineResourceLayoutHashTable VulkanComputePipelineResourceLayoutHashTable;
+typedef struct VulkanDescriptorSetLayoutHashTable VulkanDescriptorSetLayoutHashTable;
+
 struct VulkanRenderer
 {
     VkInstance instance;
@@ -1174,12 +1171,12 @@ struct VulkanRenderer
 
     VulkanFencePool fencePool;
 
-    SDL_HashTable *commandPoolHashTable;
-    SDL_HashTable *renderPassHashTable;
-    SDL_HashTable *framebufferHashTable;
-    SDL_HashTable *graphicsPipelineResourceLayoutHashTable;
-    SDL_HashTable *computePipelineResourceLayoutHashTable;
-    SDL_HashTable *descriptorSetLayoutHashTable;
+    VulkanCommandPoolHashTable *commandPoolHashTable;
+    VulkanRenderPassHashTable *renderPassHashTable;
+    VulkanFramebufferHashTable *framebufferHashTable;
+    VulkanGraphicsPipelineResourceLayoutHashTable *graphicsPipelineResourceLayoutHashTable;
+    VulkanComputePipelineResourceLayoutHashTable *computePipelineResourceLayoutHashTable;
+    VulkanDescriptorSetLayoutHashTable *descriptorSetLayoutHashTable;
 
     VulkanUniformBuffer **uniformBufferPool;
     Uint32 uniformBufferPoolCount;
@@ -3048,75 +3045,8 @@ static void VULKAN_INTERNAL_DestroyFramebuffer(
     SDL_free(framebuffer);
 }
 
-typedef struct CheckOneFramebufferForRemovalData
-{
-    Uint32 keysToRemoveCapacity;
-    Uint32 keysToRemoveCount;
-    FramebufferHashTableKey **keysToRemove;
-    VkImageView view;
-} CheckOneFramebufferForRemovalData;
 
-static bool SDLCALL CheckOneFramebufferForRemoval(void *userdata, const SDL_HashTable *table, const void *vkey, const void *vvalue)
-{
-    CheckOneFramebufferForRemovalData *data = (CheckOneFramebufferForRemovalData *) userdata;
-    FramebufferHashTableKey *key = (FramebufferHashTableKey *) vkey;
-    VkImageView view = data->view;
-    bool remove = false;
-
-    for (Uint32 i = 0; i < key->numColorTargets; i += 1) {
-        if (key->colorAttachmentViews[i] == view) {
-            remove = true;
-        }
-    }
-    for (Uint32 i = 0; i < key->numResolveAttachments; i += 1) {
-        if (key->resolveAttachmentViews[i] == view) {
-            remove = true;
-        }
-    }
-    if (key->depthStencilAttachmentView == view) {
-        remove = true;
-    }
-
-    if (remove) {
-        if (data->keysToRemoveCount == data->keysToRemoveCapacity) {
-            data->keysToRemoveCapacity *= 2;
-            void *ptr = SDL_realloc(data->keysToRemove, data->keysToRemoveCapacity * sizeof(FramebufferHashTableKey *));
-            if (!ptr) {
-                return false;  // ugh, stop iterating. We're in trouble.
-            }
-            data->keysToRemove = (FramebufferHashTableKey **) ptr;
-        }
-        data->keysToRemove[data->keysToRemoveCount] = key;
-        data->keysToRemoveCount++;
-    }
-
-    return true;  // keep iterating.
-}
-
-static void VULKAN_INTERNAL_RemoveFramebuffersContainingView(
-    VulkanRenderer *renderer,
-    VkImageView view)
-{
-    // Can't remove while iterating!
-
-    CheckOneFramebufferForRemovalData data = { 8, 0, NULL, view };
-    data.keysToRemove = (FramebufferHashTableKey **) SDL_malloc(data.keysToRemoveCapacity * sizeof(FramebufferHashTableKey *));
-    if (!data.keysToRemove) {
-        return;  // uhoh.
-    }
-
-    SDL_LockMutex(renderer->framebufferFetchLock);
-
-    SDL_IterateHashTable(renderer->framebufferHashTable, CheckOneFramebufferForRemoval, &data);
-
-    for (Uint32 i = 0; i < data.keysToRemoveCount; i += 1) {
-        SDL_RemoveFromHashTable(renderer->framebufferHashTable, (void *)data.keysToRemove[i]);
-    }
-
-    SDL_UnlockMutex(renderer->framebufferFetchLock);
-
-    SDL_free(data.keysToRemove);
-}
+static void VULKAN_INTERNAL_RemoveFramebuffersContainingView(VulkanRenderer *renderer, VkImageView view);
 
 static void VULKAN_INTERNAL_DestroyTexture(
     VulkanRenderer *renderer,
@@ -3420,7 +3350,8 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
             renderer->vkDestroyDescriptorPool(
                 renderer->logicalDevice,
                 descriptorSetCache->pools[i].descriptorPools[j],
-                NULL);
+
+            NULL);
         }
         SDL_free(descriptorSetCache->pools[i].descriptorSets);
         SDL_free(descriptorSetCache->pools[i].descriptorPools);
@@ -3431,9 +3362,8 @@ static void VULKAN_INTERNAL_DestroyDescriptorSetCache(
 
 // Hashtable functions
 
-static Uint32 SDLCALL VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction(void *userdata, const void *key)
+static Uint32 VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction(const GraphicsPipelineResourceLayoutHashTableKey *hashTableKey)
 {
-    GraphicsPipelineResourceLayoutHashTableKey *hashTableKey = (GraphicsPipelineResourceLayoutHashTableKey *)key;
     /* The algorithm for this hashing function
      * is taken from Josh Bloch's "Effective Java".
      * (https://stackoverflow.com/a/113600/12492383)
@@ -3450,21 +3380,19 @@ static Uint32 SDLCALL VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction
     result = result * hashFactor + hashTableKey->fragmentUniformBufferCount;
     return result;
 }
-static bool SDLCALL VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
-{
-    return SDL_memcmp(aKey, bKey, sizeof(GraphicsPipelineResourceLayoutHashTableKey)) == 0;
-}
-static void SDLCALL VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashDestroy(void *userdata, const void *key, const void *value)
-{
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    VulkanGraphicsPipelineResourceLayout *resourceLayout = (VulkanGraphicsPipelineResourceLayout *)value;
-    VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout(renderer, resourceLayout);
-    SDL_free((void *)key);
-}
 
-static Uint32 SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction(void *userdata, const void *key)
+#define SDL_HASHTABLE_NAME VulkanGraphicsPipelineResourceLayoutHashTable
+#define SDL_HASHTABLE_KEY GraphicsPipelineResourceLayoutHashTableKey *
+#define SDL_HASHTABLE_VALUE VulkanGraphicsPipelineResourceLayout *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (SDL_memcmp(a, b, sizeof (*a)) == 0)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { VULKAN_INTERNAL_DestroyGraphicsPipelineResourceLayout((VulkanRenderer *) userdata, value); SDL_free(key); }
+// no lock: manually synchronized due to lookup timing
+#include "../../SDL_hashtable_template.h"
+
+
+static Uint32 VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction(const ComputePipelineResourceLayoutHashTableKey *hashTableKey)
 {
-    ComputePipelineResourceLayoutHashTableKey *hashTableKey = (ComputePipelineResourceLayoutHashTableKey *)key;
     /* The algorithm for this hashing function
      * is taken from Josh Bloch's "Effective Java".
      * (https://stackoverflow.com/a/113600/12492383)
@@ -3480,23 +3408,18 @@ static Uint32 SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction(
     return result;
 }
 
-static bool SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
-{
-    return SDL_memcmp(aKey, bKey, sizeof(ComputePipelineResourceLayoutHashTableKey)) == 0;
-}
+#define SDL_HASHTABLE_NAME VulkanComputePipelineResourceLayoutHashTable
+#define SDL_HASHTABLE_KEY ComputePipelineResourceLayoutHashTableKey *
+#define SDL_HASHTABLE_VALUE VulkanComputePipelineResourceLayout *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (SDL_memcmp(a, b, sizeof (*a)) == 0)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { VULKAN_INTERNAL_DestroyComputePipelineResourceLayout((VulkanRenderer *) userdata, value); SDL_free(key); }
+// no lock: manually synchronized due to lookup timing
+#include "../../SDL_hashtable_template.h"
 
-static void SDLCALL VULKAN_INTERNAL_ComputePipelineResourceLayoutHashDestroy(void *userdata, const void *key, const void *value)
-{
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    VulkanComputePipelineResourceLayout *resourceLayout = (VulkanComputePipelineResourceLayout *)value;
-    VULKAN_INTERNAL_DestroyComputePipelineResourceLayout(renderer, resourceLayout);
-    SDL_free((void *)key);
-}
 
-static Uint32 SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(void *userdata, const void *key)
+static Uint32 VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(const DescriptorSetLayoutHashTableKey *hashTableKey)
 {
-    DescriptorSetLayoutHashTableKey *hashTableKey = (DescriptorSetLayoutHashTableKey *)key;
-
     /* The algorithm for this hashing function
      * is taken from Josh Bloch's "Effective Java".
      * (https://stackoverflow.com/a/113600/12492383)
@@ -3513,43 +3436,18 @@ static Uint32 SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(void *user
     return result;
 }
 
-static bool SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
-{
-    return SDL_memcmp(aKey, bKey, sizeof(DescriptorSetLayoutHashTableKey)) == 0;
-}
+#define SDL_HASHTABLE_NAME VulkanDescriptorSetLayoutHashTable
+#define SDL_HASHTABLE_KEY DescriptorSetLayoutHashTableKey *
+#define SDL_HASHTABLE_VALUE DescriptorSetLayout *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) VULKAN_INTERNAL_DescriptorSetLayoutHashFunction(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (SDL_memcmp(a, b, sizeof (*a)) == 0)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { VULKAN_INTERNAL_DestroyDescriptorSetLayout((VulkanRenderer *)userdata, value); SDL_free(key); }
+// no lock: manually synchronized due to lookup timing
+#include "../../SDL_hashtable_template.h"
 
-static void SDLCALL VULKAN_INTERNAL_DescriptorSetLayoutHashDestroy(void *userdata, const void *key, const void *value)
-{
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    DescriptorSetLayout *layout = (DescriptorSetLayout *)value;
-    VULKAN_INTERNAL_DestroyDescriptorSetLayout(renderer, layout);
-    SDL_free((void *)key);
-}
 
-static Uint32 SDLCALL VULKAN_INTERNAL_CommandPoolHashFunction(void *userdata, const void *key)
+static Uint32 VULKAN_INTERNAL_RenderPassHashFunction(const RenderPassHashTableKey *hashTableKey)
 {
-    return (Uint32)((CommandPoolHashTableKey *)key)->threadID;
-}
-
-static bool SDLCALL VULKAN_INTERNAL_CommandPoolHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
-{
-    CommandPoolHashTableKey *a = (CommandPoolHashTableKey *)aKey;
-    CommandPoolHashTableKey *b = (CommandPoolHashTableKey *)bKey;
-    return a->threadID == b->threadID;
-}
-
-static void SDLCALL VULKAN_INTERNAL_CommandPoolHashDestroy(void *userdata, const void *key, const void *value)
-{
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    VulkanCommandPool *pool = (VulkanCommandPool *)value;
-    VULKAN_INTERNAL_DestroyCommandPool(renderer, pool);
-    SDL_free((void *)key);
-}
-
-static Uint32 SDLCALL VULKAN_INTERNAL_RenderPassHashFunction(void *userdata, const void *key)
-{
-    RenderPassHashTableKey *hashTableKey = (RenderPassHashTableKey *)key;
-
     /* The algorithm for this hashing function
      * is taken from Josh Bloch's "Effective Java".
      * (https://stackoverflow.com/a/113600/12492383)
@@ -3578,11 +3476,8 @@ static Uint32 SDLCALL VULKAN_INTERNAL_RenderPassHashFunction(void *userdata, con
     return result;
 }
 
-static bool SDLCALL VULKAN_INTERNAL_RenderPassHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
+static bool VULKAN_INTERNAL_RenderPassHashKeyMatch(const RenderPassHashTableKey *a, const RenderPassHashTableKey *b)
 {
-    RenderPassHashTableKey *a = (RenderPassHashTableKey *)aKey;
-    RenderPassHashTableKey *b = (RenderPassHashTableKey *)bKey;
-
     if (a->numColorTargets != b->numColorTargets) {
         return 0;
     }
@@ -3638,22 +3533,18 @@ static bool SDLCALL VULKAN_INTERNAL_RenderPassHashKeyMatch(void *userdata, const
     return 1;
 }
 
-static void SDLCALL VULKAN_INTERNAL_RenderPassHashDestroy(void *userdata, const void *key, const void *value)
-{
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    VulkanRenderPassHashTableValue *renderPassWrapper = (VulkanRenderPassHashTableValue *)value;
-    renderer->vkDestroyRenderPass(
-        renderer->logicalDevice,
-        renderPassWrapper->handle,
-        NULL);
-    SDL_free(renderPassWrapper);
-    SDL_free((void *)key);
-}
+#define SDL_HASHTABLE_NAME VulkanRenderPassHashTable
+#define SDL_HASHTABLE_KEY RenderPassHashTableKey *
+#define SDL_HASHTABLE_VALUE VkRenderPass   // this is a handle (a pointer, or uint64_t, depending on the platform).
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) VULKAN_INTERNAL_RenderPassHashFunction(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) VULKAN_INTERNAL_RenderPassHashKeyMatch(a, b)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { VulkanRenderer *renderer = (VulkanRenderer *)userdata; renderer->vkDestroyRenderPass(renderer->logicalDevice, value, NULL); SDL_free(key); }
+// no lock: manually synchronized due to lookup timing
+#include "../../SDL_hashtable_template.h"
 
-static Uint32 SDLCALL VULKAN_INTERNAL_FramebufferHashFunction(void *userdata, const void *key)
-{
-    FramebufferHashTableKey *hashTableKey = (FramebufferHashTableKey *)key;
 
+static Uint32 VULKAN_INTERNAL_FramebufferHashFunction(const FramebufferHashTableKey *hashTableKey)
+{
     /* The algorithm for this hashing function
      * is taken from Josh Bloch's "Effective Java".
      * (https://stackoverflow.com/a/113600/12492383)
@@ -3675,11 +3566,8 @@ static Uint32 SDLCALL VULKAN_INTERNAL_FramebufferHashFunction(void *userdata, co
     return result;
 }
 
-static bool SDLCALL VULKAN_INTERNAL_FramebufferHashKeyMatch(void *userdata, const void *aKey, const void *bKey)
+static bool VULKAN_INTERNAL_FramebufferHashKeyMatch(const FramebufferHashTableKey *a, const FramebufferHashTableKey *b)
 {
-    FramebufferHashTableKey *a = (FramebufferHashTableKey *)aKey;
-    FramebufferHashTableKey *b = (FramebufferHashTableKey *)bKey;
-
     if (a->numColorTargets != b->numColorTargets) {
         return 0;
     }
@@ -3715,13 +3603,98 @@ static bool SDLCALL VULKAN_INTERNAL_FramebufferHashKeyMatch(void *userdata, cons
     return 1;
 }
 
-static void SDLCALL VULKAN_INTERNAL_FramebufferHashDestroy(void *userdata, const void *key, const void *value)
+#define SDL_HASHTABLE_NAME VulkanFramebufferHashTable
+#define SDL_HASHTABLE_KEY FramebufferHashTableKey *
+#define SDL_HASHTABLE_VALUE VulkanFramebuffer *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) VULKAN_INTERNAL_FramebufferHashFunction(key)
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) VULKAN_INTERNAL_FramebufferHashKeyMatch(a, b)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) { VULKAN_INTERNAL_ReleaseFramebuffer((VulkanRenderer *)userdata, value); SDL_free(key); }
+// no lock: manually synchronized due to iteration
+#include "../../SDL_hashtable_template.h"
+
+
+#define SDL_HASHTABLE_NAME VulkanCommandPoolHashTable
+#define SDL_HASHTABLE_KEY SDL_ThreadID
+#define SDL_HASHTABLE_VALUE VulkanCommandPool *
+#define SDL_HASHTABLE_HASH_KEY(userdata, key) (((Uint32) (key >> 32)) ^ ((Uint32) key))    // I have no idea if this is good enough.
+#define SDL_HASHTABLE_KEYS_EQUAL(userdata, a, b) (a == b)
+#define SDL_HASHTABLE_FREE_ITEM(userdata, key, value) VULKAN_INTERNAL_DestroyCommandPool((VulkanRenderer *)userdata, value)
+// no lock: manually synchronized due to submission timing
+#include "../../SDL_hashtable_template.h"
+
+
+
+typedef struct CheckOneFramebufferForRemovalData
 {
-    VulkanRenderer *renderer = (VulkanRenderer *)userdata;
-    VulkanFramebuffer *framebuffer = (VulkanFramebuffer *)value;
-    VULKAN_INTERNAL_ReleaseFramebuffer(renderer, framebuffer);
-    SDL_free((void *)key);
+    Uint32 keysToRemoveCapacity;
+    Uint32 keysToRemoveCount;
+    FramebufferHashTableKey **keysToRemove;
+    VkImageView view;
+} CheckOneFramebufferForRemovalData;
+
+static bool SDLCALL CheckOneFramebufferForRemoval(void *userdata, const VulkanFramebufferHashTable *table, FramebufferHashTableKey *key, VulkanFramebuffer *value)
+{
+    CheckOneFramebufferForRemovalData *data = (CheckOneFramebufferForRemovalData *) userdata;
+    VkImageView view = data->view;
+    bool remove = false;
+
+    for (Uint32 i = 0; i < key->numColorTargets; i += 1) {
+        if (key->colorAttachmentViews[i] == view) {
+            remove = true;
+        }
+    }
+    for (Uint32 i = 0; i < key->numResolveAttachments; i += 1) {
+        if (key->resolveAttachmentViews[i] == view) {
+            remove = true;
+        }
+    }
+    if (key->depthStencilAttachmentView == view) {
+        remove = true;
+    }
+
+    if (remove) {
+        if (data->keysToRemoveCount == data->keysToRemoveCapacity) {
+            data->keysToRemoveCapacity *= 2;
+            void *ptr = SDL_realloc(data->keysToRemove, data->keysToRemoveCapacity * sizeof(FramebufferHashTableKey *));
+            if (!ptr) {
+                return false;  // ugh, stop iterating. We're in trouble.
+            }
+            data->keysToRemove = (FramebufferHashTableKey **) ptr;
+        }
+        data->keysToRemove[data->keysToRemoveCount] = key;
+        data->keysToRemoveCount++;
+    }
+
+    return true;  // keep iterating.
 }
+
+static void VULKAN_INTERNAL_RemoveFramebuffersContainingView(
+    VulkanRenderer *renderer,
+    VkImageView view)
+{
+    // Can't remove while iterating!
+    // !!! FIXME: maybe add a Cull method to hashtable?
+
+    CheckOneFramebufferForRemovalData data = { 8, 0, NULL, view };
+    data.keysToRemove = (FramebufferHashTableKey **) SDL_malloc(data.keysToRemoveCapacity * sizeof(FramebufferHashTableKey *));
+    if (!data.keysToRemove) {
+        return;  // uhoh.
+    }
+
+    SDL_LockMutex(renderer->framebufferFetchLock);
+
+    VulkanFramebufferHashTableIterate(renderer->framebufferHashTable, CheckOneFramebufferForRemoval, &data);
+
+    for (Uint32 i = 0; i < data.keysToRemoveCount; i += 1) {
+        VulkanFramebufferHashTableRemove(renderer->framebufferHashTable, data.keysToRemove[i]);
+    }
+
+    SDL_UnlockMutex(renderer->framebufferFetchLock);
+
+    SDL_free(data.keysToRemove);
+}
+
+
 
 // Descriptor pools
 
@@ -3882,10 +3855,10 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
 
     SDL_LockMutex(renderer->descriptorSetLayoutFetchLock);
 
-    if (SDL_FindInHashTable(
+    if (VulkanDescriptorSetLayoutHashTableFind(
         renderer->descriptorSetLayoutHashTable,
-        (const void *)&key,
-        (const void **)&layout)) {
+        &key,
+        &layout)) {
         SDL_UnlockMutex(renderer->descriptorSetLayoutFetchLock);
         return layout;
     }
@@ -3989,10 +3962,10 @@ static DescriptorSetLayout *VULKAN_INTERNAL_FetchDescriptorSetLayout(
     DescriptorSetLayoutHashTableKey *allocedKey = SDL_malloc(sizeof(DescriptorSetLayoutHashTableKey));
     SDL_memcpy(allocedKey, &key, sizeof(DescriptorSetLayoutHashTableKey));
 
-    SDL_InsertIntoHashTable(
+    VulkanDescriptorSetLayoutHashTableInsert(
         renderer->descriptorSetLayoutHashTable,
-        (const void *)allocedKey,
-        (const void *)layout, true);
+        allocedKey,
+        layout, true);
 
     SDL_UnlockMutex(renderer->descriptorSetLayoutFetchLock);
     return layout;
@@ -4018,10 +3991,10 @@ static VulkanGraphicsPipelineResourceLayout *VULKAN_INTERNAL_FetchGraphicsPipeli
 
     SDL_LockMutex(renderer->graphicsPipelineLayoutFetchLock);
 
-    if (SDL_FindInHashTable(
+    if (VulkanGraphicsPipelineResourceLayoutHashTableFind(
         renderer->graphicsPipelineResourceLayoutHashTable,
-        (const void *)&key,
-        (const void **)&pipelineResourceLayout)) {
+        &key,
+        &pipelineResourceLayout)) {
         SDL_UnlockMutex(renderer->graphicsPipelineLayoutFetchLock);
         return pipelineResourceLayout;
     }
@@ -4112,10 +4085,10 @@ static VulkanGraphicsPipelineResourceLayout *VULKAN_INTERNAL_FetchGraphicsPipeli
     GraphicsPipelineResourceLayoutHashTableKey *allocedKey = SDL_malloc(sizeof(GraphicsPipelineResourceLayoutHashTableKey));
     SDL_memcpy(allocedKey, &key, sizeof(GraphicsPipelineResourceLayoutHashTableKey));
 
-    SDL_InsertIntoHashTable(
+    VulkanGraphicsPipelineResourceLayoutHashTableInsert(
         renderer->graphicsPipelineResourceLayoutHashTable,
-        (const void *)allocedKey,
-        (const void *)pipelineResourceLayout, true);
+        allocedKey,
+        pipelineResourceLayout, true);
 
     SDL_UnlockMutex(renderer->graphicsPipelineLayoutFetchLock);
     return pipelineResourceLayout;
@@ -4138,10 +4111,10 @@ static VulkanComputePipelineResourceLayout *VULKAN_INTERNAL_FetchComputePipeline
 
     SDL_LockMutex(renderer->computePipelineLayoutFetchLock);
 
-    if (SDL_FindInHashTable(
+    if (VulkanComputePipelineResourceLayoutHashTableFind(
         renderer->computePipelineResourceLayoutHashTable,
-        (const void *)&key,
-        (const void **)&pipelineResourceLayout)) {
+        &key,
+        &pipelineResourceLayout)) {
         SDL_UnlockMutex(renderer->computePipelineLayoutFetchLock);
         return pipelineResourceLayout;
     }
@@ -4218,10 +4191,10 @@ static VulkanComputePipelineResourceLayout *VULKAN_INTERNAL_FetchComputePipeline
     ComputePipelineResourceLayoutHashTableKey *allocedKey = SDL_malloc(sizeof(ComputePipelineResourceLayoutHashTableKey));
     SDL_memcpy(allocedKey, &key, sizeof(ComputePipelineResourceLayoutHashTableKey));
 
-    SDL_InsertIntoHashTable(
+    VulkanComputePipelineResourceLayoutHashTableInsert(
         renderer->computePipelineResourceLayoutHashTable,
-        (const void *)allocedKey,
-        (const void *)pipelineResourceLayout, true);
+        allocedKey,
+        pipelineResourceLayout, true);
 
     SDL_UnlockMutex(renderer->computePipelineLayoutFetchLock);
     return pipelineResourceLayout;
@@ -5038,12 +5011,12 @@ static void VULKAN_DestroyDevice(
     SDL_free(renderer->fencePool.availableFences);
     SDL_DestroyMutex(renderer->fencePool.lock);
 
-    SDL_DestroyHashTable(renderer->commandPoolHashTable);
-    SDL_DestroyHashTable(renderer->renderPassHashTable);
-    SDL_DestroyHashTable(renderer->framebufferHashTable);
-    SDL_DestroyHashTable(renderer->graphicsPipelineResourceLayoutHashTable);
-    SDL_DestroyHashTable(renderer->computePipelineResourceLayoutHashTable);
-    SDL_DestroyHashTable(renderer->descriptorSetLayoutHashTable);
+    VulkanCommandPoolHashTableDestroy(renderer->commandPoolHashTable);
+    VulkanRenderPassHashTableDestroy(renderer->renderPassHashTable);
+    VulkanFramebufferHashTableDestroy(renderer->framebufferHashTable);
+    VulkanGraphicsPipelineResourceLayoutHashTableDestroy(renderer->graphicsPipelineResourceLayoutHashTable);
+    VulkanComputePipelineResourceLayoutHashTableDestroy(renderer->computePipelineResourceLayoutHashTable);
+    VulkanDescriptorSetLayoutHashTableDestroy(renderer->descriptorSetLayoutHashTable);
 
     for (Uint32 i = 0; i < VK_MAX_MEMORY_TYPES; i += 1) {
         allocator = &renderer->memoryAllocator->subAllocators[i];
@@ -7268,7 +7241,6 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     Uint32 numColorTargets,
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
 {
-    VulkanRenderPassHashTableValue *renderPassWrapper = NULL;
     VkRenderPass renderPassHandle;
     RenderPassHashTableKey key;
     Uint32 i;
@@ -7311,14 +7283,14 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
 
     SDL_LockMutex(renderer->renderPassFetchLock);
 
-    bool result = SDL_FindInHashTable(
+    bool result = VulkanRenderPassHashTableFind(
         renderer->renderPassHashTable,
-        (const void *)&key,
-        (const void **)&renderPassWrapper);
+        &key,
+        &renderPassHandle);
 
     if (result) {
         SDL_UnlockMutex(renderer->renderPassFetchLock);
-        return renderPassWrapper->handle;
+        return renderPassHandle;
     }
 
     renderPassHandle = VULKAN_INTERNAL_CreateRenderPass(
@@ -7336,13 +7308,10 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     RenderPassHashTableKey *allocedKey = SDL_malloc(sizeof(RenderPassHashTableKey));
     SDL_memcpy(allocedKey, &key, sizeof(RenderPassHashTableKey));
 
-    renderPassWrapper = SDL_malloc(sizeof(VulkanRenderPassHashTableValue));
-    renderPassWrapper->handle = renderPassHandle;
-
-    SDL_InsertIntoHashTable(
+    VulkanRenderPassHashTableInsert(
         renderer->renderPassHashTable,
-        (const void *)allocedKey,
-        (const void *)renderPassWrapper, true);
+        allocedKey,
+        renderPassHandle, true);
 
     SDL_UnlockMutex(renderer->renderPassFetchLock);
 
@@ -7409,10 +7378,10 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
 
     SDL_LockMutex(renderer->framebufferFetchLock);
 
-    bool findResult = SDL_FindInHashTable(
+    bool findResult = VulkanFramebufferHashTableFind(
         renderer->framebufferHashTable,
-        (const void *)&key,
-        (const void **)&vulkanFramebuffer);
+        &key,
+        &vulkanFramebuffer);
 
     if (findResult) {
         SDL_UnlockMutex(renderer->framebufferFetchLock);
@@ -7483,10 +7452,10 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
         FramebufferHashTableKey *allocedKey = SDL_malloc(sizeof(FramebufferHashTableKey));
         SDL_memcpy(allocedKey, &key, sizeof(FramebufferHashTableKey));
 
-        SDL_InsertIntoHashTable(
+        VulkanFramebufferHashTableInsert(
             renderer->framebufferHashTable,
-            (const void *)allocedKey,
-            (const void *)vulkanFramebuffer, true);
+            allocedKey,
+            vulkanFramebuffer, true);
 
     } else {
         SDL_free(vulkanFramebuffer);
@@ -9571,13 +9540,11 @@ static VulkanCommandPool *VULKAN_INTERNAL_FetchCommandPool(
     VulkanCommandPool *vulkanCommandPool = NULL;
     VkCommandPoolCreateInfo commandPoolCreateInfo;
     VkResult vulkanResult;
-    CommandPoolHashTableKey key;
-    key.threadID = threadID;
 
-    bool result = SDL_FindInHashTable(
+    bool result = VulkanCommandPoolHashTableFind(
         renderer->commandPoolHashTable,
-        (const void *)&key,
-        (const void **)&vulkanCommandPool);
+        threadID,
+        &vulkanCommandPool);
 
     if (result) {
         return vulkanCommandPool;
@@ -9615,13 +9582,10 @@ static VulkanCommandPool *VULKAN_INTERNAL_FetchCommandPool(
         return NULL;
     }
 
-    CommandPoolHashTableKey *allocedKey = SDL_malloc(sizeof(CommandPoolHashTableKey));
-    allocedKey->threadID = threadID;
-
-    SDL_InsertIntoHashTable(
+    VulkanCommandPoolHashTableInsert(
         renderer->commandPoolHashTable,
-        (const void *)allocedKey,
-        (const void *)vulkanCommandPool, true);
+        threadID,
+        vulkanCommandPool, true);
 
     return vulkanCommandPool;
 }
@@ -13572,52 +13536,28 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
 
     // Initialize caches
 
-    renderer->commandPoolHashTable = SDL_CreateHashTable(
+    renderer->commandPoolHashTable = VulkanCommandPoolHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to submission timing
-        VULKAN_INTERNAL_CommandPoolHashFunction,
-        VULKAN_INTERNAL_CommandPoolHashKeyMatch,
-        VULKAN_INTERNAL_CommandPoolHashDestroy,
         (void *)renderer);
 
-    renderer->renderPassHashTable = SDL_CreateHashTable(
+    renderer->renderPassHashTable = VulkanRenderPassHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to lookup timing
-        VULKAN_INTERNAL_RenderPassHashFunction,
-        VULKAN_INTERNAL_RenderPassHashKeyMatch,
-        VULKAN_INTERNAL_RenderPassHashDestroy,
         (void *)renderer);
 
-    renderer->framebufferHashTable = SDL_CreateHashTable(
+    renderer->framebufferHashTable = VulkanFramebufferHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to iteration
-        VULKAN_INTERNAL_FramebufferHashFunction,
-        VULKAN_INTERNAL_FramebufferHashKeyMatch,
-        VULKAN_INTERNAL_FramebufferHashDestroy,
         (void *)renderer);
 
-    renderer->graphicsPipelineResourceLayoutHashTable = SDL_CreateHashTable(
+    renderer->graphicsPipelineResourceLayoutHashTable = VulkanGraphicsPipelineResourceLayoutHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to lookup timing
-        VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashFunction,
-        VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashKeyMatch,
-        VULKAN_INTERNAL_GraphicsPipelineResourceLayoutHashDestroy,
         (void *)renderer);
 
-    renderer->computePipelineResourceLayoutHashTable = SDL_CreateHashTable(
+    renderer->computePipelineResourceLayoutHashTable = VulkanComputePipelineResourceLayoutHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to lookup timing
-        VULKAN_INTERNAL_ComputePipelineResourceLayoutHashFunction,
-        VULKAN_INTERNAL_ComputePipelineResourceLayoutHashKeyMatch,
-        VULKAN_INTERNAL_ComputePipelineResourceLayoutHashDestroy,
         (void *)renderer);
 
-    renderer->descriptorSetLayoutHashTable = SDL_CreateHashTable(
+    renderer->descriptorSetLayoutHashTable = VulkanDescriptorSetLayoutHashTableCreate(
         0,  // !!! FIXME: a real guess here, for a _minimum_ if not a maximum, could be useful.
-        false,  // manually synchronized due to lookup timing
-        VULKAN_INTERNAL_DescriptorSetLayoutHashFunction,
-        VULKAN_INTERNAL_DescriptorSetLayoutHashKeyMatch,
-        VULKAN_INTERNAL_DescriptorSetLayoutHashDestroy,
         (void *)renderer);
 
     // Initialize fence pool

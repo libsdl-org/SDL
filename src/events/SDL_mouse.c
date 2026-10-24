@@ -34,11 +34,16 @@
 
 #define WARP_EMULATION_THRESHOLD_NS SDL_MS_TO_NS(30)
 
+typedef struct SDL_MouseDeviceInfo
+{
+    SDL_MouseID id;
+    const char *name;
+} SDL_MouseDeviceInfo;
+
 // The mouse state
 static SDL_Mouse SDL_mouse;
 static int SDL_mouse_count;
-static SDL_MouseID *SDL_mice;
-static SDL_HashTable *SDL_mouse_names;
+static SDL_MouseDeviceInfo *SDL_mice;
 static bool SDL_mouse_initialized;
 
 // for mapping mouse events to touch
@@ -286,8 +291,6 @@ bool SDL_PreInitMouse(void)
 
     mouse->cursor_visible = true;
 
-    SDL_mouse_names = SDL_CreateHashTable(0, true, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
-
     return true;
 }
 
@@ -316,7 +319,7 @@ bool SDL_IsMouse(Uint16 vendor, Uint16 product)
 static int SDL_GetMouseIndex(SDL_MouseID mouseID)
 {
     for (int i = 0; i < SDL_mouse_count; ++i) {
-        if (mouseID == SDL_mice[i]) {
+        if (mouseID == SDL_mice[i].id) {
             return i;
         }
     }
@@ -325,7 +328,7 @@ static int SDL_GetMouseIndex(SDL_MouseID mouseID)
 
 void SDL_AddMouse(SDL_MouseID mouseID, const char *name)
 {
-    int mouse_index = SDL_GetMouseIndex(mouseID);
+    const int mouse_index = SDL_GetMouseIndex(mouseID);
     if (mouse_index >= 0) {
         // We already know about this mouse
         return;
@@ -333,18 +336,14 @@ void SDL_AddMouse(SDL_MouseID mouseID, const char *name)
 
     SDL_assert(mouseID != 0);
 
-    SDL_MouseID *mice = (SDL_MouseID *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
+    SDL_MouseDeviceInfo *mice = (SDL_MouseDeviceInfo *)SDL_realloc(SDL_mice, (SDL_mouse_count + 1) * sizeof(*mice));
     if (!mice) {
         return;
     }
-    mice[SDL_mouse_count] = mouseID;
+    mice[SDL_mouse_count].id = mouseID;
+    mice[SDL_mouse_count].name = SDL_CacheString(name ? name : "Mouse");
     SDL_mice = mice;
     ++SDL_mouse_count;
-
-    if (!name) {
-        name = "Mouse";
-    }
-    SDL_InsertIntoHashTable(SDL_mouse_names, (const void *)(uintptr_t)mouseID, SDL_strdup(name), true);
 
     SDL_Event event;
     SDL_zero(event);
@@ -360,6 +359,8 @@ void SDL_RemoveMouse(SDL_MouseID mouseID)
         // We don't know about this mouse
         return;
     }
+
+    // don't SDL_free(SDL_mice[mouse_index].name), it's from SDL_CacheString().
 
     if (mouse_index != SDL_mouse_count - 1) {
         SDL_memmove(&SDL_mice[mouse_index], &SDL_mice[mouse_index + 1], (SDL_mouse_count - mouse_index - 1) * sizeof(SDL_mice[mouse_index]));
@@ -406,7 +407,7 @@ SDL_MouseID *SDL_GetMice(int *count)
         }
 
         for (i = 0; i < SDL_mouse_count; ++i) {
-            mice[i] = SDL_mice[i];
+            mice[i] = SDL_mice[i].id;
         }
         mice[i] = 0;
     } else {
@@ -421,6 +422,7 @@ SDL_MouseID *SDL_GetMice(int *count)
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
 {
     const char *name = NULL;
+    int mouse_index;
 
     switch (instance_id) {
     case SDL_GLOBAL_MOUSE_ID:
@@ -443,13 +445,14 @@ const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
         name = "Pen";
         break;
     default:
-        if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+        mouse_index = SDL_GetMouseIndex(instance_id);
+        if (mouse_index < 0) {
             SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
             return NULL;
         }
+        name = SDL_mice[mouse_index].name;
         if (!name) {
-            // SDL_strdup() failed during insert
-            SDL_OutOfMemory();
+            SDL_OutOfMemory();   // SDL_CacheString() failed during insert
             return NULL;
         }
         break;
@@ -1195,13 +1198,10 @@ void SDL_QuitMouse(void)
                         SDL_MouseIntegerModeChanged, mouse);
 
     for (int i = SDL_mouse_count; i--; ) {
-        SDL_RemoveMouse(SDL_mice[i]);
+        SDL_RemoveMouse(SDL_mice[i].id);
     }
     SDL_free(SDL_mice);
     SDL_mice = NULL;
-
-    SDL_DestroyHashTable(SDL_mouse_names);
-    SDL_mouse_names = NULL;
 
     if (mouse->internal) {
         SDL_free(mouse->internal);

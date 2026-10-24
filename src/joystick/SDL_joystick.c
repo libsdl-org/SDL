@@ -121,7 +121,6 @@ static bool SDL_joystick_being_added;
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_event_lock) = NULL;
-static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static bool SDL_joystick_allows_background_events = false;
 
 static Uint32 initial_old_xboxone_controllers[] = {
@@ -869,8 +868,6 @@ bool SDL_InitJoysticks(void)
 
     SDL_joysticks_initialized = true;
 
-    SDL_joystick_names = SDL_CreateHashTable(0, false, SDL_HashID, SDL_KeyMatchID, SDL_DestroyHashValue, NULL);
-
     SDL_LoadVIDPIDList(&old_xboxone_controllers);
     SDL_LoadVIDPIDList(&arcadestick_devices);
     SDL_LoadVIDPIDList(&blacklist_devices);
@@ -1036,30 +1033,7 @@ static const char *SDL_UpdateJoystickNameForID(SDL_JoystickID instance_id)
         current_name = driver->GetDeviceName(device_index);
     }
 
-    if (!SDL_joystick_names) {
-        return SDL_GetPersistentString(current_name);
-    }
-
-    char *name = NULL;
-    bool found = SDL_FindInHashTable(SDL_joystick_names, (const void *)(uintptr_t)instance_id, (const void **)&name);
-    if (!current_name) {
-        if (!found) {
-            SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
-            return NULL;
-        }
-        if (!name) {
-            // SDL_strdup() failed during insert
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        return name;
-    }
-
-    if (!name || SDL_strcmp(name, current_name) != 0) {
-        name = SDL_strdup(current_name);
-        SDL_InsertIntoHashTable(SDL_joystick_names, (const void *)(uintptr_t)instance_id, name, true);
-    }
-    return name;
+    return SDL_CacheString(current_name);   // lives until SDL_Quit
 }
 
 const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
@@ -2491,11 +2465,6 @@ void SDL_QuitJoysticks(void)
     SDL_FreeVIDPIDList(&zero_centered_devices);
 
     SDL_QuitGamepadMappings();
-
-    if (SDL_joystick_names) {
-        SDL_DestroyHashTable(SDL_joystick_names);
-        SDL_joystick_names = NULL;
-    }
 
     SDL_joysticks_quitting = false;
     SDL_joysticks_initialized = false;

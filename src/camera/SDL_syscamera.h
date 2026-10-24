@@ -27,6 +27,8 @@
 
 #define DEBUG_CAMERA 0
 
+typedef struct SDL_CameraDeviceMap SDL_CameraDeviceMap;
+
 /* Backends should call this as devices are added to the system (such as
    a USB camera being plugged in), and should also be called for
    for every device found during DetectDevices(). */
@@ -199,12 +201,10 @@ typedef struct SDL_CameraDriver
     const char *desc;  // The description of this camera driver
     SDL_CameraDriverImpl impl; // the backend's interface
 
-    SDL_RWLock *device_hash_lock;  // A rwlock that protects `device_hash`   // !!! FIXME: device_hash _also_ has a rwlock, see if we still need this one.
-    SDL_HashTable *device_hash;  // the collection of currently-available camera devices
+    SDL_CameraDeviceMap *device_map;  // the collection of currently-available camera devices
     SDL_PendingCameraEvent pending_events;
     SDL_PendingCameraEvent *pending_events_tail;
 
-    SDL_AtomicInt device_count;
     SDL_AtomicInt shutting_down;  // non-zero during SDL_Quit, so we known not to accept any last-minute device hotplugs.
 } SDL_CameraDriver;
 
