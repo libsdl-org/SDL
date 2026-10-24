@@ -606,7 +606,7 @@ static HRESULT GameInputCreateWithVersion(
         RETURN_IF_FAILED(LoadGameInputDll(&g_gameInputDll));
     }
 
-    typedef HRESULT (*GameInputInitializeFn)(
+    typedef HRESULT (STDAPICALLTYPE *GameInputInitializeFn)(
         _In_ REFIID riid,
         _COM_Outptr_ LPVOID* ppv);
 
@@ -622,7 +622,7 @@ static HRESULT GameInputCreateWithVersion(
         // did not find it via above query, we must be running an old version of GameInput
         // which only supports the v0 API. Don't attempt to use it for newer API versions.
 
-        typedef HRESULT (*GameInputCreateFn)(
+        typedef HRESULT (STDAPICALLTYPE *GameInputCreateFn)(
             _COM_Outptr_ LPVOID* ppv);
 
         GameInputCreateFn gameInputCreate = nullptr;
