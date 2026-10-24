@@ -299,7 +299,9 @@ static bool IsMimeType(const char *tag)
 static CFStringRef GetUTIType(const char *tag)
 {
     CFStringRef utiType;
-    if (IsMimeType(tag)) {
+    if (SDL_strcmp(tag, "text/plain;charset=utf-8") == 0) {
+        utiType = CFRetain((__bridge CFStringRef)NSPasteboardTypeString);
+    } else if (IsMimeType(tag)) {
         CFStringRef mimeType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
         utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
         CFRelease(mimeType);
