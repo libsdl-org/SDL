@@ -200,7 +200,9 @@ static bool SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_
     }
 
     SDL_UnlockMutex(mutex);
-    while (lastret > 0 && !WindowsDeviceChanged()) {
+    // Pump messages until we're told to quit. Device changes are picked up by WINDOWS_JoystickDetect(),
+    // so returning while one is pending would just spin until the next detect.
+    while (lastret > 0) {
         lastret = GetMessage(&msg, NULL, 0, 0); // WM_QUIT causes return value of 0
         if (lastret > 0) {
             TranslateMessage(&msg);

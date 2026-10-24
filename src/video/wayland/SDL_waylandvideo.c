@@ -35,6 +35,8 @@
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandvideo.h"
+
+#include "SDL_waylandframebuffer.h"
 #include "SDL_waylandvulkan.h"
 #include "SDL_waylandwindow.h"
 
@@ -756,6 +758,12 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
     device->StartTextInput = Wayland_StartTextInput;
     device->StopTextInput = Wayland_StopTextInput;
     device->UpdateTextInputArea = Wayland_UpdateTextInputArea;
+
+    device->CreateWindowFramebuffer = Wayland_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = Wayland_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = Wayland_DestroyWindowFramebuffer;
+    device->SetWindowFramebufferVSync = Wayland_SetWindowFramebufferVSync;
+    device->GetWindowFramebufferVSync = Wayland_GetWindowFramebufferVSync;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
@@ -1711,6 +1719,11 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Failed to create event thread context");
     }
 
+    data->job_thread_context = Wayland_CreateJobThread();
+    if (!data->job_thread_context) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "wayland: Failed to create job thread context");
+    }
+
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
         return SDL_SetError("Failed to create XKB context");
@@ -1818,6 +1831,9 @@ static void Wayland_VideoCleanup(SDL_VideoDevice *_this)
 
     Wayland_DestroyEventThread(data->event_thread_context);
     data->event_thread_context = NULL;
+
+    Wayland_DestroyJobThread(data->job_thread_context);
+    data->job_thread_context = NULL;
 
     if (data->pointer_constraints) {
         zwp_pointer_constraints_v1_destroy(data->pointer_constraints);

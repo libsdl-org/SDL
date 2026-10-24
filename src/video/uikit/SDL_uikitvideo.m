@@ -163,11 +163,15 @@ static bool UIKit_VideoInit(SDL_VideoDevice *_this)
 
     UIKit_InitClipboard(_this);
 
+    UIKit_InitWindowFocus();
+
     return true;
 }
 
 static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
+    UIKit_QuitWindowFocus();
+
     UIKit_QuitClipboard(_this);
 
     SDL_QuitGCKeyboard();
@@ -238,20 +242,25 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * This is a workaround until a better solution can be found.
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
-     * https://forums.developer.apple.com/thread/65337 */
+     * https://forums.developer.apple.com/thread/65337
+     *
+     * On iOS 13 and newer the window bounds match the interface orientation,
+     * which may not be known yet at launch, and iPadOS 26 doesn't let resizable
+     * applications lock the orientation, so we use the window bounds as-is there.
+     */
+    if (!UIKit_IsSystemVersionAtLeast(13.0)) {
+        UIInterfaceOrientation orientation = UIKit_GetInterfaceOrientation();
+        BOOL landscape = UIInterfaceOrientationIsLandscape(orientation) ||
+                         !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
+        BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
-    UIInterfaceOrientation orient = UIKit_GetInterfaceOrientation();
-
-    BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
-                    !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
-    BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
-
-    /* The orientation flip doesn't make sense when the window is smaller
-     * than the screen (iPad Split View, for example). */
-    if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
-        float height = frame.size.width;
-        frame.size.width = frame.size.height;
-        frame.size.height = height;
+        /* The orientation flip doesn't make sense when the window is smaller
+         * than the screen (iPad Split View, for example). */
+        if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
+            float height = frame.size.width;
+            frame.size.width = frame.size.height;
+            frame.size.height = height;
+        }
     }
 #endif
 
@@ -262,7 +271,7 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
 UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
 {
-#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 27000
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270000
     if (@available(iOS 27.0, *)) {
         UIWindowScene *windowScene = UIKit_GetActiveWindowScene();
         if (windowScene != nil) {
@@ -279,9 +288,58 @@ UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
 }
 #endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
 
+#ifndef SDL_PLATFORM_VISIONOS
+// Find a foreground scene, optionally on a specific screen and a specific role, preferring an active one.
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role) API_AVAILABLE(ios(13.0), tvos(13.0));
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role)
+{
+    NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+    UIWindowScene *foregroundScene = nil;
+
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+
+        UIWindowScene *windowScene = (UIWindowScene *)scene;
+        if (screen && windowScene.screen != screen) {
+            continue;
+        }
+        if (role && ![windowScene.session.role isEqualToString:role]) {
+            continue;
+        }
+
+        if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+            foregroundScene = windowScene;
+            break;
+        }
+        if (windowScene.activationState == UISceneActivationStateForegroundInactive && !foregroundScene) {
+            foregroundScene = windowScene;
+        }
+    }
+    return foregroundScene;
+}
+
+UIWindowScene *UIKit_GetWindowSceneForScreen(UIScreen *screen)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        return UIKit_FindForegroundWindowScene(screen, nil);
+    }
+    return nil;
+}
+#endif // !SDL_PLATFORM_VISIONOS
+
 UIWindowScene *UIKit_GetActiveWindowScene(void)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
+#ifndef SDL_PLATFORM_VISIONOS
+        // Return the application scene, if possible
+        UIWindowScene *applicationScene = UIKit_FindForegroundWindowScene(nil, UIWindowSceneSessionRoleApplication);
+        if (applicationScene) {
+            return applicationScene;
+        }
+#endif
+
         NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
 
         // First, try to find an active foreground scene

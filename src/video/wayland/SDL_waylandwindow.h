@@ -35,9 +35,6 @@ struct SDL_WindowData
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
-    struct wl_callback *gles_swap_frame_callback;
-    struct wl_event_queue *gles_swap_frame_event_queue;
-    struct wl_surface *gles_swap_frame_surface_wrapper;
     struct wl_callback *surface_frame_callback;
 
     union
@@ -67,6 +64,7 @@ struct SDL_WindowData
             Uint32 serial;
         } xdg;
     } shell_surface;
+
     enum
     {
         WAYLAND_SHELL_SURFACE_TYPE_UNKNOWN = 0,
@@ -75,6 +73,7 @@ struct SDL_WindowData
         WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR,
         WAYLAND_SHELL_SURFACE_TYPE_CUSTOM
     } shell_surface_type;
+
     enum
     {
         WAYLAND_SHELL_SURFACE_STATUS_HIDDEN = 0,
@@ -83,6 +82,7 @@ struct SDL_WindowData
         WAYLAND_SHELL_SURFACE_STATUS_SHOW_PENDING,
         WAYLAND_SHELL_SURFACE_STATUS_SHOWN
     } shell_surface_status;
+
     enum
     {
         WAYLAND_WM_CAPS_WINDOW_MENU = 0x01,
@@ -95,6 +95,7 @@ struct SDL_WindowData
                               WAYLAND_WM_CAPS_FULLSCREEN |
                               WAYLAND_WM_CAPS_MINIMIZE
     } wm_caps;
+
     enum
     {
         WAYLAND_TOPLEVEL_CONSTRAINED_LEFT = 0x01,
@@ -128,8 +129,15 @@ struct SDL_WindowData
     struct xdg_toplevel_session_v1 *xdg_toplevel_session;
 
     struct Wayland_ColorInfoState *color_info_state;
+    struct Wayland_Framebuffer *framebuffer;
 
-    SDL_AtomicInt swap_interval_ready;
+    struct
+    {
+        struct wl_callback *frame_callback;
+        struct wl_event_queue *queue;
+        struct wl_surface *surface_wrapper;
+        SDL_AtomicInt swap_interval_ready;
+    } presentation;
 
     SDL_DisplayData **outputs;
     int num_outputs;

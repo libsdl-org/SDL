@@ -70,6 +70,17 @@ typedef struct
     int read_fd;
 } SDL_WaylandDataOffer;
 
+typedef struct Wayland_DropData
+{
+    SDL_WaylandDataOffer *offer;
+    SDL_Window *dnd_window;
+    const char *text_mime_type;
+    struct wl_callback *cleanup_callback;
+    Wayland_JobID id;
+
+    struct wl_list link;
+} Wayland_DropData;
+
 typedef struct
 {
     struct zwp_primary_selection_offer_v1 *offer;
@@ -87,10 +98,11 @@ struct SDL_WaylandDataDevice
     uint32_t drag_serial;
     SDL_WaylandDataOffer *drag_offer;
     SDL_WaylandDataOffer *selection_offer;
-    const char *mime_type;
-    bool has_mime_file, has_mime_text;
+    const char *text_mime_type;
+    bool has_mime_file;
     SDL_Window *dnd_window;
     struct wl_surface *dnd_surface;
+    struct wl_list pending_drops;
 
     // Clipboard and Primary Selection
     SDL_WaylandDataSource *selection_source;
@@ -120,7 +132,7 @@ extern void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSou
 // Wayland Data / Primary Selection Offer - (Receiving)
 extern bool Wayland_DataOfferRequestDataFromSelf(SDL_WaylandDataOffer *offer, const char *mime_type, const struct wl_callback_listener *completion_listener, void *userdata);
 extern void *Wayland_DataOfferGetDataFromSelf(SDL_WaylandDataOffer *offer, size_t *length);
-extern void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout);
+extern void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length);
 extern void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type, size_t *length);
 extern bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type);
 extern void Wayland_DataDeviceSetSelectionOffer(SDL_WaylandDataDevice *data_device, SDL_WaylandDataOffer *offer);

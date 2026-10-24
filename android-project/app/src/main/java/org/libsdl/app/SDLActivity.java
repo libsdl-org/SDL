@@ -1204,6 +1204,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
     public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
+    public static native void nativeSetScreenHDRHeadroom(float headroom);
     public static native void onNativeResize();
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
@@ -1334,6 +1335,28 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         Log.v(TAG, "setOrientation() requestedOrientation=" + req + " width=" + w +" height="+ h +" resizable=" + resizable + " hint=" + hint);
         mSingleton.setRequestedOrientation(req);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void setDesiredHDRHeadroom(final float headroom) {
+        if (Build.VERSION.SDK_INT < 35 /* Android 15 (V) */) {
+            return;
+        }
+
+        if (mSingleton == null) {
+            return;
+        }
+
+        mSingleton.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mSurface != null) {
+                    mSurface.setDesiredHDRHeadroom(headroom);
+                }
+            }
+        });
     }
 
     /**

@@ -54,6 +54,81 @@
 
 @end
 
+// Return whether a window can take input, e.g. it isn't on a non-interactive external display
+static bool UIKit_IsFocusableWindow(UIWindow *uiwindow)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    return true;
+#else
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        UIWindowScene *scene = uiwindow.windowScene;
+        if (scene) {
+            return [scene.session.role isEqualToString:UIWindowSceneSessionRoleApplication];
+        }
+    }
+    return (uiwindow.screen == [UIScreen mainScreen]);
+#endif
+}
+
+static SDL_Window *UIKit_GetSDLWindow(UIWindow *uiwindow)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        for (SDL_Window *window = _this->windows; window; window = window->next) {
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+            if (data && data.uiwindow == uiwindow) {
+                return window;
+            }
+        }
+    }
+    return NULL;
+}
+
+static id SDL_BecomeKeyObserver;
+static id SDL_ResignKeyObserver;
+
+// Track keyboard focus with the key window of scenes that can take input
+void UIKit_InitWindowFocus(void)
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    SDL_BecomeKeyObserver = [center addObserverForName:UIWindowDidBecomeKeyNotification
+                                                object:nil
+                                                 queue:nil
+                                            usingBlock:^(NSNotification *notification) {
+        UIWindow *uiwindow = (UIWindow *)notification.object;
+        SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
+        if (window && UIKit_IsFocusableWindow(uiwindow)) {
+            SDL_SetKeyboardFocus(window);
+        }
+    }];
+
+    SDL_ResignKeyObserver = [center addObserverForName:UIWindowDidResignKeyNotification
+                                                object:nil
+                                                 queue:nil
+                                            usingBlock:^(NSNotification *notification) {
+        UIWindow *uiwindow = (UIWindow *)notification.object;
+        SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
+        if (window && SDL_GetKeyboardFocus() == window) {
+            SDL_SetKeyboardFocus(NULL);
+        }
+    }];
+}
+
+void UIKit_QuitWindowFocus(void)
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    if (SDL_BecomeKeyObserver) {
+        [center removeObserver:SDL_BecomeKeyObserver];
+        SDL_BecomeKeyObserver = nil;
+    }
+    if (SDL_ResignKeyObserver) {
+        [center removeObserver:SDL_ResignKeyObserver];
+        SDL_ResignKeyObserver = nil;
+    }
+}
+
 static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_PropertiesID create_props, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -192,6 +267,12 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         UIWindow *uiwindow = nil;
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             UIWindowScene *scene = (__bridge UIWindowScene *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER, NULL);
+#ifndef SDL_PLATFORM_VISIONOS
+            if (!scene) {
+                // Use the scene on the window's display, if there is one
+                scene = UIKit_GetWindowSceneForScreen(data.uiscreen);
+            }
+#endif
             if (!scene) {
                 scene = UIKit_GetActiveWindowScene();
             }
@@ -277,12 +358,7 @@ void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         [data.uiwindow makeKeyAndVisible];
 
         // Make this window the current mouse focus for touch input
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
-#ifndef SDL_PLATFORM_VISIONOS
-        if (displaydata.uiscreen == [UIScreen mainScreen])
-#endif
-        {
+        if (UIKit_IsFocusableWindow(data.uiwindow)) {
             SDL_SetMouseFocus(window);
             SDL_SetKeyboardFocus(window);
         }

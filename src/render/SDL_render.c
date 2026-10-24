@@ -878,6 +878,14 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
             renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
         } else
 #endif
+#ifdef SDL_PLATFORM_ANDROID
+        if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            // Android composites PQ in absolute nits, and the SDR white level isn't
+            // available, so assume the BT.2408 reference white of 203 nits for now.
+            const float SDR_reference_white_nits = 203.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else
+#endif
         if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
             // The Vulkan drivers don't set luminance for HDR10 swapchains, so the
             // protocol default reference white of 203 nits is used. For linear
@@ -894,6 +902,20 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
         } else {
             renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
         }
+#ifdef SDL_PLATFORM_ANDROID
+        if (SDL_GetAndroidSDKVersion() < 35) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                // Requesting HDR headroom needs Android 15, and without it Android clips
+                // extended range content to SDR white, so tone map to that instead.
+                renderer->HDR_headroom = 1.0f;
+            }
+        } else {
+            // Ask for as much headroom as the display can do, which lets us report the headroom
+            // that's actually available, and applications can tone map to that. Android only shows
+            // extended range content above SDR white if it requests more than 1.01 headroom.
+            Android_JNI_SetDesiredHDRHeadroom(10000.0f);
+        }
+#endif
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
@@ -5876,6 +5898,14 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     renderer->destroyed = true;
 
+#ifdef SDL_PLATFORM_ANDROID
+    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+        renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+        // We're no longer showing HDR content, so stop requesting HDR headroom
+        Android_JNI_SetDesiredHDRHeadroom(0.0f);
+    }
+#endif
+
     if (renderer->window) {
         SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
         SDL_RemoveWindowRenderer(renderer->window, renderer);
@@ -6096,7 +6126,7 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 
     renderer->wanted_vsync = vsync ? true : false;
 
-    // for the software renderer, forward the call to the WindowTexture renderer
+    // for the software renderer, forward the call to the presentation renderer
 #ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software) {
         if (!renderer->window) {
@@ -6106,7 +6136,7 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
                 return SDL_Unsupported();
             }
         }
-        if (SDL_SetWindowTextureVSync(NULL, renderer->window, vsync)) {
+        if (SDL_SetWindowSurfaceVSync(renderer->window, vsync)) {
             renderer->simulate_vsync = false;
             return true;
         }

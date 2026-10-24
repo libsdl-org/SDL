@@ -1236,9 +1236,9 @@ void SDL_SetDisplayHDRProperties(SDL_VideoDisplay *display, const SDL_HDROutputP
 
     SDL_copyp(&display->HDR, &HDR_clamped);
 
-	if (changed) {
-		SDL_SetBooleanProperty(display->props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, display->HDR.HDR_headroom > 1.0f);
-	}
+    if (changed) {
+        SDL_SetBooleanProperty(display->props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, display->HDR.HDR_headroom > 1.0f);
+    }
 
     if (changed && !SDL_DriverSendsHDRChanges(_this)) {
         for (SDL_Window *w = display->device->windows; w; w = w->next) {
@@ -6265,6 +6265,12 @@ void SDL_OnApplicationWillEnterBackground(void)
         for (window = _this->windows; window; window = window->next) {
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
         }
+
+        // Remember which window had focus so we can restore it when we come back
+        window = SDL_GetKeyboardFocus();
+        if (window) {
+            _this->background_focus_windowID = window->id;
+        }
         SDL_SetKeyboardFocus(NULL);
     }
     SDL_SendAppEvent(SDL_EVENT_WILL_ENTER_BACKGROUND);
@@ -6287,9 +6293,17 @@ void SDL_OnApplicationDidEnterForeground(void)
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window; window = window->next) {
-            SDL_SetKeyboardFocus(window);
             SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESTORED, 0, 0);
         }
+
+        // Restore focus to the window that had it before we went into the background
+        if (_this->background_focus_windowID && !SDL_GetKeyboardFocus()) {
+            window = SDL_GetWindowFromID(_this->background_focus_windowID);
+            if (window) {
+                SDL_SetKeyboardFocus(window);
+            }
+        }
+        _this->background_focus_windowID = 0;
     }
 }
 

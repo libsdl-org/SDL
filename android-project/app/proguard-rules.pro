@@ -42,6 +42,7 @@
     boolean setActivityTitle(java.lang.String);
     void setBackButtonTrapEnabled(boolean);
     boolean setCustomCursor(int);
+    void setDesiredHDRHeadroom(float);
     void setOrientation(int, int, boolean, java.lang.String);
     boolean setRelativeMouseEnabled(boolean);
     boolean setSystemCursor(int);
