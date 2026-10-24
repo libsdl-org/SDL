@@ -1261,8 +1261,8 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
             // The Steam Deck's built-in controller has QAM, 4 back buttons, L/R trackpads, and L/R capacitive touch sticks
             SDL_strlcat(mapping_string, "misc1:b11,paddle1:b12,paddle2:b13,paddle3:b14,paddle4:b15,touchpad:b17,misc2:b16", sizeof(mapping_string));
         } else if (SDL_IsJoystickSteamTriton(vendor, product)) {
-            // Second generation Steam controllers have 4 back paddle buttons
-            SDL_strlcat(mapping_string, "misc1:b11,paddle1:b12,paddle2:b13,paddle3:b14,paddle4:b15,touchpad:b17,misc2:b16", sizeof(mapping_string));
+            // Second generation Steam controllers have 4 back paddle buttons, 2 trackpad clicks, and digital trigger clicks
+            SDL_strlcat(mapping_string, "misc1:b11,paddle1:b12,paddle2:b13,paddle3:b14,paddle4:b15,touchpad:b17,misc2:b16,misc3:b18,misc4:b19", sizeof(mapping_string));
         } else if (SDL_IsJoystickNintendoSwitchPro(vendor, product) ||
                    SDL_IsJoystickNintendoSwitchProInputOnly(vendor, product)) {
             // Nintendo Switch Pro controllers have a screenshot button
