@@ -339,6 +339,10 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     } else {
         format = AAUDIO_FORMAT_PCM_I16;  // sint16 is a safe bet for everything else.
     }
+    if (recording && format == AAUDIO_FORMAT_PCM_FLOAT && SDL_GetAndroidSDKVersion() == 29) {
+        // Android 10 crashes converting recorded 16-bit data to float with a fixed callback size
+        format = AAUDIO_FORMAT_PCM_I16;
+    }
     ctx.AAudioStreamBuilder_setFormat(builder, format);
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
