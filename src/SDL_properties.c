@@ -351,7 +351,7 @@ static bool SDL_SetupPropertyAssignment(SDL_PropertiesID props, const char *name
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)properties);
-    CHECK_PARAM(!properties) {
+    if (!(*properties)) {
         return SDL_InvalidParamError("props");
     }
 
@@ -605,7 +605,7 @@ static bool SDL_SetupPropertyQuery(SDL_PropertiesID props, const char *name, SDL
     }
 
     SDL_FindInHashTable(SDL_properties, (const void *)(uintptr_t)props, (const void **)properties);
-    CHECK_PARAM(!properties) {
+    if (!(*properties)) {
         return false;
     }
 
