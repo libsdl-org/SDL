@@ -716,6 +716,10 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             }
         }
 
+        /* Note: We don't handle RI_MOUSE_WHEEL and RI_MOUSE_HWHEEL here because some
+           input devices have inverted wheel direction in raw mode. This avoids scroll
+           direction changing unexpectedly when entering/exiting relative mouse mode. */
+
         /* Invalidate the mouse button flags. If we don't do this then disabling raw input
            will cause held down mouse buttons to persist when released. */
         windowdata->mouse_button_flags = (WPARAM)-1;
