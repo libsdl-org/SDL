@@ -66,6 +66,10 @@ xcuserdata
 *.xcworkspace
 Xcode/build.xcconfig
 
+# for SwiftPM
+.build/
+.swiftpm/
+
 # for Visual Studio Code
 .vscode/
 

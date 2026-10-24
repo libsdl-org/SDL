@@ -109,7 +109,13 @@ struct SDL_Tray {
     }
 
     if (show_menu && self.tray->menu) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 10.14 in favor of NSStatusItem's menu property, but that
+        // makes AppKit show the menu itself on every click, which would bypass the
+        // click callbacks above that can suppress showing the menu.
         [self.tray->statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+#pragma clang diagnostic pop
     }
 }
 
