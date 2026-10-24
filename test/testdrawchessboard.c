@@ -144,6 +144,11 @@ int main(int argc, char *argv[])
     }
 #ifdef USE_SOFTWARE_RENDERER
     surface = SDL_GetWindowSurface(window);
+    if (!surface) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Surface creation for window fail : %s", SDL_GetError());
+        return 1;
+    }
+
     renderer = SDL_CreateSoftwareRenderer(surface);
 #else
     renderer = SDL_CreateRenderer(window, NULL);
