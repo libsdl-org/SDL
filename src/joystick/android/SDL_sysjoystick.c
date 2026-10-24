@@ -447,7 +447,7 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     item->can_rumble = can_rumble;
     item->has_rgb_led = has_rgb_led;
     item->has_accelerometer = has_accelerometer;
-    item->has_gyroscope = has_accelerometer;
+    item->has_gyroscope = has_gyroscope;
     item->device_instance = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
