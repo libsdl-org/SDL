@@ -899,7 +899,7 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 }
 
-static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
+static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat)
 {
     // Pointer is immobilized, do nothing.
     if (seat->pointer.locked_pointer) {
@@ -908,6 +908,7 @@ static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
 
     SDL_WindowData *window_data = seat->pointer.focus;
     SDL_Window *window = window_data->sdlwindow;
+    const Uint32 serial = seat->last_implicit_grab_serial;
 
     if (window->hit_test) {
         static const uint32_t directions[] = {
@@ -931,17 +932,13 @@ static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
 #ifdef HAVE_LIBDECOR_H
             if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
                 if (window_data->shell_surface.libdecor.frame) {
-                    libdecor_frame_move(window_data->shell_surface.libdecor.frame,
-                                        seat->wl_seat,
-                                        serial);
+                    libdecor_frame_move(window_data->shell_surface.libdecor.frame, seat->wl_seat, serial);
                 }
             } else
 #endif
                 if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
                 if (window_data->shell_surface.xdg.toplevel.xdg_toplevel) {
-                    xdg_toplevel_move(window_data->shell_surface.xdg.toplevel.xdg_toplevel,
-                                      seat->wl_seat,
-                                      serial);
+                    xdg_toplevel_move(window_data->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, serial);
                 }
             }
             return true;
@@ -957,18 +954,14 @@ static bool Wayland_ProcessHitTest(SDL_WaylandSeat *seat, Uint32 serial)
 #ifdef HAVE_LIBDECOR_H
             if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
                 if (window_data->shell_surface.libdecor.frame) {
-                    libdecor_frame_resize(window_data->shell_surface.libdecor.frame,
-                                          seat->wl_seat,
-                                          serial,
+                    libdecor_frame_resize(window_data->shell_surface.libdecor.frame, seat->wl_seat, serial,
                                           directions_libdecor[window_data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             } else
 #endif
                 if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
                 if (window_data->shell_surface.xdg.toplevel.xdg_toplevel) {
-                    xdg_toplevel_resize(window_data->shell_surface.xdg.toplevel.xdg_toplevel,
-                                        seat->wl_seat,
-                                        serial,
+                    xdg_toplevel_resize(window_data->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, serial,
                                         directions[window_data->hit_test_result - SDL_HITTEST_RESIZE_TOPLEFT]);
                 }
             }
@@ -992,7 +985,7 @@ static void pointer_dispatch_button(SDL_WaylandSeat *seat, Uint8 sdl_button, boo
         if (down) {
             seat->pointer.buttons_pressed |= SDL_BUTTON_MASK(sdl_button);
 
-            if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat, seat->last_implicit_grab_serial)) {
+            if (sdl_button == SDL_BUTTON_LEFT && Wayland_ProcessHitTest(seat)) {
                 return; // don't pass this event on to app.
             }
         } else {

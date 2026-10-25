@@ -39,20 +39,20 @@ typedef struct Wayland_PrimarySelectionDevice Wayland_PrimarySelectionDevice;
 // Data device (clipboard and drag & drop)
 extern bool Wayland_CreateDataDevice(SDL_WaylandSeat *seat);
 extern void Wayland_DestroyDataDevice(Wayland_DataDevice *data_device);
+extern bool Wayland_DataDeviceHasSelectionSource(Wayland_DataDevice *data_device);
 extern bool Wayland_DataDeviceSetSelectionSource(Wayland_DataDevice *data_device, const char *const *mime_types, size_t mime_count,
                                                  SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata, Uint32 sequence);
-extern void Wayland_DataDeviceDestroySelectionOffer(Wayland_DataDevice *data_device, bool clear);
 extern bool Wayland_DataDeviceSelectionOfferHasMIME(Wayland_DataDevice *data_device, const char *mime_type);
-extern bool Wayland_DataDeviceHasSelectionSource(Wayland_DataDevice *data_device);
 extern void *Wayland_DataDeviceReceiveSelectionOffer(Wayland_DataDevice *data_device, const char *mime_type, size_t *length);
+extern void Wayland_DataDeviceDestroySelectionOffer(Wayland_DataDevice *data_device, bool clear);
 extern void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, SDL_Window *window);
 
 // Primary selection
 extern bool Wayland_CreatePrimarySelectionDevice(SDL_WaylandSeat *seat);
 extern void Wayland_DestroyPrimarySelectionDevice(Wayland_PrimarySelectionDevice *primary_selection_device);
-extern bool Wayland_PrimarySelectionDeviceSetText(Wayland_PrimarySelectionDevice *primary_selection_device, const char *text);
-extern char *Wayland_PrimarySelectionDeviceGetText(Wayland_PrimarySelectionDevice *primary_selection_device, size_t *length);
 extern bool Wayland_PrimarySelectionDeviceHasText(Wayland_PrimarySelectionDevice *primary_selection_device);
+extern char *Wayland_PrimarySelectionDeviceGetText(Wayland_PrimarySelectionDevice *primary_selection_device, size_t *length);
+extern bool Wayland_PrimarySelectionDeviceSetText(Wayland_PrimarySelectionDevice *primary_selection_device, const char *text);
 extern void Wayland_PrimarySelectionDeviceDestroyOffer(Wayland_PrimarySelectionDevice *primary_selection_device);
 
 #endif // SDL_waylanddatamanager_h_

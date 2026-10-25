@@ -1148,10 +1148,10 @@ static const struct zwp_primary_selection_device_v1_listener primary_selection_d
     primary_selection_device_handle_selection
 };
 
-static void Wayland_DataDeviceSetID(Wayland_DataDevice *data_device)
+static void DataDeviceSetID(Wayland_DataDevice *data_device)
 {
-    if (!data_device->id_str)
 #ifdef SDL_USE_LIBDBUS
+    if (!data_device->id_str)
     {
         SDL_DBusContext *dbus = SDL_DBus_GetContext();
         if (dbus) {
@@ -1161,8 +1161,8 @@ static void Wayland_DataDeviceSetID(Wayland_DataDevice *data_device)
             }
         }
     }
-    if (!data_device->id_str)
 #endif
+    if (!data_device->id_str)
     {
         char id[24];
         Uint64 pid = (Uint64)getpid();
@@ -1190,7 +1190,7 @@ bool Wayland_CreateDataDevice(SDL_WaylandSeat *seat)
         return false;
     }
 
-    Wayland_DataDeviceSetID(data_device);
+    DataDeviceSetID(data_device);
     WAYLAND_wl_list_init(&data_device->pending_drops);
     wl_data_device_set_user_data(data_device->data_device, data_device);
     wl_data_device_add_listener(data_device->data_device, &data_device_listener, data_device);
