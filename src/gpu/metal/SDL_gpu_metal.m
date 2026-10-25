@@ -4464,11 +4464,10 @@ static void METAL_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(createinfo);
     createinfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    createinfo.enable_anisotropy = 0;
-    createinfo.enable_compare = 0;
     createinfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.min_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
