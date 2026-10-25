@@ -415,6 +415,8 @@ typedef struct SDL_AudioSpec
  * This reports on the size of an audio sample frame: stereo Sint16 data (2
  * channels of 2 bytes each) would be 4 bytes per frame, for example.
  *
+ * This casts the value to unsigned int to avoid implicit sign conversion.
+ *
  * \param x an SDL_AudioSpec to query.
  * \returns the number of bytes used per sample frame.
  *
@@ -422,7 +424,7 @@ typedef struct SDL_AudioSpec
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_AUDIO_FRAMESIZE(x) (SDL_AUDIO_BYTESIZE((x).format) * (x).channels)
+#define SDL_AUDIO_FRAMESIZE(x) (((unsigned int)SDL_AUDIO_BYTESIZE((x).format)) * ((unsigned int)((x).channels)))
 
 /**
  * The opaque handle that represents an audio stream.
