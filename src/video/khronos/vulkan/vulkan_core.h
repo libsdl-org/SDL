@@ -61,7 +61,7 @@ extern "C" {
 
 //#define VK_API_VERSION VK_MAKE_API_VERSION(0, 1, 0, 0) // Patch version should always be set to 0
 // Version of this file
-#define VK_HEADER_VERSION 365
+#define VK_HEADER_VERSION 366
 // Complete version of this file
 #define VK_HEADER_VERSION_COMPLETE VK_MAKE_API_VERSION(0, 1, 4, VK_HEADER_VERSION)
 
@@ -1490,6 +1490,9 @@ typedef enum VkStructureType {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_ALLOCATION_ALIGNMENT_FEATURES_VALVE = 1000709000,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_ALLOCATION_ALIGNMENT_PROPERTIES_VALVE = 1000709001,
     VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_ALIGNMENT_ALLOCATE_INFO_VALVE = 1000709002,
+    VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HDR_SMPTE_ST_209450_FEATURES_GOOGLE = 1000718000,
+    VK_STRUCTURE_TYPE_HDR_SMPTE_ST_209450_GOOGLE = 1000718001,
+    VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_HDR_SMPTE_ST_209450_GOOGLE = 1000718002,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES,
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETER_FEATURES = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES,
   // VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT is a legacy alias
@@ -1830,6 +1833,7 @@ typedef enum VkVendorId {
     VK_VENDOR_ID_POCL = 0x10006,
     VK_VENDOR_ID_MOBILEYE = 0x10007,
     VK_VENDOR_ID_APE = 0x10008,
+    VK_VENDOR_ID_APEX = 0x10009,
     VK_VENDOR_ID_MAX_ENUM = 0x7FFFFFFF
 } VkVendorId;
 
@@ -6216,6 +6220,9 @@ typedef enum VkDriverId {
     VK_DRIVER_ID_MESA_GFXSTREAM = 29,
     VK_DRIVER_ID_APE_SOFT = 30,
     VK_DRIVER_ID_RESERVED_31 = 31,
+    VK_DRIVER_ID_APEX = 32,
+    VK_DRIVER_ID_NIKKI = 33,
+    VK_DRIVER_ID_MOMOTEN = 34,
     VK_DRIVER_ID_AMD_PROPRIETARY_KHR = VK_DRIVER_ID_AMD_PROPRIETARY,
     VK_DRIVER_ID_AMD_OPEN_SOURCE_KHR = VK_DRIVER_ID_AMD_OPEN_SOURCE,
     VK_DRIVER_ID_MESA_RADV_KHR = VK_DRIVER_ID_MESA_RADV,
@@ -27178,6 +27185,40 @@ typedef struct VkBufferDeviceAddressAlignmentAllocateInfoVALVE {
     void*              pNext;
     uint32_t           alignment;
 } VkBufferDeviceAddressAlignmentAllocateInfoVALVE;
+
+
+
+// VK_GOOGLE_hdr_smpte_st_209450_metadata is a preprocessor guard. Do not pass it to API calls.
+#define VK_GOOGLE_hdr_smpte_st_209450_metadata 1
+
+#define VK_GOOGLE_HDR_SMPTE_ST_209450_METADATA_SPEC_VERSION 1
+#define VK_GOOGLE_HDR_SMPTE_ST_209450_METADATA_EXTENSION_NAME "VK_GOOGLE_hdr_smpte_st_209450_metadata"
+
+typedef enum VkHdrSmpteSt209450PowerPreferenceGOOGLE {
+    VK_HDR_SMPTE_ST_209450_POWER_PREFERENCE_COLOR_ACCURACY_GOOGLE = 0,
+    VK_HDR_SMPTE_ST_209450_POWER_PREFERENCE_LOW_POWER_GOOGLE = 1,
+    VK_HDR_SMPTE_ST_209450_POWER_PREFERENCE_MAX_ENUM_GOOGLE = 0x7FFFFFFF
+} VkHdrSmpteSt209450PowerPreferenceGOOGLE;
+
+typedef struct VkPhysicalDeviceHdrSmpteSt209450FeaturesGOOGLE {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           hdrSmpteSt209450;
+} VkPhysicalDeviceHdrSmpteSt209450FeaturesGOOGLE;
+
+typedef struct VkHdrSmpteSt209450GOOGLE {
+    VkStructureType                            sType;
+    const void*                                pNext;
+    size_t                                     metadataSize;
+    const void*                                pMetadata;
+    VkHdrSmpteSt209450PowerPreferenceGOOGLE    powerPreference;
+} VkHdrSmpteSt209450GOOGLE;
+
+typedef struct VkSurfaceCapabilitiesHdrSmpteSt209450GOOGLE {
+    VkStructureType    sType;
+    void*              pNext;
+    VkBool32           hdrSmpteSt209450Supported;
+} VkSurfaceCapabilitiesHdrSmpteSt209450GOOGLE;
 
 
 
