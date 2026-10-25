@@ -8480,6 +8480,7 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(samplerCreateInfo);
     samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
