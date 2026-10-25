@@ -226,6 +226,15 @@ struct SDL_VideoDevice
     bool (*VideoInit)(SDL_VideoDevice *_this);
 
     /*
+     * Called when Video subsystem is beginning to terminate. This allows for
+     * special case code that need to happen before internal SDL bits
+     * clean up that must happen before VideoQuit(). An example is stopping
+     * a hotplug thread that might add mice/keyboards after SDL has cleaned
+     * up its internal list. Most work is meant to happen in VideoQuit, though.
+     */
+    void (*VideoPreQuit)(SDL_VideoDevice *_this);
+
+    /*
      * Reverse the effects VideoInit() -- called if VideoInit() fails or
      * if the application is shutting down the video subsystem.
      */
