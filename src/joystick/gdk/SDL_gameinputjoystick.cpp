@@ -88,17 +88,7 @@ static Uint64 g_GameInputTimestampOffset;
 #if GAMEINPUT_API_VERSION < 4
 static const GameInputDeviceInfo *GAMEINPUT_GetGameInputDeviceInfo(IGameInputDevice *pDevice)
 {
-    const GameInputDeviceInfo *info = NULL;
-#if GAMEINPUT_API_VERSION >= 1
-    HRESULT hr = pDevice->GetDeviceInfo(&info);
-    if (FAILED(hr)) {
-        WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
-        return NULL;
-    }
-#else
-    info = pDevice->GetDeviceInfo();
-#endif
-    return info;
+    return pDevice->GetDeviceInfo();
 }
 #endif
 
@@ -114,18 +104,10 @@ static bool GAMEINPUT_InternalIsGamepad(IGameInputDevice *pDevice)
 
 static Uint8 GAMEINPUT_GetDeviceRawType(IGameInputDevice *pDevice)
 {
-#if GAMEINPUT_API_VERSION >= 3
-
 #if GAMEINPUT_API_VERSION >= 4
     GameInputKind supportedInput = pDevice->GetSupportedInput();
     uint16_t vendorId = pDevice->GetVendorId();
     uint16_t productId = pDevice->GetProductId();
-#else
-    const GameInputDeviceInfo *info = GAMEINPUT_GetGameInputDeviceInfo(pDevice);
-    GameInputKind supportedInput = info->supportedInput;
-    uint16_t vendorId = info->vendorId;
-    uint16_t productId = info->productId;
-#endif
 
     if (supportedInput & GameInputKindRawDeviceReport) {
         switch (vendorId) {
@@ -180,7 +162,7 @@ static Uint8 GAMEINPUT_GetDeviceRawType(IGameInputDevice *pDevice)
                 break;
         }
     }
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
     return SDL_GAMEINPUT_RAWTYPE_NONE;
 }
 static Uint8 GAMEINPUT_GetDeviceSubtype(IGameInputDevice *pDevice)
@@ -213,7 +195,7 @@ static Uint8 GAMEINPUT_GetDeviceSubtype(IGameInputDevice *pDevice)
     return 0;
 }
 
-#if GAMEINPUT_API_VERSION >= 1
+#if GAMEINPUT_API_VERSION >= 4
 static int GetSteamVirtualGamepadSlot(const char *device_path)
 {
     int slot = -1;
@@ -223,7 +205,7 @@ static int GetSteamVirtualGamepadSlot(const char *device_path)
     (void)SDL_sscanf(device_path, "\\\\.\\pipe\\HID#VID_045E&PID_028E&IG_00#%*X&%*X&%*X#%d#%*u", &slot);
     return slot;
 }
-#endif // GAMEINPUT_API_VERSION >= 1
+#endif // GAMEINPUT_API_VERSION >= 4
 
 static bool IsXbox360WirelessAdapter(Uint16 vendor, Uint16 product)
 {
@@ -261,15 +243,9 @@ static void QueryDeviceName(IGameInputDevice *pDevice, Uint16 vendor_id, Uint16 
     }
 #else
     const GameInputDeviceInfo *info = GAMEINPUT_GetGameInputDeviceInfo(pDevice);
-#if GAMEINPUT_API_VERSION >= 1
-    if (info->displayName) {
-        *product_string = SDL_strdup(info->displayName);
-    }
-#else
     if (info->displayName) {
         *product_string = SDL_strdup(info->displayName->data);
     }
-#endif
     if (!info->displayName) {
         *product_string = NULL;
     }
@@ -301,15 +277,7 @@ static void GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     vendor = pDevice->GetVendorId();
     product = pDevice->GetProductId();
 #else
-#if GAMEINPUT_API_VERSION >= 1
-    HRESULT hr = pDevice->GetDeviceInfo(&info);
-    if (FAILED(hr)) {
-        WIN_SetErrorFromHRESULT("IGameInputDevice::GetDeviceInfo", hr);
-        return;
-    }
-#else
     info = pDevice->GetDeviceInfo();
-#endif
     vendor = info->vendorId;
     product = info->productId;
 #endif
@@ -420,8 +388,6 @@ static void GAMEINPUT_InternalAddOrFind(IGameInputDevice *pDevice)
     char pnpPath[256];
     pDevice->GetPnpPath(sizeof(pnpPath), pnpPath);
     elem->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(pnpPath);
-#elif GAMEINPUT_API_VERSION >= 1
-    elem->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(info->pnpPath);
 #else
     elem->steam_virtual_gamepad_slot = -1;
 #endif
@@ -526,7 +492,7 @@ static void GAMEINPUT_JoystickQuit(void);
 
 static bool GAMEINPUT_IsRawGameInputEnabled(void)
 {
-#if GAMEINPUT_API_VERSION >= 3
+#if GAMEINPUT_API_VERSION >= 4
     return SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT_RAW, true);
 #else
     return false;
@@ -549,15 +515,13 @@ static bool GAMEINPUT_JoystickInit(void)
     // SDL manages focus policy at a higher level, so we can set this unconditionally.
 #if GAMEINPUT_API_VERSION >= 4
     g_pGameInput->EnableBackgroundInput(true);
-#elif GAMEINPUT_API_VERSION >= 2
-    g_pGameInput->SetFocusPolicy(GameInputEnableBackgroundInput | GameInputEnableBackgroundGuideButton | GameInputEnableBackgroundShareButton);
 #endif
 
     GameInputKind kind = GameInputKindUnknown;
     if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
         kind |= GameInputKindController;
     }
-#if GAMEINPUT_API_VERSION >= 3
+#if GAMEINPUT_API_VERSION >= 4
     if (GAMEINPUT_IsRawGameInputEnabled()) {
         kind |= GameInputKindRawDeviceReport;
     }
@@ -722,35 +686,6 @@ static void GAMEINPUT_UpdatePowerInfo(SDL_Joystick *joystick, IGameInputDevice *
 #endif
 }
 
-#if GAMEINPUT_API_VERSION >= 1 && GAMEINPUT_API_VERSION < 4
-static void CALLBACK GAMEINPUT_InternalSystemButtonCallback(
-    _In_ GameInputCallbackToken callbackToken,
-    _In_ void * context,
-    _In_ IGameInputDevice * device,
-    _In_ uint64_t timestampUS,
-    _In_ GameInputSystemButtons currentButtons,
-    _In_ GameInputSystemButtons previousButtons)
-{
-    SDL_Joystick *joystick = (SDL_Joystick *)context;
-
-    GameInputSystemButtons changedButtons = (previousButtons ^ currentButtons);
-    if (changedButtons) {
-        Uint64 timestamp = SDL_US_TO_NS(timestampUS + g_GameInputTimestampOffset);
-
-        SDL_LockJoysticks();
-        if (changedButtons & GameInputSystemButtonGuide) {
-            bool down = ((currentButtons & GameInputSystemButtonGuide) != 0);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, down);
-        }
-        if (changedButtons & GameInputSystemButtonShare) {
-            bool down = ((currentButtons & GameInputSystemButtonShare) != 0);
-            SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE, down);
-        }
-        SDL_UnlockJoysticks();
-    }
-}
-#endif // GAMEINPUT_API_VERSION >= 1
-
 static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 {
     GAMEINPUT_InternalDevice *elem = GAMEINPUT_InternalFindByIndex(device_index);
@@ -784,33 +719,17 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
             device->GetSupportedSystemButtons() & GameInputSystemButtonShare) {
             ++joystick->nbuttons;
         }
-#elif GAMEINPUT_API_VERSION >= 1
-        if (info->supportedSystemButtons != GameInputSystemButtonNone) {
-            GameInputSystemButtons buttons = GameInputSystemButtonGuide;
-
-            if (SDL_IsJoystickXboxSeriesX(elem->vendor, elem->product) &&
-                (info->supportedSystemButtons & GameInputSystemButtonShare)) {
-                ++joystick->nbuttons;
-                buttons |= GameInputSystemButtonShare;
-            }
-
-            g_pGameInput->RegisterSystemButtonCallback(elem->device, buttons, joystick, GAMEINPUT_InternalSystemButtonCallback, &hwdata->system_button_callback_token);
-        }
-#endif // GAMEINPUT_API_VERSION >= 1
+#endif // GAMEINPUT_API_VERSION >= 4
     } else {
 #if GAMEINPUT_API_VERSION >= 4
         joystick->naxes = device->GetControllerAxisCount();
         joystick->nbuttons = device->GetControllerButtonCount();
         joystick->nhats = device->GetControllerSwitchCount();
-#elif GAMEINPUT_API_VERSION >= 3
-        joystick->naxes = info->controllerInfo->controllerAxisCount;
-        joystick->nbuttons = info->controllerInfo->controllerButtonCount;
-        joystick->nhats = info->controllerInfo->controllerSwitchCount;
 #else
         joystick->naxes = info->controllerAxisCount;
         joystick->nbuttons = info->controllerButtonCount;
         joystick->nhats = info->controllerSwitchCount;
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
     }
 
 #if GAMEINPUT_API_VERSION >= 4
@@ -836,16 +755,7 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
             SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 60.0f);
         }
     }
-#elif GAMEINPUT_API_VERSION >= 3
-    if (info->supportedInput & GameInputKindSensors) {
-        if (info->sensorsInfo->supportedSensors & GameInputSensorsGyrometer) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 60.0f);
-        }
-        if (info->sensorsInfo->supportedSensors & GameInputSensorsAccelerometer) {
-            SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 60.0f);
-        }
-    }
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
 
     return true;
 }
@@ -889,7 +799,7 @@ static bool GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool ena
 }
 static void GAMEINPUT_DrumUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp)
 {
-#if GAMEINPUT_API_VERSION >= 3
+#if GAMEINPUT_API_VERSION >= 4
     IGameInputRawDeviceReport *rawState;
     if (reading->GetRawReport(&rawState)) {
         uint8_t rawData[40];
@@ -925,11 +835,11 @@ static void GAMEINPUT_DrumUpdate(SDL_Joystick *joystick, IGameInputReading *read
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, rawData[4] || rawData[5]);
         }
     }
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
 }
 static void GAMEINPUT_GuitarUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp)
 {
-#if GAMEINPUT_API_VERSION >= 3
+#if GAMEINPUT_API_VERSION >= 4
     IGameInputRawDeviceReport *rawState;
     if (reading->GetRawReport(&rawState)) {
         static WORD s_GuitarButtons[] = {
@@ -982,7 +892,7 @@ static void GAMEINPUT_GuitarUpdate(SDL_Joystick *joystick, IGameInputReading *re
             SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[rawData[4] >> 4]);
         }
     }
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
 }
 
 static void GAMEINPUT_GamepadUpdate(SDL_Joystick *joystick, IGameInputReading *reading, Uint64 timestamp) {
@@ -1148,19 +1058,15 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         GAMEINPUT_ControllerUpdate(joystick, reading, timestamp);
     }
 
-#if GAMEINPUT_API_VERSION >= 3
+#if GAMEINPUT_API_VERSION >= 4
     if (hwdata->report_sensors) {
         GameInputSensorsState sensor_state;
 
         if (reading->GetSensorsState(&sensor_state)) {
             GameInputSensorsKind supportedSensors;
-#if GAMEINPUT_API_VERSION >= 4
             GameInputSensorsInfo sensorsInfo;
             device->GetSensorsInfo(&sensorsInfo);
             supportedSensors = sensorsInfo.supportedSensors;
-#else
-            supportedSensors = info->sensorsInfo->supportedSensors;
-#endif
             if ((supportedSensors & GameInputSensorsGyrometer) != 0) {
                 float data[3] = {
                     sensor_state.angularVelocityInRadPerSecX,
@@ -1179,7 +1085,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
             }
         }
     }
-#endif // GAMEINPUT_API_VERSION >= 3
+#endif // GAMEINPUT_API_VERSION >= 4
 
     reading->Release();
 
@@ -1193,11 +1099,7 @@ static void GAMEINPUT_JoystickClose(SDL_Joystick *joystick)
 
 #if GAMEINPUT_API_VERSION < 4
     if (hwdata->system_button_callback_token) {
-#if GAMEINPUT_API_VERSION >= 1
-        g_pGameInput->UnregisterCallback(hwdata->system_button_callback_token);
-#else
         g_pGameInput->UnregisterCallback(hwdata->system_button_callback_token, 10000);
-#endif
     }
 #endif
     SDL_free(hwdata);
@@ -1210,7 +1112,7 @@ static void GAMEINPUT_JoystickQuit(void)
     if (g_pGameInput) {
         // free the callback
         if (g_GameInputCallbackToken) {
-#if GAMEINPUT_API_VERSION >= 1
+#if GAMEINPUT_API_VERSION >= 4
             g_pGameInput->UnregisterCallback(g_GameInputCallbackToken);
 #else
             g_pGameInput->UnregisterCallback(g_GameInputCallbackToken, 10000);
@@ -1251,12 +1153,8 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
     out->back.kind = EMappingKind_Button;
     out->back.target = SDL_GAMEPAD_BUTTON_BACK;
 
-#if GAMEINPUT_API_VERSION >= 1
 #if GAMEINPUT_API_VERSION >= 4
     GameInputSystemButtons supportedSystemButtons = elem->device->GetSupportedSystemButtons();
-#else
-    GameInputSystemButtons supportedSystemButtons = elem->info->supportedSystemButtons;
-#endif
     if (supportedSystemButtons & GameInputSystemButtonGuide) {
         out->guide.kind = EMappingKind_Button;
         out->guide.target = SDL_GAMEPAD_BUTTON_GUIDE;
@@ -1267,7 +1165,7 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         out->misc1.kind = EMappingKind_Button;
         out->misc1.target = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
     }
-#endif // GAMEINPUT_API_VERSION >= 1
+#endif // GAMEINPUT_API_VERSION >= 4
 
     out->start.kind = EMappingKind_Button;
     out->start.target = SDL_GAMEPAD_BUTTON_START;

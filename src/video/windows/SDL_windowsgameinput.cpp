@@ -76,14 +76,7 @@ static bool GAMEINPUT_InternalAddOrFind(WIN_GameInputData *data, IGameInputDevic
 #if GAMEINPUT_API_VERSION < 4
     const GameInputDeviceInfo *info;
 
-#if GAMEINPUT_API_VERSION >= 1
-    HRESULT hr = pDevice->GetDeviceInfo(&info);
-    if (FAILED(hr)) {
-        return WIN_SetErrorFromHRESULT("IGameInputDevice_GetDeviceInfo", hr);
-    }
-#else
     info = pDevice->GetDeviceInfo();
-#endif
 #endif
 
     SDL_LockMutex(data->lock);
@@ -626,7 +619,7 @@ void WIN_QuitGameInput(SDL_VideoDevice *_this)
     if (data->pGameInput) {
         // free the callback
         if (data->gameinput_callback_token) {
-#if GAMEINPUT_API_VERSION >= 1
+#if GAMEINPUT_API_VERSION >= 4
             data->pGameInput->UnregisterCallback(data->gameinput_callback_token);
 #else
             data->pGameInput->UnregisterCallback(data->gameinput_callback_token, 10000);
