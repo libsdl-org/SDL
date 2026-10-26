@@ -597,7 +597,7 @@ bool SDL_HasProperty(SDL_PropertiesID props, const char *name)
 
 static bool SDL_SetupPropertyQuery(SDL_PropertiesID props, const char *name, SDL_Properties **properties)
 {
-    CHECK_PARAM(!props) {
+    if(!props) {
         return false;
     }
     CHECK_PARAM(!name || !*name) {
