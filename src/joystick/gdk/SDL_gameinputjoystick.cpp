@@ -74,6 +74,12 @@ typedef struct joystick_hwdata
 {
     GAMEINPUT_InternalDevice *devref;
     bool report_sensors;
+#if GAMEINPUT_API_VERSION >= 4
+    GameInputSensorsKind supported_sensors;
+    GameInputGamepadButtons supported_paddles;
+    Uint8 first_paddle_button;
+    bool led_changed;
+#endif
     GameInputRumbleParams rumbleParams;
 #if GAMEINPUT_API_VERSION < 4 // g_pGameInput->RegisterSystemButtonCallback no longer exists in GameInput v4, so no need for a callback token
     GameInputCallbackToken system_button_callback_token;
@@ -101,6 +107,45 @@ static bool GAMEINPUT_InternalIsGamepad(IGameInputDevice *pDevice)
 #endif
     return (supportedInput & GameInputKindGamepad) != 0;
 }
+
+#if GAMEINPUT_API_VERSION >= 4
+// Paddles in SDL button order
+static const GameInputGamepadButtons GAMEINPUT_Paddles[] = {
+    GameInputGamepadPaddleRight1,
+    GameInputGamepadPaddleLeft1,
+    GameInputGamepadPaddleRight2,
+    GameInputGamepadPaddleLeft2,
+};
+
+static bool GAMEINPUT_HasShareButton(IGameInputDevice *pDevice, Uint16 vendor, Uint16 product)
+{
+    // GameInput reports that the Xbox Elite Series 2 has the share button, so check SDL's list first
+    if (SDL_IsJoystickXboxSeriesX(vendor, product) &&
+        (pDevice->GetSupportedSystemButtons() & GameInputSystemButtonShare)) {
+        return true;
+    }
+    return false;
+}
+
+static GameInputGamepadButtons GAMEINPUT_GetSupportedPaddles(IGameInputDevice *pDevice)
+{
+    GameInputGamepadInfo info;
+    if (pDevice->GetGamepadInfo(&info)) {
+        return (GameInputGamepadButtons)(info.supportedLayout & GameInputGamepadModulePaddles4);
+    }
+    return GameInputGamepadNone;
+}
+
+// Paddles follow the standard buttons and the optional share button
+static int GAMEINPUT_GetFirstPaddleButton(IGameInputDevice *pDevice, Uint16 vendor, Uint16 product)
+{
+    int paddle_button_start = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
+    if (GAMEINPUT_HasShareButton(pDevice, vendor, product)) {
+        ++paddle_button_start;
+    }
+    return paddle_button_start;
+}
+#endif // GAMEINPUT_API_VERSION >= 4
 
 static Uint8 GAMEINPUT_GetDeviceRawType(IGameInputDevice *pDevice)
 {
@@ -635,6 +680,12 @@ static int GAMEINPUT_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
 
 static int GAMEINPUT_JoystickGetDevicePlayerIndex(int device_index)
 {
+#if GAMEINPUT_API_VERSION >= 4
+    uint32_t xinput_index;
+    if (GAMEINPUT_InternalFindByIndex(device_index)->device->GetXInputDeviceIndex(&xinput_index)) {
+        return (int)xinput_index;
+    }
+#endif
     return -1;
 }
 
@@ -715,9 +766,20 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
         joystick->nhats = 1;
 
 #if GAMEINPUT_API_VERSION >= 4
-        if (SDL_IsJoystickXboxSeriesX(elem->vendor, elem->product) &&
-            device->GetSupportedSystemButtons() & GameInputSystemButtonShare) {
+        if (GAMEINPUT_HasShareButton(device, elem->vendor, elem->product)) {
             ++joystick->nbuttons;
+        }
+        if (GAMEINPUT_InternalIsGamepad(device)) {
+            hwdata->supported_paddles = GAMEINPUT_GetSupportedPaddles(device);
+            if (hwdata->supported_paddles) {
+                hwdata->first_paddle_button = (Uint8)GAMEINPUT_GetFirstPaddleButton(device, elem->vendor, elem->product);
+                SDL_assert(hwdata->first_paddle_button == joystick->nbuttons);
+                for (size_t i = 0; i < SDL_arraysize(GAMEINPUT_Paddles); ++i) {
+                    if (hwdata->supported_paddles & GAMEINPUT_Paddles[i]) {
+                        ++joystick->nbuttons;
+                    }
+                }
+            }
         }
 #endif // GAMEINPUT_API_VERSION >= 4
     } else {
@@ -747,13 +809,23 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, int device_index)
 #if GAMEINPUT_API_VERSION >= 4
     if (device->GetSupportedInput() & GameInputKindSensors) {
         GameInputSensorsInfo sensorsInfo;
-        device->GetSensorsInfo(&sensorsInfo);
-        if (sensorsInfo.supportedSensors & GameInputSensorsGyrometer) {
+        if (device->GetSensorsInfo(&sensorsInfo)) {
+            hwdata->supported_sensors = sensorsInfo.supportedSensors;
+        }
+        if (hwdata->supported_sensors & GameInputSensorsGyrometer) {
             SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, 60.0f);
         }
-        if (sensorsInfo.supportedSensors & GameInputSensorsAccelerometer) {
+        if (hwdata->supported_sensors & GameInputSensorsAccelerometer) {
             SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 60.0f);
         }
+    }
+
+    if (device->GetSupportedLightingGroups() != GameInputLightingGroupUnknown) {
+        SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, true);
+    }
+
+    if (device->GetSupportedInput() & GameInputKindTouch) {
+        // FIXME: Need to add touch support
     }
 #endif // GAMEINPUT_API_VERSION >= 4
 
@@ -784,7 +856,22 @@ static bool GAMEINPUT_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left
 
 static bool GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
+#if GAMEINPUT_API_VERSION >= 4
+    GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
+    IGameInputDevice *device = hwdata->devref->device;
+
+    if (device->GetSupportedLightingGroups() == GameInputLightingGroupUnknown) {
+        return SDL_Unsupported();
+    }
+
+    GameInputColor color = { red, green, blue };
+    device->SetLightingColor(color, GameInputLightingGroupAll);
+    device->ApplyLightingColors();
+    hwdata->led_changed = true;
+    return true;
+#else
     return SDL_Unsupported();
+#endif
 }
 
 static bool GAMEINPUT_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
@@ -927,6 +1014,15 @@ static void GAMEINPUT_GamepadUpdate(SDL_Joystick *joystick, IGameInputReading *r
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, (systemButtons & GameInputSystemButtonGuide) != 0);
             SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE, (systemButtons & GameInputSystemButtonShare) != 0);
         }
+
+        if (joystick->hwdata->supported_paddles) {
+            Uint8 paddle_button = joystick->hwdata->first_paddle_button;
+            for (size_t i = 0; i < SDL_arraysize(GAMEINPUT_Paddles); ++i) {
+                if (joystick->hwdata->supported_paddles & GAMEINPUT_Paddles[i]) {
+                    SDL_SendJoystickButton(timestamp, joystick, paddle_button++, (state.buttons & GAMEINPUT_Paddles[i]) != 0);
+                }
+            }
+        }
 #else
         // GAMEINPUT_InternalSystemButtonCallback is used instead
 #endif
@@ -1063,10 +1159,7 @@ static void GAMEINPUT_JoystickUpdate(SDL_Joystick *joystick)
         GameInputSensorsState sensor_state;
 
         if (reading->GetSensorsState(&sensor_state)) {
-            GameInputSensorsKind supportedSensors;
-            GameInputSensorsInfo sensorsInfo;
-            device->GetSensorsInfo(&sensorsInfo);
-            supportedSensors = sensorsInfo.supportedSensors;
+            GameInputSensorsKind supportedSensors = hwdata->supported_sensors;
             if ((supportedSensors & GameInputSensorsGyrometer) != 0) {
                 float data[3] = {
                     sensor_state.angularVelocityInRadPerSecX,
@@ -1097,7 +1190,11 @@ static void GAMEINPUT_JoystickClose(SDL_Joystick *joystick)
 {
     GAMEINPUT_InternalJoystickHwdata *hwdata = joystick->hwdata;
 
-#if GAMEINPUT_API_VERSION < 4
+#if GAMEINPUT_API_VERSION >= 4
+    if (hwdata->led_changed) {
+        hwdata->devref->device->ApplyLightingSystemDefault();
+    }
+#else
     if (hwdata->system_button_callback_token) {
         g_pGameInput->UnregisterCallback(hwdata->system_button_callback_token, 10000);
     }
@@ -1160,10 +1257,41 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
         out->guide.target = SDL_GAMEPAD_BUTTON_GUIDE;
     }
 
-    if (SDL_IsJoystickXboxSeriesX(elem->vendor, elem->product) &&
-        (supportedSystemButtons & GameInputSystemButtonShare)) {
+    if (GAMEINPUT_HasShareButton(elem->device, elem->vendor, elem->product)) {
         out->misc1.kind = EMappingKind_Button;
         out->misc1.target = SDL_GAMEPAD_BUTTON_GAMEINPUT_SHARE;
+    }
+
+    if (GAMEINPUT_InternalIsGamepad(elem->device)) {
+        GameInputGamepadButtons supported_paddles = GAMEINPUT_GetSupportedPaddles(elem->device);
+        Uint8 paddle_button = (Uint8)GAMEINPUT_GetFirstPaddleButton(elem->device, elem->vendor, elem->product);
+        for (size_t i = 0; i < SDL_arraysize(GAMEINPUT_Paddles); ++i) {
+            if (!(supported_paddles & GAMEINPUT_Paddles[i])) {
+                continue;
+            }
+
+            SDL_InputMapping *mapping = NULL;
+            switch (GAMEINPUT_Paddles[i]) {
+            case GameInputGamepadPaddleRight1:
+                mapping = &out->right_paddle1;
+                break;
+            case GameInputGamepadPaddleLeft1:
+                mapping = &out->left_paddle1;
+                break;
+            case GameInputGamepadPaddleRight2:
+                mapping = &out->right_paddle2;
+                break;
+            case GameInputGamepadPaddleLeft2:
+                mapping = &out->left_paddle2;
+                break;
+            default:
+                break;
+            }
+            if (mapping) {
+                mapping->kind = EMappingKind_Button;
+                mapping->target = paddle_button++;
+            }
+        }
     }
 #endif // GAMEINPUT_API_VERSION >= 4
 
