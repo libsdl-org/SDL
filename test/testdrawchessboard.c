@@ -28,6 +28,7 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static int done;
+static bool lazy_redraw;
 
 #ifdef USE_SOFTWARE_RENDERER
 static SDL_Surface *surface;
@@ -60,6 +61,59 @@ static void DrawChessBoard(void)
                 SDL_SetRenderDrawColor(renderer, 0xFF, 0, 0, 0xFF);
                 SDL_RenderLine(renderer, 0, 0, rect.w, rect.h);
             }
+        }
+    }
+}
+
+static void lazy_loop(void)
+{
+    SDL_Event e;
+    while (SDL_WaitEvent(&e)) {
+
+#ifdef USE_SOFTWARE_RENDERER
+        /* Re-create when window surface has been resized */
+        if (e.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+
+            SDL_DestroyRenderer(renderer);
+
+            surface = SDL_GetWindowSurface(window);
+            renderer = SDL_CreateSoftwareRenderer(surface);
+            /* Clear the rendering surface with the specified color */
+            SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SDL_RenderClear(renderer);
+        }
+#endif
+
+        if (e.type == SDL_EVENT_WINDOW_EXPOSED) {
+            /* Clear the rendering surface with the specified color */
+            SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+            SDL_RenderClear(renderer);
+
+            DrawChessBoard();
+
+            SDL_RenderPresent(renderer);
+
+#ifdef USE_SOFTWARE_RENDERER
+            /* Got everything on rendering surface,
+               now Update the drawing image on window screen */
+            SDL_UpdateWindowSurface(window);
+#endif
+        }
+
+        if (e.type == SDL_EVENT_QUIT) {
+            done = 1;
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+            emscripten_cancel_main_loop();
+#endif
+            return;
+        }
+
+        if ((e.type == SDL_EVENT_KEY_DOWN) && (e.key.key == SDLK_ESCAPE)) {
+            done = 1;
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+            emscripten_cancel_main_loop();
+#endif
+            return;
         }
     }
 }
@@ -126,8 +180,25 @@ int main(int argc, char *argv[])
     }
 
     /* Parse commandline */
-    if (!SDLTest_CommonDefaultArgs(state, argc, argv)) {
-        return 1;
+    for (int i = 1; i < argc;) {
+        int consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            consumed = -1;
+            if (SDL_strcasecmp(argv[i], "--lazy-redraw") == 0) {
+                lazy_redraw = true;
+                consumed = 1;
+            }
+        }
+
+        if (consumed < 0) {
+            static const char *options[] = {
+                "[--lazy-redraw]",
+                NULL
+            };
+            SDLTest_CommonLogUsage(state, argv[0], options);
+            return 1;
+        }
+        i += consumed;
     }
 
     /* Initialize SDL */
@@ -159,7 +230,11 @@ int main(int argc, char *argv[])
     emscripten_set_main_loop(loop, 0, 1);
 #else
     while (!done) {
-        loop();
+        if (!lazy_redraw) {
+            loop();
+        } else {
+            lazy_loop();
+        }
     }
 #endif
 
