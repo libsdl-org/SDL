@@ -641,7 +641,7 @@ static void VULKAN_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static void VULKAN_DestroyBuffer(VULKAN_RenderData *rendererData, VULKAN_Buffer *vulkanBuffer);
 static void VULKAN_DestroyImage(VULKAN_RenderData *rendererData, VULKAN_Image *vulkanImage);
 static void VULKAN_ResetCommandList(VULKAN_RenderData *rendererData);
-static void VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData);
+static bool VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData);
 static void VULKAN_RecordExternalImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout);
 static void VULKAN_RecordPipelineImageBarrier(VULKAN_RenderData *rendererData, VkAccessFlags sourceAccessMask, VkAccessFlags destAccessMask, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout destLayout, VkImage image, VkImageLayout *imageLayout);
 static bool VULKAN_FindMemoryTypeIndex(VULKAN_RenderData *rendererData, uint32_t typeBits, VkMemoryPropertyFlags requiredFlags, VkMemoryPropertyFlags desiredFlags, uint32_t *memoryTypeIndexOut);
@@ -1054,7 +1054,10 @@ static VkResult VULKAN_AllocateImage(VULKAN_RenderData *rendererData, SDL_Proper
     }
 
     if (imageOut->imageLayout != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-        VULKAN_EnsureCommandBuffer(rendererData);
+        if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+            VULKAN_DestroyImage(rendererData, imageOut);
+            return VK_ERROR_OUT_OF_DATE_KHR;
+        }
         if (external) {
             VULKAN_RecordExternalImageBarrier(rendererData,
                 VK_ACCESS_NONE,
@@ -1253,9 +1256,13 @@ static void VULKAN_BeginRenderPass(VULKAN_RenderData *rendererData, VkAttachment
     vkCmdBeginRenderPass(rendererData->currentCommandBuffer, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-static void VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData)
+static bool VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData)
 {
     if (rendererData->currentCommandBuffer == VK_NULL_HANDLE) {
+        if (!rendererData->commandBuffers) {
+            // The swapchain couldn't be created, e.g. the window surface isn't available
+            return SDL_SetError("Vulkan swapchain isn't available");
+        }
         rendererData->currentCommandBuffer = rendererData->commandBuffers[rendererData->currentCommandBufferIndex];
         VULKAN_ResetCommandList(rendererData);
 
@@ -1281,13 +1288,16 @@ static void VULKAN_EnsureCommandBuffer(VULKAN_RenderData *rendererData)
                 &rendererData->swapchainImageLayouts[rendererData->currentSwapchainImageIndex]);
         }
     }
+    return true;
 }
 
 static bool VULKAN_ActivateCommandBuffer(SDL_Renderer *renderer, VkAttachmentLoadOp loadOp, VkClearColorValue *clearColor, VULKAN_DrawStateCache *stateCache)
 {
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
 
-    VULKAN_EnsureCommandBuffer(rendererData);
+    if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+        return false;
+    }
 
     if (rendererData->currentRenderPass == VK_NULL_HANDLE || loadOp == VK_ATTACHMENT_LOAD_OP_CLEAR) {
         if (rendererData->currentRenderPass != VK_NULL_HANDLE) {
@@ -3369,7 +3379,9 @@ static bool VULKAN_UpdateTextureInternal(VULKAN_RenderData *rendererData, VkImag
     VkResult rc;
     int planeCount = VULKAN_VkFormatGetNumPlanes(format);
 
-    VULKAN_EnsureCommandBuffer(rendererData);
+    if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+        return false;
+    }
 
     int currentUploadBufferIndex = rendererData->currentUploadBuffer[rendererData->currentCommandBufferIndex];
     VULKAN_Buffer *uploadBuffer = &rendererData->uploadBuffers[rendererData->currentCommandBufferIndex][currentUploadBufferIndex];
@@ -3680,7 +3692,10 @@ static void VULKAN_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         return;
     }
 
-    VULKAN_EnsureCommandBuffer(rendererData);
+    if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+        VULKAN_DestroyBuffer(rendererData, &textureData->stagingBuffer);
+        return;
+    }
 
      // Make sure the destination is in the correct resource state
     VULKAN_RecordPipelineImageBarrier(rendererData,
@@ -3729,7 +3744,9 @@ static bool VULKAN_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     VULKAN_RenderData *rendererData = (VULKAN_RenderData *)renderer->internal;
     VULKAN_TextureData *textureData = NULL;
 
-    VULKAN_EnsureCommandBuffer(rendererData);
+    if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+        return false;
+    }
 
     if (texture) {
         textureData = (VULKAN_TextureData *)texture->internal;
@@ -5016,7 +5033,9 @@ static SDL_Surface *VULKAN_RenderReadPixels(SDL_Renderer *renderer, const SDL_Re
     VkFormat vkFormat;
     SDL_Surface *output;
 
-    VULKAN_EnsureCommandBuffer(rendererData);
+    if (!VULKAN_EnsureCommandBuffer(rendererData)) {
+        return NULL;
+    }
 
     // Stop any outstanding renderpass if open
     if (rendererData->currentRenderPass != VK_NULL_HANDLE) {
