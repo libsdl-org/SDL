@@ -8515,11 +8515,10 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(samplerCreateInfo);
     samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.enable_anisotropy = 0;
-    samplerCreateInfo.enable_compare = 0;
     samplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
