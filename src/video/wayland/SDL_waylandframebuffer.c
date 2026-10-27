@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_internal.h"
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL_waylandframebuffer.h"
 #include "../../core/unix/SDL_poll.h"
@@ -280,3 +283,5 @@ void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
     SDL_free(framebuffer->pixels);
     SDL_free(framebuffer);
 }
+
+#endif // SDL_VIDEO_DRIVER_WAYLAND
