@@ -84,6 +84,22 @@ static SDL_Window *UIKit_GetSDLWindow(UIWindow *uiwindow)
     return NULL;
 }
 
+#ifdef SDL_PLATFORM_VISIONOS
+static SDL_Window *UIKit_GetSDLWindowForScene(UIWindowScene *scene)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this && scene) {
+        for (SDL_Window *window = _this->windows; window; window = window->next) {
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+            if (data && data.uiwindow.windowScene == scene) {
+                return window;
+            }
+        }
+    }
+    return NULL;
+}
+#endif
+
 static id SDL_BecomeKeyObserver;
 static id SDL_ResignKeyObserver;
 
@@ -98,6 +114,17 @@ void UIKit_InitWindowFocus(void)
                                             usingBlock:^(NSNotification *notification) {
         UIWindow *uiwindow = (UIWindow *)notification.object;
         SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!window) {
+            // The uiwindow may be an ornament that has become key in the scene
+            window = UIKit_GetSDLWindowForScene(uiwindow.windowScene);
+            if (!window) {
+                // A different scene without an SDL window has become key
+                SDL_SetKeyboardFocus(NULL);
+                return;
+            }
+        }
+#endif
         if (window && UIKit_IsFocusableWindow(uiwindow)) {
             SDL_SetKeyboardFocus(window);
         }
@@ -110,6 +137,12 @@ void UIKit_InitWindowFocus(void)
         UIWindow *uiwindow = (UIWindow *)notification.object;
         SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
         if (window && SDL_GetKeyboardFocus() == window) {
+#ifdef SDL_PLATFORM_VISIONOS
+            if (uiwindow.windowScene.activationState == UISceneActivationStateForegroundActive) {
+                // The key window may be moving to one of our ornaments, so keep focus on this window
+                return;
+            }
+#endif
             SDL_SetKeyboardFocus(NULL);
         }
     }];
