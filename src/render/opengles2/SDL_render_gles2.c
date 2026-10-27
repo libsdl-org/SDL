@@ -411,6 +411,9 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     }
     if (entry) {
         if (data->program_cache.head != entry) {
+            if (entry == data->program_cache.tail) {
+                data->program_cache.tail = entry->prev;
+            }
             if (entry->next) {
                 entry->next->prev = entry->prev;
             }
@@ -486,6 +489,7 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     if (data->program_cache.count > GLES2_MAX_CACHED_PROGRAMS) {
         GLES2_ProgramCacheEntry *oldest = data->program_cache.tail;
         data->program_cache.tail = oldest->prev;
+        data->program_cache.tail->next = NULL;
         data->glDeleteProgram(oldest->id);
         SDL_free(oldest->shader_params);
         SDL_free(oldest);
