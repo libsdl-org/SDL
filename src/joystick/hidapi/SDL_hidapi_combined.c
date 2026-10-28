@@ -108,28 +108,40 @@ static bool HIDAPI_DriverCombined_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 
 static bool HIDAPI_DriverCombined_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int i;
+    bool supported = false;
     bool result = false;
 
-    for (i = 0; i < device->num_children; ++i) {
+    for (int i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
-        if (child->driver->RumbleJoystick(child, joystick, low_frequency_rumble, high_frequency_rumble)) {
-            result = true;
+        if (child->driver->RumbleJoystick) {
+            supported = true;
+            if (child->driver->RumbleJoystick(child, joystick, low_frequency_rumble, high_frequency_rumble)) {
+                result = true;
+            }
         }
+    }
+    if (!supported) {
+        return SDL_Unsupported();
     }
     return result;
 }
 
 static bool HIDAPI_DriverCombined_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    int i;
+    bool supported = false;
     bool result = false;
 
-    for (i = 0; i < device->num_children; ++i) {
+    for (int i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
-        if (child->driver->RumbleJoystickTriggers(child, joystick, left_rumble, right_rumble)) {
-            result = true;
+        if (child->driver->RumbleJoystickTriggers) {
+            supported = true;
+            if (child->driver->RumbleJoystickTriggers(child, joystick, left_rumble, right_rumble)) {
+                result = true;
+            }
         }
+    }
+    if (!supported) {
+        return SDL_Unsupported();
     }
     return result;
 }
@@ -148,33 +160,40 @@ static Uint32 HIDAPI_DriverCombined_GetJoystickCapabilities(SDL_HIDAPI_Device *d
 
 static bool HIDAPI_DriverCombined_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int i;
+    bool supported = false;
     bool result = false;
 
-    for (i = 0; i < device->num_children; ++i) {
+    for (int i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
-        if (child->driver->SetJoystickLED(child, joystick, red, green, blue)) {
-            result = true;
+        if (child->driver->SetJoystickLED) {
+            supported = true;
+            if (child->driver->SetJoystickLED(child, joystick, red, green, blue)) {
+                result = true;
+            }
         }
+    }
+    if (!supported) {
+        return SDL_Unsupported();
     }
     return result;
 }
 
-static bool HIDAPI_DriverCombined_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 static bool HIDAPI_DriverCombined_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    int i;
+    bool supported = false;
     bool result = false;
 
-    for (i = 0; i < device->num_children; ++i) {
+    for (int i = 0; i < device->num_children; ++i) {
         SDL_HIDAPI_Device *child = device->children[i];
-        if (child->driver->SetJoystickSensorsEnabled(child, joystick, enabled)) {
-            result = true;
+        if (child->driver->SetJoystickSensorsEnabled) {
+            supported = true;
+            if (child->driver->SetJoystickSensorsEnabled(child, joystick, enabled)) {
+                result = true;
+            }
         }
+    }
+    if (!supported) {
+        return SDL_Unsupported();
     }
     return result;
 }
@@ -223,7 +242,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverCombined = {
     HIDAPI_DriverCombined_RumbleJoystickTriggers,
     HIDAPI_DriverCombined_GetJoystickCapabilities,
     HIDAPI_DriverCombined_SetJoystickLED,
-    HIDAPI_DriverCombined_SendJoystickEffect,
+    NULL, // SendJoystickEffect
     HIDAPI_DriverCombined_SetJoystickSensorsEnabled,
     HIDAPI_DriverCombined_CloseJoystick,
     HIDAPI_DriverCombined_FreeDevice,

@@ -48,6 +48,22 @@
 #include "./virtual/SDL_virtualjoystick_c.h"
 #endif
 
+// Platforms that find devices in SDL_UpdateJoysticks() instead of on a device thread, because their drivers
+// only poll a few fixed ports or their threads aren't a good fit.
+#if defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_PS2) || defined(SDL_PLATFORM_PSP) || \
+    defined(SDL_PLATFORM_VITA) || defined(SDL_PLATFORM_3DS) || defined(SDL_PLATFORM_DOS)
+#define SDL_JOYSTICK_DISCOVERY_INLINE
+#endif
+
+// The device thread can wait on drivers' discovery file descriptors (FreeBSD also uses the Linux driver)
+#if defined(SDL_PLATFORM_LINUX) || defined(SDL_JOYSTICK_LINUX)
+#define SDL_JOYSTICK_DISCOVERY_FDS
+#include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <unistd.h>
+#endif
+
 static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_HIDAPI // Highest priority driver for supported devices
     &SDL_HIDAPI_JoystickDriver,
@@ -58,11 +74,11 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
     &SDL_GAMEINPUT_JoystickDriver,
 #endif
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
-    &SDL_WINDOWS_JoystickDriver,
+#ifdef SDL_JOYSTICK_XINPUT
+    &SDL_XINPUT_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_WINMM
-    &SDL_WINMM_JoystickDriver,
+#ifdef SDL_JOYSTICK_DINPUT
+    &SDL_DINPUT_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_LINUX
     &SDL_LINUX_JoystickDriver,
@@ -113,6 +129,91 @@ static bool SDL_joysticks_initialized;
 static bool SDL_joysticks_quitting;
 static bool SDL_joystick_being_added;
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_event_lock) = NULL;
+
+// Published devices, in the order they were published
+static int SDL_joystick_device_count SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_JoystickDevice **SDL_joystick_devices SDL_GUARDED_BY(SDL_event_lock) = NULL;
+
+// Every device drivers have reported and not removed, including hidden and claim-only devices
+static int SDL_joystick_registry_count SDL_GUARDED_BY(SDL_event_lock) = 0;
+static SDL_JoystickDevice **SDL_joystick_registry SDL_GUARDED_BY(SDL_event_lock) = NULL;
+
+// How long to wait for devices to be resolved when they are supported by multiple drivers
+#define SDL_JOYSTICK_SETTLE_MS 100
+
+// The longest a device is held waiting for a higher priority driver
+#define SDL_JOYSTICK_HOLD_CAP_MS 2000
+
+// How long a hidden device is held after the device hiding it is removed, so it's not published if it's
+// about to be removed too, e.g. the XInput side of a controller that was just unplugged.
+#define SDL_JOYSTICK_REMOVED_OWNER_HOLD_MS 1000
+
+typedef enum SDL_JoystickDeviceChangeType
+{
+    SDL_JOYSTICK_CHANGE_REPORT,
+    SDL_JOYSTICK_CHANGE_DESCRIPTION,
+    SDL_JOYSTICK_CHANGE_REMOVE,
+    SDL_JOYSTICK_CHANGE_MESSAGE,
+    SDL_JOYSTICK_CHANGE_USABLE
+} SDL_JoystickDeviceChangeType;
+
+// A change reported by a driver, applied when changes are next processed
+typedef struct SDL_JoystickDeviceChange
+{
+    SDL_JoystickDeviceChangeType type;
+    SDL_JoystickID driver_instance_id;
+    bool handled;
+
+    // SDL_JOYSTICK_CHANGE_REPORT: the reported device, owned by the change
+    SDL_JoystickDevice *device;
+
+    // SDL_JOYSTICK_CHANGE_DESCRIPTION
+    char *name;
+    char *path;
+    SDL_GUID guid;
+    int steam_virtual_gamepad_slot;
+
+    // SDL_JOYSTICK_CHANGE_MESSAGE
+    SDL_JoystickDriver *driver;
+    void *message;
+
+    // SDL_JOYSTICK_CHANGE_USABLE
+    SDL_JoystickUsable usable;
+
+    struct SDL_JoystickDeviceChange *next;
+} SDL_JoystickDeviceChange;
+
+// The queue of pending joystick device changes
+static SDL_SpinLock SDL_joystick_change_lock;
+static SDL_JoystickDeviceChange *SDL_joystick_change_head;
+static SDL_JoystickDeviceChange *SDL_joystick_change_tail;
+
+static void SDL_UnpublishJoystickDevice(SDL_JoystickDevice *device);
+static void SDL_ProcessJoystickDeviceChanges(void);
+static void SDL_DiscardJoystickChanges(void);
+
+// The device thread runs drivers' Discover(). It never takes the joystick lock.
+static SDL_InitState SDL_joystick_discovery_init;
+static SDL_Semaphore *SDL_joystick_discovery_wake;
+static SDL_Semaphore *SDL_joystick_discovery_first_pass;
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+static int SDL_joystick_discovery_pipe[2] = { -1, -1 };
+#endif
+static SDL_Thread *SDL_joystick_discovery_thread;
+static SDL_AtomicInt SDL_joystick_discovery_quit;
+static bool SDL_joystick_discovery_inline;
+
+static bool SDL_joystick_driver_initialized[SDL_arraysize(SDL_joystick_drivers)];
+static SDL_AtomicInt SDL_joystick_discovery_passes_started[SDL_arraysize(SDL_joystick_drivers)];
+static SDL_AtomicInt SDL_joystick_discovery_passes_completed[SDL_arraysize(SDL_joystick_drivers)];
+
+static void SDL_ResolveJoystickDevices(void);
+static bool SDL_JoystickDevicesHeld(void);
+static void SDL_StartJoystickDiscovery(bool wait);
+static void SDL_StopJoystickDiscovery(void);
+static void SDL_DestroyJoystickDiscoveryObjects(void);
+static Sint32 SDL_RunJoystickDiscovery(void);
+static bool SDL_JoystickDriverDiscovers(int i);
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
@@ -729,31 +830,178 @@ void SDL_AssertJoysticksLocked(void)
     SDL_assert(SDL_JoysticksLocked());
 }
 
-/*
- * Get the driver and device index for a joystick instance ID
- * This should be called while the joystick lock is held, to prevent another thread from updating the list
- */
-static bool SDL_GetDriverAndJoystickIndex(SDL_JoystickID instance_id, SDL_JoystickDriver **driver, int *driver_index)
+static int SDL_GetJoystickDeviceIndex(SDL_JoystickID instance_id)
 {
-    int i, num_joysticks, device_index;
-
     SDL_AssertJoysticksLocked();
 
     if (instance_id > 0) {
-        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-            num_joysticks = SDL_joystick_drivers[i]->GetCount();
-            for (device_index = 0; device_index < num_joysticks; ++device_index) {
-                SDL_JoystickID joystick_id = SDL_joystick_drivers[i]->GetDeviceInstanceID(device_index);
-                if (joystick_id == instance_id) {
-                    *driver = SDL_joystick_drivers[i];
-                    *driver_index = device_index;
-                    return true;
-                }
+        for (int i = 0; i < SDL_joystick_device_count; ++i) {
+            if (SDL_joystick_devices[i]->instance_id == instance_id) {
+                return i;
             }
         }
     }
+    return -1;
+}
 
-    SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
+// Find a published device, without setting an error
+static SDL_JoystickDevice *SDL_FindJoystickDevice(SDL_JoystickID instance_id)
+{
+    int i = SDL_GetJoystickDeviceIndex(instance_id);
+    if (i < 0) {
+        return NULL;
+    }
+    return SDL_joystick_devices[i];
+}
+
+static bool SDL_AddJoystickDeviceToList(SDL_JoystickDevice *device)
+{
+    SDL_JoystickDevice **devices;
+
+    SDL_AssertJoysticksLocked();
+
+    devices = (SDL_JoystickDevice **)SDL_realloc(SDL_joystick_devices, (SDL_joystick_device_count + 1) * sizeof(*devices));
+    if (!devices) {
+        return false;
+    }
+    devices[SDL_joystick_device_count++] = device;
+    SDL_joystick_devices = devices;
+    return true;
+}
+
+static void SDL_RemoveJoystickDeviceFromList(SDL_JoystickDevice *device)
+{
+    SDL_AssertJoysticksLocked();
+
+    for (int i = 0; i < SDL_joystick_device_count; ++i) {
+        if (SDL_joystick_devices[i] == device) {
+            --SDL_joystick_device_count;
+            if (i < SDL_joystick_device_count) {
+                SDL_memmove(&SDL_joystick_devices[i], &SDL_joystick_devices[i + 1], (SDL_joystick_device_count - i) * sizeof(*SDL_joystick_devices));
+            }
+            break;
+        }
+    }
+}
+
+static void SDL_FreeJoystickDevice(SDL_JoystickDevice *device)
+{
+    SDL_free(device->name);
+    SDL_free(device->path);
+    if (device->driver_data && device->driver->FreeDeviceData) {
+        device->driver->FreeDeviceData(device->driver_data);
+    } else {
+        SDL_free(device->driver_data);
+    }
+    SDL_free(device);
+}
+
+SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver)
+{
+    SDL_JoystickDevice *device = (SDL_JoystickDevice *)SDL_calloc(1, sizeof(*device));
+    if (!device) {
+        return NULL;
+    }
+    device->driver = driver;
+    device->driver_instance_id = SDL_GetNextObjectID();
+    device->steam_virtual_gamepad_slot = -1;
+    device->player_index = -1;
+    device->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    device->hold_driver = -1;
+    return device;
+}
+
+static bool SDL_SetJoystickDeviceString(char **dst, const char *src)
+{
+    char *copy;
+
+    if (!src) {
+        SDL_free(*dst);
+        *dst = NULL;
+        return true;
+    }
+    if (*dst && SDL_strcmp(*dst, src) == 0) {
+        return true;
+    }
+    copy = SDL_strdup(src);
+    if (!copy) {
+        return false;
+    }
+    SDL_free(*dst);
+    *dst = copy;
+    return true;
+}
+
+void SDL_SetJoystickDeviceDescription(SDL_JoystickDevice *device, const char *name, const char *path, SDL_GUID guid, int steam_virtual_gamepad_slot)
+{
+    SDL_SetJoystickDeviceString(&device->name, name);
+    SDL_SetJoystickDeviceString(&device->path, path);
+    device->guid = guid;
+    device->steam_virtual_gamepad_slot = steam_virtual_gamepad_slot;
+}
+
+void SDL_AddJoystickMatchVIDPID(SDL_JoystickMatchInfo *info, Uint16 vendor_id, Uint16 product_id)
+{
+    if (info->num_matches < (int)SDL_arraysize(info->matches)) {
+        SDL_JoystickMatch *match = &info->matches[info->num_matches++];
+        match->vendor_id = vendor_id;
+        match->product_id = product_id;
+        match->type = SDL_GAMEPAD_TYPE_UNKNOWN;
+    }
+}
+
+void SDL_AddJoystickMatchType(SDL_JoystickMatchInfo *info, SDL_GamepadType type)
+{
+    if (info->num_matches < (int)SDL_arraysize(info->matches)) {
+        SDL_JoystickMatch *match = &info->matches[info->num_matches++];
+        match->vendor_id = 0;
+        match->product_id = 0;
+        match->type = type;
+    }
+}
+
+static const char *SDL_GetJoystickDeviceName(SDL_JoystickDevice *device)
+{
+    return device->name;
+}
+
+static const char *SDL_GetJoystickDevicePath(SDL_JoystickDevice *device)
+{
+    return device->path;
+}
+
+static SDL_GUID SDL_GetJoystickDeviceGUID(SDL_JoystickDevice *device)
+{
+    return device->guid;
+}
+
+static int SDL_GetJoystickDeviceSteamVirtualGamepadSlot(SDL_JoystickDevice *device)
+{
+    return device->steam_virtual_gamepad_slot;
+}
+
+static int SDL_GetJoystickDevicePlayerIndex(SDL_JoystickDevice *device)
+{
+    return device->player_index;
+}
+
+static void SDL_SetJoystickDevicePlayerIndex(SDL_JoystickDevice *device, int player_index)
+{
+    if (device->driver->SetPlayerIndex) {
+        device->driver->SetPlayerIndex(device, player_index);
+    }
+}
+
+static bool SDL_OpenJoystickDevice(SDL_Joystick *joystick, SDL_JoystickDevice *device)
+{
+    return device->driver->Open(joystick, device);
+}
+
+static bool SDL_GetJoystickDeviceGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
+{
+    if (device->driver->GetGamepadMapping) {
+        return device->driver->GetGamepadMapping(device, out);
+    }
     return false;
 }
 
@@ -801,8 +1049,7 @@ static SDL_JoystickID SDL_GetJoystickIDForPlayerIndex(int player_index)
 static bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID instance_id)
 {
     SDL_JoystickID existing_instance = SDL_GetJoystickIDForPlayerIndex(player_index);
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     int existing_player_index;
 
     SDL_AssertJoysticksLocked();
@@ -832,8 +1079,9 @@ static bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID ins
     }
 
     // Update the driver with the new index
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        driver->SetDevicePlayerIndex(device_index, player_index);
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        SDL_SetJoystickDevicePlayerIndex(device, player_index);
     }
 
     // Move any existing joystick to another slot
@@ -859,6 +1107,15 @@ bool SDL_InitJoysticks(void)
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;
+    }
+
+    // Do the slow setup before taking the joystick lock
+    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        if (SDL_joystick_drivers[i]->PreInit) {
+            SDL_joystick_driver_initialized[i] = SDL_joystick_drivers[i]->PreInit();
+        } else {
+            SDL_joystick_driver_initialized[i] = true;
+        }
     }
 
     SDL_LockJoysticks();
@@ -888,8 +1145,33 @@ bool SDL_InitJoysticks(void)
     SDL_InitSteamVirtualGamepadInfo();
 
     for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-        if (SDL_joystick_drivers[i]->Init()) {
+        if (SDL_joystick_driver_initialized[i]) {
+            SDL_joystick_driver_initialized[i] = SDL_joystick_drivers[i]->Init();
+        }
+        if (SDL_joystick_driver_initialized[i]) {
             result = true;
+        }
+    }
+    if (result) {
+        bool wait = true;
+        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HOTPLUG_INIT, true)) {
+            wait = false;
+        }
+
+        SDL_StartJoystickDiscovery(wait);
+        if (wait) {
+            SDL_ProcessJoystickDeviceChanges();
+
+            // Wait for devices held while a higher priority driver looks for them.
+            // HIDAPI devices are read meanwhile, because some only find out whether they can handle the
+            // controller from its replies (e.g. Flydigi's status reply).
+            while (SDL_JoystickDevicesHeld()) {
+                SDL_Delay(1);
+#ifdef SDL_JOYSTICK_HIDAPI
+                HIDAPI_UpdateDevices();
+#endif
+                SDL_ProcessJoystickDeviceChanges();
+            }
         }
     }
     SDL_UnlockJoysticks();
@@ -918,77 +1200,36 @@ bool SDL_JoysticksOpened(void)
     return opened;
 }
 
-bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+bool SDL_HasJoystick(void)
 {
-    int i;
-    bool result = false;
+    bool result;
 
     SDL_LockJoysticks();
     {
-        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-            if (driver == SDL_joystick_drivers[i]) {
-                // Higher priority drivers do not have this device
-                break;
-            }
-            if (SDL_joystick_drivers[i]->IsDevicePresent(vendor_id, product_id, version, name)) {
-                result = true;
-                break;
-            }
-        }
+        result = (SDL_joystick_device_count > 0);
     }
     SDL_UnlockJoysticks();
 
     return result;
 }
 
-bool SDL_HasJoystick(void)
-{
-    int i;
-    int total_joysticks = 0;
-
-    SDL_LockJoysticks();
-    {
-        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-            total_joysticks += SDL_joystick_drivers[i]->GetCount();
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    if (total_joysticks > 0) {
-        return true;
-    }
-    return false;
-}
-
 SDL_JoystickID *SDL_GetJoysticks(int *count)
 {
-    int i, num_joysticks, device_index;
-    int joystick_index = 0, total_joysticks = 0;
+    int i;
     SDL_JoystickID *joysticks;
 
     SDL_LockJoysticks();
     {
-        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-            total_joysticks += SDL_joystick_drivers[i]->GetCount();
-        }
-
-        joysticks = (SDL_JoystickID *)SDL_malloc((total_joysticks + 1) * sizeof(*joysticks));
+        joysticks = (SDL_JoystickID *)SDL_malloc((SDL_joystick_device_count + 1) * sizeof(*joysticks));
         if (joysticks) {
             if (count) {
-                *count = total_joysticks;
+                *count = SDL_joystick_device_count;
             }
 
-            for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-                num_joysticks = SDL_joystick_drivers[i]->GetCount();
-                for (device_index = 0; device_index < num_joysticks; ++device_index) {
-                    SDL_assert(joystick_index < total_joysticks);
-                    joysticks[joystick_index] = SDL_joystick_drivers[i]->GetDeviceInstanceID(device_index);
-                    SDL_assert(joysticks[joystick_index] > 0);
-                    ++joystick_index;
-                }
+            for (i = 0; i < SDL_joystick_device_count; ++i) {
+                joysticks[i] = SDL_joystick_devices[i]->instance_id;
             }
-            SDL_assert(joystick_index == total_joysticks);
-            joysticks[joystick_index] = 0;
+            joysticks[i] = 0;
         } else {
             if (count) {
                 *count = 0;
@@ -1002,13 +1243,14 @@ SDL_JoystickID *SDL_GetJoysticks(int *count)
 
 const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_JoystickID instance_id)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     const SDL_SteamVirtualGamepadInfo *info = NULL;
 
-    if (SDL_SteamVirtualGamepadEnabled() &&
-        SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        info = SDL_GetSteamVirtualGamepadInfo(driver->GetDeviceSteamVirtualGamepadSlot(device_index));
+    if (SDL_SteamVirtualGamepadEnabled()) {
+        device = SDL_FindJoystickDevice(instance_id);
+        if (device) {
+            info = SDL_GetSteamVirtualGamepadInfo(SDL_GetJoystickDeviceSteamVirtualGamepadSlot(device));
+        }
     }
     return info;
 }
@@ -1018,8 +1260,7 @@ const SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_Jo
  */
 static const char *SDL_UpdateJoystickNameForID(SDL_JoystickID instance_id)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     const char *current_name = NULL;
     const SDL_SteamVirtualGamepadInfo *info;
 
@@ -1028,8 +1269,13 @@ static const char *SDL_UpdateJoystickNameForID(SDL_JoystickID instance_id)
     info = SDL_GetJoystickVirtualGamepadInfoForID(instance_id);
     if (info) {
         current_name = info->name;
-    } else if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        current_name = driver->GetDeviceName(device_index);
+    } else {
+        device = SDL_FindJoystickDevice(instance_id);
+        if (device) {
+            current_name = SDL_GetJoystickDeviceName(device);
+        } else {
+            SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
+        }
     }
 
     if (!SDL_joystick_names) {
@@ -1074,13 +1320,13 @@ const char *SDL_GetJoystickNameForID(SDL_JoystickID instance_id)
  */
 const char *SDL_GetJoystickPathForID(SDL_JoystickID instance_id)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     const char *path = NULL;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        path = SDL_GetPersistentString(driver->GetDevicePath(device_index));
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        path = SDL_GetPersistentString(SDL_GetJoystickDevicePath(device));
     }
     SDL_UnlockJoysticks();
 
@@ -1350,8 +1596,8 @@ static bool ShouldSwapFaceButtons(const SDL_SteamVirtualGamepadInfo *info)
  */
 SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
 {
+    SDL_JoystickDevice *device;
     SDL_JoystickDriver *driver;
-    int device_index;
     SDL_Joystick *joystick;
     SDL_Joystick *joysticklist;
     const char *joystickname = NULL;
@@ -1361,10 +1607,13 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
 
     SDL_LockJoysticks();
 
-    if (!SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
+    device = SDL_FindJoystickDevice(instance_id);
+    if (!device) {
+        SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
         SDL_UnlockJoysticks();
         return NULL;
     }
+    driver = device->driver;
 
     joysticklist = SDL_joysticks;
     /* If the joystick is already open, return it
@@ -1389,6 +1638,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, true);
     joystick->driver = driver;
     joystick->instance_id = instance_id;
+    joystick->driver_instance_id = device->driver_instance_id;
     joystick->attached = true;
     joystick->led_expiration = SDL_GetTicks();
     joystick->battery_percent = -1;
@@ -1396,24 +1646,28 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->is_virtual = (driver == &SDL_VIRTUAL_JoystickDriver);
 #endif
 
-    if (!driver->Open(joystick, device_index)) {
+    if (!SDL_OpenJoystickDevice(joystick, device)) {
         SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, false);
         SDL_free(joystick);
         SDL_UnlockJoysticks();
         return NULL;
     }
 
-    joystickname = driver->GetDeviceName(device_index);
-    if (joystickname) {
-        joystick->name = SDL_strdup(joystickname);
-    }
+    // Opening can update the device description, or remove other devices
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        joystickname = SDL_GetJoystickDeviceName(device);
+        if (joystickname) {
+            joystick->name = SDL_strdup(joystickname);
+        }
 
-    joystickpath = driver->GetDevicePath(device_index);
-    if (joystickpath) {
-        joystick->path = SDL_strdup(joystickpath);
-    }
+        joystickpath = SDL_GetJoystickDevicePath(device);
+        if (joystickpath) {
+            joystick->path = SDL_strdup(joystickpath);
+        }
 
-    joystick->guid = driver->GetDeviceGUID(device_index);
+        joystick->guid = SDL_GetJoystickDeviceGUID(device);
+    }
 
     if (joystick->naxes > 0) {
         joystick->axes = (SDL_JoystickAxisInfo *)SDL_calloc(joystick->naxes, sizeof(*joystick->axes));
@@ -1501,6 +1755,8 @@ SDL_JoystickID SDL_AttachVirtualJoystick(const SDL_VirtualJoystickDesc *desc)
 
     SDL_LockJoysticks();
     result = SDL_JoystickAttachVirtualInner(desc);
+    // Publish it now, callers use the ID straight away
+    SDL_ProcessJoystickDeviceChanges();
     SDL_UnlockJoysticks();
     return result;
 #else
@@ -1516,6 +1772,7 @@ bool SDL_DetachVirtualJoystick(SDL_JoystickID instance_id)
 
     SDL_LockJoysticks();
     result = SDL_JoystickDetachVirtualInner(instance_id);
+    SDL_ProcessJoystickDeviceChanges();
     SDL_UnlockJoysticks();
     return result;
 #else
@@ -1526,15 +1783,17 @@ bool SDL_DetachVirtualJoystick(SDL_JoystickID instance_id)
 bool SDL_IsJoystickVirtual(SDL_JoystickID instance_id)
 {
 #ifdef SDL_JOYSTICK_VIRTUAL
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     bool is_virtual = false;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        if (driver == &SDL_VIRTUAL_JoystickDriver) {
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        if (device->driver == &SDL_VIRTUAL_JoystickDriver) {
             is_virtual = true;
         }
+    } else {
+        SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
     }
     SDL_UnlockJoysticks();
 
@@ -1675,13 +1934,13 @@ bool SDL_IsJoystickValid(SDL_Joystick *joystick)
 
 bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id, SDL_GamepadMapping *out)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     bool is_ok = false;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        is_ok = driver->GetGamepadMapping(device_index, out);
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        is_ok = SDL_GetJoystickDeviceGamepadMapping(device, out);
     }
     SDL_UnlockJoysticks();
 
@@ -1957,6 +2216,10 @@ bool SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, b
                 } else {
                     if (enabled) {
                         if (joystick->nsensors_enabled == 0) {
+                            if (!joystick->driver->SetSensorsEnabled) {
+                                SDL_UnlockJoysticks();
+                                return SDL_Unsupported();
+                            }
                             if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
                                 SDL_UnlockJoysticks();
                                 return false;
@@ -1964,7 +2227,7 @@ bool SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, b
                         }
                         ++joystick->nsensors_enabled;
                     } else {
-                        if (joystick->nsensors_enabled == 1) {
+                        if (joystick->nsensors_enabled == 1 && joystick->driver->SetSensorsEnabled) {
                             if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
                                 SDL_UnlockJoysticks();
                                 return false;
@@ -2109,6 +2372,21 @@ SDL_Joystick *SDL_GetJoystickFromID(SDL_JoystickID instance_id)
     return joystick;
 }
 
+SDL_Joystick *SDL_GetJoystickFromDriverID(SDL_JoystickID driver_instance_id)
+{
+    SDL_Joystick *joystick;
+
+    SDL_AssertJoysticksLocked();
+
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        // A device that was hidden and published again can have an old joystick open, detached, next to the new one
+        if (joystick->driver_instance_id == driver_instance_id && joystick->attached) {
+            break;
+        }
+    }
+    return joystick;
+}
+
 /**
  * Return the SDL_Joystick associated with a player index.
  */
@@ -2240,8 +2518,10 @@ bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
 
-        if (low_frequency_rumble == joystick->low_frequency_rumble &&
-            high_frequency_rumble == joystick->high_frequency_rumble) {
+        if (!joystick->driver->Rumble) {
+            result = SDL_Unsupported();
+        } else if (low_frequency_rumble == joystick->low_frequency_rumble &&
+                   high_frequency_rumble == joystick->high_frequency_rumble) {
             // Just update the expiration
             result = true;
         } else {
@@ -2284,7 +2564,9 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
 
-        if (left_rumble == joystick->left_trigger_rumble && right_rumble == joystick->right_trigger_rumble) {
+        if (!joystick->driver->RumbleTriggers) {
+            result = SDL_Unsupported();
+        } else if (left_rumble == joystick->left_trigger_rumble && right_rumble == joystick->right_trigger_rumble) {
             // Just update the expiration
             result = true;
         } else {
@@ -2329,7 +2611,9 @@ bool SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 bl
                        green != joystick->led_green ||
                        blue != joystick->led_blue;
 
-        if (isfreshvalue || SDL_GetTicks() >= joystick->led_expiration) {
+        if (!joystick->driver->SetLED) {
+            result = SDL_Unsupported();
+        } else if (isfreshvalue || SDL_GetTicks() >= joystick->led_expiration) {
             result = joystick->driver->SetLED(joystick, red, green, blue);
             joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
         } else {
@@ -2355,7 +2639,11 @@ bool SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size)
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
 
-        result = joystick->driver->SendEffect(joystick, data, size);
+        if (!joystick->driver->SendEffect) {
+            result = SDL_Unsupported();
+        } else {
+            result = joystick->driver->SendEffect(joystick, data, size);
+        }
     }
     SDL_UnlockJoysticks();
 
@@ -2434,19 +2722,15 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
 
 void SDL_QuitJoysticks(void)
 {
-    int i;
-    SDL_JoystickID *joysticks;
-
     SDL_LockJoysticks();
 
     SDL_joysticks_quitting = true;
 
-    joysticks = SDL_GetJoysticks(NULL);
-    if (joysticks) {
-        for (i = 0; joysticks[i]; ++i) {
-            SDL_PrivateJoystickRemoved(joysticks[i]);
-        }
-        SDL_free(joysticks);
+    // Apply pending removals, pending reports are dropped while quitting
+    SDL_ProcessJoystickDeviceChanges();
+
+    while (SDL_joystick_device_count > 0) {
+        SDL_UnpublishJoystickDevice(SDL_joystick_devices[0]);
     }
 
     while (SDL_joysticks) {
@@ -2454,10 +2738,34 @@ void SDL_QuitJoysticks(void)
         SDL_CloseJoystick(SDL_joysticks);
     }
 
+    // The device thread never takes the joystick lock, so it can be stopped while holding it
+    SDL_StopJoystickDiscovery();
+
+    // Drop anything a pass that was still running reported, while drivers can still free their messages
+    // (e.g. HIDAPI closes the hid devices in its messages, which has to happen before SDL_hid_exit())
+    SDL_DiscardJoystickChanges();
+
     // Quit drivers in reverse order to avoid breaking dependencies between drivers
-    for (i = SDL_arraysize(SDL_joystick_drivers) - 1; i >= 0; --i) {
+    for (int i = SDL_arraysize(SDL_joystick_drivers) - 1; i >= 0; --i) {
         SDL_joystick_drivers[i]->Quit();
     }
+
+    // Drop anything the drivers reported while quitting
+    SDL_DiscardJoystickChanges();
+
+    SDL_DestroyJoystickDiscoveryObjects();
+
+    SDL_assert(SDL_joystick_device_count == 0);
+    SDL_free(SDL_joystick_devices);
+    SDL_joystick_devices = NULL;
+    SDL_joystick_device_count = 0;
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        SDL_FreeJoystickDevice(SDL_joystick_registry[i]);
+    }
+    SDL_free(SDL_joystick_registry);
+    SDL_joystick_registry = NULL;
+    SDL_joystick_registry_count = 0;
 
     if (SDL_joystick_players) {
         SDL_free(SDL_joystick_players);
@@ -2592,26 +2900,44 @@ void SDL_PrivateJoystickAddCapSense(SDL_Joystick *joystick, SDL_GamepadCapSenseT
     }
 }
 
-void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
+// Add a registered device to the public list and send the added events
+static bool SDL_PublishJoystickDevice(SDL_JoystickDevice *device)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
-    int player_index = -1;
+    SDL_JoystickID instance_id;
+    int player_index;
     bool is_gamepad;
 
     SDL_AssertJoysticksLocked();
 
-    if (SDL_JoysticksQuitting()) {
-        return;
+    if (SDL_JoysticksQuitting() || device->published) {
+        return false;
     }
+
+    // Each publish gets a new instance ID, unless the driver reserved one, because instance IDs are never reused
+    if (!device->instance_id) {
+        device->instance_id = SDL_GetNextObjectID();
+    }
+    instance_id = device->instance_id;
+
+    if (SDL_GetJoystickDeviceIndex(instance_id) >= 0) {
+        SDL_assert(!"Joystick added twice");
+        return false;
+    }
+
+    if (device->driver->DevicePublishing) {
+        device->driver->DevicePublishing(device);
+    }
+
+    if (!SDL_AddJoystickDeviceToList(device)) {
+        return false;
+    }
+    device->published = true;
 
     SDL_joystick_being_added = true;
 
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        player_index = driver->GetDeviceSteamVirtualGamepadSlot(device_index);
-        if (player_index < 0) {
-            player_index = driver->GetDevicePlayerIndex(device_index);
-        }
+    player_index = SDL_GetJoystickDeviceSteamVirtualGamepadSlot(device);
+    if (player_index < 0) {
+        player_index = SDL_GetJoystickDevicePlayerIndex(device);
     }
     if (player_index < 0 && SDL_IsGamepad(instance_id)) {
         player_index = SDL_FindFreePlayerIndex();
@@ -2642,6 +2968,50 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
     if (is_gamepad) {
         SDL_PrivateGamepadAdded(instance_id);
     }
+    if (device->driver->DevicePublished) {
+        device->driver->DevicePublished(device, true);
+    }
+    return true;
+}
+
+SDL_JoystickID SDL_ReportJoystickClaim(SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, SDL_GamepadType type, SDL_JoystickUsable usable, const SDL_GUID *container_id)
+{
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(driver);
+    SDL_JoystickID driver_instance_id;
+
+    if (!device) {
+        return 0;
+    }
+    device->claim_only = true;
+    device->usable = usable;
+    device->vendor_id = vendor_id;
+    device->product_id = product_id;
+    device->type = type;
+    if (container_id) {
+        device->container_id = *container_id;
+    }
+    driver_instance_id = device->driver_instance_id;
+    SDL_ReportJoystickDevice(device);
+    return driver_instance_id;
+}
+
+SDL_JoystickID SDL_ReportJoystickLongClaim(SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, SDL_GamepadType type, Uint32 hold_ms)
+{
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(driver);
+    SDL_JoystickID driver_instance_id;
+
+    if (!device) {
+        return 0;
+    }
+    device->claim_only = true;
+    device->usable = SDL_JOYSTICK_USABLE_UNKNOWN;
+    device->claim_hold_ms = hold_ms;
+    device->vendor_id = vendor_id;
+    device->product_id = product_id;
+    device->type = type;
+    driver_instance_id = device->driver_instance_id;
+    SDL_ReportJoystickDevice(device);
+    return driver_instance_id;
 }
 
 bool SDL_IsJoystickBeingAdded(void)
@@ -2680,13 +3050,24 @@ void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick)
     }
 }
 
-void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
+// Remove the device from the public list, detach any open joystick and send the removed events
+static void SDL_UnpublishJoystickDevice(SDL_JoystickDevice *device)
 {
+    SDL_JoystickID instance_id = device->instance_id;
     SDL_Joystick *joystick = NULL;
     int player_index;
     SDL_Event event;
 
     SDL_AssertJoysticksLocked();
+
+    if (!device->published) {
+        return;
+    }
+    if (device->driver->DevicePublished) {
+        device->driver->DevicePublished(device, false);
+    }
+    SDL_RemoveJoystickDeviceFromList(device);
+    device->published = false;
 
     // Find this joystick...
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
@@ -2713,6 +3094,778 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
     if (player_index >= 0) {
         SDL_joystick_players[player_index] = 0;
     }
+
+    device->instance_id = 0;
+}
+
+static void SDL_PushJoystickDeviceChange(SDL_JoystickDeviceChange *change)
+{
+    change->next = NULL;
+
+    SDL_LockSpinlock(&SDL_joystick_change_lock);
+    if (SDL_joystick_change_tail) {
+        SDL_joystick_change_tail->next = change;
+    } else {
+        SDL_joystick_change_head = change;
+    }
+    SDL_joystick_change_tail = change;
+    SDL_UnlockSpinlock(&SDL_joystick_change_lock);
+}
+
+static SDL_JoystickDeviceChange *SDL_PopJoystickDeviceChanges(void)
+{
+    SDL_JoystickDeviceChange *changes;
+
+    SDL_LockSpinlock(&SDL_joystick_change_lock);
+    changes = SDL_joystick_change_head;
+    SDL_joystick_change_head = NULL;
+    SDL_joystick_change_tail = NULL;
+    SDL_UnlockSpinlock(&SDL_joystick_change_lock);
+
+    return changes;
+}
+
+static void SDL_FreeJoystickDeviceChange(SDL_JoystickDeviceChange *change)
+{
+    if (change->device) {
+        SDL_FreeJoystickDevice(change->device);
+    }
+    if (change->message && change->driver->FreeMessage) {
+        change->driver->FreeMessage(change->message);
+    }
+    SDL_free(change->name);
+    SDL_free(change->path);
+    SDL_free(change);
+}
+
+void SDL_ReportJoystickDevice(SDL_JoystickDevice *device)
+{
+    SDL_JoystickDeviceChange *change = (SDL_JoystickDeviceChange *)SDL_calloc(1, sizeof(*change));
+    if (!change) {
+        SDL_FreeJoystickDevice(device);
+        return;
+    }
+    change->type = SDL_JOYSTICK_CHANGE_REPORT;
+    change->driver_instance_id = device->driver_instance_id;
+    change->device = device;
+    SDL_PushJoystickDeviceChange(change);
+}
+
+void SDL_UpdateJoystickDeviceDescription(SDL_JoystickID driver_instance_id, const char *name, const char *path, SDL_GUID guid, int steam_virtual_gamepad_slot)
+{
+    SDL_JoystickDeviceChange *change = (SDL_JoystickDeviceChange *)SDL_calloc(1, sizeof(*change));
+    if (!change) {
+        return;
+    }
+    change->type = SDL_JOYSTICK_CHANGE_DESCRIPTION;
+    change->driver_instance_id = driver_instance_id;
+    if ((name && !SDL_SetJoystickDeviceString(&change->name, name)) ||
+        (path && !SDL_SetJoystickDeviceString(&change->path, path))) {
+        SDL_FreeJoystickDeviceChange(change);
+        return;
+    }
+    change->guid = guid;
+    change->steam_virtual_gamepad_slot = steam_virtual_gamepad_slot;
+    SDL_PushJoystickDeviceChange(change);
+}
+
+void SDL_ReportJoystickRemoved(SDL_JoystickID driver_instance_id)
+{
+    SDL_JoystickDeviceChange *change = (SDL_JoystickDeviceChange *)SDL_calloc(1, sizeof(*change));
+    if (!change) {
+        return;
+    }
+    change->type = SDL_JOYSTICK_CHANGE_REMOVE;
+    change->driver_instance_id = driver_instance_id;
+    SDL_PushJoystickDeviceChange(change);
+}
+
+void SDL_SetJoystickDeviceUsable(SDL_JoystickID driver_instance_id, SDL_JoystickUsable usable)
+{
+    SDL_JoystickDeviceChange *change = (SDL_JoystickDeviceChange *)SDL_calloc(1, sizeof(*change));
+    if (!change) {
+        return;
+    }
+    change->type = SDL_JOYSTICK_CHANGE_USABLE;
+    change->driver_instance_id = driver_instance_id;
+    change->usable = usable;
+    SDL_PushJoystickDeviceChange(change);
+}
+
+void SDL_PostJoystickDriverMessage(SDL_JoystickDriver *driver, void *message)
+{
+    SDL_JoystickDeviceChange *change = (SDL_JoystickDeviceChange *)SDL_calloc(1, sizeof(*change));
+    if (!change) {
+        if (driver->FreeMessage) {
+            driver->FreeMessage(message);
+        }
+        return;
+    }
+    change->type = SDL_JOYSTICK_CHANGE_MESSAGE;
+    change->driver = driver;
+    change->message = message;
+    SDL_PushJoystickDeviceChange(change);
+}
+
+static int SDL_GetJoystickDriverRank(SDL_JoystickDriver *driver)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        if (SDL_joystick_drivers[i] == driver) {
+            return i;
+        }
+    }
+    return SDL_arraysize(SDL_joystick_drivers);
+}
+
+static SDL_JoystickDevice *SDL_FindRegisteredJoystickDevice(SDL_JoystickID driver_instance_id)
+{
+    SDL_AssertJoysticksLocked();
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        if (SDL_joystick_registry[i]->driver_instance_id == driver_instance_id) {
+            return SDL_joystick_registry[i];
+        }
+    }
+    return NULL;
+}
+
+static bool SDL_JoystickContainerKnown(const SDL_GUID *container_id)
+{
+    for (int i = 0; i < SDL_arraysize(container_id->data); ++i) {
+        if (container_id->data[i]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Return true if device is the same controller as owner, a device from a higher priority driver
+static bool SDL_JoystickDeviceMatches(const SDL_JoystickDevice *owner, const SDL_JoystickDevice *device)
+{
+    if (owner->match.never_group || device->match.never_group) {
+        return false;
+    }
+
+    // If both drivers know which physical device it is, compare those
+    if (SDL_JoystickContainerKnown(&owner->container_id) &&
+        SDL_JoystickContainerKnown(&device->container_id) &&
+        SDL_memcmp(&owner->container_id, &device->container_id, sizeof(owner->container_id)) != 0) {
+        return false;
+    }
+
+    if ((device->vendor_id || device->product_id) &&
+        owner->vendor_id == device->vendor_id && owner->product_id == device->product_id) {
+        return true;
+    }
+
+    if (device->vendor_id == USB_VENDOR_MICROSOFT) {
+        // XInput doesn't know which controller it is, so match it against any Xbox controller
+        if (device->product_id == USB_PRODUCT_XBOX360_XUSB_CONTROLLER) {
+            if (owner->vendor_id == USB_VENDOR_MICROSOFT && owner->product_id == USB_PRODUCT_XBOX360_WIRELESS_RECEIVER) {
+                return true;
+            }
+            if (owner->type == SDL_GAMEPAD_TYPE_XBOX360 || owner->type == SDL_GAMEPAD_TYPE_XBOXONE) {
+                return true;
+            }
+        }
+
+        // Raw input Xbox One controllers have a hardcoded product ID, so match them against any Xbox One controller
+        if (device->product_id == USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER && owner->type == SDL_GAMEPAD_TYPE_XBOXONE) {
+            return true;
+        }
+    }
+
+    // The NVIDIA SHIELD controller's Xbox interface
+    if (device->vendor_id == USB_VENDOR_NVIDIA && device->product_id == 0xb400 &&
+        SDL_IsJoystickNVIDIASHIELDController(owner->vendor_id, owner->product_id)) {
+        return true;
+    }
+
+    for (int i = 0; i < device->match.num_matches; ++i) {
+        const SDL_JoystickMatch *match = &device->match.matches[i];
+        if (match->vendor_id) {
+            if (owner->vendor_id == match->vendor_id && owner->product_id == match->product_id) {
+                return true;
+            }
+        } else if (match->type != SDL_GAMEPAD_TYPE_UNKNOWN && owner->type == match->type) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Return true if a higher priority driver has the same controller. If pending is set, it's set to whether the
+// device is only hidden while a higher priority driver finds out whether it can handle the controller.
+static bool SDL_IsJoystickDeviceHidden(const SDL_JoystickDevice *device, Uint64 now, bool *pending)
+{
+    bool hidden = false;
+
+    if (pending) {
+        *pending = false;
+    }
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        const SDL_JoystickDevice *owner = SDL_joystick_registry[i];
+        if (owner == device || owner->rank >= device->rank) {
+            continue;
+        }
+        if (owner->usable == SDL_JOYSTICK_USABLE_NO || !SDL_JoystickDeviceMatches(owner, device)) {
+            continue;
+        }
+        if (owner->usable == SDL_JOYSTICK_USABLE_UNKNOWN) {
+            // Hold devices that aren't published yet, for a while
+            const Uint64 hold_ms = owner->claim_hold_ms ? owner->claim_hold_ms : SDL_JOYSTICK_HOLD_CAP_MS;
+            if (device->published || now >= owner->unknown_since_ms + hold_ms) {
+                continue;
+            }
+            hidden = true;
+            if (pending && now < owner->unknown_since_ms + SDL_JOYSTICK_HOLD_CAP_MS) {
+                // Long holds (e.g. waiting for the user) are only for the usual time
+                *pending = true;
+            }
+            continue;
+        }
+        if (pending) {
+            *pending = false;
+        }
+        return true;
+    }
+    return hidden;
+}
+
+static bool SDL_IsJoystickDeviceHeld(const SDL_JoystickDevice *device, Uint64 now)
+{
+    if (now >= device->hold_cap_ms) {
+        return false;
+    }
+    if (now < device->hold_until_ms) {
+        return true;
+    }
+    if (device->hold_driver >= 0 &&
+        SDL_GetAtomicInt(&SDL_joystick_discovery_passes_completed[device->hold_driver]) < device->hold_pass) {
+        // Wait for a discovery pass that started after the device was reported
+        return true;
+    }
+    return false;
+}
+
+// If a higher priority driver supports this device, hold it for a moment in case that driver reports it too
+static void SDL_StartJoystickDeviceHold(SDL_JoystickDevice *device, Uint16 version)
+{
+    const char *name = device->name ? device->name : "";
+    for (int i = 0; i < device->rank && i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->Supports && driver->Supports(device->vendor_id, device->product_id, version, name)) {
+            device->hold_until_ms = device->reported_ms + SDL_JOYSTICK_SETTLE_MS;
+            device->hold_cap_ms = device->reported_ms + SDL_JOYSTICK_HOLD_CAP_MS;
+            if (SDL_JoystickDriverDiscovers(i) && SDL_joystick_discovery_thread) {
+                device->hold_driver = i;
+                device->hold_pass = SDL_GetAtomicInt(&SDL_joystick_discovery_passes_started[i]) + 1;
+                SDL_WakeJoystickDeviceThread();
+            }
+            return;
+        }
+    }
+}
+
+// Add a reported device to the registry. It's published by SDL_ResolveJoystickDevices().
+static bool SDL_RegisterJoystickDevice(SDL_JoystickDevice *device)
+{
+    SDL_JoystickDevice **registry;
+    Uint16 version = 0;
+
+    SDL_AssertJoysticksLocked();
+
+    if (SDL_FindRegisteredJoystickDevice(device->driver_instance_id)) {
+        SDL_assert(!"Joystick reported twice");
+        return false;
+    }
+
+    registry = (SDL_JoystickDevice **)SDL_realloc(SDL_joystick_registry, (SDL_joystick_registry_count + 1) * sizeof(*registry));
+    if (!registry) {
+        return false;
+    }
+    SDL_joystick_registry = registry;
+
+    device->rank = SDL_GetJoystickDriverRank(device->driver);
+    device->reported_ms = SDL_GetTicks();
+    device->unknown_since_ms = device->reported_ms;
+
+    if (!device->claim_only && !device->vendor_id && !device->product_id) {
+        // The driver didn't say how to match it, use its GUID
+        SDL_GetJoystickGUIDInfo(device->guid, &device->vendor_id, &device->product_id, &version, NULL);
+        device->type = SDL_GetGamepadTypeFromVIDPID(device->vendor_id, device->product_id, device->name, false);
+    } else {
+        SDL_GetJoystickGUIDInfo(device->guid, NULL, NULL, &version, NULL);
+    }
+
+    if (!device->claim_only && !device->match.never_group) {
+        SDL_StartJoystickDeviceHold(device, version);
+    }
+
+    SDL_joystick_registry[SDL_joystick_registry_count++] = device;
+    return true;
+}
+
+static void SDL_UnregisterJoystickDevice(SDL_JoystickDevice *device)
+{
+    Uint64 now = SDL_GetTicks();
+
+    SDL_AssertJoysticksLocked();
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        if (SDL_joystick_registry[i] == device) {
+            --SDL_joystick_registry_count;
+            if (i < SDL_joystick_registry_count) {
+                SDL_memmove(&SDL_joystick_registry[i], &SDL_joystick_registry[i + 1], (SDL_joystick_registry_count - i) * sizeof(*SDL_joystick_registry));
+            }
+            break;
+        }
+    }
+
+    if (device->usable == SDL_JOYSTICK_USABLE_NO) {
+        // It wasn't hiding anything
+        return;
+    }
+
+    // Devices this one was hiding may be about to go away too, so hold them for a moment
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        SDL_JoystickDevice *hidden = SDL_joystick_registry[i];
+        if (hidden->claim_only || hidden->published || hidden->rank <= device->rank) {
+            continue;
+        }
+        if (SDL_JoystickDeviceMatches(device, hidden)) {
+            hidden->hold_until_ms = SDL_max(hidden->hold_until_ms, now + SDL_JOYSTICK_REMOVED_OWNER_HOLD_MS);
+            hidden->hold_cap_ms = SDL_max(hidden->hold_cap_ms, hidden->hold_until_ms);
+        }
+    }
+}
+
+// Publish the devices no higher priority driver has, and unpublish the ones that a higher priority driver now has
+static void SDL_ResolveJoystickDevices(void)
+{
+    Uint64 now = SDL_GetTicks();
+
+    SDL_AssertJoysticksLocked();
+
+    if (SDL_JoysticksQuitting()) {
+        return;
+    }
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        SDL_JoystickDevice *device = SDL_joystick_registry[i];
+        if (device->published && SDL_IsJoystickDeviceHidden(device, now, NULL)) {
+            SDL_UnpublishJoystickDevice(device);
+        }
+    }
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        SDL_JoystickDevice *device = SDL_joystick_registry[i];
+        if (device->claim_only || device->published) {
+            continue;
+        }
+        if (SDL_IsJoystickDeviceHidden(device, now, NULL) || SDL_IsJoystickDeviceHeld(device, now)) {
+            continue;
+        }
+        SDL_PublishJoystickDevice(device);
+    }
+}
+
+// Return true if a device is waiting to see whether a higher priority driver has it
+static bool SDL_JoystickDevicesHeld(void)
+{
+    Uint64 now = SDL_GetTicks();
+
+    SDL_AssertJoysticksLocked();
+
+    for (int i = 0; i < SDL_joystick_registry_count; ++i) {
+        SDL_JoystickDevice *device = SDL_joystick_registry[i];
+        bool pending;
+
+        if (device->claim_only || device->published) {
+            continue;
+        }
+        if (SDL_IsJoystickDeviceHidden(device, now, &pending)) {
+            if (pending) {
+                // Hidden only until a higher priority driver knows whether it can handle the controller
+                return true;
+            }
+        } else if (SDL_IsJoystickDeviceHeld(device, now)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void SDL_ApplyJoystickDeviceChanges(SDL_JoystickDeviceChange *changes)
+{
+    SDL_JoystickDeviceChange *change, *report;
+    SDL_JoystickDevice *device;
+
+    // Fold changes to devices reported in this batch into their reports, so they're published with
+    // their final description, or not at all if they've already been removed.
+    for (change = changes; change; change = change->next) {
+        if (change->type == SDL_JOYSTICK_CHANGE_REPORT || change->type == SDL_JOYSTICK_CHANGE_MESSAGE) {
+            continue;
+        }
+        for (report = changes; report != change; report = report->next) {
+            if (report->type == SDL_JOYSTICK_CHANGE_REPORT && report->device &&
+                report->driver_instance_id == change->driver_instance_id) {
+                break;
+            }
+        }
+        if (report == change) {
+            continue;
+        }
+        if (change->type == SDL_JOYSTICK_CHANGE_DESCRIPTION) {
+            SDL_SetJoystickDeviceDescription(report->device, change->name, change->path, change->guid, change->steam_virtual_gamepad_slot);
+        } else if (change->type == SDL_JOYSTICK_CHANGE_USABLE) {
+            report->device->usable = change->usable;
+        } else {
+            SDL_FreeJoystickDevice(report->device);
+            report->device = NULL;
+            report->handled = true;
+        }
+        change->handled = true;
+    }
+
+    while (changes) {
+        change = changes;
+        changes = change->next;
+
+        if (!change->handled) {
+            switch (change->type) {
+            case SDL_JOYSTICK_CHANGE_REPORT:
+                if (SDL_RegisterJoystickDevice(change->device)) {
+                    change->device = NULL;
+                }
+                break;
+            case SDL_JOYSTICK_CHANGE_DESCRIPTION:
+                device = SDL_FindRegisteredJoystickDevice(change->driver_instance_id);
+                if (device) {
+                    SDL_SetJoystickDeviceDescription(device, change->name, change->path, change->guid, change->steam_virtual_gamepad_slot);
+                }
+                break;
+            case SDL_JOYSTICK_CHANGE_REMOVE:
+                device = SDL_FindRegisteredJoystickDevice(change->driver_instance_id);
+                if (device) {
+                    SDL_UnpublishJoystickDevice(device);
+                    SDL_UnregisterJoystickDevice(device);
+                    SDL_FreeJoystickDevice(device);
+                }
+                break;
+            case SDL_JOYSTICK_CHANGE_USABLE:
+                device = SDL_FindRegisteredJoystickDevice(change->driver_instance_id);
+                if (device) {
+                    if (change->usable == SDL_JOYSTICK_USABLE_UNKNOWN && device->usable != SDL_JOYSTICK_USABLE_UNKNOWN) {
+                        // Holds for an UNKNOWN claim are timed from when it became UNKNOWN
+                        device->unknown_since_ms = SDL_GetTicks();
+                    }
+                    device->usable = change->usable;
+                }
+                break;
+            case SDL_JOYSTICK_CHANGE_MESSAGE:
+                // While quitting, messages are freed instead of handled
+                if (!SDL_JoysticksQuitting()) {
+                    change->driver->HandleMessage(change->message);
+                    change->message = NULL;
+                }
+                break;
+            }
+        }
+        SDL_FreeJoystickDeviceChange(change);
+    }
+}
+
+static void SDL_ProcessJoystickDeviceChanges(void)
+{
+    // Handling changes can report more (e.g. a driver message that adds a device)
+    const int MAX_ROUNDS = 4;
+    static bool processing = false;
+
+    SDL_AssertJoysticksLocked();
+
+    // Publishing sends events, and event watchers can call back in, e.g. to attach or detach a virtual joystick.
+    if (processing) {
+        return;
+    }
+    processing = true;
+
+    for (int round = 0; round < MAX_ROUNDS; ++round) {
+        SDL_JoystickDeviceChange *changes = SDL_PopJoystickDeviceChanges();
+        if (!changes && round > 0) {
+            break;
+        }
+        if (changes) {
+            SDL_ApplyJoystickDeviceChanges(changes);
+        }
+
+        SDL_ResolveJoystickDevices();
+    }
+
+    processing = false;
+}
+
+static void SDL_DiscardJoystickChanges(void)
+{
+    SDL_JoystickDeviceChange *changes = SDL_PopJoystickDeviceChanges();
+
+    while (changes) {
+        SDL_JoystickDeviceChange *change = changes;
+        changes = change->next;
+        SDL_FreeJoystickDeviceChange(change);
+    }
+}
+
+// Return whether a driver finds devices with Discover(). Drivers whose Init() failed don't.
+static bool SDL_JoystickDriverDiscovers(int i)
+{
+    return SDL_joystick_drivers[i]->Discover && SDL_joystick_driver_initialized[i];
+}
+
+static bool SDL_JoystickDiscoveryNeeded(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        if (SDL_JoystickDriverDiscovers(i)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Driver callbacks on other threads (e.g. hidapi device notifications) can wake the thread at any time,
+// including while joysticks are shutting down.
+static SDL_SpinLock SDL_joystick_discovery_wake_lock;
+
+static bool SDL_CreateJoystickDiscoveryObjects(void)
+{
+    if (SDL_ShouldInit(&SDL_joystick_discovery_init)) {
+        bool result = true;
+
+        SDL_joystick_discovery_wake = SDL_CreateSemaphore(0);
+        SDL_joystick_discovery_first_pass = SDL_CreateSemaphore(0);
+        if (!SDL_joystick_discovery_wake || !SDL_joystick_discovery_first_pass) {
+            result = false;
+        }
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+        if (pipe(SDL_joystick_discovery_pipe) == 0) {
+            for (int i = 0; i < 2; ++i) {
+                fcntl(SDL_joystick_discovery_pipe[i], F_SETFL, fcntl(SDL_joystick_discovery_pipe[i], F_GETFL) | O_NONBLOCK);
+                fcntl(SDL_joystick_discovery_pipe[i], F_SETFD, FD_CLOEXEC);
+            }
+        } else {
+            SDL_joystick_discovery_pipe[0] = -1;
+            SDL_joystick_discovery_pipe[1] = -1;
+        }
+#endif
+        SDL_SetInitialized(&SDL_joystick_discovery_init, result);
+    }
+    return SDL_joystick_discovery_wake && SDL_joystick_discovery_first_pass;
+}
+
+void SDL_WakeJoystickDeviceThread(void)
+{
+    SDL_LockSpinlock(&SDL_joystick_discovery_wake_lock);
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+    if (SDL_joystick_discovery_pipe[1] >= 0) {
+        const char c = 0;
+        // If the pipe is full, the thread is already going to wake up
+        (void)write(SDL_joystick_discovery_pipe[1], &c, 1);
+    } else
+#endif
+    if (SDL_joystick_discovery_wake) {
+        SDL_SignalSemaphore(SDL_joystick_discovery_wake);
+    }
+    SDL_UnlockSpinlock(&SDL_joystick_discovery_wake_lock);
+}
+
+// Called by SDL_QuitJoysticks() after the device thread has stopped and the drivers have quit
+static void SDL_DestroyJoystickDiscoveryObjects(void)
+{
+    SDL_Semaphore *wake, *first_pass;
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+    int pipe_fds[2];
+#endif
+
+    if (!SDL_ShouldQuit(&SDL_joystick_discovery_init)) {
+        return;
+    }
+
+    SDL_LockSpinlock(&SDL_joystick_discovery_wake_lock);
+    wake = SDL_joystick_discovery_wake;
+    SDL_joystick_discovery_wake = NULL;
+    first_pass = SDL_joystick_discovery_first_pass;
+    SDL_joystick_discovery_first_pass = NULL;
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+    pipe_fds[0] = SDL_joystick_discovery_pipe[0];
+    pipe_fds[1] = SDL_joystick_discovery_pipe[1];
+    SDL_joystick_discovery_pipe[0] = -1;
+    SDL_joystick_discovery_pipe[1] = -1;
+#endif
+    SDL_UnlockSpinlock(&SDL_joystick_discovery_wake_lock);
+
+    SDL_DestroySemaphore(wake);
+    SDL_DestroySemaphore(first_pass);
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+    if (pipe_fds[0] >= 0) {
+        close(pipe_fds[0]);
+    }
+    if (pipe_fds[1] >= 0) {
+        close(pipe_fds[1]);
+    }
+#endif
+
+    SDL_SetInitialized(&SDL_joystick_discovery_init, false);
+}
+
+bool SDL_JoystickDiscoveryQuitting(void)
+{
+    return SDL_GetAtomicInt(&SDL_joystick_discovery_quit) != 0;
+}
+
+// Run each driver's Discover() and return how long to wait before running them again, or -1
+static Sint32 SDL_RunJoystickDiscovery(void)
+{
+    Sint32 timeout = -1;
+
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (SDL_JoystickDriverDiscovers(i)) {
+            Sint32 driver_timeout;
+
+            SDL_AddAtomicInt(&SDL_joystick_discovery_passes_started[i], 1);
+            driver_timeout = driver->Discover();
+            SDL_AddAtomicInt(&SDL_joystick_discovery_passes_completed[i], 1);
+
+            if (driver_timeout >= 0 && (timeout < 0 || driver_timeout < timeout)) {
+                timeout = driver_timeout;
+            }
+        }
+    }
+
+    {
+        // The Steam virtual gamepad info file is read here, too, so the app thread doesn't wait for it
+        Sint32 steam_timeout = SDL_DiscoverSteamVirtualGamepadInfo();
+        if (steam_timeout >= 0 && (timeout < 0 || steam_timeout < timeout)) {
+            timeout = steam_timeout;
+        }
+    }
+    return timeout;
+}
+
+#ifndef SDL_JOYSTICK_DISCOVERY_INLINE
+static void SDL_WaitForJoystickDiscovery(Sint32 timeout)
+{
+#ifdef SDL_JOYSTICK_DISCOVERY_FDS
+    if (SDL_joystick_discovery_pipe[0] >= 0) {
+        struct pollfd fds[1 + SDL_arraysize(SDL_joystick_drivers)];
+        nfds_t nfds = 0;
+
+        fds[nfds].fd = SDL_joystick_discovery_pipe[0];
+        fds[nfds].events = POLLIN;
+        ++nfds;
+        for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+            SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+            if (SDL_JoystickDriverDiscovers(i) && driver->GetDiscoveryFD) {
+                int fd = driver->GetDiscoveryFD();
+                if (fd >= 0) {
+                    fds[nfds].fd = fd;
+                    fds[nfds].events = POLLIN;
+                    ++nfds;
+                }
+            }
+        }
+
+        if (poll(fds, nfds, timeout) > 0 && (fds[0].revents & POLLIN)) {
+            char buf[64];
+            while (read(SDL_joystick_discovery_pipe[0], buf, sizeof(buf)) > 0) {
+                // Drain the wake-ups
+            }
+        }
+        return;
+    }
+
+    // Without the wake pipe, the drivers' discovery fds can't be waited on, so check them every second
+    if (timeout < 0 || timeout > 1000) {
+        timeout = 1000;
+    }
+#endif
+    if (timeout < 0) {
+        SDL_WaitSemaphore(SDL_joystick_discovery_wake);
+    } else {
+        SDL_WaitSemaphoreTimeout(SDL_joystick_discovery_wake, timeout);
+    }
+
+    // One pass handles any number of wake-ups
+    while (SDL_TryWaitSemaphore(SDL_joystick_discovery_wake)) {
+    }
+}
+
+static int SDLCALL SDL_JoystickDiscoveryThread(void *data)
+{
+    bool first_pass = true;
+
+    while (!SDL_GetAtomicInt(&SDL_joystick_discovery_quit)) {
+        Sint32 timeout = SDL_RunJoystickDiscovery();
+
+        if (first_pass) {
+            SDL_SignalSemaphore(SDL_joystick_discovery_first_pass);
+            first_pass = false;
+        }
+
+        if (SDL_GetAtomicInt(&SDL_joystick_discovery_quit)) {
+            break;
+        }
+        SDL_WaitForJoystickDiscovery(timeout);
+    }
+    return 0;
+}
+#endif // !SDL_JOYSTICK_DISCOVERY_INLINE
+
+// Called by SDL_InitJoysticks(), holding the joystick lock. The thread never takes it, so waiting for its
+// first pass is safe.
+static void SDL_StartJoystickDiscovery(bool wait)
+{
+    if (!SDL_JoystickDiscoveryNeeded()) {
+        return;
+    }
+
+    if (SDL_CreateJoystickDiscoveryObjects()) {
+        // Clear wake-ups and first pass signals left from a previous init
+        while (SDL_TryWaitSemaphore(SDL_joystick_discovery_wake)) {
+        }
+        while (SDL_TryWaitSemaphore(SDL_joystick_discovery_first_pass)) {
+        }
+
+        SDL_SetAtomicInt(&SDL_joystick_discovery_quit, 0);
+#ifndef SDL_JOYSTICK_DISCOVERY_INLINE
+        SDL_joystick_discovery_thread = SDL_CreateThread(SDL_JoystickDiscoveryThread, "SDLJoystickDevices", NULL);
+#endif
+    }
+
+    if (!SDL_joystick_discovery_thread) {
+        // No threads, discover devices in SDL_UpdateJoysticks()
+        SDL_joystick_discovery_inline = true;
+        if (wait) {
+            SDL_RunJoystickDiscovery();
+        }
+        return;
+    }
+
+    if (wait) {
+        SDL_WaitSemaphore(SDL_joystick_discovery_first_pass);
+    }
+}
+
+static void SDL_StopJoystickDiscovery(void)
+{
+    if (SDL_joystick_discovery_thread) {
+        SDL_SetAtomicInt(&SDL_joystick_discovery_quit, 1);
+        SDL_WakeJoystickDeviceThread();
+        SDL_WaitThread(SDL_joystick_discovery_thread, NULL);
+        SDL_joystick_discovery_thread = NULL;
+    }
+    SDL_joystick_discovery_inline = false;
 }
 
 void SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value)
@@ -2953,7 +4106,6 @@ static void SendSteamHandleUpdateEvents(void)
 
 void SDL_UpdateJoysticks(void)
 {
-    int i;
     Uint64 now;
     SDL_Joystick *joystick;
 
@@ -2967,10 +4119,17 @@ void SDL_UpdateJoysticks(void)
         SendSteamHandleUpdateEvents();
     }
 
+    if (SDL_joystick_discovery_inline) {
+        SDL_RunJoystickDiscovery();
+    }
+
 #ifdef SDL_JOYSTICK_HIDAPI
     // Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks
     HIDAPI_UpdateDevices();
 #endif // SDL_JOYSTICK_HIDAPI
+
+    // Detach joysticks that have been removed before updating them
+    SDL_ProcessJoystickDeviceChanges();
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (!joystick->attached) {
@@ -3026,12 +4185,7 @@ void SDL_UpdateJoysticks(void)
         }
     }
 
-    /* this needs to happen AFTER walking the joystick list above, so that any
-       dangling hardware data from removed devices can be free'd
-     */
-    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-        SDL_joystick_drivers[i]->Detect();
-    }
+    SDL_ProcessJoystickDeviceChanges();
 
     SDL_UnlockJoysticks();
 }
@@ -3143,13 +4297,9 @@ char *SDL_CreateJoystickName(Uint16 vendor, Uint16 product, const char *vendor_n
     return SDL_CreateDeviceName(vendor, product, vendor_name, product_name, "Controller");
 }
 
-SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data)
+Uint16 SDL_GetJoystickNameCRC(const char *vendor_name, const char *product_name)
 {
-    SDL_GUID guid;
-    Uint16 *guid16 = (Uint16 *)guid.data;
     Uint16 crc = 0;
-
-    SDL_zero(guid);
 
     if (vendor_name && *vendor_name && product_name && *product_name) {
         crc = SDL_crc16(crc, vendor_name, SDL_strlen(vendor_name));
@@ -3158,6 +4308,16 @@ SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint1
     } else if (product_name) {
         crc = SDL_crc16(crc, product_name, SDL_strlen(product_name));
     }
+    return crc;
+}
+
+SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product, Uint16 version, const char *vendor_name, const char *product_name, Uint8 driver_signature, Uint8 driver_data)
+{
+    SDL_GUID guid;
+    Uint16 *guid16 = (Uint16 *)guid.data;
+    Uint16 crc = SDL_GetJoystickNameCRC(vendor_name, product_name);
+
+    SDL_zero(guid);
 
     // We only need 16 bits for each of these; space them out to fill 128.
     // Byteswap so devices get same GUID on little/big endian platforms.
@@ -3735,14 +4895,15 @@ bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 versio
 // return the guid for this index
 SDL_GUID SDL_GetJoystickGUIDForID(SDL_JoystickID instance_id)
 {
-    SDL_JoystickDriver *driver;
-    int device_index;
+    SDL_JoystickDevice *device;
     SDL_GUID guid;
 
     SDL_LockJoysticks();
-    if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        guid = driver->GetDeviceGUID(device_index);
+    device = SDL_FindJoystickDevice(instance_id);
+    if (device) {
+        guid = SDL_GetJoystickDeviceGUID(device);
     } else {
+        SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
         SDL_zero(guid);
     }
     SDL_UnlockJoysticks();

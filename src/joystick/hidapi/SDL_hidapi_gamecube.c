@@ -183,6 +183,16 @@ static bool HIDAPI_DriverGameCube_EnableAdapter(SDL_HIDAPI_Device *device)
     return true;
 }
 
+// Enable Nintendo adapters on the joystick device thread, because it does slow USB work
+static bool HIDAPI_DriverGameCube_PrepareDevice(SDL_HIDAPI_Device *device)
+{
+    if (device->vendor_id != USB_VENDOR_NINTENDO) {
+        // PC mode adapters don't need it
+        return true;
+    }
+    return HIDAPI_DriverGameCube_EnableAdapter(device);
+}
+
 static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGameCube_Context *ctx;
@@ -230,10 +240,6 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
         }
 #endif
     } else {
-        if (!HIDAPI_DriverGameCube_EnableAdapter(device)) {
-            return false;
-        }
-
         // Add all the applicable joysticks
         while ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
@@ -311,7 +317,7 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     }
 #endif
 
-    joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
+    joystick = SDL_GetJoystickFromDriverID(ctx->joysticks[i]);
     if (!joystick) {
         // Hasn't been opened yet, skip
         return;
@@ -386,7 +392,7 @@ static void HIDAPI_DriverGameCube_HandleNintendoPacket(SDL_HIDAPI_Device *device
                 ResetAxisRange(ctx, i);
                 HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
             }
-            joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
+            joystick = SDL_GetJoystickFromDriverID(ctx->joysticks[i]);
 
             // Hasn't been opened yet, skip
             if (!joystick) {
@@ -504,7 +510,7 @@ static bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_AssertJoysticksLocked();
 
     for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-        if (joystick->instance_id == ctx->joysticks[i]) {
+        if (joystick->driver_instance_id == ctx->joysticks[i]) {
             joystick->nbuttons = 12;
             joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
             if (ctx->wireless[i]) {
@@ -527,7 +533,7 @@ static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
 
     if (ctx->pc_mode) {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-            if (joystick->instance_id == ctx->joysticks[i]) {
+            if (joystick->driver_instance_id == ctx->joysticks[i]) {
                 if (!ctx->rumbleAllowed[i]) {
                     return SDL_SetError("Rumble is disabled because the adapter is not at least of firmware 0x7");
                 }
@@ -547,7 +553,7 @@ static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
         }
     } else {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-            if (joystick->instance_id == ctx->joysticks[i]) {
+            if (joystick->driver_instance_id == ctx->joysticks[i]) {
                 if (ctx->wireless[i]) {
                     return SDL_SetError("Nintendo GameCube WaveBird controllers do not support rumble");
                 }
@@ -578,11 +584,6 @@ static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     return SDL_SetError("Couldn't find joystick");
 }
 
-static bool HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -592,7 +593,7 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
     Uint8 i;
     if (ctx->pc_mode) {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-            if (joystick->instance_id == ctx->joysticks[i]) {
+            if (joystick->driver_instance_id == ctx->joysticks[i]) {
                 if (ctx->rumbleAllowed[i]) {
                     result |= SDL_JOYSTICK_CAP_RUMBLE;
                     break;
@@ -601,7 +602,7 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
         }
     } else {
         for (i = 0; i < MAX_CONTROLLERS; i += 1) {
-            if (joystick->instance_id == ctx->joysticks[i]) {
+            if (joystick->driver_instance_id == ctx->joysticks[i]) {
                 if (!ctx->wireless[i] && ctx->rumbleAllowed[i]) {
                     result |= SDL_JOYSTICK_CAP_RUMBLE;
                     break;
@@ -611,21 +612,6 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
     }
 
     return result;
-}
-
-static bool HIDAPI_DriverGameCube_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -665,13 +651,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube = {
     HIDAPI_DriverGameCube_UpdateDevice,
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_RumbleJoystick,
-    HIDAPI_DriverGameCube_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverGameCube_GetJoystickCapabilities,
-    HIDAPI_DriverGameCube_SetJoystickLED,
-    HIDAPI_DriverGameCube_SendJoystickEffect,
-    HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverGameCube_CloseJoystick,
     HIDAPI_DriverGameCube_FreeDevice,
+    HIDAPI_DriverGameCube_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_GAMECUBE

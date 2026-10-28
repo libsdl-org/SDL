@@ -65,26 +65,27 @@ static id disconnectObserver = nil;
 
 #endif // SDL_JOYSTICK_MFI
 
-static SDL_JoystickDeviceItem *deviceList = NULL;
-
-static int numjoysticks = 0;
 int SDL_AppleTVRemoteOpenedAsJoystick = 0;
 
-static SDL_JoystickDeviceItem *GetDeviceForIndex(int device_index)
+#ifdef SDL_JOYSTICK_MFI
+// A controller that has been reported, so it can be found when it's disconnected
+typedef struct IOS_ReportedDevice
 {
-    SDL_JoystickDeviceItem *device = deviceList;
-    int i = 0;
+    const void *controller; // retained GCController
+    SDL_JoystickID instance_id; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
+    struct IOS_ReportedDevice *next;
+} IOS_ReportedDevice;
 
-    while (i < device_index) {
-        if (device == NULL) {
-            return NULL;
-        }
-        device = device->next;
-        i++;
-    }
+// Controllers are reported from the GameController notifications, without the joystick lock, so the list
+// of reported controllers has its own lock.
+// A notification can still be delivered on another thread while the driver shuts down, so this is a spinlock,
+// which never needs to be destroyed.
+static SDL_SpinLock IOS_device_lock;
+static bool IOS_initialized = false;
+static IOS_ReportedDevice *IOS_reported_devices = NULL;
+#endif
 
-    return device;
-}
+static void IOS_FreeDeviceItem(SDL_JoystickDeviceItem *device);
 
 #ifdef SDL_JOYSTICK_MFI
 static bool IsControllerPS4(GCController *controller)
@@ -294,6 +295,64 @@ static bool ElementAlreadyHandled(SDL_JoystickDeviceItem *device, NSString *elem
     return false;
 }
 
+// GCController doesn't report the USB IDs, so describe the devices HIDAPI would see for this controller
+static void IOS_SetDeviceMatch(SDL_JoystickDeviceItem *device, const char *name)
+{
+    SDL_JoystickMatchInfo *info = &device->match;
+
+    if (device->is_xbox) {
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_XBOXONE);
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_XBOX360);
+    }
+    if (device->is_ps4) {
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_PS4);
+    }
+    if (device->is_ps5) {
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_PS5);
+    }
+    if (device->is_switch_pro) {
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO);
+    }
+    if (device->is_switch_joycon_pair) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR);
+    }
+    if (device->is_shield) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_NVIDIA, USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104);
+    }
+    if (device->is_stadia) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER);
+    }
+    if (device->is_switch_joyconL) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
+    }
+    if (device->is_switch_joyconR) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
+    }
+    if (SDL_strstr(name, "GameCube Controller Adapter")) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER);
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1);
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2);
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3);
+    }
+    if (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO);
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT);
+    }
+    if (SDL_strcmp(name, "8BitDo Pro 2") == 0) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2);
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT);
+    }
+    if (SDL_strcmp(name, "8BitDo Pro 3") == 0) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_3);
+    }
+    if (SDL_startswith(name, "8BitDo Ultimate 2 Wireless")) {
+        SDL_AddJoystickMatchVIDPID(info, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS);
+    }
+    if (SDL_startswith(name, "Steam Controller")) {
+        SDL_AddJoystickMatchType(info, SDL_GAMEPAD_TYPE_STEAM);
+    }
+}
+
 static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
     Uint16 vendor = 0;
@@ -368,31 +427,7 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     device->is_backbone_one = IsControllerBackboneOne(controller);
     device->is_switch_joyconL = IsControllerSwitchJoyConL(controller);
     device->is_switch_joyconR = IsControllerSwitchJoyConR(controller);
-#ifdef SDL_JOYSTICK_HIDAPI
-    if ((device->is_xbox && (HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_XBOXONE) ||
-                             HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_XBOX360))) ||
-        (device->is_ps4 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS4)) ||
-        (device->is_ps5 && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_PS5)) ||
-        (device->is_switch_pro && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO)) ||
-        (device->is_switch_joycon_pair && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR, 0, "")) ||
-        (device->is_shield && HIDAPI_IsDevicePresent(USB_VENDOR_NVIDIA, USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104, 0, "")) ||
-        (device->is_stadia && HIDAPI_IsDevicePresent(USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER, 0, "")) ||
-        (device->is_switch_joyconL && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT, 0, "")) ||
-        (device->is_switch_joyconR && HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT, 0, "")) ||
-        (SDL_strstr(name, "GameCube Controller Adapter") &&
-            (HIDAPI_IsDevicePresent(USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2, 0, "") ||
-             HIDAPI_IsDevicePresent(USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3, 0, ""))) ||
-        (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT, 0, ""))) ||
-        (SDL_strcmp(name, "8BitDo Pro 2") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2, 0, "") || HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT, 0, ""))) ||
-        (SDL_strcmp(name, "8BitDo Pro 3") == 0 && (HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_3, 0, ""))) ||
-        (SDL_startswith(name, "8BitDo Ultimate 2 Wireless") && HIDAPI_IsDevicePresent(USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS, 0, "")) ||
-        (SDL_startswith(name, "Steam Controller") && HIDAPI_IsDeviceTypePresent(SDL_GAMEPAD_TYPE_STEAM))) {
-        // The HIDAPI driver is taking care of this device
-        return false;
-    }
-#endif
+    IOS_SetDeviceMatch(device, name);
     if (device->is_xbox && SDL_strncmp(name, "GamePad-", 8) == 0) {
         // This is a Steam Virtual Gamepad, which isn't supported by GCController
         return false;
@@ -488,6 +523,8 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
     if (SDL_ShouldIgnoreJoystick(vendor, product, 0, name)) {
         return false;
     }
+    device->vendor_id = vendor;
+    device->product_id = product;
 
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
@@ -646,111 +683,92 @@ static bool IOS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCControlle
 #endif // SDL_JOYSTICK_MFI
 
 #ifdef SDL_JOYSTICK_MFI
+// Called from the GameController notifications, or at init, without the joystick lock
 static void IOS_AddJoystickDevice(GCController *controller)
 {
-    SDL_JoystickDeviceItem *device = deviceList;
+    IOS_ReportedDevice *entry;
+    SDL_JoystickDeviceItem *item;
+    SDL_JoystickDevice *device = NULL;
 
-    while (device != NULL) {
-        if (device->controller == controller) {
-            return;
-        }
-        device = device->next;
-    }
-
-    device = (SDL_JoystickDeviceItem *)SDL_calloc(1, sizeof(SDL_JoystickDeviceItem));
-    if (device == NULL) {
+    if (!controller) {
         return;
     }
 
-    device->instance_id = SDL_GetNextObjectID();
-    device->pause_button_index = -1;
+    SDL_LockSpinlock(&IOS_device_lock);
 
-    if (controller) {
-        if (!IOS_AddMFIJoystickDevice(device, controller)) {
-            SDL_free(device->name);
-            SDL_free(device);
-            return;
+    if (!IOS_initialized) {
+        goto done;
+    }
+
+    for (entry = IOS_reported_devices; entry; entry = entry->next) {
+        if (entry->controller == (__bridge const void *)controller) {
+            goto done;
         }
     }
 
-    if (deviceList == NULL) {
-        deviceList = device;
-    } else {
-        SDL_JoystickDeviceItem *lastdevice = deviceList;
-        while (lastdevice->next != NULL) {
-            lastdevice = lastdevice->next;
-        }
-        lastdevice->next = device;
+    item = (SDL_JoystickDeviceItem *)SDL_calloc(1, sizeof(SDL_JoystickDeviceItem));
+    if (item == NULL) {
+        goto done;
+    }
+    item->pause_button_index = -1;
+
+    if (!IOS_AddMFIJoystickDevice(item, controller)) {
+        IOS_FreeDeviceItem(item);
+        goto done;
     }
 
-    ++numjoysticks;
+    entry = (IOS_ReportedDevice *)SDL_calloc(1, sizeof(*entry));
+    if (entry) {
+        device = SDL_CreateJoystickDevice(&SDL_IOS_JoystickDriver);
+    }
+    if (!device) {
+        SDL_free(entry);
+        IOS_FreeDeviceItem(item);
+        goto done;
+    }
 
-    SDL_PrivateJoystickAdded(device->instance_id);
+    device->driver_data = item;
+    SDL_SetJoystickDeviceDescription(device, item->name, NULL, item->guid, -1);
+    device->vendor_id = item->vendor_id;
+    device->product_id = item->product_id;
+    device->type = SDL_GetGamepadTypeFromVIDPID(item->vendor_id, item->product_id, item->name, false);
+    device->match = item->match;
+
+    entry->controller = CFBridgingRetain(controller);
+    entry->instance_id = device->driver_instance_id;
+    entry->next = IOS_reported_devices;
+    IOS_reported_devices = entry;
+
+    // Reported holding the lock, so a disconnect on another thread can't be posted before the report
+    SDL_ReportJoystickDevice(device);
+
+done:
+    SDL_UnlockSpinlock(&IOS_device_lock);
 }
-#endif // SDL_JOYSTICK_MFI
 
-static SDL_JoystickDeviceItem *IOS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
+// Called from the GameController notifications, without the joystick lock
+static void IOS_RemoveJoystickDevice(GCController *controller)
 {
-    SDL_JoystickDeviceItem *prev = NULL;
-    SDL_JoystickDeviceItem *next = NULL;
-    SDL_JoystickDeviceItem *item = deviceList;
+    IOS_ReportedDevice *entry, *prev = NULL;
 
-    if (device == NULL) {
-        return NULL;
-    }
+    SDL_LockSpinlock(&IOS_device_lock);
+    for (entry = IOS_reported_devices; entry; prev = entry, entry = entry->next) {
+        if (entry->controller == (__bridge const void *)controller) {
+            SDL_ReportJoystickRemoved(entry->instance_id);
 
-    next = device->next;
-
-    while (item != NULL) {
-        if (item == device) {
+            if (prev) {
+                prev->next = entry->next;
+            } else {
+                IOS_reported_devices = entry->next;
+            }
+            CFRelease(entry->controller);
+            SDL_free(entry);
             break;
         }
-        prev = item;
-        item = item->next;
     }
-
-    // Unlink the device item from the device list.
-    if (prev) {
-        prev->next = device->next;
-    } else if (device == deviceList) {
-        deviceList = device->next;
-    }
-
-    if (device->joystick) {
-        device->joystick->hwdata = NULL;
-    }
-
-#ifdef SDL_JOYSTICK_MFI
-    @autoreleasepool {
-        // These were explicitly retained in the struct, so they should be explicitly released before freeing the struct.
-        if (device->controller) {
-            GCController *controller = CFBridgingRelease((__bridge CFTypeRef)(device->controller));
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            controller.controllerPausedHandler = nil;
-#pragma clang diagnostic pop
-            device->controller = nil;
-        }
-        if (device->axes) {
-            CFRelease((__bridge CFTypeRef)device->axes);
-            device->axes = nil;
-        }
-        if (device->buttons) {
-            CFRelease((__bridge CFTypeRef)device->buttons);
-            device->buttons = nil;
-        }
-    }
-#endif // SDL_JOYSTICK_MFI
-
-    --numjoysticks;
-
-    SDL_PrivateJoystickRemoved(device->instance_id);
-
-    SDL_free(device->name);
-    SDL_free(device);
-
-    return next;
+    SDL_UnlockSpinlock(&IOS_device_lock);
 }
+#endif // SDL_JOYSTICK_MFI
 
 #ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *oldValue, const char *newValue)
@@ -787,13 +805,11 @@ static bool IOS_JoystickInit(void)
 #endif
 
 #ifdef SDL_JOYSTICK_MFI
-        // GameController.framework was added in iOS 7.
-        if (![GCController class]) {
-            return true;
-        }
+        SDL_LockSpinlock(&IOS_device_lock);
+        IOS_initialized = true;
+        SDL_UnlockSpinlock(&IOS_device_lock);
 
-        /* For whatever reason, this always returns an empty array on
-         macOS 11.0.1 */
+        // For whatever reason, this always returns an empty array on macOS 11.0.1
         for (GCController *controller in [GCController controllers]) {
             IOS_AddJoystickDevice(controller);
         }
@@ -810,9 +826,7 @@ static bool IOS_JoystickInit(void)
                                                queue:nil
                                           usingBlock:^(NSNotification *note) {
                                             GCController *controller = note.object;
-                                            SDL_LockJoysticks();
                                             IOS_AddJoystickDevice(controller);
-                                            SDL_UnlockJoysticks();
                                           }];
 
         disconnectObserver = [center addObserverForName:GCControllerDidDisconnectNotification
@@ -820,15 +834,7 @@ static bool IOS_JoystickInit(void)
                                                   queue:nil
                                              usingBlock:^(NSNotification *note) {
                                                GCController *controller = note.object;
-                                               SDL_JoystickDeviceItem *device;
-                                               SDL_LockJoysticks();
-                                               for (device = deviceList; device != NULL; device = device->next) {
-                                                   if (device->controller == controller) {
-                                                       IOS_RemoveJoystickDevice(device);
-                                                       break;
-                                                   }
-                                               }
-                                               SDL_UnlockJoysticks();
+                                               IOS_RemoveJoystickDevice(controller);
                                              }];
 #endif // SDL_JOYSTICK_MFI
 
@@ -840,82 +846,38 @@ static bool IOS_JoystickInit(void)
     return true;
 }
 
-static int IOS_JoystickGetCount(void)
-{
-    return numjoysticks;
-}
-
-static void IOS_JoystickDetect(void)
-{
-}
-
-static bool IOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers through this method
-    return false;
-}
-
-static const char *IOS_JoystickGetDeviceName(int device_index)
-{
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    return device ? device->name : "Unknown";
-}
-
-static const char *IOS_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int IOS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int IOS_JoystickGetDevicePlayerIndex(int device_index)
+static void IOS_JoystickSetPlayerIndex(SDL_JoystickDevice *joystick_device, int player_index)
 {
 #ifdef SDL_JOYSTICK_MFI
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    if (device && device->controller) {
-        return (int)device->controller.playerIndex;
-    }
-#endif
-    return -1;
-}
-
-static void IOS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-#ifdef SDL_JOYSTICK_MFI
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    if (device && device->controller) {
+    SDL_JoystickDeviceItem *device = (SDL_JoystickDeviceItem *)joystick_device->driver_data;
+    if (device->controller) {
         device->controller.playerIndex = player_index;
     }
 #endif
 }
 
-static SDL_GUID IOS_JoystickGetDeviceGUID(int device_index)
+static bool IOS_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *joystick_device)
 {
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    SDL_GUID guid;
-    if (device) {
-        guid = device->guid;
-    } else {
-        SDL_zero(guid);
-    }
-    return guid;
-}
-
-static SDL_JoystickID IOS_JoystickGetDeviceInstanceID(int device_index)
-{
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    return device ? device->instance_id : 0;
-}
-
-static bool IOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
+    // The open joystick has its own copy of the device, so it can outlive the device's removal
+    SDL_JoystickDeviceItem *device = (SDL_JoystickDeviceItem *)SDL_malloc(sizeof(*device));
     if (device == NULL) {
-        return SDL_SetError("Could not open Joystick: no hardware device for the specified index");
+        return false;
     }
+    SDL_memcpy(device, joystick_device->driver_data, sizeof(*device));
+    device->name = NULL;
+    device->rumble = NULL;
+    device->joystick = NULL;
+#ifdef SDL_JOYSTICK_MFI
+    if (device->controller) {
+        CFRetain((__bridge CFTypeRef)device->controller);
+    }
+    if (device->axes) {
+        CFRetain((__bridge CFTypeRef)device->axes);
+    }
+    if (device->buttons) {
+        CFRetain((__bridge CFTypeRef)device->buttons);
+    }
+#endif
 
     joystick->hwdata = device;
 
@@ -1511,11 +1473,6 @@ static bool IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, U
     return SDL_Unsupported();
 }
 
-static bool IOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 static bool IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     @autoreleasepool {
@@ -1551,6 +1508,43 @@ static void IOS_JoystickUpdate(SDL_Joystick *joystick)
     }
 }
 
+// Free a device description, or an open joystick's copy of it
+static void IOS_FreeDeviceItem(SDL_JoystickDeviceItem *device)
+{
+#ifdef SDL_JOYSTICK_MFI
+    @autoreleasepool {
+        // These were explicitly retained in the struct, so they should be explicitly released before freeing the struct.
+        if (device->rumble) {
+            SDL3_RumbleContext *rumble = (__bridge SDL3_RumbleContext *)device->rumble;
+
+            [rumble cleanup];
+            CFRelease(device->rumble);
+            device->rumble = NULL;
+        }
+        if (device->controller) {
+            CFRelease((__bridge CFTypeRef)device->controller);
+            device->controller = nil;
+        }
+        if (device->axes) {
+            CFRelease((__bridge CFTypeRef)device->axes);
+            device->axes = nil;
+        }
+        if (device->buttons) {
+            CFRelease((__bridge CFTypeRef)device->buttons);
+            device->buttons = nil;
+        }
+    }
+#endif // SDL_JOYSTICK_MFI
+
+    SDL_free(device->name);
+    SDL_free(device);
+}
+
+static void IOS_FreeDeviceData(void *driver_data)
+{
+    IOS_FreeDeviceItem((SDL_JoystickDeviceItem *)driver_data);
+}
+
 static void IOS_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_JoystickDeviceItem *device = joystick->hwdata;
@@ -1562,6 +1556,11 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
     device->joystick = NULL;
 
 #ifdef SDL_JOYSTICK_MFI
+    // A joystick whose device was hidden and published again can still be open, detached, next to the new one,
+    // and both use the same controller
+    SDL_Joystick *attached = SDL_GetJoystickFromDriverID(joystick->driver_instance_id);
+    bool controller_shared = (attached && attached != joystick);
+
     @autoreleasepool {
         if (device->rumble) {
             SDL3_RumbleContext *rumble = (__bridge SDL3_RumbleContext *)device->rumble;
@@ -1571,7 +1570,8 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
             device->rumble = NULL;
         }
 
-        if (device->controller) {
+        // Leave the controller's settings alone if the other open joystick is using it
+        if (device->controller && !controller_shared) {
             GCController *controller = device->controller;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -1594,6 +1594,9 @@ static void IOS_JoystickClose(SDL_Joystick *joystick)
     if (device->is_siri_remote) {
         --SDL_AppleTVRemoteOpenedAsJoystick;
     }
+
+    IOS_FreeDeviceItem(device);
+    joystick->hwdata = NULL;
 }
 
 static void IOS_JoystickQuit(void)
@@ -1618,24 +1621,27 @@ static void IOS_JoystickQuit(void)
 #endif // SDL_PLATFORM_TVOS
 #endif // SDL_JOYSTICK_MFI
 
-        while (deviceList != NULL) {
-            IOS_RemoveJoystickDevice(deviceList);
+#ifdef SDL_JOYSTICK_MFI
+        SDL_LockSpinlock(&IOS_device_lock);
+        IOS_initialized = false;
+        while (IOS_reported_devices) {
+            IOS_ReportedDevice *entry = IOS_reported_devices;
+            IOS_reported_devices = entry->next;
+            CFRelease(entry->controller);
+            SDL_free(entry);
         }
+        SDL_UnlockSpinlock(&IOS_device_lock);
+#endif
 
 #ifdef SDL_VIDEO_DRIVER_UIKIT
         UIKit_SetGameControllerInteraction(false);
 #endif
     }
-
-    numjoysticks = 0;
 }
 
-static bool IOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool IOS_JoystickGetGamepadMapping(SDL_JoystickDevice *joystick_device, SDL_GamepadMapping *out)
 {
-    SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
-    if (device == NULL) {
-        return false;
-    }
+    SDL_JoystickDeviceItem *device = (SDL_JoystickDeviceItem *)joystick_device->driver_data;
 
     if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         int axis = 0;
@@ -1780,14 +1786,17 @@ bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
     }
 
     if (@available(macOS 11.0, *)) {
-        const int MAX_ATTEMPTS = 3;
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
-            if ([GCController supportsHIDDevice:device]) {
-                return true;
-            }
+        // This is called on the joystick device thread, which has no autorelease pool of its own
+        @autoreleasepool {
+            const int MAX_ATTEMPTS = 3;
+            for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
+                if ([GCController supportsHIDDevice:device]) {
+                    return true;
+                }
 
-            // The framework may not have seen the device yet
-            SDL_Delay(10);
+                // The framework may not have seen the device yet
+                SDL_Delay(10);
+            }
         }
     }
     return false;
@@ -1829,7 +1838,8 @@ const char *IOS_GetAppleSFSymbolsNameForButton(SDL_Gamepad *gamepad, SDL_Gamepad
     elementName[0] = '\0';
 
 #ifdef SDL_JOYSTICK_MFI
-    if (gamepad && SDL_GetGamepadJoystick(gamepad)->driver == &SDL_IOS_JoystickDriver) {
+    if (gamepad && SDL_GetGamepadJoystick(gamepad)->driver == &SDL_IOS_JoystickDriver &&
+        SDL_GetGamepadJoystick(gamepad)->hwdata) {
         if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
             GCController *controller = SDL_GetGamepadJoystick(gamepad)->hwdata->controller;
             NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
@@ -1945,7 +1955,8 @@ const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAx
     elementName[0] = '\0';
 
 #ifdef SDL_JOYSTICK_MFI
-    if (gamepad && SDL_GetGamepadJoystick(gamepad)->driver == &SDL_IOS_JoystickDriver) {
+    if (gamepad && SDL_GetGamepadJoystick(gamepad)->driver == &SDL_IOS_JoystickDriver &&
+        SDL_GetGamepadJoystick(gamepad)->hwdata) {
         if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
             GCController *controller = SDL_GetGamepadJoystick(gamepad)->hwdata->controller;
             NSDictionary<NSString *, GCControllerElement *> *elements = controller.physicalInputProfile.elements;
@@ -1979,25 +1990,16 @@ const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAx
 }
 
 SDL_JoystickDriver SDL_IOS_JoystickDriver = {
-    IOS_JoystickInit,
-    IOS_JoystickGetCount,
-    IOS_JoystickDetect,
-    IOS_JoystickIsDevicePresent,
-    IOS_JoystickGetDeviceName,
-    IOS_JoystickGetDevicePath,
-    IOS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    IOS_JoystickGetDevicePlayerIndex,
-    IOS_JoystickSetDevicePlayerIndex,
-    IOS_JoystickGetDeviceGUID,
-    IOS_JoystickGetDeviceInstanceID,
-    IOS_JoystickOpen,
-    IOS_JoystickRumble,
-    IOS_JoystickRumbleTriggers,
-    IOS_JoystickSetLED,
-    IOS_JoystickSendEffect,
-    IOS_JoystickSetSensorsEnabled,
-    IOS_JoystickUpdate,
-    IOS_JoystickClose,
-    IOS_JoystickQuit,
-    IOS_JoystickGetGamepadMapping
+    .Init = IOS_JoystickInit,
+    .FreeDeviceData = IOS_FreeDeviceData,
+    .SetPlayerIndex = IOS_JoystickSetPlayerIndex,
+    .GetGamepadMapping = IOS_JoystickGetGamepadMapping,
+    .Open = IOS_JoystickOpen,
+    .Rumble = IOS_JoystickRumble,
+    .RumbleTriggers = IOS_JoystickRumbleTriggers,
+    .SetLED = IOS_JoystickSetLED,
+    .SetSensorsEnabled = IOS_JoystickSetSensorsEnabled,
+    .Update = IOS_JoystickUpdate,
+    .Close = IOS_JoystickClose,
+    .Quit = IOS_JoystickQuit,
 };

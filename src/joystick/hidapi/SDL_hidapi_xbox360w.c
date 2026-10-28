@@ -214,11 +214,6 @@ static bool HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     return true;
 }
 
-static bool HIDAPI_DriverXbox360W_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverXbox360W_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
@@ -228,21 +223,6 @@ static Uint32 HIDAPI_DriverXbox360W_GetJoystickCapabilities(SDL_HIDAPI_Device *d
         result |= SDL_JOYSTICK_CAP_PLAYER_LED;
     }
     return result;
-}
-
-static bool HIDAPI_DriverXbox360W_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXbox360W_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverXbox360W_Context *ctx, Uint8 *data, int size)
@@ -314,7 +294,7 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
@@ -379,7 +359,7 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                     device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
                     break;
             }
-            device->guid.data[15] = ctx->capabilities.subType;
+            HIDAPI_SetDeviceGUIDDriverData(device, ctx->capabilities.subType);
             const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             if (SDL_hid_write(device->dev, capabilities_packet, sizeof(capabilities_packet)) != sizeof(capabilities_packet)) {
                 SDL_SetError("Couldn't write capabilities_packet packet");
@@ -456,11 +436,11 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W = {
     HIDAPI_DriverXbox360W_UpdateDevice,
     HIDAPI_DriverXbox360W_OpenJoystick,
     HIDAPI_DriverXbox360W_RumbleJoystick,
-    HIDAPI_DriverXbox360W_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverXbox360W_GetJoystickCapabilities,
-    HIDAPI_DriverXbox360W_SetJoystickLED,
-    HIDAPI_DriverXbox360W_SendJoystickEffect,
-    HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverXbox360W_CloseJoystick,
     HIDAPI_DriverXbox360W_FreeDevice,
 };

@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 struct SDL_JoystickDriver;
+struct SDL_JoystickMatchInfo;
 struct SDL_SteamVirtualGamepadInfo;
 
 // Initialization and shutdown functions
@@ -52,9 +53,6 @@ extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);
-
-// Function to determine whether a device is currently detected by this driver
-extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
@@ -78,6 +76,9 @@ extern void SDL_SetJoystickGUIDVersion(SDL_GUID *guid, Uint16 version);
 
 // Function to set the CRC field of a joystick GUID
 extern void SDL_SetJoystickGUIDCRC(SDL_GUID *guid, Uint16 crc);
+
+// Function to get the CRC of the names in a joystick GUID
+extern Uint16 SDL_GetJoystickNameCRC(const char *vendor_name, const char *product_name);
 
 // Function to return the type of a controller
 extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, bool forUI);
@@ -178,9 +179,60 @@ extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickSensorRate(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickAddCapSense(SDL_Joystick *joystick, SDL_GamepadCapSenseType type);
-extern void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id);
 extern bool SDL_IsJoystickBeingAdded(void);
-extern void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id);
+
+// Joystick devices
+
+// Whether a device's driver can handle the controller
+typedef enum SDL_JoystickUsable
+{
+    SDL_JOYSTICK_USABLE_YES,
+    SDL_JOYSTICK_USABLE_UNKNOWN, // The driver is still finding out, so hold lower priority devices for a while
+    SDL_JOYSTICK_USABLE_NO       // Lower priority drivers handle the controller
+} SDL_JoystickUsable;
+
+// Create a joystick device with a new instance ID. Callers should set its description, then report it.
+extern struct SDL_JoystickDevice *SDL_CreateJoystickDevice(struct SDL_JoystickDriver *driver);
+
+// Set the description of a device that hasn't been reported yet
+extern void SDL_SetJoystickDeviceDescription(struct SDL_JoystickDevice *device, const char *name, const char *path, SDL_GUID guid, int steam_virtual_gamepad_slot);
+
+// Add a controller that a device is the same as, matched by VID/PID or by gamepad type
+extern void SDL_AddJoystickMatchVIDPID(struct SDL_JoystickMatchInfo *info, Uint16 vendor_id, Uint16 product_id);
+extern void SDL_AddJoystickMatchType(struct SDL_JoystickMatchInfo *info, SDL_GamepadType type);
+
+// Queue the device to be published, takes ownership of 'device'
+extern void SDL_ReportJoystickDevice(struct SDL_JoystickDevice *device);
+
+// Queue a description change for a reported device
+extern void SDL_UpdateJoystickDeviceDescription(SDL_JoystickID driver_instance_id, const char *name, const char *path, SDL_GUID guid, int steam_virtual_gamepad_slot);
+
+// Queue the removal of a reported device
+extern void SDL_ReportJoystickRemoved(SDL_JoystickID driver_instance_id);
+
+// Queue a message for the driver's HandleMessage(), called in order with the other changes
+extern void SDL_PostJoystickDriverMessage(struct SDL_JoystickDriver *driver, void *message);
+
+// Return the attached open joystick for a driver instance ID, or NULL.
+extern SDL_Joystick *SDL_GetJoystickFromDriverID(SDL_JoystickID driver_instance_id);
+
+// Report a claim-only device, which hides lower priority drivers' devices matching it. Remove it with
+// SDL_ReportJoystickRemoved(). Returns the device's driver instance ID, or 0 on failure.
+extern SDL_JoystickID SDL_ReportJoystickClaim(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, SDL_GamepadType type, SDL_JoystickUsable usable, const SDL_GUID *container_id);
+
+// Report a device with usable UNKNOWN that hides matching devices that aren't published yet for longer than
+// usual, e.g. while the user is asked for permission to open the controller.
+extern SDL_JoystickID SDL_ReportJoystickLongClaim(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, SDL_GamepadType type, Uint32 hold_ms);
+
+// Change whether a device's driver can handle it.
+extern void SDL_SetJoystickDeviceUsable(SDL_JoystickID driver_instance_id, SDL_JoystickUsable usable);
+
+// Have the joystick device thread run Discover() again.
+extern void SDL_WakeJoystickDeviceThread(void);
+
+// Return true if Discover() should stop early because joysticks are shutting down
+extern bool SDL_JoystickDiscoveryQuitting(void);
+
 extern void SDL_PrivateJoystickForceRecentering(SDL_Joystick *joystick);
 extern void SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, Sint16 value);
 extern void SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, Sint16 xrel, Sint16 yrel);

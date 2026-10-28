@@ -31,24 +31,23 @@
 extern "C" {
 #endif
 
-typedef struct JoyStick_DeviceData
+// When a driver should look for devices again, see SDL_windowsjoystick.c
+typedef struct WINDOWS_JoystickRescan
 {
-    SDL_GUID guid;
-    char *joystickname;
-    Uint8 send_add_event;
-    SDL_JoystickID nInstanceID;
-#ifdef SDL_JOYSTICK_XINPUT
-    bool bXInputDevice;
-    BYTE SubType;
-    Uint8 XInputUserId;
-#endif
-    DIDEVICEINSTANCE dxdevice;
-    char path[MAX_PATH];
-    int steam_virtual_gamepad_slot;
-    struct JoyStick_DeviceData *pNext;
-} JoyStick_DeviceData;
+    bool initialized;
+    Uint32 change_count;
+    Uint64 scan_ns[2];
+    Uint64 last_scan_ns;
+} WINDOWS_JoystickRescan;
 
-extern JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
+extern void WINDOWS_InitJoystickDeviceNotification(void);
+extern void WINDOWS_QuitJoystickDeviceNotification(void);
+
+// Return true if the driver should look for devices now, and set the timeout until it should look again,
+// or -1. Drivers with a cheap scan can set scan_immediately to also look as soon as a device change is
+// reported, see SDL_windowsjoystick.c. Without device notifications, the driver looks every
+// poll_interval_ms, if that's not 0.
+extern bool WINDOWS_JoystickRescanNeeded(WINDOWS_JoystickRescan *rescan, bool scan_immediately, Uint32 poll_interval_ms, Sint32 *timeout);
 
 typedef enum Type
 {
@@ -99,7 +98,6 @@ struct joystick_hwdata
 extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 #endif
 
-extern void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus

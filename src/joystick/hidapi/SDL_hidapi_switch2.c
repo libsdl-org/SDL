@@ -633,11 +633,6 @@ static bool HIDAPI_DriverSwitch2_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     return true;
 }
 
-static bool HIDAPI_DriverSwitch2_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSwitch2_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
@@ -647,16 +642,6 @@ static Uint32 HIDAPI_DriverSwitch2_GetJoystickCapabilities(SDL_HIDAPI_Device *de
         result |= SDL_JOYSTICK_CAP_PLAYER_LED;
     }
     return result;
-}
-
-static bool HIDAPI_DriverSwitch2_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSwitch2_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSwitch2_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -1251,7 +1236,7 @@ static bool HIDAPI_DriverSwitch2_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -1321,10 +1306,10 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2 = {
     HIDAPI_DriverSwitch2_UpdateDevice,
     HIDAPI_DriverSwitch2_OpenJoystick,
     HIDAPI_DriverSwitch2_RumbleJoystick,
-    HIDAPI_DriverSwitch2_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSwitch2_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch2_SetJoystickLED,
-    HIDAPI_DriverSwitch2_SendJoystickEffect,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
     HIDAPI_DriverSwitch2_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch2_CloseJoystick,
     HIDAPI_DriverSwitch2_FreeDevice,

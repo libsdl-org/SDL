@@ -229,6 +229,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasJoystick(void);
 /**
  * Get a list of currently connected joysticks.
  *
+ * Note that immediately after initialization the list of connected joysticks may not be complete. You should support hotplug by listening for SDL_EVENT_JOYSTICK_ADDED and SDL_EVENT_JOYSTICK_REMOVED.
+ *
  * \param count a pointer filled in with the number of joysticks returned, may
  *              be NULL.
  * \returns a 0 terminated array of joystick instance IDs or NULL on failure;

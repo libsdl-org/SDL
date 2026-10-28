@@ -138,30 +138,9 @@ static bool HIDAPI_DriverSteamHori_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     return true;
 }
 
-static bool HIDAPI_DriverSteamHori_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    // Device doesn't support rumble
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSteamHori_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSteamHori_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return 0;
-}
-
-static bool HIDAPI_DriverSteamHori_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSteamHori_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteamHori_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -368,7 +347,7 @@ static bool HIDAPI_DriverSteamHori_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -411,11 +390,11 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori = {
     HIDAPI_DriverSteamHori_SetDevicePlayerIndex,
     HIDAPI_DriverSteamHori_UpdateDevice,
     HIDAPI_DriverSteamHori_OpenJoystick,
-    HIDAPI_DriverSteamHori_RumbleJoystick,
-    HIDAPI_DriverSteamHori_RumbleJoystickTriggers,
+    NULL, // RumbleJoystick
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSteamHori_GetJoystickCapabilities,
-    HIDAPI_DriverSteamHori_SetJoystickLED,
-    HIDAPI_DriverSteamHori_SendJoystickEffect,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
     HIDAPI_DriverSteamHori_SetJoystickSensorsEnabled,
     HIDAPI_DriverSteamHori_CloseJoystick,
     HIDAPI_DriverSteamHori_FreeDevice,

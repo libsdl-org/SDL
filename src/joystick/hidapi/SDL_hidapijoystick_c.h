@@ -23,6 +23,7 @@
 #ifndef SDL_JOYSTICK_HIDAPI_H
 #define SDL_JOYSTICK_HIDAPI_H
 
+#include "../SDL_sysjoystick.h"
 #include "../usb_ids.h"
 
 // This is the full set of HIDAPI drivers available
@@ -103,10 +104,30 @@ typedef struct SDL_HIDAPI_Device
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;
+    // Driver instance IDs, use SDL_GetJoystickFromDriverID() to find their open joysticks
     SDL_JoystickID *joysticks;
 
-    // Used during scanning for device changes
-    bool seen;
+    // Opened and matched with a driver on the joystick device thread, before being added to the list
+    bool prepared;
+    struct SDL_HIDAPI_DeviceDriver *prepared_driver;
+
+    // Set when the device thread couldn't open the device, so it isn't retried until devices change
+    bool prepare_failed;
+
+    // A second handle a driver opened in PrepareDevice(), e.g. GameSir's output interface. InitDevice() takes
+    // it, otherwise it's closed when the device is freed.
+    SDL_hid_device *aux_dev;
+
+    // Set when UpdateDevice() fails, which drivers do on read errors
+    bool update_failed;
+
+    // A claim-only joystick device for this device's VID/PID, see HIDAPI_UpdateDeviceClaim()
+    SDL_JoystickID claim_id;
+    SDL_GUID container_id;
+    SDL_GamepadType claim_type;
+
+    // Whether the driver can handle the controller, for drivers that only find out after setup (Flydigi)
+    SDL_JoystickUsable usable;
 
     // Used to flag devices that failed open
     // This can happen on Windows with Bluetooth devices that have turned off
@@ -132,6 +153,7 @@ typedef struct SDL_HIDAPI_DeviceDriver
     void (*SetDevicePlayerIndex)(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index);
     bool (*UpdateDevice)(SDL_HIDAPI_Device *device);
     bool (*OpenJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
+    // Optional: RumbleJoystick, RumbleJoystickTriggers, SetJoystickLED, SendJoystickEffect and SetJoystickSensorsEnabled
     bool (*RumbleJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     bool (*RumbleJoystickTriggers)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
     Uint32 (*GetJoystickCapabilities)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
@@ -140,6 +162,14 @@ typedef struct SDL_HIDAPI_DeviceDriver
     bool (*SetJoystickSensorsEnabled)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled);
     void (*CloseJoystick)(SDL_HIDAPI_Device *device, SDL_Joystick *joystick);
     void (*FreeDevice)(SDL_HIDAPI_Device *device);
+
+    // Optional: set up the device on the joystick device thread after it's opened, before it's added, for
+    // work that would block the app thread (enumerating devices, slow USB transfers, waiting for replies to
+    // queries). It runs without the joystick lock, so it may only touch the device itself: it can create
+    // device->context for InitDevice() to use, but changes to the device's name, serial or joysticks are
+    // left to InitDevice(). If it fails, the device isn't used until devices change. A driver that has it
+    // only has InitDevice() called after it succeeded.
+    bool (*PrepareDevice)(SDL_HIDAPI_Device *device);
 
 } SDL_HIDAPI_DeviceDriver;
 
@@ -181,18 +211,6 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
                             (((Uint32)(C)) << 16) | \
                             (((Uint32)(D)) << 24))
 
-// Return true if a HID device is present and supported as a joystick of the given type
-extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
-
-// Return true if a HID device is present and supported as a joystick
-extern bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
-
-// Return the name of a connected device, which should be freed with SDL_free(), or NULL if it's not available
-extern char *HIDAPI_GetDeviceProductName(Uint16 vendor_id, Uint16 product_id);
-
-// Return the manufacturer of a connected device, which should be freed with SDL_free(), or NULL if it's not available
-extern char *HIDAPI_GetDeviceManufacturerName(Uint16 vendor_id, Uint16 product_id);
-
 // Return the type of a joystick if it's present and supported
 extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid);
 
@@ -202,12 +220,16 @@ extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid);
 extern void HIDAPI_UpdateDevices(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
 extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id);
+extern void HIDAPI_SetDeviceUsable(SDL_HIDAPI_Device *device, SDL_JoystickUsable usable);
+extern void HIDAPI_SetDeviceGUIDVersion(SDL_HIDAPI_Device *device, Uint16 version);
+extern void HIDAPI_SetDeviceGUIDDriverData(SDL_HIDAPI_Device *device, Uint8 driver_data);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);
 extern bool HIDAPI_HasConnectedUSBDevice(const char *serial);
 extern void HIDAPI_DisconnectBluetoothDevice(const char *serial);
 extern bool HIDAPI_JoystickConnected(SDL_HIDAPI_Device *device, SDL_JoystickID *pJoystickID);
 extern void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joystickID);
 extern void HIDAPI_UpdateDeviceProperties(SDL_HIDAPI_Device *device);
+extern void HIDAPI_UpdateJoystickDeviceName(SDL_JoystickDevice *joystick_device);
 
 extern void HIDAPI_DumpPacket(const char *prefix, const Uint8 *data, int size);
 

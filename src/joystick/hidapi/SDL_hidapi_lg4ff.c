@@ -799,7 +799,7 @@ static bool HIDAPI_DriverLg4ff_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_DriverLg4ff_Context *ctx = (SDL_DriverLg4ff_Context *)device->context;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
         if (joystick == NULL) {
             return false;
         }
@@ -870,16 +870,6 @@ static bool HIDAPI_DriverLg4ff_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     }
 
     return true;
-}
-
-static bool HIDAPI_DriverLg4ff_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLg4ff_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverLg4ff_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -995,8 +985,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff = {
     HIDAPI_DriverLg4ff_SetDevicePlayerIndex,
     HIDAPI_DriverLg4ff_UpdateDevice,
     HIDAPI_DriverLg4ff_OpenJoystick,
-    HIDAPI_DriverLg4ff_RumbleJoystick,
-    HIDAPI_DriverLg4ff_RumbleJoystickTriggers,
+    NULL, // RumbleJoystick
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverLg4ff_GetJoystickCapabilities,
     HIDAPI_DriverLg4ff_SetJoystickLED,
     HIDAPI_DriverLg4ff_SendJoystickEffect,

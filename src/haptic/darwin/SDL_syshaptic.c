@@ -591,7 +591,7 @@ bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
     if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
         return false;
     }
-    if (joystick->hwdata->ffservice != 0) {
+    if (joystick->hwdata && joystick->hwdata->ffservice != 0) {
         return true;
     }
 #endif
@@ -604,7 +604,7 @@ bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
 #ifdef SDL_JOYSTICK_IOKIT
-    if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
+    if (joystick->driver != &SDL_DARWIN_JoystickDriver || !joystick->hwdata) {
         return false;
     }
     if (IOObjectIsEqualTo((io_object_t)((size_t)haptic->hwdata->device),
@@ -623,7 +623,7 @@ bool SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 #ifdef SDL_JOYSTICK_IOKIT
     SDL_hapticlist_item *item;
 
-    if (joystick->driver != &SDL_DARWIN_JoystickDriver) {
+    if (joystick->driver != &SDL_DARWIN_JoystickDriver || !joystick->hwdata) {
         return false;
     }
     for (item = SDL_hapticlist; item; item = item->next) {

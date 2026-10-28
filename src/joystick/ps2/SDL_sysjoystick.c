@@ -52,11 +52,17 @@ struct JoyInfo
     uint8_t slot;
     int8_t rumble_ready;
     int8_t opened;
+    int8_t added;
 } __attribute__((aligned(64)));
 
 static uint8_t enabled_pads = 0;
 static struct JoyInfo joyInfo[MAX_CONTROLLERS];
-static struct JoyInfo *joyInfoByIndex[MAX_CONTROLLERS];
+
+// SDL_JoystickDevice driver data
+typedef struct PS2_DeviceData
+{
+    int index; // into joyInfo
+} PS2_DeviceData;
 
 static inline int16_t convert_u8_to_s16(uint8_t val)
 {
@@ -66,11 +72,10 @@ static inline int16_t convert_u8_to_s16(uint8_t val)
     return val * 0x0101 - 0x8000;
 }
 
-static inline uint8_t rumble_status(uint8_t index)
+static inline uint8_t rumble_status(struct JoyInfo *info)
 {
     char actAlign[6];
     int res;
-    struct JoyInfo *info = &joyInfo[index];
 
     if (info->rumble_ready == 0) {
         actAlign[0] = 0;
@@ -105,12 +110,31 @@ static int PS2_WaitPadReady(int port, int slot)
 
 static void PS2_AddJoystick(struct JoyInfo *info, int port, int slot)
 {
+    // the GUID is just the name for now
+    const char *name = "PS2 Controller";
+    PS2_DeviceData *data;
+    SDL_JoystickDevice *device;
+
     info->opened = 1;
+    info->added = 1;
     info->port = port;
     info->slot = slot;
-    joyInfoByIndex[enabled_pads] = info;
     enabled_pads++;
-    SDL_PrivateJoystickAdded(enabled_pads);
+
+    data = (PS2_DeviceData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        return;
+    }
+    data->index = PS2_GetPadIndex(port, slot);
+
+    device = SDL_CreateJoystickDevice(&SDL_PS2_JoystickDriver);
+    if (!device) {
+        SDL_free(data);
+        return;
+    }
+    device->driver_data = data;
+    SDL_SetJoystickDeviceDescription(device, name, NULL, SDL_CreateJoystickGUIDForName(name), -1);
+    SDL_ReportJoystickDevice(device);
 }
 
 // Function to scan the system for joysticks.
@@ -152,17 +176,12 @@ static bool PS2_JoystickInit(void)
         }
     }
 
-    return (enabled_pads > 0);
+    // Pads connected later are found by PS2_JoystickDiscover()
+    return true;
 }
 
-// Function to return the number of joystick devices plugged in right now
-static int PS2_JoystickGetCount(void)
-{
-    return (int)enabled_pads;
-}
-
-// Function to cause any queued joystick insertions to be processed
-static void PS2_JoystickDetect(void)
+// Look for controllers that have been connected. This runs in SDL_UpdateJoysticks(), PS2 has no device thread.
+static Sint32 PS2_JoystickDiscover(void)
 {
     uint32_t port = 0;
     uint32_t slot = 0;
@@ -172,7 +191,7 @@ static void PS2_JoystickDetect(void)
             int index = PS2_GetPadIndex(port, slot);
             struct JoyInfo *info = &joyInfo[index];
 
-            if (!info->opened) {
+            if (!info->added) {
                 int state = padGetState(port, slot);
                 if (state == PAD_STATE_STABLE) {
                     PS2_AddJoystick(info, port, slot);
@@ -180,60 +199,7 @@ static void PS2_JoystickDetect(void)
             }
         }
     }
-}
-
-static bool PS2_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-// Function to get the device-dependent name of a joystick
-static const char *PS2_JoystickGetDeviceName(int index)
-{
-    if (index >= 0 && index < enabled_pads) {
-        return "PS2 Controller";
-    }
-
-    SDL_SetError("No joystick available with that index");
-    return NULL;
-}
-
-// Function to get the device-dependent path of a joystick
-static const char *PS2_JoystickGetDevicePath(int index)
-{
-    return NULL;
-}
-
-// Function to get the Steam virtual gamepad slot of a joystick
-static int PS2_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-// Function to get the player index of a joystick
-static int PS2_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-// Function to set the player index of a joystick
-static void PS2_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-// Function to return the stable GUID for a plugged in device
-static SDL_GUID PS2_JoystickGetDeviceGUID(int device_index)
-{
-    // the GUID is just the name for now
-    const char *name = PS2_JoystickGetDeviceName(device_index);
-    return SDL_CreateJoystickGUIDForName(name);
-}
-
-// Function to get the current instance id of the joystick located at device_index
-static SDL_JoystickID PS2_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
+    return 100;
 }
 
 static void PS2_InitializePad(int port, int slot)
@@ -287,14 +253,12 @@ static void PS2_InitializePad(int port, int slot)
     PS2_WaitPadReady(port, slot);
 }
 
-/*  Function to open a joystick for use.
-    The joystick to open is specified by the device index.
-    This should fill the nbuttons and naxes fields of the joystick structure.
-    It returns 0, or -1 if there is an error.
-*/
-static bool PS2_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool PS2_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    struct JoyInfo *info = joyInfoByIndex[device_index];
+    const PS2_DeviceData *data = (const PS2_DeviceData *)device->driver_data;
+    struct JoyInfo *info = &joyInfo[data->index];
+
+    joystick->hwdata = (struct joystick_hwdata *)info;
 
     if (!info->opened) {
         if (padPortOpen(info->port, info->slot, (void *)info->padBuf) > 0) {
@@ -319,10 +283,9 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
 {
     char actAlign[6];
     int res;
-    int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = joyInfoByIndex[index];
+    struct JoyInfo *info = (struct JoyInfo *)joystick->hwdata;
 
-    if (!rumble_status(index)) {
+    if (!rumble_status(info)) {
         return false;
     }
 
@@ -338,30 +301,6 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     return (res == 1);
 }
 
-// Rumble functionality
-static bool PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
-{
-    return SDL_Unsupported();
-}
-
-// LED functionality
-static bool PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-// General effects
-static bool PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-// Sensor functionality
-static bool PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 /*  Function to update the state of a joystick - called as a device poll.
  *   This function shouldn't update the joystick structure directly,
  *   but instead should call SDL_PrivateJoystick*() to deliver events
@@ -374,8 +313,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
     uint16_t mask, previous, current;
     struct padButtonStatus buttons;
     uint8_t all_axis[PS2_TOTAL_AXIS];
-    int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = joyInfoByIndex[index];
+    struct JoyInfo *info = (struct JoyInfo *)joystick->hwdata;
     int state = padGetState(info->port, info->slot);
     Uint64 timestamp = SDL_GetTicksNS();
 
@@ -448,8 +386,7 @@ static void PS2_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void PS2_JoystickClose(SDL_Joystick *joystick)
 {
-    int index = (int)(joystick->instance_id - 1);
-    struct JoyInfo *info = joyInfoByIndex[index];
+    struct JoyInfo *info = (struct JoyInfo *)joystick->hwdata;
     padPortClose(info->port, info->slot);
     info->opened = 0;
 }
@@ -458,35 +395,19 @@ static void PS2_JoystickClose(SDL_Joystick *joystick)
 static void PS2_JoystickQuit(void)
 {
     deinit_joystick_driver(true);
-}
 
-static bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
+    SDL_zeroa(joyInfo);
+    enabled_pads = 0;
 }
 
 SDL_JoystickDriver SDL_PS2_JoystickDriver = {
-    PS2_JoystickInit,
-    PS2_JoystickGetCount,
-    PS2_JoystickDetect,
-    PS2_JoystickIsDevicePresent,
-    PS2_JoystickGetDeviceName,
-    PS2_JoystickGetDevicePath,
-    PS2_JoystickGetDeviceSteamVirtualGamepadSlot,
-    PS2_JoystickGetDevicePlayerIndex,
-    PS2_JoystickSetDevicePlayerIndex,
-    PS2_JoystickGetDeviceGUID,
-    PS2_JoystickGetDeviceInstanceID,
-    PS2_JoystickOpen,
-    PS2_JoystickRumble,
-    PS2_JoystickRumbleTriggers,
-    PS2_JoystickSetLED,
-    PS2_JoystickSendEffect,
-    PS2_JoystickSetSensorsEnabled,
-    PS2_JoystickUpdate,
-    PS2_JoystickClose,
-    PS2_JoystickQuit,
-    PS2_GetGamepadMapping,
+    .Init = PS2_JoystickInit,
+    .Discover = PS2_JoystickDiscover,
+    .Open = PS2_JoystickOpen,
+    .Rumble = PS2_JoystickRumble,
+    .Update = PS2_JoystickUpdate,
+    .Close = PS2_JoystickClose,
+    .Quit = PS2_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_PS2

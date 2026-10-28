@@ -924,11 +924,18 @@ static void CameraUdevCallback(SDL_UDEV_deviceevent udev_type, int udev_class, c
 }
 #endif // SDL_USE_LIBUDEV
 
+#ifdef SDL_USE_LIBUDEV
+static bool V4L2_udev_initialized;
+#endif
+
 static void V4L2_Deinitialize(void)
 {
 #ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_DelCallback(CameraUdevCallback);
-    SDL_UDEV_Quit();
+    if (V4L2_udev_initialized) {
+        SDL_UDEV_DelCallback(CameraUdevCallback);
+        SDL_UDEV_Quit();
+        V4L2_udev_initialized = false;
+    }
 #endif // SDL_USE_LIBUDEV
 }
 
@@ -936,6 +943,7 @@ static void V4L2_DetectDevices(void)
 {
 #ifdef SDL_USE_LIBUDEV
     if (SDL_UDEV_Init()) {
+        V4L2_udev_initialized = true;
         if (SDL_UDEV_AddCallback(CameraUdevCallback)) {
             SDL_UDEV_Scan();  // Force a scan to build the initial device list
         }

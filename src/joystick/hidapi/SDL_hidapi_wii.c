@@ -732,7 +732,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "Nintendo Wii Remote with Unknown Extension");
         break;
     }
-    device->guid.data[15] = ctx->m_eExtensionControllerType;
+    HIDAPI_SetDeviceGUIDDriverData(device, (Uint8)ctx->m_eExtensionControllerType);
 }
 
 static bool HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
@@ -839,24 +839,9 @@ static bool HIDAPI_DriverWii_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverWii_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverWii_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverWii_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverWii_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -1519,7 +1504,7 @@ static bool HIDAPI_DriverWii_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -1605,10 +1590,10 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii = {
     HIDAPI_DriverWii_UpdateDevice,
     HIDAPI_DriverWii_OpenJoystick,
     HIDAPI_DriverWii_RumbleJoystick,
-    HIDAPI_DriverWii_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverWii_GetJoystickCapabilities,
-    HIDAPI_DriverWii_SetJoystickLED,
-    HIDAPI_DriverWii_SendJoystickEffect,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
     HIDAPI_DriverWii_SetJoystickSensorsEnabled,
     HIDAPI_DriverWii_CloseJoystick,
     HIDAPI_DriverWii_FreeDevice,

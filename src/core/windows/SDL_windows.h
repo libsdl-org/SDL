@@ -241,6 +241,10 @@ typedef void (*WIN_DeviceInterfaceCallback)(void *userdata);
 extern WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_DeviceInterfaceCallback callback, void *userdata);
 extern void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification);
 
+// Get the container ID of the device with this device interface path, e.g. a HID path. All the interfaces of a
+// physical device share a container ID. Returns false and an all-zero ID if it isn't known.
+extern bool WIN_GetDeviceInterfaceContainerID(const char *path, SDL_GUID *container_id);
+
 // Ends C function definitions when using C++
 #ifdef __cplusplus
 }

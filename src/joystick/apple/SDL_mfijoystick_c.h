@@ -39,8 +39,9 @@ typedef struct joystick_hwdata
 
     char *name;
     SDL_Joystick *joystick;
-    SDL_JoystickID instance_id;
     SDL_GUID guid;
+    Uint16 vendor_id;
+    Uint16 product_id;
 
     int naxes;
     int nbuttons;
@@ -58,6 +59,9 @@ typedef struct joystick_hwdata
     bool is_backbone_one;
     int is_siri_remote;
 
+    // The devices other drivers might see for this controller
+    SDL_JoystickMatchInfo match;
+
     NSArray __unsafe_unretained *axes;
     NSArray __unsafe_unretained *buttons;
 
@@ -65,8 +69,6 @@ typedef struct joystick_hwdata
     bool has_xbox_paddles;
     bool has_xbox_share_button;
     bool has_nintendo_buttons;
-
-    struct joystick_hwdata *next;
 } joystick_hwdata;
 
 typedef joystick_hwdata SDL_JoystickDeviceItem;

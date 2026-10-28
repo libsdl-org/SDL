@@ -267,6 +267,10 @@ typedef struct
         PS5StatePacket_t full_state;
         Uint8 data[64];
     } last_state;
+
+    // Found by HIDAPI_DriverPS5_PrepareDevice()
+    char prepared_serial[18];
+    SDL_JoystickType prepared_joystick_type;
 } SDL_DriverPS5_Context;
 
 static bool HIDAPI_DriverPS5_InternalSendJoystickEffect(SDL_DriverPS5_Context *ctx, const void *effect, int size, bool application_usage);
@@ -372,19 +376,19 @@ static void SetLightsForPlayerIndex(DS5EffectsState_t *effects, int player_index
     }
 }
 
-static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
+// Read the controller's mode, serial number and capabilities. This runs on the joystick device thread.
+static bool HIDAPI_DriverPS5_PrepareDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx;
     Uint8 data[USB_PACKET_LENGTH * 2];
     int size;
-    char serial[18];
-    SDL_JoystickType joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
 
     ctx = (SDL_DriverPS5_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
     }
     ctx->device = device;
+    ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
 
     device->context = ctx;
 
@@ -394,13 +398,13 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         j = -1;
         for (i = 0; i < 12; i += 2) {
             j += 1;
-            SDL_memmove(&serial[j], &device->serial[i], 2);
+            SDL_memmove(&ctx->prepared_serial[j], &device->serial[i], 2);
             j += 2;
-            serial[j] = '-';
+            ctx->prepared_serial[j] = '-';
         }
-        serial[j] = '\0';
+        ctx->prepared_serial[j] = '\0';
     } else {
-        serial[0] = '\0';
+        ctx->prepared_serial[0] = '\0';
     }
 
     // Read a report to see what mode we're in
@@ -427,7 +431,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
            This will also enable enhanced reports over Bluetooth
         */
         if (ReadFeatureReport(device->dev, k_EPS5FeatureReportIdSerialNumber, data, sizeof(data)) >= 7) {
-            (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+            (void)SDL_snprintf(ctx->prepared_serial, sizeof(ctx->prepared_serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                data[6], data[5], data[4], data[3], data[2], data[1]);
         }
 
@@ -488,10 +492,10 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
 
             switch (device_type) {
             case 0x00:
-                joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
                 break;
             case 0x01:
-                joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
                 if (device_specific_capabilities & 0x01) {
                     ctx->guitar_effects_selector_supported = true;
                 }
@@ -503,19 +507,19 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
                 }
                 break;
             case 0x02:
-                joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
                 break;
             case 0x06:
-                joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
                 break;
             case 0x07:
-                joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
                 break;
             case 0x08:
-                joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
                 break;
             default:
-                joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
+                ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_UNKNOWN;
                 break;
             }
 
@@ -540,7 +544,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
                     device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRED ||
                     device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRELESS)) {
             // The Razer Kitsune and Raiju don't respond to the detection protocol, but have a touchpad
-            joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
+            ctx->prepared_joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
             ctx->touchpad_supported = true;
             ctx->use_alternate_report = true;
         }
@@ -555,8 +559,16 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
           device->product_id == USB_PRODUCT_RAZER_RAIJU_V3_PRO_PS5_WIRELESS))) {
         ctx->is_dongle = true;
     }
+    return true;
+}
 
-    device->joystick_type = joystick_type;
+static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverPS5_Context *ctx;
+
+    ctx = (SDL_DriverPS5_Context *)device->context;
+
+    device->joystick_type = ctx->prepared_joystick_type;
     device->type = SDL_GAMEPAD_TYPE_PS5;
     if (device->vendor_id == USB_VENDOR_SONY) {
         if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
@@ -565,7 +577,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
             HIDAPI_SetDeviceName(device, "DualSense Wireless Controller");
         }
     }
-    HIDAPI_SetDeviceSerial(device, serial);
+    HIDAPI_SetDeviceSerial(device, ctx->prepared_serial);
 
     if (ctx->is_dongle) {
         // We don't know if this is connected yet, wait for reports
@@ -1024,11 +1036,6 @@ static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
     return HIDAPI_DriverPS5_UpdateEffects(ctx, k_EDS5EffectRumble, true);
-}
-
-static bool HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -1594,7 +1601,7 @@ static bool HIDAPI_DriverPS5_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     while ((size = SDL_hid_read_timeout(device->dev, data, sizeof(data), 0)) > 0) {
@@ -1720,13 +1727,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 = {
     HIDAPI_DriverPS5_UpdateDevice,
     HIDAPI_DriverPS5_OpenJoystick,
     HIDAPI_DriverPS5_RumbleJoystick,
-    HIDAPI_DriverPS5_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverPS5_GetJoystickCapabilities,
     HIDAPI_DriverPS5_SetJoystickLED,
     HIDAPI_DriverPS5_SendJoystickEffect,
     HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
     HIDAPI_DriverPS5_CloseJoystick,
     HIDAPI_DriverPS5_FreeDevice,
+    HIDAPI_DriverPS5_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_PS5

@@ -110,7 +110,7 @@ static bool HIDAPI_DriverXBOX360BB_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     SDL_AssertJoysticksLocked();
 
     for (i = 0; i < MAX_CONTROLLERS; ++i) {
-        if (joystick->instance_id == ctx->joysticks[i]) {
+        if (joystick->driver_instance_id == ctx->joysticks[i]) {
             joystick->nbuttons = SDL_GAMEPAD_NUM_XBOX360BB_BUTTONS;
             joystick->nhats = 1;
             joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
@@ -120,34 +120,9 @@ static bool HIDAPI_DriverXBOX360BB_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
     return false; // Should never get here!
 }
 
-static bool HIDAPI_DriverXBOX360BB_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverXBOX360BB_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return 0;
-}
-
-static bool HIDAPI_DriverXBOX360BB_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverXBOX360BB_HandleStatePacket(SDL_DriverXbox360BB_Context *ctx, Uint8 *data, int size)
@@ -158,7 +133,7 @@ static void HIDAPI_DriverXBOX360BB_HandleStatePacket(SDL_DriverXbox360BB_Context
 
     i = data[2];
     SDL_assert(i < MAX_CONTROLLERS);
-    joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
+    joystick = SDL_GetJoystickFromDriverID(ctx->joysticks[i]);
     ctx->last_packet[i] = timestamp;
 
     if (ctx->last_state[i][3] != data[3]) {
@@ -207,7 +182,7 @@ static void HIDAPI_DriverXBOX360BB_HandleReleaseEvents(SDL_DriverXbox360BB_Conte
         // -flibit
         const int XBOXBB_BUTTON_RELEASE_TIMEOUT_MS = 120;
         if (SDL_NS_TO_MS(timestamp - ctx->last_packet[i]) >= XBOXBB_BUTTON_RELEASE_TIMEOUT_MS) {
-            SDL_Joystick *joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
+            SDL_Joystick *joystick = SDL_GetJoystickFromDriverID(ctx->joysticks[i]);
             if (joystick) {
                 SDL_SendJoystickHat(timestamp, joystick, 0, 0);
                 SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, 0);
@@ -265,12 +240,12 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360BB = {
     HIDAPI_DriverXBOX360BB_SetDevicePlayerIndex,
     HIDAPI_DriverXBOX360BB_UpdateDevice,
     HIDAPI_DriverXBOX360BB_OpenJoystick,
-    HIDAPI_DriverXBOX360BB_RumbleJoystick,
-    HIDAPI_DriverXBOX360BB_RumbleJoystickTriggers,
+    NULL, // RumbleJoystick
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverXBOX360BB_GetJoystickCapabilities,
-    HIDAPI_DriverXBOX360BB_SetJoystickLED,
-    HIDAPI_DriverXBOX360BB_SendJoystickEffect,
-    HIDAPI_DriverXBOX360BB_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverXBOX360BB_CloseJoystick,
     HIDAPI_DriverXBOX360BB_FreeDevice,
 };

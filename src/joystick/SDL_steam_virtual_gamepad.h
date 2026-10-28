@@ -31,6 +31,9 @@ typedef struct SDL_SteamVirtualGamepadInfo
 
 void SDL_InitSteamVirtualGamepadInfo(void);
 bool SDL_SteamVirtualGamepadEnabled(void);
+// Read the info file if it has changed, on the joystick device thread. Returns the time until the next check.
+Sint32 SDL_DiscoverSteamVirtualGamepadInfo(void);
+// Swap in info that's been read, on the app thread. Returns true if it changed.
 bool SDL_UpdateSteamVirtualGamepadInfo(void);
 const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot);
 void SDL_QuitSteamVirtualGamepadInfo(void);

@@ -152,6 +152,7 @@ enum
 
 struct joystick_hwdata
 {
+    bool gone; // Set when a read error has removed the joystick
     int fd;
     enum
     {
@@ -167,20 +168,21 @@ struct joystick_hwdata
     int axis_map[JOYAXE_count]; /* map present JOYAXE_* to 0,1,.. */
 };
 
-// A linked list of available joysticks
+// A device node that has been checked. Nodes that aren't joysticks we use are remembered too, with no
+// instance ID, so they aren't opened again on every poll.
 typedef struct SDL_joylist_item
 {
-    SDL_JoystickID device_instance;
+    SDL_JoystickID device_instance; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
     char *path; // "/dev/uhid0" or whatever
-    char *name; // "SideWinder 3D Pro" or whatever
-    SDL_GUID guid;
     dev_t devnum;
+    ino_t ino; // A node that's removed and created again gets a new inode, even with the same device number
     struct SDL_joylist_item *next;
 } SDL_joylist_item;
 
+// The device thread adds and removes items, and the app thread removes joysticks it finds are gone (read
+// errors), so the device thread checks the node again on the next poll.
+static SDL_SpinLock BSD_joylist_lock;
 static SDL_joylist_item *SDL_joylist = NULL;
-static SDL_joylist_item *SDL_joylist_tail = NULL;
-static int numjoysticks = 0;
 
 static bool report_alloc(struct report *, struct report_desc *, int);
 static void report_free(struct report *);
@@ -233,8 +235,15 @@ static int usage_to_joyaxe(int usage)
 static void FreeJoylistItem(SDL_joylist_item *item)
 {
     SDL_free(item->path);
-    SDL_free(item->name);
     SDL_free(item);
+}
+
+static void AddJoylistItem(SDL_joylist_item *item)
+{
+    SDL_LockSpinlock(&BSD_joylist_lock);
+    item->next = SDL_joylist;
+    SDL_joylist = item;
+    SDL_UnlockSpinlock(&BSD_joylist_lock);
 }
 
 static void FreeHwData(struct joystick_hwdata *hw)
@@ -388,12 +397,30 @@ usberr:
     return NULL;
 }
 
+// Remember a device node that isn't a joystick we use, so it isn't checked again while it's there
+static void RememberOtherDevice(const char *path, const struct stat *sb)
+{
+    SDL_joylist_item *item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
+    if (!item) {
+        return;
+    }
+    item->devnum = sb->st_rdev;
+    item->ino = sb->st_ino;
+    item->path = SDL_strdup(path);
+    if (!item->path) {
+        SDL_free(item);
+        return;
+    }
+    AddJoylistItem(item);
+}
+
 static bool MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
     SDL_GUID guid;
     SDL_joylist_item *item;
+    SDL_JoystickDevice *device = NULL;
     struct joystick_hwdata *hw;
 
     if (!path) {
@@ -405,14 +432,32 @@ static bool MaybeAddDevice(const char *path)
     }
 
     // Check to make sure it's not already in list.
+    bool known = false;
+    SDL_LockSpinlock(&BSD_joylist_lock);
     for (item = SDL_joylist; item; item = item->next) {
-        if (sb.st_rdev == item->devnum) {
-            return false; // already have this one
+        if (sb.st_rdev == item->devnum && sb.st_ino == item->ino) {
+            known = true;
+            break;
         }
+    }
+    SDL_UnlockSpinlock(&BSD_joylist_lock);
+    if (known) {
+        return false; // already have this one
+    }
+
+    // If we can't open it (e.g. its permissions haven't been set up yet), try again on the next poll
+    {
+        int fd = open(path, O_RDONLY | O_CLOEXEC);
+        if (fd == -1) {
+            return false;
+        }
+        close(fd);
     }
 
     hw = CreateHwData(path);
     if (!hw) {
+        // It's not a joystick
+        RememberOtherDevice(path, &sb);
         return false;
     }
 
@@ -426,10 +471,10 @@ static bool MaybeAddDevice(const char *path)
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
             guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
-            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name) ||
-                SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
+            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);
+                RememberOtherDevice(path, &sb);
                 return false;
             }
         }
@@ -448,37 +493,74 @@ static bool MaybeAddDevice(const char *path)
     }
 
     item->devnum = sb.st_rdev;
+    item->ino = sb.st_ino;
     item->path = SDL_strdup(path);
-    item->name = name;
-    item->guid = guid;
-
-    if ((!item->path) || (!item->name)) {
+    if (item->path && name) {
+        device = SDL_CreateJoystickDevice(&SDL_BSD_JoystickDriver);
+    }
+    if (!device) {
+        SDL_free(name);
         FreeJoylistItem(item);
         return false;
     }
+    SDL_SetJoystickDeviceDescription(device, name, path, guid, -1);
+    SDL_free(name);
 
-    item->device_instance = SDL_GetNextObjectID();
-    if (!SDL_joylist_tail) {
-        SDL_joylist = SDL_joylist_tail = item;
-    } else {
-        SDL_joylist_tail->next = item;
-        SDL_joylist_tail = item;
-    }
+    item->device_instance = device->driver_instance_id;
+    AddJoylistItem(item);
 
-    // Need to increment the joystick count before we post the event
-    ++numjoysticks;
-
-    SDL_PrivateJoystickAdded(item->device_instance);
+    SDL_ReportJoystickDevice(device);
 
     return true;
 }
 
+// Remove joysticks (and other remembered devices) whose device nodes have gone away. On systems with a static
+// /dev (OpenBSD, NetBSD) device nodes never go away, so read errors are the only way to notice that an open
+// joystick was unplugged, see BSD_JoystickUpdate().
+static void RemoveMissingDevices(void)
+{
+    SDL_joylist_item *item, *prev = NULL, *next;
+
+    SDL_LockSpinlock(&BSD_joylist_lock);
+    for (item = SDL_joylist; item; item = next) {
+        struct stat sb;
+
+        next = item->next;
+        if (stat(item->path, &sb) == 0 && sb.st_rdev == item->devnum && sb.st_ino == item->ino) {
+            prev = item;
+            continue;
+        }
+
+        if (item->device_instance) {
+            SDL_ReportJoystickRemoved(item->device_instance);
+        }
+        if (prev) {
+            prev->next = next;
+        } else {
+            SDL_joylist = next;
+        }
+        FreeJoylistItem(item);
+    }
+    SDL_UnlockSpinlock(&BSD_joylist_lock);
+}
+
 static bool BSD_JoystickInit(void)
 {
-    char s[16];
-    int i;
+    // Read the default USB HID usage table.
+    hid_init(NULL);
 
-    for (i = 0; i < MAX_UHID_JOYS; i++) {
+    return true;
+}
+
+// Look for joysticks, on the joystick device thread. There are no device notifications, so this polls.
+static Sint32 BSD_JoystickDiscover(void)
+{
+    const Sint32 BSD_POLL_INTERVAL_MS = 3000;
+    char s[16];
+
+    RemoveMissingDevices();
+
+    for (int i = 0; i < MAX_UHID_JOYS; i++) {
 #if defined(SDL_PLATFORM_OPENBSD) && (OpenBSD >= 202105)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/ujoy/%d", i);
 #else
@@ -487,83 +569,13 @@ static bool BSD_JoystickInit(void)
         MaybeAddDevice(s);
     }
 #ifdef SUPPORT_JOY_GAMEPORT
-    for (i = 0; i < MAX_JOY_JOYS; i++) {
+    for (int i = 0; i < MAX_JOY_JOYS; i++) {
         SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
         MaybeAddDevice(s);
     }
 #endif // SUPPORT_JOY_GAMEPORT
 
-    // Read the default USB HID usage table.
-    hid_init(NULL);
-
-    return true;
-}
-
-static int BSD_JoystickGetCount(void)
-{
-    return numjoysticks;
-}
-
-static void BSD_JoystickDetect(void)
-{
-}
-
-static bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
-{
-    SDL_joylist_item *item = SDL_joylist;
-
-    if ((device_index < 0) || (device_index >= numjoysticks)) {
-        return NULL;
-    }
-
-    while (device_index > 0) {
-        SDL_assert(item != NULL);
-        device_index--;
-        item = item->next;
-    }
-
-    return item;
-}
-
-static const char *BSD_JoystickGetDeviceName(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->name;
-}
-
-static const char *BSD_JoystickGetDevicePath(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->path;
-}
-
-static int BSD_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int BSD_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID BSD_JoystickGetDeviceGUID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->guid;
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->device_instance;
+    return BSD_POLL_INTERVAL_MS;
 }
 
 static unsigned hatval_to_sdl(Sint32 hatval)
@@ -580,16 +592,11 @@ static unsigned hatval_to_sdl(Sint32 hatval)
     return result;
 }
 
-static bool BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
+static bool BSD_JoystickOpen(SDL_Joystick *joy, SDL_JoystickDevice *device)
 {
-    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
     struct joystick_hwdata *hw;
 
-    if (!item) {
-        return SDL_SetError("No such device");
-    }
-
-    hw = CreateHwData(item->path);
+    hw = CreateHwData(device->path);
     if (!hw) {
         return false;
     }
@@ -608,6 +615,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
     struct hid_data *hdata;
     struct report *rep;
     int nbutton, naxe = -1;
+    ssize_t len;
     Sint32 v;
 #ifdef SDL_PLATFORM_OPENBSD
     Sint32 dpad[4] = { 0, 0, 0, 0 };
@@ -659,7 +667,7 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
 
     rep = &joy->hwdata->inreport;
 
-    while (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) == rep->size) {
+    while ((len = read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size)) == rep->size) {
 #if defined(USBHID_NEW) || (defined(SDL_PLATFORM_FREEBSD) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
         hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
 #else
@@ -732,6 +740,28 @@ static void BSD_JoystickUpdate(SDL_Joystick *joy)
         }
         hid_end_parse(hdata);
     }
+
+    if (len < 0 && errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR && !joy->hwdata->gone) {
+        // The device is gone, remove it now and forget it, so the device thread checks the node again
+        SDL_joylist_item *item, *prev = NULL;
+
+        joy->hwdata->gone = true;
+        SDL_ReportJoystickRemoved(joy->driver_instance_id);
+
+        SDL_LockSpinlock(&BSD_joylist_lock);
+        for (item = SDL_joylist; item; prev = item, item = item->next) {
+            if (item->device_instance == joy->driver_instance_id) {
+                if (prev) {
+                    prev->next = item->next;
+                } else {
+                    SDL_joylist = item->next;
+                }
+                FreeJoylistItem(item);
+                break;
+            }
+        }
+        SDL_UnlockSpinlock(&BSD_joylist_lock);
+    }
 }
 
 // Function to close a joystick after use
@@ -748,14 +778,13 @@ static void BSD_JoystickQuit(void)
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
+    // The device thread has stopped, so the list can be freed here
     for (item = SDL_joylist; item; item = next) {
         next = item->next;
         FreeJoylistItem(item);
     }
 
-    SDL_joylist = SDL_joylist_tail = NULL;
-
-    numjoysticks = 0;
+    SDL_joylist = NULL;
 }
 
 static bool report_alloc(struct report *r, struct report_desc *rd, int repind)
@@ -811,58 +840,13 @@ static void report_free(struct report *r)
     r->status = SREPORT_UNINIT;
 }
 
-static bool BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
-static bool BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 SDL_JoystickDriver SDL_BSD_JoystickDriver = {
-    BSD_JoystickInit,
-    BSD_JoystickGetCount,
-    BSD_JoystickDetect,
-    BSD_JoystickIsDevicePresent,
-    BSD_JoystickGetDeviceName,
-    BSD_JoystickGetDevicePath,
-    BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
-    BSD_JoystickGetDevicePlayerIndex,
-    BSD_JoystickSetDevicePlayerIndex,
-    BSD_JoystickGetDeviceGUID,
-    BSD_JoystickGetDeviceInstanceID,
-    BSD_JoystickOpen,
-    BSD_JoystickRumble,
-    BSD_JoystickRumbleTriggers,
-    BSD_JoystickSetLED,
-    BSD_JoystickSendEffect,
-    BSD_JoystickSetSensorsEnabled,
-    BSD_JoystickUpdate,
-    BSD_JoystickClose,
-    BSD_JoystickQuit,
-    BSD_JoystickGetGamepadMapping
+    .Init = BSD_JoystickInit,
+    .Discover = BSD_JoystickDiscover,
+    .Open = BSD_JoystickOpen,
+    .Update = BSD_JoystickUpdate,
+    .Close = BSD_JoystickClose,
+    .Quit = BSD_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_USBHID

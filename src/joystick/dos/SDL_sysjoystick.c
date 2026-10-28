@@ -42,9 +42,6 @@
 #define GAMEPORT_BUTTON4 0x80 /* bit 7 */
 
 /* Static state for detection */
-static bool dos_joystick_detected = false;
-static SDL_JoystickID dos_joystick_id = 0;
-static SDL_JoystickID dos_next_instance_id = 1;
 static Uint64 dos_joystick_next_poll_ns = 0;
 #define DOS_JOYSTICK_POLL_INTERVAL_NS SDL_MS_TO_NS(16) /* ~60 Hz is plenty for a 2-axis gameport stick */
 
@@ -136,81 +133,28 @@ static Sint16 CalibrateAxis(int raw, struct joystick_hwdata *hwdata, int axis)
 
 static bool DOS_JoystickInit(void)
 {
-    dos_joystick_detected = ProbeGameport();
-    if (dos_joystick_detected) {
-        dos_joystick_id = dos_next_instance_id++;
+    if (ProbeGameport()) {
+        const char *name = "DOS Gameport Joystick";
+        SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_DOS_JoystickDriver);
+        if (device) {
+            SDL_GUID guid = SDL_CreateJoystickGUID(
+                SDL_HARDWARE_BUS_UNKNOWN, /* bus */
+                0x0000,                   /* vendor */
+                0x0201,                   /* product (port number) */
+                0x0001,                   /* version */
+                NULL,                     /* vendor_name */
+                name,                     /* product_name */
+                0,                        /* driver_signature */
+                0                         /* driver_data */
+            );
+            SDL_SetJoystickDeviceDescription(device, name, "gameport:0x201", guid, -1);
+            SDL_ReportJoystickDevice(device);
+        }
     }
     return true;
 }
 
-static int DOS_JoystickGetCount(void)
-{
-    return dos_joystick_detected ? 1 : 0;
-}
-
-static void DOS_JoystickDetect(void)
-{
-    /* This could probably be implemented calling ProbeGameport(). */
-}
-
-static bool DOS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    return false;
-}
-
-static const char *DOS_JoystickGetDeviceName(int device_index)
-{
-    if (device_index == 0 && dos_joystick_detected) {
-        return "DOS Gameport Joystick";
-    }
-    return NULL;
-}
-
-static const char *DOS_JoystickGetDevicePath(int device_index)
-{
-    if (device_index == 0 && dos_joystick_detected) {
-        return "gameport:0x201";
-    }
-    return NULL;
-}
-
-static int DOS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int DOS_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void DOS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID DOS_JoystickGetDeviceGUID(int device_index)
-{
-    return SDL_CreateJoystickGUID(
-        SDL_HARDWARE_BUS_UNKNOWN, /* bus */
-        0x0000,                   /* vendor */
-        0x0201,                   /* product (port number) */
-        0x0001,                   /* version */
-        NULL,                     /* vendor_name */
-        "DOS Gameport Joystick",  /* product_name */
-        0,                        /* driver_signature */
-        0                         /* driver_data */
-    );
-}
-
-static SDL_JoystickID DOS_JoystickGetDeviceInstanceID(int device_index)
-{
-    if (device_index == 0 && dos_joystick_detected) {
-        return dos_joystick_id;
-    }
-    return 0;
-}
-
-static bool DOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool DOS_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
     struct joystick_hwdata *hwdata;
 
@@ -234,31 +178,6 @@ static bool DOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nballs = 0;
 
     return true;
-}
-
-static bool DOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void DOS_JoystickUpdate(SDL_Joystick *joystick)
@@ -309,37 +228,14 @@ static void DOS_JoystickClose(SDL_Joystick *joystick)
 
 static void DOS_JoystickQuit(void)
 {
-    dos_joystick_detected = false;
-    dos_joystick_id = 0;
-}
-
-static bool DOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
 }
 
 SDL_JoystickDriver SDL_DOS_JoystickDriver = {
-    DOS_JoystickInit,
-    DOS_JoystickGetCount,
-    DOS_JoystickDetect,
-    DOS_JoystickIsDevicePresent,
-    DOS_JoystickGetDeviceName,
-    DOS_JoystickGetDevicePath,
-    DOS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    DOS_JoystickGetDevicePlayerIndex,
-    DOS_JoystickSetDevicePlayerIndex,
-    DOS_JoystickGetDeviceGUID,
-    DOS_JoystickGetDeviceInstanceID,
-    DOS_JoystickOpen,
-    DOS_JoystickRumble,
-    DOS_JoystickRumbleTriggers,
-    DOS_JoystickSetLED,
-    DOS_JoystickSendEffect,
-    DOS_JoystickSetSensorsEnabled,
-    DOS_JoystickUpdate,
-    DOS_JoystickClose,
-    DOS_JoystickQuit,
-    DOS_JoystickGetGamepadMapping
+    .Init = DOS_JoystickInit,
+    .Open = DOS_JoystickOpen,
+    .Update = DOS_JoystickUpdate,
+    .Close = DOS_JoystickClose,
+    .Quit = DOS_JoystickQuit,
 };
 
 #endif /* SDL_JOYSTICK_DOS */

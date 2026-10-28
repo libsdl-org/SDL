@@ -488,7 +488,7 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     if (ctx->connected && joystick) {
@@ -528,7 +528,7 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
             if (!joystick) {
                 HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
                 if (device->num_joysticks > 0) {
-                    joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+                    joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
                 }
             }
             if (joystick && r >= (1 + sizeof(TritonMTUNoQuat_t))) {
@@ -540,7 +540,7 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
             if (!joystick) {
                 HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
                 if (device->num_joysticks > 0) {
-                    joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+                    joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
                 }
             }
             if (joystick && r >= (1 + sizeof(TritonMTUNoQuat32TS_t))) {
@@ -623,19 +623,9 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     return true;
 }
 
-static bool HIDAPI_DriverSteamTriton_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSteamTriton_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverSteamTriton_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -698,9 +688,9 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton = {
     HIDAPI_DriverSteamTriton_UpdateDevice,
     HIDAPI_DriverSteamTriton_OpenJoystick,
     HIDAPI_DriverSteamTriton_RumbleJoystick,
-    HIDAPI_DriverSteamTriton_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSteamTriton_GetJoystickCapabilities,
-    HIDAPI_DriverSteamTriton_SetJoystickLED,
+    NULL, // SetJoystickLED
     HIDAPI_DriverSteamTriton_SendJoystickEffect,
     HIDAPI_DriverSteamTriton_SetSensorsEnabled,
     HIDAPI_DriverSteamTriton_CloseJoystick,

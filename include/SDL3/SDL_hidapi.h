@@ -170,6 +170,8 @@ typedef struct SDL_hid_device_info
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_hid_exit
@@ -184,6 +186,9 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_init(void);
  *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread, but no other
+ *               HIDAPI functions should be running at the same time.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -205,6 +210,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_exit(void);
  *
  * \returns a change counter that is incremented with each potential device
  *          change, or 0 if device change detection isn't available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -234,6 +241,8 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_hid_device_change_count(void);
  *          in the case of failure. Free this linked list by calling
  *          SDL_hid_free_enumeration().
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_hid_device_change_count
@@ -247,6 +256,8 @@ extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_enumerate(unsigned sho
  *
  * \param devs pointer to a list of struct_device returned from
  *             SDL_hid_enumerate().
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -266,6 +277,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_hid_free_enumeration(SDL_hid_device_info *d
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_id, unsigned short product_id, const wchar_t *serial_number);
@@ -279,6 +292,8 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open(unsigned short vendor_
  * \param path the path name of the device to open.
  * \returns a pointer to a SDL_hid_device object on success or NULL on
  *          failure; call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -295,6 +310,8 @@ extern SDL_DECLSPEC SDL_hid_device * SDLCALL SDL_hid_open_path(const char *path)
  * \param dev a device handle returned from SDL_hid_open().
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.4.0.
  */
@@ -325,6 +342,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_hid_get_properties(SDL_hid_devi
  * \returns the actual number of bytes written and -1 on on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety This function should only be called for the device on a single thread at a time.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigned char *data, size_t length);
@@ -345,6 +364,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_write(SDL_hid_device *dev, const unsigne
  * \returns the actual number of bytes read and -1 on on failure; call
  *          SDL_GetError() for more information. If no packet was available to
  *          be read within the timeout period, this function returns 0.
+ *
+ * \threadsafety This function and SDL_hid_read() should only be called for the device on a single thread at a time.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -367,6 +388,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_read_timeout(SDL_hid_device *dev, unsign
  *          be read and the handle is in non-blocking mode, this function
  *          returns 0.
  *
+ * \threadsafety This function and SDL_hid_read_timeout() should only be called for the device on a single thread at a time.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char *data, size_t length);
@@ -385,6 +408,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_read(SDL_hid_device *dev, unsigned char 
  *                 nonblocking - 0 to disable nonblocking.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -411,6 +436,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_set_nonblocking(SDL_hid_device *dev, int
  * \returns the actual number of bytes written and -1 on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety This function should only be called for the device on a single thread at a time.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev, const unsigned char *data, size_t length);
@@ -433,6 +460,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_send_feature_report(SDL_hid_device *dev,
  * \returns the number of bytes read plus one for the report ID (which is
  *          still in the first byte), or -1 on on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function and SDL_hid_get_input_report() should only be called for the device on a single thread at a time.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -457,6 +486,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_feature_report(SDL_hid_device *dev, 
  *          still in the first byte), or -1 on on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function and SDL_hid_get_feature_report() should only be called for the device on a single thread at a time.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, unsigned char *data, size_t length);
@@ -467,6 +498,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_input_report(SDL_hid_device *dev, un
  * \param dev a device handle returned from SDL_hid_open().
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -481,6 +514,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_close(SDL_hid_device *dev);
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety Do not use the same device from two threads at once.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
@@ -494,6 +529,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_manufacturer_string(SDL_hid_device *
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety Do not use the same device from two threads at once.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, wchar_t *string, size_t maxlen);
@@ -506,6 +543,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_product_string(SDL_hid_device *dev, 
  * \param maxlen the length of the buffer in multiples of wchar_t.
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -521,6 +560,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_serial_number_string(SDL_hid_device 
  * \returns 0 on success or a negative error code on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety Do not use the same device from two threads at once.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, int string_index, wchar_t *string, size_t maxlen);
@@ -532,6 +573,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_hid_get_indexed_string(SDL_hid_device *dev, 
  * \returns a pointer to the SDL_hid_device_info for this hid_device or NULL
  *          on failure; call SDL_GetError() for more information. This struct
  *          is valid until the device is closed with SDL_hid_close().
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -548,6 +591,8 @@ extern SDL_DECLSPEC SDL_hid_device_info * SDLCALL SDL_hid_get_device_info(SDL_hi
  * \param buf_size the size of the buffer in bytes.
  * \returns the number of bytes actually copied or -1 on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety Do not use the same device from two threads at once.
  *
  * \since This function is available since SDL 3.2.0.
  */

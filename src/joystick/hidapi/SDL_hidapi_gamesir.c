@@ -352,6 +352,13 @@ static SDL_hid_device *GetOutputHandle(SDL_HIDAPI_Device *device)
     return output_handle;
 }
 
+// Find the output interface on the joystick device thread, because it enumerates devices
+static bool HIDAPI_DriverGameSir_PrepareDevice(SDL_HIDAPI_Device *device)
+{
+    device->aux_dev = GetOutputHandle(device);
+    return true;
+}
+
 static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -363,7 +370,9 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
     device->context = ctx;
 
     ctx->led_supported = true;
-    ctx->output_handle = GetOutputHandle(device);
+    // HIDAPI_DriverGameSir_PrepareDevice() looked for it on the device thread
+    ctx->output_handle = device->aux_dev;
+    device->aux_dev = NULL;
     ctx->sensor_timestamp_step_ns = SDL_NS_PER_SECOND / GAMESIR_IMU_RATE_HZ;
 
     switch (device->product_id) {
@@ -487,13 +496,6 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     return true;
 }
 
-
-static bool HIDAPI_DriverGameSir_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-
 static Uint32 HIDAPI_DriverGameSir_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
@@ -532,11 +534,6 @@ static bool HIDAPI_DriverGameSir_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_J
         return false;
     }
     return true;
-}
-
-static bool HIDAPI_DriverGameSir_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverGameSir_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -990,7 +987,7 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     SDL_hid_device *handle = HIDAPI_DriverGameSir_GetInputHandle(device, ctx);
@@ -1067,13 +1064,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir = {
     HIDAPI_DriverGameSir_UpdateDevice,
     HIDAPI_DriverGameSir_OpenJoystick,
     HIDAPI_DriverGameSir_RumbleJoystick,
-    HIDAPI_DriverGameSir_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverGameSir_GetJoystickCapabilities,
     HIDAPI_DriverGameSir_SetJoystickLED,
-    HIDAPI_DriverGameSir_SendJoystickEffect,
+    NULL, // SendJoystickEffect
     HIDAPI_DriverGameSir_SetJoystickSensorsEnabled,
     HIDAPI_DriverGameSir_CloseJoystick,
     HIDAPI_DriverGameSir_FreeDevice,
+    HIDAPI_DriverGameSir_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_GAMESIR

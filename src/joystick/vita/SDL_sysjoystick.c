@@ -41,7 +41,39 @@ static SceCtrlData pad3 = { .lx = 0, .ly = 0, .rx = 0, .ry = 0, .lt = 0, .rt = 0
 
 static int ext_port_map[4] = { 1, 2, 3, 4 }; // index: SDL joy number, entry: Vita port number. For external controllers
 
-static int SDL_numjoysticks = 1;
+// The controller index, in SDL_JoystickDevice driver data and open joysticks
+struct joystick_hwdata
+{
+    int index;
+};
+
+static void VITA_AddJoystick(int index)
+{
+    // the GUID is just the name for now
+    const char *name = "PSVita Controller";
+    struct joystick_hwdata *data;
+    SDL_JoystickDevice *device;
+
+    data = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        return;
+    }
+    data->index = index;
+
+    device = SDL_CreateJoystickDevice(&SDL_VITA_JoystickDriver);
+    if (!device) {
+        SDL_free(data);
+        return;
+    }
+    device->driver_data = data;
+    SDL_SetJoystickDeviceDescription(device, name, NULL, SDL_CreateJoystickGUIDForName(name), -1);
+    SDL_ReportJoystickDevice(device);
+}
+
+static int VITA_GetJoystickIndex(SDL_Joystick *joystick)
+{
+    return joystick->hwdata ? joystick->hwdata->index : -1;
+}
 
 #define VITA_HAT_MASK (SCE_CTRL_DOWN | SCE_CTRL_LEFT | SCE_CTRL_UP | SCE_CTRL_RIGHT)  // we offer the dpad as a hat switch.
 
@@ -89,13 +121,10 @@ static int calc_bezier_y(float t)
     return dest.y;
 }
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * It should return number of joysticks, or -1 on an unrecoverable fatal error.
- */
+// Report the controllers
 static bool VITA_JoystickInit(void)
 {
-    int i;
+    int numjoysticks;
     SceCtrlPortInfo myPortInfo;
 
     // Setup input
@@ -104,7 +133,7 @@ static bool VITA_JoystickInit(void)
 
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
-    for (i = 0; i < 128; i++) {
+    for (int i = 0; i < 128; i++) {
         float t = (float)i / 127.0f;
         analog_map[i + 128] = calc_bezier_y(t);
         analog_map[127 - i] = -1 * analog_map[i + 128];
@@ -115,92 +144,32 @@ static bool VITA_JoystickInit(void)
     // and control things immediately even if it is paired
     // after the app has already started.
 
-    SDL_numjoysticks = 1;
-    SDL_PrivateJoystickAdded(SDL_numjoysticks);
+    numjoysticks = 1;
+    VITA_AddJoystick(0);
 
     // How many additional paired controllers are there?
     sceCtrlGetControllerPortInfo(&myPortInfo);
 
     // On Vita TV, port 0 and 1 are the same controller
     // and that is the first one, so start at port 2
-    for (i = 2; i <= 4; i++) {
-        if (myPortInfo.port[i] != SCE_CTRL_TYPE_UNPAIRED) {
-            ++SDL_numjoysticks;
-            SDL_PrivateJoystickAdded(SDL_numjoysticks);
+    for (int i = 2; i <= 4; i++) {
+        if (myPortInfo.port[i] != SCE_CTRL_TYPE_UNPAIRED && numjoysticks < (int)SDL_arraysize(ext_port_map)) {
+            VITA_AddJoystick(numjoysticks++);
         }
     }
-    return SDL_numjoysticks;
+    return true;
 }
 
-static int VITA_JoystickGetCount(void)
+static bool VITA_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    return SDL_numjoysticks;
-}
+    const struct joystick_hwdata *data = (const struct joystick_hwdata *)device->driver_data;
 
-static void VITA_JoystickDetect(void)
-{
-}
-
-static bool VITA_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID VITA_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
-}
-
-static const char *VITA_JoystickGetDeviceName(int index)
-{
-    if (index == 0) {
-        return "PSVita Controller";
+    joystick->hwdata = (struct joystick_hwdata *)SDL_malloc(sizeof(*joystick->hwdata));
+    if (!joystick->hwdata) {
+        return false;
     }
+    *joystick->hwdata = *data;
 
-    if (index == 1) {
-        return "PSVita Controller";
-    }
-
-    if (index == 2) {
-        return "PSVita Controller";
-    }
-
-    if (index == 3) {
-        return "PSVita Controller";
-    }
-
-    SDL_SetError("No joystick available with that index");
-    return NULL;
-}
-
-static const char *VITA_JoystickGetDevicePath(int index)
-{
-    return NULL;
-}
-
-static int VITA_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int VITA_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-static bool VITA_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
     joystick->nbuttons = SDL_arraysize(ext_button_map);
     joystick->naxes = 6;
     joystick->nhats = 1;  // we treat the dpad as a hat switch, even though its just buttons.
@@ -232,7 +201,7 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
     SceCtrlData *pad = NULL;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    int index = (int)SDL_GetJoystickID(joystick) - 1;
+    int index = VITA_GetJoystickIndex(joystick);
 
     if (index == 0)
         pad = &pad0;
@@ -329,6 +298,8 @@ static void VITA_JoystickUpdate(SDL_Joystick *joystick)
 // Function to close a joystick after use
 static void VITA_JoystickClose(SDL_Joystick *joystick)
 {
+    SDL_free(joystick->hwdata);
+    joystick->hwdata = NULL;
 }
 
 // Function to perform any system-specific joystick related cleanup
@@ -336,16 +307,9 @@ static void VITA_JoystickQuit(void)
 {
 }
 
-static SDL_GUID VITA_JoystickGetDeviceGUID(int device_index)
-{
-    // the GUID is just the name for now
-    const char *name = VITA_JoystickGetDeviceName(device_index);
-    return SDL_CreateJoystickGUIDForName(name);
-}
-
 static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
-    int index = (int)SDL_GetJoystickID(joystick) - 1;
+    int index = VITA_GetJoystickIndex(joystick);
     SceCtrlActuator act;
 
     if (index < 0 || index > 3) {
@@ -360,14 +324,9 @@ static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rum
     return true;
 }
 
-static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
-{
-    return SDL_Unsupported();
-}
-
 static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
-    int index = (int)SDL_GetJoystickID(joystick) - 1;
+    int index = VITA_GetJoystickIndex(joystick);
     if (index < 0 || index > 3) {
         return false;
     }
@@ -377,43 +336,14 @@ static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, 
     return true;
 }
 
-static bool VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
-static bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_VITA_JoystickDriver = {
-    VITA_JoystickInit,
-    VITA_JoystickGetCount,
-    VITA_JoystickDetect,
-    VITA_JoystickIsDevicePresent,
-    VITA_JoystickGetDeviceName,
-    VITA_JoystickGetDevicePath,
-    VITA_JoystickGetDeviceSteamVirtualGamepadSlot,
-    VITA_JoystickGetDevicePlayerIndex,
-    VITA_JoystickSetDevicePlayerIndex,
-    VITA_JoystickGetDeviceGUID,
-    VITA_JoystickGetDeviceInstanceID,
-    VITA_JoystickOpen,
-    VITA_JoystickRumble,
-    VITA_JoystickRumbleTriggers,
-    VITA_JoystickSetLED,
-    VITA_JoystickSendEffect,
-    VITA_JoystickSetSensorsEnabled,
-    VITA_JoystickUpdate,
-    VITA_JoystickClose,
-    VITA_JoystickQuit,
-    VITA_JoystickGetGamepadMapping,
+    .Init = VITA_JoystickInit,
+    .Open = VITA_JoystickOpen,
+    .Rumble = VITA_JoystickRumble,
+    .SetLED = VITA_JoystickSetLED,
+    .Update = VITA_JoystickUpdate,
+    .Close = VITA_JoystickClose,
+    .Quit = VITA_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_VITA

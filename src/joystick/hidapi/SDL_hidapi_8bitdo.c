@@ -93,6 +93,9 @@ typedef struct
     Uint8 trigger_rumble_left_value;
     Uint8 trigger_rumble_right_value;
     Uint32 last_tick;
+
+    // The Bluetooth MAC address found by HIDAPI_Driver8BitDo_PrepareDevice()
+    char prepared_serial[18];
 } SDL_Driver8BitDo_Context;
 
 #pragma pack(push,1)
@@ -171,7 +174,8 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
     return false;
 }
 
-static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
+// Ask the controller what it supports. This runs on the joystick device thread.
+static bool HIDAPI_Driver8BitDo_PrepareDevice(SDL_HIDAPI_Device *device)
 {
     SDL_Driver8BitDo_Context *ctx = (SDL_Driver8BitDo_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
@@ -224,10 +228,8 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
                     ctx->sensor_timestamp_supported = false;
                 }
                 if (size >= 17 && data[11] != 0) {
-                    char serial[18];
-                    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                    (void)SDL_snprintf(ctx->prepared_serial, sizeof(ctx->prepared_serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                         data[16], data[15], data[14], data[13], data[12], data[11]);
-                    HIDAPI_SetDeviceSerial(device, serial);
                 }
                 break;
             }
@@ -252,10 +254,8 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
 
                 // Set the serial number to the Bluetooth MAC address
                 if (size >= 12 && data[10] != 0) {
-                    char serial[18];
-                    (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
+                    (void)SDL_snprintf(ctx->prepared_serial, sizeof(ctx->prepared_serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                                        data[10], data[9], data[8], data[7], data[6], data[5]);
-                    HIDAPI_SetDeviceSerial(device, serial);
                 }
                 break;
             }
@@ -264,6 +264,16 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             SDL_Delay(10);
         }
     }
+    return true;
+}
+
+static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
+{
+    SDL_Driver8BitDo_Context *ctx;
+
+    ctx = (SDL_Driver8BitDo_Context *)device->context;
+
+    HIDAPI_SetDeviceSerial(device, ctx->prepared_serial);
 
     if (device->product_id == USB_PRODUCT_8BITDO_SF30_PRO || device->product_id == USB_PRODUCT_8BITDO_SF30_PRO_BT) {
         HIDAPI_SetDeviceName(device, "8BitDo SF30 Pro");
@@ -438,16 +448,6 @@ static Uint32 HIDAPI_Driver8BitDo_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
         caps |= SDL_JOYSTICK_CAP_RGB_LED;
     }
     return caps;
-}
-
-static bool HIDAPI_Driver8BitDo_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_Driver8BitDo_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -737,7 +737,7 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -788,11 +788,12 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo = {
     HIDAPI_Driver8BitDo_RumbleJoystick,
     HIDAPI_Driver8BitDo_RumbleJoystickTriggers,
     HIDAPI_Driver8BitDo_GetJoystickCapabilities,
-    HIDAPI_Driver8BitDo_SetJoystickLED,
-    HIDAPI_Driver8BitDo_SendJoystickEffect,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
     HIDAPI_Driver8BitDo_SetJoystickSensorsEnabled,
     HIDAPI_Driver8BitDo_CloseJoystick,
     HIDAPI_Driver8BitDo_FreeDevice,
+    HIDAPI_Driver8BitDo_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_8BITDO

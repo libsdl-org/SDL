@@ -1437,7 +1437,7 @@ static bool GIP_HandleCommandStatusDevice(
     status.base.power_level = (bytes[0] >> 6) & 3;
 
     if (attachment->joystick) {
-        joystick = SDL_GetJoystickFromID(attachment->joystick);
+        joystick = SDL_GetJoystickFromDriverID(attachment->joystick);
     }
     if (joystick) {
         switch (status.base.battery_level) {
@@ -1716,7 +1716,7 @@ static bool GIP_HandleCommandGuideButtonStatus(
         return true;
     }
 
-    joystick = SDL_GetJoystickFromID(attachment->joystick);
+    joystick = SDL_GetJoystickFromDriverID(attachment->joystick);
     if (!joystick) {
         return false;
     }
@@ -1795,7 +1795,7 @@ static bool GIP_HandleCommandRawReport(
         return true;
     }
 
-    joystick = SDL_GetJoystickFromID(attachment->joystick);
+    joystick = SDL_GetJoystickFromDriverID(attachment->joystick);
     if (!joystick) {
         return true;
     }
@@ -2267,7 +2267,7 @@ static bool GIP_HandleLLInputReport(
         }
     }
 
-    joystick = SDL_GetJoystickFromID(attachment->joystick);
+    joystick = SDL_GetJoystickFromDriverID(attachment->joystick);
     if (!joystick) {
         return false;
     }
@@ -2824,7 +2824,7 @@ static GIP_Attachment * HIDAPI_DriverGIP_FindAttachment(SDL_HIDAPI_Device *devic
     SDL_AssertJoysticksLocked();
 
     for (i = 0; i < MAX_ATTACHMENTS; i++) {
-        if (ctx->attachments[i] && ctx->attachments[i]->joystick == joystick->instance_id) {
+        if (ctx->attachments[i] && ctx->attachments[i]->joystick == joystick->driver_instance_id) {
             return ctx->attachments[i];
         }
     }
@@ -2975,16 +2975,6 @@ static bool HIDAPI_DriverGIP_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverGIP_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-
-static bool HIDAPI_DriverGIP_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
 
 static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
 {
@@ -3094,8 +3084,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGIP = {
     HIDAPI_DriverGIP_RumbleJoystickTriggers,
     HIDAPI_DriverGIP_GetJoystickCapabilities,
     HIDAPI_DriverGIP_SetJoystickLED,
-    HIDAPI_DriverGIP_SendJoystickEffect,
-    HIDAPI_DriverGIP_SetJoystickSensorsEnabled,
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverGIP_CloseJoystick,
     HIDAPI_DriverGIP_FreeDevice,
 };

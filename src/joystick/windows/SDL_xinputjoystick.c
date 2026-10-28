@@ -38,12 +38,33 @@ extern "C" {
 
 static bool s_bXInputEnabled = false;
 
+// The controller in each XInput slot. Only used on the joystick device thread, and by Quit after it stops.
+typedef struct XINPUT_Slot
+{
+    SDL_JoystickID instance_id; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
+    BYTE SubType;
+    char *name;
+    char path[16];
+    SDL_GUID guid;
+    int steam_virtual_gamepad_slot;
+} XINPUT_Slot;
+
+static XINPUT_Slot s_XInputSlots[XUSER_MAX_COUNT];
+static WINDOWS_JoystickRescan s_XInputRescan;
+
+// SDL_JoystickDevice driver data
+typedef struct XINPUT_DeviceData
+{
+    Uint8 userid;
+} XINPUT_DeviceData;
+
 bool SDL_XINPUT_Enabled(void)
 {
     return s_bXInputEnabled;
 }
 
-bool SDL_XINPUT_JoystickInit(void)
+// GameInput's PreInit() runs first, so this can see whether GameInput handles XInput controllers
+static bool XINPUT_JoystickPreInit(void)
 {
     bool enabled = true;
 
@@ -57,6 +78,13 @@ bool SDL_XINPUT_JoystickInit(void)
     }
     s_bXInputEnabled = enabled;
 
+    WINDOWS_InitJoystickDeviceNotification();
+
+    return true;
+}
+
+static bool XINPUT_JoystickInit(void)
+{
     return true;
 }
 
@@ -131,7 +159,7 @@ static bool GetXInputDeviceInfo(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16
     return true;
 }
 
-int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
+static int XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
 {
     SDL_XINPUT_CAPABILITIES_EX capabilities;
 
@@ -144,107 +172,119 @@ int SDL_XINPUT_GetSteamVirtualGamepadSlot(Uint8 userid)
     return -1;
 }
 
-static void AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
+static void XINPUT_AddSlot(Uint8 userid, BYTE SubType)
 {
-    const char *name = NULL;
+    XINPUT_Slot *slot = &s_XInputSlots[userid];
+    const char *name = GetXInputName(userid, SubType);
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint16 version = 0;
-    JoyStick_DeviceData *pPrevJoystick = NULL;
-    JoyStick_DeviceData *pNewJoystick = *pContext;
+    char *joystickname;
+    XINPUT_DeviceData *data;
+    SDL_JoystickDevice *device;
 
-    if (SubType == XINPUT_DEVSUBTYPE_UNKNOWN) {
-        return;
-    }
-
-    while (pNewJoystick) {
-        if (pNewJoystick->bXInputDevice && (pNewJoystick->XInputUserId == userid) && (pNewJoystick->SubType == SubType)) {
-            // if we are replacing the front of the list then update it
-            if (pNewJoystick == *pContext) {
-                *pContext = pNewJoystick->pNext;
-            } else if (pPrevJoystick) {
-                pPrevJoystick->pNext = pNewJoystick->pNext;
-            }
-
-            pNewJoystick->pNext = SYS_Joystick;
-            SYS_Joystick = pNewJoystick;
-            return; // already in the list.
-        }
-
-        pPrevJoystick = pNewJoystick;
-        pNewJoystick = pNewJoystick->pNext;
-    }
-
-    name = GetXInputName(userid, SubType);
     GetXInputDeviceInfo(userid, &vendor, &product, &version);
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, name) ||
-        SDL_JoystickHandledByAnotherDriver(&SDL_WINDOWS_JoystickDriver, vendor, product, version, name)) {
+    if (SDL_ShouldIgnoreJoystick(vendor, product, version, name)) {
         return;
     }
 
-    pNewJoystick = (JoyStick_DeviceData *)SDL_calloc(1, sizeof(JoyStick_DeviceData));
-    if (!pNewJoystick) {
+    joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
+    if (!joystickname) {
         return; // better luck next time?
     }
 
-    pNewJoystick->bXInputDevice = true;
-    pNewJoystick->joystickname = SDL_CreateJoystickName(vendor, product, NULL, name);
-    if (!pNewJoystick->joystickname) {
-        SDL_free(pNewJoystick);
-        return; // better luck next time?
+    data = (XINPUT_DeviceData *)SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        SDL_free(joystickname);
+        return;
     }
-    (void)SDL_snprintf(pNewJoystick->path, sizeof(pNewJoystick->path), "XInput#%u", userid);
-    pNewJoystick->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
-    pNewJoystick->SubType = SubType;
-    pNewJoystick->XInputUserId = userid;
+    data->userid = userid;
 
-    WINDOWS_AddJoystickDevice(pNewJoystick);
+    device = SDL_CreateJoystickDevice(&SDL_XINPUT_JoystickDriver);
+    if (!device) {
+        SDL_free(data);
+        SDL_free(joystickname);
+        return;
+    }
+    device->driver_data = data;
+
+    SDL_free(slot->name);
+    slot->name = joystickname;
+    slot->SubType = SubType;
+    (void)SDL_snprintf(slot->path, sizeof(slot->path), "XInput#%u", userid);
+    slot->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, vendor, product, version, NULL, name, 'x', SubType);
+    slot->steam_virtual_gamepad_slot = XINPUT_GetSteamVirtualGamepadSlot(userid);
+    slot->instance_id = device->driver_instance_id;
+
+    SDL_SetJoystickDeviceDescription(device, slot->name, slot->path, slot->guid, slot->steam_virtual_gamepad_slot);
+    device->vendor_id = vendor;
+    device->product_id = product;
+    device->type = SDL_GetGamepadTypeFromVIDPID(vendor, product, joystickname, false);
+    device->player_index = userid;
+
+    SDL_ReportJoystickDevice(device);
 }
 
-void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
+static void XINPUT_RemoveSlot(Uint8 userid)
 {
-    int iuserid;
+    XINPUT_Slot *slot = &s_XInputSlots[userid];
+
+    if (slot->instance_id) {
+        SDL_ReportJoystickRemoved(slot->instance_id);
+        slot->instance_id = 0;
+    }
+    SDL_free(slot->name);
+    slot->name = NULL;
+}
+
+static Sint32 XINPUT_JoystickDiscover(void)
+{
+    // Without device notifications, look for controllers every second
+    const Uint32 XINPUT_POLL_INTERVAL_MS = 1000;
+    Sint32 timeout;
 
     if (!s_bXInputEnabled) {
-        return;
+        return -1;
     }
 
-    // iterate in reverse, so these are in the final list in ascending numeric order.
-    for (iuserid = XUSER_MAX_COUNT - 1; iuserid >= 0; iuserid--) {
-        const Uint8 userid = (Uint8)iuserid;
+    // Checking the 4 slots is cheap, so look as soon as something changes
+    if (!WINDOWS_JoystickRescanNeeded(&s_XInputRescan, true, XINPUT_POLL_INTERVAL_MS, &timeout)) {
+        return timeout;
+    }
+
+    for (Uint8 userid = 0; userid < XUSER_MAX_COUNT; ++userid) {
+        XINPUT_Slot *slot = &s_XInputSlots[userid];
         XINPUT_CAPABILITIES capabilities;
+        BYTE SubType = XINPUT_DEVSUBTYPE_UNKNOWN;
+
         if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
-            AddXInputDevice(userid, capabilities.SubType, pContext);
+            SubType = capabilities.SubType;
         }
-    }
-}
 
-bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
-{
-    int iuserid;
+        if (slot->instance_id && SubType != slot->SubType) {
+            XINPUT_RemoveSlot(userid);
+        }
 
-    if (!s_bXInputEnabled) {
-        return false;
-    }
-
-    // iterate in reverse, so these are in the final list in ascending numeric order.
-    for (iuserid = 0; iuserid < XUSER_MAX_COUNT; ++iuserid) {
-        const Uint8 userid = (Uint8)iuserid;
-        Uint16 slot_vendor;
-        Uint16 slot_product;
-        Uint16 slot_version;
-        if (GetXInputDeviceInfo(userid, &slot_vendor, &slot_product, &slot_version)) {
-            if (vendor == slot_vendor && product == slot_product && version == slot_version) {
-                return true;
+        if (!slot->instance_id) {
+            if (SubType != XINPUT_DEVSUBTYPE_UNKNOWN) {
+                XINPUT_AddSlot(userid, SubType);
+            }
+        } else {
+            // The Steam virtual gamepad slot can change as controllers are seated
+            int steam_virtual_gamepad_slot = XINPUT_GetSteamVirtualGamepadSlot(userid);
+            if (steam_virtual_gamepad_slot != slot->steam_virtual_gamepad_slot) {
+                slot->steam_virtual_gamepad_slot = steam_virtual_gamepad_slot;
+                SDL_UpdateJoystickDeviceDescription(slot->instance_id, slot->name, slot->path, slot->guid, steam_virtual_gamepad_slot);
             }
         }
     }
-    return false;
+    return timeout;
 }
 
-bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
+static bool XINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    const Uint8 userId = joystickdevice->XInputUserId;
+    const XINPUT_DeviceData *data = (const XINPUT_DeviceData *)device->driver_data;
+    const Uint8 userId = data->userid;
     XINPUT_CAPABILITIES capabilities;
     XINPUT_VIBRATION state;
 
@@ -253,13 +293,17 @@ bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joysti
     SDL_assert(XINPUTSETSTATE);
     SDL_assert(userId < XUSER_MAX_COUNT);
 
-    joystick->hwdata->bXInputDevice = true;
-
     if (XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities) != ERROR_SUCCESS) {
-        SDL_free(joystick->hwdata);
-        joystick->hwdata = NULL;
         return SDL_SetError("Failed to obtain XInput device capabilities. Device disconnected?");
     }
+
+    joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(struct joystick_hwdata));
+    if (!joystick->hwdata) {
+        return false;
+    }
+    joystick->hwdata->guid = device->guid;
+    joystick->hwdata->bXInputDevice = true;
+
     SDL_zero(state);
     joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
     joystick->hwdata->userid = userId;
@@ -354,7 +398,7 @@ static void UpdateXInputJoystickState(SDL_Joystick *joystick, XINPUT_STATE *pXIn
     UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
-bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
+static bool XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     XINPUT_VIBRATION XVibration;
 
@@ -370,13 +414,13 @@ bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     return true;
 }
 
-void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
+static void XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 {
     DWORD result;
     XINPUT_STATE XInputState;
     XINPUT_BATTERY_INFORMATION_EX XBatteryInformation;
 
-    if (!XINPUTGETSTATE) {
+    if (!XINPUTGETSTATE || !joystick->hwdata) {
         return;
     }
 
@@ -403,17 +447,49 @@ void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 #endif
 }
 
-void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
+static void XINPUT_JoystickClose(SDL_Joystick *joystick)
 {
+    SDL_free(joystick->hwdata);
+    joystick->hwdata = NULL;
 }
 
-void SDL_XINPUT_JoystickQuit(void)
+static void XINPUT_JoystickQuit(void)
 {
+    // The joystick device thread has stopped
+    for (Uint8 userid = 0; userid < XUSER_MAX_COUNT; ++userid) {
+        XINPUT_RemoveSlot(userid);
+    }
+    SDL_zero(s_XInputRescan);
+
+    WINDOWS_QuitJoystickDeviceNotification();
+
     if (s_bXInputEnabled) {
         s_bXInputEnabled = false;
         WIN_UnloadXInputDLL();
     }
 }
+
+static void XINPUT_JoystickSetPlayerIndex(SDL_JoystickDevice *device, int player_index)
+{
+}
+
+static bool XINPUT_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
+{
+    return false;
+}
+
+SDL_JoystickDriver SDL_XINPUT_JoystickDriver = {
+    .PreInit = XINPUT_JoystickPreInit,
+    .Init = XINPUT_JoystickInit,
+    .Discover = XINPUT_JoystickDiscover,
+    .SetPlayerIndex = XINPUT_JoystickSetPlayerIndex,
+    .GetGamepadMapping = XINPUT_JoystickGetGamepadMapping,
+    .Open = XINPUT_JoystickOpen,
+    .Rumble = XINPUT_JoystickRumble,
+    .Update = XINPUT_JoystickUpdate,
+    .Close = XINPUT_JoystickClose,
+    .Quit = XINPUT_JoystickQuit,
+};
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
@@ -422,47 +498,9 @@ void SDL_XINPUT_JoystickQuit(void)
 
 #else // !SDL_JOYSTICK_XINPUT
 
-typedef struct JoyStick_DeviceData JoyStick_DeviceData;
-
 bool SDL_XINPUT_Enabled(void)
 {
     return false;
-}
-
-bool SDL_XINPUT_JoystickInit(void)
-{
-    return true;
-}
-
-void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
-{
-}
-
-bool SDL_XINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version)
-{
-    return false;
-}
-
-bool SDL_XINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice)
-{
-    return SDL_Unsupported();
-}
-
-bool SDL_XINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-void SDL_XINPUT_JoystickUpdate(SDL_Joystick *joystick)
-{
-}
-
-void SDL_XINPUT_JoystickClose(SDL_Joystick *joystick)
-{
-}
-
-void SDL_XINPUT_JoystickQuit(void)
-{
 }
 
 #endif // SDL_JOYSTICK_XINPUT

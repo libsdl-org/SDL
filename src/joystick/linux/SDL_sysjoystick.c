@@ -43,6 +43,7 @@
 
 #include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_evdev.h"
+#include "../../core/unix/SDL_poll.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
@@ -154,46 +155,97 @@ typedef enum
 static EnumerationMethod enumeration_method = ENUMERATION_UNSET;
 
 static bool IsJoystickJSNode(const char *node);
+static bool IsJoystickDeviceNode(const char *node);
 static void MaybeAddDevice(const char *path);
 static void MaybeRemoveDevice(const char *path);
 
-// A linked list of available joysticks
-typedef struct SDL_joylist_item
+// A device node that has been checked, owned by the joystick device thread. Sensors and nodes that aren't
+// joysticks we use have no instance ID. Other nodes are remembered so the polling scan doesn't open them
+// again; a notification for the node checks it again.
+typedef struct LINUX_KnownNode
 {
-    SDL_JoystickID device_instance;
     char *path; // "/dev/input/event2" or whatever
+    dev_t devnum;
+    ino_t ino; // A node that's removed and created again gets a new inode, even with the same device number
+    SDL_JoystickID instance_id; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
+    bool is_sensor;
+    struct LINUX_KnownNode *next;
+} LINUX_KnownNode;
+
+// A gamepad sensor node. The Linux driver creates a separate device for the gyro and accelerometer, with
+// the same unique ID as the joystick. Sensors are found on the device thread and paired with a joystick
+// when it's opened.
+typedef struct LINUX_SensorNode
+{
+    char *path;
+    char uniq[128];
+    bool in_use;
+    struct LINUX_SensorNode *next;
+} LINUX_SensorNode;
+
+// SDL_JoystickDevice driver data
+typedef struct LINUX_DeviceData
+{
     Uint16 vendor;
-    Uint16 product;
-    char *name; // "SideWinder 3D Pro" or whatever
-    char *driver; // "xpad" or whatever
-    SDL_GUID guid;
-    dev_t devnum;
-    int steam_virtual_gamepad_slot;
-    struct joystick_hwdata *hwdata;
-    struct SDL_joylist_item *next;
+    char driver[32]; // "xpad" or whatever
+    char uniq[128];
+    char serial[128];
 
+    // The gamepad mapping, generated the first time it's needed. Only used on the app thread.
     bool checked_mapping;
-    SDL_GamepadMapping *mapping;
-} SDL_joylist_item;
-
-// A linked list of available gamepad sensors
-typedef struct SDL_sensorlist_item
-{
-    char *path; // "/dev/input/event2" or whatever
-    dev_t devnum;
-    struct joystick_hwdata *hwdata;
-    struct SDL_sensorlist_item *next;
-} SDL_sensorlist_item;
+    bool has_mapping;
+    SDL_GamepadMapping mapping;
+} LINUX_DeviceData;
 
 static bool SDL_classic_joysticks = false;
-static SDL_joylist_item *SDL_joylist SDL_GUARDED_BY(SDL_event_lock) = NULL;
-static SDL_joylist_item *SDL_joylist_tail SDL_GUARDED_BY(SDL_event_lock) = NULL;
-static int numjoysticks SDL_GUARDED_BY(SDL_event_lock) = 0;
-static SDL_sensorlist_item *SDL_sensorlist SDL_GUARDED_BY(SDL_event_lock) = NULL;
+static char *LINUX_hint_devices = NULL;
+static bool LINUX_first_pass = false;
+static LINUX_KnownNode *LINUX_known_nodes = NULL;
+static SDL_Mutex *LINUX_sensor_lock = NULL;
+static LINUX_SensorNode *LINUX_sensors SDL_GUARDED_BY(LINUX_sensor_lock) = NULL;
 static int inotify_fd = -1;
 
 static Uint64 last_joy_detect_time;
 static time_t last_input_dir_mtime;
+
+// Joysticks the app thread found were gone (read errors), for the device thread to forget. This matters
+// when the device thread can't see the node change, e.g. a static /dev or a fast replug with polling.
+typedef struct LINUX_GoneJoystick
+{
+    SDL_JoystickID instance_id; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
+    struct LINUX_GoneJoystick *next;
+} LINUX_GoneJoystick;
+
+static SDL_SpinLock LINUX_gone_lock;
+static LINUX_GoneJoystick *LINUX_gone_joysticks = NULL;
+
+#ifdef SDL_USE_LIBUDEV
+// The device thread has its own udev context, because a udev context can't be used by more than one thread
+static const SDL_UDEV_Symbols *LINUX_udev_syms = NULL;
+static struct udev *LINUX_udev = NULL;
+static struct udev_monitor *LINUX_udev_mon = NULL;
+#endif
+
+#ifdef SDL_USE_LIBUDEV
+static bool LINUX_GetProductInfo(const char *path, struct input_id *inpid, int *class, char **driver)
+{
+    if (LINUX_udev) {
+        return SDL_UDEV_GetProductInfo(LINUX_udev, path, inpid, class, driver);
+    }
+    return false;
+}
+
+static void LINUX_GetProductSerial(const char *path, char *serial, size_t size)
+{
+    if (LINUX_udev) {
+        char *value = SDL_UDEV_GetProductSerial(LINUX_udev, path);
+        if (value) {
+            SDL_strlcpy(serial, value, size);
+            SDL_free(value);
+        }
+    }
+}
+#endif
 
 static void FixupDeviceInfoForMapping(int fd, struct input_id *inpid)
 {
@@ -300,7 +352,7 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
     SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
     // Opening input devices can generate synchronous device I/O, so avoid it if we can
-    if (SDL_UDEV_GetProductInfo(path, &inpid, &class, &driver) &&
+    if (LINUX_GetProductInfo(path, &inpid, &class, &driver) &&
         !(class & SDL_UDEV_DEVICE_JOYSTICK)) {
         goto error;
     }
@@ -334,11 +386,6 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
         goto error;
     }
 
-    if (!IsVirtualJoystick(inpid.vendor, inpid.product, inpid.version, name) &&
-        SDL_JoystickHandledByAnotherDriver(&SDL_LINUX_JoystickDriver, inpid.vendor, inpid.product, inpid.version, name)) {
-        goto error;
-    }
-
     FixupDeviceInfoForMapping(*fd, &inpid);
 
 #ifdef DEBUG_JOYSTICK
@@ -369,7 +416,7 @@ static bool IsSensor(const char *path, int *fd)
     SDL_zero(inpid);
 #ifdef SDL_USE_LIBUDEV
     // Opening input devices can generate synchronous device I/O, so avoid it if we can
-    if (SDL_UDEV_GetProductInfo(path, &inpid, &class, NULL) &&
+    if (LINUX_GetProductInfo(path, &inpid, &class, NULL) &&
         !(class & SDL_UDEV_DEVICE_ACCELEROMETER)) {
         return false;
     }
@@ -399,59 +446,130 @@ static bool IsSensor(const char *path, int *fd)
     return true;
 }
 
-#ifdef SDL_USE_LIBUDEV
-static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
+static LINUX_KnownNode *CreateKnownNode(const char *path, const struct stat *sb)
 {
-    if (!devpath) {
+    LINUX_KnownNode *node = (LINUX_KnownNode *)SDL_calloc(1, sizeof(*node));
+    if (!node) {
+        return NULL;
+    }
+    node->path = SDL_strdup(path);
+    if (!node->path) {
+        SDL_free(node);
+        return NULL;
+    }
+    node->devnum = sb->st_rdev;
+    node->ino = sb->st_ino;
+    return node;
+}
+
+static void FreeKnownNode(LINUX_KnownNode *node)
+{
+    if (node) {
+        SDL_free(node->path);
+        SDL_free(node);
+    }
+}
+
+static void FreeSensorNode(LINUX_SensorNode *sensor)
+{
+    if (sensor) {
+        SDL_free(sensor->path);
+        SDL_free(sensor);
+    }
+}
+
+static void ReadUniq(int fd, char *uniq, size_t size)
+{
+    SDL_memset(uniq, 0, size);
+    if (ioctl(fd, EVIOCGUNIQ(size - 1), uniq) < 0) {
+        uniq[0] = '\0';
+    }
+}
+
+static void AddJoystick(const char *path, const struct stat *sb, int fd, char *name, char *driver, Uint16 vendor, Uint16 product, SDL_GUID guid)
+{
+    LINUX_KnownNode *node = CreateKnownNode(path, sb);
+    LINUX_DeviceData *data = (LINUX_DeviceData *)SDL_calloc(1, sizeof(*data));
+    SDL_JoystickDevice *device = NULL;
+    int steam_virtual_gamepad_slot = -1;
+    Uint16 version = 0;
+
+    if (node && data) {
+        device = SDL_CreateJoystickDevice(&SDL_LINUX_JoystickDriver);
+    }
+    if (!device) {
+        FreeKnownNode(node);
+        SDL_free(data);
         return;
     }
 
-    switch (udev_type) {
-    case SDL_UDEV_DEVICEADDED:
-        if (!(udev_class & (SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_ACCELEROMETER))) {
-            return;
-        }
-        if (SDL_classic_joysticks) {
-            if (!IsJoystickJSNode(devpath)) {
-                return;
-            }
-        } else {
-            if (IsJoystickJSNode(devpath)) {
-                return;
-            }
-        }
+    data->vendor = vendor;
+    if (driver) {
+        SDL_strlcpy(data->driver, driver, sizeof(data->driver));
+    }
+    ReadUniq(fd, data->uniq, sizeof(data->uniq));
+#ifdef SDL_USE_LIBUDEV
+    LINUX_GetProductSerial(path, data->serial, sizeof(data->serial));
+#endif
+    device->driver_data = data;
 
-        // Wait a bit for the hidraw udev node to initialize
-        SDL_Delay(10);
+    if (vendor == USB_VENDOR_VALVE &&
+        product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
+        GetSteamVirtualGamepadSlot(fd, &steam_virtual_gamepad_slot);
+    }
 
-        MaybeAddDevice(devpath);
-        break;
+    SDL_SetJoystickDeviceDescription(device, name, path, guid, steam_virtual_gamepad_slot);
+    device->vendor_id = vendor;
+    device->product_id = product;
+    device->type = SDL_GetGamepadTypeFromVIDPID(vendor, product, name, false);
 
-    case SDL_UDEV_DEVICEREMOVED:
-        MaybeRemoveDevice(devpath);
-        break;
+    // Virtual devices are never the same controller as another driver's device
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
+    device->match.never_group = IsVirtualJoystick(vendor, product, version, name);
 
-    default:
-        break;
+    node->instance_id = device->driver_instance_id;
+    node->next = LINUX_known_nodes;
+    LINUX_known_nodes = node;
+
+    SDL_ReportJoystickDevice(device);
+}
+
+static void AddSensor(const char *path, const struct stat *sb, int fd)
+{
+    LINUX_KnownNode *node = CreateKnownNode(path, sb);
+    LINUX_SensorNode *sensor = (LINUX_SensorNode *)SDL_calloc(1, sizeof(*sensor));
+
+    if (sensor) {
+        sensor->path = SDL_strdup(path);
+    }
+    if (!node || !sensor || !sensor->path) {
+        FreeKnownNode(node);
+        FreeSensorNode(sensor);
+        return;
+    }
+    ReadUniq(fd, sensor->uniq, sizeof(sensor->uniq));
+
+    SDL_LockMutex(LINUX_sensor_lock);
+    sensor->next = LINUX_sensors;
+    LINUX_sensors = sensor;
+    SDL_UnlockMutex(LINUX_sensor_lock);
+
+    node->is_sensor = true;
+    node->next = LINUX_known_nodes;
+    LINUX_known_nodes = node;
+}
+
+// Remember a node that isn't a joystick or sensor we use
+static void AddOtherNode(const char *path, const struct stat *sb)
+{
+    LINUX_KnownNode *node = CreateKnownNode(path, sb);
+    if (node) {
+        node->next = LINUX_known_nodes;
+        LINUX_known_nodes = node;
     }
 }
-#endif // SDL_USE_LIBUDEV
 
-static void FreeJoylistItem(SDL_joylist_item *item)
-{
-    SDL_free(item->mapping);
-    SDL_free(item->path);
-    SDL_free(item->name);
-    SDL_free(item->driver);
-    SDL_free(item);
-}
-
-static void FreeSensorlistItem(SDL_sensorlist_item *item)
-{
-    SDL_free(item->path);
-    SDL_free(item);
-}
-
+// Called on the device thread
 static void MaybeAddDevice(const char *path)
 {
     struct stat sb;
@@ -460,35 +578,27 @@ static void MaybeAddDevice(const char *path)
     char *driver = NULL;
     Uint16 vendor, product;
     SDL_GUID guid;
-    SDL_joylist_item *item;
-    SDL_sensorlist_item *item_sensor;
+    LINUX_KnownNode *node;
 
     if (!path) {
         return;
     }
 
+    if (stat(path, &sb) == -1) {
+        return;
+    }
+
+    // Check to make sure it's not already in list.
+    for (node = LINUX_known_nodes; node; node = node->next) {
+        if (sb.st_rdev == node->devnum && sb.st_ino == node->ino) {
+            return; // already have this one
+        }
+    }
+
+    // If we can't open it (e.g. its permissions haven't been set up yet), it's checked again later
     fd = open(path, O_RDONLY | O_CLOEXEC, 0);
     if (fd < 0) {
         return;
-    }
-
-    if (fstat(fd, &sb) == -1) {
-        close(fd);
-        return;
-    }
-
-    SDL_LockJoysticks();
-
-    // Check to make sure it's not already in list.
-    for (item = SDL_joylist; item; item = item->next) {
-        if (sb.st_rdev == item->devnum) {
-            goto done; // already have this one
-        }
-    }
-    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
-        if (sb.st_rdev == item_sensor->devnum) {
-            goto done; // already have this one
-        }
     }
 
 #ifdef DEBUG_INPUT_EVENTS
@@ -499,190 +609,156 @@ static void MaybeAddDevice(const char *path)
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found joystick: %s", path);
 #endif
-        item = (SDL_joylist_item *)SDL_calloc(1, sizeof(SDL_joylist_item));
-        if (!item) {
-            SDL_free(name);
-            goto done;
-        }
+        AddJoystick(path, &sb, fd, name, driver, vendor, product, guid);
+        SDL_free(name);
+        SDL_free(driver);
 
-        item->devnum = sb.st_rdev;
-        item->steam_virtual_gamepad_slot = -1;
-        item->path = SDL_strdup(path);
-        item->vendor = vendor;
-        item->product = product;
-        item->name = name;
-        item->guid = guid;
-        item->driver = driver;
-
-        if (vendor == USB_VENDOR_VALVE &&
-            product == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD) {
-            GetSteamVirtualGamepadSlot(fd, &item->steam_virtual_gamepad_slot);
-        }
-
-        if ((!item->path) || (!item->name)) {
-            FreeJoylistItem(item);
-            goto done;
-        }
-
-        item->device_instance = SDL_GetNextObjectID();
-        if (!SDL_joylist_tail) {
-            SDL_joylist = SDL_joylist_tail = item;
-        } else {
-            SDL_joylist_tail->next = item;
-            SDL_joylist_tail = item;
-        }
-
-        // Need to increment the joystick count before we post the event
-        ++numjoysticks;
-
-        SDL_PrivateJoystickAdded(item->device_instance);
-        goto done;
-    }
-
-    if (IsSensor(path, &fd)) {
+    } else if (IsSensor(path, &fd)) {
 #ifdef DEBUG_INPUT_EVENTS
         SDL_Log("found sensor: %s", path);
 #endif
-        item_sensor = (SDL_sensorlist_item *)SDL_calloc(1, sizeof(SDL_sensorlist_item));
-        if (!item_sensor) {
-            goto done;
-        }
-        item_sensor->devnum = sb.st_rdev;
-        item_sensor->path = SDL_strdup(path);
+        AddSensor(path, &sb, fd);
 
-        if (!item_sensor->path) {
-            FreeSensorlistItem(item_sensor);
-            goto done;
-        }
-
-        item_sensor->next = SDL_sensorlist;
-        SDL_sensorlist = item_sensor;
-        goto done;
+    } else {
+        AddOtherNode(path, &sb);
     }
 
-done:
     close(fd);
-    SDL_UnlockJoysticks();
 }
 
-static void RemoveJoylistItem(SDL_joylist_item *item, SDL_joylist_item *prev)
+// Check a node again after a notification about it, if it was remembered as not being a joystick or sensor
+static void MaybeRecheckDevice(const char *path)
 {
-    SDL_AssertJoysticksLocked();
+    LINUX_KnownNode *node, *prev = NULL;
 
-    if (item->hwdata) {
-        item->hwdata->item = NULL;
+    for (node = LINUX_known_nodes; node; prev = node, node = node->next) {
+        if (SDL_strcmp(path, node->path) == 0) {
+            if (!node->instance_id && !node->is_sensor) {
+                if (prev) {
+                    prev->next = node->next;
+                } else {
+                    LINUX_known_nodes = node->next;
+                }
+                FreeKnownNode(node);
+            }
+            break;
+        }
     }
-
-    if (prev) {
-        prev->next = item->next;
-    } else {
-        SDL_assert(SDL_joylist == item);
-        SDL_joylist = item->next;
-    }
-
-    if (item == SDL_joylist_tail) {
-        SDL_joylist_tail = prev;
-    }
-
-    // Need to decrement the joystick count before we post the event
-    --numjoysticks;
-
-    SDL_PrivateJoystickRemoved(item->device_instance);
-    FreeJoylistItem(item);
+    MaybeAddDevice(path);
 }
 
-static void RemoveSensorlistItem(SDL_sensorlist_item *item, SDL_sensorlist_item *prev)
+static void RemoveKnownNode(LINUX_KnownNode *node)
 {
-    SDL_AssertJoysticksLocked();
+    LINUX_KnownNode *curr, *prev = NULL;
 
-    if (item->hwdata) {
-        item->hwdata->item_sensor = NULL;
+    for (curr = LINUX_known_nodes; curr; prev = curr, curr = curr->next) {
+        if (curr == node) {
+            if (prev) {
+                prev->next = curr->next;
+            } else {
+                LINUX_known_nodes = curr->next;
+            }
+            break;
+        }
     }
 
-    if (prev) {
-        prev->next = item->next;
-    } else {
-        SDL_assert(SDL_sensorlist == item);
-        SDL_sensorlist = item->next;
-    }
+    if (node->instance_id) {
+        SDL_ReportJoystickRemoved(node->instance_id);
+    } else if (node->is_sensor) {
+        LINUX_SensorNode *sensor, *prev_sensor = NULL;
 
-    /* Do not call SDL_PrivateJoystickRemoved here as RemoveJoylistItem will do it,
-     * assuming both sensor and joy item are removed at the same time */
-    FreeSensorlistItem(item);
+        SDL_LockMutex(LINUX_sensor_lock);
+        for (sensor = LINUX_sensors; sensor; prev_sensor = sensor, sensor = sensor->next) {
+            if (SDL_strcmp(sensor->path, node->path) == 0) {
+                if (prev_sensor) {
+                    prev_sensor->next = sensor->next;
+                } else {
+                    LINUX_sensors = sensor->next;
+                }
+                FreeSensorNode(sensor);
+                break;
+            }
+        }
+        SDL_UnlockMutex(LINUX_sensor_lock);
+    }
+    FreeKnownNode(node);
 }
 
+// Called on the device thread
 static void MaybeRemoveDevice(const char *path)
 {
-    SDL_joylist_item *item;
-    SDL_joylist_item *prev = NULL;
-    SDL_sensorlist_item *item_sensor;
-    SDL_sensorlist_item *prev_sensor = NULL;
+    LINUX_KnownNode *node, *next;
 
     if (!path) {
         return;
     }
 
-    SDL_LockJoysticks();
-    for (item = SDL_joylist; item; item = item->next) {
-        // found it, remove it.
-        if (SDL_strcmp(path, item->path) == 0) {
-            RemoveJoylistItem(item, prev);
-            goto done;
+    // There can be more than one node on the path if a removal was missed, and they're all gone now
+    for (node = LINUX_known_nodes; node; node = next) {
+        next = node->next;
+        if (SDL_strcmp(path, node->path) == 0) {
+            RemoveKnownNode(node);
         }
-        prev = item;
     }
-    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
-        // found it, remove it.
-        if (SDL_strcmp(path, item_sensor->path) == 0) {
-            RemoveSensorlistItem(item_sensor, prev_sensor);
-            goto done;
-        }
-        prev_sensor = item_sensor;
-    }
-done:
-    SDL_UnlockJoysticks();
 }
 
-static void HandlePendingRemovals(void)
+// Remove devices whose nodes have gone away, when we can't be notified of removals
+static void RemoveMissingDevices(void)
 {
-    SDL_joylist_item *prev = NULL;
-    SDL_joylist_item *item = NULL;
-    SDL_sensorlist_item *prev_sensor = NULL;
-    SDL_sensorlist_item *item_sensor = NULL;
+    LINUX_KnownNode *node, *next;
 
-    SDL_AssertJoysticksLocked();
+    for (node = LINUX_known_nodes; node; node = next) {
+        struct stat sb;
 
-    item = SDL_joylist;
-    while (item) {
-        if (item->hwdata && item->hwdata->gone) {
-            RemoveJoylistItem(item, prev);
-
-            if (prev) {
-                item = prev->next;
-            } else {
-                item = SDL_joylist;
-            }
-        } else {
-            prev = item;
-            item = item->next;
+        next = node->next;
+        if (stat(node->path, &sb) < 0 || sb.st_rdev != node->devnum || sb.st_ino != node->ino) {
+            RemoveKnownNode(node);
         }
     }
+}
 
-    item_sensor = SDL_sensorlist;
-    while (item_sensor) {
-        if (item_sensor->hwdata && item_sensor->hwdata->sensor_gone) {
-            RemoveSensorlistItem(item_sensor, prev_sensor);
+// Pair a sensor with a joystick that's being opened, returning the sensor's path.
+// Only sensors with the same non-empty unique ID as the joystick are paired.
+static char *ClaimSensor(const char *uniq)
+{
+    LINUX_SensorNode *sensor;
+    char *path = NULL;
 
-            if (prev_sensor) {
-                item_sensor = prev_sensor->next;
-            } else {
-                item_sensor = SDL_sensorlist;
+    if (!*uniq) {
+        return NULL;
+    }
+
+    SDL_LockMutex(LINUX_sensor_lock);
+    for (sensor = LINUX_sensors; sensor; sensor = sensor->next) {
+        if (!sensor->in_use && SDL_strcmp(sensor->uniq, uniq) == 0) {
+            path = SDL_strdup(sensor->path);
+            if (path) {
+                sensor->in_use = true;
             }
-        } else {
-            prev_sensor = item_sensor;
-            item_sensor = item_sensor->next;
+            break;
         }
     }
+    SDL_UnlockMutex(LINUX_sensor_lock);
+
+    return path;
+}
+
+static void ReleaseSensor(const char *path)
+{
+    LINUX_SensorNode *sensor;
+
+    if (!path) {
+        return;
+    }
+
+    SDL_LockMutex(LINUX_sensor_lock);
+    for (sensor = LINUX_sensors; sensor; sensor = sensor->next) {
+        if (sensor->in_use && SDL_strcmp(sensor->path, path) == 0) {
+            sensor->in_use = false;
+            break;
+        }
+    }
+    SDL_UnlockMutex(LINUX_sensor_lock);
 }
 
 static bool StrIsInteger(const char *string)
@@ -773,7 +849,7 @@ static void LINUX_InotifyJoystickDetect(void)
                 (void)SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", buf.event.name);
 
                 if (buf.event.mask & (IN_CREATE | IN_MOVED_TO | IN_ATTRIB)) {
-                    MaybeAddDevice(path);
+                    MaybeRecheckDevice(path);
                 } else if (buf.event.mask & (IN_DELETE | IN_MOVED_FROM)) {
                     MaybeRemoveDevice(path);
                 }
@@ -886,7 +962,7 @@ static void LINUX_ScanSteamVirtualGamepads(void)
         // Opening input devices can generate synchronous device I/O, so avoid it if we can
         class = 0;
         SDL_zero(inpid);
-        if (SDL_UDEV_GetProductInfo(path, &inpid, &class, NULL) &&
+        if (LINUX_GetProductInfo(path, &inpid, &class, NULL) &&
             (inpid.vendor != USB_VENDOR_VALVE || inpid.product != USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
             free(entries[i]); // This should NOT be SDL_free()
             continue;
@@ -947,7 +1023,46 @@ static void LINUX_ScanInputDevices(void)
     free(entries); // This should NOT be SDL_free()
 }
 
-static void LINUX_FallbackJoystickDetect(void)
+#ifdef SDL_USE_LIBUDEV
+static void LINUX_UdevJoystickDetect(void)
+{
+    const int fd = LINUX_udev_syms->udev_monitor_get_fd(LINUX_udev_mon);
+
+    while (SDL_IOReady(fd, SDL_IOR_READ, 0) > 0) {
+        struct udev_device *dev = LINUX_udev_syms->udev_monitor_receive_device(LINUX_udev_mon);
+        const char *action;
+        const char *devnode;
+
+        if (!dev) {
+            break;
+        }
+
+        action = LINUX_udev_syms->udev_device_get_action(dev);
+        devnode = LINUX_udev_syms->udev_device_get_devnode(dev);
+        if (action && devnode && IsJoystickDeviceNode(devnode)) {
+            if (SDL_strcmp(action, "add") == 0) {
+                struct input_id inpid;
+                int class = 0;
+
+                SDL_zero(inpid);
+                if (LINUX_GetProductInfo(devnode, &inpid, &class, NULL) &&
+                    (class & (SDL_UDEV_DEVICE_JOYSTICK | SDL_UDEV_DEVICE_ACCELEROMETER))) {
+                    // Wait a bit for the hidraw udev node to initialize
+                    SDL_Delay(10);
+
+                    MaybeRecheckDevice(devnode);
+                }
+            } else if (SDL_strcmp(action, "remove") == 0) {
+                MaybeRemoveDevice(devnode);
+            }
+        }
+
+        LINUX_udev_syms->udev_device_unref(dev);
+    }
+}
+#endif // SDL_USE_LIBUDEV
+
+static Sint32 LINUX_FallbackJoystickDetect(void)
 {
     const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000; // Update every 3 seconds
     Uint64 now = SDL_GetTicks();
@@ -957,6 +1072,8 @@ static void LINUX_FallbackJoystickDetect(void)
 
         // Opening input devices can generate synchronous device I/O, so avoid it if we can
         if (stat("/dev/input", &sb) == 0 && sb.st_mtime != last_input_dir_mtime) {
+            RemoveMissingDevices();
+
             // Look for Steam virtual gamepads first, and sort by Steam controller slot
             LINUX_ScanSteamVirtualGamepads();
 
@@ -967,104 +1084,212 @@ static void LINUX_FallbackJoystickDetect(void)
 
         last_joy_detect_time = now;
     }
+
+    return (Sint32)(last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS - now);
 }
 
-static void LINUX_JoystickDetect(void)
+// Ask the device thread to forget a joystick that has gone away. Called on the app thread.
+static void LINUX_ForgetJoystick(SDL_JoystickID instance_id)
 {
-#ifdef SDL_USE_LIBUDEV
-    if (enumeration_method == ENUMERATION_LIBUDEV) {
-        // Polling will happen in the main event loop
-    } else
-#endif
-#ifdef HAVE_INOTIFY
-    if (inotify_fd >= 0 && last_joy_detect_time != 0) {
-        LINUX_InotifyJoystickDetect();
-    } else
-#endif
-    {
-        LINUX_FallbackJoystickDetect();
+    LINUX_GoneJoystick *gone = (LINUX_GoneJoystick *)SDL_malloc(sizeof(*gone));
+    if (!gone) {
+        return;
+    }
+    gone->instance_id = instance_id;
+
+    SDL_LockSpinlock(&LINUX_gone_lock);
+    gone->next = LINUX_gone_joysticks;
+    LINUX_gone_joysticks = gone;
+    SDL_UnlockSpinlock(&LINUX_gone_lock);
+
+    SDL_WakeJoystickDeviceThread();
+}
+
+static LINUX_GoneJoystick *LINUX_TakeGoneJoysticks(void)
+{
+    LINUX_GoneJoystick *gone;
+
+    SDL_LockSpinlock(&LINUX_gone_lock);
+    gone = LINUX_gone_joysticks;
+    LINUX_gone_joysticks = NULL;
+    SDL_UnlockSpinlock(&LINUX_gone_lock);
+
+    return gone;
+}
+
+// Forget the joysticks the app thread found were gone, so their nodes are checked again. Device thread.
+static void LINUX_ApplyGoneJoysticks(void)
+{
+    LINUX_GoneJoystick *gone = LINUX_TakeGoneJoysticks();
+
+    while (gone) {
+        LINUX_GoneJoystick *next = gone->next;
+        LINUX_KnownNode *node;
+
+        for (node = LINUX_known_nodes; node; node = node->next) {
+            if (node->instance_id == gone->instance_id) {
+                RemoveKnownNode(node);
+                break;
+            }
+        }
+        SDL_free(gone);
+        gone = next;
+
+        // Without notifications, scan again even if /dev/input hasn't changed
+        last_input_dir_mtime = 0;
+        last_joy_detect_time = 0;
+    }
+}
+
+// Called on the joystick device thread
+static Sint32 LINUX_JoystickDiscover(void)
+{
+    LINUX_ApplyGoneJoysticks();
+
+    if (LINUX_first_pass) {
+        LINUX_first_pass = false;
+
+        // First see if the user specified one or more joysticks to use
+        if (LINUX_hint_devices) {
+            char *envpath = LINUX_hint_devices;
+            while (envpath) {
+                char *delim = SDL_strchr(envpath, ':');
+                if (delim) {
+                    *delim++ = '\0';
+                }
+                MaybeAddDevice(envpath);
+                envpath = delim;
+            }
+        }
+
+        // Scan before handling notifications, since we sort by device number and udev doesn't.
+        // Notifications for devices found here are ignored.
+        if (enumeration_method == ENUMERATION_LIBUDEV || inotify_fd >= 0) {
+            // Look for Steam virtual gamepads first, and sort by Steam controller slot
+            LINUX_ScanSteamVirtualGamepads();
+
+            LINUX_ScanInputDevices();
+        }
     }
 
-    HandlePendingRemovals();
+#ifdef SDL_USE_LIBUDEV
+    if (enumeration_method == ENUMERATION_LIBUDEV) {
+        LINUX_UdevJoystickDetect();
+        return -1;
+    }
+#endif
+#ifdef HAVE_INOTIFY
+    if (inotify_fd >= 0) {
+        LINUX_InotifyJoystickDetect();
+        return -1;
+    }
+#endif
+    return LINUX_FallbackJoystickDetect();
 }
 
-static bool LINUX_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
+static int LINUX_JoystickGetDiscoveryFD(void)
 {
-    // We don't override any other drivers
-    return false;
+#ifdef SDL_USE_LIBUDEV
+    if (LINUX_udev_mon) {
+        return LINUX_udev_syms->udev_monitor_get_fd(LINUX_udev_mon);
+    }
+#endif
+    return inotify_fd;
 }
+
+#ifdef SDL_USE_LIBUDEV
+static void LINUX_QuitUdev(void)
+{
+    if (LINUX_udev_mon) {
+        LINUX_udev_syms->udev_monitor_unref(LINUX_udev_mon);
+        LINUX_udev_mon = NULL;
+    }
+    if (LINUX_udev) {
+        LINUX_udev_syms->udev_unref(LINUX_udev);
+        LINUX_udev = NULL;
+    }
+    if (LINUX_udev_syms) {
+        SDL_UDEV_ReleaseUdevSyms();
+        LINUX_udev_syms = NULL;
+    }
+}
+
+// Set up the udev context used to look up devices. This is used whenever udev is available, even when
+// devices aren't found with udev, because only udev's event notification is unreliable in containers.
+static bool LINUX_InitUdev(void)
+{
+    LINUX_udev_syms = SDL_UDEV_GetUdevSyms();
+    if (!LINUX_udev_syms) {
+        return false;
+    }
+
+    LINUX_udev = LINUX_udev_syms->udev_new();
+    if (!LINUX_udev) {
+        LINUX_QuitUdev();
+        return false;
+    }
+    return true;
+}
+
+// Set up udev event notification, for finding devices with udev
+static bool LINUX_InitUdevMonitor(void)
+{
+    if (!LINUX_udev) {
+        return false;
+    }
+
+    LINUX_udev_mon = LINUX_udev_syms->udev_monitor_new_from_netlink(LINUX_udev, "udev");
+    if (!LINUX_udev_mon) {
+        return false;
+    }
+    LINUX_udev_syms->udev_monitor_filter_add_match_subsystem_devtype(LINUX_udev_mon, "input", NULL);
+    LINUX_udev_syms->udev_monitor_enable_receiving(LINUX_udev_mon);
+    return true;
+}
+#endif // SDL_USE_LIBUDEV
 
 static bool LINUX_JoystickInit(void)
 {
     const char *devices = SDL_GetHint(SDL_HINT_JOYSTICK_DEVICE);
-#ifdef SDL_USE_LIBUDEV
-    bool udev_initialized = SDL_UDEV_Init();
-#endif
 
     SDL_classic_joysticks = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_LINUX_CLASSIC, false);
 
     enumeration_method = ENUMERATION_UNSET;
 
-    // First see if the user specified one or more joysticks to use
-    if (devices) {
-        char *envcopy, *envpath, *delim;
-        envcopy = SDL_strdup(devices);
-        envpath = envcopy;
-        while (envpath) {
-            delim = SDL_strchr(envpath, ':');
-            if (delim) {
-                *delim++ = '\0';
-            }
-            MaybeAddDevice(envpath);
-            envpath = delim;
-        }
-        SDL_free(envcopy);
+    LINUX_sensor_lock = SDL_CreateMutex();
+    if (!LINUX_sensor_lock) {
+        return false;
     }
+
+    // The device thread looks for these on its first pass
+    if (devices) {
+        LINUX_hint_devices = SDL_strdup(devices);
+    }
+    LINUX_first_pass = true;
 
     // Force immediate joystick detection if using fallback
     last_joy_detect_time = 0;
     last_input_dir_mtime = 0;
 
-    // Manually scan first, since we sort by device number and udev doesn't
-    LINUX_JoystickDetect();
-
 #ifdef SDL_USE_LIBUDEV
-    if (enumeration_method == ENUMERATION_UNSET) {
-        if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", false)) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
-            enumeration_method = ENUMERATION_FALLBACK;
-        } else if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Container detected, disabling udev integration");
-            enumeration_method = ENUMERATION_FALLBACK;
+    LINUX_InitUdev();
 
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "Using udev for joystick device discovery");
-            enumeration_method = ENUMERATION_LIBUDEV;
-        }
-    }
-
-    if (enumeration_method == ENUMERATION_LIBUDEV) {
-        if (udev_initialized) {
-            // Set up the udev callback
-            if (!SDL_UDEV_AddCallback(joystick_udev_callback)) {
-                SDL_UDEV_Quit();
-                return SDL_SetError("Could not set up joystick <-> udev callback");
-            }
-
-            // Force a scan to build the initial device list
-            SDL_UDEV_Scan();
-        } else {
-            SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
-                         "udev init failed, disabling udev integration");
-            enumeration_method = ENUMERATION_FALLBACK;
-        }
+    if (SDL_GetHintBoolean("SDL_JOYSTICK_DISABLE_UDEV", false)) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "udev disabled by SDL_JOYSTICK_DISABLE_UDEV");
+        enumeration_method = ENUMERATION_FALLBACK;
+    } else if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "Container detected, disabling udev integration");
+        enumeration_method = ENUMERATION_FALLBACK;
+    } else if (LINUX_InitUdevMonitor()) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "Using udev for joystick device discovery");
+        enumeration_method = ENUMERATION_LIBUDEV;
     } else {
-        if (udev_initialized) {
-            SDL_UDEV_Quit();
-        }
+        SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
+                     "udev init failed, disabling udev integration");
+        enumeration_method = ENUMERATION_FALLBACK;
     }
 #endif
 
@@ -1095,68 +1320,6 @@ static bool LINUX_JoystickInit(void)
     }
 
     return true;
-}
-
-static int LINUX_JoystickGetCount(void)
-{
-    SDL_AssertJoysticksLocked();
-
-    return numjoysticks;
-}
-
-static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
-{
-    SDL_joylist_item *item;
-
-    SDL_AssertJoysticksLocked();
-
-    if ((device_index < 0) || (device_index >= numjoysticks)) {
-        return NULL;
-    }
-
-    item = SDL_joylist;
-    while (device_index > 0) {
-        SDL_assert(item != NULL);
-        device_index--;
-        item = item->next;
-    }
-
-    return item;
-}
-
-static const char *LINUX_JoystickGetDeviceName(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->name;
-}
-
-static const char *LINUX_JoystickGetDevicePath(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->path;
-}
-
-static int LINUX_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->steam_virtual_gamepad_slot;
-}
-
-static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID LINUX_JoystickGetDeviceGUID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->guid;
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID LINUX_JoystickGetDeviceInstanceID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->device_instance;
 }
 
 static bool allocate_balldata(SDL_Joystick *joystick)
@@ -1479,35 +1642,34 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
    without adding an opened SDL_Joystick object to the system.
    This expects `joystick->hwdata` to be allocated and will not free it
    on error. Returns -1 on error, 0 on success. */
-static bool PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item, SDL_sensorlist_item *item_sensor)
+static bool PrepareJoystickHwdata(SDL_Joystick *joystick, const char *path, SDL_GUID guid, Uint16 vendor, const char *sensor_path)
 {
     SDL_AssertJoysticksLocked();
 
-    joystick->hwdata->item = item;
-    joystick->hwdata->item_sensor = item_sensor;
-    joystick->hwdata->guid = item->guid;
+    joystick->hwdata->guid = guid;
+    joystick->hwdata->vendor = vendor;
     joystick->hwdata->effect.id = -1;
     SDL_memset(joystick->hwdata->key_map, 0xFF, sizeof(joystick->hwdata->key_map));
     SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof(joystick->hwdata->abs_map));
 
     int fd = -1, fd_sensor = -1;
     // Try read-write first, so we can do rumble
-    fd = open(item->path, O_RDWR | O_CLOEXEC, 0);
+    fd = open(path, O_RDWR | O_CLOEXEC, 0);
     if (fd < 0) {
         // Try read-only again, at least we'll get events in this case
-        fd = open(item->path, O_RDONLY | O_CLOEXEC, 0);
+        fd = open(path, O_RDONLY | O_CLOEXEC, 0);
     }
     if (fd < 0) {
-        return SDL_SetError("Unable to open %s", item->path);
+        return SDL_SetError("Unable to open %s", path);
     }
     // If opening sensor fail, continue with buttons and axes only
-    if (item_sensor) {
-        fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
+    if (sensor_path) {
+        fd_sensor = open(sensor_path, O_RDONLY | O_CLOEXEC, 0);
     }
 
     joystick->hwdata->fd = fd;
     joystick->hwdata->fd_sensor = fd_sensor;
-    joystick->hwdata->fname = SDL_strdup(item->path);
+    joystick->hwdata->fname = SDL_strdup(path);
     if (!joystick->hwdata->fname) {
         close(fd);
         if (fd_sensor >= 0) {
@@ -1527,72 +1689,12 @@ static bool PrepareJoystickHwdata(SDL_Joystick *joystick, SDL_joylist_item *item
     return true;
 }
 
-static SDL_sensorlist_item *GetSensor(SDL_joylist_item *item)
+static bool LINUX_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    SDL_sensorlist_item *item_sensor;
-    char uniq_item[128];
-    int fd_item = -1;
+    const LINUX_DeviceData *data = (const LINUX_DeviceData *)device->driver_data;
+    char *sensor_path;
 
     SDL_AssertJoysticksLocked();
-
-    if (!item || !SDL_sensorlist) {
-        return NULL;
-    }
-
-    SDL_zeroa(uniq_item);
-    fd_item = open(item->path, O_RDONLY | O_CLOEXEC, 0);
-    if (fd_item < 0) {
-        return NULL;
-    }
-    if (ioctl(fd_item, EVIOCGUNIQ(sizeof(uniq_item) - 1), &uniq_item) < 0) {
-        close(fd_item);
-        return NULL;
-    }
-    close(fd_item);
-#ifdef DEBUG_INPUT_EVENTS
-    SDL_Log("Joystick UNIQ: %s", uniq_item);
-#endif // DEBUG_INPUT_EVENTS
-
-    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = item_sensor->next) {
-        char uniq_sensor[128];
-        int fd_sensor = -1;
-        if (item_sensor->hwdata) {
-            // already associated with another joystick
-            continue;
-        }
-
-        SDL_zeroa(uniq_sensor);
-        fd_sensor = open(item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
-        if (fd_sensor < 0) {
-            continue;
-        }
-        if (ioctl(fd_sensor, EVIOCGUNIQ(sizeof(uniq_sensor) - 1), &uniq_sensor) < 0) {
-            close(fd_sensor);
-            continue;
-        }
-        close(fd_sensor);
-#ifdef DEBUG_INPUT_EVENTS
-        SDL_Log("Sensor UNIQ: %s", uniq_sensor);
-#endif // DEBUG_INPUT_EVENTS
-
-        if (SDL_strcmp(uniq_item, uniq_sensor) == 0) {
-            return item_sensor;
-        }
-    }
-    return NULL;
-}
-
-static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
-    SDL_joylist_item *item;
-    SDL_sensorlist_item *item_sensor;
-
-    SDL_AssertJoysticksLocked();
-
-    item = GetJoystickByDevIndex(device_index);
-    if (!item) {
-        return SDL_SetError("No such device");
-    }
 
     joystick->hwdata = (struct joystick_hwdata *)
         SDL_calloc(1, sizeof(*joystick->hwdata));
@@ -1600,23 +1702,19 @@ static bool LINUX_JoystickOpen(SDL_Joystick *joystick, int device_index)
         return false;
     }
 
-    item_sensor = GetSensor(item);
-    if (!PrepareJoystickHwdata(joystick, item, item_sensor)) {
+    sensor_path = ClaimSensor(data->uniq);
+    if (!PrepareJoystickHwdata(joystick, device->path, device->guid, data->vendor, sensor_path)) {
+        ReleaseSensor(sensor_path);
+        SDL_free(sensor_path);
         SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
         return false; // SDL_SetError will already have been called
     }
+    joystick->hwdata->sensor_path = sensor_path;
 
-    SDL_assert(item->hwdata == NULL);
-    SDL_assert(!item_sensor || item_sensor->hwdata == NULL);
-    item->hwdata = joystick->hwdata;
-    if (item_sensor) {
-        item_sensor->hwdata = joystick->hwdata;
+    if (data->serial[0]) {
+        joystick->serial = SDL_strdup(data->serial);
     }
-
-#ifdef SDL_USE_LIBUDEV
-    joystick->serial = SDL_UDEV_GetProductSerial(item->path);
-#endif
 
     // mark joystick as fresh and ready
     joystick->hwdata->fresh = true;
@@ -1682,21 +1780,6 @@ static bool LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
     return true;
 }
 
-static bool LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 static bool LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     SDL_AssertJoysticksLocked();
@@ -1709,12 +1792,12 @@ static bool LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled
     }
 
     if (enabled) {
-        if (!joystick->hwdata->item_sensor) {
+        if (!joystick->hwdata->sensor_path) {
             return SDL_SetError("Sensors unplugged.");
         }
-        joystick->hwdata->fd_sensor = open(joystick->hwdata->item_sensor->path, O_RDONLY | O_CLOEXEC, 0);
+        joystick->hwdata->fd_sensor = open(joystick->hwdata->sensor_path, O_RDONLY | O_CLOEXEC, 0);
         if (joystick->hwdata->fd_sensor < 0) {
-            return SDL_SetError("Couldn't open sensor file %s.", joystick->hwdata->item_sensor->path);
+            return SDL_SetError("Couldn't open sensor file %s.", joystick->hwdata->sensor_path);
         }
         fcntl(joystick->hwdata->fd_sensor, F_SETFL, O_NONBLOCK);
     } else {
@@ -1879,7 +1962,7 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
 
 static void CorrectSensorData(struct joystick_hwdata *hwdata, float *values, float *data)
 {
-    if (hwdata->item->vendor == USB_VENDOR_NINTENDO) {
+    if (hwdata->vendor == USB_VENDOR_NINTENDO) {
         // The Nintendo driver uses a different axis order than SDL
         data[0] = -values[1];
         data[1] = values[2];
@@ -2037,8 +2120,12 @@ static void HandleInputEvents(SDL_Joystick *joystick)
     }
 
     if (errno == ENODEV) {
-        // We have to wait until the JoystickDetect callback to remove this
-        joystick->hwdata->gone = true;
+        // The device is gone, remove it now instead of waiting for the device thread to notice
+        if (!joystick->hwdata->gone) {
+            joystick->hwdata->gone = true;
+            SDL_ReportJoystickRemoved(joystick->driver_instance_id);
+            LINUX_ForgetJoystick(joystick->driver_instance_id);
+        }
         errno = 0;
     }
 
@@ -2131,9 +2218,11 @@ static void HandleInputEvents(SDL_Joystick *joystick)
         }
     }
 
-    if (errno == ENODEV) {
-        // We have to wait until the JoystickDetect callback to remove this
-        joystick->hwdata->sensor_gone = true;
+    if (errno == ENODEV && joystick->hwdata->fd_sensor >= 0) {
+        // The sensor device is gone, stop reading it
+        close(joystick->hwdata->fd_sensor);
+        joystick->hwdata->fd_sensor = -1;
+        joystick->hwdata->report_sensor = false;
     }
 }
 
@@ -2226,12 +2315,8 @@ static void LINUX_JoystickClose(SDL_Joystick *joystick)
         if (joystick->hwdata->fd_sensor >= 0) {
             close(joystick->hwdata->fd_sensor);
         }
-        if (joystick->hwdata->item) {
-            joystick->hwdata->item->hwdata = NULL;
-        }
-        if (joystick->hwdata->item_sensor) {
-            joystick->hwdata->item_sensor->hwdata = NULL;
-        }
+        ReleaseSensor(joystick->hwdata->sensor_path);
+        SDL_free(joystick->hwdata->sensor_path);
         SDL_free(joystick->hwdata->key_pam);
         SDL_free(joystick->hwdata->abs_pam);
         SDL_free(joystick->hwdata->hats);
@@ -2244,10 +2329,9 @@ static void LINUX_JoystickClose(SDL_Joystick *joystick)
 // Function to perform any system-specific joystick related cleanup
 static void LINUX_JoystickQuit(void)
 {
-    SDL_joylist_item *item = NULL;
-    SDL_joylist_item *next = NULL;
-    SDL_sensorlist_item *item_sensor = NULL;
-    SDL_sensorlist_item *next_sensor = NULL;
+    LINUX_KnownNode *node, *next;
+    LINUX_SensorNode *sensor, *next_sensor;
+    LINUX_GoneJoystick *gone, *next_gone;
 
     SDL_AssertJoysticksLocked();
 
@@ -2256,26 +2340,38 @@ static void LINUX_JoystickQuit(void)
         inotify_fd = -1;
     }
 
-    for (item = SDL_joylist; item; item = next) {
-        next = item->next;
-        FreeJoylistItem(item);
+    for (node = LINUX_known_nodes; node; node = next) {
+        next = node->next;
+        FreeKnownNode(node);
     }
-    for (item_sensor = SDL_sensorlist; item_sensor; item_sensor = next_sensor) {
-        next_sensor = item_sensor->next;
-        FreeSensorlistItem(item_sensor);
+    LINUX_known_nodes = NULL;
+
+    if (LINUX_sensor_lock) {
+        SDL_LockMutex(LINUX_sensor_lock);
+        for (sensor = LINUX_sensors; sensor; sensor = next_sensor) {
+            next_sensor = sensor->next;
+            FreeSensorNode(sensor);
+        }
+        LINUX_sensors = NULL;
+        SDL_UnlockMutex(LINUX_sensor_lock);
+
+        SDL_DestroyMutex(LINUX_sensor_lock);
+        LINUX_sensor_lock = NULL;
     }
 
-    SDL_joylist = SDL_joylist_tail = NULL;
-    SDL_sensorlist = NULL;
+    for (gone = LINUX_TakeGoneJoysticks(); gone; gone = next_gone) {
+        next_gone = gone->next;
+        SDL_free(gone);
+    }
 
-    numjoysticks = 0;
+    SDL_free(LINUX_hint_devices);
+    LINUX_hint_devices = NULL;
+    LINUX_first_pass = false;
 
 #ifdef SDL_USE_LIBUDEV
-    if (enumeration_method == ENUMERATION_LIBUDEV) {
-        SDL_UDEV_DelCallback(joystick_udev_callback);
-        SDL_UDEV_Quit();
-    }
+    LINUX_QuitUdev();
 #endif
+    enumeration_method = ENUMERATION_UNSET;
 }
 
 /*
@@ -2284,10 +2380,10 @@ static void LINUX_JoystickQuit(void)
    and the Android gamepad documentation,
    https://developer.android.com/develop/ui/views/touch-and-input/game-controllers/controller-input
  */
-static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool LINUX_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
 {
     SDL_Joystick *joystick;
-    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
+    LINUX_DeviceData *data = (LINUX_DeviceData *)device->driver_data;
     enum {
         MAPPED_TRIGGER_LEFT = 0x1,
         MAPPED_TRIGGER_RIGHT = 0x2,
@@ -2310,11 +2406,11 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
 
     SDL_AssertJoysticksLocked();
 
-    if (item->checked_mapping) {
-        if (item->mapping) {
-            SDL_memcpy(out, item->mapping, sizeof(*out));
+    if (data->checked_mapping) {
+        if (data->has_mapping) {
+            SDL_memcpy(out, &data->mapping, sizeof(*out));
 #ifdef DEBUG_GAMEPAD_MAPPING
-            SDL_Log("Prior mapping for device %d", device_index);
+            SDL_Log("Prior mapping for %s", device->path);
 #endif
             return true;
         } else {
@@ -2328,7 +2424,7 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
     if (!joystick) {
         return false;
     }
-    SDL_memcpy(&joystick->guid, &item->guid, sizeof(item->guid));
+    SDL_memcpy(&joystick->guid, &device->guid, sizeof(device->guid));
 
     joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*joystick->hwdata));
     if (!joystick->hwdata) {
@@ -2337,13 +2433,11 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
     }
     SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, true);
 
-    item->checked_mapping = true;
+    data->checked_mapping = true;
 
-    if (!PrepareJoystickHwdata(joystick, item, NULL)) {
+    if (!PrepareJoystickHwdata(joystick, device->path, device->guid, data->vendor, NULL)) {
         goto done; // SDL_SetError will already have been called
     }
-
-    // don't assign `item->hwdata` so it's not in any global state.
 
     // it is now safe to call LINUX_JoystickClose on this fake joystick.
 
@@ -2355,7 +2449,7 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
     // We have a gamepad, start filling out the mappings
 
 #ifdef DEBUG_GAMEPAD_MAPPING
-    SDL_Log("Mapping %s (VID/PID 0x%.4x/0x%.4x)", item->name, SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
+    SDL_Log("Mapping %s (VID/PID 0x%.4x/0x%.4x)", device->name, SDL_GetJoystickVendor(joystick), SDL_GetJoystickProduct(joystick));
 #endif
 
     if (joystick->hwdata->has_key[BTN_A]) {
@@ -2669,7 +2763,7 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
             SDL_Log("Mapped DPUP+DOWN to axis %d (ABS_HAT0Y)", out->dpup.target);
             SDL_Log("Mapped DPLEFT+RIGHT to axis %d (ABS_HAT0X)", out->dpleft.target);
 #endif
-        } else if (item->driver && SDL_strcmp(item->driver, "xpad") == 0) {
+        } else if (SDL_strcmp(data->driver, "xpad") == 0) {
             // xpad will sometimes map the D-Pad as BTN_TRIGGER_HAPPY1 - BTN_TRIGGER_HAPPY4
             if (joystick->hwdata->has_key[BTN_TRIGGER_HAPPY1] &&
                 joystick->hwdata->has_key[BTN_TRIGGER_HAPPY2] &&
@@ -2804,12 +2898,10 @@ static bool LINUX_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping
     }
 
     // Cache the mapping for later
-    item->mapping = (SDL_GamepadMapping *)SDL_malloc(sizeof(*item->mapping));
-    if (item->mapping) {
-        SDL_memcpy(item->mapping, out, sizeof(*out));
-    }
+    SDL_memcpy(&data->mapping, out, sizeof(*out));
+    data->has_mapping = true;
 #ifdef DEBUG_GAMEPAD_MAPPING
-    SDL_Log("Generated mapping for device %d", device_index);
+    SDL_Log("Generated mapping for %s", device->path);
 #endif
     result = true;
 
@@ -2822,27 +2914,16 @@ done:
 }
 
 SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
-    LINUX_JoystickInit,
-    LINUX_JoystickGetCount,
-    LINUX_JoystickDetect,
-    LINUX_JoystickIsDevicePresent,
-    LINUX_JoystickGetDeviceName,
-    LINUX_JoystickGetDevicePath,
-    LINUX_JoystickGetDeviceSteamVirtualGamepadSlot,
-    LINUX_JoystickGetDevicePlayerIndex,
-    LINUX_JoystickSetDevicePlayerIndex,
-    LINUX_JoystickGetDeviceGUID,
-    LINUX_JoystickGetDeviceInstanceID,
-    LINUX_JoystickOpen,
-    LINUX_JoystickRumble,
-    LINUX_JoystickRumbleTriggers,
-    LINUX_JoystickSetLED,
-    LINUX_JoystickSendEffect,
-    LINUX_JoystickSetSensorsEnabled,
-    LINUX_JoystickUpdate,
-    LINUX_JoystickClose,
-    LINUX_JoystickQuit,
-    LINUX_JoystickGetGamepadMapping
+    .Init = LINUX_JoystickInit,
+    .Discover = LINUX_JoystickDiscover,
+    .GetDiscoveryFD = LINUX_JoystickGetDiscoveryFD,
+    .GetGamepadMapping = LINUX_JoystickGetGamepadMapping,
+    .Open = LINUX_JoystickOpen,
+    .Rumble = LINUX_JoystickRumble,
+    .SetSensorsEnabled = LINUX_JoystickSetSensorsEnabled,
+    .Update = LINUX_JoystickUpdate,
+    .Close = LINUX_JoystickClose,
+    .Quit = LINUX_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_LINUX

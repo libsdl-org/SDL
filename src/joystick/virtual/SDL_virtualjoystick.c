@@ -44,19 +44,18 @@ static joystick_hwdata *VIRTUAL_HWDataForInstance(SDL_JoystickID instance_id)
     return NULL;
 }
 
-static joystick_hwdata *VIRTUAL_HWDataForIndex(int device_index)
+static joystick_hwdata *VIRTUAL_HWDataForDriverInstance(SDL_JoystickID driver_instance_id)
 {
     joystick_hwdata *vjoy;
 
     SDL_AssertJoysticksLocked();
 
     for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
-        if (device_index == 0) {
-            break;
+        if (driver_instance_id == vjoy->driver_instance_id) {
+            return vjoy;
         }
-        --device_index;
     }
-    return vjoy;
+    return NULL;
 }
 
 static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
@@ -132,6 +131,7 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
 SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 {
     joystick_hwdata *hwdata = NULL;
+    SDL_JoystickDevice *device;
     const char *name = NULL;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
@@ -309,8 +309,16 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
 
-    // Allocate an instance ID for this device
-    hwdata->instance_id = SDL_GetNextObjectID();
+    device = SDL_CreateJoystickDevice(&SDL_VIRTUAL_JoystickDriver);
+    if (!device) {
+        VIRTUAL_FreeHWData(hwdata);
+        return 0;
+    }
+    // Reserve the public instance ID, so it can be returned before the device is published. Virtual
+    // joysticks are never hidden by other drivers, so it's the ID they're published with.
+    device->instance_id = SDL_GetNextObjectID();
+    hwdata->instance_id = device->instance_id;
+    hwdata->driver_instance_id = device->driver_instance_id;
 
     // Add virtual joystick to SDL-global lists
     if (g_VJoys) {
@@ -322,7 +330,11 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
     } else {
         g_VJoys = hwdata;
     }
-    SDL_PrivateJoystickAdded(hwdata->instance_id);
+
+    // Virtual joysticks are never the same controller as another driver's device
+    SDL_SetJoystickDeviceDescription(device, hwdata->name, NULL, hwdata->guid, -1);
+    device->match.never_group = true;
+    SDL_ReportJoystickDevice(device);
 
     return hwdata->instance_id;
 }
@@ -330,11 +342,14 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
 bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForInstance(instance_id);
+    SDL_JoystickID driver_instance_id;
+
     if (!hwdata) {
         return SDL_SetError("Virtual joystick data not found");
     }
+    driver_instance_id = hwdata->driver_instance_id;
     VIRTUAL_FreeHWData(hwdata);
-    SDL_PrivateJoystickRemoved(instance_id);
+    SDL_ReportJoystickRemoved(driver_instance_id);
     return true;
 }
 
@@ -488,89 +503,22 @@ static bool VIRTUAL_JoystickInit(void)
     return true;
 }
 
-static int VIRTUAL_JoystickGetCount(void)
+static void VIRTUAL_JoystickSetPlayerIndex(SDL_JoystickDevice *device, int player_index)
 {
-    joystick_hwdata *cur;
-    int count = 0;
-
-    SDL_AssertJoysticksLocked();
-
-    for (cur = g_VJoys; cur; cur = cur->next) {
-        ++count;
-    }
-    return count;
-}
-
-static void VIRTUAL_JoystickDetect(void)
-{
-}
-
-static bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers... or do we?
-    return false;
-}
-
-static const char *VIRTUAL_JoystickGetDeviceName(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        return NULL;
-    }
-    return hwdata->name;
-}
-
-static const char *VIRTUAL_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int VIRTUAL_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void VIRTUAL_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForDriverInstance(device->driver_instance_id);
 
     if (hwdata && hwdata->desc.SetPlayerIndex) {
         hwdata->desc.SetPlayerIndex(hwdata->desc.userdata, player_index);
     }
 }
 
-static SDL_GUID VIRTUAL_JoystickGetDeviceGUID(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        SDL_GUID guid;
-        SDL_zero(guid);
-        return guid;
-    }
-    return hwdata->guid;
-}
-
-static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        return true;
-    }
-    return hwdata->instance_id;
-}
-
-static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
     joystick_hwdata *hwdata;
 
     SDL_AssertJoysticksLocked();
 
-    hwdata = VIRTUAL_HWDataForIndex(device_index);
+    hwdata = VIRTUAL_HWDataForDriverInstance(device->driver_instance_id);
     if (!hwdata) {
         return SDL_SetError("No such device");
     }
@@ -790,9 +738,9 @@ static void VIRTUAL_JoystickQuit(void)
     }
 }
 
-static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool VIRTUAL_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
 {
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata = VIRTUAL_HWDataForDriverInstance(device->driver_instance_id);
     Uint8 current_button = 0;
     Uint8 current_axis = 0;
 
@@ -964,27 +912,18 @@ static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 }
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
-    VIRTUAL_JoystickInit,
-    VIRTUAL_JoystickGetCount,
-    VIRTUAL_JoystickDetect,
-    VIRTUAL_JoystickIsDevicePresent,
-    VIRTUAL_JoystickGetDeviceName,
-    VIRTUAL_JoystickGetDevicePath,
-    VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,
-    VIRTUAL_JoystickGetDevicePlayerIndex,
-    VIRTUAL_JoystickSetDevicePlayerIndex,
-    VIRTUAL_JoystickGetDeviceGUID,
-    VIRTUAL_JoystickGetDeviceInstanceID,
-    VIRTUAL_JoystickOpen,
-    VIRTUAL_JoystickRumble,
-    VIRTUAL_JoystickRumbleTriggers,
-    VIRTUAL_JoystickSetLED,
-    VIRTUAL_JoystickSendEffect,
-    VIRTUAL_JoystickSetSensorsEnabled,
-    VIRTUAL_JoystickUpdate,
-    VIRTUAL_JoystickClose,
-    VIRTUAL_JoystickQuit,
-    VIRTUAL_JoystickGetGamepadMapping
+    .Init = VIRTUAL_JoystickInit,
+    .SetPlayerIndex = VIRTUAL_JoystickSetPlayerIndex,
+    .GetGamepadMapping = VIRTUAL_JoystickGetGamepadMapping,
+    .Open = VIRTUAL_JoystickOpen,
+    .Rumble = VIRTUAL_JoystickRumble,
+    .RumbleTriggers = VIRTUAL_JoystickRumbleTriggers,
+    .SetLED = VIRTUAL_JoystickSetLED,
+    .SendEffect = VIRTUAL_JoystickSendEffect,
+    .SetSensorsEnabled = VIRTUAL_JoystickSetSensorsEnabled,
+    .Update = VIRTUAL_JoystickUpdate,
+    .Close = VIRTUAL_JoystickClose,
+    .Quit = VIRTUAL_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_VIRTUAL

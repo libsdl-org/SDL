@@ -167,6 +167,24 @@ typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Con
 typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
 typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
 
+// Device property definitions, for looking up container IDs
+
+typedef struct
+{
+    GUID fmtid;
+    ULONG pid;
+} SDL_DEVPROPKEY;
+
+#define SDL_DEVPROP_TYPE_GUID   0x0000000D
+#define SDL_DEVPROP_TYPE_STRING 0x00000012
+
+static const SDL_DEVPROPKEY SDL_DEVPKEY_Device_InstanceId = { { 0x78c34fc8, 0x104a, 0x4aca, { 0x9e, 0xa4, 0x52, 0x4d, 0x52, 0x99, 0x6e, 0x57 } }, 256 };
+static const SDL_DEVPROPKEY SDL_DEVPKEY_Device_ContainerId = { { 0x8c7ed206, 0x3f8a, 0x4827, { 0xb3, 0xab, 0xae, 0x9e, 0x1f, 0xae, 0xfc, 0x6c } }, 2 };
+
+typedef DWORD (WINAPI *CM_Get_Device_Interface_PropertyWFunc)(LPCWSTR pszDeviceInterface, const SDL_DEVPROPKEY *PropertyKey, ULONG *PropertyType, PBYTE PropertyBuffer, PULONG PropertyBufferSize, ULONG ulFlags);
+typedef DWORD (WINAPI *CM_Locate_DevNodeWFunc)(DWORD *pdnDevInst, WCHAR *pDeviceID, ULONG ulFlags);
+typedef DWORD (WINAPI *CM_Get_DevNode_PropertyWFunc)(DWORD dnDevInst, const SDL_DEVPROPKEY *PropertyKey, ULONG *PropertyType, PBYTE PropertyBuffer, PULONG PropertyBufferSize, ULONG ulFlags);
+
 #define CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES 0x00000001
 
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
@@ -174,6 +192,9 @@ static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB,
 static SDL_InitState SDL_cfgmgr32_init;
 static CM_Register_NotificationFunc SDL_CM_Register_Notification;
 static CM_Unregister_NotificationFunc SDL_CM_Unregister_Notification;
+static CM_Get_Device_Interface_PropertyWFunc SDL_CM_Get_Device_Interface_PropertyW;
+static CM_Locate_DevNodeWFunc SDL_CM_Locate_DevNodeW;
+static CM_Get_DevNode_PropertyWFunc SDL_CM_Get_DevNode_PropertyW;
 
 static int s_DeviceNotificationsRequested;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
@@ -182,7 +203,7 @@ static HANDLE s_HotplugEvent = INVALID_HANDLE_VALUE;
 static SDL_AtomicInt s_HotplugRunning;
 static SDL_Thread *s_HotplugThread;
 
-static bool WIN_LoadCfgMgr32(void)
+static void WIN_LoadCfgMgr32(void)
 {
     if (SDL_ShouldInit(&SDL_cfgmgr32_init)) {
         // We'll keep this loaded for future use
@@ -190,14 +211,66 @@ static bool WIN_LoadCfgMgr32(void)
         if (cfgmgr32) {
             SDL_CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Register_Notification");
             SDL_CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Unregister_Notification");
+            SDL_CM_Get_Device_Interface_PropertyW = (CM_Get_Device_Interface_PropertyWFunc)GetProcAddress(cfgmgr32, "CM_Get_Device_Interface_PropertyW");
+            SDL_CM_Locate_DevNodeW = (CM_Locate_DevNodeWFunc)GetProcAddress(cfgmgr32, "CM_Locate_DevNodeW");
+            SDL_CM_Get_DevNode_PropertyW = (CM_Get_DevNode_PropertyWFunc)GetProcAddress(cfgmgr32, "CM_Get_DevNode_PropertyW");
         }
         SDL_SetInitialized(&SDL_cfgmgr32_init, true);
     }
+}
 
-    if (!SDL_CM_Register_Notification || !SDL_CM_Unregister_Notification) {
+bool WIN_GetDeviceInterfaceContainerID(const char *path, SDL_GUID *container_id)
+{
+    WCHAR *interface_path = NULL;
+    WCHAR *instance_id = NULL;
+    ULONG property_type;
+    ULONG size = 0;
+    DWORD devnode;
+    GUID guid;
+    bool result = false;
+
+    SDL_zerop(container_id);
+
+    WIN_LoadCfgMgr32();
+    if (!SDL_CM_Get_Device_Interface_PropertyW || !SDL_CM_Locate_DevNodeW || !SDL_CM_Get_DevNode_PropertyW || !path) {
         return false;
     }
-    return true;
+
+    interface_path = WIN_UTF8ToStringW(path);
+    if (!interface_path) {
+        goto done;
+    }
+
+    // Find the device instance from the interface path
+    SDL_CM_Get_Device_Interface_PropertyW(interface_path, &SDL_DEVPKEY_Device_InstanceId, &property_type, NULL, &size, 0);
+    if (size == 0) {
+        goto done;
+    }
+    instance_id = (WCHAR *)SDL_malloc(size);
+    if (!instance_id) {
+        goto done;
+    }
+    if (SDL_CM_Get_Device_Interface_PropertyW(interface_path, &SDL_DEVPKEY_Device_InstanceId, &property_type, (PBYTE)instance_id, &size, 0) != CR_SUCCESS ||
+        property_type != SDL_DEVPROP_TYPE_STRING) {
+        goto done;
+    }
+    if (SDL_CM_Locate_DevNodeW(&devnode, instance_id, 0) != CR_SUCCESS) {
+        goto done;
+    }
+
+    // Get the container ID from the device instance
+    size = sizeof(guid);
+    if (SDL_CM_Get_DevNode_PropertyW(devnode, &SDL_DEVPKEY_Device_ContainerId, &property_type, (PBYTE)&guid, &size, 0) != CR_SUCCESS ||
+        property_type != SDL_DEVPROP_TYPE_GUID) {
+        goto done;
+    }
+    SDL_memcpy(container_id->data, &guid, sizeof(container_id->data));
+    result = true;
+
+done:
+    SDL_free(interface_path);
+    SDL_free(instance_id);
+    return result;
 }
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
@@ -245,7 +318,8 @@ void WIN_InitDeviceNotification(void)
     s_HotplugEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     s_HotplugThread = SDL_CreateThread(DeviceHotplugThread, "DeviceHotplugThread", NULL);
 
-    if (WIN_LoadCfgMgr32()) {
+    WIN_LoadCfgMgr32();
+    if (SDL_CM_Register_Notification && SDL_CM_Unregister_Notification) {
         CM_NOTIFY_FILTER notify_filter;
 
         SDL_zero(notify_filter);
@@ -288,7 +362,8 @@ WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_Dev
     WIN_DeviceInterfaceNotification *notification;
     CM_NOTIFY_FILTER notify_filter;
 
-    if (!WIN_LoadCfgMgr32()) {
+    WIN_LoadCfgMgr32();
+    if (!SDL_CM_Register_Notification || !SDL_CM_Unregister_Notification) {
         return NULL;
     }
 
@@ -360,6 +435,12 @@ WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_Dev
 
 void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification)
 {
+}
+
+bool WIN_GetDeviceInterfaceContainerID(const char *path, SDL_GUID *container_id)
+{
+    SDL_zerop(container_id);
+    return false;
 }
 
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

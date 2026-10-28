@@ -260,19 +260,9 @@ static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 }
 
-static bool HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverShield_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -288,11 +278,6 @@ static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
     } else {
         return SDL_SetError("Effect data must at least contain a command byte");
     }
-}
-
-static bool HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
@@ -496,7 +481,7 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     ShieldCommandReport_t *cmd_resp_report;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -584,11 +569,11 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield = {
     HIDAPI_DriverShield_UpdateDevice,
     HIDAPI_DriverShield_OpenJoystick,
     HIDAPI_DriverShield_RumbleJoystick,
-    HIDAPI_DriverShield_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverShield_GetJoystickCapabilities,
-    HIDAPI_DriverShield_SetJoystickLED,
+    NULL, // SetJoystickLED
     HIDAPI_DriverShield_SendJoystickEffect,
-    HIDAPI_DriverShield_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverShield_CloseJoystick,
     HIDAPI_DriverShield_FreeDevice,
 };

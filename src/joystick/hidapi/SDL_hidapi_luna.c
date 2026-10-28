@@ -130,11 +130,6 @@ static bool HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     Uint32 result = 0;
@@ -146,21 +141,6 @@ static Uint32 HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *devic
 #endif
 
     return result;
-}
-
-static bool HIDAPI_DriverLuna_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLuna_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Context *ctx, Uint8 *data, int size)
@@ -356,7 +336,7 @@ static bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -407,11 +387,11 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna = {
     HIDAPI_DriverLuna_UpdateDevice,
     HIDAPI_DriverLuna_OpenJoystick,
     HIDAPI_DriverLuna_RumbleJoystick,
-    HIDAPI_DriverLuna_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverLuna_GetJoystickCapabilities,
-    HIDAPI_DriverLuna_SetJoystickLED,
-    HIDAPI_DriverLuna_SendJoystickEffect,
-    HIDAPI_DriverLuna_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverLuna_CloseJoystick,
     HIDAPI_DriverLuna_FreeDevice,
 };

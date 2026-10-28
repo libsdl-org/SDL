@@ -46,7 +46,8 @@ typedef struct VirtualSensorEvent
 
 typedef struct joystick_hwdata
 {
-    SDL_JoystickID instance_id;
+    SDL_JoystickID instance_id;        // The public instance ID, reserved before the device is reported
+    SDL_JoystickID driver_instance_id; // Driver instance ID, which is never the same as the public one
     bool attached;
     char *name;
     SDL_JoystickType type;

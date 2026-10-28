@@ -116,7 +116,7 @@ static struct hid_api_version api_version = {
 };
 
 /* - Run context - */
-static	IOHIDManagerRef hid_mgr = 0x0;
+static	int hid_initialized = 0;
 static	int is_macos_10_10_or_greater = 0;
 static	IOOptionBits device_open_options = 0;
 static	wchar_t *last_global_error_str = NULL;
@@ -443,20 +443,6 @@ static wchar_t *dup_wcs(const wchar_t *s)
 	return ret;
 }
 
-/* Initialize the IOHIDManager. Return 0 for success and -1 for failure. */
-static int init_hid_manager(void)
-{
-	/* Initialize all the HID Manager Objects */
-	hid_mgr = IOHIDManagerCreate(kCFAllocatorDefault, kIOHIDOptionsTypeNone);
-	if (hid_mgr) {
-		IOHIDManagerSetDeviceMatching(hid_mgr, NULL);
-		IOHIDManagerScheduleWithRunLoop(hid_mgr, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-		return 0;
-	}
-
-	register_global_error("Failed to create IOHIDManager");
-	return -1;
-}
 
 HID_API_EXPORT const struct hid_api_version* HID_API_CALL hid_version(void)
 {
@@ -468,17 +454,17 @@ HID_API_EXPORT const char* HID_API_CALL hid_version_str(void)
 	return HID_API_VERSION_STR;
 }
 
-/* Initialize the IOHIDManager if necessary. This is the public function, and
+/* Initialize hidapi if necessary. This is the public function, and
    it is safe to call this function repeatedly. Return 0 for success and -1
    for failure. */
 int HID_API_EXPORT hid_init(void)
 {
 	register_global_error(NULL);
 
-	if (!hid_mgr) {
+	if (!hid_initialized) {
 		is_macos_10_10_or_greater = (kCFCoreFoundationVersionNumber >= 1151.16); /* kCFCoreFoundationVersionNumber10_10 */
 		hid_darwin_set_open_exclusive(1); /* Backward compatibility */
-		return init_hid_manager();
+		hid_initialized = 1;
 	}
 
 	/* Already initialized. */
@@ -487,12 +473,7 @@ int HID_API_EXPORT hid_init(void)
 
 int HID_API_EXPORT hid_exit(void)
 {
-	if (hid_mgr) {
-		/* Close the HID manager. */
-		IOHIDManagerClose(hid_mgr, kIOHIDOptionsTypeNone);
-		CFRelease(hid_mgr);
-		hid_mgr = NULL;
-	}
+	hid_initialized = 0;
 
 	/* Free global error message */
 	register_global_error(NULL);
@@ -500,11 +481,51 @@ int HID_API_EXPORT hid_exit(void)
 	return 0;
 }
 
-static void process_pending_events(void) {
-	SInt32 res;
-	do {
-		res = CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.001, FALSE);
-	} while(res != kCFRunLoopRunFinished && res != kCFRunLoopRunTimedOut);
+/* Get the HID devices directly from IOKit, rather than from an IOHIDManager. The manager is tied to a
+   run loop, so enumerating through it depends on the thread, and pumps that thread's run loop. */
+static CFSetRef copy_hid_devices(unsigned short vendor_id, unsigned short product_id)
+{
+	CFMutableDictionaryRef matching;
+	CFMutableSetRef device_set;
+	io_iterator_t iterator = IO_OBJECT_NULL;
+	io_service_t service;
+
+	matching = IOServiceMatching(kIOHIDDeviceKey);
+	if (matching == NULL) {
+		return NULL;
+	}
+
+	if (vendor_id != 0) {
+		CFNumberRef v = CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &vendor_id);
+		CFDictionarySetValue(matching, CFSTR(kIOHIDVendorIDKey), v);
+		CFRelease(v);
+	}
+
+	if (product_id != 0) {
+		CFNumberRef p = CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &product_id);
+		CFDictionarySetValue(matching, CFSTR(kIOHIDProductIDKey), p);
+		CFRelease(p);
+	}
+
+	/* This consumes the matching dictionary */
+	if (IOServiceGetMatchingServices((mach_port_t) 0, matching, &iterator) != KERN_SUCCESS) {
+		return NULL;
+	}
+
+	device_set = CFSetCreateMutable(kCFAllocatorDefault, 0, &kCFTypeSetCallBacks);
+	if (device_set != NULL) {
+		while ((service = IOIteratorNext(iterator)) != IO_OBJECT_NULL) {
+			IOHIDDeviceRef dev = IOHIDDeviceCreate(kCFAllocatorDefault, service);
+			if (dev != NULL) {
+				CFSetAddValue(device_set, dev);
+				CFRelease(dev);
+			}
+			IOObjectRelease(service);
+		}
+	}
+	IOObjectRelease(iterator);
+
+	return device_set;
 }
 
 static int read_usb_interface_from_hid_service_parent(io_service_t hid_service)
@@ -762,32 +783,8 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 	}
 	/* register_global_error: global error is set/reset by hid_init */
 
-	/* give the IOHIDManager a chance to update itself */
-	process_pending_events();
-
 	/* Get a list of the Devices */
-	CFMutableDictionaryRef matching = NULL;
-	if (vendor_id != 0 || product_id != 0) {
-		matching = CFDictionaryCreateMutable(kCFAllocatorDefault, kIOHIDOptionsTypeNone, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-
-		if (matching && vendor_id != 0) {
-			CFNumberRef v = CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &vendor_id);
-			CFDictionarySetValue(matching, CFSTR(kIOHIDVendorIDKey), v);
-			CFRelease(v);
-		}
-
-		if (matching && product_id != 0) {
-			CFNumberRef p = CFNumberCreate(kCFAllocatorDefault, kCFNumberShortType, &product_id);
-			CFDictionarySetValue(matching, CFSTR(kIOHIDProductIDKey), p);
-			CFRelease(p);
-		}
-	}
-	IOHIDManagerSetDeviceMatching(hid_mgr, matching);
-	if (matching != NULL) {
-		CFRelease(matching);
-	}
-
-	CFSetRef device_set = IOHIDManagerCopyDevices(hid_mgr);
+	CFSetRef device_set = copy_hid_devices(vendor_id, product_id);
 
 	IOHIDDeviceRef *device_array = NULL;
 

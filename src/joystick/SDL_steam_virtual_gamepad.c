@@ -33,12 +33,25 @@
 #include <sys/stat.h>
 #endif
 
-static char *SDL_steam_virtual_gamepad_info_file SDL_GUARDED_BY(SDL_event_lock) = NULL;
-static Uint64 SDL_steam_virtual_gamepad_info_file_mtime SDL_GUARDED_BY(SDL_event_lock) = 0;
-static Uint64 SDL_steam_virtual_gamepad_info_check_time SDL_GUARDED_BY(SDL_event_lock) = 0;
-static SDL_SteamVirtualGamepadInfo **SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_event_lock) = NULL;
-static int SDL_steam_virtual_gamepad_info_count SDL_GUARDED_BY(SDL_event_lock) = 0;
+// The info file is read on the joystick device thread (or in SDL_UpdateJoysticks() without one), and the
+// parsed table is swapped in by SDL_UpdateSteamVirtualGamepadInfo() on the app thread.
+typedef struct SDL_SteamVirtualGamepadTable
+{
+    SDL_SteamVirtualGamepadInfo **info;
+    int count;
+} SDL_SteamVirtualGamepadTable;
 
+// Set at init, before the device thread starts, then only used by the device thread
+static char *SDL_steam_virtual_gamepad_info_file = NULL;
+static Uint64 SDL_steam_virtual_gamepad_info_file_mtime = 0;
+static Uint64 SDL_steam_virtual_gamepad_info_check_time = 0;
+
+// A table that has been read but not swapped in yet
+static SDL_SpinLock SDL_steam_virtual_gamepad_info_lock;
+static SDL_SteamVirtualGamepadTable *SDL_steam_virtual_gamepad_info_pending = NULL;
+
+// The current table
+static SDL_SteamVirtualGamepadTable *SDL_steam_virtual_gamepad_info SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
 static Uint64 GetFileModificationTime(const char *file)
 {
@@ -69,46 +82,43 @@ static Uint64 GetFileModificationTime(const char *file)
     return modification_time;
 }
 
-static void SDL_FreeSteamVirtualGamepadInfo(void)
+static void SDL_FreeSteamVirtualGamepadTable(SDL_SteamVirtualGamepadTable *table)
 {
-    int i;
+    if (!table) {
+        return;
+    }
 
-    SDL_AssertJoysticksLocked();
-
-    for (i = 0; i < SDL_steam_virtual_gamepad_info_count; ++i) {
-        SDL_SteamVirtualGamepadInfo *entry = SDL_steam_virtual_gamepad_info[i];
+    for (int i = 0; i < table->count; ++i) {
+        SDL_SteamVirtualGamepadInfo *entry = table->info[i];
         if (entry) {
             SDL_free(entry->name);
             SDL_free(entry);
         }
     }
-    SDL_free(SDL_steam_virtual_gamepad_info);
-    SDL_steam_virtual_gamepad_info = NULL;
-    SDL_steam_virtual_gamepad_info_count = 0;
+    SDL_free(table->info);
+    SDL_free(table);
 }
 
-static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
+static void AddVirtualGamepadInfo(SDL_SteamVirtualGamepadTable *table, int slot, SDL_SteamVirtualGamepadInfo *info)
 {
     SDL_SteamVirtualGamepadInfo *new_info;
-
-    SDL_AssertJoysticksLocked();
 
     if (slot < 0) {
         return;
     }
 
-    if (slot >= SDL_steam_virtual_gamepad_info_count) {
-        SDL_SteamVirtualGamepadInfo **slots = (SDL_SteamVirtualGamepadInfo **)SDL_realloc(SDL_steam_virtual_gamepad_info, (slot + 1)*sizeof(*SDL_steam_virtual_gamepad_info));
+    if (slot >= table->count) {
+        SDL_SteamVirtualGamepadInfo **slots = (SDL_SteamVirtualGamepadInfo **)SDL_realloc(table->info, (slot + 1) * sizeof(*table->info));
         if (!slots) {
             return;
         }
-        while (SDL_steam_virtual_gamepad_info_count <= slot) {
-            slots[SDL_steam_virtual_gamepad_info_count++] = NULL;
+        while (table->count <= slot) {
+            slots[table->count++] = NULL;
         }
-        SDL_steam_virtual_gamepad_info = slots;
+        table->info = slots;
     }
 
-    if (SDL_steam_virtual_gamepad_info[slot]) {
+    if (table->info[slot]) {
         // We already have this slot info
         return;
     }
@@ -118,8 +128,85 @@ static void AddVirtualGamepadInfo(int slot, SDL_SteamVirtualGamepadInfo *info)
         return;
     }
     SDL_copyp(new_info, info);
-    SDL_steam_virtual_gamepad_info[slot] = new_info;
+    table->info[slot] = new_info;
     SDL_zerop(info);
+}
+
+// Read the info file if it has changed, returning the new table or NULL
+static SDL_SteamVirtualGamepadTable *SDL_ReadSteamVirtualGamepadInfo(void)
+{
+    Uint64 mtime;
+    char *data, *end, *next, *line, *value;
+    size_t size;
+    int slot, new_slot;
+    SDL_SteamVirtualGamepadInfo info;
+    SDL_SteamVirtualGamepadTable *table;
+
+    mtime = GetFileModificationTime(SDL_steam_virtual_gamepad_info_file);
+    if (mtime == 0 || mtime == SDL_steam_virtual_gamepad_info_file_mtime) {
+        return NULL;
+    }
+
+    table = (SDL_SteamVirtualGamepadTable *)SDL_calloc(1, sizeof(*table));
+    if (!table) {
+        return NULL;
+    }
+
+    data = (char *)SDL_LoadFile(SDL_steam_virtual_gamepad_info_file, &size);
+    if (!data) {
+        SDL_free(table);
+        return NULL;
+    }
+
+    slot = -1;
+    SDL_zero(info);
+
+    for (next = data, end = data + size; next < end; ) {
+        while (next < end && (*next == '\0' || *next == '\r' || *next == '\n')) {
+            ++next;
+        }
+
+        line = next;
+
+        while (next < end && (*next != '\r' && *next != '\n')) {
+            ++next;
+        }
+        *next = '\0';
+
+        if (SDL_sscanf(line, "[slot %d]", &new_slot) == 1) {
+            if (slot >= 0) {
+                AddVirtualGamepadInfo(table, slot, &info);
+            }
+            slot = new_slot;
+        } else {
+            value = SDL_strchr(line, '=');
+            if (value) {
+                *value++ = '\0';
+
+                if (SDL_strcmp(line, "name") == 0) {
+                    SDL_free(info.name);
+                    info.name = SDL_strdup(value);
+                } else if (SDL_strcmp(line, "VID") == 0) {
+                    info.vendor_id = (Uint16)SDL_strtoul(value, NULL, 0);
+                } else if (SDL_strcmp(line, "PID") == 0) {
+                    info.product_id = (Uint16)SDL_strtoul(value, NULL, 0);
+                } else if (SDL_strcmp(line, "type") == 0) {
+                    info.type = SDL_GetGamepadTypeFromString(value);
+                } else if (SDL_strcmp(line, "handle") == 0) {
+                    info.handle = (Uint64)SDL_strtoull(value, NULL, 0);
+                }
+            }
+        }
+    }
+    if (slot >= 0) {
+        AddVirtualGamepadInfo(table, slot, &info);
+    }
+    SDL_free(info.name);
+    SDL_free(data);
+
+    SDL_steam_virtual_gamepad_info_file_mtime = mtime;
+
+    return table;
 }
 
 void SDL_InitSteamVirtualGamepadInfo(void)
@@ -146,7 +233,12 @@ void SDL_InitSteamVirtualGamepadInfo(void)
 #endif
         SDL_steam_virtual_gamepad_info_file = SDL_strdup(file);
     }
-    SDL_UpdateSteamVirtualGamepadInfo();
+
+    // Read it now, so it's available as soon as devices are added
+    if (SDL_steam_virtual_gamepad_info_file) {
+        SDL_steam_virtual_gamepad_info = SDL_ReadSteamVirtualGamepadInfo();
+        SDL_steam_virtual_gamepad_info_check_time = SDL_GetTicks();
+    }
 }
 
 bool SDL_SteamVirtualGamepadEnabled(void)
@@ -156,89 +248,52 @@ bool SDL_SteamVirtualGamepadEnabled(void)
     return (SDL_steam_virtual_gamepad_info != NULL);
 }
 
-bool SDL_UpdateSteamVirtualGamepadInfo(void)
+Sint32 SDL_DiscoverSteamVirtualGamepadInfo(void)
 {
-    const int UPDATE_CHECK_INTERVAL_MS = 3000;
+    const Uint64 UPDATE_CHECK_INTERVAL_MS = 3000;
+    SDL_SteamVirtualGamepadTable *table, *old_table;
     Uint64 now;
-    Uint64 mtime;
-    char *data, *end, *next, *line, *value;
-    size_t size;
-    int slot, new_slot;
-    SDL_SteamVirtualGamepadInfo info;
-
-    SDL_AssertJoysticksLocked();
 
     if (!SDL_steam_virtual_gamepad_info_file) {
-        return false;
+        return -1;
     }
 
     now = SDL_GetTicks();
     if (SDL_steam_virtual_gamepad_info_check_time &&
         now < (SDL_steam_virtual_gamepad_info_check_time + UPDATE_CHECK_INTERVAL_MS)) {
-        return false;
+        return (Sint32)(SDL_steam_virtual_gamepad_info_check_time + UPDATE_CHECK_INTERVAL_MS - now);
     }
     SDL_steam_virtual_gamepad_info_check_time = now;
 
-    mtime = GetFileModificationTime(SDL_steam_virtual_gamepad_info_file);
-    if (mtime == 0 || mtime == SDL_steam_virtual_gamepad_info_file_mtime) {
+    table = SDL_ReadSteamVirtualGamepadInfo();
+    if (table) {
+        SDL_LockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+        old_table = SDL_steam_virtual_gamepad_info_pending;
+        SDL_steam_virtual_gamepad_info_pending = table;
+        SDL_UnlockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+
+        SDL_FreeSteamVirtualGamepadTable(old_table);
+    }
+    return (Sint32)UPDATE_CHECK_INTERVAL_MS;
+}
+
+bool SDL_UpdateSteamVirtualGamepadInfo(void)
+{
+    SDL_SteamVirtualGamepadTable *table;
+
+    SDL_AssertJoysticksLocked();
+
+    SDL_LockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+    table = SDL_steam_virtual_gamepad_info_pending;
+    SDL_steam_virtual_gamepad_info_pending = NULL;
+    SDL_UnlockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+
+    if (!table) {
         return false;
     }
 
-    data = (char *)SDL_LoadFile(SDL_steam_virtual_gamepad_info_file, &size);
-    if (!data) {
-        return false;
-    }
-
-    SDL_FreeSteamVirtualGamepadInfo();
-
-    slot = -1;
-    SDL_zero(info);
-
-    for (next = data, end = data + size; next < end; ) {
-        while (next < end && (*next == '\0' || *next == '\r' || *next == '\n')) {
-            ++next;
-        }
-
-        line = next;
-
-        while (next < end && (*next != '\r' && *next != '\n')) {
-            ++next;
-        }
-        *next = '\0';
-
-        if (SDL_sscanf(line, "[slot %d]", &new_slot) == 1) {
-            if (slot >= 0) {
-                AddVirtualGamepadInfo(slot, &info);
-            }
-            slot = new_slot;
-        } else {
-            value = SDL_strchr(line, '=');
-            if (value) {
-                *value++ = '\0';
-
-                if (SDL_strcmp(line, "name") == 0) {
-                    SDL_free(info.name);
-                    info.name = SDL_strdup(value);
-                } else if (SDL_strcmp(line, "VID") == 0) {
-                    info.vendor_id = (Uint16)SDL_strtoul(value, NULL, 0);
-                } else if (SDL_strcmp(line, "PID") == 0) {
-                    info.product_id = (Uint16)SDL_strtoul(value, NULL, 0);
-                } else if (SDL_strcmp(line, "type") == 0) {
-                    info.type = SDL_GetGamepadTypeFromString(value);
-                } else if (SDL_strcmp(line, "handle") == 0) {
-                    info.handle = (Uint64)SDL_strtoull(value, NULL, 0);
-                }
-            }
-        }
-    }
-    if (slot >= 0) {
-        AddVirtualGamepadInfo(slot, &info);
-    }
-    SDL_free(info.name);
-    SDL_free(data);
-
-    SDL_steam_virtual_gamepad_info_file_mtime = mtime;
-
+    SDL_FreeSteamVirtualGamepadTable(SDL_steam_virtual_gamepad_info);
+    SDL_steam_virtual_gamepad_info = table;
     return true;
 }
 
@@ -246,21 +301,27 @@ const SDL_SteamVirtualGamepadInfo *SDL_GetSteamVirtualGamepadInfo(int slot)
 {
     SDL_AssertJoysticksLocked();
 
-    if (slot < 0 || slot >= SDL_steam_virtual_gamepad_info_count) {
+    if (!SDL_steam_virtual_gamepad_info || slot < 0 || slot >= SDL_steam_virtual_gamepad_info->count) {
         return NULL;
     }
-    return SDL_steam_virtual_gamepad_info[slot];
+    return SDL_steam_virtual_gamepad_info->info[slot];
 }
 
+// Called after the device thread has stopped
 void SDL_QuitSteamVirtualGamepadInfo(void)
 {
     SDL_AssertJoysticksLocked();
 
-    if (SDL_steam_virtual_gamepad_info_file) {
-        SDL_FreeSteamVirtualGamepadInfo();
-        SDL_free(SDL_steam_virtual_gamepad_info_file);
-        SDL_steam_virtual_gamepad_info_file = NULL;
-        SDL_steam_virtual_gamepad_info_file_mtime = 0;
-        SDL_steam_virtual_gamepad_info_check_time = 0;
-    }
+    SDL_FreeSteamVirtualGamepadTable(SDL_steam_virtual_gamepad_info);
+    SDL_steam_virtual_gamepad_info = NULL;
+
+    SDL_LockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+    SDL_FreeSteamVirtualGamepadTable(SDL_steam_virtual_gamepad_info_pending);
+    SDL_steam_virtual_gamepad_info_pending = NULL;
+    SDL_UnlockSpinlock(&SDL_steam_virtual_gamepad_info_lock);
+
+    SDL_free(SDL_steam_virtual_gamepad_info_file);
+    SDL_steam_virtual_gamepad_info_file = NULL;
+    SDL_steam_virtual_gamepad_info_file_mtime = 0;
+    SDL_steam_virtual_gamepad_info_check_time = 0;
 }

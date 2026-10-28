@@ -135,11 +135,6 @@ static bool HIDAPI_DriverStadia_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 }
 
-static bool HIDAPI_DriverStadia_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverStadia_Context *ctx = (SDL_DriverStadia_Context *)device->context;
@@ -149,21 +144,6 @@ static Uint32 HIDAPI_DriverStadia_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
     return caps;
-}
-
-static bool HIDAPI_DriverStadia_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverStadia_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverStadia_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverStadia_HandleStatePacket(SDL_Joystick *joystick, SDL_DriverStadia_Context *ctx, Uint8 *data, int size)
@@ -266,7 +246,7 @@ static bool HIDAPI_DriverStadia_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -310,11 +290,11 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverStadia = {
     HIDAPI_DriverStadia_UpdateDevice,
     HIDAPI_DriverStadia_OpenJoystick,
     HIDAPI_DriverStadia_RumbleJoystick,
-    HIDAPI_DriverStadia_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverStadia_GetJoystickCapabilities,
-    HIDAPI_DriverStadia_SetJoystickLED,
-    HIDAPI_DriverStadia_SendJoystickEffect,
-    HIDAPI_DriverStadia_SetJoystickSensorsEnabled,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverStadia_CloseJoystick,
     HIDAPI_DriverStadia_FreeDevice,
 };

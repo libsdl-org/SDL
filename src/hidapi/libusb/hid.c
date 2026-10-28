@@ -159,19 +159,23 @@ static libusb_context *usb_context = NULL;
 
 #ifdef SDL_PLATFORM_MACOS
 
+/* Devices are opened and closed on one thread while another enumerates (SDL's joystick device thread),
+   so the list of open devices has a lock. */
+static SDL_SpinLock open_devices_lock;
 static hid_device *open_devices;
 
 static void add_open_device(hid_device *dev)
 {
-	if (open_devices) {
-		dev->next = open_devices;
-	}
-    open_devices = dev;
+	SDL_LockSpinlock(&open_devices_lock);
+	dev->next = open_devices;
+	open_devices = dev;
+	SDL_UnlockSpinlock(&open_devices_lock);
 }
 
 static void remove_open_device(hid_device *dev)
 {
 	hid_device *prev = NULL;
+	SDL_LockSpinlock(&open_devices_lock);
 	for (hid_device *curr = open_devices; curr; prev = curr, curr = curr->next) {
 		if (curr == dev) {
 			if (prev) {
@@ -182,16 +186,21 @@ static void remove_open_device(hid_device *dev)
 			break;
 		}
 	}
+	SDL_UnlockSpinlock(&open_devices_lock);
 }
 
 static bool has_open_path(const char *path)
 {
+	bool result = false;
+	SDL_LockSpinlock(&open_devices_lock);
 	for (hid_device *curr = open_devices; curr; curr = curr->next) {
 		if (curr->dev_path && strcmp(curr->dev_path, path) == 0) {
-			return true;
+			result = true;
+			break;
 		}
 	}
-	return false;
+	SDL_UnlockSpinlock(&open_devices_lock);
+	return result;
 }
 
 #endif /* SDL_PLATFORM_MACOS */
@@ -657,10 +666,10 @@ static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libus
 {
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		HIDAPI_DeviceChanged();
+		SDL_HIDAPI_DeviceChanged();
 		break;
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		HIDAPI_DeviceChanged();
+		SDL_HIDAPI_DeviceChanged();
 		break;
 	default:
 		break;

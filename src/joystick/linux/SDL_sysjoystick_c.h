@@ -24,17 +24,14 @@
 
 #include <linux/input.h>
 
-struct SDL_joylist_item;
-struct SDL_sensorlist_item;
-
 // The private structure used to keep track of a joystick
 struct joystick_hwdata
 {
     int fd;
     // linux driver creates a separate device for gyro/accelerometer
     int fd_sensor;
-    struct SDL_joylist_item *item;
-    struct SDL_sensorlist_item *item_sensor;
+    char *sensor_path; // The paired sensor, NULL if there isn't one
+    Uint16 vendor;
     SDL_GUID guid;
     char *fname; // Used in haptic subsystem
 
@@ -109,9 +106,8 @@ struct joystick_hwdata
         int maximum[2];
     } hat_correct[4];
 
-    // Set when gamepad is pending removal due to ENODEV read error
+    // Set when the device has been removed after an ENODEV read error
     bool gone;
-    bool sensor_gone;
 };
 
 #endif // SDL_sysjoystick_c_h_

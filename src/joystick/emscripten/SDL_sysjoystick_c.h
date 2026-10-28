@@ -32,7 +32,7 @@ typedef struct SDL_joylist_item
     int index;
     char *name;
     char *mapping;
-    SDL_JoystickID device_instance;
+    SDL_JoystickID device_instance; // Driver instance ID, not the public joystick ID (see SDL_JoystickDevice)
     SDL_Joystick *joystick;
     int first_hat_button;
     int first_trigger_button;

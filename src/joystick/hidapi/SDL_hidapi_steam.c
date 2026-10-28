@@ -1279,27 +1279,10 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    // You should use the full Steam Input API for rumble support
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSteam_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     // You should use the full Steam Input API for extended capabilities
     return 0;
-}
-
-static bool HIDAPI_DriverSteam_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    // You should use the full Steam Input API for LED support
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteam_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -1347,7 +1330,7 @@ static bool ControllerConnected(SDL_HIDAPI_Device *device, SDL_Joystick **joysti
     // We'll automatically accept this controller if we're in pairing mode
     HIDAPI_DriverSteam_CommitPairing(ctx);
 
-    *joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+    *joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     ctx->connected = true;
     return true;
 }
@@ -1384,7 +1367,7 @@ static bool HIDAPI_DriverSteam_UpdateDevice(SDL_HIDAPI_Device *device)
     SDL_Joystick *joystick = NULL;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     if (ctx->pairing_time) {
@@ -1588,10 +1571,10 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
     HIDAPI_DriverSteam_SetDevicePlayerIndex,
     HIDAPI_DriverSteam_UpdateDevice,
     HIDAPI_DriverSteam_OpenJoystick,
-    HIDAPI_DriverSteam_RumbleJoystick,
-    HIDAPI_DriverSteam_RumbleJoystickTriggers,
+    NULL, // RumbleJoystick
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSteam_GetJoystickCapabilities,
-    HIDAPI_DriverSteam_SetJoystickLED,
+    NULL, // SetJoystickLED
     HIDAPI_DriverSteam_SendJoystickEffect,
     HIDAPI_DriverSteam_SetSensorsEnabled,
     HIDAPI_DriverSteam_CloseJoystick,

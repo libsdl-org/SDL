@@ -45,16 +45,12 @@ typedef struct recElement recElement;
 
 struct joystick_hwdata
 {
-    IOHIDDeviceRef deviceRef; // HIDManager device handle
+    IOHIDDeviceRef deviceRef; // HID device handle, open while the joystick is open
     io_service_t ffservice;   // Interface for force feedback, 0 = no ff
     FFDeviceObjectReference ffdevice;
     FFEFFECT *ffeffect;
     FFEffectObjectReference ffeffect_ref;
     bool ff_initialized;
-
-    char product[256];  // name of product
-    uint32_t usage;     // usage page from IOUSBHID Parser.h which defines general usage
-    uint32_t usagePage; // usage within above page from IOUSBHID Parser.h which defines specific usage
 
     int axes;     // number of axis (calculated, not reported by device)
     int buttons;  // number of buttons (calculated, not reported by device)
@@ -65,16 +61,7 @@ struct joystick_hwdata
     recElement *firstButton;
     recElement *firstHat;
 
-    bool removed;
-    SDL_Joystick *joystick;
-    bool runLoopAttached; // is 'deviceRef' attached to a CFRunLoop?
-
-    int instance_id;
-    SDL_GUID guid;
-    int steam_virtual_gamepad_slot;
     bool nacon_revolution_x_unlimited;
-
-    struct joystick_hwdata *pNext; // next device
 };
 typedef struct joystick_hwdata recDevice;
 

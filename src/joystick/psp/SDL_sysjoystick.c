@@ -68,12 +68,11 @@ static int calc_bezier_y(float t)
     return dest.y;
 }
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * It should return number of joysticks, or -1 on an unrecoverable fatal error.
- */
+// Set up the builtin joypad and report it
 static bool PSP_JoystickInit(void)
 {
+    const char *name = "PSP builtin joypad";
+    SDL_JoystickDevice *device;
     int i;
 
     // Setup input
@@ -88,106 +87,23 @@ static bool PSP_JoystickInit(void)
         analog_map[127 - i] = -1 * analog_map[i + 128];
     }
 
-    SDL_PrivateJoystickAdded(1);
-
-    return 1;
-}
-
-static int PSP_JoystickGetCount(void)
-{
-    return 1;
-}
-
-static void PSP_JoystickDetect(void)
-{
-}
-
-static bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-// Function to get the device-dependent name of a joystick
-static const char *PSP_JoystickGetDeviceName(int device_index)
-{
-    if (device_index == 0) {
-        return "PSP builtin joypad";
+    device = SDL_CreateJoystickDevice(&SDL_PSP_JoystickDriver);
+    if (device) {
+        // the GUID is just the name for now
+        SDL_SetJoystickDeviceDescription(device, name, NULL, SDL_CreateJoystickGUIDForName(name), -1);
+        SDL_ReportJoystickDevice(device);
     }
 
-    SDL_SetError("No joystick available with that index");
-    return NULL;
+    return true;
 }
 
-static const char *PSP_JoystickGetDevicePath(int index)
-{
-    return NULL;
-}
-
-static int PSP_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int PSP_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void PSP_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID PSP_JoystickGetDeviceGUID(int device_index)
-{
-    // the GUID is just the name for now
-    const char *name = PSP_JoystickGetDeviceName(device_index);
-    return SDL_CreateJoystickGUIDForName(name);
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID PSP_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
-}
-
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-static bool PSP_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool PSP_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
     joystick->nbuttons = SDL_arraysize(button_map);
     joystick->naxes = 2;
     joystick->nhats = 1;  // we treat the d-pad as a hat.
 
     return true;
-}
-
-static bool PSP_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -266,33 +182,12 @@ static void PSP_JoystickQuit(void)
 {
 }
 
-static bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_PSP_JoystickDriver = {
-    PSP_JoystickInit,
-    PSP_JoystickGetCount,
-    PSP_JoystickDetect,
-    PSP_JoystickIsDevicePresent,
-    PSP_JoystickGetDeviceName,
-    PSP_JoystickGetDevicePath,
-    PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
-    PSP_JoystickGetDevicePlayerIndex,
-    PSP_JoystickSetDevicePlayerIndex,
-    PSP_JoystickGetDeviceGUID,
-    PSP_JoystickGetDeviceInstanceID,
-    PSP_JoystickOpen,
-    PSP_JoystickRumble,
-    PSP_JoystickRumbleTriggers,
-    PSP_JoystickSetLED,
-    PSP_JoystickSendEffect,
-    PSP_JoystickSetSensorsEnabled,
-    PSP_JoystickUpdate,
-    PSP_JoystickClose,
-    PSP_JoystickQuit,
-    PSP_JoystickGetGamepadMapping
+    .Init = PSP_JoystickInit,
+    .Open = PSP_JoystickOpen,
+    .Update = PSP_JoystickUpdate,
+    .Close = PSP_JoystickClose,
+    .Quit = PSP_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_PSP

@@ -107,7 +107,8 @@ static bool HIDAPI_DriverZUIKI_IsSupportedDevice(SDL_HIDAPI_Device *device, cons
     return false;
 }
 
-static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
+// Read a report to see what the controller supports. This runs on the joystick device thread.
+static bool HIDAPI_DriverZUIKI_PrepareDevice(SDL_HIDAPI_Device *device)
 {
     Uint8 data[USB_PACKET_LENGTH * 2];
     SDL_DriverZUIKI_Context *ctx = (SDL_DriverZUIKI_Context *)SDL_calloc(1, sizeof(*ctx));
@@ -132,9 +133,6 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     switch (device->product_id) {
-        case USB_PRODUCT_ZUIKI_MASCON_PRO:
-            HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
-            break;
         case USB_PRODUCT_ZUIKI_EVOTOP_PC_DINPUT:
             ctx->sensors_supported = true;
             ctx->sensor_rate = 200.0f;
@@ -148,6 +146,20 @@ static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
                 ctx->sensors_supported = true;
                 ctx->sensor_rate = 50.0f;
             }
+            break;
+        default:
+            break;
+    }
+    return true;
+}
+
+static bool HIDAPI_DriverZUIKI_InitDevice(SDL_HIDAPI_Device *device)
+{
+    switch (device->product_id) {
+        case USB_PRODUCT_ZUIKI_MASCON_PRO:
+            HIDAPI_SetDeviceName(device, "ZUIKI MASCON PRO");
+            break;
+        case USB_PRODUCT_ZUIKI_EVOTOP_PC_BT:
             HIDAPI_SetDeviceName(device, "ZUIKI EVOTOP");
             break;
         case USB_PRODUCT_ZUIKI_EVOTOP_AXIS_DINPUT:
@@ -203,11 +215,6 @@ static bool HIDAPI_DriverZUIKI_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     return true;
 }
 
-static bool HIDAPI_DriverZUIKI_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverZUIKI_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     Uint32 caps = 0;
@@ -215,11 +222,6 @@ static Uint32 HIDAPI_DriverZUIKI_GetJoystickCapabilities(SDL_HIDAPI_Device *devi
         caps |= SDL_JOYSTICK_CAP_RUMBLE;
     }
     return caps;
-}
-
-static bool HIDAPI_DriverZUIKI_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverZUIKI_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -442,7 +444,7 @@ static bool HIDAPI_DriverZUIKI_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -493,13 +495,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI = {
     HIDAPI_DriverZUIKI_UpdateDevice,
     HIDAPI_DriverZUIKI_OpenJoystick,
     HIDAPI_DriverZUIKI_RumbleJoystick,
-    HIDAPI_DriverZUIKI_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverZUIKI_GetJoystickCapabilities,
-    HIDAPI_DriverZUIKI_SetJoystickLED,
+    NULL, // SetJoystickLED
     HIDAPI_DriverZUIKI_SendJoystickEffect,
     HIDAPI_DriverZUIKI_SetJoystickSensorsEnabled,
     HIDAPI_DriverZUIKI_CloseJoystick,
     HIDAPI_DriverZUIKI_FreeDevice,
+    HIDAPI_DriverZUIKI_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_ZUIKI

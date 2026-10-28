@@ -63,44 +63,26 @@ static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
 static bool N3DS_JoystickInit(void)
 {
+    const char *name = "Nintendo 3DS";
+    SDL_JoystickDevice *device;
+
     hidInit();
-    SDL_PrivateJoystickAdded(1);
+
+    device = SDL_CreateJoystickDevice(&SDL_N3DS_JoystickDriver);
+    if (device) {
+        SDL_SetJoystickDeviceDescription(device, name, NULL, SDL_CreateJoystickGUIDForName(name), -1);
+        SDL_ReportJoystickDevice(device);
+    }
     return true;
 }
 
-static const char *N3DS_JoystickGetDeviceName(int device_index)
-{
-    return "Nintendo 3DS";
-}
-
-static int N3DS_JoystickGetCount(void)
-{
-    return 1;
-}
-
-static SDL_GUID N3DS_JoystickGetDeviceGUID(int device_index)
-{
-    SDL_GUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
-    return guid;
-}
-
-static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
-}
-
-static bool N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool N3DS_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
     joystick->nbuttons = NB_BUTTONS - 4;  // -4 for the dpad (which we treat as a hat).
     joystick->naxes = 4;
     joystick->nhats = 1;  // treat the dpad as a hat.
 
     return true;
-}
-
-static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
@@ -232,7 +214,7 @@ static void N3DS_JoystickQuit(void)
     hidExit();
 }
 
-static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool N3DS_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
 {
     // There is only one possible mapping.
     *out = (SDL_GamepadMapping){
@@ -266,77 +248,13 @@ static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping 
     return true;
 }
 
-static void N3DS_JoystickDetect(void)
-{
-}
-
-static bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static const char *N3DS_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int N3DS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int N3DS_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static bool N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
-    N3DS_JoystickInit,
-    N3DS_JoystickGetCount,
-    N3DS_JoystickDetect,
-    N3DS_JoystickIsDevicePresent,
-    N3DS_JoystickGetDeviceName,
-    N3DS_JoystickGetDevicePath,
-    N3DS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    N3DS_JoystickGetDevicePlayerIndex,
-    N3DS_JoystickSetDevicePlayerIndex,
-    N3DS_JoystickGetDeviceGUID,
-    N3DS_JoystickGetDeviceInstanceID,
-    N3DS_JoystickOpen,
-    N3DS_JoystickRumble,
-    N3DS_JoystickRumbleTriggers,
-    N3DS_JoystickSetLED,
-    N3DS_JoystickSendEffect,
-    N3DS_JoystickSetSensorsEnabled,
-    N3DS_JoystickUpdate,
-    N3DS_JoystickClose,
-    N3DS_JoystickQuit,
-    N3DS_JoystickGetGamepadMapping
+    .Init = N3DS_JoystickInit,
+    .GetGamepadMapping = N3DS_JoystickGetGamepadMapping,
+    .Open = N3DS_JoystickOpen,
+    .Update = N3DS_JoystickUpdate,
+    .Close = N3DS_JoystickClose,
+    .Quit = N3DS_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_N3DS

@@ -254,6 +254,9 @@ typedef struct
     Uint32 last_imu_timestamp_us;
 
     Uint64 imu_timestamp_ns; // Nanoseconds. We accumulate with received deltas
+
+    // The features reply read by HIDAPI_DriverSInput_PrepareDevice()
+    Uint8 prepared_features[USB_PACKET_LENGTH - SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK];
 } SDL_DriverSInput_Context;
 
 // Converts raw int16_t gyro scale setting
@@ -429,8 +432,7 @@ static void DeviceDynamicEncodingSetup(SDL_HIDAPI_Device *device)
     version = SDL_clamp(version, 0, UINT16_MAX);
 
     // Overwrite 'Version' field of the GUID data
-    device->guid.data[12] = (Uint8)(version & 0xFF);
-    device->guid.data[13] = (Uint8)(version >> 8);
+    HIDAPI_SetDeviceGUIDVersion(device, (Uint16)version);
 }
 
 
@@ -465,7 +467,7 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 
     // The 3 MSB represent a button layout style SDL_GamepadFaceStyle
     // The 5 LSB represent a device sub-type
-    device->guid.data[15] = data[5];
+    HIDAPI_SetDeviceGUIDDriverData(device, data[5]);
 
     ctx->sub_product = (data[5] & 0x1F);
 
@@ -556,8 +558,10 @@ static void ProcessSDLFeaturesResponse(SDL_HIDAPI_Device *device, Uint8 *data)
 #endif
 }
 
+// Ask the controller for its features, and keep the reply for ProcessSDLFeaturesResponse()
 static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
     int written = 0;
 
     // Attempt to send the SDL features get command.
@@ -597,7 +601,7 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
 #endif
 
         if ((read == USB_PACKET_LENGTH) && (data[0] == SINPUT_DEVICE_REPORT_ID_INPUT_CMDDAT) && (data[1] == SINPUT_DEVICE_COMMAND_FEATURES)) {
-            ProcessSDLFeaturesResponse(device, &(data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK]));
+            SDL_memcpy(ctx->prepared_features, &data[SINPUT_REPORT_IDX_COMMAND_RESPONSE_BULK], sizeof(ctx->prepared_features));
 #if defined(DEBUG_SINPUT_INIT)
             SDL_Log("Received SInput SDL Features command response");
 #endif
@@ -642,12 +646,9 @@ static bool HIDAPI_DriverSInput_IsSupportedDevice(SDL_HIDAPI_Device *device, con
     return SDL_IsJoystickSInputController(vendor_id, product_id);
 }
 
-static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
+// Ask the controller for its features. This runs on the joystick device thread.
+static bool HIDAPI_DriverSInput_PrepareDevice(SDL_HIDAPI_Device *device)
 {
-#if defined(DEBUG_SINPUT_INIT)
-    SDL_Log("SInput device Init");
-#endif
-
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)SDL_calloc(1, sizeof(*ctx));
     if (!ctx) {
         return false;
@@ -656,9 +657,20 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     ctx->device = device;
     device->context = ctx;
 
-    if (!RetrieveSDLFeatures(device)) {
-        return false;
-    }
+    return RetrieveSDLFeatures(device);
+}
+
+static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
+{
+    SDL_DriverSInput_Context *ctx;
+
+#if defined(DEBUG_SINPUT_INIT)
+    SDL_Log("SInput device Init");
+#endif
+
+    ctx = (SDL_DriverSInput_Context *)device->context;
+
+    ProcessSDLFeaturesResponse(device, ctx->prepared_features);
 
     // Store the USB Device Version because we will overwrite this data
     ctx->usb_device_version = device->version;
@@ -792,11 +804,6 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
@@ -832,11 +839,6 @@ static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 
         return true;
     }
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSInput_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
     return SDL_Unsupported();
 }
 
@@ -1074,7 +1076,7 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
     int size = 0;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -1120,13 +1122,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput = {
     HIDAPI_DriverSInput_UpdateDevice,
     HIDAPI_DriverSInput_OpenJoystick,
     HIDAPI_DriverSInput_RumbleJoystick,
-    HIDAPI_DriverSInput_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSInput_GetJoystickCapabilities,
     HIDAPI_DriverSInput_SetJoystickLED,
-    HIDAPI_DriverSInput_SendJoystickEffect,
+    NULL, // SendJoystickEffect
     HIDAPI_DriverSInput_SetJoystickSensorsEnabled,
     HIDAPI_DriverSInput_CloseJoystick,
     HIDAPI_DriverSInput_FreeDevice,
+    HIDAPI_DriverSInput_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SINPUT

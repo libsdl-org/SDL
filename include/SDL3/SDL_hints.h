@@ -2328,6 +2328,24 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA "SDL_JOYSTICK_HIDAPI_GIP_RESET_FOR_METADATA"
 
 /**
+ * A variable controlling whether controllers connected at startup get hotplug events after initialization.
+ *
+ * By default SDL controller initialization is asynchronous and controllers will send SDL_EVENT_JOYSTICK_ADDED and SDL_EVENT_GAMEPAD_ADDED events as they are detected in the background. You can disable this hint to have initialization wait for the initial controller discovery to complete.
+ *
+ * Note that when GameInput is being used on Windows and the Game Controller framework is being used on Apple platforms controller detection is always asynchronous. We highly recommend that you support controller hotplug in your application.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": Initializing joysticks and gamepads will wait for initial discovery to complete before returning.
+ * - "1": Initializing joysticks and gamepads will return immediately and controllers are always reported as connected asynchronously. (default)
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_HOTPLUG_INIT "SDL_JOYSTICK_HOTPLUG_INIT"
+
+/**
  * A variable controlling whether IOKit should be used for controller
  * handling.
  *
@@ -2435,22 +2453,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
-
-/**
- * A variable controlling whether a separate thread should be used for
- * handling joystick detection on Windows.
- *
- * The variable can be set to the following values:
- *
- * - "0": A separate thread is not used.
- * - "1": A separate thread is used for handling device change messages.
- *   (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
  * A variable containing a list of throttle style controllers.

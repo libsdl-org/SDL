@@ -656,16 +656,6 @@ static bool HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_J
     }
 }
 
-static bool HIDAPI_DriverXboxOne_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, Uint32 flags)
 {
     bool on_usb = (((flags & 0x0C) >> 2) == 0);
@@ -1947,7 +1937,7 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
     int size;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     } else {
         return false;
     }
@@ -2041,8 +2031,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne = {
     HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
     HIDAPI_DriverXboxOne_GetJoystickCapabilities,
     HIDAPI_DriverXboxOne_SetJoystickLED,
-    HIDAPI_DriverXboxOne_SendJoystickEffect,
-    HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,
+    NULL, // SendJoystickEffect
+    NULL, // SetJoystickSensorsEnabled
     HIDAPI_DriverXboxOne_CloseJoystick,
     HIDAPI_DriverXboxOne_FreeDevice,
 };

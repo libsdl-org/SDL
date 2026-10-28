@@ -541,6 +541,17 @@ public:
 	void SetOpenPending()
 	{
 		m_bIsWaitingForOpen = true;
+		m_bPermissionRequested = true;
+	}
+
+	bool BPermissionRequested() const
+	{
+		return m_bPermissionRequested;
+	}
+
+	bool BPermissionGranted() const
+	{
+		return m_bPermissionGranted;
 	}
 
 	bool BOpenPending() const
@@ -563,6 +574,7 @@ public:
 		if ( m_bIsWaitingForOpen )
 		{
 			m_bOpenResult = bResult;
+			m_bPermissionGranted = bResult;
 			m_bIsWaitingForOpen = false;
 
 			if ( m_bOpenResult )
@@ -795,6 +807,8 @@ private:
 	pthread_cond_t m_cv = PTHREAD_COND_INITIALIZER;
 	bool m_bIsWaitingForOpen = false;
 	bool m_bWasOpenPending = false;
+	bool m_bPermissionRequested = false;
+	bool m_bPermissionGranted = false; // Unlike m_bOpenResult, this isn't cleared when the device is closed
 	bool m_bOpenResult = false;
 	bool m_bIsWaitingForReportResponse = false;
 	int m_nReportResponseError = 0;
@@ -964,6 +978,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenPending)(J
 	hid_device_ref<CHIDDevice> pDevice = FindDevice( nDeviceID );
 	if ( pDevice )
 	{
+		hid_mutex_guard l( &g_DevicesMutex );
 		pDevice->SetOpenPending();
 	}
 }
@@ -975,6 +990,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult)(JN
 	hid_device_ref<CHIDDevice> pDevice = FindDevice( nDeviceID );
 	if ( pDevice )
 	{
+		hid_mutex_guard l( &g_DevicesMutex );
 		pDevice->SetOpenResult( bOpened );
 	}
 
@@ -1148,6 +1164,29 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open(unsigned short vendor_id, unsi
 {
 	// TODO: Implement
 	return NULL;
+}
+
+extern "C"
+SDL_HIDAPI_OpenPermission SDL_HIDAPI_GetOpenPermission(const char *path)
+{
+	hid_mutex_guard l( &g_DevicesMutex );
+	for ( hid_device_ref<CHIDDevice> pDevice = g_Devices; pDevice; pDevice = pDevice->next )
+	{
+		const hid_device_info *info = pDevice->GetDeviceInfo();
+		if ( info && info->path && SDL_strcmp( info->path, path ) == 0 )
+		{
+			if ( pDevice->BOpenPending() )
+			{
+				return SDL_HIDAPI_OPEN_PERMISSION_PENDING;
+			}
+			if ( pDevice->BPermissionRequested() )
+			{
+				return pDevice->BPermissionGranted() ? SDL_HIDAPI_OPEN_PERMISSION_GRANTED : SDL_HIDAPI_OPEN_PERMISSION_DENIED;
+			}
+			break;
+		}
+	}
+	return SDL_HIDAPI_OPEN_PERMISSION_NONE;
 }
 
 HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path)

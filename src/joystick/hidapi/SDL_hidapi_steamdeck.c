@@ -319,7 +319,8 @@ static bool HIDAPI_DriverSteamDeck_IsSupportedDevice(
     return SDL_IsJoystickSteamDeck(vendor_id, product_id);
 }
 
-static bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
+// Check that this is the controller endpoint. This runs on the joystick device thread.
+static bool HIDAPI_DriverSteamDeck_PrepareDevice(SDL_HIDAPI_Device *device)
 {
     int size;
     Uint8 data[64];
@@ -342,6 +343,11 @@ static bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
     if (size == 0)
         return false;
 
+    return true;
+}
+
+static bool HIDAPI_DriverSteamDeck_InitDevice(SDL_HIDAPI_Device *device)
+{
     if (!DisableDeckLizardMode(device->dev))
         return false;
 
@@ -368,7 +374,7 @@ static bool HIDAPI_DriverSteamDeck_UpdateDevice(SDL_HIDAPI_Device *device)
     ValveInReport_t *pInReport = (ValveInReport_t *)data;
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
         if (joystick == NULL) {
             return false;
         }
@@ -446,24 +452,9 @@ static bool HIDAPI_DriverSteamDeck_RumbleJoystick(SDL_HIDAPI_Device *device, SDL
     return true;
 }
 
-static bool HIDAPI_DriverSteamDeck_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSteamDeck_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverSteamDeck_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSteamDeck_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteamDeck_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -494,13 +485,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamDeck = {
     HIDAPI_DriverSteamDeck_UpdateDevice,
     HIDAPI_DriverSteamDeck_OpenJoystick,
     HIDAPI_DriverSteamDeck_RumbleJoystick,
-    HIDAPI_DriverSteamDeck_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSteamDeck_GetJoystickCapabilities,
-    HIDAPI_DriverSteamDeck_SetJoystickLED,
-    HIDAPI_DriverSteamDeck_SendJoystickEffect,
+    NULL, // SetJoystickLED
+    NULL, // SendJoystickEffect
     HIDAPI_DriverSteamDeck_SetSensorsEnabled,
     HIDAPI_DriverSteamDeck_CloseJoystick,
     HIDAPI_DriverSteamDeck_FreeDevice,
+    HIDAPI_DriverSteamDeck_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_STEAMDECK

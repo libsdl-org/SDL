@@ -84,6 +84,7 @@ typedef struct SDL_JoystickCapSenseInfo
 struct SDL_Joystick
 {
     SDL_JoystickID instance_id _guarded; // Device instance, monotonically increasing from 0
+    SDL_JoystickID driver_instance_id _guarded; // The device's driver instance ID, for drivers that need to know which device this is
     char *name _guarded;                 // Joystick name - system dependent
     char *path _guarded;                 // Joystick path - system dependent
     char *serial _guarded;               // Joystick serial
@@ -147,7 +148,9 @@ struct SDL_Joystick
 
     struct SDL_JoystickDriver *driver _guarded;
 
-    struct joystick_hwdata *hwdata _guarded; // Driver dependent information
+    // Driver dependent information for the open joystick. It has to work after the joystick is detached,
+    // so it holds its own copies and references, not pointers into the device's driver_data.
+    struct joystick_hwdata *hwdata _guarded;
 
     SDL_PropertiesID props _guarded;
 
@@ -158,6 +161,86 @@ struct SDL_Joystick
 
 #undef _guarded
 
+// How a device is matched with the same controller seen by other drivers
+
+#define SDL_MAX_JOYSTICK_MATCHES 8
+
+typedef struct SDL_JoystickMatch
+{
+    Uint16 vendor_id;       // Match on VID/PID if non-zero
+    Uint16 product_id;
+    SDL_GamepadType type;   // Match on type if vendor_id is 0
+} SDL_JoystickMatch;
+
+typedef struct SDL_JoystickMatchInfo
+{
+    // Never hidden by other drivers, and never hides other drivers' devices (e.g. virtual joysticks)
+    bool never_group;
+
+    // Other devices this one is the same controller as, in addition to its own vendor and product IDs
+    int num_matches;
+    SDL_JoystickMatch matches[SDL_MAX_JOYSTICK_MATCHES];
+} SDL_JoystickMatchInfo;
+
+// A joystick device that has been reported by a driver, whether or not it's published or open
+typedef struct SDL_JoystickDevice
+{
+    struct SDL_JoystickDriver *driver;
+
+    // The ID the driver knows the device by, used for its removal and updates.
+    SDL_JoystickID driver_instance_id;
+
+    // The public instance ID, assigned each time the device is published and 0 when it isn't.
+    // This is a unique ID and will never match the driver_instance_id.
+    SDL_JoystickID instance_id;
+
+    // Driver data that the driver needs to describe and open the device. Once the device is reported, only
+    // the driver's callbacks on the app thread use it, so they can update it without locking (e.g. to cache
+    // a gamepad mapping). It's freed with FreeDeviceData(), or SDL_free() if the driver doesn't have one,
+    // after the device is removed, which can happen while a joystick opened from it is still open.
+    void *driver_data;
+
+    // Description
+    char *name;
+    char *path;
+    SDL_GUID guid;
+    int steam_virtual_gamepad_slot;
+    int player_index;
+
+    // Matching with other drivers' devices. If the vendor and product IDs aren't set, they come from the
+    // device GUID.
+    Uint16 vendor_id;
+    Uint16 product_id;
+    SDL_GamepadType type;
+    SDL_JoystickMatchInfo match;
+
+    // The physical device it belongs to, all zero if unknown. Devices with different container IDs are never
+    // the same controller, even if they match otherwise, e.g. two controllers of the same model where only one
+    // works with a higher priority driver.
+    SDL_GUID container_id;
+
+    // A claim-only device is never published. It hides lower priority drivers' devices that match it,
+    // e.g. for a controller that a driver is still setting up, or a dongle with no controllers connected.
+    bool claim_only;
+    SDL_JoystickUsable usable;
+
+    // How long a claim with usable UNKNOWN hides matching devices that aren't published yet, 0 for the default
+    Uint64 claim_hold_ms;
+
+    // When the device was reported with, or changed to, usable UNKNOWN
+    Uint64 unknown_since_ms;
+
+    // Resolution state
+    int rank;
+    bool published;
+    Uint64 reported_ms;
+    bool hold_checked;
+    Uint64 hold_until_ms;
+    Uint64 hold_cap_ms;
+    int hold_driver;
+    int hold_pass;
+} SDL_JoystickDevice;
+
 // Device bus definitions
 #define SDL_HARDWARE_BUS_UNKNOWN   0x00
 #define SDL_HARDWARE_BUS_USB       0x03
@@ -167,62 +250,76 @@ struct SDL_Joystick
 // Macro to combine a USB vendor ID and product ID into a single Uint32 value
 #define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
 
+// A joystick driver. Drivers report devices with SDL_CreateJoystickDevice() and SDL_ReportJoystickDevice(),
+// from any thread, and remove them with SDL_ReportJoystickRemoved(). The core decides which devices are
+// published and owns their instance IDs.
+//
+// Drivers in C use designated initializers for this table. The C++ drivers can't (that needs C++20), so the
+// order of these fields matters to them.
 typedef struct SDL_JoystickDriver
 {
-    /* Function to scan the system for joysticks.
-     * Joystick 0 should be the system default joystick.
-     * This function should return 0, or -1 on an unrecoverable error.
+    // Optional slow setup, like loading libraries and creating API objects, called before Init() on the
+    // thread calling SDL_Init(), without the joystick lock. It must not report devices or use joystick state.
+    // Returns false if the driver isn't available, and then Init() isn't called. Quit() undoes it either way.
+    bool (*PreInit)(void);
+
+    /* Set up the driver, on the app thread holding the joystick lock. Drivers that don't have Discover()
+       can report the devices that are already connected here. Returns false if the driver isn't available.
      */
     bool (*Init)(void);
 
-    // Function to return the number of joystick devices plugged in right now
-    int (*GetCount)(void);
+    // Find devices, on the joystick device thread without the joystick lock. Results are reported, or posted
+    // with SDL_PostJoystickDriverMessage(). Returns how long to wait in milliseconds before it needs to run
+    // again, or -1 to wait until SDL_WakeJoystickDeviceThread() is called or the discovery fd is readable.
+    // On platforms without the device thread, it runs in SDL_UpdateJoysticks().
+    Sint32 (*Discover)(void);
 
-    // Function to cause any queued joystick insertions to be processed
-    void (*Detect)(void);
+    // Return a file descriptor that becomes readable when Discover() should run again, or -1
+    int (*GetDiscoveryFD)(void);
 
-    // Function to determine whether a device is currently detected by this driver
-    bool (*IsDevicePresent)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+    // Handle a message posted by Discover(), on the app thread holding the joystick lock
+    void (*HandleMessage)(void *message);
 
-    // Function to get the device-dependent name of a joystick
-    const char *(*GetDeviceName)(int device_index);
+    // Free a message that won't be handled, before the driver's Quit()
+    void (*FreeMessage)(void *message);
 
-    // Function to get the device-dependent path of a joystick
-    const char *(*GetDevicePath)(int device_index);
+    // Return whether this driver might handle a device that a lower priority driver has reported, without
+    // doing any I/O. Lower priority devices it supports are held for a moment, in case this driver reports
+    // the same controller, so it doesn't appear twice.
+    bool (*Supports)(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
-    // Function to get the Steam virtual gamepad slot of a joystick
-    int (*GetDeviceSteamVirtualGamepadSlot)(int device_index);
+    // Optional: called on the app thread holding the joystick lock, just before a device is published. It can
+    // change the device's name and GUID, e.g. to the ones another driver uses.
+    void (*DevicePublishing)(SDL_JoystickDevice *device);
 
-    // Function to get the player index of a joystick
-    int (*GetDevicePlayerIndex)(int device_index);
+    // Called on the app thread holding the joystick lock, after a device is published and before it's unpublished
+    void (*DevicePublished)(SDL_JoystickDevice *device, bool published);
 
-    // Function to set the player index of a joystick
-    void (*SetDevicePlayerIndex)(int device_index, int player_index);
+    // Free a device's driver_data, which may happen on any thread, and after the driver's Quit()
+    void (*FreeDeviceData)(void *driver_data);
 
-    // Function to return the stable GUID for a plugged in device
-    SDL_GUID (*GetDeviceGUID)(int device_index);
+    // Set the player index of a published device
+    void (*SetPlayerIndex)(SDL_JoystickDevice *device, int player_index);
 
-    // Function to get the current instance id of the joystick located at device_index
-    SDL_JoystickID (*GetDeviceInstanceID)(int device_index);
+    // Get the autodetected controller mapping; returns false if there isn't any
+    bool (*GetGamepadMapping)(SDL_JoystickDevice *device, SDL_GamepadMapping *out);
 
-    /* Function to open a joystick for use.
-       The joystick to open is specified by the device index.
-       This should fill the nbuttons and naxes fields of the joystick structure.
-       It returns 0, or -1 if there is an error.
+    /* Open a joystick for use. This should fill the nbuttons and naxes fields of the joystick structure.
+       Returns false on error.
      */
-    bool (*Open)(SDL_Joystick *joystick, int device_index);
+    bool (*Open)(SDL_Joystick *joystick, SDL_JoystickDevice *device);
 
-    // Rumble functionality
+    // Optional rumble functionality
     bool (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     bool (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
 
-    // LED functionality
+    // Optional LED functionality
     bool (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
-    // General effects
+    // Optional general effects
     bool (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);
 
-    // Sensor functionality
+    // Optional sensor functionality
     bool (*SetSensorsEnabled)(SDL_Joystick *joystick, bool enabled);
 
     /* Function to update the state of a joystick - called as a device poll.
@@ -237,10 +334,6 @@ typedef struct SDL_JoystickDriver
 
     // Function to perform any system-specific joystick related cleanup
     void (*Quit)(void);
-
-    // Function to get the autodetected controller mapping; returns false if there isn't any.
-    bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
-
 } SDL_JoystickDriver;
 
 // Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF
@@ -264,8 +357,8 @@ extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
 extern SDL_JoystickDriver SDL_IOS_JoystickDriver;
 extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
 extern SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver;
-extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
-extern SDL_JoystickDriver SDL_WINMM_JoystickDriver;
+extern SDL_JoystickDriver SDL_XINPUT_JoystickDriver;
+extern SDL_JoystickDriver SDL_DINPUT_JoystickDriver;
 extern SDL_JoystickDriver SDL_PS2_JoystickDriver;
 extern SDL_JoystickDriver SDL_PSP_JoystickDriver;
 extern SDL_JoystickDriver SDL_VITA_JoystickDriver;

@@ -1557,7 +1557,7 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
             device->type = SDL_GAMEPAD_TYPE_STANDARD;
             break;
         }
-        device->guid.data[15] = ctx->m_eControllerType;
+        HIDAPI_SetDeviceGUIDDriverData(device, (Uint8)ctx->m_eControllerType);
 
         (void)SDL_snprintf(serial, sizeof(serial), "%.2x-%.2x-%.2x-%.2x-%.2x-%.2x",
                            ctx->m_rgucMACAddress[0],
@@ -1570,7 +1570,8 @@ static void UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     }
 }
 
-static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
+// Ask the controller what it is. This runs on the joystick device thread.
+static bool HIDAPI_DriverSwitch_PrepareDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverSwitch_Context *ctx;
 
@@ -1599,6 +1600,11 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
 
         BReadDeviceInfo(ctx);
     }
+    return true;
+}
+
+static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
+{
     UpdateDeviceIdentity(device);
 
     // Prefer the USB device over the Bluetooth device
@@ -1846,11 +1852,6 @@ static bool HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 #endif
 
     return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
-}
-
-static bool HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -2811,7 +2812,7 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     Uint64 now = SDL_GetTicks();
 
     if (device->num_joysticks > 0) {
-        joystick = SDL_GetJoystickFromID(device->joysticks[0]);
+        joystick = SDL_GetJoystickFromDriverID(device->joysticks[0]);
     }
 
     while ((size = ReadInput(ctx)) > 0) {
@@ -2950,13 +2951,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic = {
     HIDAPI_DriverSwitch_UpdateDevice,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSwitch_GetJoystickCapabilities,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_SendJoystickEffect,
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch_CloseJoystick,
     HIDAPI_DriverSwitch_FreeDevice,
+    HIDAPI_DriverSwitch_PrepareDevice,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons = {
@@ -2972,13 +2974,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons = {
     HIDAPI_DriverSwitch_UpdateDevice,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSwitch_GetJoystickCapabilities,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_SendJoystickEffect,
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch_CloseJoystick,
     HIDAPI_DriverSwitch_FreeDevice,
+    HIDAPI_DriverSwitch_PrepareDevice,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch = {
@@ -2994,13 +2997,14 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch = {
     HIDAPI_DriverSwitch_UpdateDevice,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
+    NULL, // RumbleJoystickTriggers
     HIDAPI_DriverSwitch_GetJoystickCapabilities,
     HIDAPI_DriverSwitch_SetJoystickLED,
     HIDAPI_DriverSwitch_SendJoystickEffect,
     HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
     HIDAPI_DriverSwitch_CloseJoystick,
     HIDAPI_DriverSwitch_FreeDevice,
+    HIDAPI_DriverSwitch_PrepareDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SWITCH

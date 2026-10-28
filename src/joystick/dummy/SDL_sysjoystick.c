@@ -32,84 +32,9 @@ static bool DUMMY_JoystickInit(void)
     return true;
 }
 
-static int DUMMY_JoystickGetCount(void)
-{
-    return 0;
-}
-
-static void DUMMY_JoystickDetect(void)
-{
-}
-
-static bool DUMMY_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    return false;
-}
-
-static const char *DUMMY_JoystickGetDeviceName(int device_index)
-{
-    return NULL;
-}
-
-static const char *DUMMY_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int DUMMY_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int DUMMY_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void DUMMY_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID DUMMY_JoystickGetDeviceGUID(int device_index)
-{
-    SDL_GUID guid;
-    SDL_zero(guid);
-    return guid;
-}
-
-static SDL_JoystickID DUMMY_JoystickGetDeviceInstanceID(int device_index)
-{
-    return 0;
-}
-
-static bool DUMMY_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool DUMMY_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
     return SDL_SetError("Logic error: No joysticks available");
-}
-
-static bool DUMMY_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DUMMY_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DUMMY_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool DUMMY_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool DUMMY_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void DUMMY_JoystickUpdate(SDL_Joystick *joystick)
@@ -124,33 +49,12 @@ static void DUMMY_JoystickQuit(void)
 {
 }
 
-static bool DUMMY_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_DUMMY_JoystickDriver = {
-    DUMMY_JoystickInit,
-    DUMMY_JoystickGetCount,
-    DUMMY_JoystickDetect,
-    DUMMY_JoystickIsDevicePresent,
-    DUMMY_JoystickGetDeviceName,
-    DUMMY_JoystickGetDevicePath,
-    DUMMY_JoystickGetDeviceSteamVirtualGamepadSlot,
-    DUMMY_JoystickGetDevicePlayerIndex,
-    DUMMY_JoystickSetDevicePlayerIndex,
-    DUMMY_JoystickGetDeviceGUID,
-    DUMMY_JoystickGetDeviceInstanceID,
-    DUMMY_JoystickOpen,
-    DUMMY_JoystickRumble,
-    DUMMY_JoystickRumbleTriggers,
-    DUMMY_JoystickSetLED,
-    DUMMY_JoystickSendEffect,
-    DUMMY_JoystickSetSensorsEnabled,
-    DUMMY_JoystickUpdate,
-    DUMMY_JoystickClose,
-    DUMMY_JoystickQuit,
-    DUMMY_JoystickGetGamepadMapping
+    .Init = DUMMY_JoystickInit,
+    .Open = DUMMY_JoystickOpen,
+    .Update = DUMMY_JoystickUpdate,
+    .Close = DUMMY_JoystickClose,
+    .Quit = DUMMY_JoystickQuit,
 };
 
 #endif // SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED

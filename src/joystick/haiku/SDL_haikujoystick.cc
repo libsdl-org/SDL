@@ -37,10 +37,6 @@ extern "C"
 // The maximum number of joysticks we'll detect
 #define MAX_JOYSTICKS   16
 
-// A list of available joysticks
-    static char *SDL_joyport[MAX_JOYSTICKS];
-    static char *SDL_joyname[MAX_JOYSTICKS];
-
 // The private structure used to keep track of a joystick
     struct joystick_hwdata
     {
@@ -49,84 +45,44 @@ extern "C"
         int16 *new_axes;
     };
 
-    static int numjoysticks = 0;
-
+    // Report the joysticks that are attached. Haiku doesn't notify us of new ones.
     static bool HAIKU_JoystickInit(void)
     {
         BJoystick joystick;
-        int i;
+        int i, numjoysticks = 0;
         int32 nports;
         char name[B_OS_NAME_LENGTH];
 
         // Search for attached joysticks
         nports = joystick.CountDevices();
-        numjoysticks = 0;
-        SDL_memset(SDL_joyport, 0, sizeof(SDL_joyport));
-        SDL_memset(SDL_joyname, 0, sizeof(SDL_joyname));
         for (i = 0; (numjoysticks < MAX_JOYSTICKS) && (i < nports); ++i) {
             if (joystick.GetDeviceName(i, name) == B_OK) {
                 if (joystick.Open(name) != B_ERROR) {
                     BString stick_name;
+                    char *joystick_name;
+                    SDL_JoystickDevice *device;
+
                     joystick.GetControllerName(&stick_name);
-                    SDL_joyport[numjoysticks] = SDL_strdup(name);
-                    SDL_joyname[numjoysticks] = SDL_CreateJoystickName(0, 0, NULL, stick_name.String());
-                    numjoysticks++;
                     joystick.Close();
 
-                    SDL_PrivateJoystickAdded(numjoysticks);
+                    joystick_name = SDL_CreateJoystickName(0, 0, NULL, stick_name.String());
+                    device = joystick_name ? SDL_CreateJoystickDevice(&SDL_HAIKU_JoystickDriver) : NULL;
+                    if (device) {
+                        // the GUID is just the name for now
+                        SDL_SetJoystickDeviceDescription(device, joystick_name, name, SDL_CreateJoystickGUIDForName(joystick_name), -1);
+                        SDL_ReportJoystickDevice(device);
+                        numjoysticks++;
+                    }
+                    SDL_free(joystick_name);
                 }
             }
         }
         return true;
     }
 
-    static int HAIKU_JoystickGetCount(void)
-    {
-        return numjoysticks;
-    }
-
-    static void HAIKU_JoystickDetect(void)
-    {
-    }
-
-    static bool HAIKU_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-    {
-        // We don't override any other drivers
-        return false;
-    }
-
-    static const char *HAIKU_JoystickGetDeviceName(int device_index)
-    {
-        return SDL_joyname[device_index];
-    }
-
-    static const char *HAIKU_JoystickGetDevicePath(int device_index)
-    {
-        return SDL_joyport[device_index];
-    }
-
-    static int HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-    {
-        return -1;
-    }
-
-    static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
-    {
-        return -1;
-    }
-
-    static void HAIKU_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-    {
-    }
-
-    static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
-    {
-        return device_index + 1;
-    }
-
     static void HAIKU_JoystickClose(SDL_Joystick *joystick);
 
-    static bool HAIKU_JoystickOpen(SDL_Joystick *joystick, int device_index)
+    static bool HAIKU_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
     {
         BJoystick *stick;
 
@@ -139,7 +95,7 @@ extern "C"
         joystick->hwdata->stick = stick;
 
         // Open the requested joystick for use
-        if (stick->Open(SDL_joyport[device_index]) == B_ERROR) {
+        if (stick->Open(device->path) == B_ERROR) {
             HAIKU_JoystickClose(joystick);
             return SDL_SetError("Unable to open joystick");
         }
@@ -233,81 +189,32 @@ extern "C"
 // Function to perform any system-specific joystick related cleanup
     static void HAIKU_JoystickQuit(void)
     {
-        int i;
-
-        for (i = 0; i < numjoysticks; ++i) {
-            SDL_free(SDL_joyport[i]);
-        }
-        SDL_joyport[0] = NULL;
-
-        for (i = 0; i < numjoysticks; ++i) {
-            SDL_free(SDL_joyname[i]);
-        }
-        SDL_joyname[0] = NULL;
     }
 
-    static SDL_GUID HAIKU_JoystickGetDeviceGUID(int device_index)
-    {
-        // the GUID is just the name for now
-        const char *name = HAIKU_JoystickGetDeviceName(device_index);
-        return SDL_CreateJoystickGUIDForName(name);
-    }
-
-    static bool HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-    {
-        return SDL_Unsupported();
-    }
-
-
-    static bool HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-    {
-        return SDL_Unsupported();
-    }
-
-    static bool HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-    {
-        return false;
-    }
-
-    static bool HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-    {
-        return SDL_Unsupported();
-    }
-
-
-    static bool HAIKU_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-    {
-        return SDL_Unsupported();
-    }
-
-    static bool HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-    {
-        return SDL_Unsupported();
-    }
-
+    // C++ before C++20 doesn't have designated initializers, so these are in SDL_JoystickDriver order
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
+        NULL, // PreInit
         HAIKU_JoystickInit,
-        HAIKU_JoystickGetCount,
-        HAIKU_JoystickDetect,
-        HAIKU_JoystickIsDevicePresent,
-        HAIKU_JoystickGetDeviceName,
-        HAIKU_JoystickGetDevicePath,
-        HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot,
-        HAIKU_JoystickGetDevicePlayerIndex,
-        HAIKU_JoystickSetDevicePlayerIndex,
-        HAIKU_JoystickGetDeviceGUID,
-        HAIKU_JoystickGetDeviceInstanceID,
+        NULL, // Discover
+        NULL, // GetDiscoveryFD
+        NULL, // HandleMessage
+        NULL, // FreeMessage
+        NULL, // Supports
+        NULL, // DevicePublishing
+        NULL, // DevicePublished
+        NULL, // FreeDeviceData
+        NULL, // SetPlayerIndex
+        NULL, // GetGamepadMapping
         HAIKU_JoystickOpen,
-        HAIKU_JoystickRumble,
-        HAIKU_JoystickRumbleTriggers,
-        HAIKU_JoystickSetLED,
-        HAIKU_JoystickSendEffect,
-        HAIKU_JoystickSetSensorsEnabled,
+        NULL, // Rumble
+        NULL, // RumbleTriggers
+        NULL, // SetLED
+        NULL, // SendEffect
+        NULL, // SetSensorsEnabled
         HAIKU_JoystickUpdate,
         HAIKU_JoystickClose,
-        HAIKU_JoystickQuit,
-        HAIKU_JoystickGetGamepadMapping
+        HAIKU_JoystickQuit
     };
 
 }                              // extern "C"
