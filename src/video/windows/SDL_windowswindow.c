@@ -593,8 +593,11 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
         if (data->keyboard_hook) {
             UnhookWindowsHookEx(data->keyboard_hook);
         }
-        if (data->hicon) {
-            DestroyIcon(data->hicon);
+        if (data->hicon_small) {
+            DestroyIcon(data->hicon_small);
+        }
+        if (data->hicon_large) {
+            DestroyIcon(data->hicon_large);
         }
         ReleaseDC(data->hwnd, data->hdc);
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
@@ -839,26 +842,23 @@ void WIN_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
 }
 
-bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+static HICON create_hicon(SDL_Surface *surface)
 {
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
+    SDL_Surface *icon = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
     HICON hicon = NULL;
     BYTE *icon_bmp;
     int icon_len, mask_len, row_len, y;
     BITMAPINFOHEADER *bmi;
     Uint8 *dst;
     bool isstack;
-    bool result = true;
 
     // Create temporary buffer for ICONIMAGE structure
-    SDL_COMPILE_TIME_ASSERT(WIN_SetWindowIcon_uses_BITMAPINFOHEADER_to_prepare_an_ICONIMAGE, sizeof(BITMAPINFOHEADER) == 40);
     mask_len = (icon->h * (icon->w + 7) / 8);
     icon_len = sizeof(BITMAPINFOHEADER) + icon->h * icon->w * sizeof(Uint32) + mask_len;
     icon_bmp = SDL_small_alloc(BYTE, icon_len, &isstack);
     if (!icon_bmp) {
-        return false;
+        return NULL;
     }
 
     // Write the BITMAPINFO header
@@ -876,7 +876,6 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     bmi->biClrImportant = SDL_Swap32LE(0);
 
     // Write the pixels upside down into the bitmap buffer
-    SDL_assert(icon->format == SDL_PIXELFORMAT_ARGB8888);
     dst = &icon_bmp[sizeof(BITMAPINFOHEADER)];
     row_len = icon->w * sizeof(Uint32);
     y = icon->h;
@@ -894,20 +893,81 @@ bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *
     SDL_small_free(icon_bmp, isstack);
 
     if (!hicon) {
-        return SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
+        SDL_SetError("SetWindowIcon() failed, error %08X", (unsigned int)GetLastError());
+        return NULL;
     }
 
-    if (data->hicon) {
-        DestroyIcon(data->hicon);
+    return hicon;
+#else
+    return NULL;
+#endif
+}
+
+static int icon_sort_callback(const void *a, const void *b)
+{
+    const SDL_Surface *s1 = *(const SDL_Surface **)a;
+    const SDL_Surface *s2 = *(const SDL_Surface **)b;
+
+    return (s1->w * s1->h) <= (s2->w * s2->h) ? -1 : 1;
+}
+
+bool WIN_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *icon)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
+
+    int image_count = 0;
+    SDL_Surface **images = SDL_GetSurfaceImages(icon, &image_count);
+    SDL_qsort(images, image_count, sizeof(SDL_Surface *), icon_sort_callback);
+
+    SDL_Surface* icon_small = NULL;
+    int target_small_w = GetSystemMetrics(SM_CXSMICON);
+    int target_small_h = GetSystemMetrics(SM_CYSMICON);
+    for (int i = 0; i < image_count; ++i) {
+        if (icon_small != NULL && (images[i]->w >= target_small_w || images[i]->h >= target_small_h)) {
+            break;
+        } else {
+            icon_small = images[i];
+        }
     }
-    data->hicon = hicon;
 
-    // Set the icon for the window
-    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon);
+    HICON hicon_small = create_hicon(icon_small);
+    if (!hicon_small) {
+        return false;
+    }
 
-    // Set the icon in the task manager (should we do this?)
-    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon);
-    return result;
+    if (data->hicon_small) {
+        DestroyIcon(data->hicon_small);
+    }
+    data->hicon_small = hicon_small;
+
+    SDL_Surface* icon_large = NULL;
+    int target_large_w = GetSystemMetrics(SM_CXICON);
+    int target_large_h = GetSystemMetrics(SM_CYICON);
+    for (int i = image_count; i > 0; --i) {
+        if (icon_large != NULL && (images[i]->w <= target_large_w || images[i]->h <= target_large_h)) {
+            break;
+        } else {
+            icon_large = images[i];
+        }
+    }
+
+    HICON hicon_large = create_hicon(icon_large);
+    if (!hicon_large) {
+        return false;
+    }
+
+    if (data->hicon_large) {
+        DestroyIcon(data->hicon_large);
+    }
+    data->hicon_large = hicon_large;
+
+    // Set the icons for the window
+    SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hicon_small);
+    SendMessage(hwnd, WM_SETICON, ICON_BIG, (LPARAM)hicon_large);
+
+    return true;
 #else
     return SDL_Unsupported();
 #endif
@@ -1375,10 +1435,10 @@ SDL_FullscreenResult WIN_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window 
         WIN_MaximizeWindow(_this, window);
     }
 
-    if (!fullscreen && data && data->hicon) {
+    if (!fullscreen && data && data->hicon_small) {
         // Reset the icon for the window when returning from fullscreen mode
         SendMessage(hwnd, WM_SETICON, ICON_SMALL, 0);
-        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)data->hicon);
+        SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)data->hicon_small);
     }
 
 #ifdef HIGHDPI_DEBUG
