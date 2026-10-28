@@ -453,6 +453,11 @@ static void HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 
+    // Make sure the rumble thread is done with this device
+    while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
+        SDL_Delay(10);
+    }
+
     if (device->driver->FreeDevice) {
         device->driver->FreeDevice(device);
     }
@@ -1026,11 +1031,6 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
             }
 
             HIDAPI_CleanupDeviceDriver(device);
-
-            // Make sure the rumble thread is done with this device
-            while (SDL_GetAtomicInt(&device->rumble_pending) > 0) {
-                SDL_Delay(10);
-            }
 
             for (i = 0; i < device->num_children; ++i) {
                 device->children[i]->parent = NULL;
