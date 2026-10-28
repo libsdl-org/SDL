@@ -106,16 +106,12 @@ static const SDL_UDEV_Symbols *usyms = NULL;
 static struct
 {
     bool m_bInitialized;
-    Uint32 m_unDeviceChangeCounter;
+    SDL_AtomicU32 m_unDeviceChangeCounter;
     bool m_bCanGetNotifications;
     Uint64 m_unLastDetect;
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    SDL_ThreadID m_nThreadID;
-    WNDCLASSEXA m_wndClass;
-    HWND m_hwndMsg;
-    HDEVNOTIFY m_hNotify;
-    double m_flLastWin32MessageCheck;
+    WIN_DeviceInterfaceNotification *m_pNotification;
 #endif
 
 #ifdef SDL_PLATFORM_MACOS
@@ -130,51 +126,17 @@ static struct
 #endif
 } SDL_HIDAPI_discovery;
 
+static void HIDAPI_DeviceChanged(void)
+{
+    SDL_AddAtomicU32(&SDL_HIDAPI_discovery.m_unDeviceChangeCounter, 1);
+}
+
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-struct _DEV_BROADCAST_HDR
-{
-    DWORD dbch_size;
-    DWORD dbch_devicetype;
-    DWORD dbch_reserved;
-};
-
-typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
-{
-    DWORD dbcc_size;
-    DWORD dbcc_devicetype;
-    DWORD dbcc_reserved;
-    GUID dbcc_classguid;
-    char dbcc_name[1];
-} DEV_BROADCAST_DEVICEINTERFACE_A, *PDEV_BROADCAST_DEVICEINTERFACE_A;
-
-typedef struct _DEV_BROADCAST_HDR DEV_BROADCAST_HDR;
-#define DBT_DEVICEARRIVAL          0x8000     // system detected a new device
-#define DBT_DEVICEREMOVECOMPLETE   0x8004     // device was removed from the system
-#define DBT_DEVTYP_DEVICEINTERFACE 0x00000005 // device interface class
-#define DBT_DEVNODES_CHANGED       0x0007
-#define DBT_CONFIGCHANGED          0x0018
-#define DBT_DEVICETYPESPECIFIC     0x8005 // type specific event
-#define DBT_DEVINSTSTARTED         0x8008 // device installed and started
-
 #include <initguid.h>
-DEFINE_GUID(GUID_DEVINTERFACE_USB_DEVICE, 0xA5DCBF10L, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
 
-static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+static void HIDAPI_DeviceInterfaceChanged(void *userdata)
 {
-    switch (message) {
-    case WM_DEVICECHANGE:
-        switch (wParam) {
-        case DBT_DEVICEARRIVAL:
-        case DBT_DEVICEREMOVECOMPLETE:
-            if (((DEV_BROADCAST_HDR *)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
-                ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
-            }
-            break;
-        }
-        return TRUE;
-    }
-
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    HIDAPI_DeviceChanged();
 }
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
@@ -185,7 +147,7 @@ static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
     io_object_t entry;
     while ((entry = IOIteratorNext(portIterator)) != 0) {
         IOObjectRelease(entry);
-        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+        HIDAPI_DeviceChanged();
     }
 }
 #endif // SDL_PLATFORM_MACOS
@@ -235,37 +197,19 @@ static int StrIsInteger(const char *string)
 static void HIDAPI_InitializeDiscovery(void)
 {
     SDL_HIDAPI_discovery.m_bInitialized = true;
-    SDL_HIDAPI_discovery.m_unDeviceChangeCounter = 1;
     SDL_HIDAPI_discovery.m_bCanGetNotifications = false;
     SDL_HIDAPI_discovery.m_unLastDetect = 0;
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    SDL_HIDAPI_discovery.m_nThreadID = SDL_GetCurrentThreadID();
-
-    SDL_zero(SDL_HIDAPI_discovery.m_wndClass);
-    SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
-    SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "SDL_HIDAPI_DEVICE_DETECTION";
-    SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc; // This function is called by windows
-    SDL_HIDAPI_discovery.m_wndClass.cbSize = sizeof(WNDCLASSEX);
-
-    RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
-    SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "SDL_HIDAPI_DEVICE_DETECTION", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
-
-    {
-        DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
-
-        SDL_zero(devBroadcast);
-        devBroadcast.dbcc_size = sizeof(devBroadcast);
-        devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-        devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
-
-        /* DEVICE_NOTIFY_ALL_INTERFACE_CLASSES is important, makes GUID_DEVINTERFACE_USB_DEVICE ignored,
-         * but that seems to be necessary to get a notice after each individual usb input device actually
-         * installs, rather than just as the composite device is seen.
-         */
-        SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification(SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES);
-        SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_hNotify != 0);
-    }
+    /* We want notifications for all interface classes, not just HID, so we get a notice after
+     * each individual USB input device actually installs, rather than just as the composite
+     * device is seen, and so WinUSB devices used through libusb are noticed too.
+     *
+     * The callback is called on a system thread, so this doesn't depend on which thread
+     * initialized hidapi or pumps messages.
+     */
+    SDL_HIDAPI_discovery.m_pNotification = WIN_RegisterDeviceInterfaceNotification(HIDAPI_DeviceInterfaceChanged, NULL);
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_pNotification != NULL);
 #endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 #ifdef SDL_PLATFORM_MACOS
@@ -381,28 +325,11 @@ static void HIDAPI_UpdateDiscovery(void)
         const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000; // Update every 3 seconds
         Uint64 now = SDL_GetTicks();
         if (!SDL_HIDAPI_discovery.m_unLastDetect || now >= (SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
-            ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+            HIDAPI_DeviceChanged();
             SDL_HIDAPI_discovery.m_unLastDetect = now;
         }
         return;
     }
-
-#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (SDL_IsVideoThread()) {
-        // just let the usual SDL_PumpEvents loop dispatch these, fixing bug 2998. --ryan.
-    } else {
-        // We'll only get messages on the same thread that created the window
-        if (SDL_GetCurrentThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
-            MSG msg;
-            while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
-                if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
-                }
-            }
-        }
-    }
-#endif // defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 
 #ifdef SDL_PLATFORM_MACOS
     if (SDL_HIDAPI_discovery.m_notificationPort) {
@@ -440,7 +367,7 @@ static void HIDAPI_UpdateDiscovery(void)
                     const char *action = NULL;
                     action = usyms->udev_device_get_action(pUdevDevice);
                     if (action == NULL || SDL_strcmp(action, "add") == 0 || SDL_strcmp(action, "remove") == 0) {
-                        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+                        HIDAPI_DeviceChanged();
                     }
                     usyms->udev_device_unref(pUdevDevice);
                 }
@@ -471,7 +398,7 @@ static void HIDAPI_UpdateDiscovery(void)
                 if (buf.event.len > 0) {
                     if (StrHasPrefix(buf.event.name, "hidraw") &&
                         StrIsInteger(buf.event.name + SDL_strlen("hidraw"))) {
-                        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+                        HIDAPI_DeviceChanged();
                         /* We found an hidraw change. We still continue to
                          * drain the inotify fd to avoid leaving old
                          * notifications in the queue. */
@@ -497,15 +424,8 @@ static void HIDAPI_ShutdownDiscovery(void)
     }
 
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
-    if (SDL_HIDAPI_discovery.m_hNotify) {
-        UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
-    }
-
-    if (SDL_HIDAPI_discovery.m_hwndMsg) {
-        DestroyWindow(SDL_HIDAPI_discovery.m_hwndMsg);
-    }
-
-    UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
+    WIN_UnregisterDeviceInterfaceNotification(SDL_HIDAPI_discovery.m_pNotification);
+    SDL_HIDAPI_discovery.m_pNotification = NULL;
 #endif
 
 #ifdef SDL_PLATFORM_MACOS
@@ -1327,11 +1247,10 @@ Uint32 SDL_hid_device_change_count(void)
 
     HIDAPI_UpdateDiscovery();
 
-    if (SDL_HIDAPI_discovery.m_unDeviceChangeCounter == 0) {
-        // Counter wrapped!
-        ++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
-    }
-    counter = SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+    // Bump the counter if it's freshly initialized or wrapped
+    SDL_CompareAndSwapAtomicU32(&SDL_HIDAPI_discovery.m_unDeviceChangeCounter, 0, 1);
+
+    counter = SDL_GetAtomicU32(&SDL_HIDAPI_discovery.m_unDeviceChangeCounter);
 
 #endif // !SDL_HIDAPI_DISABLED
 
