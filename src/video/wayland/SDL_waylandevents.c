@@ -2691,7 +2691,28 @@ static void text_input_delete_surrounding_text(void *data,
                                                uint32_t before_length,
                                                uint32_t after_length)
 {
-    // FIXME: Do we care about this event?
+    /* Plasma keyboard sends a deletion event when replacing characters via a long press popup,
+     * even when the surrounding text is not set.
+     *
+     * FIXME: Implementing this properly requires plumbing the surrounding text through to the
+     *        IME backend.
+     */
+
+    // The cursor position is unknown, so just send a backspace key event when before_length is non-zero.
+    if (before_length) {
+        SDL_WaylandSeat *seat = (SDL_WaylandSeat *)data;
+        const bool *state = SDL_GetKeyboardState(NULL);
+        SDL_Keymod modifiers = SDL_KMOD_NONE;
+        const SDL_Scancode sc = SDL_GetScancodeFromKey(SDLK_BACKSPACE, &modifiers);
+        const bool release = !state[sc];
+
+        SDL_SetModState(modifiers);
+        SDL_SendKeyboardKeyIgnoreModifiers(0, seat->keyboard.sdl_id, 0, sc, true);
+        if (release) {
+            SDL_SendKeyboardKeyIgnoreModifiers(0, seat->keyboard.sdl_id, 0, sc, false);
+        }
+        SDL_SetModState(seat->keyboard.pressed_modifiers | seat->keyboard.locked_modifiers);
+    }
 }
 
 static void text_input_done(void *data,
