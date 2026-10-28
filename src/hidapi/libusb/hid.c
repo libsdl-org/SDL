@@ -657,10 +657,10 @@ static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libus
 {
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	default:
 		break;
