@@ -1352,38 +1352,6 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 }
 
 /*
- * Helper function to guess at a mapping for RAWINPUT gamepads
- */
-static GamepadMapping_t *SDL_CreateMappingForRAWINPUTGamepad(SDL_GUID guid)
-{
-    bool existing;
-    char mapping_string[1024];
-
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,guide:b10,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:h0.1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
-
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
-}
-
-/*
- * Helper function to guess at a mapping for WGI gamepads
- */
-static GamepadMapping_t *SDL_CreateMappingForWGIGamepad(SDL_GUID guid)
-{
-    bool existing;
-    char mapping_string[1024];
-
-    if (guid.data[15] != SDL_JOYSTICK_TYPE_GAMEPAD) {
-        return NULL;
-    }
-
-    SDL_strlcpy(mapping_string, "none,*,", sizeof(mapping_string));
-    SDL_strlcat(mapping_string, "a:b0,b:b1,x:b2,y:b3,back:b6,start:b7,leftstick:b8,rightstick:b9,leftshoulder:b4,rightshoulder:b5,dpup:b10,dpdown:b12,dpleft:b13,dpright:b11,leftx:a1,lefty:a0~,rightx:a3,righty:a2~,lefttrigger:a4,righttrigger:a5,", sizeof(mapping_string));
-
-    return SDL_PrivateAddMappingForGUID(guid, mapping_string, &existing, SDL_GAMEPAD_MAPPING_PRIORITY_DEFAULT);
-}
-
-/*
  * Helper function to scan the mappings database for a gamepad with the specified GUID
  */
 static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bool match_version, bool exact_match_crc)
@@ -1482,10 +1450,6 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
 #endif
     if (SDL_IsJoystickHIDAPI(guid)) {
         mapping = SDL_CreateMappingForHIDAPIGamepad(guid);
-    } else if (SDL_IsJoystickRAWINPUT(guid)) {
-        mapping = SDL_CreateMappingForRAWINPUTGamepad(guid);
-    } else if (SDL_IsJoystickWGI(guid)) {
-        mapping = SDL_CreateMappingForWGIGamepad(guid);
     } else if (SDL_IsJoystickVIRTUAL(guid)) {
         // We'll pick up a robust mapping in VIRTUAL_JoystickGetGamepadMapping
 #ifdef SDL_PLATFORM_ANDROID

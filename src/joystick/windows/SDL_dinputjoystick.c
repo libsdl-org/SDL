@@ -26,7 +26,6 @@
 
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
-#include "SDL_rawinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
 #include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
@@ -235,16 +234,12 @@ static bool SetDIerror(const char *function, HRESULT code)
 
 static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
 {
-#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
+#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_GAMEINPUT)
     SDL_GamepadType type;
 
     // Some other backends will pick up XInput-compatible devices
-    if (!SDL_XINPUT_Enabled()
-#ifdef SDL_JOYSTICK_RAWINPUT
-        && !RAWINPUT_IsEnabled()
-#endif
-        && !SDL_UsingGameInputForXInputControllers()
-    ) {
+    if (!SDL_XINPUT_Enabled() &&
+        !SDL_UsingGameInputForXInputControllers()) {
         return false;
     }
 
@@ -260,7 +255,7 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
         (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return true;
     }
-#endif // SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT
+#endif // SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_GAMEINPUT
 
     return false;
 }

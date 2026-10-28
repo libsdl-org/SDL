@@ -44,7 +44,6 @@
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
-#include "SDL_rawinputjoystick_c.h"
 
 #include "../../haptic/windows/SDL_dinputhaptic_c.h" // For haptic hot plugging
 
@@ -72,11 +71,6 @@ static bool WindowsDeviceChanged(void)
 static void SetWindowsDeviceChanged(void)
 {
     s_lastDeviceChange = 0;
-}
-
-void WINDOWS_RAWINPUTEnabledChanged(void)
-{
-    SetWindowsDeviceChanged();
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
@@ -118,19 +112,11 @@ static LRESULT CALLBACK SDL_PrivateJoystickDetectProc(HWND hwnd, UINT msg, WPARA
         break;
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT
-    return CallWindowProc(RAWINPUT_WindowProc, hwnd, msg, wParam, lParam);
-#else
     return CallWindowProc(DefWindowProc, hwnd, msg, wParam, lParam);
-#endif
 }
 
 static void SDL_CleanupDeviceNotification(SDL_DeviceNotificationData *data)
 {
-#ifdef SDL_JOYSTICK_RAWINPUT
-    RAWINPUT_UnregisterNotifications();
-#endif
-
     if (data->hNotify) {
         UnregisterDeviceNotification(data->hNotify);
     }
@@ -184,9 +170,6 @@ static bool SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
         return false;
     }
 
-#ifdef SDL_JOYSTICK_RAWINPUT
-    RAWINPUT_RegisterNotifications(data->messageWindow);
-#endif
     return true;
 }
 
@@ -701,12 +684,5 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
     WINDOWS_JoystickQuit,
     WINDOWS_JoystickGetGamepadMapping
 };
-
-#else
-
-#ifdef SDL_JOYSTICK_RAWINPUT
-// The RAWINPUT driver needs the device notification setup above
-#error SDL_JOYSTICK_RAWINPUT requires SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
-#endif
 
 #endif // SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT
