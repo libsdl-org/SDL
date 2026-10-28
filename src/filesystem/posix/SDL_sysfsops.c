@@ -304,11 +304,11 @@ bool SDL_SYS_CreateDirectory(const char *path)
     const char *mkdir_path = path;
     char *apath = NULL;
 
-#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS)
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_OPENHARMONY)
     if (*path != '/') {
-#ifdef SDL_PLATFORM_ANDROID
-        SDL_asprintf(&apath, "%s/%s", SDL_GetAndroidInternalStoragePath(), path);
-#elif defined(SDL_PLATFORM_IOS)
+        #if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
+        SDL_asprintf(&apath, "%s/%s", SDL_GetPlatformInternalStoragePath(), path);
+        #elif defined(SDL_PLATFORM_IOS)
         char *base = SDL_GetPrefPath("", "");
         if (!base) {
             return false;
@@ -316,7 +316,7 @@ bool SDL_SYS_CreateDirectory(const char *path)
 
         SDL_asprintf(&apath, "%s%s", base, path);
         SDL_free(base);
-#endif
+        #endif
         if (!apath) {
             return false;
         }
