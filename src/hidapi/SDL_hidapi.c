@@ -131,6 +131,11 @@ static void HIDAPI_DeviceChanged(void)
     SDL_AddAtomicU32(&SDL_HIDAPI_discovery.m_unDeviceChangeCounter, 1);
 }
 
+void SDL_HIDAPI_DeviceChanged(void)
+{
+    HIDAPI_DeviceChanged();
+}
+
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 #include <initguid.h>
 
