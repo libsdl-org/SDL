@@ -41,7 +41,6 @@ struct Wayland_Framebuffer
     Wayland_Buffer buffer[BUFFER_COUNT];
     Wayland_SHMPool *pool;
     void *pixels;
-    bool vsync;
 };
 
 static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
@@ -127,27 +126,20 @@ void Wayland_WaitForSwapInterval(SDL_WindowData *wind)
 
 bool Wayland_SetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync)
 {
-    SDL_WindowData *wind = window->internal;
-    if (!wind->framebuffer) {
-        SDL_SetError("No window framebuffer");
-    }
     if (vsync < 0) {
         return SDL_SetError("Unsupported vsync type");
     }
 
-    wind->framebuffer->vsync = vsync > 0;
+    SDL_WindowData *wind = window->internal;
+    wind->presentation.vsync = vsync > 0;
     return true;
 }
 
 bool Wayland_GetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int *vsync)
 {
-    SDL_WindowData *wind = window->internal;
-    if (!wind->framebuffer) {
-        SDL_SetError("No window framebuffer");
-    }
-
     if (vsync) {
-        *vsync = (int)wind->framebuffer->vsync;
+        SDL_WindowData *wind = window->internal;
+        *vsync = (int)wind->presentation.vsync;
     }
     return true;
 }
@@ -238,10 +230,8 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
             break;
         }
 
-        /* If there are no free buffers, wait for a buffer release event.
-         * Not all compositors flush on a release event, so round trips are used, as they cause a flush.
-         */
-        if (WAYLAND_wl_display_roundtrip_queue(viddata->display, wind->presentation.queue) < 0) {
+        // If there are no free buffers, wait for a buffer release event.
+        if (WAYLAND_wl_display_dispatch_queue(viddata->display, wind->presentation.queue) < 0) {
             return false;
         }
     }
@@ -249,7 +239,7 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     // Copy the image data.
     SDL_memcpy(buffer->mem, framebuffer->pixels, w * h * 4);
 
-    if (framebuffer->vsync) {
+    if (wind->presentation.vsync) {
         Wayland_WaitForSwapInterval(wind);
     }
 

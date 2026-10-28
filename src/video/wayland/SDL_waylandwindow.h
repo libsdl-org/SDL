@@ -131,10 +131,11 @@ struct SDL_WindowData
 
     struct
     {
-        struct wl_callback *frame_callback;
         struct wl_event_queue *queue;
         struct wl_surface *surface_wrapper;
+        struct wl_callback *frame_callback;
         SDL_AtomicInt swap_interval_ready;
+        bool vsync;
     } presentation;
 
     SDL_DisplayData **outputs;
