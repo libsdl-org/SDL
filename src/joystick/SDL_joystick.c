@@ -58,14 +58,8 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
     &SDL_GAMEINPUT_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_RAWINPUT // Before WINDOWS driver, as WINDOWS wants to check if this driver is handling things
-    &SDL_RAWINPUT_JoystickDriver,
-#endif
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT) // Before WGI driver, as WGI wants to check if this driver is handling things
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     &SDL_WINDOWS_JoystickDriver,
-#endif
-#ifdef SDL_JOYSTICK_WGI
-    &SDL_WGI_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_WINMM
     &SDL_WINMM_JoystickDriver,
@@ -1449,9 +1443,7 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
 
     // We know the initial values for HIDAPI and XInput joysticks
     if ((SDL_IsJoystickHIDAPI(joystick->guid) ||
-         SDL_IsJoystickXInput(joystick->guid) ||
-         SDL_IsJoystickRAWINPUT(joystick->guid) ||
-         SDL_IsJoystickWGI(joystick->guid)) &&
+         SDL_IsJoystickXInput(joystick->guid)) &&
         joystick->naxes >= SDL_GAMEPAD_AXIS_COUNT) {
         int left_trigger, right_trigger;
         if (SDL_IsJoystickXInput(joystick->guid)) {
@@ -3586,11 +3578,6 @@ bool SDL_IsJoystickXInput(SDL_GUID guid)
     return (guid.data[14] == 'x') ? true : false;
 }
 
-bool SDL_IsJoystickWGI(SDL_GUID guid)
-{
-    return (guid.data[14] == 'w') ? true : false;
-}
-
 bool SDL_IsJoystickGameInput(SDL_GUID guid)
 {
     return (guid.data[14] == 'g') ? true : false;
@@ -3604,11 +3591,6 @@ bool SDL_IsJoystickHIDAPI(SDL_GUID guid)
 bool SDL_IsJoystickMFI(SDL_GUID guid)
 {
     return (guid.data[14] == 'm') ? true : false;
-}
-
-bool SDL_IsJoystickRAWINPUT(SDL_GUID guid)
-{
-    return (guid.data[14] == 'r') ? true : false;
 }
 
 bool SDL_IsJoystickVIRTUAL(SDL_GUID guid)
@@ -3706,10 +3688,6 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
         default:
             return SDL_JOYSTICK_TYPE_UNKNOWN;
         }
-    }
-
-    if (SDL_IsJoystickWGI(guid)) {
-        return (SDL_JoystickType)guid.data[15];
     }
 
     if (SDL_IsJoystickGameInput(guid)) {

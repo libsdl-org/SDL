@@ -155,9 +155,6 @@ extern bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id);
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 
-// Function to return whether a joystick guid comes from the WGI driver
-extern bool SDL_IsJoystickWGI(SDL_GUID guid);
-
 // Function to return whether a joystick guid comes from the GameInput driver
 extern bool SDL_IsJoystickGameInput(SDL_GUID guid);
 
@@ -166,9 +163,6 @@ extern bool SDL_IsJoystickHIDAPI(SDL_GUID guid);
 
 // Function to return whether a joystick guid comes from the MFI driver
 extern bool SDL_IsJoystickMFI(SDL_GUID guid);
-
-// Function to return whether a joystick guid comes from the RAWINPUT driver
-extern bool SDL_IsJoystickRAWINPUT(SDL_GUID guid);
 
 // Function to return whether a joystick guid comes from the Virtual driver
 extern bool SDL_IsJoystickVIRTUAL(SDL_GUID guid);
