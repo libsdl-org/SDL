@@ -472,7 +472,7 @@ static void HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
     }
 }
 
-static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed) SDL_NO_THREAD_SAFETY_ANALYSIS // We unlock the joystick lock to be able to open the HID device on Android
+static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed)
 {
     *removed = false;
 
@@ -1689,7 +1689,7 @@ static void HIDAPI_JoystickUpdate(SDL_Joystick *joystick)
     // This is handled in SDL_HIDAPI_UpdateDevices()
 }
 
-static void HIDAPI_JoystickClose(SDL_Joystick *joystick) SDL_NO_THREAD_SAFETY_ANALYSIS // We unlock the device lock so rumble can complete
+static void HIDAPI_JoystickClose(SDL_Joystick *joystick)
 {
     SDL_AssertJoysticksLocked();
 

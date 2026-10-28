@@ -2599,7 +2599,7 @@ static void HandleMiniControllerStateR(Uint64 timestamp, SDL_Joystick *joystick,
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 }
 
-static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet) SDL_NO_THREAD_SAFETY_ANALYSIS // We unlock and lock the device lock to be able to change IMU state
+static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
 {
     Uint64 timestamp = SDL_GetTicksNS();
 
