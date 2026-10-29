@@ -31,6 +31,8 @@
 #include "../../core/windows/SDL_gameinput.h"
 #include "../hidapi/SDL_hidapijoystick_c.h"
 
+#include <cfgmgr32.h>
+
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL 0x80000000
 #endif
@@ -233,6 +235,52 @@ static bool SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() DirectX error 0x%8.8" SDL_PRIxSLONG, function, code);
 }
 
+#if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
+// Returns true if the xinputhid.sys filter driver is loaded for this HID device.
+// xinputhid exposes the device through XInput, but the HID path doesn't contain "IG_",
+// e.g. Xbox controllers over Bluetooth and third party XInputHID controllers.
+static bool SDL_IsXInputHIDDevice(const char *hidPath)
+{
+    char instance_id[MAX_DEVICE_ID_LEN];
+    char filters[256];
+    ULONG size = sizeof(filters) - 2;
+    DEVINST devnode;
+    const char *filter;
+    char *guid;
+    size_t i;
+
+    // Convert a path like this: \\?\HID#VID_3537&PID_6700&MI_00#8&10e91a1d&0&0000#{4d1e55b2-f16f-11cf-88cb-001111000030}
+    // to the device instance ID: HID\VID_3537&PID_6700&MI_00\8&10e91a1d&0&0000
+    if (SDL_strncmp(hidPath, "\\\\?\\", 4) != 0) {
+        return false;
+    }
+    SDL_strlcpy(instance_id, hidPath + 4, sizeof(instance_id));
+    guid = SDL_strstr(instance_id, "#{");
+    if (!guid) {
+        return false;
+    }
+    *guid = '\0';
+    for (i = 0; instance_id[i] != '\0'; ++i) {
+        if (instance_id[i] == '#') {
+            instance_id[i] = '\\';
+        }
+    }
+
+    // CM_DRP_UPPERFILTERS is a REG_MULTI_SZ, the zeroed tail of the buffer terminates the list
+    SDL_zeroa(filters);
+    if (CM_Locate_DevNodeA(&devnode, instance_id, CM_LOCATE_DEVNODE_NORMAL) != CR_SUCCESS ||
+        CM_Get_DevNode_Registry_PropertyA(devnode, CM_DRP_UPPERFILTERS, NULL, filters, &size, 0) != CR_SUCCESS) {
+        return false;
+    }
+    for (filter = filters; *filter; filter += SDL_strlen(filter) + 1) {
+        if (SDL_strcasecmp(filter, "xinputhid") == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+#endif // SDL_JOYSTICK_XINPUT || SDL_JOYSTICK_RAWINPUT
+
 static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
 {
 #if defined(SDL_JOYSTICK_XINPUT) || defined(SDL_JOYSTICK_RAWINPUT)
@@ -251,6 +299,11 @@ static bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *
     // If device path contains "IG_" then its an XInput device
     // See: https://docs.microsoft.com/windows/win32/xinput/xinput-and-directinput
     if (SDL_strstr(hidPath, "IG_") != NULL) {
+        return true;
+    }
+
+    // RawInput only picks up devices with "IG_" in the path, so these are only reported by XInput
+    if (SDL_XINPUT_Enabled() && SDL_IsXInputHIDDevice(hidPath)) {
         return true;
     }
 
