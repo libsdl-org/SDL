@@ -322,7 +322,6 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
             CFStringRef utiType = GetUTIType(mime_type);
             NSString *availableType = [pasteboard availableTypeFromArray:@[(__bridge NSString *) utiType]];
             itemData = [item dataForType: availableType];
-            CFRelease(utiType);
             if (itemData != nil) {
                 NSUInteger length = [itemData length];
                 *size = (size_t)length;
@@ -330,9 +329,23 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
                 if (data) {
                     [itemData getBytes: data length: length];
                     SDL_memset((Uint8 *)data + length, 0, sizeof(Uint32));
+                    // if the app asked for, generically, "plain text" and we see a UTF-16 byte-order-mark, convert it to UTF-8.
+                    // almost all plain text comes through as UTF-8 on the Mac, but some things, like "copying" a file's icon to the clipboard from the Finder,
+                    // will still give you UTF-16. Other than the BOM, there's no indication of the encoding for the "public.plain-text" UTI,
+                    // so if the app didn't ask for something more specific, this is the best we can do.
+                    if ((*((const Uint16 *) data) == 0xFEFF) && (CFStringCompare(utiType, CFSTR("public.plain-text"), 0) == kCFCompareEqualTo)) {
+                        char *utf8 = SDL_iconv_string("UTF-8", "UTF-16", ((char *) data) + 2, length + sizeof (Uint32) - 2);
+                        if (utf8) {
+                            *size = (size_t) SDL_strlen(utf8);
+                            SDL_free(data);
+                            data = utf8;
+                        }
+                    }
                 }
+                CFRelease(utiType);
                 break;
             }
+            CFRelease(utiType);
         }
 
         if (!data && SDL_strcmp(mime_type, "text/uri-list") == 0) {
