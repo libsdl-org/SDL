@@ -338,7 +338,12 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, background_app_default)) {
         // Get more aggressive for Catalina: activate the Dock first so we definitely reset all activation state.
         for (NSRunningApplication *i in [NSRunningApplication runningApplicationsWithBundleIdentifier:@"com.apple.dock"]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // NSApplicationActivateIgnoringOtherApps is deprecated in macOS 14.0 and has no
+            // effect there, but this is still needed when running on earlier versions.
             [i activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+#pragma clang diagnostic pop
             break;
         }
         SDL_Delay(300); // !!! FIXME: this isn't right.

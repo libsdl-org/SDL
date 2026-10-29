@@ -33,10 +33,6 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 
-#ifdef SDL_PLATFORM_VISIONOS
-#import "SDL3/SDL3-Swift.h"
-#endif
-
 #ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
