@@ -40,7 +40,18 @@ typedef struct SDL_Hint
     SDL_HintWatch *callbacks;
 } SDL_Hint;
 
+/* The hint properties lock protects the values and the callback lists, and is never held while callbacks are
+   called, so reading hints never waits for a callback. The callback lock is held while callbacks are called,
+   and while callbacks are added and removed, so callbacks are called one at a time, in the order the values
+   were set, and a callback isn't running on another thread once it has been removed.
+
+   Callbacks can set hints and add or remove callbacks themselves, both locks are recursive. Callbacks that are
+   removed while callbacks are being called are only cleared, and freed later, so the list being walked stays
+   valid. Callbacks are added at the head of the list, so they aren't called by a walk that's in progress.
+ */
 static SDL_AtomicU32 SDL_hint_props;
+static void *SDL_hint_callback_lock; // Accessed with the atomic pointer functions
+static int SDL_hint_dispatching;     // Callback calls in progress, protected by the callback lock
 
 
 void SDL_InitHints(void)
@@ -57,6 +68,23 @@ void SDL_QuitHints(void)
     if (props) {
         SDL_DestroyProperties(props);
     }
+
+    SDL_Mutex *callback_lock = (SDL_Mutex *)SDL_SetAtomicPointer(&SDL_hint_callback_lock, NULL);
+    SDL_DestroyMutex(callback_lock);
+}
+
+static SDL_Mutex *GetHintCallbackLock(void)
+{
+    SDL_Mutex *lock = (SDL_Mutex *)SDL_GetAtomicPointer(&SDL_hint_callback_lock);
+    if (!lock) {
+        lock = SDL_CreateMutex();
+        if (!SDL_CompareAndSwapAtomicPointer(&SDL_hint_callback_lock, NULL, lock)) {
+            // Somebody else created the lock before us, just use that
+            SDL_DestroyMutex(lock);
+            lock = (SDL_Mutex *)SDL_GetAtomicPointer(&SDL_hint_callback_lock);
+        }
+    }
+    return lock;
 }
 
 static SDL_PropertiesID GetHintProperties(bool create)
@@ -102,6 +130,68 @@ static const char *GetHintEnvironmentVariable(const char *name)
     return result;
 }
 
+// Find a hint, adding it if it doesn't exist yet. Called holding the hint properties lock.
+static SDL_Hint *GetOrAddHint(SDL_PropertiesID hints, const char *name)
+{
+    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
+    if (!hint) {
+        hint = (SDL_Hint *)SDL_calloc(1, sizeof(*hint));
+        if (!hint) {
+            return NULL;
+        }
+        hint->priority = SDL_HINT_DEFAULT;
+        if (!SDL_SetPointerPropertyWithCleanup(hints, name, hint, CleanupHintProperty, NULL)) {
+            // SDL_SetPointerPropertyWithCleanup() cleans up the hint if it fails
+            return NULL;
+        }
+    }
+    return hint;
+}
+
+// Call a hint's callbacks, holding the callback lock and not the hint properties lock
+static void CallHintCallbacks(SDL_Hint *hint, const char *name, const char *old_value, const char *new_value)
+{
+    ++SDL_hint_dispatching;
+    for (SDL_HintWatch *entry = hint->callbacks; entry; entry = entry->next) {
+        if (entry->callback) {
+            entry->callback(entry->userdata, name, old_value, new_value);
+        }
+    }
+    --SDL_hint_dispatching;
+}
+
+// Remove a callback, holding the callback lock and the hint properties lock
+static void RemoveHintCallback(SDL_Hint *hint, SDL_HintCallback callback, void *userdata)
+{
+    SDL_HintWatch *entry, *prev = NULL, *next;
+
+    for (entry = hint->callbacks; entry; entry = entry->next) {
+        if ((callback == entry->callback) && (userdata == entry->userdata)) {
+            entry->callback = NULL;
+            break;
+        }
+    }
+
+    if (SDL_hint_dispatching) {
+        // Freed when callbacks aren't being called
+        return;
+    }
+
+    for (entry = hint->callbacks; entry; entry = next) {
+        next = entry->next;
+        if (!entry->callback) {
+            if (prev) {
+                prev->next = next;
+            } else {
+                hint->callbacks = next;
+            }
+            SDL_free(entry);
+        } else {
+            prev = entry;
+        }
+    }
+}
+
 bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriority priority)
 {
     CHECK_PARAM(!name || !*name) {
@@ -119,36 +209,23 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
     }
 
     bool result = false;
+    char *old_value = NULL;
+    bool changed = false;
 
+    SDL_Mutex *callback_lock = GetHintCallbackLock();
+
+    SDL_LockMutex(callback_lock);
     SDL_LockProperties(hints);
 
-    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
-    if (hint) {
-        if (priority >= hint->priority) {
-            if (hint->value != value && (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
-                char *old_value = hint->value;
-
-                hint->value = value ? SDL_strdup(value) : NULL;
-                SDL_HintWatch *entry = hint->callbacks;
-                while (entry) {
-                    // Save the next entry in case this one is deleted
-                    SDL_HintWatch *next = entry->next;
-                    entry->callback(entry->userdata, name, old_value, value);
-                    entry = next;
-                }
-                SDL_free(old_value);
-            }
-            hint->priority = priority;
-            result = true;
-        }
-    } else {  // Couldn't find the hint? Add a new one.
-        hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-        if (hint) {
+    SDL_Hint *hint = GetOrAddHint(hints, name);
+    if (hint && priority >= hint->priority) {
+        if (hint->value != value && (!value || !hint->value || SDL_strcmp(hint->value, value) != 0)) {
+            old_value = hint->value;
             hint->value = value ? SDL_strdup(value) : NULL;
-            hint->priority = priority;
-            hint->callbacks = NULL;
-            result = SDL_SetPointerPropertyWithCleanup(hints, name, hint, CleanupHintProperty, NULL);
+            changed = true;
         }
+        hint->priority = priority;
+        result = true;
     }
 
 #ifdef SDL_PLATFORM_ANDROID
@@ -159,6 +236,13 @@ bool SDL_SetHintWithPriority(const char *name, const char *value, SDL_HintPriori
 #endif // SDL_PLATFORM_ANDROID
 
     SDL_UnlockProperties(hints);
+
+    if (changed) {
+        CallHintCallbacks(hint, name, old_value, value);
+        SDL_free(old_value);
+    }
+
+    SDL_UnlockMutex(callback_lock);
 
     return result;
 }
@@ -176,25 +260,27 @@ bool SDL_ResetHint(const char *name)
         return false;
     }
 
-    bool result = false;
+    char *old_value = NULL;
+    bool changed = false;
 
+    SDL_Mutex *callback_lock = GetHintCallbackLock();
+
+    SDL_LockMutex(callback_lock);
     SDL_LockProperties(hints);
 
     SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
-    if (hint) {
-        if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
-            for (SDL_HintWatch *entry = hint->callbacks; entry;) {
-                // Save the next entry in case this one is deleted
-                SDL_HintWatch *next = entry->next;
-                entry->callback(entry->userdata, name, hint->value, env);
-                entry = next;
-            }
-        }
-        SDL_free(hint->value);
-        hint->value = NULL;
-        hint->priority = SDL_HINT_DEFAULT;
-        result = true;
+    if (!hint) {
+        SDL_UnlockProperties(hints);
+        SDL_UnlockMutex(callback_lock);
+        return false;
     }
+
+    if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
+        changed = true;
+    }
+    old_value = hint->value;
+    hint->value = NULL;
+    hint->priority = SDL_HINT_DEFAULT;
 
 #ifdef SDL_PLATFORM_ANDROID
     if (SDL_strcmp(name, SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY) == 0) {
@@ -209,45 +295,56 @@ bool SDL_ResetHint(const char *name)
 
     SDL_UnlockProperties(hints);
 
-    return result;
+    if (changed) {
+        CallHintCallbacks(hint, name, old_value, env);
+    }
+    SDL_free(old_value);
+
+    SDL_UnlockMutex(callback_lock);
+
+    return true;
 }
 
-static void SDLCALL ResetHintsCallback(void *userdata, SDL_PropertiesID hints, const char *name)
+typedef struct ResetHintsData
 {
-    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
-    if (!hint) {
-        return;  // uh...okay.
-    }
+    char **names;
+    int count;
+    int max;
+} ResetHintsData;
 
-    const char *env = GetHintEnvironmentVariable(name);
-    if ((!env && hint->value) || (env && !hint->value) || (env && SDL_strcmp(env, hint->value) != 0)) {
-        SDL_HintWatch *entry = hint->callbacks;
-        while (entry) {
-            // Save the next entry in case this one is deleted
-            SDL_HintWatch *next = entry->next;
-            entry->callback(entry->userdata, name, hint->value, env);
-            entry = next;
-        }
-    }
-    SDL_free(hint->value);
-    hint->value = NULL;
-    hint->priority = SDL_HINT_DEFAULT;
+static void SDLCALL CollectHintNamesCallback(void *userdata, SDL_PropertiesID hints, const char *name)
+{
+    ResetHintsData *data = (ResetHintsData *)userdata;
 
-#ifdef SDL_PLATFORM_ANDROID
-    if (SDL_strcmp(name, SDL_HINT_ANDROID_ALLOW_RECREATE_ACTIVITY) == 0) {
-        // Special handling for this hint, which needs to persist outside the normal application flow
-        if (env) {
-            Android_SetAllowRecreateActivity(SDL_GetStringBoolean(env, false));
-        } else {
-            Android_SetAllowRecreateActivity(false);
+    if (data->count == data->max) {
+        int max = data->max ? data->max * 2 : 32;
+        char **names = (char **)SDL_realloc(data->names, max * sizeof(*names));
+        if (!names) {
+            return;
         }
+        data->names = names;
+        data->max = max;
     }
-#endif // SDL_PLATFORM_ANDROID
+    data->names[data->count] = SDL_strdup(name);
+    if (data->names[data->count]) {
+        ++data->count;
+    }
 }
 
 void SDL_ResetHints(void)
 {
-    SDL_EnumerateProperties(GetHintProperties(false), ResetHintsCallback, NULL);
+    ResetHintsData data;
+    int i;
+
+    // Collect the names first, callbacks can't be called while the properties are being enumerated
+    SDL_zero(data);
+    SDL_EnumerateProperties(GetHintProperties(false), CollectHintNamesCallback, &data);
+
+    for (i = 0; i < data.count; ++i) {
+        SDL_ResetHint(data.names[i]);
+        SDL_free(data.names[i]);
+    }
+    SDL_free(data.names);
 }
 
 bool SDL_SetHint(const char *name, const char *value)
@@ -335,40 +432,36 @@ bool SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *user
     entry->callback = callback;
     entry->userdata = userdata;
 
-    bool result = false;
+    SDL_Mutex *callback_lock = GetHintCallbackLock();
 
+    SDL_LockMutex(callback_lock);
     SDL_LockProperties(hints);
 
-    SDL_RemoveHintCallback(name, callback, userdata);
-
-    SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
-    if (hint) {
-        result = true;
-    } else {  // Need to add a hint entry for this watcher
-        hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
-        if (!hint) {
-            SDL_free(entry);
-            SDL_UnlockProperties(hints);
-            return false;
-        } else {
-            hint->value = NULL;
-            hint->priority = SDL_HINT_DEFAULT;
-            hint->callbacks = NULL;
-            result = SDL_SetPointerPropertyWithCleanup(hints, name, hint, CleanupHintProperty, NULL);
-        }
+    SDL_Hint *hint = GetOrAddHint(hints, name);
+    if (!hint) {
+        SDL_UnlockProperties(hints);
+        SDL_UnlockMutex(callback_lock);
+        SDL_free(entry);
+        return false;
     }
+
+    RemoveHintCallback(hint, callback, userdata);
 
     // Add it to the callbacks for this hint
     entry->next = hint->callbacks;
     hint->callbacks = entry;
 
-    // Now call it with the current value
+    // Get the current value, it's a persistent copy so it can be used after unlocking
     const char *value = SDL_GetHint(name);
-    callback(userdata, name, value, value);
 
     SDL_UnlockProperties(hints);
 
-    return result;
+    // Now call it with the current value
+    callback(userdata, name, value, value);
+
+    SDL_UnlockMutex(callback_lock);
+
+    return true;
 }
 
 void SDL_RemoveHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
@@ -382,23 +475,15 @@ void SDL_RemoveHintCallback(const char *name, SDL_HintCallback callback, void *u
         return;
     }
 
+    SDL_Mutex *callback_lock = GetHintCallbackLock();
+
+    // Wait for callbacks to finish on other threads, so this one isn't called once it's removed
+    SDL_LockMutex(callback_lock);
     SDL_LockProperties(hints);
     SDL_Hint *hint = (SDL_Hint *)SDL_GetPointerProperty(hints, name, NULL);
     if (hint) {
-        SDL_HintWatch *prev = NULL;
-        for (SDL_HintWatch *entry = hint->callbacks; entry; entry = entry->next) {
-            if ((callback == entry->callback) && (userdata == entry->userdata)) {
-                if (prev) {
-                    prev->next = entry->next;
-                } else {
-                    hint->callbacks = entry->next;
-                }
-                SDL_free(entry);
-                break;
-            }
-            prev = entry;
-        }
+        RemoveHintCallback(hint, callback, userdata);
     }
     SDL_UnlockProperties(hints);
+    SDL_UnlockMutex(callback_lock);
 }
-
