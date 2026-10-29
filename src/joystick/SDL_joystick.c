@@ -672,6 +672,8 @@ static SDL_vidpid_list zero_centered_devices = {
     false
 };
 
+static SDL_SpinLock SDL_vidpid_list_lock;
+
 #define CHECK_JOYSTICK_MAGIC(joystick, result)                          \
     CHECK_PARAM(!SDL_ObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK)) { \
         SDL_InvalidParamError("joystick");                              \
@@ -4209,28 +4211,44 @@ static void SDL_LoadVIDPIDListFromHint(const char *hint, int *num_entries, int *
 
 void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list)
 {
-    // Empty the list
-    list->num_included_entries = 0;
-    list->num_excluded_entries = 0;
+    int num_included_entries = 0;
+    int max_included_entries = 0;
+    Uint32 *included_entries = NULL;
+    int num_excluded_entries = 0;
+    int max_excluded_entries = 0;
+    Uint32 *excluded_entries = NULL;
+    Uint32 *old_included_entries;
+    Uint32 *old_excluded_entries;
 
     // Add the initial entries
     if (list->num_initial_entries > 0) {
-        if (list->num_included_entries < list->num_initial_entries) {
-            Uint32 *entries = (Uint32 *)SDL_malloc(list->num_initial_entries * sizeof(*entries));
-            if (entries) {
-                SDL_memcpy(entries, list->initial_entries, list->num_initial_entries * sizeof(*entries));
-                list->included_entries = entries;
-                list->num_included_entries = list->num_initial_entries;
-                list->max_included_entries = list->num_initial_entries;
-            }
+        included_entries = (Uint32 *)SDL_malloc(list->num_initial_entries * sizeof(*included_entries));
+        if (included_entries) {
+            SDL_memcpy(included_entries, list->initial_entries, list->num_initial_entries * sizeof(*included_entries));
+            num_included_entries = list->num_initial_entries;
+            max_included_entries = list->num_initial_entries;
         }
     }
 
     // Add the included entries from the hint
-    SDL_LoadVIDPIDListFromHint(included_list, &list->num_included_entries, &list->max_included_entries, &list->included_entries);
+    SDL_LoadVIDPIDListFromHint(included_list, &num_included_entries, &max_included_entries, &included_entries);
 
     // Add the excluded entries from the hint
-    SDL_LoadVIDPIDListFromHint(excluded_list, &list->num_excluded_entries, &list->max_excluded_entries, &list->excluded_entries);
+    SDL_LoadVIDPIDListFromHint(excluded_list, &num_excluded_entries, &max_excluded_entries, &excluded_entries);
+
+    SDL_LockSpinlock(&SDL_vidpid_list_lock);
+    old_included_entries = list->included_entries;
+    list->included_entries = included_entries;
+    list->num_included_entries = num_included_entries;
+    list->max_included_entries = max_included_entries;
+    old_excluded_entries = list->excluded_entries;
+    list->excluded_entries = excluded_entries;
+    list->num_excluded_entries = num_excluded_entries;
+    list->max_excluded_entries = max_excluded_entries;
+    SDL_UnlockSpinlock(&SDL_vidpid_list_lock);
+
+    SDL_free(old_included_entries);
+    SDL_free(old_excluded_entries);
 }
 
 static void SDLCALL SDL_VIDPIDIncludedHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -4299,22 +4317,31 @@ bool SDL_VIDPIDInList(Uint16 vendor_id, Uint16 product_id, const SDL_vidpid_list
 {
     int i;
     Uint32 vidpid = MAKE_VIDPID(vendor_id, product_id);
+    bool result = false;
 
+    SDL_LockSpinlock(&SDL_vidpid_list_lock);
     for (i = 0; i < list->num_excluded_entries; ++i) {
         if (vidpid == list->excluded_entries[i]) {
-            return false;
+            goto done;
         }
     }
     for (i = 0; i < list->num_included_entries; ++i) {
         if (vidpid == list->included_entries[i]) {
-            return true;
+            result = true;
+            goto done;
         }
     }
-    return false;
+
+done:
+    SDL_UnlockSpinlock(&SDL_vidpid_list_lock);
+    return result;
 }
 
 void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
 {
+    Uint32 *included_entries;
+    Uint32 *excluded_entries;
+
     if (list->included_hint_name) {
         SDL_RemoveHintCallback(list->included_hint_name, SDL_VIDPIDIncludedHintChanged, list);
     }
@@ -4323,19 +4350,19 @@ void SDL_FreeVIDPIDList(SDL_vidpid_list *list)
         SDL_RemoveHintCallback(list->excluded_hint_name, SDL_VIDPIDExcludedHintChanged, list);
     }
 
-    if (list->included_entries) {
-        SDL_free(list->included_entries);
-        list->included_entries = NULL;
-        list->num_included_entries = 0;
-        list->max_included_entries = 0;
-    }
+    SDL_LockSpinlock(&SDL_vidpid_list_lock);
+    included_entries = list->included_entries;
+    list->included_entries = NULL;
+    list->num_included_entries = 0;
+    list->max_included_entries = 0;
+    excluded_entries = list->excluded_entries;
+    list->excluded_entries = NULL;
+    list->num_excluded_entries = 0;
+    list->max_excluded_entries = 0;
+    SDL_UnlockSpinlock(&SDL_vidpid_list_lock);
 
-    if (list->excluded_entries) {
-        SDL_free(list->excluded_entries);
-        list->excluded_entries = NULL;
-        list->num_excluded_entries = 0;
-        list->max_excluded_entries = 0;
-    }
+    SDL_free(included_entries);
+    SDL_free(excluded_entries);
 
     list->initialized = false;
 }
