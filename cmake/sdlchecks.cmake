@@ -1074,17 +1074,40 @@ macro(CheckPTHREAD)
           check_c_source_compiles("
               #include <pthread.h>
               #include <semaphore.h>
+              #include <time.h>
               int main(int argc, char **argv) {
-                  sem_timedwait(NULL, NULL);
+                  sem_clockwait(NULL, CLOCK_MONOTONIC, NULL);
                   return 0;
-              }" COMPILER_HAS_SEM_TIMEDWAIT)
-          set(HAVE_SEM_TIMEDWAIT ${COMPILER_HAS_SEM_TIMEDWAIT})
+              }" COMPILER_HAS_SEM_CLOCKWAIT)
+          set(HAVE_SEM_CLOCKWAIT ${COMPILER_HAS_SEM_CLOCKWAIT})
+          if (NOT HAVE_SEM_CLOCKWAIT)
+            check_c_source_compiles("
+                #include <pthread.h>
+                #include <semaphore.h>
+                #include <time.h>
+                int main(int argc, char **argv) {
+                    sem_clockwait_np(NULL, CLOCK_MONOTONIC, 0, NULL, NULL);
+                    return 0;
+                }" COMPILER_HAS_SEM_CLOCKWAIT_NP)
+            set(HAVE_SEM_CLOCKWAIT_NP ${COMPILER_HAS_SEM_CLOCKWAIT_NP})
+            if (NOT HAVE_SEM_CLOCKWAIT_NP)
+                check_c_source_compiles("
+                    #include <pthread.h>
+                    #include <semaphore.h>
+                    int main(int argc, char **argv) {
+                        sem_timedwait(NULL, NULL);
+                        return 0;
+                    }" COMPILER_HAS_SEM_TIMEDWAIT)
+                set(HAVE_SEM_TIMEDWAIT ${COMPILER_HAS_SEM_TIMEDWAIT})
+            endif ()
+          endif ()
         endif()
       endif()
 
       check_include_file(pthread.h HAVE_PTHREAD_H)
       check_include_file(pthread_np.h HAVE_PTHREAD_NP_H)
       if (HAVE_PTHREAD_H)
+        check_symbol_exists(pthread_condattr_setclock "pthread.h" HAVE_PTHREAD_CONDATTR_SETCLOCK)
         check_c_source_compiles("
             #include <pthread.h>
             int main(int argc, char **argv) {
