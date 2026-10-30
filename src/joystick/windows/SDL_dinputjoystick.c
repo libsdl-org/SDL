@@ -378,6 +378,8 @@ DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
         FreeRumbleEffectData(effect);
         return NULL;
     }
+    effect->rgdwAxes[0] = DIJOFS_X;
+    effect->rgdwAxes[1] = DIJOFS_Y;
 
     effect->rglDirection = (LONG *)SDL_calloc(effect->cAxes, sizeof(LONG));
     if (!effect->rglDirection) {
