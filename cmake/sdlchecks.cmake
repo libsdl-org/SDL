@@ -442,6 +442,7 @@ macro(CheckX11)
         /usr/openwin/share/include
         /opt/graphics/OpenGL/include
         /opt/X11/include
+        /opt/local/include
     )
 
     if(X_INCLUDEDIR)
@@ -526,7 +527,16 @@ macro(CheckX11)
             XGetEventData(display, cookie);
             XFreeEventData(display, cookie);
             return 0; }" HAVE_XGENERICEVENT)
-      if(HAVE_XGENERICEVENT)
+
+      # In OmniOS pkgsrc, XGenericEventCookie is defined, but fails to compile due to unrelated circumstances
+      # thus, if this check fails, it means that OmniOS's outdated X11 is being used
+      check_c_source_compiles("
+          #include <X11/Xlib.h>
+          typedef struct XGenericCookie XGenericCookie;
+          int main(int argc, char **argv) {
+            return 0; }" HAVE_XGENERICEVENT_TYPEDEF_QUIRK)
+
+      if(HAVE_XGENERICEVENT OR NOT HAVE_XGENERICEVENT_TYPEDEF_QUIRK)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
