@@ -470,11 +470,6 @@ static bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverPS4_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static bool HIDAPI_DriverPS4_LoadOfficialCalibrationData(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)device->context;
@@ -901,11 +896,6 @@ static bool HIDAPI_DriverPS4_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
     return HIDAPI_DriverPS4_UpdateEffects(ctx, k_EPS4EffectRumble, true);
-}
-
-static bool HIDAPI_DriverPS4_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverPS4_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -1421,30 +1411,23 @@ static void HIDAPI_DriverPS4_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     ctx->enhanced_mode_available = false;
 }
 
-static void HIDAPI_DriverPS4_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 = {
-    SDL_HINT_JOYSTICK_HIDAPI_PS4,
-    true,
-    HIDAPI_DriverPS4_RegisterHints,
-    HIDAPI_DriverPS4_UnregisterHints,
-    HIDAPI_DriverPS4_IsEnabled,
-    HIDAPI_DriverPS4_IsSupportedDevice,
-    HIDAPI_DriverPS4_InitDevice,
-    HIDAPI_DriverPS4_GetDevicePlayerIndex,
-    HIDAPI_DriverPS4_SetDevicePlayerIndex,
-    HIDAPI_DriverPS4_UpdateDevice,
-    HIDAPI_DriverPS4_OpenJoystick,
-    HIDAPI_DriverPS4_RumbleJoystick,
-    HIDAPI_DriverPS4_RumbleJoystickTriggers,
-    HIDAPI_DriverPS4_GetJoystickCapabilities,
-    HIDAPI_DriverPS4_SetJoystickLED,
-    HIDAPI_DriverPS4_SendJoystickEffect,
-    HIDAPI_DriverPS4_SetJoystickSensorsEnabled,
-    HIDAPI_DriverPS4_CloseJoystick,
-    HIDAPI_DriverPS4_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_PS4,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverPS4_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverPS4_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverPS4_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverPS4_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverPS4_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverPS4_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverPS4_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverPS4_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverPS4_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverPS4_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverPS4_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverPS4_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverPS4_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverPS4_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_PS4

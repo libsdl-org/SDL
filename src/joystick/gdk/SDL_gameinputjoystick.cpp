@@ -689,10 +689,6 @@ static int GAMEINPUT_JoystickGetDevicePlayerIndex(int device_index)
     return -1;
 }
 
-static void GAMEINPUT_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID GAMEINPUT_JoystickGetDeviceGUID(int device_index)
 {
     return GAMEINPUT_InternalFindByIndex(device_index)->guid;
@@ -872,11 +868,6 @@ static bool GAMEINPUT_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 gr
 #else
     return SDL_Unsupported();
 #endif
-}
-
-static bool GAMEINPUT_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool GAMEINPUT_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
@@ -1354,14 +1345,14 @@ SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
     GAMEINPUT_JoystickGetDevicePath,
     GAMEINPUT_JoystickGetDeviceSteamVirtualGamepadSlot,
     GAMEINPUT_JoystickGetDevicePlayerIndex,
-    GAMEINPUT_JoystickSetDevicePlayerIndex,
+    NULL, // SetDevicePlayerIndex
     GAMEINPUT_JoystickGetDeviceGUID,
     GAMEINPUT_JoystickGetDeviceInstanceID,
     GAMEINPUT_JoystickOpen,
     GAMEINPUT_JoystickRumble,
     GAMEINPUT_JoystickRumbleTriggers,
     GAMEINPUT_JoystickSetLED,
-    GAMEINPUT_JoystickSendEffect,
+    NULL, // SendEffect
     GAMEINPUT_JoystickSetSensorsEnabled,
     GAMEINPUT_JoystickUpdate,
     GAMEINPUT_JoystickClose,

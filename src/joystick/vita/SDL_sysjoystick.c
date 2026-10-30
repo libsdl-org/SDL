@@ -185,15 +185,6 @@ static int VITA_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int VITA_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void VITA_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 /* Function to open a joystick for use.
    The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
@@ -360,11 +351,6 @@ static bool VITA_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rum
     return true;
 }
 
-static bool VITA_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
-{
-    return SDL_Unsupported();
-}
-
 static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     int index = (int)SDL_GetJoystickID(joystick) - 1;
@@ -377,43 +363,22 @@ static bool VITA_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, 
     return true;
 }
 
-static bool VITA_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool VITA_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
-static bool VITA_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_VITA_JoystickDriver = {
-    VITA_JoystickInit,
-    VITA_JoystickGetCount,
-    VITA_JoystickDetect,
-    VITA_JoystickIsDevicePresent,
-    VITA_JoystickGetDeviceName,
-    VITA_JoystickGetDevicePath,
-    VITA_JoystickGetDeviceSteamVirtualGamepadSlot,
-    VITA_JoystickGetDevicePlayerIndex,
-    VITA_JoystickSetDevicePlayerIndex,
-    VITA_JoystickGetDeviceGUID,
-    VITA_JoystickGetDeviceInstanceID,
-    VITA_JoystickOpen,
-    VITA_JoystickRumble,
-    VITA_JoystickRumbleTriggers,
-    VITA_JoystickSetLED,
-    VITA_JoystickSendEffect,
-    VITA_JoystickSetSensorsEnabled,
-    VITA_JoystickUpdate,
-    VITA_JoystickClose,
-    VITA_JoystickQuit,
-    VITA_JoystickGetGamepadMapping,
+    .Init = VITA_JoystickInit,
+    .GetCount = VITA_JoystickGetCount,
+    .Detect = VITA_JoystickDetect,
+    .IsDevicePresent = VITA_JoystickIsDevicePresent,
+    .GetDeviceName = VITA_JoystickGetDeviceName,
+    .GetDevicePath = VITA_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = VITA_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = VITA_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = VITA_JoystickGetDeviceInstanceID,
+    .Open = VITA_JoystickOpen,
+    .Rumble = VITA_JoystickRumble,
+    .SetLED = VITA_JoystickSetLED,
+    .Update = VITA_JoystickUpdate,
+    .Close = VITA_JoystickClose,
+    .Quit = VITA_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_VITA

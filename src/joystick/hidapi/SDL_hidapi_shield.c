@@ -129,15 +129,6 @@ static bool HIDAPI_DriverShield_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverShield_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverShield_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverShield_SendCommand(SDL_HIDAPI_Device *device, Uint8 cmd, const void *data, int size)
 {
 #ifdef SDL_PLATFORM_MACOS
@@ -260,19 +251,9 @@ static bool HIDAPI_DriverShield_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     }
 }
 
-static bool HIDAPI_DriverShield_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverShield_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverShield_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -288,11 +269,6 @@ static bool HIDAPI_DriverShield_SendJoystickEffect(SDL_HIDAPI_Device *device, SD
     } else {
         return SDL_SetError("Effect data must at least contain a command byte");
     }
-}
-
-static bool HIDAPI_DriverShield_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverShield_HandleStatePacketV103(SDL_Joystick *joystick, SDL_DriverShield_Context *ctx, Uint8 *data, int size)
@@ -563,34 +539,19 @@ static bool HIDAPI_DriverShield_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_DriverShield_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_DriverShield_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverShield = {
-    SDL_HINT_JOYSTICK_HIDAPI_SHIELD,
-    true,
-    HIDAPI_DriverShield_RegisterHints,
-    HIDAPI_DriverShield_UnregisterHints,
-    HIDAPI_DriverShield_IsEnabled,
-    HIDAPI_DriverShield_IsSupportedDevice,
-    HIDAPI_DriverShield_InitDevice,
-    HIDAPI_DriverShield_GetDevicePlayerIndex,
-    HIDAPI_DriverShield_SetDevicePlayerIndex,
-    HIDAPI_DriverShield_UpdateDevice,
-    HIDAPI_DriverShield_OpenJoystick,
-    HIDAPI_DriverShield_RumbleJoystick,
-    HIDAPI_DriverShield_RumbleJoystickTriggers,
-    HIDAPI_DriverShield_GetJoystickCapabilities,
-    HIDAPI_DriverShield_SetJoystickLED,
-    HIDAPI_DriverShield_SendJoystickEffect,
-    HIDAPI_DriverShield_SetJoystickSensorsEnabled,
-    HIDAPI_DriverShield_CloseJoystick,
-    HIDAPI_DriverShield_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_SHIELD,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverShield_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverShield_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverShield_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverShield_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverShield_InitDevice,
+    .UpdateDevice = HIDAPI_DriverShield_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverShield_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverShield_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverShield_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverShield_SendJoystickEffect,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SHIELD

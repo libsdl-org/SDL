@@ -618,15 +618,6 @@ static int ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int ANDROID_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void ANDROID_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID ANDROID_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
@@ -693,11 +684,6 @@ static bool ANDROID_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
 #endif
 }
 
-static bool ANDROID_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
@@ -709,11 +695,6 @@ static bool ANDROID_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 gree
     }
     Android_JNI_JoystickSetLED(item->device_id, red, green, blue);
     return true;
-}
-
-static bool ANDROID_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool ANDROID_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
@@ -757,33 +738,23 @@ static void ANDROID_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-static bool ANDROID_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
-    ANDROID_JoystickInit,
-    ANDROID_JoystickGetCount,
-    ANDROID_JoystickDetect,
-    ANDROID_JoystickIsDevicePresent,
-    ANDROID_JoystickGetDeviceName,
-    ANDROID_JoystickGetDevicePath,
-    ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
-    ANDROID_JoystickGetDevicePlayerIndex,
-    ANDROID_JoystickSetDevicePlayerIndex,
-    ANDROID_JoystickGetDeviceGUID,
-    ANDROID_JoystickGetDeviceInstanceID,
-    ANDROID_JoystickOpen,
-    ANDROID_JoystickRumble,
-    ANDROID_JoystickRumbleTriggers,
-    ANDROID_JoystickSetLED,
-    ANDROID_JoystickSendEffect,
-    ANDROID_JoystickSetSensorsEnabled,
-    ANDROID_JoystickUpdate,
-    ANDROID_JoystickClose,
-    ANDROID_JoystickQuit,
-    ANDROID_JoystickGetGamepadMapping
+    .Init = ANDROID_JoystickInit,
+    .GetCount = ANDROID_JoystickGetCount,
+    .Detect = ANDROID_JoystickDetect,
+    .IsDevicePresent = ANDROID_JoystickIsDevicePresent,
+    .GetDeviceName = ANDROID_JoystickGetDeviceName,
+    .GetDevicePath = ANDROID_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = ANDROID_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = ANDROID_JoystickGetDeviceInstanceID,
+    .Open = ANDROID_JoystickOpen,
+    .Rumble = ANDROID_JoystickRumble,
+    .SetLED = ANDROID_JoystickSetLED,
+    .SetSensorsEnabled = ANDROID_JoystickSetSensorsEnabled,
+    .Update = ANDROID_JoystickUpdate,
+    .Close = ANDROID_JoystickClose,
+    .Quit = ANDROID_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_ANDROID

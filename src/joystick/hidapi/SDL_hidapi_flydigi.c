@@ -646,15 +646,6 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
     }
 }
 
-static int HIDAPI_DriverFlydigi_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverFlydigi_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
@@ -711,24 +702,9 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
     return true;
 }
 
-static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverFlydigi_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverFlydigi_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -1116,30 +1092,20 @@ static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     //SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
 }
 
-static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi = {
-    SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI,
-    true,
-    HIDAPI_DriverFlydigi_RegisterHints,
-    HIDAPI_DriverFlydigi_UnregisterHints,
-    HIDAPI_DriverFlydigi_IsEnabled,
-    HIDAPI_DriverFlydigi_IsSupportedDevice,
-    HIDAPI_DriverFlydigi_InitDevice,
-    HIDAPI_DriverFlydigi_GetDevicePlayerIndex,
-    HIDAPI_DriverFlydigi_SetDevicePlayerIndex,
-    HIDAPI_DriverFlydigi_UpdateDevice,
-    HIDAPI_DriverFlydigi_OpenJoystick,
-    HIDAPI_DriverFlydigi_RumbleJoystick,
-    HIDAPI_DriverFlydigi_RumbleJoystickTriggers,
-    HIDAPI_DriverFlydigi_GetJoystickCapabilities,
-    HIDAPI_DriverFlydigi_SetJoystickLED,
-    HIDAPI_DriverFlydigi_SendJoystickEffect,
-    HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled,
-    HIDAPI_DriverFlydigi_CloseJoystick,
-    HIDAPI_DriverFlydigi_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverFlydigi_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverFlydigi_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverFlydigi_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverFlydigi_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverFlydigi_InitDevice,
+    .UpdateDevice = HIDAPI_DriverFlydigi_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverFlydigi_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverFlydigi_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverFlydigi_GetJoystickCapabilities,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverFlydigi_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_FLYDIGI

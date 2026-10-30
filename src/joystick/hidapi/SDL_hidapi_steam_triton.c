@@ -471,15 +471,6 @@ static bool HIDAPI_DriverSteamTriton_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
 }
 
-static int HIDAPI_DriverSteamTriton_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverSteamTriton_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
 
 static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
@@ -623,19 +614,9 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     return true;
 }
 
-static bool HIDAPI_DriverSteamTriton_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSteamTriton_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverSteamTriton_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -681,30 +662,21 @@ static void HIDAPI_DriverSteamTriton_CloseJoystick(SDL_HIDAPI_Device *device, SD
     // Lizard mode id automatically re-enabled by watchdog. Nothing to do here.
 }
 
-static void HIDAPI_DriverSteamTriton_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton = {
-    SDL_HINT_JOYSTICK_HIDAPI_STEAM,
-    true,
-    HIDAPI_DriverSteamTriton_RegisterHints,
-    HIDAPI_DriverSteamTriton_UnregisterHints,
-    HIDAPI_DriverSteamTriton_IsEnabled,
-    HIDAPI_DriverSteamTriton_IsSupportedDevice,
-    HIDAPI_DriverSteamTriton_InitDevice,
-    HIDAPI_DriverSteamTriton_GetDevicePlayerIndex,
-    HIDAPI_DriverSteamTriton_SetDevicePlayerIndex,
-    HIDAPI_DriverSteamTriton_UpdateDevice,
-    HIDAPI_DriverSteamTriton_OpenJoystick,
-    HIDAPI_DriverSteamTriton_RumbleJoystick,
-    HIDAPI_DriverSteamTriton_RumbleJoystickTriggers,
-    HIDAPI_DriverSteamTriton_GetJoystickCapabilities,
-    HIDAPI_DriverSteamTriton_SetJoystickLED,
-    HIDAPI_DriverSteamTriton_SendJoystickEffect,
-    HIDAPI_DriverSteamTriton_SetSensorsEnabled,
-    HIDAPI_DriverSteamTriton_CloseJoystick,
-    HIDAPI_DriverSteamTriton_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_STEAM,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSteamTriton_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSteamTriton_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSteamTriton_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSteamTriton_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSteamTriton_InitDevice,
+    .UpdateDevice = HIDAPI_DriverSteamTriton_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSteamTriton_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSteamTriton_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSteamTriton_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverSteamTriton_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSteamTriton_SetSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSteamTriton_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_STEAM_TRITON

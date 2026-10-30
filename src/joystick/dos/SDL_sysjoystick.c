@@ -179,15 +179,6 @@ static int DOS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int DOS_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void DOS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID DOS_JoystickGetDeviceGUID(int device_index)
 {
     return SDL_CreateJoystickGUID(
@@ -234,31 +225,6 @@ static bool DOS_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nballs = 0;
 
     return true;
-}
-
-static bool DOS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool DOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void DOS_JoystickUpdate(SDL_Joystick *joystick)
@@ -313,33 +279,20 @@ static void DOS_JoystickQuit(void)
     dos_joystick_id = 0;
 }
 
-static bool DOS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_DOS_JoystickDriver = {
-    DOS_JoystickInit,
-    DOS_JoystickGetCount,
-    DOS_JoystickDetect,
-    DOS_JoystickIsDevicePresent,
-    DOS_JoystickGetDeviceName,
-    DOS_JoystickGetDevicePath,
-    DOS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    DOS_JoystickGetDevicePlayerIndex,
-    DOS_JoystickSetDevicePlayerIndex,
-    DOS_JoystickGetDeviceGUID,
-    DOS_JoystickGetDeviceInstanceID,
-    DOS_JoystickOpen,
-    DOS_JoystickRumble,
-    DOS_JoystickRumbleTriggers,
-    DOS_JoystickSetLED,
-    DOS_JoystickSendEffect,
-    DOS_JoystickSetSensorsEnabled,
-    DOS_JoystickUpdate,
-    DOS_JoystickClose,
-    DOS_JoystickQuit,
-    DOS_JoystickGetGamepadMapping
+    .Init = DOS_JoystickInit,
+    .GetCount = DOS_JoystickGetCount,
+    .Detect = DOS_JoystickDetect,
+    .IsDevicePresent = DOS_JoystickIsDevicePresent,
+    .GetDeviceName = DOS_JoystickGetDeviceName,
+    .GetDevicePath = DOS_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = DOS_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = DOS_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = DOS_JoystickGetDeviceInstanceID,
+    .Open = DOS_JoystickOpen,
+    .Update = DOS_JoystickUpdate,
+    .Close = DOS_JoystickClose,
+    .Quit = DOS_JoystickQuit
 };
 
 #endif /* SDL_JOYSTICK_DOS */

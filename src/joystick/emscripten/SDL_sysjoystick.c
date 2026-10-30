@@ -554,15 +554,6 @@ static int EMSCRIPTEN_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int EMSCRIPTEN_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void EMSCRIPTEN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_JoystickID EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 {
     return JoystickByDeviceIndex(device_index)->device_instance;
@@ -757,48 +748,22 @@ static bool EMSCRIPTEN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 lef
     return Emscripten_UpdateRumble(item);
 }
 
-static bool EMSCRIPTEN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
-static bool EMSCRIPTEN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool EMSCRIPTEN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool EMSCRIPTEN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver = {
-    EMSCRIPTEN_JoystickInit,
-    EMSCRIPTEN_JoystickGetCount,
-    EMSCRIPTEN_JoystickDetect,
-    EMSCRIPTEN_JoystickIsDevicePresent,
-    EMSCRIPTEN_JoystickGetDeviceName,
-    EMSCRIPTEN_JoystickGetDevicePath,
-    EMSCRIPTEN_JoystickGetDeviceSteamVirtualGamepadSlot,
-    EMSCRIPTEN_JoystickGetDevicePlayerIndex,
-    EMSCRIPTEN_JoystickSetDevicePlayerIndex,
-    EMSCRIPTEN_JoystickGetDeviceGUID,
-    EMSCRIPTEN_JoystickGetDeviceInstanceID,
-    EMSCRIPTEN_JoystickOpen,
-    EMSCRIPTEN_JoystickRumble,
-    EMSCRIPTEN_JoystickRumbleTriggers,
-    EMSCRIPTEN_JoystickSetLED,
-    EMSCRIPTEN_JoystickSendEffect,
-    EMSCRIPTEN_JoystickSetSensorsEnabled,
-    EMSCRIPTEN_JoystickUpdate,
-    EMSCRIPTEN_JoystickClose,
-    EMSCRIPTEN_JoystickQuit,
-    EMSCRIPTEN_JoystickGetGamepadMapping
+    .Init = EMSCRIPTEN_JoystickInit,
+    .GetCount = EMSCRIPTEN_JoystickGetCount,
+    .Detect = EMSCRIPTEN_JoystickDetect,
+    .IsDevicePresent = EMSCRIPTEN_JoystickIsDevicePresent,
+    .GetDeviceName = EMSCRIPTEN_JoystickGetDeviceName,
+    .GetDevicePath = EMSCRIPTEN_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = EMSCRIPTEN_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = EMSCRIPTEN_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = EMSCRIPTEN_JoystickGetDeviceInstanceID,
+    .Open = EMSCRIPTEN_JoystickOpen,
+    .Rumble = EMSCRIPTEN_JoystickRumble,
+    .RumbleTriggers = EMSCRIPTEN_JoystickRumbleTriggers,
+    .Update = EMSCRIPTEN_JoystickUpdate,
+    .Close = EMSCRIPTEN_JoystickClose,
+    .Quit = EMSCRIPTEN_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_EMSCRIPTEN

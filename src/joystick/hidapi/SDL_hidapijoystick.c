@@ -453,7 +453,9 @@ static void HIDAPI_CleanupDeviceDriver(SDL_HIDAPI_Device *device)
         HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
     }
 
-    device->driver->FreeDevice(device);
+    if (device->driver->FreeDevice) {
+        device->driver->FreeDevice(device);
+    }
     device->driver = NULL;
 
     if (device->dev) {
@@ -848,7 +850,11 @@ void HIDAPI_JoystickDisconnected(SDL_HIDAPI_Device *device, SDL_JoystickID joyst
 static void HIDAPI_UpdateJoystickProperties(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_PropertiesID props = SDL_GetJoystickProperties(joystick);
-    Uint32 caps = device->driver->GetJoystickCapabilities(device, joystick);
+    Uint32 caps = 0;
+
+    if (device->driver->GetJoystickCapabilities) {
+        caps = device->driver->GetJoystickCapabilities(device, joystick);
+    }
 
     if (caps & SDL_JOYSTICK_CAP_MONO_LED) {
         SDL_SetBooleanProperty(props, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, true);
@@ -1509,7 +1515,7 @@ static int HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
     int player_index = -1;
 
     device = HIDAPI_GetDeviceByIndex(device_index, &instance_id);
-    if (device) {
+    if (device && device->driver->GetDevicePlayerIndex) {
         player_index = device->driver->GetDevicePlayerIndex(device, instance_id);
     }
 
@@ -1522,7 +1528,7 @@ static void HIDAPI_JoystickSetDevicePlayerIndex(int device_index, int player_ind
     SDL_JoystickID instance_id;
 
     device = HIDAPI_GetDeviceByIndex(device_index, &instance_id);
-    if (device) {
+    if (device && device->driver->SetDevicePlayerIndex) {
         device->driver->SetDevicePlayerIndex(device, instance_id, player_index);
     }
 }
@@ -1620,7 +1626,11 @@ static bool HIDAPI_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_r
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
-        result = device->driver->RumbleJoystick(device, joystick, low_frequency_rumble, high_frequency_rumble);
+        if (device->driver->RumbleJoystick) {
+            result = device->driver->RumbleJoystick(device, joystick, low_frequency_rumble, high_frequency_rumble);
+        } else {
+            result = SDL_Unsupported();
+        }
     } else {
         result = SDL_SetError("Rumble failed, device disconnected");
     }
@@ -1634,7 +1644,11 @@ static bool HIDAPI_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_ru
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
-        result = device->driver->RumbleJoystickTriggers(device, joystick, left_rumble, right_rumble);
+        if (device->driver->RumbleJoystickTriggers) {
+            result = device->driver->RumbleJoystickTriggers(device, joystick, left_rumble, right_rumble);
+        } else {
+            result = SDL_Unsupported();
+        }
     } else {
         result = SDL_SetError("Rumble failed, device disconnected");
     }
@@ -1648,7 +1662,11 @@ static bool HIDAPI_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
-        result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
+        if (device->driver->SetJoystickLED) {
+            result = device->driver->SetJoystickLED(device, joystick, red, green, blue);
+        } else {
+            result = SDL_Unsupported();
+        }
     } else {
         result = SDL_SetError("SetLED failed, device disconnected");
     }
@@ -1662,7 +1680,11 @@ static bool HIDAPI_JoystickSendEffect(SDL_Joystick *joystick, const void *data, 
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
-        result = device->driver->SendJoystickEffect(device, joystick, data, size);
+        if (device->driver->SendJoystickEffect) {
+            result = device->driver->SendJoystickEffect(device, joystick, data, size);
+        } else {
+            result = SDL_Unsupported();
+        }
     } else {
         result = SDL_SetError("SendEffect failed, device disconnected");
     }
@@ -1676,7 +1698,11 @@ static bool HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enable
     SDL_HIDAPI_Device *device = NULL;
 
     if (HIDAPI_GetJoystickDevice(joystick, &device)) {
-        result = device->driver->SetJoystickSensorsEnabled(device, joystick, enabled);
+        if (device->driver->SetJoystickSensorsEnabled) {
+            result = device->driver->SetJoystickSensorsEnabled(device, joystick, enabled);
+        } else {
+            result = SDL_Unsupported();
+        }
     } else {
         result = SDL_SetError("SetSensorsEnabled failed, device disconnected");
     }
@@ -1703,7 +1729,9 @@ static void HIDAPI_JoystickClose(SDL_Joystick *joystick) SDL_NO_THREAD_SAFETY_AN
             }
         }
 
-        device->driver->CloseJoystick(device, joystick);
+        if (device->driver->CloseJoystick) {
+            device->driver->CloseJoystick(device, joystick);
+        }
 
         SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
@@ -1753,33 +1781,27 @@ static void HIDAPI_JoystickQuit(void)
     initialized = false;
 }
 
-static bool HIDAPI_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_HIDAPI_JoystickDriver = {
-    HIDAPI_JoystickInit,
-    HIDAPI_JoystickGetCount,
-    HIDAPI_JoystickDetect,
-    HIDAPI_IsDevicePresent,
-    HIDAPI_JoystickGetDeviceName,
-    HIDAPI_JoystickGetDevicePath,
-    HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot,
-    HIDAPI_JoystickGetDevicePlayerIndex,
-    HIDAPI_JoystickSetDevicePlayerIndex,
-    HIDAPI_JoystickGetDeviceGUID,
-    HIDAPI_JoystickGetDeviceInstanceID,
-    HIDAPI_JoystickOpen,
-    HIDAPI_JoystickRumble,
-    HIDAPI_JoystickRumbleTriggers,
-    HIDAPI_JoystickSetLED,
-    HIDAPI_JoystickSendEffect,
-    HIDAPI_JoystickSetSensorsEnabled,
-    HIDAPI_JoystickUpdate,
-    HIDAPI_JoystickClose,
-    HIDAPI_JoystickQuit,
-    HIDAPI_JoystickGetGamepadMapping
+    .Init = HIDAPI_JoystickInit,
+    .GetCount = HIDAPI_JoystickGetCount,
+    .Detect = HIDAPI_JoystickDetect,
+    .IsDevicePresent = HIDAPI_IsDevicePresent,
+    .GetDeviceName = HIDAPI_JoystickGetDeviceName,
+    .GetDevicePath = HIDAPI_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = HIDAPI_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDevicePlayerIndex = HIDAPI_JoystickGetDevicePlayerIndex,
+    .SetDevicePlayerIndex = HIDAPI_JoystickSetDevicePlayerIndex,
+    .GetDeviceGUID = HIDAPI_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = HIDAPI_JoystickGetDeviceInstanceID,
+    .Open = HIDAPI_JoystickOpen,
+    .Rumble = HIDAPI_JoystickRumble,
+    .RumbleTriggers = HIDAPI_JoystickRumbleTriggers,
+    .SetLED = HIDAPI_JoystickSetLED,
+    .SendEffect = HIDAPI_JoystickSendEffect,
+    .SetSensorsEnabled = HIDAPI_JoystickSetSensorsEnabled,
+    .Update = HIDAPI_JoystickUpdate,
+    .Close = HIDAPI_JoystickClose,
+    .Quit = HIDAPI_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_HIDAPI

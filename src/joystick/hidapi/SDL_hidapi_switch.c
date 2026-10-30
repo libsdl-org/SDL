@@ -1612,11 +1612,6 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverSwitch_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
@@ -1846,11 +1841,6 @@ static bool HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
 #endif
 
     return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
-}
-
-static bool HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -2933,74 +2923,61 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->m_bEnhancedModeAvailable = false;
 }
 
-static void HIDAPI_DriverSwitch_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic = {
-    SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
-    true,
-    HIDAPI_DriverNintendoClassic_RegisterHints,
-    HIDAPI_DriverNintendoClassic_UnregisterHints,
-    HIDAPI_DriverNintendoClassic_IsEnabled,
-    HIDAPI_DriverNintendoClassic_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverNintendoClassic_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverNintendoClassic_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverNintendoClassic_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverNintendoClassic_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons = {
-    SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
-    true,
-    HIDAPI_DriverJoyCons_RegisterHints,
-    HIDAPI_DriverJoyCons_UnregisterHints,
-    HIDAPI_DriverJoyCons_IsEnabled,
-    HIDAPI_DriverJoyCons_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverJoyCons_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverJoyCons_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverJoyCons_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverJoyCons_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch = {
-    SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
-    true,
-    HIDAPI_DriverSwitch_RegisterHints,
-    HIDAPI_DriverSwitch_UnregisterHints,
-    HIDAPI_DriverSwitch_IsEnabled,
-    HIDAPI_DriverSwitch_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSwitch_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSwitch_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSwitch_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSwitch_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SWITCH
