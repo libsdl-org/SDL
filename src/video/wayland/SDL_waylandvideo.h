@@ -32,20 +32,17 @@
 #include "../../core/linux/SDL_ime.h"
 #include "SDL_waylandeventthread.h"
 
-struct xkb_context;
-struct SDL_WaylandSeat;
-
-typedef struct
+typedef struct Wayland_CursorTheme
 {
     struct wl_cursor_theme *theme;
     int size;
-} SDL_WaylandCursorTheme;
+} Wayland_CursorTheme;
 
-typedef struct
+typedef struct Wayland_ConnectorName
 {
     struct wl_list link;
     char wl_output_name[];
-} SDL_WaylandConnectorName;
+} Wayland_ConnectorName;
 
 struct SDL_VideoData
 {
@@ -53,7 +50,7 @@ struct SDL_VideoData
     struct wl_registry *registry;
     struct wl_compositor *compositor;
     struct wl_shm *shm;
-    SDL_WaylandCursorTheme *cursor_themes;
+    Wayland_CursorTheme *cursor_themes;
     int num_cursor_themes;
     struct
     {
@@ -95,9 +92,9 @@ struct SDL_VideoData
     struct xkb_context *xkb_context;
 
     struct wl_list seat_list;
-    struct SDL_WaylandSeat *last_implicit_grab_seat;
-    struct SDL_WaylandSeat *current_data_offer_seat;
-    struct SDL_WaylandSeat *current_primary_selection_seat;
+    struct Wayland_Seat *last_implicit_grab_seat;
+    struct Wayland_Seat *current_data_offer_seat;
+    struct Wayland_Seat *current_primary_selection_seat;
     Wayland_EventThreadContext *event_thread_context;
     Wayland_JobThreadContext *job_thread_context;
 
@@ -163,15 +160,15 @@ struct SDL_DisplayData
 // Needed here to get wl_surface declaration, fixes GitHub#4594
 #include "SDL_waylanddyn.h"
 
-extern void SDL_WAYLAND_register_surface(struct wl_surface *surface);
-extern void SDL_WAYLAND_register_output(struct wl_output *output);
-extern bool SDL_WAYLAND_own_surface(struct wl_surface *surface);
-extern bool SDL_WAYLAND_own_output(struct wl_output *output);
+extern void Wayland_RegisterSurface(struct wl_surface *surface);
+extern void Wayland_RegisterOutput(struct wl_output *output);
+extern bool Wayland_OwnsSurface(struct wl_surface *surface);
+extern bool Wayland_OwnsOutput(struct wl_output *output);
 
 extern SDL_WindowData *Wayland_GetWindowDataForOwnedSurface(struct wl_surface *surface);
 extern void Wayland_AddWindowDataToExternalList(SDL_WindowData *data);
 extern void Wayland_RemoveWindowDataFromExternalList(SDL_WindowData *data);
-extern struct wl_event_queue *Wayland_DisplayCreateQueue(struct wl_display *display, const char *name);
+extern struct wl_event_queue *Wayland_CreateQueue(struct wl_display *display, const char *name);
 extern void Wayland_CreateSession(SDL_VideoData *data);
 
 extern bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg);

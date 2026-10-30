@@ -39,7 +39,7 @@ static const char *const text_mime_types[] = {
 bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_implicit_grab_seat;
+    Wayland_Seat *seat = video_data->last_implicit_grab_seat;
     bool result = false;
 
     // If no implicit grab is available yet, just attach it to the first available seat.
@@ -51,7 +51,7 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 
     if (seat && seat->data_device) {
         // Clear references to the clipboard held by other seats, as they are about to become invalid.
-        SDL_WaylandSeat *s;
+        Wayland_Seat *s;
         wl_list_for_each (s, &video_data->seat_list, link) {
             if (s->data_device) {
                 if (s != seat) {
@@ -73,7 +73,7 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
 void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size_t *length)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->current_data_offer_seat;
+    Wayland_Seat *seat = video_data->current_data_offer_seat;
     void *buffer = NULL;
 
     if (seat && seat->data_device) {
@@ -91,7 +91,7 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
 bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->current_data_offer_seat;
+    Wayland_Seat *seat = video_data->current_data_offer_seat;
     bool result = false;
 
     if (seat && seat->data_device) {
@@ -114,7 +114,7 @@ const char *const *Wayland_GetTextMimeTypes(SDL_VideoDevice *_this, size_t *num_
 bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->last_implicit_grab_seat;
+    Wayland_Seat *seat = video_data->last_implicit_grab_seat;
     bool result;
 
     // If no implicit grab is available yet, just attach it to the first available seat.
@@ -126,7 +126,7 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 
     if (seat && seat->primary_selection_device) {
         // Clear references to the primary selection held by other seats, as they are about to become invalid.
-        SDL_WaylandSeat *s;
+        Wayland_Seat *s;
         wl_list_for_each (s, &video_data->seat_list, link) {
             if (s->data_device) {
                 if (s != seat) {
@@ -146,7 +146,7 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
 char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->current_primary_selection_seat;
+    Wayland_Seat *seat = video_data->current_primary_selection_seat;
     char *text = NULL;
     size_t length = 0;
 
@@ -164,7 +164,7 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
 bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
 {
     SDL_VideoData *video_data = _this->internal;
-    SDL_WaylandSeat *seat = video_data->current_primary_selection_seat;
+    Wayland_Seat *seat = video_data->current_primary_selection_seat;
 
     if (seat && seat->primary_selection_device) {
         return Wayland_PrimarySelectionDeviceHasText(seat->primary_selection_device);

@@ -98,7 +98,7 @@ typedef struct Wayland_PrimarySelectionOffer
 struct Wayland_DataDevice
 {
     struct wl_data_device *data_device;
-    SDL_WaylandSeat *seat;
+    Wayland_Seat *seat;
     char *id_str;
 
     // Drag and Drop
@@ -118,7 +118,7 @@ struct Wayland_DataDevice
 struct Wayland_PrimarySelectionDevice
 {
     struct zwp_primary_selection_device_v1 *primary_selection_device;
-    SDL_WaylandSeat *seat;
+    Wayland_Seat *seat;
 
     Wayland_PrimarySelectionSource *source;
     Wayland_PrimarySelectionOffer *offer;
@@ -574,11 +574,11 @@ static const struct wl_callback_listener offer_source_listener = {
 
 static void UpdateSeatOffers(Wayland_DataDevice *data_device)
 {
-    SDL_WaylandSeat *offer_seat = data_device->seat;
+    Wayland_Seat *offer_seat = data_device->seat;
     SDL_VideoData *video_data = offer_seat->display;
 
     // Clear any existing references to the existing clipboard data before replacing the current offer.
-    SDL_WaylandSeat *s;
+    Wayland_Seat *s;
     wl_list_for_each (s, &video_data->seat_list, link) {
         if (s->data_device) {
             DestroyDataSource(s->data_device->selection_source);
@@ -1171,7 +1171,7 @@ static void DataDeviceSetID(Wayland_DataDevice *data_device)
     }
 }
 
-bool Wayland_CreateDataDevice(SDL_WaylandSeat *seat)
+bool Wayland_CreateDataDevice(Wayland_Seat *seat)
 {
     if (!seat || !seat->display->data_device_manager || seat->data_device) {
         return false;
@@ -1303,7 +1303,7 @@ void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, S
         return;
     }
 
-    SDL_WaylandSeat *seat = data_device->seat;
+    Wayland_Seat *seat = data_device->seat;
     SDL_VideoData *viddata = seat->display;
 
     // Cancel any pending drop events.
@@ -1316,7 +1316,7 @@ void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, S
     }
 }
 
-bool Wayland_CreatePrimarySelectionDevice(SDL_WaylandSeat *seat)
+bool Wayland_CreatePrimarySelectionDevice(Wayland_Seat *seat)
 {
     if (!seat || !seat->display->primary_selection_device_manager || seat->primary_selection_device) {
         return false;

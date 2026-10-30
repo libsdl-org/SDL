@@ -37,7 +37,7 @@ typedef struct Wayland_PrimarySelectionDevice Wayland_PrimarySelectionDevice;
 #define SDL_DATA_ORIGIN_MIME "application/x-sdl3-source-id"
 
 // Data device (clipboard and drag & drop)
-extern bool Wayland_CreateDataDevice(SDL_WaylandSeat *seat);
+extern bool Wayland_CreateDataDevice(Wayland_Seat *seat);
 extern void Wayland_DestroyDataDevice(Wayland_DataDevice *data_device);
 extern bool Wayland_DataDeviceHasSelectionSource(Wayland_DataDevice *data_device);
 extern bool Wayland_DataDeviceSetSelectionSource(Wayland_DataDevice *data_device, const char *const *mime_types, size_t mime_count,
@@ -48,7 +48,7 @@ extern void Wayland_DataDeviceDestroySelectionOffer(Wayland_DataDevice *data_dev
 extern void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, SDL_Window *window);
 
 // Primary selection
-extern bool Wayland_CreatePrimarySelectionDevice(SDL_WaylandSeat *seat);
+extern bool Wayland_CreatePrimarySelectionDevice(Wayland_Seat *seat);
 extern void Wayland_DestroyPrimarySelectionDevice(Wayland_PrimarySelectionDevice *primary_selection_device);
 extern bool Wayland_PrimarySelectionDeviceHasText(Wayland_PrimarySelectionDevice *primary_selection_device);
 extern char *Wayland_PrimarySelectionDeviceGetText(Wayland_PrimarySelectionDevice *primary_selection_device, size_t *length);
