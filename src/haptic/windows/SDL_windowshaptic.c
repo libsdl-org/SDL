@@ -24,7 +24,7 @@
 
 #include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"               // For the real SDL_Joystick
-#include "../../joystick/windows/SDL_windowsjoystick_c.h" // For joystick hwdata
+#include "../../joystick/windows/SDL_dinputjoystick_c.h" // For joystick hwdata
 #include "../../joystick/windows/SDL_xinputjoystick_c.h"  // For xinput rumble
 
 #include "SDL_windowshaptic_c.h"
@@ -182,7 +182,7 @@ int SDL_SYS_HapticMouse(void)
  */
 bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
-    if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
+    if (joystick->driver != &SDL_DINPUT_JoystickDriver) {
         return false;
     }
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
@@ -196,7 +196,7 @@ bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
  */
 bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
-    if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
+    if (joystick->driver != &SDL_DINPUT_JoystickDriver) {
         return false;
     }
     return SDL_DINPUT_JoystickSameHaptic(haptic, joystick);
@@ -207,7 +207,7 @@ bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
  */
 bool SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
-    SDL_assert(joystick->driver == &SDL_WINDOWS_JoystickDriver);
+    SDL_assert(joystick->driver == &SDL_DINPUT_JoystickDriver);
 
     return SDL_DINPUT_HapticOpenFromJoystick(haptic, joystick);
 }

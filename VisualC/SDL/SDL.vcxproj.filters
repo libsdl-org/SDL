@@ -690,9 +690,6 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>joystick\windows</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\joystick\windows\SDL_windowsjoystick_c.h">
-      <Filter>joystick\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h">
       <Filter>joystick\windows</Filter>
     </ClInclude>
@@ -1670,9 +1667,6 @@
       <Filter>joystick\hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
-      <Filter>joystick\windows</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c">
       <Filter>joystick\windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c">

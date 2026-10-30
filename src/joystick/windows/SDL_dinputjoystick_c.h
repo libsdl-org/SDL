@@ -20,19 +20,67 @@
 */
 #include "SDL_internal.h"
 
+#include "../SDL_sysjoystick.h"
+#include "../../core/windows/SDL_windows.h"
+#include "../../core/windows/SDL_directx.h"
+
+#define MAX_INPUTS 256 // each joystick can have up to 256 inputs
+
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern bool SDL_DINPUT_JoystickInit(void);
-extern void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
-extern bool SDL_DINPUT_JoystickPresent(Uint16 vendor, Uint16 product, Uint16 version);
-extern bool SDL_DINPUT_JoystickOpen(SDL_Joystick *joystick, JoyStick_DeviceData *joystickdevice);
-extern bool SDL_DINPUT_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
-extern void SDL_DINPUT_JoystickUpdate(SDL_Joystick *joystick);
-extern void SDL_DINPUT_JoystickClose(SDL_Joystick *joystick);
-extern void SDL_DINPUT_JoystickQuit(void);
+typedef struct JoyStick_DeviceData
+{
+    SDL_GUID guid;
+    char *joystickname;
+    Uint8 send_add_event;
+    SDL_JoystickID nInstanceID;
+    DIDEVICEINSTANCE dxdevice;
+    char path[MAX_PATH];
+    int steam_virtual_gamepad_slot;
+    struct JoyStick_DeviceData *pNext;
+} JoyStick_DeviceData;
+
+extern JoyStick_DeviceData *SYS_Joystick;
+
+typedef enum Type
+{
+    BUTTON,
+    AXIS,
+    HAT
+} Type;
+
+typedef struct input_t
+{
+    // DirectInput offset for this input type:
+    DWORD ofs;
+
+    // Button, axis or hat:
+    Type type;
+
+    // SDL input offset:
+    Uint8 num;
+} input_t;
+
+// The private structure used to keep track of a joystick
+struct joystick_hwdata
+{
+    SDL_GUID guid;
+    LPDIRECTINPUTDEVICE8 InputDevice;
+    DIDEVCAPS Capabilities;
+    bool buffered;
+    bool first_update;
+    input_t Inputs[MAX_INPUTS];
+    int NumInputs;
+    int NumSliders;
+    bool ff_initialized;
+    DIEFFECT *ffeffect;
+    LPDIRECTINPUTEFFECT ffeffect_ref;
+};
+
+extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
