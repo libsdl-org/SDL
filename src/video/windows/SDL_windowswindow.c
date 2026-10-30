@@ -1636,7 +1636,8 @@ void WIN_UpdateClipCursor(SDL_Window *window)
          */
 
         // Temporarily set the thread to per-monitor awareness v2 to get the display DPI.
-        if (videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2)) {
+        DPI_AWARENESS_CONTEXT prev_ctx = videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        if (prev_ctx) {
             HMONITOR hmon = MonitorFromWindow(data->hwnd, MONITOR_DEFAULTTONEAREST);
             if (hmon) {
                 UINT hdpi_uint, vdpi_uint;
@@ -1658,7 +1659,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
                     }
                 }
             }
-            videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_UNAWARE);
+            videodata->SetThreadDpiAwarenessContext(prev_ctx);
         }
     }
 
