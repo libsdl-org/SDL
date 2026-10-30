@@ -58,11 +58,11 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
     &SDL_GAMEINPUT_JoystickDriver,
 #endif
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
-    &SDL_WINDOWS_JoystickDriver,
+#if defined(SDL_JOYSTICK_XINPUT)
+    &SDL_XINPUT_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_WINMM
-    &SDL_WINMM_JoystickDriver,
+#if defined(SDL_JOYSTICK_DINPUT)
+    &SDL_DINPUT_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_LINUX
     &SDL_LINUX_JoystickDriver,

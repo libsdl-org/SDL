@@ -26,7 +26,7 @@
 
 #include "SDL_windowshaptic_c.h"
 #include "SDL_dinputhaptic_c.h"
-#include "../../joystick/windows/SDL_windowsjoystick_c.h"
+#include "../../joystick/windows/SDL_dinputjoystick_c.h"
 
 /*
  * External stuff.
