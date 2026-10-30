@@ -27,3 +27,4 @@ extern bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Uint16
 /* Called by platform backends when devices may have changed, this is safe to call from any thread */
 extern void SDL_HIDAPI_DeviceChanged(void);
 
+

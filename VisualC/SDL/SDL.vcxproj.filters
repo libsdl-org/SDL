@@ -627,6 +627,9 @@
     <ClInclude Include="..\..\src\joystick\SDL_gamepad_db.h">
       <Filter>joystick</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\SDL_devicewatcher.h">
+      <Filter>joystick</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h">
       <Filter>joystick</Filter>
     </ClInclude>
@@ -1517,6 +1520,9 @@
       <Filter>hidapi</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\controller_type.c">
+      <Filter>joystick</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\SDL_devicewatcher.c">
       <Filter>joystick</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_gamepad.c">

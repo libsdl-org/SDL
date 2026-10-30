@@ -1337,6 +1337,7 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(int device_index, SDL_GamepadMap
 
 SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
 {
+    NULL, // PreInit
     GAMEINPUT_JoystickInit,
     GAMEINPUT_JoystickGetCount,
     GAMEINPUT_JoystickDetect,
@@ -1357,7 +1358,10 @@ SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
     GAMEINPUT_JoystickUpdate,
     GAMEINPUT_JoystickClose,
     GAMEINPUT_JoystickQuit,
-    GAMEINPUT_JoystickGetGamepadMapping
+    GAMEINPUT_JoystickGetGamepadMapping,
+    NULL, // InitDeviceThread
+    NULL, // UpdateDeviceThread
+    NULL, // QuitDeviceThread
 };
 
 #endif // SDL_JOYSTICK_GAMEINPUT

@@ -26,6 +26,7 @@
 #include "../SDL_hints_c.h"
 #include "SDL_gamepad_c.h"
 #include "SDL_joystick_c.h"
+#include "SDL_devicewatcher.h"
 #include "SDL_steam_virtual_gamepad.h"
 
 #include "../events/SDL_events_c.h"
@@ -117,6 +118,16 @@ static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock) = 0;
 static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_event_lock) = NULL;
 static bool SDL_joystick_allows_background_events = false;
+
+typedef struct SDL_JoystickDeviceThread
+{
+    SDL_Thread *thread;
+    SDL_AtomicInt running;
+    SDL_DeviceWatcher *watcher;
+    SDL_Semaphore *first_pass_signal;
+} SDL_JoystickDeviceThread;
+
+static SDL_JoystickDeviceThread SDL_joystick_device_thread;
 
 static Uint32 initial_old_xboxone_controllers[] = {
     MAKE_VIDPID(0x0000, 0x6686),
@@ -854,13 +865,180 @@ static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, con
     }
 }
 
+static int SDLCALL JoystickDeviceThread(void *data)
+{
+    SDL_JoystickDeviceThread *thread = (SDL_JoystickDeviceThread *)(data);
+    bool first_pass = true;
+    bool update = true;
+    Uint64 change_time = 0;
+
+    // Times after a device change to update the device thread, since devices can take a while to show up in all APIs
+    static const Uint32 SDL_device_change_delaysMS[] = {
+        10,
+        300,
+        2000
+    };
+    int change_step = SDL_arraysize(SDL_device_change_delaysMS);
+
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->InitDeviceThread) {
+            driver->InitDeviceThread();
+        }
+    }
+
+    while (SDL_GetAtomicInt(&thread->running)) {
+        if (update) {
+            for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+                SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+                if (driver->UpdateDeviceThread) {
+                    driver->UpdateDeviceThread();
+                }
+            }
+
+            if (first_pass) {
+                if (thread->first_pass_signal) {
+                    SDL_SignalSemaphore(thread->first_pass_signal);
+                }
+                first_pass = false;
+            }
+        }
+
+        int waitMS;
+        if (change_step < SDL_arraysize(SDL_device_change_delaysMS)) {
+            // Wait for the next update after a device change, the scheduled updates cover any driver timeouts
+            Uint64 next_update = change_time + SDL_device_change_delaysMS[change_step];
+            Uint64 now = SDL_GetTicks();
+            if (next_update > now) {
+                waitMS = (int)(next_update - now);
+            } else {
+                waitMS = 0;
+            }
+        } else {
+            waitMS = -1;
+        }
+
+        Uint64 changed = SDL_WaitDeviceWatcher(thread->watcher, waitMS);
+        if (changed) {
+            // Restart the update schedule from the most recent change
+            change_time = changed;
+            change_step = 0;
+        }
+
+        if (change_step < SDL_arraysize(SDL_device_change_delaysMS)) {
+            // If an update took longer than the delay, the next update happens right away
+            Uint64 next_update = change_time + SDL_device_change_delaysMS[change_step];
+            if (SDL_GetTicks() >= next_update) {
+                ++change_step;
+                update = true;
+            } else {
+                update = false;
+            }
+        } else {
+            update = true;
+        }
+    }
+
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->QuitDeviceThread) {
+            driver->QuitDeviceThread();
+        }
+    }
+
+    return 0;
+}
+
+static bool SDL_CreateJoystickDeviceThread(bool async_init)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    thread->watcher = SDL_CreateDeviceWatcher();
+    if (!thread->watcher) {
+        return false;
+    }
+
+    if (!async_init) {
+        thread->first_pass_signal = SDL_CreateSemaphore(0);
+        if (!thread->first_pass_signal) {
+            return false;
+        }
+    }
+
+    SDL_SetAtomicInt(&thread->running, 1);
+    thread->thread = SDL_CreateThread(JoystickDeviceThread, "SDLJoystickThread", thread);
+    if (!thread->thread) {
+        return false;
+    }
+    return true;
+}
+
+void SDL_WakeJoystickDeviceThread(void)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->watcher) {
+        SDL_WakeDeviceWatcher(thread->watcher, false);
+    }
+}
+
+void SDL_WakeJoystickDeviceThreadForDeviceChange(void)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->watcher) {
+        SDL_WakeDeviceWatcher(thread->watcher, true);
+    }
+}
+
+Uint32 SDL_GetJoystickDeviceChangeCount(void)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->watcher) {
+        return SDL_GetDeviceWatcherChangeCount(thread->watcher);
+    }
+    return 0;
+}
+
+static void SDL_DestroyJoystickDeviceThread(void)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->thread) {
+        SDL_SetAtomicInt(&thread->running, 0);
+        SDL_WakeJoystickDeviceThread();
+        SDL_WaitThread(thread->thread, NULL);
+        thread->thread = NULL;
+    }
+
+    if (thread->watcher) {
+        SDL_DestroyDeviceWatcher(thread->watcher);
+        thread->watcher = NULL;
+    }
+
+    if (thread->first_pass_signal) {
+        SDL_DestroySemaphore(thread->first_pass_signal);
+        thread->first_pass_signal = NULL;
+    }
+}
+
 bool SDL_InitJoysticks(void)
 {
     int i;
+    bool device_thread = false;
+    bool init_async = SDL_GetHintBoolean("SDL_JOYSTICK_INIT_ASYNC", false);
     bool result = false;
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;
+    }
+
+    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->PreInit) {
+            driver->PreInit();
+        }
     }
 
     SDL_LockJoysticks();
@@ -890,11 +1068,37 @@ bool SDL_InitJoysticks(void)
     SDL_InitSteamVirtualGamepadInfo();
 
     for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
-        if (SDL_joystick_drivers[i]->Init()) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->Init()) {
             result = true;
+
+            if (driver->UpdateDeviceThread) {
+                device_thread = true;
+            }
         }
     }
+
+    if (device_thread) {
+        // Create the device thread
+        device_thread = SDL_CreateJoystickDeviceThread(init_async);
+    }
+
     SDL_UnlockJoysticks();
+
+    if (device_thread && !init_async) {
+        // Wait for the initial device thread cycle, outside the joystick lock
+        // FIXME: Should we have a timeout here? What do we do if it expires?
+        SDL_WaitSemaphore(SDL_joystick_device_thread.first_pass_signal);
+    }
+
+    if (result && !init_async) {
+        // Get the list of currently connected controllers
+        SDL_LockJoysticks();
+        for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+            SDL_joystick_drivers[i]->Detect();
+        }
+        SDL_UnlockJoysticks();
+    }
 
     if (!result) {
         SDL_QuitJoysticks();
@@ -2461,6 +2665,8 @@ void SDL_QuitJoysticks(void)
 {
     int i;
     SDL_JoystickID *joysticks;
+
+    SDL_DestroyJoystickDeviceThread();
 
     SDL_LockJoysticks();
 
