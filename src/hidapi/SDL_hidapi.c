@@ -281,6 +281,8 @@ static void HIDAPI_InitializeDiscovery(void)
             if (SDL_HIDAPI_discovery.m_pUdev != NULL) {
                 SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
                 if (SDL_HIDAPI_discovery.m_pUdevMonitor != NULL) {
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "hidraw", NULL);
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "usb", NULL);
                     usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
@@ -1178,10 +1180,18 @@ int SDL_hid_init(void)
     ++attempts;
 #ifdef SDL_PLATFORM_LINUX
     udev_ctx = SDL_UDEV_GetUdevSyms();
-#endif // __LINUX __
-    if (udev_ctx && PLATFORM_hid_init() == 0) {
+    if (udev_ctx && PLATFORM_hid_init() != 0) {
+        SDL_UDEV_ReleaseUdevSyms();
+        udev_ctx = NULL;
+    }
+    if (udev_ctx) {
         ++success;
     }
+#else
+    if (PLATFORM_hid_init() == 0) {
+        ++success;
+    }
+#endif
 #endif // HAVE_PLATFORM_BACKEND
 
     if (attempts > 0 && success == 0) {
@@ -1216,10 +1226,11 @@ int SDL_hid_exit(void)
 #ifdef HAVE_PLATFORM_BACKEND
     if (udev_ctx) {
         result |= PLATFORM_hid_exit();
-    }
 #ifdef SDL_PLATFORM_LINUX
-    SDL_UDEV_ReleaseUdevSyms();
-#endif // __LINUX __
+        SDL_UDEV_ReleaseUdevSyms();
+        udev_ctx = NULL;
+#endif
+    }
 #endif // HAVE_PLATFORM_BACKEND
 
 #ifdef HAVE_LIBUSB
