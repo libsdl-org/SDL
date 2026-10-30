@@ -1,0 +1,26 @@
+{
+  "configurations" : [
+    {
+      "id" : "E43CDE9E-38BF-4EB5-BD2E-5F4735FFEB49",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "performanceAntipatternCheckerEnabled" : true,
+    "testInteropMode" : "complete"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SimpleDirectMediaLayerTests",
+        "name" : "SimpleDirectMediaLayerTests"
+      }
+    }
+  ],
+  "version" : 1
+}
