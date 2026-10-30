@@ -183,7 +183,22 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
-        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, mDisplay.getRefreshRate());
+
+        if (density <= 0.0f) {
+            density = 1.0f;
+        }
+
+        float rate = mDisplay.getRefreshRate();
+
+        // Initial values needed for SDL_Init()
+        SDLActivity.mAndroid_SurfaceWidth = width;
+        SDLActivity.mAndroid_SurfaceHeight = height;
+        SDLActivity.mAndroid_DeviceWidth = nDeviceWidth;
+        SDLActivity.mAndroid_DeviceHeight = nDeviceHeight;
+        SDLActivity.mAndroid_ScreenDensity = density;
+        SDLActivity.mAndroid_ScreenRate = rate;
+
+        SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, density, rate);
         updateHDRHeadroom();
         SDLActivity.onNativeResize();
 
@@ -317,7 +332,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 y = motionListener.getEventY(event, i);
                 relative = motionListener.inRelativeMode();
 
-                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);                 
+                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
 
             } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
                 pointerId = event.getPointerId(i);
@@ -445,6 +460,8 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
 
         mReportedHDRHeadroom = headroom;
+        // Initial value needed for SDL_Init()
+        SDLActivity.mInit_ScreenHeadroom = headroom;
         SDLActivity.nativeSetScreenHDRHeadroom(headroom);
     }
 
