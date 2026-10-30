@@ -139,6 +139,9 @@ static VideoBootStrap *bootstrap[] = {
 #ifdef SDL_VIDEO_DRIVER_QNX
     &QNX_bootstrap,
 #endif
+#ifdef SDL_VIDEO_DRIVER_PLAYDATE
+    &PLAYDATE_bootstrap,
+#endif
 #ifdef SDL_VIDEO_DRIVER_OS2
     &OS2DIVE_bootstrap,
     &OS2VMAN_bootstrap,
