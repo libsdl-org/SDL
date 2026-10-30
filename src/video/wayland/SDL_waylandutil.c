@@ -57,7 +57,7 @@ bool Wayland_GetActivationTokenForExport(SDL_VideoDevice *_this, char **token, c
 
     SDL_VideoData *viddata = _this->internal;
 
-    SDL_WaylandSeat *seat = viddata->last_implicit_grab_seat;
+    Wayland_Seat *seat = viddata->last_implicit_grab_seat;
     SDL_WindowData *focus = NULL;
 
     if (seat) {
@@ -86,7 +86,7 @@ bool Wayland_GetActivationTokenForExport(SDL_VideoDevice *_this, char **token, c
             .done = false
         };
 
-        struct wl_event_queue *activation_token_queue = Wayland_DisplayCreateQueue(viddata->display, "SDL Activation Token Generation Queue");
+        struct wl_event_queue *activation_token_queue = Wayland_CreateQueue(viddata->display, "SDL Activation Token Generation Queue");
 
         struct wl_proxy *activation_manager_wrapper = WAYLAND_wl_proxy_create_wrapper(viddata->activation_manager);
         WAYLAND_wl_proxy_set_queue(activation_manager_wrapper, activation_token_queue);

@@ -73,7 +73,7 @@ static const struct wl_callback_listener swap_frame_listener = {
 static void CreatePresentationQueue(SDL_WindowData *wind)
 {
     if (!wind->presentation.queue) {
-        wind->presentation.queue = Wayland_DisplayCreateQueue(wind->waylandData->display, "SDL Surface Presentation Queue");
+        wind->presentation.queue = Wayland_CreateQueue(wind->waylandData->display, "SDL Surface Presentation Queue");
         wind->presentation.surface_wrapper = WAYLAND_wl_proxy_create_wrapper(wind->surface);
         WAYLAND_wl_proxy_set_queue((struct wl_proxy *)wind->presentation.surface_wrapper, wind->presentation.queue);
     }

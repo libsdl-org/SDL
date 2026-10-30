@@ -51,7 +51,7 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-void Wayland_SeatUpdateTextInput(SDL_WaylandSeat *seat)
+void Wayland_SeatUpdateTextInput(Wayland_Seat *seat)
 {
     if (seat->text_input.zwp_text_input) {
         SDL_WindowData *focus = seat->keyboard.focus;
@@ -177,7 +177,7 @@ bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
 
         wind->text_input_props.active = true;
 
-        SDL_WaylandSeat *seat;
+        Wayland_Seat *seat;
         wl_list_for_each (seat, &display->seat_list, link) {
             if (seat->keyboard.focus == wind) {
                 Wayland_SeatUpdateTextInput(seat);
@@ -196,7 +196,7 @@ bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_VideoData *display = _this->internal;
 
     if (display->text_input_manager) {
-        SDL_WaylandSeat *seat;
+        Wayland_Seat *seat;
         SDL_WindowData *wind = window->internal;
         wind->text_input_props.active = false;
 
@@ -219,7 +219,7 @@ bool Wayland_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window)
 {
     SDL_VideoData *internal = _this->internal;
     if (internal->text_input_manager) {
-        SDL_WaylandSeat *seat;
+        Wayland_Seat *seat;
         SDL_WindowData *wind = window->internal;
 
         wl_list_for_each (seat, &internal->seat_list, link) {
@@ -262,7 +262,7 @@ bool Wayland_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
      * input protocol, make sure we don't have any physical keyboards either.
      */
     SDL_VideoData *internal = _this->internal;
-    SDL_WaylandSeat *seat;
+    Wayland_Seat *seat;
     bool hastextmanager = (internal->text_input_manager != NULL);
     bool haskeyboard = false;
 

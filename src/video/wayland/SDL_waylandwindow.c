@@ -585,7 +585,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
         if (!data->mask.surface) {
             data->mask.surface = wl_compositor_create_surface(data->waylandData->compositor);
-            SDL_WAYLAND_register_surface(data->mask.surface);
+            Wayland_RegisterSurface(data->mask.surface);
             wl_surface_set_user_data(data->mask.surface, data);
         }
         if (!data->mask.subsurface) {
@@ -1841,7 +1841,7 @@ static struct libdecor_frame_interface libdecor_frame_interface = {
 };
 #endif
 
-static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, double factor)
+static void HandlePreferredScaleChanged(SDL_WindowData *window_data, double factor)
 {
     const double old_factor = window_data->scale_factor;
 
@@ -1887,10 +1887,9 @@ static void Wayland_HandlePreferredScaleChanged(SDL_WindowData *window_data, dou
     }
 }
 
-static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
+static void MaybeUpdateScaleFactor(SDL_WindowData *window)
 {
     double factor;
-    int i;
 
     /* If the fractional scale protocol is present or the core protocol supports the
      * preferred buffer scale event, the compositor will explicitly tell the application
@@ -1904,7 +1903,7 @@ static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
     if (window->num_outputs != 0) {
         // Check every display's factor, use the highest
         factor = 0.0;
-        for (i = 0; i < window->num_outputs; i++) {
+        for (int i = 0; i < window->num_outputs; i++) {
             SDL_DisplayData *internal = window->outputs[i];
             factor = SDL_max(factor, internal->scale_factor);
         }
@@ -1913,7 +1912,7 @@ static void Wayland_MaybeUpdateScaleFactor(SDL_WindowData *window)
         factor = window->scale_factor;
     }
 
-    Wayland_HandlePreferredScaleChanged(window, factor);
+    HandlePreferredScaleChanged(window, factor);
 }
 
 void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data)
@@ -1937,7 +1936,7 @@ void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *dis
         window->outputs = NULL;
     } else if (!window->is_fullscreen || window->num_outputs == 1) {
         Wayland_UpdateWindowPosition(window->sdlwindow);
-        Wayland_MaybeUpdateScaleFactor(window);
+        MaybeUpdateScaleFactor(window);
     }
 }
 
@@ -1947,7 +1946,7 @@ static void handle_surface_enter(void *data, struct wl_surface *surface, struct 
     SDL_DisplayData *internal = wl_output_get_user_data(output);
     SDL_DisplayData **new_outputs;
 
-    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
+    if (!Wayland_OwnsOutput(output) || !Wayland_OwnsSurface(surface)) {
         return;
     }
 
@@ -1962,7 +1961,7 @@ static void handle_surface_enter(void *data, struct wl_surface *surface, struct 
     // Update the scale factor after the move so that fullscreen outputs are updated.
     if (!window->is_fullscreen || window->num_outputs == 1) {
         Wayland_UpdateWindowPosition(window->sdlwindow);
-        Wayland_MaybeUpdateScaleFactor(window);
+        MaybeUpdateScaleFactor(window);
     }
 }
 
@@ -1970,7 +1969,7 @@ static void handle_surface_leave(void *data, struct wl_surface *surface, struct 
 {
     SDL_WindowData *window = (SDL_WindowData *)data;
 
-    if (!SDL_WAYLAND_own_output(output) || !SDL_WAYLAND_own_surface(surface)) {
+    if (!Wayland_OwnsOutput(output) || !Wayland_OwnsSurface(surface)) {
         return;
     }
 
@@ -1986,7 +1985,7 @@ static void handle_surface_preferred_buffer_scale(void *data, struct wl_surface 
      * only listen to this event if the fractional scaling protocol is not present.
      */
     if (!wind->fractional_scale) {
-        Wayland_HandlePreferredScaleChanged(data, (double)factor);
+        HandlePreferredScaleChanged(data, (double)factor);
     }
 }
 
@@ -2005,7 +2004,7 @@ static const struct wl_surface_listener surface_listener = {
 static void handle_fractional_scale_preferred(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale)
 {
     const double factor = (double)scale / 120.; // 120 is a magic number defined in the spec as a common denominator
-    Wayland_HandlePreferredScaleChanged(data, factor);
+    HandlePreferredScaleChanged(data, factor);
 }
 
 static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
@@ -2558,7 +2557,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
 }
 
-static void Wayland_ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
+static void ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
 {
     SDL_WindowData *popupdata;
 
@@ -2647,7 +2646,7 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
     {
         if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
-            Wayland_ReleasePopup(_this, window);
+            ReleasePopup(_this, window);
         } else if (wind->shell_surface.xdg.toplevel.xdg_toplevel) {
             xdg_toplevel_destroy(wind->shell_surface.xdg.toplevel.xdg_toplevel);
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, NULL);
@@ -2715,9 +2714,9 @@ static const struct xdg_activation_token_v1_listener xdg_activation_listener = {
  *
  * -flibit
  */
-static void Wayland_activate_window(SDL_VideoData *data, SDL_WindowData *target_wind, bool set_serial)
+static void ActivateWindow(SDL_VideoData *data, SDL_WindowData *target_wind, bool set_serial)
 {
-    SDL_WaylandSeat *seat = data->last_implicit_grab_seat;
+    Wayland_Seat *seat = data->last_implicit_grab_seat;
     SDL_WindowData *focus = NULL;
 
     if (seat) {
@@ -2780,7 +2779,7 @@ void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // No token? Try to activate the window via an event serial.
-    Wayland_activate_window(_this->internal, window->internal, true);
+    ActivateWindow(_this->internal, window->internal, true);
 }
 
 bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation)
@@ -2788,7 +2787,7 @@ bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOp
     /* Not setting the serial will specify 'urgency' without switching focus as per
      * https://gitlab.freedesktop.org/wayland/wayland-protocols/-/merge_requests/9#note_854977
      */
-    Wayland_activate_window(_this->internal, window->internal, false);
+    ActivateWindow(_this->internal, window->internal, false);
     return true;
 }
 
@@ -3027,7 +3026,7 @@ bool Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
     if (!data->pointer_constraints) {
         return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
-    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
+    Wayland_UpdatePointerGrabs(data, window->internal);
     return true;
 }
 
@@ -3037,7 +3036,7 @@ bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool
     if (!data->pointer_constraints) {
         return SDL_SetError("Failed to grab mouse: compositor lacks support for the required zwp_pointer_constraints_v1 protocol");
     }
-    Wayland_DisplayUpdatePointerGrabs(data, window->internal);
+    Wayland_UpdatePointerGrabs(data, window->internal);
     return true;
 }
 
@@ -3047,7 +3046,7 @@ bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, b
     if (!data->key_inhibitor_manager) {
         return SDL_SetError("Failed to grab keyboard: compositor lacks support for the required zwp_keyboard_shortcuts_inhibit_manager_v1 protocol");
     }
-    Wayland_DisplayUpdateKeyboardGrabs(data, window->internal);
+    Wayland_UpdateKeyboardGrabs(data, window->internal);
     return true;
 }
 
@@ -3159,7 +3158,7 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
         data->surface = wl_compositor_create_surface(c->compositor);
         wl_surface_add_listener(data->surface, &surface_listener, data);
         wl_surface_set_user_data(data->surface, data);
-        SDL_WAYLAND_register_surface(data->surface);
+        Wayland_RegisterSurface(data->surface);
     } else {
         window->flags |= SDL_WINDOW_EXTERNAL;
         data->surface = external_surface;
@@ -3701,7 +3700,7 @@ bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool
 void Wayland_ShowWindowSystemMenu(SDL_Window *window, int x, int y)
 {
     SDL_WindowData *wind = window->internal;
-    SDL_WaylandSeat *seat = wind->waylandData->last_implicit_grab_seat;
+    Wayland_Seat *seat = wind->waylandData->last_implicit_grab_seat;
 
     if (!seat) {
         return;
@@ -3784,7 +3783,7 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
          * window was destroyed upon being hidden, but there is no guarantee of this, so ensure that all references
          * to the window held by seats are released before destroying the underlying surface and struct.
          */
-        Wayland_DisplayRemoveWindowReferencesFromSeats(data, wind);
+        Wayland_RemoveWindowReferencesFromSeats(data, wind);
 
         if (wind->mask.viewport) {
             wp_viewport_destroy(wind->mask.viewport);
