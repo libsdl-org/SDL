@@ -1191,15 +1191,6 @@ static bool HIDAPI_DriverSteam_InitDevice(SDL_HIDAPI_Device *device)
     }
 }
 
-static int HIDAPI_DriverSteam_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverSteam_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool SetHomeLED(SDL_HIDAPI_Device *device, Uint8 value)
 {
     unsigned char buf[65];
@@ -1282,11 +1273,6 @@ static bool HIDAPI_DriverSteam_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
 static bool HIDAPI_DriverSteam_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     // You should use the full Steam Input API for rumble support
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSteam_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
     return SDL_Unsupported();
 }
 
@@ -1577,25 +1563,22 @@ static void HIDAPI_DriverSteam_FreeDevice(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam = {
-    SDL_HINT_JOYSTICK_HIDAPI_STEAM,
-    true,
-    HIDAPI_DriverSteam_RegisterHints,
-    HIDAPI_DriverSteam_UnregisterHints,
-    HIDAPI_DriverSteam_IsEnabled,
-    HIDAPI_DriverSteam_IsSupportedDevice,
-    HIDAPI_DriverSteam_InitDevice,
-    HIDAPI_DriverSteam_GetDevicePlayerIndex,
-    HIDAPI_DriverSteam_SetDevicePlayerIndex,
-    HIDAPI_DriverSteam_UpdateDevice,
-    HIDAPI_DriverSteam_OpenJoystick,
-    HIDAPI_DriverSteam_RumbleJoystick,
-    HIDAPI_DriverSteam_RumbleJoystickTriggers,
-    HIDAPI_DriverSteam_GetJoystickCapabilities,
-    HIDAPI_DriverSteam_SetJoystickLED,
-    HIDAPI_DriverSteam_SendJoystickEffect,
-    HIDAPI_DriverSteam_SetSensorsEnabled,
-    HIDAPI_DriverSteam_CloseJoystick,
-    HIDAPI_DriverSteam_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_STEAM,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSteam_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSteam_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSteam_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSteam_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSteam_InitDevice,
+    .UpdateDevice = HIDAPI_DriverSteam_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSteam_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSteam_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSteam_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSteam_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSteam_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSteam_SetSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSteam_CloseJoystick,
+    .FreeDevice = HIDAPI_DriverSteam_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_STEAM

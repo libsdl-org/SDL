@@ -484,15 +484,6 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverXboxOne_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverXboxOne_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverXboxOne_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
@@ -654,16 +645,6 @@ static bool HIDAPI_DriverXboxOne_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_J
     } else {
         return SDL_Unsupported();
     }
-}
-
-static bool HIDAPI_DriverXboxOne_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverXboxOne_HandleBatteryState(SDL_Joystick *joystick, Uint32 flags)
@@ -2026,25 +2007,21 @@ static void HIDAPI_DriverXboxOne_FreeDevice(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne = {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
-    true,
-    HIDAPI_DriverXboxOne_RegisterHints,
-    HIDAPI_DriverXboxOne_UnregisterHints,
-    HIDAPI_DriverXboxOne_IsEnabled,
-    HIDAPI_DriverXboxOne_IsSupportedDevice,
-    HIDAPI_DriverXboxOne_InitDevice,
-    HIDAPI_DriverXboxOne_GetDevicePlayerIndex,
-    HIDAPI_DriverXboxOne_SetDevicePlayerIndex,
-    HIDAPI_DriverXboxOne_UpdateDevice,
-    HIDAPI_DriverXboxOne_OpenJoystick,
-    HIDAPI_DriverXboxOne_RumbleJoystick,
-    HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
-    HIDAPI_DriverXboxOne_GetJoystickCapabilities,
-    HIDAPI_DriverXboxOne_SetJoystickLED,
-    HIDAPI_DriverXboxOne_SendJoystickEffect,
-    HIDAPI_DriverXboxOne_SetJoystickSensorsEnabled,
-    HIDAPI_DriverXboxOne_CloseJoystick,
-    HIDAPI_DriverXboxOne_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_XBOX_ONE,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverXboxOne_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverXboxOne_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverXboxOne_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverXboxOne_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverXboxOne_InitDevice,
+    .UpdateDevice = HIDAPI_DriverXboxOne_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverXboxOne_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverXboxOne_RumbleJoystick,
+    .RumbleJoystickTriggers = HIDAPI_DriverXboxOne_RumbleJoystickTriggers,
+    .GetJoystickCapabilities = HIDAPI_DriverXboxOne_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverXboxOne_SetJoystickLED,
+    .CloseJoystick = HIDAPI_DriverXboxOne_CloseJoystick,
+    .FreeDevice = HIDAPI_DriverXboxOne_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_XBOXONE

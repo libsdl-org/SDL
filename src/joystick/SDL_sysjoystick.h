@@ -193,10 +193,10 @@ typedef struct SDL_JoystickDriver
     // Function to get the Steam virtual gamepad slot of a joystick
     int (*GetDeviceSteamVirtualGamepadSlot)(int device_index);
 
-    // Function to get the player index of a joystick
+    // Optional function to get the player index of a joystick
     int (*GetDevicePlayerIndex)(int device_index);
 
-    // Function to set the player index of a joystick
+    // Optional function to set the player index of a joystick
     void (*SetDevicePlayerIndex)(int device_index, int player_index);
 
     // Function to return the stable GUID for a plugged in device
@@ -212,17 +212,17 @@ typedef struct SDL_JoystickDriver
      */
     bool (*Open)(SDL_Joystick *joystick, int device_index);
 
-    // Rumble functionality
+    // Optional rumble functionality
     bool (*Rumble)(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
     bool (*RumbleTriggers)(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble);
 
-    // LED functionality
+    // Optional LED functionality
     bool (*SetLED)(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue);
 
-    // General effects
+    // Optional general effects
     bool (*SendEffect)(SDL_Joystick *joystick, const void *data, int size);
 
-    // Sensor functionality
+    // Optional sensor functionality
     bool (*SetSensorsEnabled)(SDL_Joystick *joystick, bool enabled);
 
     /* Function to update the state of a joystick - called as a device poll.
@@ -238,7 +238,7 @@ typedef struct SDL_JoystickDriver
     // Function to perform any system-specific joystick related cleanup
     void (*Quit)(void);
 
-    // Function to get the autodetected controller mapping; returns false if there isn't any.
+    // Optional function to get the autodetected controller mapping
     bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
 
 } SDL_JoystickDriver;

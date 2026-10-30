@@ -831,7 +831,9 @@ static bool SDL_SetJoystickIDForPlayerIndex(int player_index, SDL_JoystickID ins
 
     // Update the driver with the new index
     if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        driver->SetDevicePlayerIndex(device_index, player_index);
+        if (driver->SetDevicePlayerIndex) {
+            driver->SetDevicePlayerIndex(device_index, player_index);
+        }
     }
 
     // Move any existing joystick to another slot
@@ -1679,7 +1681,9 @@ bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id, SDL_Ga
 
     SDL_LockJoysticks();
     if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
-        is_ok = driver->GetGamepadMapping(device_index, out);
+        if (driver->GetGamepadMapping) {
+            is_ok = driver->GetGamepadMapping(device_index, out);
+        }
     }
     SDL_UnlockJoysticks();
 
@@ -1914,68 +1918,78 @@ bool SDL_JoystickHasSensor(SDL_Joystick *joystick, SDL_SensorType type)
  */
 bool SDL_SetJoystickSensorEnabled(SDL_Joystick *joystick, SDL_SensorType type, bool enabled)
 {
+    // In case someone passes non bool value
+    enabled = (enabled != false);
+
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
         for (int i = 0; i < joystick->nsensors; ++i) {
             SDL_JoystickSensorInfo *sensor = &joystick->sensors[i];
 
-            if (sensor->type == type) {
-                if (sensor->enabled == (enabled != false)) {
-                    SDL_UnlockJoysticks();
-                    return true;
-                }
+            if (sensor->type != type) {
+                continue;
+            }
 
-                if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
-                    if (enabled) {
-                        joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
-                        if (!joystick->accel) {
-                            SDL_UnlockJoysticks();
-                            return false;
-                        }
-                    } else {
-                        if (joystick->accel) {
-                            SDL_CloseSensor(joystick->accel);
-                            joystick->accel = NULL;
-                        }
-                    }
-                } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
-                    if (enabled) {
-                        joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
-                        if (!joystick->gyro) {
-                            SDL_UnlockJoysticks();
-                            return false;
-                        }
-                    } else {
-                        if (joystick->gyro) {
-                            SDL_CloseSensor(joystick->gyro);
-                            joystick->gyro = NULL;
-                        }
-                    }
-                } else {
-                    if (enabled) {
-                        if (joystick->nsensors_enabled == 0) {
-                            if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
-                                SDL_UnlockJoysticks();
-                                return false;
-                            }
-                        }
-                        ++joystick->nsensors_enabled;
-                    } else {
-                        if (joystick->nsensors_enabled == 1) {
-                            if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
-                                SDL_UnlockJoysticks();
-                                return false;
-                            }
-                        }
-                        --joystick->nsensors_enabled;
-                    }
-                }
-
-                sensor->enabled = enabled;
+            if (sensor->enabled == enabled) {
                 SDL_UnlockJoysticks();
                 return true;
             }
+
+            bool result = true;
+            if (type == SDL_SENSOR_ACCEL && joystick->accel_sensor) {
+                if (enabled) {
+                    joystick->accel = SDL_OpenSensor(joystick->accel_sensor);
+                    if (!joystick->accel) {
+                        result = false;
+                    }
+                } else {
+                    if (joystick->accel) {
+                        SDL_CloseSensor(joystick->accel);
+                        joystick->accel = NULL;
+                    }
+                }
+            } else if (type == SDL_SENSOR_GYRO && joystick->gyro_sensor) {
+                if (enabled) {
+                    joystick->gyro = SDL_OpenSensor(joystick->gyro_sensor);
+                    if (!joystick->gyro) {
+                        result = false;
+                    }
+                } else {
+                    if (joystick->gyro) {
+                        SDL_CloseSensor(joystick->gyro);
+                        joystick->gyro = NULL;
+                    }
+                }
+            } else if (joystick->driver->SetSensorsEnabled) {
+                if (enabled) {
+                    if (joystick->nsensors_enabled == 0) {
+                        if (!joystick->driver->SetSensorsEnabled(joystick, true)) {
+                            result = false;
+                        }
+                    }
+                    if (result) {
+                        ++joystick->nsensors_enabled;
+                    }
+                } else {
+                    if (joystick->nsensors_enabled == 1) {
+                        if (!joystick->driver->SetSensorsEnabled(joystick, false)) {
+                            result = false;
+                        }
+                    }
+                    if (result) {
+                        --joystick->nsensors_enabled;
+                    }
+                }
+            } else {
+                result = SDL_Unsupported();
+            }
+
+            if (result) {
+                sensor->enabled = enabled;
+            }
+            SDL_UnlockJoysticks();
+            return result;
         }
     }
     SDL_UnlockJoysticks();
@@ -2242,7 +2256,7 @@ bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
             high_frequency_rumble == joystick->high_frequency_rumble) {
             // Just update the expiration
             result = true;
-        } else {
+        } else if (joystick->driver->Rumble) {
             result = joystick->driver->Rumble(joystick, low_frequency_rumble, high_frequency_rumble);
             if (result) {
                 joystick->rumble_resend = SDL_GetTicks() + SDL_RUMBLE_RESEND_MS;
@@ -2252,6 +2266,8 @@ bool SDL_RumbleJoystick(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uin
             } else {
                 joystick->rumble_resend = 0;
             }
+        } else {
+            result = SDL_Unsupported();
         }
 
         if (result) {
@@ -2285,7 +2301,7 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
         if (left_rumble == joystick->left_trigger_rumble && right_rumble == joystick->right_trigger_rumble) {
             // Just update the expiration
             result = true;
-        } else {
+        } else if (joystick->driver->RumbleTriggers) {
             result = joystick->driver->RumbleTriggers(joystick, left_rumble, right_rumble);
             if (result) {
                 joystick->trigger_rumble_resend = SDL_GetTicks() + SDL_RUMBLE_RESEND_MS;
@@ -2295,6 +2311,8 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
             } else {
                 joystick->trigger_rumble_resend = 0;
             }
+        } else {
+            result = SDL_Unsupported();
         }
 
         if (result) {
@@ -2317,19 +2335,22 @@ bool SDL_RumbleJoystickTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint
 bool SDL_SetJoystickLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
 {
     bool result;
-    bool isfreshvalue;
 
     SDL_LockJoysticks();
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
 
-        isfreshvalue = red != joystick->led_red ||
-                       green != joystick->led_green ||
-                       blue != joystick->led_blue;
+        bool isfreshvalue = red != joystick->led_red ||
+                            green != joystick->led_green ||
+                            blue != joystick->led_blue;
 
         if (isfreshvalue || SDL_GetTicks() >= joystick->led_expiration) {
-            result = joystick->driver->SetLED(joystick, red, green, blue);
-            joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
+            if (joystick->driver->SetLED) {
+                result = joystick->driver->SetLED(joystick, red, green, blue);
+                joystick->led_expiration = SDL_GetTicks() + SDL_LED_MIN_REPEAT_MS;
+            } else {
+                result = SDL_Unsupported();
+            }
         } else {
             // Avoid spamming the driver
             result = true;
@@ -2353,7 +2374,11 @@ bool SDL_SendJoystickEffect(SDL_Joystick *joystick, const void *data, int size)
     {
         CHECK_JOYSTICK_MAGIC(joystick, false);
 
-        result = joystick->driver->SendEffect(joystick, data, size);
+        if (joystick->driver->SendEffect) {
+            result = joystick->driver->SendEffect(joystick, data, size);
+        } else {
+            result = SDL_Unsupported();
+        }
     }
     SDL_UnlockJoysticks();
 
@@ -2544,6 +2569,9 @@ void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, f
 
     SDL_AssertJoysticksLocked();
 
+    // Make sure we can actually enable this sensor
+    SDL_assert(joystick->driver->SetSensorsEnabled);
+
     nsensors = joystick->nsensors + 1;
     sensors = (SDL_JoystickSensorInfo *)SDL_realloc(joystick->sensors, (nsensors * sizeof(SDL_JoystickSensorInfo)));
     if (sensors) {
@@ -2607,7 +2635,7 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
 
     if (SDL_GetDriverAndJoystickIndex(instance_id, &driver, &device_index)) {
         player_index = driver->GetDeviceSteamVirtualGamepadSlot(device_index);
-        if (player_index < 0) {
+        if (player_index < 0 && driver->GetDevicePlayerIndex) {
             player_index = driver->GetDevicePlayerIndex(device_index);
         }
     }

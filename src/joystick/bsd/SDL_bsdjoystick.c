@@ -546,15 +546,6 @@ static int BSD_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int BSD_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void BSD_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID BSD_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
@@ -811,58 +802,20 @@ static void report_free(struct report *r)
     r->status = SREPORT_UNINIT;
 }
 
-static bool BSD_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
-static bool BSD_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool BSD_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 SDL_JoystickDriver SDL_BSD_JoystickDriver = {
-    BSD_JoystickInit,
-    BSD_JoystickGetCount,
-    BSD_JoystickDetect,
-    BSD_JoystickIsDevicePresent,
-    BSD_JoystickGetDeviceName,
-    BSD_JoystickGetDevicePath,
-    BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
-    BSD_JoystickGetDevicePlayerIndex,
-    BSD_JoystickSetDevicePlayerIndex,
-    BSD_JoystickGetDeviceGUID,
-    BSD_JoystickGetDeviceInstanceID,
-    BSD_JoystickOpen,
-    BSD_JoystickRumble,
-    BSD_JoystickRumbleTriggers,
-    BSD_JoystickSetLED,
-    BSD_JoystickSendEffect,
-    BSD_JoystickSetSensorsEnabled,
-    BSD_JoystickUpdate,
-    BSD_JoystickClose,
-    BSD_JoystickQuit,
-    BSD_JoystickGetGamepadMapping
+    .Init = BSD_JoystickInit,
+    .GetCount = BSD_JoystickGetCount,
+    .Detect = BSD_JoystickDetect,
+    .IsDevicePresent = BSD_JoystickIsDevicePresent,
+    .GetDeviceName = BSD_JoystickGetDeviceName,
+    .GetDevicePath = BSD_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = BSD_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = BSD_JoystickGetDeviceInstanceID,
+    .Open = BSD_JoystickOpen,
+    .Update = BSD_JoystickUpdate,
+    .Close = BSD_JoystickClose,
+    .Quit = BSD_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_USBHID

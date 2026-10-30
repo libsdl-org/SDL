@@ -1139,15 +1139,6 @@ static int LINUX_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return GetJoystickByDevIndex(device_index)->steam_virtual_gamepad_slot;
 }
 
-static int LINUX_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void LINUX_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID LINUX_JoystickGetDeviceGUID(int device_index)
 {
     return GetJoystickByDevIndex(device_index)->guid;
@@ -1680,21 +1671,6 @@ static bool LINUX_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_ru
         return SDL_SetError("Couldn't start rumble effect: %s", strerror(errno));
     }
     return true;
-}
-
-static bool LINUX_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool LINUX_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool LINUX_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool LINUX_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
@@ -2822,27 +2798,22 @@ done:
 }
 
 SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
-    LINUX_JoystickInit,
-    LINUX_JoystickGetCount,
-    LINUX_JoystickDetect,
-    LINUX_JoystickIsDevicePresent,
-    LINUX_JoystickGetDeviceName,
-    LINUX_JoystickGetDevicePath,
-    LINUX_JoystickGetDeviceSteamVirtualGamepadSlot,
-    LINUX_JoystickGetDevicePlayerIndex,
-    LINUX_JoystickSetDevicePlayerIndex,
-    LINUX_JoystickGetDeviceGUID,
-    LINUX_JoystickGetDeviceInstanceID,
-    LINUX_JoystickOpen,
-    LINUX_JoystickRumble,
-    LINUX_JoystickRumbleTriggers,
-    LINUX_JoystickSetLED,
-    LINUX_JoystickSendEffect,
-    LINUX_JoystickSetSensorsEnabled,
-    LINUX_JoystickUpdate,
-    LINUX_JoystickClose,
-    LINUX_JoystickQuit,
-    LINUX_JoystickGetGamepadMapping
+    .Init = LINUX_JoystickInit,
+    .GetCount = LINUX_JoystickGetCount,
+    .Detect = LINUX_JoystickDetect,
+    .IsDevicePresent = LINUX_JoystickIsDevicePresent,
+    .GetDeviceName = LINUX_JoystickGetDeviceName,
+    .GetDevicePath = LINUX_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = LINUX_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = LINUX_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = LINUX_JoystickGetDeviceInstanceID,
+    .Open = LINUX_JoystickOpen,
+    .Rumble = LINUX_JoystickRumble,
+    .SetSensorsEnabled = LINUX_JoystickSetSensorsEnabled,
+    .Update = LINUX_JoystickUpdate,
+    .Close = LINUX_JoystickClose,
+    .Quit = LINUX_JoystickQuit,
+    .GetGamepadMapping = LINUX_JoystickGetGamepadMapping
 };
 
 #endif // SDL_JOYSTICK_LINUX

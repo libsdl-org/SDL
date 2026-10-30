@@ -288,10 +288,6 @@ static int HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device,
     return -1;
 }
 
-static void HIDAPI_DriverGameCube_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device, SDL_DriverGameCube_Context *ctx, Uint8 slot, const Uint8 *packet, bool invert_c_stick)
 {
     SDL_Joystick *joystick;
@@ -578,11 +574,6 @@ static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     return SDL_SetError("Couldn't find joystick");
 }
 
-static bool HIDAPI_DriverGameCube_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -613,21 +604,6 @@ static Uint32 HIDAPI_DriverGameCube_GetJoystickCapabilities(SDL_HIDAPI_Device *d
     return result;
 }
 
-static bool HIDAPI_DriverGameCube_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverGameCube_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverGameCube_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 static void HIDAPI_DriverGameCube_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
@@ -653,25 +629,20 @@ static void HIDAPI_DriverGameCube_FreeDevice(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube = {
-    SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
-    true,
-    HIDAPI_DriverGameCube_RegisterHints,
-    HIDAPI_DriverGameCube_UnregisterHints,
-    HIDAPI_DriverGameCube_IsEnabled,
-    HIDAPI_DriverGameCube_IsSupportedDevice,
-    HIDAPI_DriverGameCube_InitDevice,
-    HIDAPI_DriverGameCube_GetDevicePlayerIndex,
-    HIDAPI_DriverGameCube_SetDevicePlayerIndex,
-    HIDAPI_DriverGameCube_UpdateDevice,
-    HIDAPI_DriverGameCube_OpenJoystick,
-    HIDAPI_DriverGameCube_RumbleJoystick,
-    HIDAPI_DriverGameCube_RumbleJoystickTriggers,
-    HIDAPI_DriverGameCube_GetJoystickCapabilities,
-    HIDAPI_DriverGameCube_SetJoystickLED,
-    HIDAPI_DriverGameCube_SendJoystickEffect,
-    HIDAPI_DriverGameCube_SetJoystickSensorsEnabled,
-    HIDAPI_DriverGameCube_CloseJoystick,
-    HIDAPI_DriverGameCube_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_GAMECUBE,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverGameCube_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverGameCube_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverGameCube_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverGameCube_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverGameCube_InitDevice,
+    .GetDevicePlayerIndex = HIDAPI_DriverGameCube_GetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverGameCube_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverGameCube_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverGameCube_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverGameCube_GetJoystickCapabilities,
+    .CloseJoystick = HIDAPI_DriverGameCube_CloseJoystick,
+    .FreeDevice = HIDAPI_DriverGameCube_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_GAMECUBE

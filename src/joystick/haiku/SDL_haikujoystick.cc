@@ -110,15 +110,6 @@ extern "C"
         return -1;
     }
 
-    static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
-    {
-        return -1;
-    }
-
-    static void HAIKU_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-    {
-    }
-
     static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
     {
         return device_index + 1;
@@ -253,38 +244,6 @@ extern "C"
         return SDL_CreateJoystickGUIDForName(name);
     }
 
-    static bool HAIKU_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-    {
-        return SDL_Unsupported();
-    }
-
-
-    static bool HAIKU_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-    {
-        return SDL_Unsupported();
-    }
-
-    static bool HAIKU_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-    {
-        return false;
-    }
-
-    static bool HAIKU_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-    {
-        return SDL_Unsupported();
-    }
-
-
-    static bool HAIKU_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-    {
-        return SDL_Unsupported();
-    }
-
-    static bool HAIKU_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-    {
-        return SDL_Unsupported();
-    }
-
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
         HAIKU_JoystickInit,
@@ -294,20 +253,20 @@ extern "C"
         HAIKU_JoystickGetDeviceName,
         HAIKU_JoystickGetDevicePath,
         HAIKU_JoystickGetDeviceSteamVirtualGamepadSlot,
-        HAIKU_JoystickGetDevicePlayerIndex,
-        HAIKU_JoystickSetDevicePlayerIndex,
+        NULL, // GetDevicePlayerIndex
+        NULL, // SetDevicePlayerIndex
         HAIKU_JoystickGetDeviceGUID,
         HAIKU_JoystickGetDeviceInstanceID,
         HAIKU_JoystickOpen,
-        HAIKU_JoystickRumble,
-        HAIKU_JoystickRumbleTriggers,
-        HAIKU_JoystickSetLED,
-        HAIKU_JoystickSendEffect,
-        HAIKU_JoystickSetSensorsEnabled,
+        NULL, // Rumble
+        NULL, // RumbleTriggers
+        NULL, // SetLED
+        NULL, // SendEffect
+        NULL, // SetSensorsEnabled
         HAIKU_JoystickUpdate,
         HAIKU_JoystickClose,
         HAIKU_JoystickQuit,
-        HAIKU_JoystickGetGamepadMapping
+        NULL // GetGamepadMapping
     };
 
 }                              // extern "C"

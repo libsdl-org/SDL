@@ -129,15 +129,6 @@ static int PSP_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int PSP_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void PSP_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID PSP_JoystickGetDeviceGUID(int device_index)
 {
     // the GUID is just the name for now
@@ -163,31 +154,6 @@ static bool PSP_JoystickOpen(SDL_Joystick *joystick, int device_index)
     joystick->nhats = 1;  // we treat the d-pad as a hat.
 
     return true;
-}
-
-static bool PSP_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -266,33 +232,20 @@ static void PSP_JoystickQuit(void)
 {
 }
 
-static bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_PSP_JoystickDriver = {
-    PSP_JoystickInit,
-    PSP_JoystickGetCount,
-    PSP_JoystickDetect,
-    PSP_JoystickIsDevicePresent,
-    PSP_JoystickGetDeviceName,
-    PSP_JoystickGetDevicePath,
-    PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
-    PSP_JoystickGetDevicePlayerIndex,
-    PSP_JoystickSetDevicePlayerIndex,
-    PSP_JoystickGetDeviceGUID,
-    PSP_JoystickGetDeviceInstanceID,
-    PSP_JoystickOpen,
-    PSP_JoystickRumble,
-    PSP_JoystickRumbleTriggers,
-    PSP_JoystickSetLED,
-    PSP_JoystickSendEffect,
-    PSP_JoystickSetSensorsEnabled,
-    PSP_JoystickUpdate,
-    PSP_JoystickClose,
-    PSP_JoystickQuit,
-    PSP_JoystickGetGamepadMapping
+    .Init = PSP_JoystickInit,
+    .GetCount = PSP_JoystickGetCount,
+    .Detect = PSP_JoystickDetect,
+    .IsDevicePresent = PSP_JoystickIsDevicePresent,
+    .GetDeviceName = PSP_JoystickGetDeviceName,
+    .GetDevicePath = PSP_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = PSP_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = PSP_JoystickGetDeviceInstanceID,
+    .Open = PSP_JoystickOpen,
+    .Update = PSP_JoystickUpdate,
+    .Close = PSP_JoystickClose,
+    .Quit = PSP_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_PSP

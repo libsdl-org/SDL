@@ -1511,11 +1511,6 @@ static bool IOS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, U
     return SDL_Unsupported();
 }
 
-static bool IOS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 static bool IOS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
 {
     @autoreleasepool {
@@ -1979,25 +1974,24 @@ const char *IOS_GetAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAx
 }
 
 SDL_JoystickDriver SDL_IOS_JoystickDriver = {
-    IOS_JoystickInit,
-    IOS_JoystickGetCount,
-    IOS_JoystickDetect,
-    IOS_JoystickIsDevicePresent,
-    IOS_JoystickGetDeviceName,
-    IOS_JoystickGetDevicePath,
-    IOS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    IOS_JoystickGetDevicePlayerIndex,
-    IOS_JoystickSetDevicePlayerIndex,
-    IOS_JoystickGetDeviceGUID,
-    IOS_JoystickGetDeviceInstanceID,
-    IOS_JoystickOpen,
-    IOS_JoystickRumble,
-    IOS_JoystickRumbleTriggers,
-    IOS_JoystickSetLED,
-    IOS_JoystickSendEffect,
-    IOS_JoystickSetSensorsEnabled,
-    IOS_JoystickUpdate,
-    IOS_JoystickClose,
-    IOS_JoystickQuit,
-    IOS_JoystickGetGamepadMapping
+    .Init = IOS_JoystickInit,
+    .GetCount = IOS_JoystickGetCount,
+    .Detect = IOS_JoystickDetect,
+    .IsDevicePresent = IOS_JoystickIsDevicePresent,
+    .GetDeviceName = IOS_JoystickGetDeviceName,
+    .GetDevicePath = IOS_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = IOS_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDevicePlayerIndex = IOS_JoystickGetDevicePlayerIndex,
+    .SetDevicePlayerIndex = IOS_JoystickSetDevicePlayerIndex,
+    .GetDeviceGUID = IOS_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = IOS_JoystickGetDeviceInstanceID,
+    .Open = IOS_JoystickOpen,
+    .Rumble = IOS_JoystickRumble,
+    .RumbleTriggers = IOS_JoystickRumbleTriggers,
+    .SetLED = IOS_JoystickSetLED,
+    .SetSensorsEnabled = IOS_JoystickSetSensorsEnabled,
+    .Update = IOS_JoystickUpdate,
+    .Close = IOS_JoystickClose,
+    .Quit = IOS_JoystickQuit,
+    .GetGamepadMapping = IOS_JoystickGetGamepadMapping
 };

@@ -93,15 +93,6 @@ static bool HIDAPI_DriverXBOX360BB_InitDevice(SDL_HIDAPI_Device *device)
     return true;
 }
 
-static int HIDAPI_DriverXBOX360BB_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverXBOX360BB_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverXBOX360BB_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360BB_Context *ctx = (SDL_DriverXbox360BB_Context *)device->context;
@@ -118,36 +109,6 @@ static bool HIDAPI_DriverXBOX360BB_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
         }
     }
     return false; // Should never get here!
-}
-
-static bool HIDAPI_DriverXBOX360BB_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static Uint32 HIDAPI_DriverXBOX360BB_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-    return 0;
-}
-
-static bool HIDAPI_DriverXBOX360BB_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXBOX360BB_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverXBOX360BB_HandleStatePacket(SDL_DriverXbox360BB_Context *ctx, Uint8 *data, int size)
@@ -245,34 +206,16 @@ static bool HIDAPI_DriverXBOX360BB_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_DriverXBOX360BB_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_DriverXBOX360BB_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360BB = {
-    "SDL_JOYSTICK_HIDAPI_XBOX_360_BIGBUTTON",
-    true,
-    HIDAPI_DriverXBOX360BB_RegisterHints,
-    HIDAPI_DriverXBOX360BB_UnregisterHints,
-    HIDAPI_DriverXBOX360BB_IsEnabled,
-    HIDAPI_DriverXBOX360BB_IsSupportedDevice,
-    HIDAPI_DriverXBOX360BB_InitDevice,
-    HIDAPI_DriverXBOX360BB_GetDevicePlayerIndex,
-    HIDAPI_DriverXBOX360BB_SetDevicePlayerIndex,
-    HIDAPI_DriverXBOX360BB_UpdateDevice,
-    HIDAPI_DriverXBOX360BB_OpenJoystick,
-    HIDAPI_DriverXBOX360BB_RumbleJoystick,
-    HIDAPI_DriverXBOX360BB_RumbleJoystickTriggers,
-    HIDAPI_DriverXBOX360BB_GetJoystickCapabilities,
-    HIDAPI_DriverXBOX360BB_SetJoystickLED,
-    HIDAPI_DriverXBOX360BB_SendJoystickEffect,
-    HIDAPI_DriverXBOX360BB_SetJoystickSensorsEnabled,
-    HIDAPI_DriverXBOX360BB_CloseJoystick,
-    HIDAPI_DriverXBOX360BB_FreeDevice,
+    .name = "SDL_JOYSTICK_HIDAPI_XBOX_360_BIGBUTTON",
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverXBOX360BB_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverXBOX360BB_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverXBOX360BB_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverXBOX360BB_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverXBOX360BB_InitDevice,
+    .UpdateDevice = HIDAPI_DriverXBOX360BB_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverXBOX360BB_OpenJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_XBOX360

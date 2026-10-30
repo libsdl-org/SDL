@@ -503,10 +503,6 @@ static int WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
 #endif
 }
 
-static void WINDOWS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 // return the stable device guid for this device index
 static SDL_GUID WINDOWS_JoystickGetDeviceGUID(int device_index)
 {
@@ -570,26 +566,6 @@ static bool WINDOWS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_
     }
 #endif
     return SDL_DINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble);
-}
-
-static bool WINDOWS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool WINDOWS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool WINDOWS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool WINDOWS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void WINDOWS_JoystickUpdate(SDL_Joystick *joystick)
@@ -656,33 +632,22 @@ void WINDOWS_JoystickQuit(void)
     WIN_QuitDeviceNotification();
 }
 
-static bool WINDOWS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_WINDOWS_JoystickDriver = {
-    WINDOWS_JoystickInit,
-    WINDOWS_JoystickGetCount,
-    WINDOWS_JoystickDetect,
-    WINDOWS_JoystickIsDevicePresent,
-    WINDOWS_JoystickGetDeviceName,
-    WINDOWS_JoystickGetDevicePath,
-    WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    WINDOWS_JoystickGetDevicePlayerIndex,
-    WINDOWS_JoystickSetDevicePlayerIndex,
-    WINDOWS_JoystickGetDeviceGUID,
-    WINDOWS_JoystickGetDeviceInstanceID,
-    WINDOWS_JoystickOpen,
-    WINDOWS_JoystickRumble,
-    WINDOWS_JoystickRumbleTriggers,
-    WINDOWS_JoystickSetLED,
-    WINDOWS_JoystickSendEffect,
-    WINDOWS_JoystickSetSensorsEnabled,
-    WINDOWS_JoystickUpdate,
-    WINDOWS_JoystickClose,
-    WINDOWS_JoystickQuit,
-    WINDOWS_JoystickGetGamepadMapping
+    .Init = WINDOWS_JoystickInit,
+    .GetCount = WINDOWS_JoystickGetCount,
+    .Detect = WINDOWS_JoystickDetect,
+    .IsDevicePresent = WINDOWS_JoystickIsDevicePresent,
+    .GetDeviceName = WINDOWS_JoystickGetDeviceName,
+    .GetDevicePath = WINDOWS_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = WINDOWS_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDevicePlayerIndex = WINDOWS_JoystickGetDevicePlayerIndex,
+    .GetDeviceGUID = WINDOWS_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = WINDOWS_JoystickGetDeviceInstanceID,
+    .Open = WINDOWS_JoystickOpen,
+    .Rumble = WINDOWS_JoystickRumble,
+    .Update = WINDOWS_JoystickUpdate,
+    .Close = WINDOWS_JoystickClose,
+    .Quit = WINDOWS_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT

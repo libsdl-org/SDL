@@ -583,11 +583,6 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverPS5_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverPS5_LoadCalibrationData(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS5_Context *ctx = (SDL_DriverPS5_Context *)device->context;
@@ -1024,11 +1019,6 @@ static bool HIDAPI_DriverPS5_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
     return HIDAPI_DriverPS5_UpdateEffects(ctx, k_EDS5EffectRumble, true);
-}
-
-static bool HIDAPI_DriverPS5_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverPS5_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -1703,30 +1693,23 @@ static void HIDAPI_DriverPS5_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     ctx->enhanced_mode_available = false;
 }
 
-static void HIDAPI_DriverPS5_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS5 = {
-    SDL_HINT_JOYSTICK_HIDAPI_PS5,
-    true,
-    HIDAPI_DriverPS5_RegisterHints,
-    HIDAPI_DriverPS5_UnregisterHints,
-    HIDAPI_DriverPS5_IsEnabled,
-    HIDAPI_DriverPS5_IsSupportedDevice,
-    HIDAPI_DriverPS5_InitDevice,
-    HIDAPI_DriverPS5_GetDevicePlayerIndex,
-    HIDAPI_DriverPS5_SetDevicePlayerIndex,
-    HIDAPI_DriverPS5_UpdateDevice,
-    HIDAPI_DriverPS5_OpenJoystick,
-    HIDAPI_DriverPS5_RumbleJoystick,
-    HIDAPI_DriverPS5_RumbleJoystickTriggers,
-    HIDAPI_DriverPS5_GetJoystickCapabilities,
-    HIDAPI_DriverPS5_SetJoystickLED,
-    HIDAPI_DriverPS5_SendJoystickEffect,
-    HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
-    HIDAPI_DriverPS5_CloseJoystick,
-    HIDAPI_DriverPS5_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_PS5,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverPS5_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverPS5_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverPS5_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverPS5_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverPS5_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverPS5_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverPS5_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverPS5_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverPS5_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverPS5_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverPS5_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverPS5_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverPS5_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverPS5_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_PS5

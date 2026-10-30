@@ -786,15 +786,6 @@ static int DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return device ? device->steam_virtual_gamepad_slot : -1;
 }
 
-static int DARWIN_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void DARWIN_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 static SDL_GUID DARWIN_JoystickGetDeviceGUID(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
@@ -962,26 +953,6 @@ static bool DARWIN_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_r
     return true;
 }
 
-static bool DARWIN_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool DARWIN_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool DARWIN_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool DARWIN_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
 {
     recDevice *device = joystick->hwdata;
@@ -1109,33 +1080,21 @@ static void DARWIN_JoystickQuit(void)
     }
 }
 
-static bool DARWIN_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
-    DARWIN_JoystickInit,
-    DARWIN_JoystickGetCount,
-    DARWIN_JoystickDetect,
-    DARWIN_JoystickIsDevicePresent,
-    DARWIN_JoystickGetDeviceName,
-    DARWIN_JoystickGetDevicePath,
-    DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot,
-    DARWIN_JoystickGetDevicePlayerIndex,
-    DARWIN_JoystickSetDevicePlayerIndex,
-    DARWIN_JoystickGetDeviceGUID,
-    DARWIN_JoystickGetDeviceInstanceID,
-    DARWIN_JoystickOpen,
-    DARWIN_JoystickRumble,
-    DARWIN_JoystickRumbleTriggers,
-    DARWIN_JoystickSetLED,
-    DARWIN_JoystickSendEffect,
-    DARWIN_JoystickSetSensorsEnabled,
-    DARWIN_JoystickUpdate,
-    DARWIN_JoystickClose,
-    DARWIN_JoystickQuit,
-    DARWIN_JoystickGetGamepadMapping
+    .Init = DARWIN_JoystickInit,
+    .GetCount = DARWIN_JoystickGetCount,
+    .Detect = DARWIN_JoystickDetect,
+    .IsDevicePresent = DARWIN_JoystickIsDevicePresent,
+    .GetDeviceName = DARWIN_JoystickGetDeviceName,
+    .GetDevicePath = DARWIN_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = DARWIN_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = DARWIN_JoystickGetDeviceInstanceID,
+    .Open = DARWIN_JoystickOpen,
+    .Rumble = DARWIN_JoystickRumble,
+    .Update = DARWIN_JoystickUpdate,
+    .Close = DARWIN_JoystickClose,
+    .Quit = DARWIN_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_IOKIT

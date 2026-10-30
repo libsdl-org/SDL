@@ -2807,15 +2807,6 @@ static bool HIDAPI_DriverGIP_InitDevice(SDL_HIDAPI_Device *device)
     return true;
 }
 
-static int HIDAPI_DriverGIP_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverGIP_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static GIP_Attachment * HIDAPI_DriverGIP_FindAttachment(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     GIP_Device *ctx = (GIP_Device *)device->context;
@@ -2975,17 +2966,6 @@ static bool HIDAPI_DriverGIP_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverGIP_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-
-static bool HIDAPI_DriverGIP_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
 {
     GIP_Device *ctx = (GIP_Device *)device->context;
@@ -3051,9 +3031,6 @@ static bool HIDAPI_DriverGIP_UpdateDevice(SDL_HIDAPI_Device *device)
     }
     return (num_bytes >= 0);
 }
-static void HIDAPI_DriverGIP_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
 
 static void HIDAPI_DriverGIP_FreeDevice(SDL_HIDAPI_Device *device)
 {
@@ -3079,25 +3056,20 @@ static void HIDAPI_DriverGIP_FreeDevice(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGIP = {
-    SDL_HINT_JOYSTICK_HIDAPI_GIP,
-    true,
-    HIDAPI_DriverGIP_RegisterHints,
-    HIDAPI_DriverGIP_UnregisterHints,
-    HIDAPI_DriverGIP_IsEnabled,
-    HIDAPI_DriverGIP_IsSupportedDevice,
-    HIDAPI_DriverGIP_InitDevice,
-    HIDAPI_DriverGIP_GetDevicePlayerIndex,
-    HIDAPI_DriverGIP_SetDevicePlayerIndex,
-    HIDAPI_DriverGIP_UpdateDevice,
-    HIDAPI_DriverGIP_OpenJoystick,
-    HIDAPI_DriverGIP_RumbleJoystick,
-    HIDAPI_DriverGIP_RumbleJoystickTriggers,
-    HIDAPI_DriverGIP_GetJoystickCapabilities,
-    HIDAPI_DriverGIP_SetJoystickLED,
-    HIDAPI_DriverGIP_SendJoystickEffect,
-    HIDAPI_DriverGIP_SetJoystickSensorsEnabled,
-    HIDAPI_DriverGIP_CloseJoystick,
-    HIDAPI_DriverGIP_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_GIP,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverGIP_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverGIP_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverGIP_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverGIP_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverGIP_InitDevice,
+    .UpdateDevice = HIDAPI_DriverGIP_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverGIP_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverGIP_RumbleJoystick,
+    .RumbleJoystickTriggers = HIDAPI_DriverGIP_RumbleJoystickTriggers,
+    .GetJoystickCapabilities = HIDAPI_DriverGIP_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverGIP_SetJoystickLED,
+    .FreeDevice = HIDAPI_DriverGIP_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_GIP

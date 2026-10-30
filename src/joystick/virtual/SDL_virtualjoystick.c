@@ -530,11 +530,6 @@ static int VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-static int VIRTUAL_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
 static void VIRTUAL_JoystickSetDevicePlayerIndex(int device_index, int player_index)
 {
     joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
@@ -964,27 +959,26 @@ static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 }
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
-    VIRTUAL_JoystickInit,
-    VIRTUAL_JoystickGetCount,
-    VIRTUAL_JoystickDetect,
-    VIRTUAL_JoystickIsDevicePresent,
-    VIRTUAL_JoystickGetDeviceName,
-    VIRTUAL_JoystickGetDevicePath,
-    VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,
-    VIRTUAL_JoystickGetDevicePlayerIndex,
-    VIRTUAL_JoystickSetDevicePlayerIndex,
-    VIRTUAL_JoystickGetDeviceGUID,
-    VIRTUAL_JoystickGetDeviceInstanceID,
-    VIRTUAL_JoystickOpen,
-    VIRTUAL_JoystickRumble,
-    VIRTUAL_JoystickRumbleTriggers,
-    VIRTUAL_JoystickSetLED,
-    VIRTUAL_JoystickSendEffect,
-    VIRTUAL_JoystickSetSensorsEnabled,
-    VIRTUAL_JoystickUpdate,
-    VIRTUAL_JoystickClose,
-    VIRTUAL_JoystickQuit,
-    VIRTUAL_JoystickGetGamepadMapping
+    .Init = VIRTUAL_JoystickInit,
+    .GetCount = VIRTUAL_JoystickGetCount,
+    .Detect = VIRTUAL_JoystickDetect,
+    .IsDevicePresent = VIRTUAL_JoystickIsDevicePresent,
+    .GetDeviceName = VIRTUAL_JoystickGetDeviceName,
+    .GetDevicePath = VIRTUAL_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .SetDevicePlayerIndex = VIRTUAL_JoystickSetDevicePlayerIndex,
+    .GetDeviceGUID = VIRTUAL_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = VIRTUAL_JoystickGetDeviceInstanceID,
+    .Open = VIRTUAL_JoystickOpen,
+    .Rumble = VIRTUAL_JoystickRumble,
+    .RumbleTriggers = VIRTUAL_JoystickRumbleTriggers,
+    .SetLED = VIRTUAL_JoystickSetLED,
+    .SendEffect = VIRTUAL_JoystickSendEffect,
+    .SetSensorsEnabled = VIRTUAL_JoystickSetSensorsEnabled,
+    .Update = VIRTUAL_JoystickUpdate,
+    .Close = VIRTUAL_JoystickClose,
+    .Quit = VIRTUAL_JoystickQuit,
+    .GetGamepadMapping = VIRTUAL_JoystickGetGamepadMapping
 };
 
 #endif // SDL_JOYSTICK_VIRTUAL

@@ -211,17 +211,6 @@ static int PS2_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
     return -1;
 }
 
-// Function to get the player index of a joystick
-static int PS2_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-// Function to set the player index of a joystick
-static void PS2_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
 // Function to return the stable GUID for a plugged in device
 static SDL_GUID PS2_JoystickGetDeviceGUID(int device_index)
 {
@@ -338,30 +327,6 @@ static bool PS2_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumb
     return (res == 1);
 }
 
-// Rumble functionality
-static bool PS2_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left, Uint16 right)
-{
-    return SDL_Unsupported();
-}
-
-// LED functionality
-static bool PS2_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-// General effects
-static bool PS2_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-// Sensor functionality
-static bool PS2_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
 /*  Function to update the state of a joystick - called as a device poll.
  *   This function shouldn't update the joystick structure directly,
  *   but instead should call SDL_PrivateJoystick*() to deliver events
@@ -460,33 +425,21 @@ static void PS2_JoystickQuit(void)
     deinit_joystick_driver(true);
 }
 
-static bool PS2_GetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
-}
-
 SDL_JoystickDriver SDL_PS2_JoystickDriver = {
-    PS2_JoystickInit,
-    PS2_JoystickGetCount,
-    PS2_JoystickDetect,
-    PS2_JoystickIsDevicePresent,
-    PS2_JoystickGetDeviceName,
-    PS2_JoystickGetDevicePath,
-    PS2_JoystickGetDeviceSteamVirtualGamepadSlot,
-    PS2_JoystickGetDevicePlayerIndex,
-    PS2_JoystickSetDevicePlayerIndex,
-    PS2_JoystickGetDeviceGUID,
-    PS2_JoystickGetDeviceInstanceID,
-    PS2_JoystickOpen,
-    PS2_JoystickRumble,
-    PS2_JoystickRumbleTriggers,
-    PS2_JoystickSetLED,
-    PS2_JoystickSendEffect,
-    PS2_JoystickSetSensorsEnabled,
-    PS2_JoystickUpdate,
-    PS2_JoystickClose,
-    PS2_JoystickQuit,
-    PS2_GetGamepadMapping,
+    .Init = PS2_JoystickInit,
+    .GetCount = PS2_JoystickGetCount,
+    .Detect = PS2_JoystickDetect,
+    .IsDevicePresent = PS2_JoystickIsDevicePresent,
+    .GetDeviceName = PS2_JoystickGetDeviceName,
+    .GetDevicePath = PS2_JoystickGetDevicePath,
+    .GetDeviceSteamVirtualGamepadSlot = PS2_JoystickGetDeviceSteamVirtualGamepadSlot,
+    .GetDeviceGUID = PS2_JoystickGetDeviceGUID,
+    .GetDeviceInstanceID = PS2_JoystickGetDeviceInstanceID,
+    .Open = PS2_JoystickOpen,
+    .Rumble = PS2_JoystickRumble,
+    .Update = PS2_JoystickUpdate,
+    .Close = PS2_JoystickClose,
+    .Quit = PS2_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_PS2
