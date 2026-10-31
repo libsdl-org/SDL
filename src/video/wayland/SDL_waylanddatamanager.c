@@ -648,14 +648,14 @@ static void SelectionOfferNotifyFromMIMEs(Wayland_DataDevice *data_device, bool 
     SDL_SendClipboardUpdate(false, new_mime_types, num_formats);
 }
 
-static void DataDeviceSetOffer(Wayland_DataDevice *data_device, Wayland_DataOffer *offer)
+static void SetSelectionOffer(Wayland_DataDevice *data_device, Wayland_DataOffer *offer)
 {
     // Don't notify when clearing the old selection offer if doing so will inadvertently clear the selection source.
     const bool notify = offer || (!offer && data_device->selection_offer && (!data_device->selection_offer->callback || !data_device->selection_source));
     DestroyDataOffer(data_device->selection_offer);
     data_device->selection_offer = offer;
     if (notify) {
-        SelectionOfferNotifyFromMIMEs(data_device, true);
+        SelectionOfferNotifyFromMIMEs(data_device, data_device->selection_source != NULL);
     }
 }
 
@@ -1095,7 +1095,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
                  ". In data_device_listener . data_device_handle_selection on data_offer 0x%08x",
                  (id ? WAYLAND_wl_proxy_get_id((struct wl_proxy *)id) : -1));
 
-    DataDeviceSetOffer(data_device, offer);
+    SetSelectionOffer(data_device, offer);
 }
 
 static const struct wl_data_device_listener data_device_listener = {
@@ -1276,7 +1276,7 @@ void Wayland_DataDeviceDestroySelectionOffer(Wayland_DataDevice *data_device, bo
 {
     if (data_device) {
         if (clear) {
-            DataDeviceSetOffer(data_device, NULL);
+            SetSelectionOffer(data_device, NULL);
         } else {
             DestroyDataOffer(data_device->selection_offer);
             data_device->selection_offer = NULL;
