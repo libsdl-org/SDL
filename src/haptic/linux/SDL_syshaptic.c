@@ -36,6 +36,7 @@
 #include <limits.h>      /* INT_MAX */
 #include <errno.h>       /* errno, strerror */
 #include <sys/stat.h>    /* stat */
+#include <sys/sysmacros.h>
 
 /* Just in case. */
 #ifndef M_PI
@@ -239,6 +240,37 @@ static int MaybeAddDevice(const char *path)
     /* check to see if file exists */
     if (stat(path, &sb) != 0) {
         return -1;
+    }
+
+    /* Local startup optimization: inspecting sysfs avoids opening every
+     * keyboard, audio jack and mouse just to discover it has no EV_FF.
+     * Keep the original probe when sysfs is absent or cannot be parsed. */
+    if (S_ISCHR(sb.st_mode)) {
+        char sysfs_path[128], capabilities[64], *end;
+        unsigned long events;
+        ssize_t length;
+        int capabilities_fd;
+
+        SDL_snprintf(sysfs_path, sizeof(sysfs_path),
+                     "/sys/dev/char/%u:%u/device/capabilities/ev",
+                     major(sb.st_rdev), minor(sb.st_rdev));
+        capabilities_fd = open(sysfs_path, O_RDONLY | O_CLOEXEC);
+        if (capabilities_fd >= 0) {
+            length = read(capabilities_fd, capabilities, sizeof(capabilities) - 1);
+            close(capabilities_fd);
+            if (length > 0 && length < sizeof(capabilities) - 1) {
+                capabilities[length] = '\0';
+                events = SDL_strtoul(capabilities, &end, 16);
+                if (end != capabilities) {
+                    while (SDL_isspace((unsigned char)*end)) {
+                        ++end;
+                    }
+                    if (!*end && !(events & (1UL << EV_FF))) {
+                        return -1;
+                    }
+                }
+            }
+        }
     }
 
     /* check for duplicates */
