@@ -562,7 +562,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
         const bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
         const bool sdlKeyPressed = keystate[scancode];
 
-        if (x11KeyPressed && !sdlKeyPressed) {
+        if (x11KeyPressed) {
             // Only update modifier state for keys that are pressed in another application
             switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false)) {
             case SDLK_LCTRL:
@@ -576,14 +576,18 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_MODE:
             case SDLK_LEVEL5_SHIFT:
                 X11_HandleModifierKeys(videodata, scancode, true);
-                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                if (!sdlKeyPressed) {
+                    SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                }
                 break;
             default:
                 break;
             }
-        } else if (!x11KeyPressed && sdlKeyPressed) {
+        } else {
             X11_HandleModifierKeys(videodata, scancode, false);
-            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
+            if (sdlKeyPressed) {
+                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
+            }
         }
     }
 
