@@ -546,7 +546,7 @@ extern void qsortG(void *base, size_t nmemb, size_t size, SDL_CompareCallback co
 void *SDL_bsearch(const void *key, const void *base, size_t nmemb, size_t size, SDL_CompareCallback compare)
 {
 #if defined(HAVE_BSEARCH)
-    return bsearch(key, base, nmemb, size, compare);
+    return SDL_const_cast(void *, bsearch(key, base, nmemb, size, compare));
 #else
 /* SDL's replacement:  Taken from the Public Domain C Library (PDCLib):
    Permission is granted to use, modify, and / or redistribute at will.
