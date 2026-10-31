@@ -55,7 +55,7 @@ struct joystick_hwdata
 
 // local variables
 static bool s_bXInputEnabled = false;
-static Uint64 s_nLastDetect;
+static bool s_bXInputDevicesChanged = false;
 static JoyStick_DeviceData *SYS_Joystick; // array to hold joystick ID values
 
 static void XINPUT_JoystickDetect(void);
@@ -311,21 +311,17 @@ static int XINPUT_JoystickGetCount(void)
 
 static void XINPUT_JoystickDetect(void)
 {
-    JoyStick_DeviceData *pCurList = NULL;
-
     if (!s_bXInputEnabled) {
         return;
     }
 
-    // We'll check every 3 seconds to avoid hammering open slots
-    const Uint32 XINPUT_DETECT_INTERVAL_MS = 3000;
-    Uint64 now = SDL_GetTicks();
-    if (s_nLastDetect && now < (s_nLastDetect + XINPUT_DETECT_INTERVAL_MS)) {
+    if (!s_bXInputDevicesChanged) {
+        // No device change
         return;
     }
-    s_nLastDetect = now;
+    s_bXInputDevicesChanged = false;
 
-    pCurList = SYS_Joystick;
+    JoyStick_DeviceData *pCurList = SYS_Joystick;
     SYS_Joystick = NULL;
 
     // iterate in reverse, so these are in the final list in ascending numeric order.
@@ -511,7 +507,7 @@ static void XINPUT_JoystickUpdate(SDL_Joystick *joystick)
 
     result = XINPUTGETSTATE(joystick->hwdata->userid, &XInputState);
     if (result == ERROR_DEVICE_NOT_CONNECTED) {
-        s_nLastDetect = 0;
+        s_bXInputDevicesChanged = true;
         return;
     }
 
@@ -550,7 +546,7 @@ static void XINPUT_JoystickQuit(void)
     }
     SYS_Joystick = NULL;
 
-    s_nLastDetect = 0;
+    s_bXInputDevicesChanged = false;
 
     if (s_bXInputEnabled) {
         s_bXInputEnabled = false;
@@ -558,7 +554,14 @@ static void XINPUT_JoystickQuit(void)
     }
 }
 
-SDL_JoystickDriver SDL_XINPUT_JoystickDriver = {
+static void XINPUT_UpdateDeviceThread(void)
+{
+    s_bXInputDevicesChanged = true;
+}
+
+SDL_JoystickDriver SDL_XINPUT_JoystickDriver =
+{
+    NULL, // PreInit
     XINPUT_JoystickInit,
     XINPUT_JoystickGetCount,
     XINPUT_JoystickDetect,
@@ -579,7 +582,10 @@ SDL_JoystickDriver SDL_XINPUT_JoystickDriver = {
     XINPUT_JoystickUpdate,
     XINPUT_JoystickClose,
     XINPUT_JoystickQuit,
-    NULL // GetGamepadMapping
+    NULL, // GetGamepadMapping
+    NULL, // InitDeviceThread
+    XINPUT_UpdateDeviceThread,
+    NULL // QuitDeviceThread
 };
 
 #else // !SDL_JOYSTICK_XINPUT

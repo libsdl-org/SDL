@@ -56,6 +56,14 @@ extern bool SDL_JoysticksOpened(void);
 // Function to determine whether a device is currently detected by this driver
 extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
+// Function to wake up the joystick device thread
+extern void SDL_WakeJoystickDeviceThread(void);
+extern void SDL_WakeJoystickDeviceThreadForDeviceChange(void);
+
+// Function to get a counter that changes whenever devices change, this is safe to call from any thread
+// Device lists enumerated before the counter changed may be out of date
+extern Uint32 SDL_GetJoystickDeviceChangeCount(void);
+
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
  */

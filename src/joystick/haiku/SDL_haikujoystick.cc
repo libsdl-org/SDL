@@ -246,6 +246,7 @@ extern "C"
 
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
+        NULL, // PreInit
         HAIKU_JoystickInit,
         HAIKU_JoystickGetCount,
         HAIKU_JoystickDetect,
@@ -266,7 +267,10 @@ extern "C"
         HAIKU_JoystickUpdate,
         HAIKU_JoystickClose,
         HAIKU_JoystickQuit,
-        NULL // GetGamepadMapping
+        NULL, // GetGamepadMapping
+        NULL, // InitDeviceThread
+        NULL, // UpdateDeviceThread
+        NULL // QuitDeviceThread
     };
 
 }                              // extern "C"

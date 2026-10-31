@@ -405,6 +405,8 @@
 		F34B9895291DEFF500AAC96E /* SDL_hidapi_steam.c in Sources */ = {isa = PBXBuildFile; fileRef = A75FDAAC23E2795C00529352 /* SDL_hidapi_steam.c */; };
 		F362B9192B3349E200D30B94 /* controller_list.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9152B3349E200D30B94 /* controller_list.h */; };
 		F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */; };
+		F3DE7C122EB5000000A1B2C3 /* SDL_devicewatcher.h in Headers */ = {isa = PBXBuildFile; fileRef = F3DE7C102EB5000000A1B2C3 /* SDL_devicewatcher.h */; };
+		F3DE7C132EB5000000A1B2C3 /* SDL_devicewatcher.c in Sources */ = {isa = PBXBuildFile; fileRef = F3DE7C112EB5000000A1B2C3 /* SDL_devicewatcher.c */; };
 		F362B91B2B3349E200D30B94 /* SDL_steam_virtual_gamepad.h in Headers */ = {isa = PBXBuildFile; fileRef = F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */; };
 		F362B91C2B3349E200D30B94 /* SDL_steam_virtual_gamepad.c in Sources */ = {isa = PBXBuildFile; fileRef = F362B9182B3349E200D30B94 /* SDL_steam_virtual_gamepad.c */; };
 		F3681E802B7AA6240002C6FD /* SDL_cocoashape.m in Sources */ = {isa = PBXBuildFile; fileRef = F3681E7E2B7AA6240002C6FD /* SDL_cocoashape.m */; };
@@ -996,6 +998,8 @@
 		F344003C2D4022E1003F26D7 /* INSTALL.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INSTALL.md; sourceTree = "<group>"; };
 		F362B9152B3349E200D30B94 /* controller_list.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_list.h; sourceTree = "<group>"; };
 		F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamepad_c.h; sourceTree = "<group>"; };
+		F3DE7C102EB5000000A1B2C3 /* SDL_devicewatcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_devicewatcher.h; sourceTree = "<group>"; };
+		F3DE7C112EB5000000A1B2C3 /* SDL_devicewatcher.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_devicewatcher.c; sourceTree = "<group>"; };
 		F362B9172B3349E200D30B94 /* SDL_steam_virtual_gamepad.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steam_virtual_gamepad.h; sourceTree = "<group>"; };
 		F362B9182B3349E200D30B94 /* SDL_steam_virtual_gamepad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_steam_virtual_gamepad.c; sourceTree = "<group>"; };
 		F3681E7E2B7AA6240002C6FD /* SDL_cocoashape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoashape.m; sourceTree = "<group>"; };
@@ -1993,6 +1997,8 @@
 				F362B9152B3349E200D30B94 /* controller_list.h */,
 				F3820712284F3609004DD584 /* controller_type.c */,
 				A7D8A7D923E2513E00DCD162 /* controller_type.h */,
+				F3DE7C112EB5000000A1B2C3 /* SDL_devicewatcher.c */,
+				F3DE7C102EB5000000A1B2C3 /* SDL_devicewatcher.h */,
 				F362B9162B3349E200D30B94 /* SDL_gamepad_c.h */,
 				A7D8A79E23E2513E00DCD162 /* SDL_gamepad_db.h */,
 				A7D8A7AD23E2513E00DCD162 /* SDL_gamepad.c */,
@@ -2742,6 +2748,7 @@
 				A7D8A95D23E2514000DCD162 /* SDL_error_c.h in Headers */,
 				A7D8BBA523E2514500DCD162 /* SDL_events_c.h in Headers */,
 				F362B91A2B3349E200D30B94 /* SDL_gamepad_c.h in Headers */,
+				F3DE7C122EB5000000A1B2C3 /* SDL_devicewatcher.h in Headers */,
 				A7D8B4AC23E2514300DCD162 /* SDL_gamepad_db.h in Headers */,
 				A7D8BA5523E2514400DCD162 /* SDL_gles2funcs.h in Headers */,
 				A7D8BA7923E2514400DCD162 /* SDL_glfuncs.h in Headers */,
@@ -3057,6 +3064,7 @@
 				A7D8B9DD23E2514400DCD162 /* SDL_blendpoint.c in Sources */,
 				F3DB66342EA9ACC300568044 /* SDL_rotate.c in Sources */,
 				A7D8B4EE23E2514300DCD162 /* SDL_gamepad.c in Sources */,
+				F3DE7C132EB5000000A1B2C3 /* SDL_devicewatcher.c in Sources */,
 				E4A568B62AF763940062EEC4 /* SDL_sysmain_callbacks.c in Sources */,
 				F316ABD82B5C3185002EF551 /* SDL_memset.c in Sources */,
 				A7D8BA1323E2514400DCD162 /* SDL_render_sw.c in Sources */,

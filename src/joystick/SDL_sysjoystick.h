@@ -169,6 +169,9 @@ struct SDL_Joystick
 
 typedef struct SDL_JoystickDriver
 {
+    // Optional function to run slow initialization outside the joystick lock
+    void (*PreInit)(void);
+
     /* Function to scan the system for joysticks.
      * Joystick 0 should be the system default joystick.
      * This function should return 0, or -1 on an unrecoverable error.
@@ -240,6 +243,12 @@ typedef struct SDL_JoystickDriver
 
     // Optional function to get the autodetected controller mapping
     bool (*GetGamepadMapping)(int device_index, SDL_GamepadMapping *out);
+
+    // Optional functions to run on a device hotplug thread
+    // These functions run outside the joystick lock and should not block with the joystick lock taken
+    void (*InitDeviceThread)(void);
+    void (*UpdateDeviceThread)(void);
+    void (*QuitDeviceThread)(void);
 
 } SDL_JoystickDriver;
 
