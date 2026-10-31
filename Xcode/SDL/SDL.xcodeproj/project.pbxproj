@@ -430,7 +430,6 @@
 		F395C1932569C68F00942BFF /* SDL_iokitjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */; };
 		F395C19C2569C68F00942BFF /* SDL_iokitjoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */; };
 		F395C1B12569C6A000942BFF /* SDL_mfijoystick.m in Sources */ = {isa = PBXBuildFile; fileRef = F395C1AF2569C6A000942BFF /* SDL_mfijoystick.m */; };
-		F395C1BA2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F395C1B02569C6A000942BFF /* SDL_mfijoystick_c.h */; };
 		F3973FA228A59BDD00B84553 /* SDL_vacopy.h in Headers */ = {isa = PBXBuildFile; fileRef = F3973FA028A59BDD00B84553 /* SDL_vacopy.h */; };
 		F3973FAB28A59BDD00B84553 /* SDL_crc16.c in Sources */ = {isa = PBXBuildFile; fileRef = F3973FA128A59BDD00B84553 /* SDL_crc16.c */; };
 		F3984CD025BCC92900374F43 /* SDL_hidapi_stadia.c in Sources */ = {isa = PBXBuildFile; fileRef = F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */; };
@@ -1040,7 +1039,6 @@
 		F395C1912569C68E00942BFF /* SDL_iokitjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_iokitjoystick_c.h; sourceTree = "<group>"; };
 		F395C1922569C68E00942BFF /* SDL_iokitjoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iokitjoystick.c; sourceTree = "<group>"; };
 		F395C1AF2569C6A000942BFF /* SDL_mfijoystick.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_mfijoystick.m; sourceTree = "<group>"; };
-		F395C1B02569C6A000942BFF /* SDL_mfijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_mfijoystick_c.h; sourceTree = "<group>"; };
 		F3973FA028A59BDD00B84553 /* SDL_vacopy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vacopy.h; sourceTree = "<group>"; };
 		F3973FA128A59BDD00B84553 /* SDL_crc16.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_crc16.c; sourceTree = "<group>"; };
 		F3984CCF25BCC92800374F43 /* SDL_hidapi_stadia.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_stadia.c; sourceTree = "<group>"; };
@@ -2017,7 +2015,6 @@
 		A7D8A7AA23E2513E00DCD162 /* apple */ = {
 			isa = PBXGroup;
 			children = (
-				F395C1B02569C6A000942BFF /* SDL_mfijoystick_c.h */,
 				F395C1AF2569C6A000942BFF /* SDL_mfijoystick.m */,
 			);
 			path = apple;
@@ -2758,7 +2755,6 @@
 				A7D8BB8723E2514500DCD162 /* SDL_keyboard_c.h in Headers */,
 				A1BB8B6C27F6CF330057CFA8 /* SDL_list.h in Headers */,
 				F386F6E72884663E001840AA /* SDL_log_c.h in Headers */,
-				F395C1BA2569C6A000942BFF /* SDL_mfijoystick_c.h in Headers */,
 				A7D8BB1B23E2514500DCD162 /* SDL_mouse_c.h in Headers */,
 				A7D8ABFD23E2514100DCD162 /* SDL_nullevents_c.h in Headers */,
 				A7D8ABE523E2514100DCD162 /* SDL_nullframebuffer_c.h in Headers */,
