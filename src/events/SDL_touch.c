@@ -437,6 +437,7 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
                 event.tfinger.dy = 0;
                 event.tfinger.pressure = pressure;
                 event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
+                event.tfinger.timestamp = timestamp;
                 SDL_PushEvent(&event);
             }
         } else {
@@ -459,6 +460,7 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
                 event.tfinger.dy = 0;
                 event.tfinger.pressure = pressure;
                 event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
+                event.tfinger.timestamp = timestamp;
                 SDL_PushEvent(&event);
             }
 
@@ -558,6 +560,7 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
             event.tfinger.dy = yrel;
             event.tfinger.pressure = pressure;
             event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
+            event.tfinger.timestamp = timestamp;
             SDL_PushEvent(&event);
         }
     }
