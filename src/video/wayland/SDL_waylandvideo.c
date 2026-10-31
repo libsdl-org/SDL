@@ -49,15 +49,22 @@
 #include <wayland-util.h>
 
 #include "alpha-modifier-v1-client-protocol.h"
+#include "color-management-v1-client-protocol.h"
+#include "commit-timing-v1-client-protocol.h"
 #include "cursor-shape-v1-client-protocol.h"
+#include "fifo-v1-client-protocol.h"
 #include "fractional-scale-v1-client-protocol.h"
 #include "frog-color-management-v1-client-protocol.h"
 #include "idle-inhibit-unstable-v1-client-protocol.h"
 #include "input-timestamps-unstable-v1-client-protocol.h"
 #include "keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
 #include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "pointer-gestures-unstable-v1-client-protocol.h"
+#include "pointer-warp-v1-client-protocol.h"
+#include "presentation-time-client-protocol.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
+#include "single-pixel-buffer-v1-client-protocol.h"
 #include "tablet-v2-client-protocol.h"
 #include "text-input-unstable-v3-client-protocol.h"
 #include "viewporter-client-protocol.h"
@@ -66,13 +73,9 @@
 #include "xdg-dialog-v1-client-protocol.h"
 #include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-output-unstable-v1-client-protocol.h"
+#include "xdg-session-management-v1-client-protocol.h"
 #include "xdg-shell-client-protocol.h"
 #include "xdg-toplevel-icon-v1-client-protocol.h"
-#include "color-management-v1-client-protocol.h"
-#include "pointer-warp-v1-client-protocol.h"
-#include "pointer-gestures-unstable-v1-client-protocol.h"
-#include "single-pixel-buffer-v1-client-protocol.h"
-#include "xdg-session-management-v1-client-protocol.h"
 #include "xdg-toplevel-tag-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
@@ -555,7 +558,7 @@ static void wayland_preferred_check_handle_global(void *data, struct wl_registry
 {
     Wayland_PreferredData *d = data;
 
-    if (SDL_strcmp(interface, "wp_fifo_manager_v1") == 0) {
+    if (SDL_strcmp(interface, wp_fifo_manager_v1_interface.name) == 0) {
         d->has_fifo_v1 = true;
     }
 #ifdef SDL_WL_FIXES_VERSION
@@ -1440,6 +1443,17 @@ static const struct xdg_wm_base_listener _xdg_wm_base_listener = {
     handle_xdg_wm_base_ping
 };
 
+static void handle_presentation_clock_id(void *data, struct wp_presentation *wp_presentation, uint32_t clk_id)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *)data;
+
+    viddata->presentation_clock_id = clk_id;
+}
+
+static const struct wp_presentation_listener wp_presentation_listener = {
+    handle_presentation_clock_id
+};
+
 #ifdef HAVE_LIBDECOR_H
 static void libdecor_error(struct libdecor *context, enum libdecor_error error, const char *message)
 {
@@ -1531,6 +1545,13 @@ static void handle_registry_global(void *data, struct wl_registry *registry, uin
         d->xdg_session_manager = wl_registry_bind(d->registry, id, &xdg_session_manager_v1_interface, 1);
     } else if (SDL_strcmp(interface, xdg_toplevel_tag_manager_v1_interface.name) == 0) {
         d->xdg_toplevel_tag_manager = wl_registry_bind(d->registry, id, &xdg_toplevel_tag_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, wp_fifo_manager_v1_interface.name) == 0) {
+        d->wp_fifo_manager = wl_registry_bind(d->registry, id, &wp_fifo_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, wp_commit_timing_manager_v1_interface.name) == 0) {
+        d->wp_commit_timing_manager = wl_registry_bind(d->registry, id, &wp_commit_timing_manager_v1_interface, 1);
+    } else if (SDL_strcmp(interface, wp_presentation_interface.name) == 0) {
+        d->wp_presentation = wl_registry_bind(d->registry, id, &wp_presentation_interface, SDL_min(version, 3));
+        wp_presentation_add_listener(d->wp_presentation, &wp_presentation_listener, d);
     }
 #ifdef SDL_WL_FIXES_VERSION
     else if (SDL_strcmp(interface, wl_fixes_interface.name) == 0) {
@@ -1866,7 +1887,7 @@ static void VideoCleanup(SDL_VideoDevice *_this)
     }
 
     if (data->tablet_manager) {
-        zwp_tablet_manager_v2_destroy((struct zwp_tablet_manager_v2 *)data->tablet_manager);
+        zwp_tablet_manager_v2_destroy(data->tablet_manager);
         data->tablet_manager = NULL;
     }
 
@@ -1981,6 +2002,21 @@ static void VideoCleanup(SDL_VideoDevice *_this)
     if (data->xdg_toplevel_tag_manager) {
         xdg_toplevel_tag_manager_v1_destroy(data->xdg_toplevel_tag_manager);
         data->xdg_toplevel_tag_manager = NULL;
+    }
+
+    if (data->wp_fifo_manager) {
+        wp_fifo_manager_v1_destroy(data->wp_fifo_manager);
+        data->wp_fifo_manager = NULL;
+    }
+
+    if (data->wp_commit_timing_manager) {
+        wp_commit_timing_manager_v1_destroy(data->wp_commit_timing_manager);
+        data->wp_commit_timing_manager = NULL;
+    }
+
+    if (data->wp_presentation) {
+        wp_presentation_destroy(data->wp_presentation);
+        data->wp_presentation = NULL;
     }
 
     if (data->subcompositor) {

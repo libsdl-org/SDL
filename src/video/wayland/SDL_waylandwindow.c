@@ -38,18 +38,20 @@
 #include "SDL_waylandcolor.h"
 
 #include "alpha-modifier-v1-client-protocol.h"
-#include "xdg-shell-client-protocol.h"
-#include "xdg-decoration-unstable-v1-client-protocol.h"
-#include "idle-inhibit-unstable-v1-client-protocol.h"
-#include "xdg-activation-v1-client-protocol.h"
-#include "viewporter-client-protocol.h"
-#include "fractional-scale-v1-client-protocol.h"
-#include "xdg-foreign-unstable-v2-client-protocol.h"
-#include "xdg-dialog-v1-client-protocol.h"
-#include "frog-color-management-v1-client-protocol.h"
-#include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "color-management-v1-client-protocol.h"
+#include "commit-timing-v1-client-protocol.h"
+#include "fifo-v1-client-protocol.h"
+#include "fractional-scale-v1-client-protocol.h"
+#include "frog-color-management-v1-client-protocol.h"
+#include "idle-inhibit-unstable-v1-client-protocol.h"
+#include "viewporter-client-protocol.h"
+#include "xdg-activation-v1-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
+#include "xdg-dialog-v1-client-protocol.h"
+#include "xdg-foreign-unstable-v2-client-protocol.h"
 #include "xdg-session-management-v1-client-protocol.h"
+#include "xdg-shell-client-protocol.h"
+#include "xdg-toplevel-icon-v1-client-protocol.h"
 #include "xdg-toplevel-tag-v1-client-protocol.h"
 
 #ifdef HAVE_LIBDECOR_H
@@ -3059,6 +3061,28 @@ bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_W
         // Window is already mapped; abort.
         return false;
     }
+    
+    // Clear any presentation objects when reconfiguring.
+    if (data->presentation.frame_callback) {
+        wl_callback_destroy(data->presentation.frame_callback);
+        data->presentation.frame_callback = NULL;
+    }
+    if (data->presentation.fifo) {
+        wp_fifo_v1_destroy(data->presentation.fifo);
+        data->presentation.fifo = NULL;
+    }
+    if (data->presentation.commit_timer) {
+        wp_commit_timer_v1_destroy(data->presentation.commit_timer);
+        data->presentation.commit_timer = NULL;
+    }
+    if (data->presentation.surface_wrapper) {
+        WAYLAND_wl_proxy_wrapper_destroy(data->presentation.surface_wrapper);
+        data->presentation.surface_wrapper = NULL;
+    }
+    if (data->presentation.queue) {
+        WAYLAND_wl_event_queue_destroy(data->presentation.queue);
+        data->presentation.queue = NULL;
+    }
 
     /* The caller guarantees that only one of the GL or Vulkan flags will be set.
      * Note that Vulkan doesn't require any specific configuration, so only EGL
@@ -3838,6 +3862,12 @@ void Wayland_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 
         if (wind->presentation.frame_callback) {
             wl_callback_destroy(wind->presentation.frame_callback);
+        }
+        if (wind->presentation.fifo) {
+            wp_fifo_v1_destroy(wind->presentation.fifo);
+        }
+        if (wind->presentation.commit_timer) {
+            wp_commit_timer_v1_destroy(wind->presentation.commit_timer);
         }
         if (wind->presentation.surface_wrapper) {
             WAYLAND_wl_proxy_wrapper_destroy(wind->presentation.surface_wrapper);

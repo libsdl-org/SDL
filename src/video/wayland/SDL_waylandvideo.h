@@ -87,6 +87,9 @@ struct SDL_VideoData
     struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager;
     struct xdg_session_manager_v1 *xdg_session_manager;
     struct xdg_toplevel_tag_manager_v1 *xdg_toplevel_tag_manager;
+    struct wp_fifo_manager_v1 *wp_fifo_manager;
+    struct wp_commit_timing_manager_v1 *wp_commit_timing_manager;
+    struct wp_presentation *wp_presentation;
 
     struct xdg_session_v1 *xdg_session;
     struct xkb_context *xkb_context;
@@ -101,6 +104,8 @@ struct SDL_VideoData
     SDL_DisplayData **output_list;
     int output_count;
     int output_max;
+
+    clockid_t presentation_clock_id;
 
     bool initializing;
     bool display_disconnected;
