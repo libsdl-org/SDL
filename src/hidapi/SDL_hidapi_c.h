@@ -21,9 +21,12 @@
 #include "SDL_internal.h"
 
 
-/* Return true if the HIDAPI should ignore a device during enumeration */
+// Return true if this platform has device notifications available
+extern bool SDL_HIDAPI_HasDeviceNotifications(void);
+
+// Return true if the HIDAPI should ignore a device during enumeration
 extern bool SDL_HIDAPI_ShouldIgnoreDevice(int bus_type, Uint16 vendor_id, Uint16 product_id, Uint16 usage_page, Uint16 usage, bool libusb, bool is_xbox);
 
-/* Called by platform backends when devices may have changed, this is safe to call from any thread */
+// Called by platform backends when devices may have changed, this is safe to call from any thread
 extern void SDL_HIDAPI_DeviceChanged(void);
 

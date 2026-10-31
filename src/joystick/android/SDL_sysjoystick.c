@@ -56,11 +56,31 @@
 
 #define ANDROID_MAX_NBUTTONS            36
 
-static SDL_joylist_item *JoystickByDeviceId(int device_id);
+// A linked list of available joysticks
+typedef struct SDL_joylist_item
+{
+    SDL_JoystickID instance_id;
+    int device_id; // Android's device id
+    Uint16 vendor_id;
+    Uint16 product_id;
+    char *name;    // "SideWinder 3D Pro" or whatever
+    SDL_GUID guid;
+    SDL_Joystick *joystick;
+    int nbuttons, naxes, nhats;
+    int dpad_state;
+    bool can_rumble;
+    bool has_rgb_led;
+    bool has_accelerometer;
+    bool has_gyroscope;
+    bool removed;
+
+    struct SDL_joylist_item *next;
+} SDL_joylist_item;
+
+typedef SDL_joylist_item joystick_hwdata;
 
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
-static int numjoysticks = 0;
 
 /* Function to convert Android keyCodes into SDL ones.
  * This code manipulation is done to get a sequential list of codes.
@@ -222,19 +242,41 @@ static SDL_Scancode button_to_scancode(int button)
     return SDL_SCANCODE_UNKNOWN;
 }
 
+static SDL_joylist_item *GetJoylistItemByDeviceId(int device_id)
+{
+    SDL_joylist_item *item = SDL_joylist;
+
+    while (item) {
+        if (item->device_id == device_id && !item->removed) {
+            return item;
+        }
+        item = item->next;
+    }
+
+    return NULL;
+}
+
+static SDL_Joystick *GetJoystickByDeviceId(int device_id)
+{
+    SDL_joylist_item *item = GetJoylistItemByDeviceId(device_id);
+    if (item) {
+        return item->joystick;
+    }
+    return NULL;
+}
+
 bool Android_OnPadDown(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
-    SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button < 0) {
         button = scancode_to_SDL(scancode);
     }
     if (button >= 0) {
         SDL_LockJoysticks();
-        item = JoystickByDeviceId(device_id);
-        if (item && item->joystick) {
-            SDL_SendJoystickButton(timestamp, item->joystick, button, true);
+        SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+        if (joystick) {
+            SDL_SendJoystickButton(timestamp, joystick, button, true);
         } else {
             SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), true);
         }
@@ -248,16 +290,15 @@ bool Android_OnPadDown(int device_id, int keycode, int scancode)
 bool Android_OnPadUp(int device_id, int keycode, int scancode)
 {
     Uint64 timestamp = SDL_GetTicksNS();
-    SDL_joylist_item *item;
     int button = keycode_to_SDL(keycode);
     if (button < 0) {
         button = scancode_to_SDL(scancode);
     }
     if (button >= 0) {
         SDL_LockJoysticks();
-        item = JoystickByDeviceId(device_id);
-        if (item && item->joystick) {
-            SDL_SendJoystickButton(timestamp, item->joystick, button, false);
+        SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+        if (joystick) {
+            SDL_SendJoystickButton(timestamp, joystick, button, false);
         } else {
             SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), false);
         }
@@ -271,13 +312,12 @@ bool Android_OnPadUp(int device_id, int keycode, int scancode)
 bool Android_OnJoy(int device_id, int axis, float value)
 {
     Uint64 timestamp = SDL_GetTicksNS();
-    // Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0]
-    SDL_joylist_item *item;
 
     SDL_LockJoysticks();
-    item = JoystickByDeviceId(device_id);
-    if (item && item->joystick) {
-        SDL_SendJoystickAxis(timestamp, item->joystick, axis, (Sint16)(32767. * value));
+    SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+    if (joystick) {
+        // Android gives joystick axis info normalized as [-1.0, 1.0] or [0.0, 1.0]
+        SDL_SendJoystickAxis(timestamp, joystick, axis, (Sint16)(32767. * value));
     }
     SDL_UnlockJoysticks();
 
@@ -293,11 +333,11 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
     const int DPAD_RIGHT_MASK = (1 << SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
 
     if (x >= -1 && x <= 1 && y >= -1 && y <= 1) {
-        SDL_joylist_item *item;
 
         SDL_LockJoysticks();
-        item = JoystickByDeviceId(device_id);
-        if (item && item->joystick) {
+        SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+        if (joystick) {
+            SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
             int dpad_state = 0;
             int dpad_delta;
             if (x < 0) {
@@ -315,19 +355,19 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
             if (dpad_delta) {
                 if (dpad_delta & DPAD_UP_MASK) {
                     bool down = ((dpad_state & DPAD_UP_MASK) != 0);
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, down);
+                    SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_UP, down);
                 }
                 if (dpad_delta & DPAD_DOWN_MASK) {
                     bool down = ((dpad_state & DPAD_DOWN_MASK) != 0);
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, down);
+                    SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_DOWN, down);
                 }
                 if (dpad_delta & DPAD_LEFT_MASK) {
                     bool down = ((dpad_state & DPAD_LEFT_MASK) != 0);
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, down);
+                    SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_LEFT, down);
                 }
                 if (dpad_delta & DPAD_RIGHT_MASK) {
                     bool down = ((dpad_state & DPAD_RIGHT_MASK) != 0);
-                    SDL_SendJoystickButton(timestamp, item->joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, down);
+                    SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_DPAD_RIGHT, down);
                 }
                 item->dpad_state = dpad_state;
             }
@@ -342,7 +382,6 @@ bool Android_OnHat(int device_id, int hat_id, int x, int y)
 void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp, float x, float y, float z)
 {
     Uint64 timestamp = SDL_GetTicksNS();
-    SDL_joylist_item *item;
     SDL_SensorType sensor;
 
     if (sensor_type == 1) { // Sensor.TYPE_ACCELEROMETER
@@ -355,8 +394,9 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
     }
 
     SDL_LockJoysticks();
-    item = JoystickByDeviceId(device_id);
-    if (item && item->joystick) {
+    SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+    if (joystick) {
+        SDL_joylist_item *item = (SDL_joylist_item *)joystick->hwdata;
         float data[3];
 
         if (item->vendor_id == USB_VENDOR_NINTENDO) {
@@ -377,7 +417,7 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
             data[1] = y;
             data[2] = z;
         }
-        SDL_SendJoystickSensor(timestamp, item->joystick, sensor, sensor_timestamp, data, 3);
+        SDL_SendJoystickSensor(timestamp, joystick, sensor, sensor_timestamp, data, 3);
     }
     SDL_UnlockJoysticks();
 }
@@ -396,6 +436,10 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
         return;
     }
 
+    if (!name) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, true)) {
@@ -405,11 +449,9 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
         }
     }
 
-    if (JoystickByDeviceId(device_id) != NULL || !name) {
-        goto done;
-    }
-
-    if (SDL_JoystickHandledByAnotherDriver(&SDL_ANDROID_JoystickDriver, vendor_id, product_id, 0, name)) {
+    if (GetJoylistItemByDeviceId(device_id)) {
+        // We already know about this device
+        // FIXME: Should we update device capabilities?
         goto done;
     }
 
@@ -471,7 +513,7 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
     item->has_rgb_led = has_rgb_led;
     item->has_accelerometer = has_accelerometer;
     item->has_gyroscope = has_gyroscope;
-    item->device_instance = SDL_GetNextObjectID();
+    item->instance_id = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
@@ -479,10 +521,8 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
         SDL_joylist_tail = item;
     }
 
-    // Need to increment the joystick count before we post the event
-    ++numjoysticks;
-
-    SDL_PrivateJoystickAdded(item->device_instance);
+    // Give higher priority drivers a chance to see new devices
+    SDL_RequestJoystickDeviceUpdate(false);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick %s with device_id %d", item->name, device_id);
@@ -494,8 +534,7 @@ done:
 
 void Android_RemoveJoystick(int device_id)
 {
-    SDL_joylist_item *item = SDL_joylist;
-    SDL_joylist_item *prev = NULL;
+    SDL_joylist_item *item;
 
     // Java might notify us about joysticks being removed before joysticks have
     // been initialized.
@@ -505,46 +544,22 @@ void Android_RemoveJoystick(int device_id)
 
     SDL_LockJoysticks();
 
-    // Don't call JoystickByDeviceId here or there'll be an infinite loop!
-    while (item) {
-        if (item->device_id == device_id) {
-            break;
+    item = GetJoylistItemByDeviceId(device_id);
+    if (item) {
+        if (item->joystick) {
+            item->joystick->hwdata = NULL;
+            item->joystick = NULL;
         }
-        prev = item;
-        item = item->next;
-    }
 
-    if (!item) {
-        goto done;
-    }
-
-    if (item->joystick) {
-        item->joystick->hwdata = NULL;
-    }
-
-    if (prev) {
-        prev->next = item->next;
-    } else {
-        SDL_assert(SDL_joylist == item);
-        SDL_joylist = item->next;
-    }
-    if (item == SDL_joylist_tail) {
-        SDL_joylist_tail = prev;
-    }
-
-    // Need to decrement the joystick count before we post the event
-    --numjoysticks;
-
-    SDL_PrivateJoystickRemoved(item->device_instance);
+        // The item is freed in the next device query, after its device has been removed
+        item->removed = true;
+        SDL_RequestJoystickDeviceUpdate(true);
 
 #ifdef DEBUG_JOYSTICK
-    SDL_Log("Removed joystick with device_id %d", device_id);
+        SDL_Log("Removed joystick with device_id %d", device_id);
 #endif
+    }
 
-    SDL_free(item->name);
-    SDL_free(item);
-
-done:
     SDL_UnlockJoysticks();
 }
 
@@ -554,86 +569,92 @@ static bool ANDROID_JoystickInit(void)
     return true;
 }
 
-static int ANDROID_JoystickGetCount(void)
+static void FreeJoylistItem(SDL_joylist_item *item)
 {
-    return numjoysticks;
+    SDL_free(item->name);
+    SDL_free(item);
 }
 
-static void ANDROID_JoystickDetect(void)
+static SDL_JoystickDevice *ANDROID_CreateJoystickDevice(SDL_joylist_item *data)
 {
-    /* Support for device connect/disconnect is implemented using InputDeviceListener
-     * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
-     */
-}
-
-static bool ANDROID_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
-{
-    SDL_joylist_item *item = SDL_joylist;
-
-    if ((device_index < 0) || (device_index >= numjoysticks)) {
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_ANDROID_JoystickDriver, 0);
+    if (!device) {
         return NULL;
     }
 
-    while (device_index > 0) {
-        SDL_assert(item != NULL);
-        device_index--;
-        item = item->next;
+    device->internal = (SDL_JoystickDeviceData *)data;
+    device->instance_id = data->instance_id;
+    device->unique_id = &device->instance_id;
+    device->unique_id_len = sizeof(device->instance_id);
+
+    device->name = SDL_strdup(data->name);
+    if (!device->name) {
+        SDL_DestroyJoystickDevice(device);
+        return NULL;
+    }
+    device->guid = data->guid;
+
+    if (data->vendor_id || data->product_id) {
+        SDL_AddJoystickDeviceMatchVIDPID(device, data->vendor_id, data->product_id);
     }
 
-    return item;
+    return device;
 }
 
-static SDL_joylist_item *JoystickByDeviceId(int device_id)
+static void FreeRemovedJoylistItems(void)
 {
-    SDL_joylist_item *item = SDL_joylist;
+    SDL_joylist_item *entry = SDL_joylist;
+    SDL_joylist_item *prev = NULL;
 
-    while (item) {
-        if (item->device_id == device_id) {
-            return item;
+    while (entry) {
+        SDL_joylist_item *next = entry->next;
+        if (entry->removed) {
+            if (prev) {
+                prev->next = next;
+            } else {
+                SDL_joylist = next;
+            }
+            if (entry == SDL_joylist_tail) {
+                SDL_joylist_tail = prev;
+            }
+            FreeJoylistItem(entry);
+        } else {
+            prev = entry;
         }
-        item = item->next;
+        entry = next;
     }
-
-    return NULL;
 }
 
-static const char *ANDROID_JoystickGetDeviceName(int device_index)
+static SDL_JoystickDevice *ANDROID_JoystickQueryDevices(void)
 {
-    return GetJoystickByDevIndex(device_index)->name;
+    SDL_JoystickDevice *devices = NULL;
+    SDL_JoystickDevice *tail = NULL;
+    SDL_joylist_item *entry;
+
+    SDL_AssertJoysticksLocked();
+
+    FreeRemovedJoylistItems();
+
+    for (entry = SDL_joylist; entry; entry = entry->next) {
+        SDL_JoystickDevice *device = ANDROID_CreateJoystickDevice(entry);
+        if (device) {
+            if (tail) {
+                tail->next = device;
+            } else {
+                devices = device;
+            }
+            tail = device;
+        }
+    }
+    return devices;
 }
 
-static const char *ANDROID_JoystickGetDevicePath(int device_index)
+static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    return NULL;
-}
+    SDL_joylist_item *item = (SDL_joylist_item *)device->internal;
 
-static int ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static SDL_GUID ANDROID_JoystickGetDeviceGUID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->guid;
-}
-
-static SDL_JoystickID ANDROID_JoystickGetDeviceInstanceID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->device_instance;
-}
-
-static bool ANDROID_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
-    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
-
-    if (!item) {
-        return SDL_SetError("No such device");
+    if (item->removed) {
+        return SDL_SetError("Joystick has been disconnected");
     }
 
     if (item->joystick) {
@@ -729,25 +750,15 @@ static void ANDROID_JoystickQuit(void)
 
     for (item = SDL_joylist; item; item = next) {
         next = item->next;
-        SDL_free(item->name);
-        SDL_free(item);
+        FreeJoylistItem(item);
     }
 
     SDL_joylist = SDL_joylist_tail = NULL;
-
-    numjoysticks = 0;
 }
 
 SDL_JoystickDriver SDL_ANDROID_JoystickDriver = {
     .Init = ANDROID_JoystickInit,
-    .GetCount = ANDROID_JoystickGetCount,
-    .Detect = ANDROID_JoystickDetect,
-    .IsDevicePresent = ANDROID_JoystickIsDevicePresent,
-    .GetDeviceName = ANDROID_JoystickGetDeviceName,
-    .GetDevicePath = ANDROID_JoystickGetDevicePath,
-    .GetDeviceSteamVirtualGamepadSlot = ANDROID_JoystickGetDeviceSteamVirtualGamepadSlot,
-    .GetDeviceGUID = ANDROID_JoystickGetDeviceGUID,
-    .GetDeviceInstanceID = ANDROID_JoystickGetDeviceInstanceID,
+    .QueryDevices = ANDROID_JoystickQueryDevices,
     .Open = ANDROID_JoystickOpen,
     .Rumble = ANDROID_JoystickRumble,
     .SetLED = ANDROID_JoystickSetLED,
