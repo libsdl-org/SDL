@@ -3006,7 +3006,7 @@ static void data_device_handle_selection(void *data, struct wl_data_device *wl_d
     Wayland_data_offer_destroy(data_device->selection_offer);
     data_device->selection_offer = offer;
     if (notify) {
-        Wayland_data_offer_notify_from_mimes(offer, true);
+        Wayland_data_offer_notify_from_mimes(offer, data_device->selection_source != NULL);
     }
 }
 
