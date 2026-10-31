@@ -159,8 +159,7 @@ bool SDL_UDEV_Init(void)
         _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "video4linux", NULL);
         _this->syms.udev_monitor_enable_receiving(_this->udev_mon);
 
-        // Do an initial scan of existing devices
-        SDL_UDEV_Scan();
+        // No callbacks are registered yet; callers handle initial device discovery.
     }
 
     _this->ref_count += 1;
