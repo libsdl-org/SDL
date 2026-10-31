@@ -22,10 +22,16 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND
 
-#include "SDL_waylandframebuffer.h"
+#include <time.h>
+
 #include "../../core/unix/SDL_poll.h"
+#include "SDL_waylandframebuffer.h"
 #include "SDL_waylandshmbuffer.h"
 #include "SDL_waylandwindow.h"
+
+#include "commit-timing-v1-client-protocol.h"
+#include "fifo-v1-client-protocol.h"
+#include "presentation-time-client-protocol.h"
 
 #define BUFFER_COUNT 3
 
@@ -41,6 +47,46 @@ struct Wayland_Framebuffer
     Wayland_Buffer buffer[BUFFER_COUNT];
     Wayland_SHMPool *pool;
     void *pixels;
+    struct wp_presentation_feedback *feedback;
+    Uint64 last_presentation_time;
+    Uint32 refresh;
+};
+
+static void handle_sync_output(void *data, struct wp_presentation_feedback *wp_presentation_feedback, struct wl_output *output)
+{
+    // NOP
+}
+
+static void handle_presented(void *data, struct wp_presentation_feedback *wp_presentation_feedback,
+                             uint32_t tv_sec_hi, uint32_t tv_sec_lo, uint32_t tv_nsec, uint32_t refresh,
+                             uint32_t seq_hi, uint32_t seq_lo, uint32_t flags)
+{
+    Wayland_Framebuffer *framebuffer = data;
+
+    framebuffer->last_presentation_time = SDL_SECONDS_TO_NS(((Uint64)tv_sec_hi << 32) | (Uint64)tv_sec_lo) + tv_nsec;
+    framebuffer->refresh = refresh;
+
+    wp_presentation_feedback_destroy(framebuffer->feedback);
+    framebuffer->feedback = NULL;
+}
+
+static void handle_discarded(void *data, struct wp_presentation_feedback *wp_presentation_feedback)
+{
+    SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+    Wayland_Framebuffer *framebuffer = data;
+
+    struct timespec now;
+    clock_gettime(viddata->presentation_clock_id, &now);
+    framebuffer->last_presentation_time = SDL_SECONDS_TO_NS(now.tv_sec) + now.tv_nsec;
+
+    wp_presentation_feedback_destroy(framebuffer->feedback);
+    framebuffer->feedback = NULL;
+}
+
+static const struct wp_presentation_feedback_listener presentation_feedback_listener = {
+    handle_sync_output,
+    handle_presented,
+    handle_discarded
 };
 
 static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
@@ -130,8 +176,14 @@ bool Wayland_SetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *windo
         return SDL_SetError("Unsupported vsync type");
     }
 
+    SDL_VideoData *viddata = _this->internal;
     SDL_WindowData *wind = window->internal;
-    wind->presentation.vsync = vsync > 0;
+
+    wind->presentation.vsync = vsync;
+    if (vsync > 1 && !viddata->wp_commit_timing_manager) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "The compositor lacks support for the commit-timing protocol; swap intervals above 1 are unsupported");
+    }
+
     return true;
 }
 
@@ -139,13 +191,14 @@ bool Wayland_GetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *windo
 {
     if (vsync) {
         SDL_WindowData *wind = window->internal;
-        *vsync = (int)wind->presentation.vsync;
+        *vsync = wind->presentation.vsync;
     }
     return true;
 }
 
 bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
 {
+    SDL_VideoData *viddata = _this->internal;
     SDL_WindowData *wind = window->internal;
     if (wind->framebuffer) {
         Wayland_DestroyWindowFramebuffer(_this, window);
@@ -170,6 +223,16 @@ bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     }
 
     CreatePresentationQueue(wind);
+
+    // Presentation feedback and FIFO are required for proper vsync, with commit-timing required for swap intervals above 1.
+    if (viddata->wp_fifo_manager && viddata->wp_presentation) {
+        if (!wind->presentation.fifo) {
+            wind->presentation.fifo = wp_fifo_manager_v1_get_fifo(viddata->wp_fifo_manager, wind->surface);
+        }
+        if (viddata->wp_commit_timing_manager && !wind->presentation.commit_timer) {
+            wind->presentation.commit_timer = wp_commit_timing_manager_v1_get_timer(viddata->wp_commit_timing_manager, wind->surface);
+        }
+    }
 
     for (int i = 0; i < BUFFER_COUNT; ++i) {
         framebuffer->buffer[i].wl_buffer = Wayland_AllocBufferFromPool(framebuffer->pool, w, h, &framebuffer->buffer[i].mem);
@@ -211,9 +274,18 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     int w, h;
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    // Process the presentation queue, as a buffer release event may have already occurred.
+    // Process any events already in the presentation queue.
     if (WAYLAND_wl_display_dispatch_queue_pending(viddata->display, wind->presentation.queue) < 0) {
         return false;
+    }
+
+    // Wait for feedback to get the next presentation time, and avoid getting too far ahead.
+    if (wind->presentation.vsync) {
+        while (framebuffer->feedback) {
+            if (WAYLAND_wl_display_dispatch_queue(viddata->display, wind->presentation.queue) < 0) {
+                return false;
+            }
+        }
     }
 
     // Find a free buffer.
@@ -239,20 +311,61 @@ bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window,
     // Copy the image data.
     SDL_memcpy(buffer->mem, framebuffer->pixels, w * h * 4);
 
-    if (wind->presentation.vsync) {
+    // Legacy synchronization that waits for the frame callback.
+    if (wind->presentation.vsync && !wind->presentation.fifo) {
         Wayland_WaitForSwapInterval(wind);
     }
 
-    // Attach the buffer and commit the surface.
+    // Attach the buffer and set the surface damage region.
     buffer->busy = true;
+
     wl_surface_attach(wind->surface, buffer->wl_buffer, 0, 0);
     if (wl_surface_get_version(wind->surface) >= WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
         wl_surface_damage_buffer(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     } else {
         wl_surface_damage(wind->surface, 0, 0, SDL_MAX_SINT32, SDL_MAX_SINT32);
     }
-    wl_surface_commit(wind->surface);
 
+    // If vsync is active, and fifo and presentation feedback are supported, use them to ensure proper frame pacing.
+    if (wind->presentation.vsync && wind->presentation.fifo) {
+        // Queue presentation feedback for this frame.
+        struct wp_presentation *presentation_wrapper = WAYLAND_wl_proxy_create_wrapper(viddata->wp_presentation);
+        WAYLAND_wl_proxy_set_queue((struct wl_proxy *)presentation_wrapper, wind->presentation.queue);
+        framebuffer->feedback = wp_presentation_feedback(presentation_wrapper, wind->surface);
+        wp_presentation_feedback_add_listener(framebuffer->feedback, &presentation_feedback_listener, framebuffer);
+        WAYLAND_wl_proxy_wrapper_destroy(presentation_wrapper);
+
+        // Set a FIFO barrier to wait for the next swap interval.
+        wp_fifo_v1_set_barrier(wind->presentation.fifo);
+
+        if (wind->presentation.commit_timer && framebuffer->last_presentation_time) {
+            const Uint32 interval = framebuffer->refresh * wind->presentation.vsync;
+
+            // Account for the rounding of refresh intervals by compositors.
+            if (interval >= SDL_MS_TO_NS(1)) {
+                const Uint64 next = framebuffer->last_presentation_time + interval - SDL_MS_TO_NS(1);
+                const Uint64 sec = SDL_NS_TO_SECONDS(next);
+                const Uint32 ns = (Uint32)(next % SDL_NS_PER_SECOND);
+                wp_commit_timer_v1_set_timestamp(wind->presentation.commit_timer, (Uint32)(sec >> 32), (Uint32)(sec & 0xFFFFFFFF), ns);
+            }
+        }
+
+        /* This weird double-commit is necessary to ensure that presented/discarded
+         * events are received under all conditions.
+         *
+         * Under normal conditions, where the frame is displayed, a presented event
+         * will be received as normal. If the window is occluded, the second commit
+         * will trigger a discarded event.
+         *
+         * It's ugly, but Mesa and Nvidia do the same thing...
+         */
+        wp_fifo_v1_wait_barrier(wind->presentation.fifo);
+        wl_surface_commit(wind->surface);
+
+        wp_fifo_v1_wait_barrier(wind->presentation.fifo);
+    }
+
+    wl_surface_commit(wind->surface);
     WAYLAND_wl_display_flush(viddata->display);
 
     return true;
@@ -267,6 +380,10 @@ void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     Wayland_Framebuffer *framebuffer = wind->framebuffer;
     wind->framebuffer = NULL;
+
+    if (framebuffer->feedback) {
+        wp_presentation_feedback_destroy(framebuffer->feedback);
+    }
 
     for (int i = 0; i < BUFFER_COUNT; ++i) {
         wl_buffer_destroy(framebuffer->buffer[i].wl_buffer);
