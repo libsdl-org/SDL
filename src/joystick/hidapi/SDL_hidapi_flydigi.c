@@ -85,7 +85,6 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     Uint8 deviceID;
-    bool available;
     bool has_cz;
     bool has_lmrm;
     bool has_circle;
@@ -293,22 +292,23 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_SetAvailable(SDL_HIDAPI_Device *device, bool available)
 {
-    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
-
-    if (available == ctx->available) {
-        return;
-    }
-
     if (available) {
+        // Include this device in queries so the Xbox endpoint is hidden
+        device->unavailable = false;
+
         if (device->num_joysticks == 0) {
             HIDAPI_JoystickConnected(device, NULL);
         }
-    } else {
+    } else if (!device->unavailable) {
+        // Don't include this device in queries so the Xbox endpoint shows up
+        device->unavailable = true;
+
         if (device->num_joysticks > 0) {
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        } else {
+            SDL_RequestJoystickDeviceUpdate(true);
         }
     }
-    ctx->available = available;
 }
 
 static int HIDAPI_DriverFlydigi_WritePacket(SDL_HIDAPI_Device *device, const Uint8 *data, size_t size)

@@ -1241,6 +1241,23 @@ int SDL_hid_exit(void)
     return result;
 }
 
+bool SDL_HIDAPI_HasDeviceNotifications(void)
+{
+#ifndef SDL_HIDAPI_DISABLED
+    if (SDL_hidapi_refcount == 0) {
+        return false;
+    }
+
+    if (!SDL_HIDAPI_discovery.m_bInitialized) {
+        HIDAPI_InitializeDiscovery();
+    }
+
+    return SDL_HIDAPI_discovery.m_bCanGetNotifications;
+#else
+    return false;
+#endif
+}
+
 Uint32 SDL_hid_device_change_count(void)
 {
     Uint32 counter = 0;

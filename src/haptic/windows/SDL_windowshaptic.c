@@ -47,7 +47,7 @@ static int numhaptics = 0;
  */
 bool SDL_SYS_HapticInit(void)
 {
-    JoyStick_DeviceData *device;
+    SDL_JoystickDevice *device;
 
     if (!SDL_DINPUT_HapticInit()) {
         return false;
@@ -58,9 +58,13 @@ bool SDL_SYS_HapticInit(void)
      * subsystem will arrive too early to create haptic devices. We will
      * invoke those callbacks again here to pick up any joysticks that
      * were added prior to haptics initialization. */
-    for (device = SYS_Joystick; device; device = device->pNext) {
-        SDL_DINPUT_HapticMaybeAddDevice(&device->dxdevice);
+    SDL_LockJoysticks();
+    for (device = SDL_GetJoystickDevices(); device; device = device->next) {
+        if (device->driver == &SDL_DINPUT_JoystickDriver && device->published) {
+            SDL_DINPUT_HapticMaybeAddDevice(&device->internal->dxdevice);
+        }
     }
+    SDL_UnlockJoysticks();
 
     return true;
 }

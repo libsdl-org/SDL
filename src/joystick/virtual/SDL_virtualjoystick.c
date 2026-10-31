@@ -28,42 +28,47 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-static joystick_hwdata *g_VJoys SDL_GUARDED_BY(SDL_event_lock) = NULL;
 
-static joystick_hwdata *VIRTUAL_HWDataForInstance(SDL_JoystickID instance_id)
+#define AXES_CHANGED        0x00000001
+#define BALLS_CHANGED       0x00000002
+#define BUTTONS_CHANGED     0x00000004
+#define HATS_CHANGED        0x00000008
+#define TOUCHPADS_CHANGED   0x00000010
+
+/**
+ * Data for a virtual, software-only joystick.
+ */
+typedef struct VirtualSensorEvent
 {
-    joystick_hwdata *vjoy;
+    SDL_SensorType type;
+    Uint64 sensor_timestamp;
+    float data[3];
+    int num_values;
+} VirtualSensorEvent;
 
-    SDL_AssertJoysticksLocked();
-
-    for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
-        if (instance_id == vjoy->instance_id) {
-            return vjoy;
-        }
-    }
-    return NULL;
-}
-
-static joystick_hwdata *VIRTUAL_HWDataForIndex(int device_index)
+typedef struct joystick_hwdata
 {
-    joystick_hwdata *vjoy;
+    bool attached;
+    SDL_JoystickType type;
+    SDL_VirtualJoystickDesc desc;
+    Uint32 changes;
+    Sint16 *axes;
+    bool *buttons;
+    Uint8 *hats;
+    SDL_JoystickBallData *balls;
+    SDL_JoystickTouchpadInfo *touchpads;
+    SDL_JoystickSensorInfo *sensors;
+    bool sensors_enabled;
+    int num_sensor_events;
+    int max_sensor_events;
+    VirtualSensorEvent *sensor_events;
 
-    SDL_AssertJoysticksLocked();
+    SDL_Joystick *joystick;
+} joystick_hwdata;
 
-    for (vjoy = g_VJoys; vjoy; vjoy = vjoy->next) {
-        if (device_index == 0) {
-            break;
-        }
-        --device_index;
-    }
-    return vjoy;
-}
 
 static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
 {
-    joystick_hwdata *cur;
-    joystick_hwdata *prev = NULL;
-
     SDL_AssertJoysticksLocked();
 
     if (!hwdata) {
@@ -74,25 +79,9 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
         hwdata->desc.Cleanup(hwdata->desc.userdata);
     }
 
-    // Remove hwdata from SDL-global list
-    for (cur = g_VJoys; cur; prev = cur, cur = cur->next) {
-        if (hwdata == cur) {
-            if (prev) {
-                prev->next = cur->next;
-            } else {
-                g_VJoys = cur->next;
-            }
-            break;
-        }
-    }
-
     if (hwdata->joystick) {
         hwdata->joystick->hwdata = NULL;
         hwdata->joystick = NULL;
-    }
-    if (hwdata->name) {
-        SDL_free(hwdata->name);
-        hwdata->name = NULL;
     }
     if (hwdata->axes) {
         SDL_free((void *)hwdata->axes);
@@ -129,9 +118,17 @@ static void VIRTUAL_FreeHWData(joystick_hwdata *hwdata)
     SDL_free(hwdata);
 }
 
+static void VIRTUAL_FreeDevice(SDL_JoystickDevice *device)
+{
+    joystick_hwdata *hwdata = (joystick_hwdata *)device->internal;
+
+    VIRTUAL_FreeHWData(hwdata);
+}
+
 SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc)
 {
     joystick_hwdata *hwdata = NULL;
+    SDL_JoystickDevice *device;
     const char *name = NULL;
     int axis_triggerleft = -1;
     int axis_triggerright = -1;
@@ -193,7 +190,6 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             break;
         }
     }
-    hwdata->name = SDL_strdup(name);
 
     if (hwdata->desc.type == SDL_JOYSTICK_TYPE_GAMEPAD) {
         int i, axis;
@@ -230,8 +226,6 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
             }
         }
     }
-
-    hwdata->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
     // Allocate fields for different control-types
     if (hwdata->desc.naxes > 0) {
@@ -309,32 +303,26 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
         }
     }
 
-    // Allocate an instance ID for this device
-    hwdata->instance_id = SDL_GetNextObjectID();
-
-    // Add virtual joystick to SDL-global lists
-    if (g_VJoys) {
-        joystick_hwdata *last;
-
-        for (last = g_VJoys; last->next; last = last->next) {
-        }
-        last->next = hwdata;
-    } else {
-        g_VJoys = hwdata;
+    device = SDL_CreateJoystickDevice(&SDL_VIRTUAL_JoystickDriver, 0);
+    if (!device) {
+        VIRTUAL_FreeHWData(hwdata);
+        return 0;
     }
-    SDL_PrivateJoystickAdded(hwdata->instance_id);
+    device->internal = (SDL_JoystickDeviceData *)hwdata;
+    device->free = VIRTUAL_FreeDevice;
+    device->name = SDL_strdup(name);
+    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
-    return hwdata->instance_id;
+    return SDL_AddJoystickDevice(device, true);
 }
 
 bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)
 {
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForInstance(instance_id);
-    if (!hwdata) {
-        return SDL_SetError("Virtual joystick data not found");
+    if (!SDL_IsJoystickVirtual(instance_id)) {
+        return SDL_SetError("Joystick %" SDL_PRIu32 " not found", instance_id);
     }
-    VIRTUAL_FreeHWData(hwdata);
-    SDL_PrivateJoystickRemoved(instance_id);
+
+    SDL_RemoveJoystickDevice(instance_id);
     return true;
 }
 
@@ -483,92 +471,12 @@ bool SDL_SendJoystickVirtualSensorDataInner(SDL_Joystick *joystick, SDL_SensorTy
     return true;
 }
 
-static bool VIRTUAL_JoystickInit(void)
+static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    return true;
-}
-
-static int VIRTUAL_JoystickGetCount(void)
-{
-    joystick_hwdata *cur;
-    int count = 0;
+    joystick_hwdata *hwdata = (joystick_hwdata *)device->internal;
 
     SDL_AssertJoysticksLocked();
 
-    for (cur = g_VJoys; cur; cur = cur->next) {
-        ++count;
-    }
-    return count;
-}
-
-static void VIRTUAL_JoystickDetect(void)
-{
-}
-
-static bool VIRTUAL_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers... or do we?
-    return false;
-}
-
-static const char *VIRTUAL_JoystickGetDeviceName(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        return NULL;
-    }
-    return hwdata->name;
-}
-
-static const char *VIRTUAL_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static void VIRTUAL_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-
-    if (hwdata && hwdata->desc.SetPlayerIndex) {
-        hwdata->desc.SetPlayerIndex(hwdata->desc.userdata, player_index);
-    }
-}
-
-static SDL_GUID VIRTUAL_JoystickGetDeviceGUID(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        SDL_GUID guid;
-        SDL_zero(guid);
-        return guid;
-    }
-    return hwdata->guid;
-}
-
-static SDL_JoystickID VIRTUAL_JoystickGetDeviceInstanceID(int device_index)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        return true;
-    }
-    return hwdata->instance_id;
-}
-
-static bool VIRTUAL_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
-    joystick_hwdata *hwdata;
-
-    SDL_AssertJoysticksLocked();
-
-    hwdata = VIRTUAL_HWDataForIndex(device_index);
-    if (!hwdata) {
-        return SDL_SetError("No such device");
-    }
     joystick->hwdata = hwdata;
     joystick->naxes = hwdata->desc.naxes;
     joystick->nbuttons = hwdata->desc.nbuttons;
@@ -699,6 +607,18 @@ static bool VIRTUAL_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabl
     return result;
 }
 
+static void VIRTUAL_JoystickSetPlayerIndex(SDL_Joystick *joystick, int player_index)
+{
+    SDL_AssertJoysticksLocked();
+
+    if (joystick->hwdata) {
+        joystick_hwdata *hwdata = joystick->hwdata;
+        if (hwdata->desc.SetPlayerIndex) {
+            hwdata->desc.SetPlayerIndex(hwdata->desc.userdata, player_index);
+        }
+    }
+}
+
 static void VIRTUAL_JoystickUpdate(SDL_Joystick *joystick)
 {
     joystick_hwdata *hwdata;
@@ -776,18 +696,9 @@ static void VIRTUAL_JoystickClose(SDL_Joystick *joystick)
     }
 }
 
-static void VIRTUAL_JoystickQuit(void)
+static bool VIRTUAL_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
 {
-    SDL_AssertJoysticksLocked();
-
-    while (g_VJoys) {
-        VIRTUAL_FreeHWData(g_VJoys);
-    }
-}
-
-static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    joystick_hwdata *hwdata = VIRTUAL_HWDataForIndex(device_index);
+    joystick_hwdata *hwdata = (joystick_hwdata *)device->internal;
     Uint8 current_button = 0;
     Uint8 current_axis = 0;
 
@@ -959,26 +870,16 @@ static bool VIRTUAL_JoystickGetGamepadMapping(int device_index, SDL_GamepadMappi
 }
 
 SDL_JoystickDriver SDL_VIRTUAL_JoystickDriver = {
-    .Init = VIRTUAL_JoystickInit,
-    .GetCount = VIRTUAL_JoystickGetCount,
-    .Detect = VIRTUAL_JoystickDetect,
-    .IsDevicePresent = VIRTUAL_JoystickIsDevicePresent,
-    .GetDeviceName = VIRTUAL_JoystickGetDeviceName,
-    .GetDevicePath = VIRTUAL_JoystickGetDevicePath,
-    .GetDeviceSteamVirtualGamepadSlot = VIRTUAL_JoystickGetDeviceSteamVirtualGamepadSlot,
-    .SetDevicePlayerIndex = VIRTUAL_JoystickSetDevicePlayerIndex,
-    .GetDeviceGUID = VIRTUAL_JoystickGetDeviceGUID,
-    .GetDeviceInstanceID = VIRTUAL_JoystickGetDeviceInstanceID,
+    .GetGamepadMapping = VIRTUAL_JoystickGetGamepadMapping,
     .Open = VIRTUAL_JoystickOpen,
     .Rumble = VIRTUAL_JoystickRumble,
     .RumbleTriggers = VIRTUAL_JoystickRumbleTriggers,
     .SetLED = VIRTUAL_JoystickSetLED,
     .SendEffect = VIRTUAL_JoystickSendEffect,
     .SetSensorsEnabled = VIRTUAL_JoystickSetSensorsEnabled,
+    .SetPlayerIndex = VIRTUAL_JoystickSetPlayerIndex,
     .Update = VIRTUAL_JoystickUpdate,
-    .Close = VIRTUAL_JoystickClose,
-    .Quit = VIRTUAL_JoystickQuit,
-    .GetGamepadMapping = VIRTUAL_JoystickGetGamepadMapping
+    .Close = VIRTUAL_JoystickClose
 };
 
 #endif // SDL_JOYSTICK_VIRTUAL

@@ -96,22 +96,6 @@ FFEFFECT *CreateRumbleEffectData(Sint16 magnitude)
     return effect;
 }
 
-static recDevice *GetDeviceForIndex(int device_index)
-{
-    recDevice *device = gpDeviceList;
-    while (device) {
-        if (!device->removed) {
-            if (device_index == 0) {
-                break;
-            }
-
-            --device_index;
-        }
-        device = device->pNext;
-    }
-    return device;
-}
-
 static void FreeElementList(recElement *pElement)
 {
     while (pElement) {
@@ -264,8 +248,6 @@ static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *s
 #ifdef SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
-
-    SDL_PrivateJoystickRemoved(device->instance_id);
 }
 
 static void AddHIDElement(const void *value, void *parameter);
@@ -542,10 +524,8 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         return false;
     }
 
-    if (SDL_JoystickHandledByAnotherDriver(&SDL_DARWIN_JoystickDriver, vendor, product, version, pDevice->product)) {
-        return false;
-    }
-
+    pDevice->vendor_id = (Uint16)vendor;
+    pDevice->product_id = (Uint16)product;
     pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
 
@@ -610,16 +590,10 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
     device->runLoopAttached = true;
 
-    // Allocate an instance ID for this device
-    device->instance_id = SDL_GetNextObjectID();
-
     // We have to do some storage of the io_service_t for SDL_OpenHapticFromJoystick
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
-#ifdef SDL_HAPTIC_IOKIT
-        MacHaptic_MaybeAddDevice(ioservice);
-#endif
     }
 
     // Add device to the end of the list
@@ -634,8 +608,6 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
         }
         curdevice->pNext = device;
     }
-
-    SDL_PrivateJoystickAdded(device->instance_id);
 }
 
 static bool ConfigHIDManager(CFArrayRef matchingArray)
@@ -728,95 +700,102 @@ static bool DARWIN_JoystickInit(void)
     return true;
 }
 
-static int DARWIN_JoystickGetCount(void)
+static SDL_JoystickDevice *DARWIN_CreateJoystickDevice(recDevice *data)
 {
-    recDevice *device = gpDeviceList;
-    int nJoySticks = 0;
-
-    while (device) {
-        if (!device->removed) {
-            nJoySticks++;
-        }
-        device = device->pNext;
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_DARWIN_JoystickDriver, 0);
+    if (!device) {
+        return NULL;
     }
 
-    return nJoySticks;
+    // The IOKit device is the unique ID for the device
+    device->internal = (SDL_JoystickDeviceData *)data;
+    device->unique_id = &device->internal;
+    device->unique_id_len = sizeof(device->internal);
+
+    device->name = SDL_strdup(data->product);
+    if (!device->name) {
+        SDL_DestroyJoystickDevice(device);
+        return NULL;
+    }
+    device->guid = data->guid;
+    device->steam_virtual_gamepad_slot = data->steam_virtual_gamepad_slot;
+
+    SDL_AddJoystickDeviceMatchVIDPID(device, data->vendor_id, data->product_id);
+
+    return device;
 }
 
-static void DARWIN_JoystickDetect(void)
+// Free devices that were removed during the last update, their SDL_JoystickDevices
+// have been removed and their recDevice is no longer referenced
+static void FreeRemovedDevices(void)
 {
-    recDevice *device = gpDeviceList;
-    while (device) {
-        if (device->removed) {
-            device = FreeDevice(device);
+    recDevice *entry = gpDeviceList;
+    while (entry) {
+        if (entry->removed) {
+            entry = FreeDevice(entry);
         } else {
-            device = device->pNext;
+            entry = entry->pNext;
         }
     }
+}
+
+static SDL_JoystickDevice *DARWIN_JoystickQueryDevices(void)
+{
+    SDL_JoystickDevice *devices = NULL;
+    SDL_JoystickDevice *tail = NULL;
+    recDevice *entry;
+
+    FreeRemovedDevices();
 
     if (hidman) {
-        /* run this after the checks above so we don't set device->removed and delete the device before
-           DARWIN_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
         while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
             // no-op. Pending callbacks will fire in CFRunLoopRunInMode().
         }
     }
-}
 
-static bool DARWIN_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static const char *DARWIN_JoystickGetDeviceName(int device_index)
-{
-    recDevice *device = GetDeviceForIndex(device_index);
-    return device ? device->product : "UNKNOWN";
-}
-
-static const char *DARWIN_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    recDevice *device = GetDeviceForIndex(device_index);
-    return device ? device->steam_virtual_gamepad_slot : -1;
-}
-
-static SDL_GUID DARWIN_JoystickGetDeviceGUID(int device_index)
-{
-    recDevice *device = GetDeviceForIndex(device_index);
-    SDL_GUID guid;
-    if (device) {
-        guid = device->guid;
-    } else {
-        SDL_zero(guid);
+    for (entry = gpDeviceList; entry; entry = entry->pNext) {
+        if (!entry->removed) {
+            SDL_JoystickDevice *device = DARWIN_CreateJoystickDevice(entry);
+            if (device) {
+                if (tail) {
+                    tail->next = device;
+                } else {
+                    devices = device;
+                }
+                tail = device;
+            }
+        }
     }
-    return guid;
+    return devices;
 }
 
-static SDL_JoystickID DARWIN_JoystickGetDeviceInstanceID(int device_index)
+static bool DARWIN_JoystickPrepareDevice(SDL_JoystickDevice *device)
 {
-    recDevice *device = GetDeviceForIndex(device_index);
-    return device ? device->instance_id : 0;
+#ifdef SDL_HAPTIC_IOKIT
+    recDevice *data = (recDevice *)device->internal;
+    if (data->ffservice) {
+        MacHaptic_MaybeAddDevice(data->ffservice);
+    }
+#endif
+    return true;
 }
 
-static bool DARWIN_JoystickOpen(SDL_Joystick *joystick, int device_index)
+static bool DARWIN_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    recDevice *device = GetDeviceForIndex(device_index);
+    recDevice *data = (recDevice *)device->internal;
 
-    joystick->hwdata = device;
-    device->joystick = joystick;
-    joystick->name = device->product;
+    if (data->removed) {
+        return SDL_SetError("Joystick has been disconnected");
+    }
 
-    joystick->naxes = device->axes;
-    joystick->nhats = device->hats;
-    joystick->nbuttons = device->buttons;
+    joystick->hwdata = data;
+    data->joystick = joystick;
 
-    if (device->ffservice) {
+    joystick->naxes = data->axes;
+    joystick->nhats = data->hats;
+    joystick->nbuttons = data->buttons;
+
+    if (data->ffservice) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 
@@ -1082,14 +1061,8 @@ static void DARWIN_JoystickQuit(void)
 
 SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
     .Init = DARWIN_JoystickInit,
-    .GetCount = DARWIN_JoystickGetCount,
-    .Detect = DARWIN_JoystickDetect,
-    .IsDevicePresent = DARWIN_JoystickIsDevicePresent,
-    .GetDeviceName = DARWIN_JoystickGetDeviceName,
-    .GetDevicePath = DARWIN_JoystickGetDevicePath,
-    .GetDeviceSteamVirtualGamepadSlot = DARWIN_JoystickGetDeviceSteamVirtualGamepadSlot,
-    .GetDeviceGUID = DARWIN_JoystickGetDeviceGUID,
-    .GetDeviceInstanceID = DARWIN_JoystickGetDeviceInstanceID,
+    .QueryDevices = DARWIN_JoystickQueryDevices,
+    .PrepareDevice = DARWIN_JoystickPrepareDevice,
     .Open = DARWIN_JoystickOpen,
     .Rumble = DARWIN_JoystickRumble,
     .Update = DARWIN_JoystickUpdate,
