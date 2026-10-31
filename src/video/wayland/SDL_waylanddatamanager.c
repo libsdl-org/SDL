@@ -553,6 +553,13 @@ static void offer_source_done_handler(void *data, struct wl_callback *callback, 
     wl_callback_destroy(offer->callback);
     offer->callback = NULL;
 
+    // The origin ID identifies the process, not the source, so the offer can only be recursive if the source still exists.
+    // If not, another client, such as a clipboard manager, took ownership of the selection and re-offered the ID.
+    if (!offer->data_device->selection_source) {
+        SelectionOfferNotifyFromMIMEs(offer->data_device, false);
+        return;
+    }
+
     id = GetOfferDataFromSelf(offer, &length);
     if (id) {
         const bool source_is_external = SDL_strncmp(offer->data_device->id_str, id, length) != 0;
