@@ -374,50 +374,31 @@ static bool QueryDeviceInfo(LPDIRECTINPUTDEVICE8 device, Uint16 *vendor_id, Uint
 
 static void FreeRumbleEffectData(DIEFFECT *effect)
 {
-    if (!effect) {
-        return;
-    }
-    SDL_free(effect->rgdwAxes);
-    SDL_free(effect->rglDirection);
-    SDL_free(effect->lpvTypeSpecificParams);
-    SDL_free(effect);
+    SDL_free(effect);  // it's all allocated in a single SDL_calloc() (or using static data) now.
 }
 
 static DIEFFECT *CreateRumbleEffectData(Sint16 magnitude)
 {
-    DIEFFECT *effect;
-    DIPERIODIC *periodic;
-
-    // Create the effect
-    effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect));
+    DIEFFECT *effect = (DIEFFECT *)SDL_calloc(1, sizeof(*effect) + sizeof (DIPERIODIC));
     if (!effect) {
         return NULL;
     }
+
     effect->dwSize = sizeof(*effect);
     effect->dwGain = 10000;
     effect->dwFlags = DIEFF_OBJECTOFFSETS;
     effect->dwDuration = SDL_MAX_RUMBLE_DURATION_MS * 1000; // In microseconds.
     effect->dwTriggerButton = DIEB_NOTRIGGER;
 
-    effect->cAxes = 2;
-    effect->rgdwAxes = (DWORD *)SDL_calloc(effect->cAxes, sizeof(DWORD));
-    if (!effect->rgdwAxes) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static DWORD rgdwAxes[] = { DIJOFS_X, DIJOFS_Y };
+    effect->cAxes = SDL_arraysize(rgdwAxes);
+    effect->rgdwAxes = rgdwAxes;
 
-    effect->rglDirection = (LONG *)SDL_calloc(effect->cAxes, sizeof(LONG));
-    if (!effect->rglDirection) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    static LONG rglDirection[] = { 0, 0 };
+    effect->rglDirection = rglDirection;
     effect->dwFlags |= DIEFF_CARTESIAN;
 
-    periodic = (DIPERIODIC *)SDL_calloc(1, sizeof(*periodic));
-    if (!periodic) {
-        FreeRumbleEffectData(effect);
-        return NULL;
-    }
+    DIPERIODIC *periodic = (DIPERIODIC *)(effect + 1);  // we allocated this right after the effect struct.
     periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
     periodic->dwPeriod = 1000000;
 
