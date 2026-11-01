@@ -28,6 +28,8 @@
 
 #include "../SDL_sysjoystick.h"
 
+extern int Android_keycode_to_SDL(int keycode);
+extern int Android_scancode_to_SDL(int scancode);
 extern bool Android_OnPadDown(int device_id, int keycode, int scancode);
 extern bool Android_OnPadUp(int device_id, int keycode, int scancode);
 extern bool Android_OnJoy(int device_id, int axisnum, float value);
