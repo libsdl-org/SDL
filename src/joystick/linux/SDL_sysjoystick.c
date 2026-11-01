@@ -57,6 +57,10 @@
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
+#ifndef EV_BTN
+#define EV_BTN 0x06
+#define EVIOCGBTNCNT 0
+#endif
 #ifndef BTN_NORTH
 #define BTN_NORTH 0x133
 #endif
@@ -1216,6 +1220,7 @@ static bool GuessIfAxesAreDigitalHat(struct input_absinfo *absinfo_x, struct inp
 static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
 {
     int i, t;
+    unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
     unsigned long relbit[NBITS(REL_MAX)] = { 0 };
@@ -1229,27 +1234,40 @@ static void ConfigJoystick(SDL_Joystick *joystick, int fd, int fd_sensor)
     // See if this device uses the new unified event API
     if ((ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) >= 0) &&
         (ioctl(fd, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) >= 0) &&
-        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0)) {
+        (ioctl(fd, EVIOCGBIT(EV_REL, sizeof(relbit)), relbit) >= 0) &&
+        (ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) >= 0) ) {
 
         // Get the number of buttons, axes, and other thingamajigs
-        for (i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
-            if (test_bit(i, keybit)) {
+        if (test_bit(EV_BTN, evbit)) {
+            unsigned int button_count;
+            if(ioctl(fd, EVIOCGBTNCNT, &button_count) == 0) {
+                joystick->hwdata->ev_btn = true;
+                joystick->nbuttons = button_count;
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick has button: 0x%x", i);
+                SDL_Log("Joystick has %u buttons", button_count);
 #endif
-                joystick->hwdata->key_map[i] = joystick->nbuttons;
-                joystick->hwdata->has_key[i] = true;
-                ++joystick->nbuttons;
             }
         }
-        for (i = 0; i < BTN_JOYSTICK; ++i) {
-            if (test_bit(i, keybit)) {
+        if (!joystick->hwdata->ev_btn) {
+            for (i = BTN_JOYSTICK; i < KEY_MAX; ++i) {
+                if (test_bit(i, keybit)) {
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick has button: 0x%x", i);
+                    SDL_Log("Joystick has button: 0x%x", i);
 #endif
-                joystick->hwdata->key_map[i] = joystick->nbuttons;
-                joystick->hwdata->has_key[i] = true;
-                ++joystick->nbuttons;
+                    joystick->hwdata->key_map[i] = joystick->nbuttons;
+                    joystick->hwdata->has_key[i] = true;
+                    ++joystick->nbuttons;
+                }
+            }
+            for (i = 0; i < BTN_JOYSTICK; ++i) {
+                if (test_bit(i, keybit)) {
+#ifdef DEBUG_INPUT_EVENTS
+                    SDL_Log("Joystick has button: 0x%x", i);
+#endif
+                    joystick->hwdata->key_map[i] = joystick->nbuttons;
+                    joystick->hwdata->has_key[i] = true;
+                    ++joystick->nbuttons;
+                }
             }
         }
         for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
@@ -1836,7 +1854,8 @@ static void PollAllValues(Uint64 timestamp, SDL_Joystick *joystick)
 
     // Poll all buttons
     SDL_zeroa(keyinfo);
-    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof(keyinfo)), keyinfo) >= 0) {
+    if (ioctl(joystick->hwdata->fd, EVIOCGKEY(sizeof(keyinfo)), keyinfo) >= 0 &&
+        !joystick->hwdata->ev_btn) {
         for (i = 0; i < KEY_MAX; i++) {
             if (joystick->hwdata->has_key[i]) {
                 bool down = test_bit(i, keyinfo);
@@ -1882,7 +1901,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_RX + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * (SDL_PI_F / 180.f) / joystick->hwdata->gyro_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick : Re-read Gyro (axis %d) val= %f", i, data[i]);
+                SDL_Log("Joystick : Re-read Gyro (axis %d) val= %f", i, values[i]);
 #endif
             }
         }
@@ -1896,7 +1915,7 @@ static void PollAllSensors(Uint64 timestamp, SDL_Joystick *joystick)
             if (ioctl(joystick->hwdata->fd_sensor, EVIOCGABS(ABS_X + i), &absinfo) >= 0) {
                 values[i] = absinfo.value * SDL_STANDARD_GRAVITY / joystick->hwdata->accelerometer_scale[i];
 #ifdef DEBUG_INPUT_EVENTS
-                SDL_Log("Joystick : Re-read Accelerometer (axis %d) val= %f", i, data[i]);
+                SDL_Log("Joystick : Re-read Accelerometer (axis %d) val= %f", i, values[i]);
 #endif
             }
         }
@@ -1939,7 +1958,18 @@ static void HandleInputEvents(SDL_Joystick *joystick)
             }
 
             switch (event->type) {
+            case EV_BTN:
+                if (!joystick->hwdata->ev_btn)
+                    break;
+#ifdef DEBUG_INPUT_EVENTS
+                SDL_Log("Button %u %s", code, event->value ? "PRESSED" : "RELEASED");
+#endif
+                SDL_SendJoystickButton(SDL_EVDEV_GetEventTimestamp(event), joystick,
+                                       code - 1, (event->value != 0));
+                break;
             case EV_KEY:
+                if (joystick->hwdata->ev_btn)
+                    break;
 #ifdef DEBUG_INPUT_EVENTS
                 SDL_Log("Key 0x%.2x %s", code, event->value ? "PRESSED" : "RELEASED");
 #endif
@@ -2037,6 +2067,7 @@ static void HandleInputEvents(SDL_Joystick *joystick)
                 }
 
                 switch (event->type) {
+                case EV_BTN:
                 case EV_KEY:
                     SDL_assert(0);
                     break;
