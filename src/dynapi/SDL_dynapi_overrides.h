@@ -45,6 +45,7 @@
 #define SDL_BeginGPUComputePass SDL_BeginGPUComputePass_REAL
 #define SDL_BeginGPUCopyPass SDL_BeginGPUCopyPass_REAL
 #define SDL_BeginGPURenderPass SDL_BeginGPURenderPass_REAL
+#define SDL_BeginMultiViewGPURenderPass SDL_BeginMultiViewGPURenderPass_REAL
 #define SDL_BindAudioStream SDL_BindAudioStream_REAL
 #define SDL_BindAudioStreams SDL_BindAudioStreams_REAL
 #define SDL_BindGPUComputePipeline SDL_BindGPUComputePipeline_REAL
