@@ -170,9 +170,11 @@ struct joystick_hwdata
 // A linked list of available joysticks
 typedef struct SDL_joylist_item
 {
-    SDL_JoystickID device_instance;
+    SDL_JoystickID instance_id;
     char *path; // "/dev/uhid0" or whatever
     char *name; // "SideWinder 3D Pro" or whatever
+    Uint16 vendor;
+    Uint16 product;
     SDL_GUID guid;
     dev_t devnum;
     struct SDL_joylist_item *next;
@@ -180,7 +182,6 @@ typedef struct SDL_joylist_item
 
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
-static int numjoysticks = 0;
 
 static bool report_alloc(struct report *, struct report_desc *, int);
 static void report_free(struct report *);
@@ -392,6 +393,8 @@ static bool MaybeAddDevice(const char *path)
 {
     struct stat sb;
     char *name = NULL;
+    Uint16 vendor = 0;
+    Uint16 product = 0;
     SDL_GUID guid;
     SDL_joylist_item *item;
     struct joystick_hwdata *hw;
@@ -426,12 +429,13 @@ static bool MaybeAddDevice(const char *path)
             name = SDL_CreateJoystickName(di.udi_vendorNo, di.udi_productNo, di.udi_vendor, di.udi_product);
             guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, di.udi_vendor, di.udi_product, 0, 0);
 
-            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name) ||
-                SDL_JoystickHandledByAnotherDriver(&SDL_BSD_JoystickDriver, di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
+            if (SDL_ShouldIgnoreJoystick(di.udi_vendorNo, di.udi_productNo, di.udi_releaseNo, name)) {
                 SDL_free(name);
                 FreeHwData(hw);
                 return false;
             }
+            vendor = di.udi_vendorNo;
+            product = di.udi_productNo;
         }
 #endif // USB_GET_DEVICEINFO
     }
@@ -450,6 +454,8 @@ static bool MaybeAddDevice(const char *path)
     item->devnum = sb.st_rdev;
     item->path = SDL_strdup(path);
     item->name = name;
+    item->vendor = vendor;
+    item->product = product;
     item->guid = guid;
 
     if ((!item->path) || (!item->name)) {
@@ -457,18 +463,13 @@ static bool MaybeAddDevice(const char *path)
         return false;
     }
 
-    item->device_instance = SDL_GetNextObjectID();
+    item->instance_id = SDL_GetNextObjectID();
     if (!SDL_joylist_tail) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
         SDL_joylist_tail->next = item;
         SDL_joylist_tail = item;
     }
-
-    // Need to increment the joystick count before we post the event
-    ++numjoysticks;
-
-    SDL_PrivateJoystickAdded(item->device_instance);
 
     return true;
 }
@@ -499,62 +500,51 @@ static bool BSD_JoystickInit(void)
     return true;
 }
 
-static int BSD_JoystickGetCount(void)
+static SDL_JoystickDevice *BSD_CreateJoystickDevice(SDL_joylist_item *data)
 {
-    return numjoysticks;
-}
-
-static void BSD_JoystickDetect(void)
-{
-}
-
-static bool BSD_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static SDL_joylist_item *GetJoystickByDevIndex(int device_index)
-{
-    SDL_joylist_item *item = SDL_joylist;
-
-    if ((device_index < 0) || (device_index >= numjoysticks)) {
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_BSD_JoystickDriver, 0);
+    if (!device) {
         return NULL;
     }
 
-    while (device_index > 0) {
-        SDL_assert(item != NULL);
-        device_index--;
-        item = item->next;
+    device->internal = (SDL_JoystickDeviceData *)data;
+    device->instance_id = data->instance_id;
+    device->unique_id = &device->instance_id;
+    device->unique_id_len = sizeof(device->instance_id);
+
+    device->name = SDL_strdup(data->name);
+    device->path = SDL_strdup(data->path);
+    if (!device->name || !device->path) {
+        SDL_DestroyJoystickDevice(device);
+        return NULL;
+    }
+    device->guid = data->guid;
+
+    if (data->vendor || data->product) {
+        SDL_AddJoystickDeviceMatchVIDPID(device, data->vendor, data->product);
     }
 
-    return item;
+    return device;
 }
 
-static const char *BSD_JoystickGetDeviceName(int device_index)
+// The device list doesn't change, but devices may be hidden by other drivers
+static SDL_JoystickDevice *BSD_JoystickQueryDevices(void)
 {
-    return GetJoystickByDevIndex(device_index)->name;
-}
+    SDL_JoystickDevice *devices = NULL;
+    SDL_JoystickDevice *tail = NULL;
 
-static const char *BSD_JoystickGetDevicePath(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->path;
-}
-
-static int BSD_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static SDL_GUID BSD_JoystickGetDeviceGUID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->guid;
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID BSD_JoystickGetDeviceInstanceID(int device_index)
-{
-    return GetJoystickByDevIndex(device_index)->device_instance;
+    for (SDL_joylist_item *entry = SDL_joylist; entry; entry = entry->next) {
+        SDL_JoystickDevice *device = BSD_CreateJoystickDevice(entry);
+        if (device) {
+            if (tail) {
+                tail->next = device;
+            } else {
+                devices = device;
+            }
+            tail = device;
+        }
+    }
+    return devices;
 }
 
 static unsigned hatval_to_sdl(Sint32 hatval)
@@ -571,16 +561,12 @@ static unsigned hatval_to_sdl(Sint32 hatval)
     return result;
 }
 
-static bool BSD_JoystickOpen(SDL_Joystick *joy, int device_index)
+static bool BSD_JoystickOpen(SDL_Joystick *joy, SDL_JoystickDevice *device)
 {
-    SDL_joylist_item *item = GetJoystickByDevIndex(device_index);
+    SDL_joylist_item *data = (SDL_joylist_item *)device->internal;
     struct joystick_hwdata *hw;
 
-    if (!item) {
-        return SDL_SetError("No such device");
-    }
-
-    hw = CreateHwData(item->path);
+    hw = CreateHwData(data->path);
     if (!hw) {
         return false;
     }
@@ -745,8 +731,6 @@ static void BSD_JoystickQuit(void)
     }
 
     SDL_joylist = SDL_joylist_tail = NULL;
-
-    numjoysticks = 0;
 }
 
 static bool report_alloc(struct report *r, struct report_desc *rd, int repind)
@@ -804,14 +788,7 @@ static void report_free(struct report *r)
 
 SDL_JoystickDriver SDL_BSD_JoystickDriver = {
     .Init = BSD_JoystickInit,
-    .GetCount = BSD_JoystickGetCount,
-    .Detect = BSD_JoystickDetect,
-    .IsDevicePresent = BSD_JoystickIsDevicePresent,
-    .GetDeviceName = BSD_JoystickGetDeviceName,
-    .GetDevicePath = BSD_JoystickGetDevicePath,
-    .GetDeviceSteamVirtualGamepadSlot = BSD_JoystickGetDeviceSteamVirtualGamepadSlot,
-    .GetDeviceGUID = BSD_JoystickGetDeviceGUID,
-    .GetDeviceInstanceID = BSD_JoystickGetDeviceInstanceID,
+    .QueryDevices = BSD_JoystickQueryDevices,
     .Open = BSD_JoystickOpen,
     .Update = BSD_JoystickUpdate,
     .Close = BSD_JoystickClose,
