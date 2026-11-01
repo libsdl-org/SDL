@@ -188,11 +188,17 @@ struct SDL_WaylandSeat
         struct zwp_locked_pointer_v1 *locked_pointer;
         struct zwp_confined_pointer_v1 *confined_pointer;
         struct zwp_pointer_gesture_pinch_v1 *gesture_pinch;
+        struct zwp_pointer_gesture_hold_v1 *gesture_hold;
 
         SDL_WindowData *focus;
         struct wl_surface *focus_surface;
 
         // According to the spec, a seat can only have one active gesture of any type at a time.
+        enum Wayland_GestureType
+        {
+            WAYLAND_GESTURE_TYPE_PINCH,
+            WAYLAND_GESTURE_TYPE_HOLD
+        } gesture_type;
         SDL_WindowData *gesture_focus;
 
         Uint64 highres_timestamp_ns;
@@ -200,6 +206,7 @@ struct SDL_WaylandSeat
         SDL_MouseButtonFlags buttons_pressed;
         SDL_Point last_motion;
         bool is_confined;
+        bool continuous_axis_stop_received;
 
         SDL_MouseID sdl_id;
 
@@ -210,6 +217,7 @@ struct SDL_WaylandSeat
             bool have_relative;
             bool have_warp;
             bool have_axis;
+            bool have_stop;
 
             Uint32 buttons_pressed;
             Uint32 buttons_released;
@@ -237,6 +245,7 @@ struct SDL_WaylandSeat
                 float y;
 
                 SDL_MouseWheelDirection direction;
+                enum wl_pointer_axis_source source;
             } axis;
 
             struct wl_surface *enter_surface;

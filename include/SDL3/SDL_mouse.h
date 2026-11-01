@@ -145,6 +145,17 @@ typedef enum SDL_MouseWheelDirection
 } SDL_MouseWheelDirection;
 
 /**
+ * Scroll source types for the Scroll event
+ *
+ * \since This enum is available since SDL 3.6.0.
+ */
+typedef enum SDL_MouseWheelSource
+{
+    SDL_MOUSEWHEEL_SOURCE_WHEEL, /**< The scroll source is a wheel */
+    SDL_MOUSEWHEEL_SOURCE_FINGER /**< The scroll source is a finger */
+} SDL_MouseWheelSource;
+
+/**
  * Animated cursor frame info.
  *
  * \since This struct is available since SDL 3.4.0.
