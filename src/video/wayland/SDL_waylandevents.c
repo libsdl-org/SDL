@@ -366,7 +366,6 @@ static void CreatePointerGestures(Wayland_Seat *seat)
     if (seat->display->zwp_pointer_gestures) {
         if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
             seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
-            zwp_pointer_gesture_pinch_v1_set_user_data(seat->pointer.gesture_pinch, seat);
             zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
         }
     }
@@ -2565,7 +2564,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
         CreateCursorShape(seat);
 
-        wl_pointer_set_user_data(seat->pointer.wl_pointer, seat);
         wl_pointer_add_listener(seat->pointer.wl_pointer, &pointer_listener, seat);
 
         // Pointer gestures
@@ -2586,7 +2584,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
 
     if ((capabilities & WL_SEAT_CAPABILITY_TOUCH) && !seat->touch.wl_touch) {
         seat->touch.wl_touch = wl_seat_get_touch(wl_seat);
-        wl_touch_set_user_data(seat->touch.wl_touch, seat);
         wl_touch_add_listener(seat->touch.wl_touch, &touch_listener, seat);
 
         if (seat->name) {
@@ -2603,7 +2600,6 @@ static void seat_handle_capabilities(void *data, struct wl_seat *wl_seat, uint32
     if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && !seat->keyboard.wl_keyboard) {
         seat->keyboard.wl_keyboard = wl_seat_get_keyboard(wl_seat);
         WAYLAND_wl_array_init(&seat->keyboard.reserved_scancodes);
-        wl_keyboard_set_user_data(seat->keyboard.wl_keyboard, seat);
         wl_keyboard_add_listener(seat->keyboard.wl_keyboard, &keyboard_listener, seat);
 
         seat->keyboard.sdl_id = SDL_GetNextObjectID();
@@ -2755,7 +2751,6 @@ static void CreateTextInput(Wayland_Seat *seat)
         seat->text_input.zwp_text_input = zwp_text_input_manager_v3_get_text_input(seat->display->text_input_manager, seat->wl_seat);
 
         if (seat->text_input.zwp_text_input) {
-            zwp_text_input_v3_set_user_data(seat->text_input.zwp_text_input, seat);
             zwp_text_input_v3_add_listener(seat->text_input.zwp_text_input, &text_input_listener, seat);
         }
     }
@@ -3137,7 +3132,6 @@ void Wayland_CreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, Uint32 
     Wayland_CreatePrimarySelectionDevice(seat);
     CreateTextInput(seat);
 
-    wl_seat_set_user_data(seat->wl_seat, seat);
     wl_seat_add_listener(seat->wl_seat, &seat_listener, seat);
 
     if (display->tablet_manager) {
