@@ -45,12 +45,14 @@ void SDL_VisionOS_SendSizeChanged(long width, long height)
         UIView *view = data.viewcontroller.view;
         view.bounds = bounds;
 
+#if defined(SDL_VIDEO_METAL) || defined(SDL_VIDEO_VULKAN)
         // Update the metal layer
         if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
             SDL_uikitmetalview *metalview = (SDL_uikitmetalview *)view;
 
             [metalview updateDrawableSize];
         }
+#endif
 
         // Send the resize event
         SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, (int)width, (int)height);

@@ -59,12 +59,24 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        engines refer to these as "sprites." We'll do a static texture (upload once, draw many
        times) with data from a bitmap file. */
 
+#ifdef SWIFT_PACKAGE
+    extern bool SwiftPackage_GetLibraryBundleResource(const char *name, char *buffer, int size);
+
+    png_path = SDL_malloc(4096);
+    if (!SwiftPackage_GetLibraryBundleResource("gamepad_front.png", png_path, 4096)) {
+        SDL_free(png_path);
+        png_path = NULL;
+    }
+#else
+    SDL_asprintf(&png_path, "%sgamepad_front.png", SDL_GetBasePath());  /* allocate a string of the full file path */
+#endif
+
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
        Load a .png into a surface, move it to a texture from there. */
-    SDL_asprintf(&png_path, "%sgamepad_front.png", SDL_GetBasePath());  /* allocate a string of the full file path */
     surface = SDL_LoadPNG(png_path);
     if (!surface) {
         SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
+        SDL_free(png_path);
         return SDL_APP_FAILURE;
     }
 
