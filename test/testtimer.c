@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
             } else if (desired < 0) {
                 char *endptr;
 
-                desired = SDL_strtoul(argv[i], &endptr, 0);
+                desired = (int) SDL_strtoul(argv[i], &endptr, 0);
                 if (desired != 0 && endptr != argv[i] && *endptr == '\0') {
                     consumed = 1;
                 }

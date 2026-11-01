@@ -1,6 +1,7 @@
 #define SDL_MAIN_USE_CALLBACKS 1
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include "testutils.h"
 
 static SDL_AudioStream *stream = NULL;
 static Uint8 *wav_data = NULL;
@@ -78,9 +79,10 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_Log("Using audio driver: %s", SDL_GetCurrentAudioDriver());
 
-    SDL_asprintf(&wav_path, "%ssample.wav", SDL_GetBasePath());  /* allocate a string of the full file path */
+    wav_path = GetResourceFilename(NULL, "sample.wav");
     if (!SDL_LoadWAV(wav_path, &wav_spec, &wav_data, &wav_data_len)) {
         SDL_Log("Couldn't load .wav file: %s", SDL_GetError());
+        SDL_free(wav_path);
         return SDL_APP_FAILURE;
     }
 

@@ -153,7 +153,11 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
             if (@available(macOS 11.0, *)) {
                 [dialog setAllowedContentTypes:types];
             } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                // Deprecated in macOS 12.0; its replacement, -setAllowedContentTypes:, doesn't exist before macOS 11.0.
                 [dialog setAllowedFileTypes:types];
+#pragma clang diagnostic pop
             }
         }
     }
