@@ -55,16 +55,16 @@ bool Wayland_SetClipboardData(SDL_VideoDevice *_this)
         wl_list_for_each (s, &video_data->seat_list, link) {
             if (s->data_device) {
                 if (s != seat) {
-                    Wayland_DataDeviceSetSelectionSource(s->data_device, NULL, 0, NULL, NULL, NULL, 0);
+                    Wayland_SetSelectionSource(s->data_device, NULL, 0, NULL, NULL, NULL, 0);
                 }
 
-                Wayland_DataDeviceDestroySelectionOffer(s->data_device, false);
+                Wayland_RemoveSelectionOffer(s->data_device, false);
             }
         }
 
         Wayland_DataDevice *data_device = seat->data_device;
-        result = Wayland_DataDeviceSetSelectionSource(data_device, (const char *const *)_this->clipboard_mime_types, _this->num_clipboard_mime_types,
-                                                      _this->clipboard_callback, _this->clipboard_cleanup, _this->clipboard_userdata, _this->clipboard_sequence);
+        result = Wayland_SetSelectionSource(data_device, (const char *const *)_this->clipboard_mime_types, _this->num_clipboard_mime_types,
+                                            _this->clipboard_callback, _this->clipboard_cleanup, _this->clipboard_userdata, _this->clipboard_sequence);
     }
 
     return result;
@@ -78,10 +78,10 @@ void *Wayland_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, si
 
     if (seat && seat->data_device) {
         Wayland_DataDevice *data_device = seat->data_device;
-        if (Wayland_DataDeviceHasSelectionSource(data_device)) {
+        if (Wayland_HasSelectionSource(data_device)) {
             buffer = SDL_GetInternalClipboardData(_this, mime_type, length);
-        } else if (Wayland_DataDeviceSelectionOfferHasMIME(data_device, mime_type)) {
-            buffer = Wayland_DataDeviceReceiveSelectionOffer(data_device, mime_type, length);
+        } else if (Wayland_HasSelectionOfferMIME(data_device, mime_type)) {
+            buffer = Wayland_ReceiveSelectionOffer(data_device, mime_type, length);
         }
     }
 
@@ -96,10 +96,10 @@ bool Wayland_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
 
     if (seat && seat->data_device) {
         Wayland_DataDevice *data_device = seat->data_device;
-        if (Wayland_DataDeviceHasSelectionSource(data_device)) {
+        if (Wayland_HasSelectionSource(data_device)) {
             result = SDL_HasInternalClipboardData(_this, mime_type);
         } else {
-            result = Wayland_DataDeviceSelectionOfferHasMIME(data_device, mime_type);
+            result = Wayland_HasSelectionOfferMIME(data_device, mime_type);
         }
     }
     return result;
@@ -130,13 +130,13 @@ bool Wayland_SetPrimarySelectionText(SDL_VideoDevice *_this, const char *text)
         wl_list_for_each (s, &video_data->seat_list, link) {
             if (s->data_device) {
                 if (s != seat) {
-                    Wayland_PrimarySelectionDeviceSetText(s->primary_selection_device, NULL);
+                    Wayland_SetPrimarySelectionDeviceText(s->primary_selection_device, NULL);
                 }
 
-                Wayland_PrimarySelectionDeviceDestroyOffer(s->primary_selection_device);
+                Wayland_RemovePrimarySelectionDeviceOffer(s->primary_selection_device);
             }
         }
-        result = Wayland_PrimarySelectionDeviceSetText(seat->primary_selection_device, text);
+        result = Wayland_SetPrimarySelectionDeviceText(seat->primary_selection_device, text);
     } else {
         result = SDL_SetError("Primary selection not supported");
     }
@@ -151,7 +151,7 @@ char *Wayland_GetPrimarySelectionText(SDL_VideoDevice *_this)
     size_t length = 0;
 
     if (seat && seat->primary_selection_device) {
-        text = Wayland_PrimarySelectionDeviceGetText(seat->primary_selection_device, &length);
+        text = Wayland_GetPrimarySelectionDeviceText(seat->primary_selection_device, &length);
     }
 
     if (!text) {
@@ -167,7 +167,7 @@ bool Wayland_HasPrimarySelectionText(SDL_VideoDevice *_this)
     Wayland_Seat *seat = video_data->current_primary_selection_seat;
 
     if (seat && seat->primary_selection_device) {
-        return Wayland_PrimarySelectionDeviceHasText(seat->primary_selection_device);
+        return Wayland_HasPrimarySelectionDeviceText(seat->primary_selection_device);
     }
     return false;
 }

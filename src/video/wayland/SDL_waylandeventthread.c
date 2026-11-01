@@ -341,7 +341,7 @@ void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
     }
 
     // Dispatch the exit job to unblock the thread and set the exit condition.
-    Wayland_JobThreadAddJob(context, job_thread_exit, context, NULL);
+    Wayland_AddJob(context, job_thread_exit, context, NULL);
 
     // Wait for the thread to return; all jobs will be complete at this point.
     SDL_WaitThread(context->thread, NULL);
@@ -353,7 +353,7 @@ void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
     SDL_free(context);
 }
 
-bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context, Wayland_JobThreadCallback callback, void *userdata, Wayland_JobID *id)
+bool Wayland_AddJob(Wayland_JobThreadContext *context, Wayland_JobThreadCallback callback, void *userdata, Wayland_JobID *id)
 {
     if (!callback) {
         return false;
@@ -389,7 +389,7 @@ bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context, Wayland_JobThrea
     return true;
 }
 
-void Wayland_JobThreadCancelJob(Wayland_JobThreadContext *context, Wayland_JobID id)
+void Wayland_CancelJob(Wayland_JobThreadContext *context, Wayland_JobID id)
 {
     if (!context) {
         return;

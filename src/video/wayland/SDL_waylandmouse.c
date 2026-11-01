@@ -1080,7 +1080,7 @@ static void ResetCursorState(Wayland_CursorState *state)
     state->current_frame = -1;
 }
 
-void Wayland_DisplayUpdatePointerFocusedScale(SDL_WindowData *updated_window)
+void Wayland_UpdatePointerFocusedScale(SDL_WindowData *updated_window)
 {
     SDL_VideoData *viddata = updated_window->waylandData;
     Wayland_Seat *seat;
@@ -1146,7 +1146,7 @@ static bool Wayland_ShowCursor(SDL_Cursor *cursor)
     return true;
 }
 
-void Wayland_SeatWarpMouse(Wayland_Seat *seat, SDL_WindowData *window, float x, float y)
+void Wayland_WarpMouse(Wayland_Seat *seat, SDL_WindowData *window, float x, float y)
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *d = vd->internal;
@@ -1210,7 +1210,7 @@ static bool Wayland_WarpMouseRelative(SDL_Window *window, float x, float y)
     if (d->wp_pointer_warp_v1 || d->pointer_constraints) {
         wl_list_for_each (seat, &d->seat_list, link) {
             if (wind == seat->pointer.focus) {
-                Wayland_SeatWarpMouse(seat, wind, x, y);
+                Wayland_WarpMouse(seat, wind, x, y);
             }
         }
     } else {
@@ -1242,7 +1242,7 @@ static bool Wayland_WarpMouseGlobal(float x, float y)
 
                 // Try to warp the cursor if the point is within the seat's focused window.
                 if (SDL_PointInRectFloat(&p, &r)) {
-                    Wayland_SeatWarpMouse(seat, wind, p.x - abs_x, p.y - abs_y);
+                    Wayland_WarpMouse(seat, wind, p.x - abs_x, p.y - abs_y);
                 }
             }
         }

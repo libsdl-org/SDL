@@ -2124,7 +2124,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
     Wayland_UpdatePointerGrabs(seat->display, window);
 
     // Update text input and IME focus.
-    Wayland_SeatUpdateTextInput(seat);
+    Wayland_UpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input) {
@@ -2206,7 +2206,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     seat->keyboard.pressed_modifiers = SDL_KMOD_NONE;
 
     // Update text input and IME focus.
-    Wayland_SeatUpdateTextInput(seat);
+    Wayland_UpdateTextInput(seat);
 
 #ifdef SDL_USE_IME
     if (!seat->text_input.zwp_text_input && !window->keyboard_focus_count) {
@@ -2222,7 +2222,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     }
 
     // The spec says that data offers are no longer valid when keyboard focus is lost.
-    Wayland_DataDeviceDestroySelectionOffer(seat->data_device, true);
+    Wayland_RemoveSelectionOffer(seat->data_device, true);
 }
 
 static bool keyboard_input_get_text(char text[8], const Wayland_Seat *seat, uint32_t key, bool down, bool *handled_by_ime)
@@ -3174,7 +3174,7 @@ void Wayland_RemoveWindowReferencesFromSeats(SDL_VideoData *display, SDL_WindowD
             }
         }
 
-        Wayland_DataDeviceRemoveWindowReferences(seat->data_device, window->sdlwindow);
+        Wayland_RemoveWindowReferencesFromDataDevice(seat->data_device, window->sdlwindow);
 
     }
 }
@@ -3362,7 +3362,7 @@ void Wayland_UpdatePointerGrab(Wayland_Seat *seat)
                         closest_y = (scaled_mouse_rect.y + scaled_mouse_rect.h) - 1;
                     }
 
-                    Wayland_SeatWarpMouse(seat, w, closest_x, closest_y);
+                    Wayland_WarpMouse(seat, w, closest_x, closest_y);
                 }
             }
 

@@ -690,7 +690,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
 
     // Update the scale for any focused cursors.
     if (prev_pointer_scale_x != data->pointer_scale.x || prev_pointer_scale_y != data->pointer_scale.y) {
-        Wayland_DisplayUpdatePointerFocusedScale(data);
+        Wayland_UpdatePointerFocusedScale(data);
     }
 
     /* Update the min/max dimensions, primarily if the state was changed, and for non-resizable
@@ -2170,7 +2170,7 @@ bool Wayland_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool mod
     return true;
 }
 
-static void Wayland_RegisterToplevelForSession(SDL_WindowData *data)
+static void RegisterToplevelForSession(SDL_WindowData *data)
 {
     struct xdg_toplevel *toplevel = GetToplevelForWindow(data);
     if (!toplevel) {
@@ -2208,7 +2208,7 @@ static void Wayland_RegisterToplevelForSession(SDL_WindowData *data)
     }
 }
 
-static void Wayland_DestroyToplevelSession(SDL_WindowData *data)
+static void DestroyToplevelSession(SDL_WindowData *data)
 {
     SDL_VideoData *viddata = data->waylandData;
 
@@ -2435,7 +2435,7 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // Restore state that was set prior to this call
-    Wayland_RegisterToplevelForSession(data);
+    RegisterToplevelForSession(data);
     Wayland_SetWindowParent(_this, window, window->parent);
 
     if (window->flags & SDL_WINDOW_MODAL) {
@@ -2666,7 +2666,7 @@ void Wayland_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     wl_surface_commit(wind->surface);
 
     // Need to destroy the session object after unmapping the window, or the state may not be saved.
-    Wayland_DestroyToplevelSession(wind);
+    DestroyToplevelSession(wind);
 
     SDL_zero(wind->shell_surface);
     SDL_zero(wind->explicit_geometry);

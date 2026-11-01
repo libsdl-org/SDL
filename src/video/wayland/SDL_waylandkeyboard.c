@@ -51,7 +51,7 @@ void Wayland_QuitKeyboard(SDL_VideoDevice *_this)
 #endif
 }
 
-void Wayland_SeatUpdateTextInput(Wayland_Seat *seat)
+void Wayland_UpdateTextInput(Wayland_Seat *seat)
 {
     if (seat->text_input.zwp_text_input) {
         SDL_WindowData *focus = seat->keyboard.focus;
@@ -180,7 +180,7 @@ bool Wayland_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Prop
         Wayland_Seat *seat;
         wl_list_for_each (seat, &display->seat_list, link) {
             if (seat->keyboard.focus == wind) {
-                Wayland_SeatUpdateTextInput(seat);
+                Wayland_UpdateTextInput(seat);
             }
         }
     }
@@ -202,7 +202,7 @@ bool Wayland_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window)
 
         wl_list_for_each (seat, &display->seat_list, link) {
             if (seat->keyboard.focus == wind) {
-                Wayland_SeatUpdateTextInput(seat);
+                Wayland_UpdateTextInput(seat);
             }
         }
     }
