@@ -385,6 +385,9 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, LPPOINT pos)
         SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? true : false);
 
         WIN_UpdateWindowICCProfile(data->window, true);
+
+        // Ensure the HDR state is up to date for all displays
+        WIN_RefreshDisplayHDRStates(SDL_GetVideoDevice());
     } else {
         data->in_window_deactivation = true;
 
@@ -1894,8 +1897,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 
         // Update the window display position
         if (data->window->displayID != original_displayID) {
-            // Display changed, check ICC profile
+            // Display changed, check ICC profile and HDR state
             WIN_UpdateWindowICCProfile(data->window, true);
+
+            SDL_VideoDisplay *display = SDL_GetVideoDisplay(data->window->displayID);
+            if (display)
+                SDL_SetWindowHDRProperties(data->window, &display->HDR, true);
         }
 
         // Update the position of any child windows
