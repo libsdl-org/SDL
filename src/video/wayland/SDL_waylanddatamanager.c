@@ -35,6 +35,7 @@
 #include "SDL_waylandclipboard.h"
 #include "SDL_waylanddatamanager.h"
 #include "primary-selection-unstable-v1-client-protocol.h"
+#include "xdg-toplevel-drag-v1-client-protocol.h"
 
 /* This value is arbitrary, but needs to be long enough to allow the remote end to
  * wake up and do any necessary processing of the data before sending it. In some
@@ -73,6 +74,7 @@ typedef struct Wayland_DataOffer
     Wayland_DataDevice *data_device;
 
     // Callback data for queued receive.
+    void *userdata;
     struct wl_callback *callback;
     int read_fd;
 } Wayland_DataOffer;
@@ -87,6 +89,12 @@ typedef struct Wayland_DropData
 
     struct wl_list link;
 } Wayland_DropData;
+
+typedef struct Wayland_WindowDragUserData
+{
+    char *mime_data;
+    struct xdg_toplevel_drag_v1 *toplevel_drag_v1;
+} Wayland_WindowDragUserData;
 
 typedef struct Wayland_PrimarySelectionOffer
 {
@@ -105,7 +113,9 @@ struct Wayland_DataDevice
     uint32_t drag_serial;
     Wayland_DataOffer *drag_offer;
     const char *text_mime_type;
-    bool has_mime_file;
+    float x;
+    float y;
+    bool has_mime_file, has_mime_window;
     SDL_Window *dnd_window;
     struct wl_surface *dnd_surface;
     struct wl_list pending_drops;
@@ -781,6 +791,66 @@ static const struct zwp_primary_selection_offer_v1_listener primary_selection_of
     primary_selection_offer_handle_offer,
 };
 
+
+static void accept_window_drag_handler(void *data, struct wl_callback *callback, uint32_t callback_data)
+{
+    Wayland_DataOffer *offer = (Wayland_DataOffer *)data;
+    wl_callback_destroy(offer->callback);
+    offer->callback = NULL;
+
+    // Make sure the window is from this process.
+    size_t length = 0;
+    const char *mime_data = GetOfferDataFromSelf(offer, &length);
+
+    if (!mime_data || !length) {
+        // No data (probably from another process); decline the offer.
+        wl_data_offer_accept(offer->offer, offer->data_device->drag_serial, NULL);
+        return;
+    }
+
+    SDL_WindowID window_id;
+    char instance_id[128];
+    SDL_sscanf(mime_data, "%i:%s", &window_id, instance_id);
+
+    if (SDL_strcmp(instance_id, offer->data_device->id_str) != 0) {
+        // This is from another process; decline the offer.
+        wl_data_offer_accept(offer->offer, offer->data_device->drag_serial, NULL);
+        return;
+    }
+
+    SDL_Window *drag_window = SDL_GetWindowFromID(window_id);
+    if (!drag_window) {
+        // Bad window ID; decline the offer.
+        wl_data_offer_accept(offer->offer, offer->data_device->drag_serial, NULL);
+        return;
+    }
+
+    /* Note that we don't check if a window is being offered to itself when accepting it, or some
+     * compositors will display a "NO" sign until the cursor moves if the offer is initially declined.
+     */
+    offer->data_device->has_mime_window = true;
+    offer->userdata = drag_window;
+
+    if (wl_data_offer_get_version(offer->offer) >= WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION) {
+        wl_data_offer_set_actions(offer->offer, WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE, WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE);
+    }
+    wl_data_offer_accept(offer->offer, offer->data_device->drag_serial, DOCKABLE_WINDOW_MIME);
+
+    if (drag_window != offer->data_device->dnd_window) {
+        SDL_SendDropPosition(offer->data_device->dnd_window, offer->data_device->x, offer->data_device->y, drag_window);
+    }
+
+    SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
+                 "In accept_window_drag_handler on data_offer 0x%08x at %d x %d into window %d for serial %d",
+                 WAYLAND_wl_proxy_get_id((struct wl_proxy *)offer),
+                 (int)offer->data_device->x, (int)offer->data_device->y,
+                 SDL_GetWindowID(offer->data_device->dnd_window), offer->data_device->drag_serial);
+}
+
+static const struct wl_callback_listener accept_window_drag_listener = {
+    accept_window_drag_handler
+};
+
 static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device, struct wl_data_offer *id)
 {
     Wayland_DataOffer *data_offer = SDL_calloc(1, sizeof(*data_offer));
@@ -804,6 +874,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
     Wayland_DataDevice *data_device = data;
     SDL_WindowData *window = surface ? Wayland_GetWindowDataForOwnedSurface(surface) : NULL;
     data_device->has_mime_file = false;
+    data_device->has_mime_window = false;
     data_device->text_mime_type = NULL;
 
     data_device->drag_serial = serial;
@@ -814,6 +885,28 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
     }
 
     if (data_device->drag_offer && window && window->accepts_drag_and_drop) {
+        // Set the destination window and send the initial position.
+        data_device->dnd_window = window->sdlwindow;
+        data_device->dnd_surface = surface;
+        double dx = wl_fixed_to_double(x);
+        double dy = wl_fixed_to_double(y);
+
+        // If over the mask, adjust the offset.
+        if (surface == window->mask.surface) {
+            dx += (double)window->mask.offset_x;
+            dy += (double)window->mask.offset_y;
+        }
+
+        dx *= window->pointer_scale.x;
+        dy *= window->pointer_scale.y;
+        data_device->x = (float)dx;
+        data_device->y = (float)dy;
+
+        // Acceptance of windows is deferred until it is certain that this is a window from this process.
+        if (MIMEDataListHasType(&data_device->drag_offer->mimes, DOCKABLE_WINDOW_MIME)) {
+            RequestOfferDataFromSelf(data_device->drag_offer, DOCKABLE_WINDOW_MIME, &accept_window_drag_listener, data_device->drag_offer);
+            return;
+        }
 #ifdef SDL_USE_LIBDBUS
         if (MIMEDataListHasType(&data_device->drag_offer->mimes, FILE_PORTAL_MIME)) {
             data_device->has_mime_file = true;
@@ -843,22 +936,7 @@ static void data_device_handle_enter(void *data, struct wl_data_device *wl_data_
                 wl_data_offer_set_actions(data_device->drag_offer->offer, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY, WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY);
             }
 
-            // Set the destination window and send the initial position.
-            data_device->dnd_window = window->sdlwindow;
-            data_device->dnd_surface = surface;
-            double dx = wl_fixed_to_double(x);
-            double dy = wl_fixed_to_double(y);
-
-            // If over the mask, adjust the offset.
-            if (surface == window->mask.surface) {
-                dx += (double)window->mask.offset_x;
-                dy += (double)window->mask.offset_y;
-            }
-
-            dx *= window->pointer_scale.x;
-            dy *= window->pointer_scale.y;
-
-            SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy);
+            SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy, NULL);
             SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                          ". In wl_data_device_listener . data_device_handle_enter on data_offer 0x%08x at %d x %d into window %d for serial %d",
                          WAYLAND_wl_proxy_get_id((struct wl_proxy *)id),
@@ -917,6 +995,7 @@ static void data_device_handle_leave(void *data, struct wl_data_device *wl_data_
                      -1, -1);
     }
     data_device->has_mime_file = false;
+    data_device->has_mime_window = false;
     data_device->text_mime_type = NULL;
 }
 
@@ -924,7 +1003,7 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
 {
     Wayland_DataDevice *data_device = data;
 
-    if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->text_mime_type)) {
+    if (data_device->drag_offer && data_device->dnd_window && (data_device->has_mime_file || data_device->has_mime_window || data_device->text_mime_type)) {
         SDL_WindowData *window_data = data_device->dnd_window->internal;
         double dx = wl_fixed_to_double(x);
         double dy = wl_fixed_to_double(y);
@@ -942,7 +1021,14 @@ static void data_device_handle_motion(void *data, struct wl_data_device *wl_data
          *      Any future implementation should cache the filenames, as otherwise this could
          *      hammer the DBus interface hundreds or even thousands of times per second.
          */
-        SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy);
+
+        SDL_Window *drag_window = NULL;
+        if (data_device->has_mime_window) {
+            if (data_device->drag_offer->userdata) {
+                drag_window = (SDL_Window *)data_device->drag_offer->userdata;
+            }
+        }
+        SDL_SendDropPosition(data_device->dnd_window, (float)dx, (float)dy, drag_window);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In wl_data_device_listener . data_device_handle_motion on data_offer 0x%08x at %d x %d in window %d serial %d",
                      WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
@@ -1048,35 +1134,40 @@ static void data_device_handle_drop(void *data, struct wl_data_device *wl_data_d
 {
     Wayland_DataDevice *data_device = data;
 
-    if (data_device->drag_offer && data_device->dnd_window &&
-        (data_device->has_mime_file || data_device->text_mime_type)) {
-        SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
-                     ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x in window %d serial %d",
-                     WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
-                     SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
+    if (data_device->drag_offer && data_device->dnd_window) {
+        if (data_device->has_mime_file || data_device->text_mime_type) {
+            SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
+                         ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x in window %d serial %d",
+                         WAYLAND_wl_proxy_get_id((struct wl_proxy *)data_device->drag_offer->offer),
+                         SDL_GetWindowID(data_device->dnd_window), data_device->drag_serial);
 
-        Wayland_JobThreadContext *ctx = data_device->seat->display->job_thread_context;
+            Wayland_JobThreadContext *ctx = data_device->seat->display->job_thread_context;
 
-        /* Dispatch the read on the event thread, as the remote end may be slow to respond,
-         * and we don't want to block the main event loop for an excessive time.
-         */
-        Wayland_DropData *drop = SDL_calloc(1, sizeof(Wayland_DropData));
-        if (drop) {
-            drop->offer = data_device->drag_offer;
-            drop->dnd_window = data_device->dnd_window;
-            drop->text_mime_type = data_device->text_mime_type;
+            /* Dispatch the read on the event thread, as the remote end may be slow to respond,
+             * and we don't want to block the main event loop for an excessive time.
+             */
+            Wayland_DropData *drop = SDL_calloc(1, sizeof(Wayland_DropData));
+            if (drop) {
+                drop->offer = data_device->drag_offer;
+                drop->dnd_window = data_device->dnd_window;
+                drop->text_mime_type = data_device->text_mime_type;
 
-            WAYLAND_wl_list_insert(&data_device->pending_drops, &drop->link);
-            Wayland_JobThreadAddJob(ctx, drop_dispatch_handler, drop, &drop->id);
-        } else {
-            DestroyDataOffer(data_device->drag_offer);
+                WAYLAND_wl_list_insert(&data_device->pending_drops, &drop->link);
+                Wayland_JobThreadAddJob(ctx, drop_dispatch_handler, drop, &drop->id);
+            } else {
+                DestroyDataOffer(data_device->drag_offer);
+            }
+        } else if (data_device->has_mime_window) {
+            if (data_device->dnd_window != data_device->drag_offer->userdata) {
+                SDL_SendDropWindow(data_device->dnd_window, data_device->drag_offer->userdata);
+                SDL_SendDropComplete(data_device->dnd_window);
+                DestroyDataOffer(data_device->drag_offer);
+            }
         }
     } else {
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In wl_data_device_listener . data_device_handle_drop on data_offer 0x%08x serial %d",
                      -1, -1);
-
-        DestroyDataOffer(data_device->drag_offer);
     }
 
     data_device->drag_offer = NULL;
@@ -1295,6 +1386,61 @@ bool Wayland_DataDeviceSelectionOfferHasMIME(Wayland_DataDevice *data_device, co
         return MIMEDataListHasType(&data_device->selection_offer->mimes, mime_type);
     }
     return false;
+}
+
+static const void *DragWindowCallback(void *userdata, const char *mime_type, size_t *size)
+{
+    Wayland_WindowDragUserData *drag_data = userdata;
+
+    if (SDL_strcmp(mime_type, DOCKABLE_WINDOW_MIME) == 0) {
+        *size = SDL_strlen(drag_data->mime_data);
+        return drag_data->mime_data;
+    }
+
+    return NULL;
+}
+
+static void DragCleanupCallback(void *userdata)
+{
+    Wayland_WindowDragUserData *drag_data = userdata;
+
+    if (drag_data->toplevel_drag_v1) {
+        xdg_toplevel_drag_v1_destroy(drag_data->toplevel_drag_v1);
+        drag_data->toplevel_drag_v1 = NULL;
+    }
+
+    SDL_free(drag_data);
+}
+bool Wayland_DataDeviceStartWindowDrag(Wayland_DataDevice *data_device, SDL_WindowData *drag_window, int offset_x, int offset_y)
+{
+    SDL_WaylandSeat *seat = data_device->seat;
+    SDL_VideoData *videodata = seat->display;
+
+    Wayland_WindowDragUserData *callback_userdata = SDL_calloc(1, sizeof(Wayland_WindowDragUserData));
+    if (!callback_userdata) {
+        return false;
+    }
+    SDL_asprintf(&callback_userdata->mime_data, "%i:%s", drag_window->sdlwindow->id, seat->data_device->id_str);
+
+    Wayland_DataSource *drag_source = CreateDataSource(data_device);
+    drag_source->data_callback = DragWindowCallback;
+    drag_source->cleanup_callback = DragCleanupCallback;
+    drag_source->userdata.data = callback_userdata;
+
+    wl_data_source_offer(drag_source->source, SDL_DATA_ORIGIN_MIME);
+    wl_data_source_offer(drag_source->source, DOCKABLE_WINDOW_MIME);
+
+    /* Note that the toplevel drag objects are not tied to the window, but the data source instance, as
+     * destroying a toplevel drag object before the associated source receives a cancelled or performed
+     * event is a protocol violation.
+     */
+    wl_data_source_set_actions(drag_source->source, WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE);
+    callback_userdata->toplevel_drag_v1 = xdg_toplevel_drag_manager_v1_get_xdg_toplevel_drag(videodata->xdg_toplevel_drag_manager, drag_source->source);
+    xdg_toplevel_drag_v1_attach(callback_userdata->toplevel_drag_v1, drag_window->shell_surface.xdg.toplevel.xdg_toplevel, offset_x, offset_y);
+    drag_source->data_device = seat->data_device;
+    wl_data_device_start_drag(seat->data_device->data_device, drag_source->source, drag_window->surface, NULL, seat->last_implicit_grab_serial);
+
+    return true;
 }
 
 void Wayland_DataDeviceRemoveWindowReferences(Wayland_DataDevice *data_device, SDL_Window *window)
