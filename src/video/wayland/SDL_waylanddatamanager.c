@@ -445,7 +445,6 @@ static Wayland_DataSource *CreateDataSource(Wayland_DataDevice *data_device)
     struct wl_data_source *id = wl_data_device_manager_create_data_source(videodata->data_device_manager);
     data_source->source = id;
     data_source->data_device = data_device;
-    wl_data_source_set_user_data(id, data_source);
     wl_data_source_add_listener(id, &data_source_listener, data_source);
 
     return data_source;
@@ -789,7 +788,6 @@ static void data_device_handle_data_offer(void *data, struct wl_data_device *wl_
         data_offer->data_device = (Wayland_DataDevice *)data;
         data_offer->read_fd = -1;
         WAYLAND_wl_array_init(&data_offer->mimes);
-        wl_data_offer_set_user_data(id, data_offer);
         wl_data_offer_add_listener(id, &data_offer_listener, data_offer);
         SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
                      ". In wl_data_device_listener . data_device_handle_data_offer on data_offer 0x%08x",
@@ -1116,7 +1114,6 @@ static void primary_selection_device_handle_offer(void *data, struct zwp_primary
         primary_selection_offer->offer = id;
         primary_selection_offer->primary_selection_device = primary_selection_device;
         WAYLAND_wl_array_init(&primary_selection_offer->mimes);
-        zwp_primary_selection_offer_v1_set_user_data(id, primary_selection_offer);
         zwp_primary_selection_offer_v1_add_listener(id, &primary_selection_offer_listener, primary_selection_offer);
     }
     SDL_LogTrace(SDL_LOG_CATEGORY_INPUT,
@@ -1192,7 +1189,6 @@ bool Wayland_CreateDataDevice(Wayland_Seat *seat)
 
     DataDeviceSetID(data_device);
     WAYLAND_wl_list_init(&data_device->pending_drops);
-    wl_data_device_set_user_data(data_device->data_device, data_device);
     wl_data_device_add_listener(data_device->data_device, &data_device_listener, data_device);
     seat->data_device = data_device;
 
@@ -1334,7 +1330,6 @@ bool Wayland_CreatePrimarySelectionDevice(Wayland_Seat *seat)
     if (!primary_selection_device->primary_selection_device) {
         SDL_free(primary_selection_device);
     } else {
-        zwp_primary_selection_device_v1_set_user_data(primary_selection_device->primary_selection_device, primary_selection_device);
         zwp_primary_selection_device_v1_add_listener(primary_selection_device->primary_selection_device, &primary_selection_device_listener, primary_selection_device);
         seat->primary_selection_device = primary_selection_device;
     }

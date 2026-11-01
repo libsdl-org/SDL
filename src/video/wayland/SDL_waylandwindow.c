@@ -2343,7 +2343,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
     if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL || data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_POPUP) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
-        xdg_surface_set_user_data(data->shell_surface.xdg.surface, data);
         xdg_surface_add_listener(data->shell_surface.xdg.surface, &_xdg_surface_listener, data);
         SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER, data->shell_surface.xdg.surface);
 
@@ -3157,7 +3156,6 @@ bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
     if (!external_surface) {
         data->surface = wl_compositor_create_surface(c->compositor);
         wl_surface_add_listener(data->surface, &surface_listener, data);
-        wl_surface_set_user_data(data->surface, data);
         Wayland_RegisterSurface(data->surface);
     } else {
         window->flags |= SDL_WINDOW_EXTERNAL;
