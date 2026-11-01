@@ -127,6 +127,8 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(SDL_SharedObjec
  * SDL_LoadFunction() will no longer be valid.
  *
  * \param handle a valid shared object handle returned by SDL_LoadObject().
+ * \returns a boolean value, where true indicates success and false
+ *          indicates failure; call SDL_GetError() for more information.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -134,7 +136,7 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_LoadFunction(SDL_SharedObjec
  *
  * \sa SDL_LoadObject
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnloadObject(SDL_SharedObject *handle);
+extern SDL_DECLSPEC bool SDLCALL SDL_UnloadObject(SDL_SharedObject *handle);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
