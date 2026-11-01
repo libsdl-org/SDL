@@ -2021,6 +2021,25 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_SINPUT "SDL_JOYSTICK_HIDAPI_SINPUT"
 
 /**
+ * A variable controlling whether the HIDAPI driver for Santroller controllers
+ * should be used.
+ *
+ * More info - https://github.com/Santroller/Santroller
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": HIDAPI driver is not used.
+ * - "1": HIDAPI driver is used.
+ *
+ * The default is the value of SDL_HINT_JOYSTICK_HIDAPI.
+ *
+ * This hint should be set before initializing joysticks and gamepads.
+ *
+ * \since This hint is available since SDL 3.4.4.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SANTROLLER "SDL_JOYSTICK_HIDAPI_SANTROLLER"
+
+/**
  * A variable controlling whether the HIDAPI driver for ZUIKI controllers
  * should be used.
  *
