@@ -130,6 +130,21 @@ static SDL_AtomicInt SDL_joystick_devices_changed;
 static SDL_AtomicInt SDL_joystick_devices_update;
 static bool SDL_joystick_allows_background_events;
 
+typedef struct SDL_JoystickDeviceThread
+{
+    SDL_Thread *thread;
+    SDL_ThreadID threadID;
+    SDL_Mutex *lock;
+    SDL_Condition *wake;
+    SDL_Condition *pass_complete;
+    bool running SDL_GUARDED_BY(lock);
+    Uint32 passes_requested SDL_GUARDED_BY(lock);
+    Uint32 passes_started SDL_GUARDED_BY(lock);
+    Uint32 passes_completed SDL_GUARDED_BY(lock);
+} SDL_JoystickDeviceThread;
+
+static SDL_JoystickDeviceThread SDL_joystick_device_thread;
+
 static Uint32 initial_old_xboxone_controllers[] = {
     MAKE_VIDPID(0x0000, 0x6686),
     MAKE_VIDPID(0x0079, 0x18a1),
@@ -700,6 +715,8 @@ static SDL_SpinLock SDL_vidpid_list_lock;
         return result;                                                  \
     }
 
+static void SDL_UpdatePendingJoystickDevices(void);
+
 bool SDL_JoysticksInitialized(void)
 {
     return SDL_joysticks_initialized;
@@ -712,6 +729,10 @@ bool SDL_JoysticksQuitting(void)
 
 void SDL_LockJoysticks(void)
 {
+#define CHECK_DEVICE_THREAD_LOCKING
+#ifdef CHECK_DEVICE_THREAD_LOCKING
+    SDL_assert(SDL_GetCurrentThreadID() != SDL_joystick_device_thread.threadID);
+#endif
     SDL_LockMutex(SDL_event_lock);
     ++SDL_joysticks_locked;
 }
@@ -747,6 +768,108 @@ static SDL_JoystickDriver *SDL_GetJoystickDriver(int index)
         return SDL_joystick_drivers[index];
     }
     return NULL;
+}
+
+static int SDLCALL JoystickDeviceThread(void *data)
+{
+    SDL_JoystickDeviceThread *thread = (SDL_JoystickDeviceThread *)(data);
+
+    SDL_LockMutex(thread->lock);
+    for ( ; ; ) {
+        while (thread->running && thread->passes_requested == thread->passes_started) {
+            SDL_WaitCondition(thread->wake, thread->lock);
+        }
+        if (!thread->running) {
+            break;
+        }
+
+        // Requests that arrive during this pass will trigger another pass
+        thread->passes_started = thread->passes_requested;
+        SDL_UnlockMutex(thread->lock);
+
+        SDL_UpdatePendingJoystickDevices();
+
+        SDL_LockMutex(thread->lock);
+        thread->passes_completed = thread->passes_started;
+        SDL_BroadcastCondition(thread->pass_complete);
+    }
+    SDL_UnlockMutex(thread->lock);
+
+    return 0;
+}
+
+static void SDL_WakeJoystickDeviceThread(bool wait)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    SDL_LockMutex(thread->lock);
+    ++thread->passes_requested;
+    SDL_SignalCondition(thread->wake);
+
+    if (wait) {
+        // Wait for a pass that started after this request
+        Uint32 passes_requested = thread->passes_requested;
+        while (thread->running && (Sint32)(thread->passes_completed - passes_requested) < 0) {
+            SDL_WaitCondition(thread->pass_complete, thread->lock);
+        }
+    }
+    SDL_UnlockMutex(thread->lock);
+}
+
+static void SDL_DestroyJoystickDeviceThread(void)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->thread) {
+        SDL_LockMutex(thread->lock);
+        thread->running = false;
+        SDL_SignalCondition(thread->wake);
+        SDL_BroadcastCondition(thread->pass_complete);
+        SDL_UnlockMutex(thread->lock);
+
+        SDL_WaitThread(thread->thread, NULL);
+        thread->thread = NULL;
+        thread->threadID = 0;
+    }
+
+    if (thread->lock) {
+        SDL_DestroyMutex(thread->lock);
+        thread->lock = NULL;
+    }
+    if (thread->wake) {
+        SDL_DestroyCondition(thread->wake);
+        thread->wake = NULL;
+    }
+    if (thread->pass_complete) {
+        SDL_DestroyCondition(thread->pass_complete);
+        thread->pass_complete = NULL;
+    }
+}
+
+static bool SDL_CreateJoystickDeviceThread(bool async_init)
+{
+    SDL_JoystickDeviceThread *thread = &SDL_joystick_device_thread;
+
+    thread->lock = SDL_CreateMutex();
+    thread->wake = SDL_CreateCondition();
+    thread->pass_complete = SDL_CreateCondition();
+    if (!thread->lock || !thread->wake || !thread->pass_complete) {
+        SDL_DestroyJoystickDeviceThread();
+        return false;
+    }
+
+    thread->running = true;
+    thread->passes_requested = 0;
+    thread->passes_started = 0;
+    thread->passes_completed = 0;
+    thread->thread = SDL_CreateThread(JoystickDeviceThread, "SDLJoystickThread", thread);
+    if (!thread->thread) {
+        SDL_DestroyJoystickDeviceThread();
+        return false;
+    }
+    thread->threadID = SDL_GetThreadID(thread->thread);
+
+    return true;
 }
 
 SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver, size_t extra_length)
@@ -1185,7 +1308,7 @@ void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id)
     }
 }
 
-static void SDL_UpdateJoystickDevices(bool update)
+static void SDL_UpdateJoystickDevices(bool update, bool wait)
 {
     SDL_AssertJoysticksLocked();
 
@@ -1240,7 +1363,11 @@ static void SDL_UpdateJoystickDevices(bool update)
     if (update) {
         SDL_last_device_update = SDL_GetTicks();
 
-        SDL_UpdatePendingJoystickDevices();
+        if (SDL_joystick_device_thread.thread) {
+            SDL_WakeJoystickDeviceThread(wait);
+        } else {
+            SDL_UpdatePendingJoystickDevices();
+        }
     }
 
     SDL_ProcessPendingJoystickDevices();
@@ -1343,11 +1470,22 @@ static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, con
 bool SDL_InitJoysticks(void)
 {
     int i;
+    bool device_thread = false;
+    bool init_async = SDL_GetHintBoolean("SDL_JOYSTICK_INIT_ASYNC", false);
     bool result = false;
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;
     }
+
+#if 0
+    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
+        if (driver->PreInit) {
+            driver->PreInit();
+        }
+    }
+#endif
 
     SDL_LockJoysticks();
 
@@ -1383,6 +1521,10 @@ bool SDL_InitJoysticks(void)
         }
         if (initialized) {
             result = true;
+
+            if (true/*driver->slow_enumeration*/) {
+                device_thread = true;
+            }
         }
         SDL_joystick_drivers_initialized[i] = initialized;
     }
@@ -1396,7 +1538,12 @@ bool SDL_InitJoysticks(void)
         }
     }
 
-    SDL_UpdateJoystickDevices(true);
+    if (device_thread) {
+        // Create the device thread
+        device_thread = SDL_CreateJoystickDeviceThread(init_async);
+    }
+
+    SDL_UpdateJoystickDevices(true, !init_async);
 
     SDL_UnlockJoysticks();
 
@@ -2954,6 +3101,9 @@ void SDL_QuitJoysticks(void)
         SDL_CloseJoystick(SDL_joysticks);
     }
 
+    // Stop device discovery before cleaning up the device lists
+    SDL_DestroyJoystickDeviceThread();
+
     if (SDL_pending_manual_devices) {
         SDL_DestroyJoystickDevices(SDL_pending_manual_devices);
         SDL_pending_manual_devices = NULL;
@@ -3575,7 +3725,7 @@ void SDL_UpdateJoysticks(void)
         }
     }
 
-    SDL_UpdateJoystickDevices(false);
+    SDL_UpdateJoystickDevices(false, false);
 
     SDL_UnlockJoysticks();
 }

@@ -224,6 +224,9 @@ struct SDL_Joystick
 
 typedef struct SDL_JoystickDriver
 {
+    // True if device enumeration is slow and should be off the main thread
+    //bool slow_enumeration;
+
     // Optional function to initialize the driver
     bool (*Init)(void);
 
