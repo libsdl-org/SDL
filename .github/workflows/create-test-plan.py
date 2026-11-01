@@ -208,6 +208,7 @@ class JobDetails:
     platform: str
     artifact: str
     no_cmake: bool
+    commit: str = ""
     ccache: bool = False
     build_tests: bool = True
     container: str = ""
@@ -278,6 +279,7 @@ class JobDetails:
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
             "name": self.name,
+            "commit": self.commit,
             "key": self.key,
             "os": self.os,
             "ccache": self.ccache,
@@ -362,11 +364,12 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
-def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args: list[str]) -> JobDetails:
+def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args: list[str], commit: str) -> JobDetails:
     job = JobDetails(
         name=spec.name,
         key=key,
         os=spec.os.value,
+        commit=commit,
         artifact=spec.artifact or "",
         container=spec.container or "",
         platform=spec.platform.value,
@@ -959,13 +962,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
     return job
 
 
-def spec_to_platform(spec: JobSpec, key: str, enable_artifacts: bool, trackmem_symbol_names: bool, ctest_args:list[str]) -> dict[str, str|bool]:
+def spec_to_platform(spec: JobSpec, key: str, commit: str, enable_artifacts: bool, trackmem_symbol_names: bool, ctest_args:list[str]) -> dict[str, str|bool]:
     logger.info("spec=%r", spec)
     job = spec_to_job(
         spec,
         key=key,
         trackmem_symbol_names=trackmem_symbol_names,
         ctest_args=ctest_args,
+        commit=commit,
     )
     logger.info("job=%r", job)
     platform = job.to_workflow(enable_artifacts=enable_artifacts)
@@ -982,6 +986,7 @@ def main():
     parser.add_argument("--no-artifact", dest="enable_artifacts", action="store_false")
     parser.add_argument("--trackmem-symbol-names", dest="trackmem_symbol_names", action="store_true")
     parser.add_argument("--priority-only", dest="priority_only", action="store_true")
+    parser.add_argument("--commit", dest="commit", default="")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
@@ -1022,7 +1027,7 @@ def main():
 
     all_level_platforms = {}
 
-    all_platforms = {key: spec_to_platform(spec, key=key, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names, ctest_args=ctest_args) for key, spec in JOB_SPECS.items()}
+    all_platforms = {key: spec_to_platform(spec, key=key, commit=args.commit, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names, ctest_args=ctest_args) for key, spec in JOB_SPECS.items()}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"
