@@ -117,7 +117,7 @@ static bool VITA_AddJoystick(int index)
     device->name = SDL_strdup(name);
     device->guid = SDL_CreateJoystickGUIDForName(name);
 
-    SDL_AddJoystickDevice(device, false);
+    SDL_AddJoystickDevice(device);
     return true;
 }
 

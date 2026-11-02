@@ -313,7 +313,7 @@ SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *des
     device->name = SDL_strdup(name);
     device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_VIRTUAL, hwdata->desc.vendor_id, hwdata->desc.product_id, 0, NULL, name, 'v', (Uint8)hwdata->desc.type);
 
-    return SDL_AddJoystickDevice(device, true);
+    return SDL_AddJoystickDevice(device);
 }
 
 bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id)

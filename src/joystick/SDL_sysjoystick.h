@@ -84,11 +84,6 @@ typedef struct SDL_JoystickDevice
 
 } SDL_JoystickDevice;
 
-typedef struct SDL_JoystickDeviceList
-{
-    SDL_JoystickDevice *devices;
-} SDL_JoystickDeviceList;
-
 typedef struct SDL_JoystickAxisInfo
 {
     Sint16 initial_value;           // Initial axis state

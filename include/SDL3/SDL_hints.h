@@ -2437,22 +2437,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
 
 /**
- * A variable controlling whether a separate thread should be used for
- * handling joystick detection on Windows.
- *
- * The variable can be set to the following values:
- *
- * - "0": A separate thread is not used.
- * - "1": A separate thread is used for handling device change messages.
- *   (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
-
-/**
  * A variable containing a list of throttle style controllers.
  *
  * The format of the string is a comma separated list of USB VID/PID pairs in

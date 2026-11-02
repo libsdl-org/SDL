@@ -57,7 +57,7 @@ extern "C"
         // the GUID is just the name for now
         device->guid = SDL_CreateJoystickGUIDForName(device->name);
 
-        SDL_AddJoystickDevice(device, false);
+        SDL_AddJoystickDevice(device);
         return true;
     }
 
