@@ -329,10 +329,6 @@ static bool XINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *devi
     const Uint8 userId = device->internal->userid;
     XINPUT_CAPABILITIES capabilities;
 
-    SDL_assert(s_bXInputEnabled);
-    SDL_assert(XINPUTGETCAPABILITIES);
-    SDL_assert(userId < XUSER_MAX_COUNT);
-
     if (XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities) != ERROR_SUCCESS) {
         SDL_free(joystick->hwdata);
         joystick->hwdata = NULL;
