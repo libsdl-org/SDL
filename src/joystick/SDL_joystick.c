@@ -112,18 +112,22 @@ static bool SDL_joystick_drivers_initialized[SDL_arraysize(SDL_joystick_drivers)
 
 static int SDL_joysticks_locked;
 static bool SDL_joysticks_initialized;
+static bool SDL_joysticks_opened;
 static bool SDL_joysticks_quitting;
 static bool SDL_joystick_being_added;
-static bool SDL_joystick_hid_notifications SDL_GUARDED_BY(SDL_event_lock);
-static Uint32 SDL_joystick_hid_change_count SDL_GUARDED_BY(SDL_event_lock);
-static Uint64 SDL_last_device_update SDL_GUARDED_BY(SDL_event_lock);
-static SDL_JoystickDevice *SDL_joystick_devices SDL_GUARDED_BY(SDL_event_lock);
-static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_event_lock);
-static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock);
-static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_event_lock);
-static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_event_lock);
-static Uint64 SDL_joystick_device_change_time SDL_GUARDED_BY(SDL_event_lock);
-static int SDL_joystick_device_update_step SDL_GUARDED_BY(SDL_event_lock);
+static bool SDL_joystick_hid_notifications SDL_GUARDED_BY(SDL_joystick_lock);
+static Uint32 SDL_joystick_hid_change_count SDL_GUARDED_BY(SDL_joystick_lock);
+static Uint64 SDL_last_device_update SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_JoystickDevice *SDL_joystick_devices SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock);
+static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_JoystickID *SDL_joystick_players SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_HashTable *SDL_joystick_names SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_JoystickEventEntry *SDL_queued_joystick_events_head SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_JoystickEventEntry *SDL_queued_joystick_events_tail SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_JoystickEventEntry *SDL_free_joystick_events SDL_GUARDED_BY(SDL_joystick_lock);
+static Uint64 SDL_joystick_device_change_time SDL_GUARDED_BY(SDL_joystick_lock);
+static int SDL_joystick_device_update_step SDL_GUARDED_BY(SDL_joystick_lock);
 static SDL_AtomicInt SDL_joystick_devices_changed;
 static SDL_AtomicInt SDL_joystick_devices_update;
 static bool SDL_joystick_allows_background_events;
@@ -710,13 +714,13 @@ bool SDL_JoysticksQuitting(void)
 
 void SDL_LockJoysticks(void)
 {
-    SDL_LockMutex(SDL_event_lock);
+    SDL_LockMutex(SDL_joystick_lock);
     ++SDL_joysticks_locked;
 }
 
 bool SDL_TryLockJoysticks(void)
 {
-    if (SDL_TryLockMutex(SDL_event_lock)) {
+    if (SDL_TryLockMutex(SDL_joystick_lock)) {
         ++SDL_joysticks_locked;
         return true;
     }
@@ -726,7 +730,7 @@ bool SDL_TryLockJoysticks(void)
 void SDL_UnlockJoysticks(void)
 {
     --SDL_joysticks_locked;
-    SDL_UnlockMutex(SDL_event_lock);
+    SDL_UnlockMutex(SDL_joystick_lock);
 }
 
 bool SDL_JoysticksLocked(void)
@@ -745,6 +749,106 @@ static SDL_JoystickDriver *SDL_GetJoystickDriver(int index)
         return SDL_joystick_drivers[index];
     }
     return NULL;
+}
+
+SDL_JoystickEventEntry *SDL_AllocJoystickEvent(SDL_EventType type, Uint64 timestamp, SDL_Event **event)
+{
+    SDL_AssertJoysticksLocked();
+
+    if (!SDL_EventEnabled(type)) {
+        return NULL;
+    }
+
+    SDL_JoystickEventEntry *entry = SDL_free_joystick_events;
+    if (entry) {
+        SDL_free_joystick_events = entry->next;
+    } else {
+        entry = (SDL_JoystickEventEntry *)SDL_calloc(1, sizeof(*entry));
+        if (!entry) {
+            return NULL;
+        }
+    }
+
+    SDL_zerop(entry);
+    entry->event.common.type = type;
+    if (timestamp) {
+        entry->event.common.timestamp = timestamp;
+    } else {
+        entry->event.common.timestamp = SDL_GetTicksNS();
+    }
+    *event = &entry->event;
+    return entry;
+}
+
+void SDL_QueueJoystickEvent(SDL_JoystickEventEntry *entry)
+{
+    SDL_AssertJoysticksLocked();
+
+    switch (entry->event.type) {
+    case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+    case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+    case SDL_EVENT_JOYSTICK_BUTTON_UP:
+    case SDL_EVENT_JOYSTICK_HAT_MOTION:
+    case SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
+        SDL_GamepadEventWatcher(&entry->event);
+        break;
+    }
+
+    if (SDL_queued_joystick_events_head) {
+        SDL_queued_joystick_events_tail->next = entry;
+    } else {
+        SDL_queued_joystick_events_head = entry;
+    }
+    SDL_queued_joystick_events_tail = entry;
+}
+
+static void SDL_DispatchJoystickEvents(void)
+{
+    SDL_JoystickEventEntry *entries, *tail;
+    SDL_LockJoysticks();
+    if (!SDL_queued_joystick_events_head) {
+        SDL_UnlockJoysticks();
+        return;
+    }
+    entries = SDL_queued_joystick_events_head;
+    tail = SDL_queued_joystick_events_tail;
+    SDL_queued_joystick_events_head = NULL;
+    SDL_queued_joystick_events_tail = NULL;
+    SDL_UnlockJoysticks();
+
+    SDL_LockMutex(SDL_event_lock);
+    for (SDL_JoystickEventEntry *entry = entries; entry; entry = entry->next) {
+        SDL_PushEvent(&entry->event);
+    }
+    SDL_UnlockMutex(SDL_event_lock);
+
+    SDL_LockJoysticks();
+    tail->next = SDL_free_joystick_events;
+    SDL_free_joystick_events = entries;
+    SDL_UnlockJoysticks();
+}
+
+static void SDL_DispatchFinalJoystickEvents(SDL_JoystickEventEntry *entries)
+{
+    SDL_LockMutex(SDL_event_lock);
+    SDL_JoystickEventEntry *entry = entries;
+    while (entry) {
+        SDL_JoystickEventEntry *next = entry->next;
+        SDL_PushEvent(&entry->event);
+        SDL_free(entry);
+        entry = next;
+    }
+    SDL_UnlockMutex(SDL_event_lock);
+}
+
+static void SDL_FreeJoystickEvents(SDL_JoystickEventEntry *entries)
+{
+    SDL_JoystickEventEntry *entry = entries;
+    while (entry) {
+        SDL_JoystickEventEntry *next = entry->next;
+        SDL_free(entry);
+        entry = next;
+    }
 }
 
 SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver, size_t extra_length)
@@ -1334,6 +1438,8 @@ bool SDL_InitJoysticks(void)
 
     SDL_UnlockJoysticks();
 
+    SDL_DispatchJoystickEvents();
+
     if (!result) {
         SDL_QuitJoysticks();
     }
@@ -1343,19 +1449,7 @@ bool SDL_InitJoysticks(void)
 
 bool SDL_JoysticksOpened(void)
 {
-    bool opened;
-
-    SDL_LockJoysticks();
-    {
-        if (SDL_joysticks != NULL) {
-            opened = true;
-        } else {
-            opened = false;
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return opened;
+    return SDL_joysticks_opened;
 }
 
 bool SDL_HasJoystick(void)
@@ -1905,6 +1999,8 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     }
 
     driver->Update(joystick);
+
+    SDL_joysticks_opened = true;
 
     SDL_UnlockJoysticks();
 
@@ -2864,6 +2960,10 @@ void SDL_CloseJoystick(SDL_Joystick *joystick)
         SDL_free(joystick->sensors);
         SDL_free(joystick->capsenses);
         SDL_free(joystick);
+
+        if (!SDL_joysticks) {
+            SDL_joysticks_opened = false;
+        }
     }
     SDL_UnlockJoysticks();
 }
@@ -2872,6 +2972,10 @@ void SDL_QuitJoysticks(void)
 {
     int i;
     SDL_JoystickID *joysticks;
+    SDL_JoystickEventEntry *final_events = NULL;
+
+    // Dispatch any pending events while joysticks are still valid
+    SDL_DispatchJoystickEvents();
 
     SDL_LockJoysticks();
 
@@ -2943,7 +3047,21 @@ void SDL_QuitJoysticks(void)
     SDL_joysticks_quitting = false;
     SDL_joysticks_initialized = false;
 
+    if (SDL_queued_joystick_events_head) {
+        final_events = SDL_queued_joystick_events_head;
+        SDL_queued_joystick_events_head = NULL;
+        SDL_queued_joystick_events_tail = NULL;
+    }
+
+    if (SDL_free_joystick_events) {
+        SDL_FreeJoystickEvents(SDL_free_joystick_events);
+        SDL_free_joystick_events = NULL;
+    }
+
     SDL_UnlockJoysticks();
+
+    // Deliver any final joystick removed events
+    SDL_DispatchFinalJoystickEvents(final_events);
 }
 
 static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
@@ -3074,16 +3192,12 @@ void SDL_PrivateJoystickAdded(SDL_JoystickID instance_id)
 
     SDL_UpdateJoystickNameForID(instance_id);
 
-    {
-        SDL_Event event;
-
-        event.type = SDL_EVENT_JOYSTICK_ADDED;
-        event.common.timestamp = 0;
-
-        if (SDL_EventEnabled(event.type)) {
-            event.jdevice.which = instance_id;
-            SDL_PushEvent(&event);
-        }
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_ADDED, 0, &event);
+    if (entry) {
+        event->jdevice.which = instance_id;
+        SDL_QueueJoystickEvent(entry);
     }
 
     // This might create an automatic gamepad mapping, so wait to send the event
@@ -3136,7 +3250,6 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
 {
     SDL_Joystick *joystick = NULL;
     int player_index;
-    SDL_Event event;
 
     SDL_AssertJoysticksLocked();
 
@@ -3153,12 +3266,12 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID instance_id)
         SDL_PrivateGamepadRemoved(instance_id);
     }
 
-    event.type = SDL_EVENT_JOYSTICK_REMOVED;
-    event.common.timestamp = 0;
-
-    if (SDL_EventEnabled(event.type)) {
-        event.jdevice.which = instance_id;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_REMOVED, 0, &event);
+    if (entry) {
+        event->jdevice.which = instance_id;
+        SDL_QueueJoystickEvent(entry);
     }
 
     player_index = SDL_GetPlayerIndexForJoystickID(instance_id);
@@ -3219,15 +3332,14 @@ void SDL_SendJoystickAxis(Uint64 timestamp, SDL_Joystick *joystick, Uint8 axis, 
     info->value = value;
     joystick->update_complete = timestamp;
 
-    // Post the event, if desired
-    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_AXIS_MOTION)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_JOYSTICK_AXIS_MOTION;
-        event.common.timestamp = timestamp;
-        event.jaxis.which = joystick->instance_id;
-        event.jaxis.axis = axis;
-        event.jaxis.value = value;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_AXIS_MOTION, timestamp, &event);
+    if (entry) {
+        event->jaxis.which = joystick->instance_id;
+        event->jaxis.axis = axis;
+        event->jaxis.value = value;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
@@ -3249,16 +3361,15 @@ void SDL_SendJoystickBall(Uint64 timestamp, SDL_Joystick *joystick, Uint8 ball, 
     joystick->balls[ball].dx += xrel;
     joystick->balls[ball].dy += yrel;
 
-    // Post the event, if desired
-    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BALL_MOTION)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_JOYSTICK_BALL_MOTION;
-        event.common.timestamp = timestamp;
-        event.jball.which = joystick->instance_id;
-        event.jball.ball = ball;
-        event.jball.xrel = xrel;
-        event.jball.yrel = yrel;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_BALL_MOTION, timestamp, &event);
+    if (entry) {
+        event->jball.which = joystick->instance_id;
+        event->jball.ball = ball;
+        event->jball.xrel = xrel;
+        event->jball.yrel = yrel;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
@@ -3288,29 +3399,20 @@ void SDL_SendJoystickHat(Uint64 timestamp, SDL_Joystick *joystick, Uint8 hat, Ui
     joystick->hats[hat] = value;
     joystick->update_complete = timestamp;
 
-    // Post the event, if desired
-    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_HAT_MOTION)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_JOYSTICK_HAT_MOTION;
-        event.common.timestamp = timestamp;
-        event.jhat.which = joystick->instance_id;
-        event.jhat.hat = hat;
-        event.jhat.value = value;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_HAT_MOTION, timestamp, &event);
+    if (entry) {
+        event->jhat.which = joystick->instance_id;
+        event->jhat.hat = hat;
+        event->jhat.value = value;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
 void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 button, bool down)
 {
-    SDL_Event event;
-
     SDL_AssertJoysticksLocked();
-
-    if (down) {
-        event.type = SDL_EVENT_JOYSTICK_BUTTON_DOWN;
-    } else {
-        event.type = SDL_EVENT_JOYSTICK_BUTTON_UP;
-    }
 
     if (joystick->swap_face_buttons) {
         switch (button) {
@@ -3352,13 +3454,15 @@ void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butt
     joystick->buttons[button] = down;
     joystick->update_complete = timestamp;
 
-    // Post the event, if desired
-    if (SDL_EventEnabled(event.type)) {
-        event.common.timestamp = timestamp;
-        event.jbutton.which = joystick->instance_id;
-        event.jbutton.button = button;
-        event.jbutton.down = down;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_EventType event_type = down ? SDL_EVENT_JOYSTICK_BUTTON_DOWN : SDL_EVENT_JOYSTICK_BUTTON_UP;
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(event_type, timestamp, &event);
+    if (entry) {
+        event->jbutton.which = joystick->instance_id;
+        event->jbutton.button = button;
+        event->jbutton.down = down;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
@@ -3414,13 +3518,12 @@ static void SendSteamHandleUpdateEvents(void)
             }
         }
         if (changed) {
-            SDL_Event event;
-
-            SDL_zero(event);
-            event.type = SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED;
-            event.common.timestamp = 0;
-            event.gdevice.which = joystick->instance_id;
-            SDL_PushEvent(&event);
+            SDL_Event *event;
+            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED, 0, &event);
+            if (entry) {
+                event->gdevice.which = joystick->instance_id;
+                SDL_QueueJoystickEvent(entry);
+            }
         }
     }
 }
@@ -3488,13 +3591,12 @@ void SDL_UpdateJoysticks(void)
     if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)) {
         for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
             if (joystick->update_complete) {
-                SDL_Event event;
-
-                event.type = SDL_EVENT_JOYSTICK_UPDATE_COMPLETE;
-                event.common.timestamp = joystick->update_complete;
-                event.jdevice.which = joystick->instance_id;
-                SDL_PushEvent(&event);
-
+                SDL_Event *event;
+                SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, joystick->update_complete, &event);
+                if (entry) {
+                    event->jdevice.which = joystick->instance_id;
+                    SDL_QueueJoystickEvent(entry);
+                }
                 joystick->update_complete = 0;
             }
         }
@@ -3503,6 +3605,8 @@ void SDL_UpdateJoysticks(void)
     SDL_UpdateJoystickDevices(false);
 
     SDL_UnlockJoysticks();
+
+    SDL_DispatchJoystickEvents();
 }
 
 static const Uint32 SDL_joystick_event_list[] = {
@@ -4405,19 +4509,23 @@ void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int
 {
     SDL_AssertJoysticksLocked();
 
-    if (state != joystick->battery_state || percent != joystick->battery_percent) {
-        joystick->battery_state = state;
-        joystick->battery_percent = percent;
+    if (state == joystick->battery_state &&
+        percent == joystick->battery_percent) {
+        return;
+    }
 
-        if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_BATTERY_UPDATED)) {
-            SDL_Event event;
-            event.type = SDL_EVENT_JOYSTICK_BATTERY_UPDATED;
-            event.common.timestamp = 0;
-            event.jbattery.which = joystick->instance_id;
-            event.jbattery.state = state;
-            event.jbattery.percent = percent;
-            SDL_PushEvent(&event);
-        }
+    // Update internal joystick state
+    joystick->battery_state = state;
+    joystick->battery_percent = percent;
+
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_BATTERY_UPDATED, 0, &event);
+    if (entry) {
+        event->jbattery.which = joystick->instance_id;
+        event->jbattery.state = state;
+        event->jbattery.percent = percent;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
@@ -4532,18 +4640,17 @@ void SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, int touc
     finger_info->pressure = pressure;
     joystick->update_complete = timestamp;
 
-    // Post the event, if desired
-    if (SDL_EventEnabled(event_type)) {
-        SDL_Event event;
-        event.type = event_type;
-        event.common.timestamp = timestamp;
-        event.gtouchpad.which = joystick->instance_id;
-        event.gtouchpad.touchpad = touchpad;
-        event.gtouchpad.finger = finger;
-        event.gtouchpad.x = x;
-        event.gtouchpad.y = y;
-        event.gtouchpad.pressure = pressure;
-        SDL_PushEvent(&event);
+    // Post the event
+    SDL_Event *event;
+    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(event_type, timestamp, &event);
+    if (entry) {
+        event->gtouchpad.which = joystick->instance_id;
+        event->gtouchpad.touchpad = touchpad;
+        event->gtouchpad.finger = finger;
+        event->gtouchpad.x = x;
+        event->gtouchpad.y = y;
+        event->gtouchpad.pressure = pressure;
+        SDL_QueueJoystickEvent(entry);
     }
 }
 
@@ -4569,19 +4676,17 @@ void SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_Sensor
 
                 // Post the event, if desired
                 if (SDL_EventEnabled(SDL_EVENT_GAMEPAD_SENSOR_UPDATE)) {
-                    SDL_Event event;
-                    event.type = SDL_EVENT_GAMEPAD_SENSOR_UPDATE;
-                    event.common.timestamp = timestamp;
-                    event.gsensor.which = joystick->instance_id;
-                    event.gsensor.sensor = type;
-                    num_values = SDL_min(num_values,
-                                         SDL_arraysize(event.gsensor.data));
-                    SDL_memset(event.gsensor.data, 0,
-                               sizeof(event.gsensor.data));
-                    SDL_memcpy(event.gsensor.data, data,
-                               num_values * sizeof(*data));
-                    event.gsensor.sensor_timestamp = sensor_timestamp;
-                    SDL_PushEvent(&event);
+                    SDL_Event *event;
+                    SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_GAMEPAD_SENSOR_UPDATE, timestamp, &event);
+                    if (entry) {
+                        event->gsensor.which = joystick->instance_id;
+                        event->gsensor.sensor = type;
+                        num_values = SDL_min(num_values, SDL_arraysize(event->gsensor.data));
+                        SDL_memset(event->gsensor.data, 0, sizeof(event->gsensor.data));
+                        SDL_memcpy(event->gsensor.data, data, num_values * sizeof(*data));
+                        event->gsensor.sensor_timestamp = sensor_timestamp;
+                        SDL_QueueJoystickEvent(entry);
+                    }
                 }
             }
             break;
@@ -4605,7 +4710,6 @@ void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_Game
         SDL_JoystickCapSenseInfo *capsense = &joystick->capsenses[i];
 
         if (capsense->type == type) {
-            SDL_Event event;
 
             // Ignore duplicate events
             if (down == capsense->down) {
@@ -4616,19 +4720,15 @@ void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_Game
             capsense->down = down;
             joystick->update_complete = timestamp;
 
-            if (down) {
-                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH;
-            } else {
-                event.type = SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE;
-            }
-
-            // Post the event, if desired
-            if (SDL_EventEnabled(event.type)) {
-                event.common.timestamp = timestamp;
-                event.gcapsense.which = joystick->instance_id;
-                event.gcapsense.capsense = type;
-                event.gcapsense.down = down;
-                SDL_PushEvent(&event);
+            // Post the event
+            SDL_EventType event_type = down ? SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH : SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE;
+            SDL_Event *event;
+            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(event_type, timestamp, &event);
+            if (entry) {
+                event->gcapsense.which = joystick->instance_id;
+                event->gcapsense.capsense = type;
+                event->gcapsense.down = down;
+                SDL_QueueJoystickEvent(entry);
             }
 
             break;

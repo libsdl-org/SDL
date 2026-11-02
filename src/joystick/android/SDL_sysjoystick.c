@@ -277,10 +277,11 @@ bool Android_OnPadDown(int device_id, int keycode, int scancode)
         SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
         if (joystick) {
             SDL_SendJoystickButton(timestamp, joystick, button, true);
+            SDL_UnlockJoysticks();
         } else {
+            SDL_UnlockJoysticks();
             SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), true);
         }
-        SDL_UnlockJoysticks();
         return true;
     }
 
@@ -299,10 +300,11 @@ bool Android_OnPadUp(int device_id, int keycode, int scancode)
         SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
         if (joystick) {
             SDL_SendJoystickButton(timestamp, joystick, button, false);
+            SDL_UnlockJoysticks();
         } else {
+            SDL_UnlockJoysticks();
             SDL_SendKeyboardKey(timestamp, SDL_GLOBAL_KEYBOARD_ID, keycode, button_to_scancode(button), false);
         }
-        SDL_UnlockJoysticks();
         return true;
     }
 
