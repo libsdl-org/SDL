@@ -1407,7 +1407,7 @@ char *Wayland_GetPrimarySelectionDeviceText(Wayland_PrimarySelectionDevice *prim
     if (primary_selection_device->source) {
         char *buf = SDL_strdup(primary_selection_device->source->userdata.data);
         if (buf && length) {
-            *length = strlen(buf);
+            *length = SDL_strlen(buf);
         }
         return buf;
     } else if (primary_selection_device->offer) {
