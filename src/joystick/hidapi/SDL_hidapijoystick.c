@@ -117,7 +117,7 @@ static int SDL_HIDAPI_numdrivers = 0;
 static SDL_AtomicInt SDL_HIDAPI_updating_devices;
 static bool SDL_HIDAPI_hints_changed = false;
 static bool SDL_HIDAPI_querying_devices = false;
-static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_event_lock);
+static SDL_HIDAPI_Device *SDL_HIDAPI_devices SDL_GUARDED_BY(SDL_joystick_lock);
 static bool SDL_HIDAPI_combine_joycons = true;
 static bool initialized = false;
 
@@ -1568,6 +1568,8 @@ static bool HIDAPI_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enable
 static void HIDAPI_JoystickSetPlayerIndex(SDL_Joystick *joystick, int player_index)
 {
     SDL_HIDAPI_Device *device = NULL;
+
+    SDL_AssertJoysticksLocked();
 
     if (HIDAPI_GetJoystickDevice(joystick, &device) &&
         device->driver->SetDevicePlayerIndex) {

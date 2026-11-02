@@ -35,6 +35,13 @@ typedef struct SDL_JoystickDriver SDL_JoystickDriver;
 typedef struct SDL_JoystickDevice SDL_JoystickDevice;
 struct SDL_SteamVirtualGamepadInfo;
 
+typedef struct SDL_JoystickEventEntry
+{
+    SDL_Event event;
+    struct SDL_JoystickEventEntry *next;
+} SDL_JoystickEventEntry;
+
+
 // Initialization and shutdown functions
 extern bool SDL_InitJoysticks(void);
 extern void SDL_QuitJoysticks(void);
@@ -49,7 +56,13 @@ extern bool SDL_JoysticksQuitting(void);
 extern bool SDL_JoysticksLocked(void);
 
 // Make sure we currently have the joysticks locked
-extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
+
+// Function to allocate an event to be delivered by the joystick subsystem
+extern SDL_JoystickEventEntry *SDL_AllocJoystickEvent(SDL_EventType type, Uint64 timestamp, SDL_Event **event);
+
+// Function to queue an event for delivery
+extern void SDL_QueueJoystickEvent(SDL_JoystickEventEntry *entry);
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);

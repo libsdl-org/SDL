@@ -39,11 +39,14 @@
 // The event mutex
 //
 // This mutex prevents multiple threads from watching multiple events
-// simultaneously and also protects resources like joysticks that may
-// be accessed from multiple threads and also generate events.
+// simultaneously and also protects resources that may be accessed from
+// multiple threads and also generate events.
 extern SDL_Mutex *SDL_event_lock;
 extern void SDL_CreateEventLock(void);
 extern void SDL_DestroyEventLock(void);
+
+// This mutex prevents multiple threads from simultaneously accessing joysticks
+extern SDL_Mutex *SDL_joystick_lock;
 
 // Start and stop the event processing loop
 extern bool SDL_StartEventLoop(void);

@@ -129,7 +129,7 @@ typedef struct SDL_JoystickCapSenseInfo
     bool down;
 } SDL_JoystickCapSenseInfo;
 
-#define _guarded SDL_GUARDED_BY(SDL_event_lock)
+#define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
 struct SDL_Joystick
 {
