@@ -1851,6 +1851,12 @@ static bool GIP_HandleCommandHidReport(
     const Uint8 *bytes,
     int num_bytes)
 {
+    // WARNING: This function is called while the joystick lock is held and sending keyboard
+    //          events will take the event lock. This will deadlock any other code that calls
+    //          into SDL joystick functions while the event lock is held, such as from an event
+    //          watcher. The fix is to queue the keyboard events here the same way we queue
+    //          joystick events, if this ends up being a problem in practice.
+
     Uint64 timestamp = SDL_GetTicksNS();
     // SDL doesn't have HID descriptor parsing, so we have to hardcode for the Chatpad descriptor instead.
     // I don't know of any other devices that emit HID reports, so this should be safe.
