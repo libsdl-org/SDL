@@ -155,7 +155,7 @@ static bool DOS_JoystickInit(void)
         0                         /* driver_data */
     );
 
-    SDL_AddJoystickDevice(device, false);
+    SDL_AddJoystickDevice(device);
     return true;
 }
 

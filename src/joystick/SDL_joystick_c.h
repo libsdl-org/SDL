@@ -70,7 +70,7 @@ extern void SDL_AddJoystickDeviceMatchXInput(SDL_JoystickDevice *device, int xin
 extern SDL_JoystickDevice *SDL_GetJoystickDevices(void);
 
 // Manually publish a device
-extern SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device, bool synchronous);
+extern SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device);
 
 // Remove a device published with SDL_AddJoystickDevice()
 extern void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id);

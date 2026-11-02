@@ -120,7 +120,7 @@ static void PS2_AddJoystick(struct JoyInfo *info)
     device->name = SDL_strdup(name);
     device->guid = SDL_CreateJoystickGUIDForName(name);
 
-    info->instance_id = SDL_AddJoystickDevice(device, false);
+    info->instance_id = SDL_AddJoystickDevice(device);
 }
 
 static void PS2_RemoveJoystick(struct JoyInfo *info)

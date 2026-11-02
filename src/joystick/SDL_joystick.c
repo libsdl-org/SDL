@@ -114,11 +114,9 @@ static int SDL_joysticks_locked;
 static bool SDL_joysticks_initialized;
 static bool SDL_joysticks_quitting;
 static bool SDL_joystick_being_added;
-static void *SDL_pending_joystick_devices;
 static bool SDL_joystick_hid_notifications SDL_GUARDED_BY(SDL_event_lock);
 static Uint32 SDL_joystick_hid_change_count SDL_GUARDED_BY(SDL_event_lock);
 static Uint64 SDL_last_device_update SDL_GUARDED_BY(SDL_event_lock);
-static SDL_JoystickDevice *SDL_pending_manual_devices SDL_GUARDED_BY(SDL_event_lock);
 static SDL_JoystickDevice *SDL_joystick_devices SDL_GUARDED_BY(SDL_event_lock);
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_event_lock);
 static int SDL_joystick_player_count SDL_GUARDED_BY(SDL_event_lock);
@@ -936,12 +934,9 @@ void SDL_RequestJoystickDeviceUpdate(bool immediate)
     }
 }
 
-static void SDL_UpdatePendingJoystickDevices(void)
+static SDL_JoystickDevice *SDL_UpdatePendingJoystickDevices(void)
 {
-    SDL_JoystickDeviceList *pending = (SDL_JoystickDeviceList *)SDL_calloc(1, sizeof(*pending));
-    if (!pending) {
-        return;
-    }
+    SDL_JoystickDevice *pending_devices = NULL;
 
     SDL_JoystickDevice *tail = NULL;
     for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
@@ -956,10 +951,10 @@ static void SDL_UpdatePendingJoystickDevices(void)
 
         SDL_JoystickDevice *devices = driver->QueryDevices();
         if (devices) {
-            if (pending->devices) {
+            if (pending_devices) {
                 tail->next = devices;
             } else {
-                pending->devices = devices;
+                pending_devices = devices;
                 tail = devices;
             }
             while (tail->next) {
@@ -968,15 +963,10 @@ static void SDL_UpdatePendingJoystickDevices(void)
         }
     }
 
-    if (pending->devices) {
-        pending->devices = SDL_RemoveHiddenDevices(pending->devices);
+    if (pending_devices) {
+        pending_devices = SDL_RemoveHiddenDevices(pending_devices);
     }
-
-    SDL_JoystickDeviceList *stale = SDL_SetAtomicPointer(&SDL_pending_joystick_devices, pending);
-    if (stale) {
-        SDL_DestroyJoystickDevices(stale->devices);
-        SDL_free(stale);
-    }
+    return pending_devices;
 }
 
 // Remove and return the device in the list with the same driver and unique ID, if any
@@ -1000,32 +990,11 @@ static SDL_JoystickDevice *SDL_FindAndRemoveJoystickDevice(SDL_JoystickDevice *d
     return NULL;
 }
 
-static void SDL_ProcessPendingJoystickDevices(void)
+static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_devices)
 {
     SDL_AssertJoysticksLocked();
 
-    SDL_JoystickDeviceList *pending = SDL_SetAtomicPointer(&SDL_pending_joystick_devices, NULL);
-    if (!pending && !SDL_pending_manual_devices) {
-        return;
-    }
-
-    SDL_JoystickDevice *pending_devices = NULL;
-    if (pending) {
-        pending_devices = pending->devices;
-    }
-    if (SDL_pending_manual_devices) {
-        SDL_JoystickDevice *tail = SDL_pending_manual_devices;
-        while (tail->next) {
-            tail = tail->next;
-        }
-        tail->next = pending_devices;
-
-        pending_devices = SDL_pending_manual_devices;
-        SDL_pending_manual_devices = NULL;
-    }
-
     // Reconcile existing devices with the new list
-    // Scanned devices are only removed if there is a new scan
     SDL_JoystickDevice *devices = NULL;
     SDL_JoystickDevice *tail = NULL;
     SDL_JoystickDevice *removed = NULL;
@@ -1033,7 +1002,7 @@ static void SDL_ProcessPendingJoystickDevices(void)
     while (old) {
         SDL_JoystickDevice *next = old->next;
         bool keep = false;
-        if (old->manually_added || !pending) {
+        if (old->manually_added) {
             keep = true;
         } else {
             // Pull the new device matching the old one out of the list
@@ -1080,10 +1049,7 @@ static void SDL_ProcessPendingJoystickDevices(void)
     }
 
     // Send events for devices that are ready to be published
-    SDL_JoystickDevice *prev = NULL;
-    SDL_JoystickDevice *next = NULL;
-    for (SDL_JoystickDevice *device = devices; device; device = next) {
-        next = device->next;
+    for (SDL_JoystickDevice *device = devices; device; device = device->next) {
         if (!device->published && !device->initializing) {
             bool prepared = true;
             if (device->driver->PrepareDevice) {
@@ -1095,53 +1061,37 @@ static void SDL_ProcessPendingJoystickDevices(void)
                 }
                 device->published = true;
                 SDL_PrivateJoystickAdded(device->instance_id);
-            } else if (device->manually_added) {
-                if (prev) {
-                    prev->next = next;
-                } else {
-                    SDL_joystick_devices = next;
-                }
-                SDL_DestroyJoystickDevice(device);
-                continue;
             }
         }
-        prev = device;
     }
-
-    SDL_free(pending);
 }
 
-SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device, bool synchronous)
+SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device)
 {
     SDL_AssertJoysticksLocked();
 
-    SDL_JoystickID instance_id = device->instance_id;
-    if (!instance_id) {
-        instance_id = device->instance_id = SDL_GetNextObjectID();
+    SDL_assert(!device->driver->PrepareDevice);
+
+    if (!device->instance_id) {
+        device->instance_id = SDL_GetNextObjectID();
     }
     device->manually_added = true;
+    device->published = true;
 
-    // Add this to the end of the pending device list
-    SDL_JoystickDevice *tail = SDL_pending_manual_devices;
-    if (tail) {
+    // Add this to the end of the device list
+    if (SDL_joystick_devices) {
+        SDL_JoystickDevice *tail = SDL_joystick_devices;
         while (tail->next) {
             tail = tail->next;
         }
         tail->next = device;
     } else {
-        SDL_pending_manual_devices = device;
+        SDL_joystick_devices = device;
     }
 
-    if (synchronous) {
-        SDL_ProcessPendingJoystickDevices();
+    SDL_PrivateJoystickAdded(device->instance_id);
 
-        // Make sure the device was published
-        if (!SDL_GetJoystickDevice(instance_id)) {
-            instance_id = 0;
-        }
-    }
-
-    return instance_id;
+    return device->instance_id;
 }
 
 void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id)
@@ -1153,20 +1103,6 @@ void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id)
     }
 
     SDL_JoystickDevice *prev = NULL;
-    for (SDL_JoystickDevice *device = SDL_pending_manual_devices; device; device = device->next) {
-        if (device->instance_id == instance_id) {
-            if (prev) {
-                prev->next = device->next;
-            } else {
-                SDL_pending_manual_devices = device->next;
-            }
-            SDL_DestroyJoystickDevice(device);
-            return;
-        }
-        prev = device;
-    }
-
-    prev = NULL;
     for (SDL_JoystickDevice *device = SDL_joystick_devices; device; device = device->next) {
         if (device->instance_id == instance_id) {
             SDL_assert(device->manually_added);
@@ -1240,10 +1176,8 @@ static void SDL_UpdateJoystickDevices(bool update)
     if (update) {
         SDL_last_device_update = SDL_GetTicks();
 
-        SDL_UpdatePendingJoystickDevices();
+        SDL_ProcessPendingJoystickDevices(SDL_UpdatePendingJoystickDevices());
     }
-
-    SDL_ProcessPendingJoystickDevices();
 }
 
 static int SDL_FindFreePlayerIndex(void)
@@ -2956,20 +2890,9 @@ void SDL_QuitJoysticks(void)
         SDL_CloseJoystick(SDL_joysticks);
     }
 
-    if (SDL_pending_manual_devices) {
-        SDL_DestroyJoystickDevices(SDL_pending_manual_devices);
-        SDL_pending_manual_devices = NULL;
-    }
-
     if (SDL_joystick_devices) {
         SDL_DestroyJoystickDevices(SDL_joystick_devices);
         SDL_joystick_devices = NULL;
-    }
-
-    SDL_JoystickDeviceList *pending = SDL_SetAtomicPointer(&SDL_pending_joystick_devices, NULL);
-    if (pending) {
-        SDL_DestroyJoystickDevices(pending->devices);
-        SDL_free(pending);
     }
 
     // Quit drivers in reverse order to avoid breaking dependencies between drivers
