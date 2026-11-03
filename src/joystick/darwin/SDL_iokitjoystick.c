@@ -547,7 +547,7 @@ static bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *i;
 
-#ifdef SDL_JOYSTICK_MFI
+#if defined(SDL_JOYSTICK_MFI) && defined(SDL_PLATFORM_IOS)
     extern bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
     if (!IsControlledBy360ControllerDriver(ioHIDDeviceObject) && IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
         return true;
