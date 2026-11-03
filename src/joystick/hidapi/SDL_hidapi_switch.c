@@ -1079,6 +1079,7 @@ static void LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
 static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
 {
+    bool have_imu_cal = false;
     SwitchSubcommandInputPacket_t *reply = NULL;
 
     // Read Calibration Info
@@ -1130,22 +1131,32 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
             }
         }
 
-        // Gyro zero-rate offset
-        ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
-        ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
-        ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
+        if (sAccelSensCoeffX != sAccelRawX &&
+            sAccelSensCoeffY != sAccelRawY &&
+            sAccelSensCoeffZ != sAccelRawZ &&
+            sGyroSensCoeffX != sGyroRawX &&
+            sGyroSensCoeffY != sGyroRawY &&
+            sGyroSensCoeffZ != sGyroRawZ) {
+            // Gyro zero-rate offset
+            ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
+            ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
+            ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
 
-        // Accelerometer scale
-        ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+            // Accelerometer scale
+            ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
 
-        // Gyro scale
-        ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
+            // Gyro scale
+            ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
 
-    } else {
+            have_imu_cal = true;
+        }
+    }
+
+    if (!have_imu_cal) {
         // Use default values
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = SDL_PI_F / 180.0f / SWITCH_GYRO_SCALE;
@@ -1162,6 +1173,8 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.sGyroOffsetY = 0;
         ctx->m_IMUScaleData.sGyroOffsetZ = 0;
     }
+
+    // FIXME: Should we read two reports and verify that gyro values are coming through?
     return true;
 }
 
