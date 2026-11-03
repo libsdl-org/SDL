@@ -89,6 +89,7 @@ typedef struct
     bool has_cz;
     bool has_lmrm;
     bool has_circle;
+    bool has_trigger_rumble;
     bool wireless;
     bool sensors_supported;
     bool sensors_enabled;
@@ -101,6 +102,10 @@ typedef struct
     Uint64 next_status_request;
     Uint64 last_packet;
     bool acquired;
+    Uint8 low_frequency_rumble;
+    Uint8 high_frequency_rumble;
+    Uint8 left_trigger_rumble;
+    Uint8 right_trigger_rumble;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
 
@@ -282,6 +287,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->has_lmrm = true;
         ctx->has_circle = true;
+        ctx->has_trigger_rumble = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
         ctx->gyroScale = DEG2RAD(2000.0f);
@@ -677,6 +683,10 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_AssertJoysticksLocked();
 
     SDL_zeroa(ctx->last_state);
+    ctx->low_frequency_rumble = 0;
+    ctx->high_frequency_rumble = 0;
+    ctx->left_trigger_rumble = 0;
+    ctx->right_trigger_rumble = 0;
 
     // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
@@ -700,6 +710,24 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
         const float flSensorRate = ctx->wireless ? (float)SENSOR_INTERVAL_VADER4_PRO_DONGLE_RATE_HZ : (float)SENSOR_INTERVAL_VADER4_PRO_WIRED_RATE_HZ;
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_GYRO, flSensorRate);
         SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, flSensorRate);
+    }
+    return true;
+}
+
+static bool HIDAPI_DriverFlydigi_SendRumbleV2(SDL_DriverFlydigi_Context *ctx)
+{
+    SDL_HIDAPI_Device *device = ctx->device;
+    Uint8 rumble_packet[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_HAPTIC_COMMAND, 6, 0, 0, 0, 0, 0 };
+    rumble_packet[5] = ctx->low_frequency_rumble;
+    rumble_packet[6] = ctx->high_frequency_rumble;
+    rumble_packet[7] = ctx->left_trigger_rumble;
+    rumble_packet[8] = ctx->right_trigger_rumble;
+    if (HIDAPI_DriverFlydigi_UsesUnnumberedReports(device)) {
+        rumble_packet[0] = 0;
+    }
+
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return true;
 }
@@ -731,12 +759,26 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 
 static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    return SDL_Unsupported();
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    if (!ctx->has_trigger_rumble) {
+        return SDL_Unsupported();
+    }
+
+    ctx->left_trigger_rumble = left_rumble >> 8;
+    ctx->right_trigger_rumble = right_rumble >> 8;
+    return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
 }
 
 static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_JOYSTICK_CAP_RUMBLE;
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+    Uint32 caps = SDL_JOYSTICK_CAP_RUMBLE;
+
+    if (ctx->has_trigger_rumble) {
+        caps |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
+    }
+    return caps;
 }
 
 static bool HIDAPI_DriverFlydigi_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
@@ -1104,7 +1146,7 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
                 // Time the input timeout from the heartbeat so we don't send it again before the replies arrive
                 ctx->last_packet = now;
             }
-        } else if (device->num_joysticks == 0 && !device->unavailable) {
+        } else if (device->num_joysticks == 0) {
             // We don't know yet whether we can use the controller, and the status reply might have been lost
             const int STATUS_RETRY_MS = 1000;
             if (now >= ctx->next_status_request) {
