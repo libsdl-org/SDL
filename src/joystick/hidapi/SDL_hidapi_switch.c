@@ -425,8 +425,10 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
                     continue;
                 }
                 if (reply->ucSubcommandID == k_eSwitchSubcommandIDs_SPIFlashRead) {
-                    SDL_assert(ucLen == sizeof(reply->spiReadData.opData));
-                    if (SDL_memcmp(&reply->spiReadData.opData, pBuf, ucLen) != 0) {
+                    SDL_assert(ucLen == sizeof(SwitchSPIOpData_t));
+                    const SwitchSPIOpData_t *request = (const SwitchSPIOpData_t *)pBuf;
+                    if (reply->spiReadData.opData.unAddress != request->unAddress ||
+                        reply->spiReadData.opData.ucLength < request->ucLength) {
                         // This was a reply for another SPI read command
                         continue;
                     }
