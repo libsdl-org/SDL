@@ -861,7 +861,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        const float* flGyroScale = ctx->gyroScale;
+        const float *flGyroScale = ctx->gyroScale;
         values[0] = LOAD16(data[26], data[27]) * flGyroScale[0] / INT16_MAX; // Acceleration along pitch axis
         values[1] = LOAD16(data[18], data[20]) * flGyroScale[1] / INT16_MAX;  // Acceleration along yaw axis
         values[2] = LOAD16(data[29], data[30]) * flGyroScale[2] / INT16_MAX;  // Acceleration along roll axis
