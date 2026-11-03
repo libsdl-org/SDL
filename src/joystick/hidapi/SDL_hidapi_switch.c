@@ -1071,8 +1071,6 @@ static void LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
             ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
         }
     }
-
-    return true;
 }
 
 static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
