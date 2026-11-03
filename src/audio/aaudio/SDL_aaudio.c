@@ -355,15 +355,16 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     ctx.AAudioStreamBuilder_setSampleRate(builder, device->spec.freq);
     ctx.AAudioStreamBuilder_setChannelCount(builder, device->spec.channels);
 
-    int32_t sample_frames;
-    if (SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
-        sample_frames = device->sample_frames;
+    const bool sample_frames_hint = SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES) != NULL;
+    int32_t requested_sample_frames;
+    if (sample_frames_hint) {
+        requested_sample_frames = device->sample_frames;
     } else {
         // Use 20 ms for the default audio buffer size
-        sample_frames = (device->spec.freq / 50);
+        requested_sample_frames = (device->spec.freq / 50);
     }
-    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * sample_frames); // AAudio requires that the buffer capacity is at least
-    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, sample_frames);      // twice the size of the data callback buffer size
+    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * requested_sample_frames); // AAudio requires that the buffer capacity is at least
+    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, requested_sample_frames);      // twice the size of the data callback buffer size
 
     const aaudio_direction_t direction = (recording ? AAUDIO_DIRECTION_INPUT : AAUDIO_DIRECTION_OUTPUT);
     ctx.AAudioStreamBuilder_setDirection(builder, direction);
@@ -405,6 +406,22 @@ static bool BuildAAudioStream(SDL_AudioDevice *device)
     if (device->sample_frames == AAUDIO_UNSPECIFIED) {
         // We'll get variable frames in the callback, make sure we have at least half a buffer available
         device->sample_frames = (int)ctx.AAudioStream_getBufferCapacityInFrames(hidden->stream) / 2;
+    }
+
+    if (!recording && sample_frames_hint) {
+        // It is not enough to set only capacity, buffer size handles latency.
+        // Created audio stream can have much larger capacity, than requested by builder.
+        // see https://developer.android.com/ndk/guides/audio/aaudio/aaudio#tuning-buffers
+        const int32_t burst_frames = ctx.AAudioStream_getFramesPerBurst(hidden->stream);
+        const int32_t requested_frames = SDL_max(2 * requested_sample_frames, 2 * burst_frames);
+        const int32_t actual_frames = ctx.AAudioStream_setBufferSizeInFrames(hidden->stream, requested_frames);
+        if (actual_frames < 0) {
+            SDL_Log("SDL could not set the AAudio buffer size to %d frames: %s",
+                    requested_frames, ctx.AAudio_convertResultToText(actual_frames));
+        } else {
+            SDL_Log("SDL AAudio buffer size set to %d frames (requested %d, burst %d)",
+                    actual_frames, requested_frames, burst_frames);
+        }
     }
 
     device->spec.freq = ctx.AAudioStream_getSampleRate(hidden->stream);
