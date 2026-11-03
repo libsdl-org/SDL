@@ -33,11 +33,13 @@
 #ifdef SDL_JOYSTICK_DINPUT
 
 #include "../hidapi/SDL_hidapijoystick_c.h"
+#include "../../core/windows/SDL_gameinput.h"
 #include "../../core/windows/SDL_windows.h"
 #include "../../core/windows/SDL_hid.h"
 
 #define INITGUID // Only set here, if set twice will cause mingw32 to break.
 #include "SDL_dinputjoystick_c.h"
+#include "SDL_xinputjoystick_c.h"
 
 #include "../../haptic/windows/SDL_dinputhaptic_c.h" // For haptic hot plugging
 
@@ -53,6 +55,7 @@
 // local variables
 static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
+static bool DINPUT_handle_xinput = false;
 
 // external variables referenced.
 extern HWND SDL_HelperWindow;
@@ -422,6 +425,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     CHECK(QueryDevicePath(dxdevice, &hidPath));
     CHECK(QueryDeviceInfo(dxdevice, &vendor, &product));
     CHECK(QueryDeviceName(dxdevice, &product_string));
+    CHECK(DINPUT_handle_xinput || !IsXInputDevice(vendor, product, hidPath));
     CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string));
 
     device = SDL_CreateJoystickDevice(&SDL_DINPUT_JoystickDriver, sizeof(*data));
@@ -445,9 +449,6 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
 
     device->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(vendor, product, device->path);
 
-    if (IsXInputDevice(vendor, product, device->path)) {
-        SDL_AddJoystickDeviceMatchXInput(device, -1);
-    }
     SDL_AddJoystickDeviceMatchVIDPID(device, vendor, product);
 
     if (enum_data->tail) {
@@ -845,6 +846,15 @@ static bool DINPUT_JoystickInit(void)
     if (FAILED(result)) {
         DINPUT_JoystickQuit();
         return SetDIerror("IDirectInput::Initialize", result);
+    }
+
+    // Check to see whether DirectInput should handle XInput devices
+    // Normally XInput or GameInput drivers will handle them
+    if (SDL_XINPUT_Enabled() ||
+        SDL_UsingGameInputForXInputControllers()) {
+        DINPUT_handle_xinput = false;
+    } else {
+        DINPUT_handle_xinput = true;
     }
 
     return true;
