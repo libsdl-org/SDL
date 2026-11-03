@@ -332,6 +332,8 @@ static void HIDAPI_InitializeDiscovery(void)
             if (SDL_HIDAPI_discovery.m_pUdev != NULL) {
                 SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
                 if (SDL_HIDAPI_discovery.m_pUdevMonitor != NULL) {
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "hidraw", NULL);
+                    usyms->udev_monitor_filter_add_match_subsystem_devtype(SDL_HIDAPI_discovery.m_pUdevMonitor, "usb", NULL);
                     usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
                     SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
