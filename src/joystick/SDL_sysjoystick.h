@@ -70,7 +70,9 @@ typedef struct SDL_JoystickDevice
 
     // State tracking
     bool manually_added;
+    bool prepared;
     bool published;
+    bool ignored;
 
     // Data that's available once it's published
     SDL_JoystickID instance_id;

@@ -882,11 +882,6 @@ static SDL_JoystickDevice *CreateDInputDevice(const DINPUT_CachedDevice *entry)
 {
     SDL_JoystickDevice *device;
     SDL_JoystickDeviceData *data;
-    Uint16 version = 0;
-
-    if (SDL_ShouldIgnoreJoystick(entry->vendor, entry->product, version, entry->name)) {
-        return NULL;
-    }
 
     device = SDL_CreateJoystickDevice(&SDL_DINPUT_JoystickDriver, sizeof(*data));
     if (!device) {

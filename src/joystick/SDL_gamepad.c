@@ -162,12 +162,14 @@ static SDL_vidpid_list SDL_allowed_gamepads = {
     SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT, 0, 0, NULL,
     NULL, 0, 0, NULL,
     0, NULL,
+    true,
     false
 };
 static SDL_vidpid_list SDL_ignored_gamepads = {
     SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES, 0, 0, NULL,
     NULL, 0, 0, NULL,
     0, NULL,
+    true,
     false
 };
 

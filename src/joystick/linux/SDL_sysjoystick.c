@@ -341,9 +341,6 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
     SDL_Log("Joystick: %s, bustype = %d, vendor = 0x%.4x, product = 0x%.4x, version = %d", name, inpid.bustype, inpid.vendor, inpid.product, inpid.version);
 #endif
 
-    if (SDL_ShouldIgnoreJoystick(inpid.vendor, inpid.product, inpid.version, name)) {
-        goto error;
-    }
     *name_return = name;
     *driver_return = driver;
     *vendor_return = inpid.vendor;
@@ -938,6 +935,8 @@ static void LINUX_FallbackJoystickDetect(void)
 
 static void LINUX_JoystickDetectDevices(void)
 {
+    SDL_AssertJoysticksLocked();
+
 #ifdef SDL_USE_LIBUDEV
     if (enumeration_method == ENUMERATION_LIBUDEV) {
         // Polling will happen in the main event loop

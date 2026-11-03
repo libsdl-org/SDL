@@ -594,11 +594,6 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
         return NULL;
     }
 
-    if (SDL_ShouldIgnoreJoystick(vendor, product, 0, name)) {
-        SDL_DestroyJoystickDevice(device);
-        return NULL;
-    }
-
     data->vendor = vendor;
     data->product = product;
     data->subtype = subtype;

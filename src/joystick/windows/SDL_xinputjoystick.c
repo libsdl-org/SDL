@@ -142,10 +142,8 @@ static SDL_JoystickDevice *CreateXInputDevice(Uint8 userid, BYTE SubType)
     }
 
     char name[32];
+    GetXInputName(userid, SubType, name, sizeof(name));
     GetXInputDeviceInfo(userid, &vendor, &product, &version, &steam_virtual_gamepad_slot);
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, GetXInputName(userid, SubType, name, sizeof(name)))) {
-        return NULL;
-    }
 
     SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_XINPUT_JoystickDriver, sizeof(SDL_JoystickDeviceData));
     if (!device) {
