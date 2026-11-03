@@ -960,7 +960,7 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
+static void LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
     Uint8 pLeftStickCal[9]  = {0,0,0,0,0,0,0,0,0};
     Uint8 pRightStickCal[9] = {0,0,0,0,0,0,0,0,0};
@@ -999,38 +999,26 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
         readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
         readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-        const int MAX_ATTEMPTS = 3;
-        for (int attempt = 0;; ++attempt) {
-            if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-                return false;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+            // We successfully read the calibration data
+            // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
+            if (!have_left_stick_cal) {
+                have_left_stick_cal = true;
+                SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
             }
-
-            if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
-                // We successfully read the calibration data
-                // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
-                if (!have_left_stick_cal) {
-                    have_left_stick_cal = true;
-                    SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
-                }
-
-                if (!have_right_stick_cal) {
-                    have_right_stick_cal = true;
-                    SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
-                }
-
-                break;
-            }
-
-            if (attempt == MAX_ATTEMPTS) {
-                return false;
+            if (!have_right_stick_cal) {
+                have_right_stick_cal = true;
+                SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
             }
         }
     }
 
-    // If we still don't have calibration data, return false
-    if (!have_left_stick_cal || !have_right_stick_cal)
-    {
-        return false;
+    // If we still don't have calibration data, use default values
+    if (!have_left_stick_cal) {
+        SDL_memset(pLeftStickCal, 0xFF, sizeof(pLeftStickCal));
+    }
+    if (!have_right_stick_cal) {
+        SDL_memset(pRightStickCal, 0xFF, sizeof(pRightStickCal));
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
@@ -1624,10 +1612,7 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
             }
         }
 
-        if (!LoadStickCalibration(ctx)) {
-            SDL_SetError("Couldn't load stick calibration");
-            return false;
-        }
+        LoadStickCalibration(ctx);
 
         if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCLeft &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCRight &&
