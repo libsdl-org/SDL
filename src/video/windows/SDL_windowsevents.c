@@ -2468,9 +2468,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             // Interactive user-initiated resizing/movement
-            {
-                /* Calculate the new frame w/h such that
-                   the client area size is maintained. */
+            if (data->window->flags & SDL_WINDOW_RESIZABLE) {
+                // The desktop dictates the size, particularly to maintain a maximized or arranged layout.
+                w = suggestedRect->right - suggestedRect->left;
+                h = suggestedRect->bottom - suggestedRect->top;
+            } else {
+                // Calculate the new frame w/h such that the fixed client area size is maintained.
                 RECT rect = { 0 };
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;
