@@ -249,9 +249,13 @@ static int AAUDIO_RecordDevice(SDL_AudioDevice *device, void *buffer, int buflen
     struct SDL_PrivateAudioData *hidden = device->hidden;
 
     // AAUDIO_dataCallback picks up our work and unblocks AAUDIO_WaitDevice. But make sure we didn't fail here.
-    if (SDL_GetAtomicInt(&hidden->error_callback_triggered)) {
-        SDL_SetAtomicInt(&hidden->error_callback_triggered, 0);
-        return -1;
+    const aaudio_result_t err = (aaudio_result_t) SDL_GetAtomicInt(&hidden->error_callback_triggered);
+    if (err) {
+        SDL_LogError(SDL_LOG_CATEGORY_AUDIO, "aaudio: Recording device triggered error %d (%s)", (int) err, ctx.AAudio_convertResultToText(err));
+
+        if (!RecoverAAudioDevice(device)) {
+            return -1;  // oh well, we went down hard.
+        }
     }
 
     SDL_assert(buflen == device->buffer_size);  // If this isn't true, we need to change semaphore trigger logic and account for wrapping copies here
@@ -528,6 +532,12 @@ static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
             if (res != AAUDIO_OK) {
                 LOGI("SDL Failed AAudioStream_requestStart %d", res);
                 SDL_SetError("%s : %s", SDL_FUNCTION, ctx.AAudio_convertResultToText(res));
+
+                // A stream that can't start again stays silent, and no error callback reports it: the audio server
+                // closes the streams of an app frozen in the background, and its requestStart then fails with
+                // AAUDIO_ERROR_DISCONNECTED. Flag it as AAUDIO_errorCallback does, so PlayDevice builds a new stream.
+                SDL_SetAtomicInt(&hidden->error_callback_triggered, (int) res);
+                SDL_SignalSemaphore(hidden->semaphore);  // in case we're blocking in WaitDevice.
             }
         }
     }
