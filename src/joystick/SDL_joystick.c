@@ -1042,8 +1042,9 @@ static SDL_JoystickDevice *SDL_UpdatePendingJoystickDevices(void)
 {
     SDL_JoystickDevice *pending_devices = NULL;
 
-    SDL_JoystickDevice *tail = NULL;
-    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+    // Iterate the drivers in reverse order
+    // DirectInput takes a long time to enumerate and devices don't always show up in HIDAPI immediately
+    for (int i = SDL_arraysize(SDL_joystick_drivers); i--; ) {
         SDL_JoystickDriver *driver = SDL_GetJoystickDriver(i);
         if (!driver) {
             continue;
@@ -1056,14 +1057,13 @@ static SDL_JoystickDevice *SDL_UpdatePendingJoystickDevices(void)
         SDL_JoystickDevice *devices = driver->QueryDevices();
         if (devices) {
             if (pending_devices) {
-                tail->next = devices;
-            } else {
-                pending_devices = devices;
-                tail = devices;
+                SDL_JoystickDevice *tail = devices;
+                while (tail->next) {
+                    tail = tail->next;
+                }
+                tail->next = pending_devices;
             }
-            while (tail->next) {
-                tail = tail->next;
-            }
+            pending_devices = devices;
         }
     }
 
