@@ -31,8 +31,16 @@
 extern "C" {
 #endif
 
-struct SDL_JoystickDriver;
+typedef struct SDL_JoystickDriver SDL_JoystickDriver;
+typedef struct SDL_JoystickDevice SDL_JoystickDevice;
 struct SDL_SteamVirtualGamepadInfo;
+
+typedef struct SDL_JoystickEventEntry
+{
+    SDL_Event event;
+    struct SDL_JoystickEventEntry *next;
+} SDL_JoystickEventEntry;
+
 
 // Initialization and shutdown functions
 extern bool SDL_InitJoysticks(void);
@@ -48,13 +56,42 @@ extern bool SDL_JoysticksQuitting(void);
 extern bool SDL_JoysticksLocked(void);
 
 // Make sure we currently have the joysticks locked
-extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
+
+// Function to allocate an event to be delivered by the joystick subsystem
+extern SDL_JoystickEventEntry *SDL_AllocJoystickEvent(SDL_EventType type, Uint64 timestamp, SDL_Event **event);
+
+// Function to queue an event for delivery
+extern void SDL_QueueJoystickEvent(SDL_JoystickEventEntry *entry);
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);
 
-// Function to determine whether a device is currently detected by this driver
-extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+// Function to allocate a joystick device
+extern SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver, size_t extra_length);
+
+// Function to free a joystick device that isn't passed back via QueryDevices()
+extern void SDL_DestroyJoystickDevice(SDL_JoystickDevice *device);
+
+// Functions to add joystick device matches
+extern void SDL_AddJoystickDeviceMatchType(SDL_JoystickDevice *device, SDL_GamepadType type);
+extern void SDL_AddJoystickDeviceMatchVIDPID(SDL_JoystickDevice *device, Uint16 vendor_id, Uint16 product_id);
+// The xinput_index is a specific slot or -1 to match all slots
+extern void SDL_AddJoystickDeviceMatchXInput(SDL_JoystickDevice *device, int xinput_index);
+
+// Function to get the current list of joystick devices
+extern SDL_JoystickDevice *SDL_GetJoystickDevices(void);
+
+// Manually publish a device
+extern SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device);
+
+// Remove a device published with SDL_AddJoystickDevice()
+extern void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id);
+
+// Request a joystick device update, can be called from any thread
+// If immediate is true, this will do a single update the next time joysticks are updated
+// If immediate is false, this will kick off several updates over the next few seconds to catch hardware settling
+extern void SDL_RequestJoystickDeviceUpdate(bool immediate);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed

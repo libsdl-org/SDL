@@ -38,11 +38,14 @@ extern bool SDL_SensorsInitialized(void);
 extern bool SDL_SensorsLocked(void);
 
 // Make sure we currently have the sensors locked
-extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
+extern void SDL_AssertSensorsLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
 
-extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_event_lock);
-extern bool SDL_TryLockSensors(void) SDL_TRY_ACQUIRE(true, SDL_event_lock);
-extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_event_lock);
+extern void SDL_LockSensors(void) SDL_ACQUIRE(SDL_joystick_lock);
+extern bool SDL_TryLockSensors(void) SDL_TRY_ACQUIRE(true, SDL_joystick_lock);
+extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_joystick_lock);
+
+// Function to dispatch any queued sensor events
+void SDL_DispatchSensorEvents(void);
 
 // Function to return whether there are any sensors opened by the application
 extern bool SDL_SensorsOpened(void);

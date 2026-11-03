@@ -85,7 +85,6 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     Uint8 deviceID;
-    bool available;
     bool has_cz;
     bool has_lmrm;
     bool has_circle;
@@ -99,7 +98,9 @@ typedef struct
     float accelScale;
     float gyroScale;
     Uint64 next_heartbeat;
+    Uint64 next_status_request;
     Uint64 last_packet;
+    bool acquired;
     Uint8 low_frequency_rumble;
     Uint8 high_frequency_rumble;
     Uint8 left_trigger_rumble;
@@ -299,22 +300,23 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_SetAvailable(SDL_HIDAPI_Device *device, bool available)
 {
-    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
-
-    if (available == ctx->available) {
-        return;
-    }
-
     if (available) {
+        // Include this device in queries so the Xbox endpoint is hidden
+        device->unavailable = false;
+
         if (device->num_joysticks == 0) {
             HIDAPI_JoystickConnected(device, NULL);
         }
-    } else {
+    } else if (!device->unavailable) {
+        // Don't include this device in queries so the Xbox endpoint shows up
+        device->unavailable = true;
+
         if (device->num_joysticks > 0) {
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        } else {
+            SDL_RequestJoystickDeviceUpdate(true);
         }
     }
-    ctx->available = available;
 }
 
 static bool HIDAPI_DriverFlydigi_UsesUnnumberedReports(SDL_HIDAPI_Device *device)
@@ -502,31 +504,6 @@ static void HIDAPI_DriverFlydigi_HandleInfoResponse(SDL_Joystick *joystick, SDL_
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
-static bool SDL_HIDAPI_Flydigi_SendStatusRequest(SDL_HIDAPI_Device *device)
-{
-    const Uint8 cmd[] = {
-        FLYDIGI_V2_CMD_REPORT_ID,
-        FLYDIGI_V2_MAGIC1,
-        FLYDIGI_V2_MAGIC2,
-        FLYDIGI_V2_GET_STATUS_COMMAND
-    };
-
-    if (HIDAPI_DriverFlydigi_WritePacket(device, cmd, sizeof(cmd)) < 0) {
-        return SDL_SetError("Couldn't query controller status");
-    }
-    return true;
-}
-
-static void HIDAPI_DriverFlydigi_HandleStatusResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
-{
-    if (data[9] == 1) {
-        HIDAPI_DriverFlydigi_SetAvailable(device, true);
-    } else {
-        // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
-        HIDAPI_DriverFlydigi_SetAvailable(device, false);
-    }
-}
-
 static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, bool acquire)
 {
     const Uint8 cmd[32] = {
@@ -547,8 +524,40 @@ static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, boo
 
 static void HIDAPI_DriverFlydigi_HandleAcquireResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
-    if (data[5] != 1 && data[6] == 0) {
-        // Controller acquiring failed or has been disabled
+    // This response might be from another application (e.g. the Space Station Service)
+    // so let's rely on the status response to determine whether the controller is available
+}
+
+static bool SDL_HIDAPI_Flydigi_SendStatusRequest(SDL_HIDAPI_Device *device)
+{
+    const Uint8 cmd[] = {
+        FLYDIGI_V2_CMD_REPORT_ID,
+        FLYDIGI_V2_MAGIC1,
+        FLYDIGI_V2_MAGIC2,
+        FLYDIGI_V2_GET_STATUS_COMMAND
+    };
+
+    if (HIDAPI_DriverFlydigi_WritePacket(device, cmd, sizeof(cmd)) < 0) {
+        return SDL_SetError("Couldn't query controller status");
+    }
+    return true;
+}
+
+static void HIDAPI_DriverFlydigi_HandleStatusResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
+{
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    if (data[9] == 1) {
+        HIDAPI_DriverFlydigi_SetAvailable(device, true);
+
+        // The Space Station service can stop input while third party apps are still allowed,
+        // so release and re-acquire the controller if it looks like we should be able to.
+        if (device->num_joysticks > 0 && ctx->acquired && data[6] == 0) {
+            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
+            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
+        }
+    } else {
+        // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
         HIDAPI_DriverFlydigi_SetAvailable(device, false);
     }
 }
@@ -633,7 +642,10 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     HIDAPI_DriverFlydigi_UpdateDeviceIdentity(device);
 
     // See whether we can acquire the controller
-    SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+    if (SDL_HIDAPI_Flydigi_SendStatusRequest(device) &&
+        GetReply(device, FLYDIGI_V2_GET_STATUS_COMMAND, data, sizeof(data))) {
+        HIDAPI_DriverFlydigi_HandleStatusResponse(device, data, sizeof(data));
+    }
 
     return true;
 }
@@ -724,9 +736,16 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
             return SDL_SetError("Couldn't send rumble packet");
         }
     } else {
-        ctx->low_frequency_rumble = low_frequency_rumble >> 8;
-        ctx->high_frequency_rumble = high_frequency_rumble >> 8;
-        return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
+        Uint8 rumble_packet[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_HAPTIC_COMMAND, 6, 0, 0, 0, 0, 0 };
+        rumble_packet[5] = low_frequency_rumble >> 8;
+        rumble_packet[6] = high_frequency_rumble >> 8;
+        if (HIDAPI_DriverFlydigi_UsesUnnumberedReports(device)) {
+            rumble_packet[0] = 0;
+        }
+
+        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+            return SDL_SetError("Couldn't send rumble packet");
+        }
     }
     return true;
 }
@@ -1097,11 +1116,26 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     }
 
-    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && joystick) {
-        if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
-            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
-            SDL_HIDAPI_Flydigi_SendInfoRequest(device);
-            ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        if (joystick) {
+            if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
+                if (SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true)) {
+                    ctx->acquired = true;
+                }
+                SDL_HIDAPI_Flydigi_SendInfoRequest(device);
+                SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+                ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
+
+                // Time the input timeout from the heartbeat so we don't send it again before the replies arrive
+                ctx->last_packet = now;
+            }
+        } else if (device->num_joysticks == 0 && !device->unavailable) {
+            // We don't know yet whether we can use the controller, and the status reply might have been lost
+            const int STATUS_RETRY_MS = 1000;
+            if (now >= ctx->next_status_request) {
+                SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+                ctx->next_status_request = now + STATUS_RETRY_MS;
+            }
         }
     }
 

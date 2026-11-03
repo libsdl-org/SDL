@@ -78,7 +78,7 @@ static const struct wl_callback_listener event_thread_exit_listener = {
     handle_event_thread_exit
 };
 
-static int SDLCALL Wayland_EventThreadFunc(void *data)
+static int SDLCALL EventThreadFunc(void *data)
 {
     Wayland_EventThreadContext *context = (Wayland_EventThreadContext *)data;
     struct wl_display *display = context->wayland_data->display;
@@ -145,7 +145,7 @@ Wayland_EventThreadContext *Wayland_CreateEventThread(SDL_VideoData *data, const
     }
 
     context->wayland_data = data;
-    context->queue = Wayland_DisplayCreateQueue(data->display, queue_name);
+    context->queue = Wayland_CreateQueue(data->display, queue_name);
     if (!context->queue) {
         goto cleanup;
     }
@@ -155,7 +155,7 @@ Wayland_EventThreadContext *Wayland_CreateEventThread(SDL_VideoData *data, const
         goto cleanup;
     }
 
-    context->thread = SDL_CreateThread(Wayland_EventThreadFunc, "wl_event_thread", context);
+    context->thread = SDL_CreateThread(EventThreadFunc, "wl_event_thread", context);
     if (!context->thread) {
         goto cleanup;
     }
@@ -236,7 +236,7 @@ void Wayland_UnlockEventThread(Wayland_EventThreadContext *context)
     }
 }
 
-static int SDLCALL Wayland_JobThreadFunc(void *data)
+static int SDLCALL JobThreadFunc(void *data)
 {
     Wayland_JobThreadContext *context = (Wayland_JobThreadContext *)data;
 
@@ -303,7 +303,7 @@ extern Wayland_JobThreadContext *Wayland_CreateJobThread()
         goto cleanup;
     }
 
-    context->thread = SDL_CreateThread(Wayland_JobThreadFunc, "wl_job_thread", context);
+    context->thread = SDL_CreateThread(JobThreadFunc, "wl_job_thread", context);
     if (!context->thread) {
         goto cleanup;
     }
@@ -334,14 +334,14 @@ static void job_thread_exit(void *data)
     context->should_exit = true;
 }
 
-extern void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
+void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
 {
     if (!context) {
         return;
     }
 
     // Dispatch the exit job to unblock the thread and set the exit condition.
-    Wayland_JobThreadAddJob(context, job_thread_exit, context, NULL);
+    Wayland_AddJob(context, job_thread_exit, context, NULL);
 
     // Wait for the thread to return; all jobs will be complete at this point.
     SDL_WaitThread(context->thread, NULL);
@@ -353,7 +353,7 @@ extern void Wayland_DestroyJobThread(Wayland_JobThreadContext *context)
     SDL_free(context);
 }
 
-bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context, Wayland_JobThreadCallback callback, void *userdata, Wayland_JobID *id)
+bool Wayland_AddJob(Wayland_JobThreadContext *context, Wayland_JobThreadCallback callback, void *userdata, Wayland_JobID *id)
 {
     if (!callback) {
         return false;
@@ -389,7 +389,7 @@ bool Wayland_JobThreadAddJob(Wayland_JobThreadContext *context, Wayland_JobThrea
     return true;
 }
 
-void Wayland_JobThreadCancelJob(Wayland_JobThreadContext *context, Wayland_JobID id)
+void Wayland_CancelJob(Wayland_JobThreadContext *context, Wayland_JobID id)
 {
     if (!context) {
         return;

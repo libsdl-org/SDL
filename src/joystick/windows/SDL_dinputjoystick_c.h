@@ -31,19 +31,12 @@
 extern "C" {
 #endif
 
-typedef struct JoyStick_DeviceData
+struct SDL_JoystickDeviceData
 {
-    SDL_GUID guid;
-    char *joystickname;
-    Uint8 send_add_event;
-    SDL_JoystickID nInstanceID;
     DIDEVICEINSTANCE dxdevice;
-    char path[MAX_PATH];
-    int steam_virtual_gamepad_slot;
-    struct JoyStick_DeviceData *pNext;
-} JoyStick_DeviceData;
-
-extern JoyStick_DeviceData *SYS_Joystick;
+    Uint16 vendor;
+    Uint16 product;
+};
 
 typedef enum Type
 {
