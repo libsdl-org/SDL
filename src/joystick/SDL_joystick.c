@@ -1143,18 +1143,31 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
     SDL_joystick_devices = devices;
 
     // Send events for removed devices
-    while (removed) {
-        SDL_JoystickDevice *next = removed->next;
-        if (removed->published) {
-            SDL_PrivateJoystickRemoved(removed->instance_id);
+    for (SDL_JoystickDevice *device = removed; device; device = device->next) {
+        if (device->published) {
+            SDL_PrivateJoystickRemoved(device->instance_id);
         }
-        SDL_DestroyJoystickDevice(removed);
-        removed = next;
     }
 
     // Send events for devices that are ready to be published
     for (SDL_JoystickDevice *device = devices; device; device = device->next) {
         if (!device->published && !device->initializing) {
+            bool deferred = false;
+            for (SDL_JoystickDevice *entry = removed; entry; entry = entry->next) {
+                if (entry->published &&
+                    entry->driver != device->driver &&
+                    SDL_DevicesMatch(device, entry)) {
+                    // This matches a device that's being removed and will probably be
+                    // removed as well on the next update, check again in a bit.
+                    deferred = true;
+                    break;
+                }
+            }
+            if (deferred) {
+                SDL_RequestJoystickDeviceUpdate(false);
+                continue;
+            }
+
             bool prepared = true;
             if (device->driver->PrepareDevice) {
                 prepared = device->driver->PrepareDevice(device);
@@ -1167,6 +1180,12 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
                 SDL_PrivateJoystickAdded(device->instance_id);
             }
         }
+    }
+
+    while (removed) {
+        SDL_JoystickDevice *next = removed->next;
+        SDL_DestroyJoystickDevice(removed);
+        removed = next;
     }
 }
 
