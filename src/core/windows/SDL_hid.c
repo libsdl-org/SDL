@@ -86,7 +86,8 @@ void WIN_UnloadHIDDLL(void)
 
 // CM_Register_Notification definitions
 
-#define CR_SUCCESS 0
+#define CR_SUCCESS      0x00
+#define CR_BUFFER_SMALL 0x1A
 
 DECLARE_HANDLE(HCMNOTIFICATION);
 typedef HCMNOTIFICATION *PHCMNOTIFICATION;
@@ -166,14 +167,19 @@ typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Con
 
 typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
 typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
+typedef DWORD (WINAPI *CM_Get_Device_Interface_List_SizeWFunc)(PULONG pulLen, LPGUID InterfaceClassGuid, WCHAR *pDeviceID, ULONG ulFlags);
+typedef DWORD (WINAPI *CM_Get_Device_Interface_ListWFunc)(LPGUID InterfaceClassGuid, WCHAR *pDeviceID, WCHAR *Buffer, ULONG BufferLen, ULONG ulFlags);
 
 #define CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES 0x00000001
+#define CM_GET_DEVICE_INTERFACE_LIST_PRESENT        0x00000000
 
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
 static SDL_InitState SDL_cfgmgr32_init;
 static CM_Register_NotificationFunc SDL_CM_Register_Notification;
 static CM_Unregister_NotificationFunc SDL_CM_Unregister_Notification;
+static CM_Get_Device_Interface_List_SizeWFunc SDL_CM_Get_Device_Interface_List_SizeW;
+static CM_Get_Device_Interface_ListWFunc SDL_CM_Get_Device_Interface_ListW;
 
 static int s_DeviceNotificationsRequested;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
@@ -190,11 +196,16 @@ static bool WIN_LoadCfgMgr32(void)
         if (cfgmgr32) {
             SDL_CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Register_Notification");
             SDL_CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Unregister_Notification");
+            SDL_CM_Get_Device_Interface_List_SizeW = (CM_Get_Device_Interface_List_SizeWFunc)GetProcAddress(cfgmgr32, "CM_Get_Device_Interface_List_SizeW");
+            SDL_CM_Get_Device_Interface_ListW = (CM_Get_Device_Interface_ListWFunc)GetProcAddress(cfgmgr32, "CM_Get_Device_Interface_ListW");
         }
         SDL_SetInitialized(&SDL_cfgmgr32_init, true);
     }
 
-    if (!SDL_CM_Register_Notification || !SDL_CM_Unregister_Notification) {
+    if (!SDL_CM_Register_Notification ||
+        !SDL_CM_Unregister_Notification ||
+        !SDL_CM_Get_Device_Interface_List_SizeW ||
+        !SDL_CM_Get_Device_Interface_ListW) {
         return false;
     }
     return true;
@@ -338,6 +349,42 @@ void WIN_QuitDeviceNotification(void)
     }
 }
 
+WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
+{
+    WCHAR *list = NULL;
+    ULONG len = 0;
+    DWORD result;
+
+    if (!WIN_LoadCfgMgr32()) {
+        *length = 0;
+        return NULL;
+    }
+
+    // Retry in case the list changes between getting the size and getting the list
+    do {
+        result = SDL_CM_Get_Device_Interface_List_SizeW(&len, &GUID_DEVINTERFACE_HID, NULL, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+        if (result != CR_SUCCESS || len == 0) {
+            break;
+        }
+
+        SDL_free(list);
+        list = (WCHAR *)SDL_malloc(len * sizeof(*list));
+        if (!list) {
+            return NULL;
+        }
+        result = SDL_CM_Get_Device_Interface_ListW(&GUID_DEVINTERFACE_HID, NULL, list, len, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+    } while (result == CR_BUFFER_SMALL);
+
+    if (result == CR_SUCCESS && len > 0) {
+        *length = len;
+        return list;
+    } else {
+        SDL_free(list);
+        *length = 0;
+        return NULL;
+    }
+}
+
 #else
 
 void WIN_InitDeviceNotification(void)
@@ -360,6 +407,12 @@ WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_Dev
 
 void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification)
 {
+}
+
+WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
+{
+    *length = 0;
+    return NULL;
 }
 
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

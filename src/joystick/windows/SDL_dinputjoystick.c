@@ -57,6 +57,20 @@ static bool coinitialized = false;
 static LPDIRECTINPUT8 dinput = NULL;
 static bool DINPUT_handle_xinput = false;
 
+typedef struct DINPUT_CachedDevice
+{
+    DIDEVICEINSTANCE dxdevice;
+    Uint16 vendor;
+    Uint16 product;
+    char *path;
+    char *name;
+    struct DINPUT_CachedDevice *next;
+} DINPUT_CachedDevice;
+
+static WCHAR *DINPUT_cached_interfaces = NULL;
+static ULONG DINPUT_cached_interfaces_length = 0;
+static DINPUT_CachedDevice *DINPUT_cached_devices = NULL;
+
 // external variables referenced.
 extern HWND SDL_HelperWindow;
 
@@ -395,12 +409,6 @@ static void FreeDInputDevice(SDL_JoystickDevice *device)
 #endif
 }
 
-typedef struct
-{
-    SDL_JoystickDevice *devices;
-    SDL_JoystickDevice *tail;
-} DINPUT_EnumData;
-
 // helper function for direct input, gets called for each connected joystick
 static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInstance, LPVOID pContext)
 {
@@ -409,12 +417,10 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
         if (!(expression)) \
             goto err;      \
     }
-    DINPUT_EnumData *enum_data = (DINPUT_EnumData *)pContext;
-    SDL_JoystickDevice *device = NULL;
-    SDL_JoystickDeviceData *data = NULL;
+    DINPUT_CachedDevice **devices = (DINPUT_CachedDevice **)pContext;
+    DINPUT_CachedDevice *entry;
     Uint16 vendor = 0;
     Uint16 product = 0;
-    Uint16 version = 0;
     char *hidPath = NULL;
     char *product_string = NULL;
     LPDIRECTINPUTDEVICE8 dxdevice = NULL;
@@ -426,44 +432,21 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     CHECK(QueryDeviceInfo(dxdevice, &vendor, &product));
     CHECK(QueryDeviceName(dxdevice, &product_string));
     CHECK(DINPUT_handle_xinput || !IsXInputDevice(vendor, product, hidPath));
-    CHECK(!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string));
 
-    device = SDL_CreateJoystickDevice(&SDL_DINPUT_JoystickDriver, sizeof(*data));
-    CHECK(device);
+    entry = (DINPUT_CachedDevice *)SDL_calloc(1, sizeof(*entry));
+    CHECK(entry);
+    entry->next = *devices;
+    *devices = entry;
 
-    data = (SDL_JoystickDeviceData *)(device + 1);
-    SDL_memcpy(&data->dxdevice, pDeviceInstance, sizeof(data->dxdevice));
-    data->vendor = vendor;
-    data->product = product;
-    device->internal = data;
-    device->free = FreeDInputDevice;
-
-    // The device path is the unique ID for the device
-    device->path = hidPath;
+    SDL_memcpy(&entry->dxdevice, pDeviceInstance, sizeof(entry->dxdevice));
+    entry->vendor = vendor;
+    entry->product = product;
+    entry->path = hidPath;
     hidPath = NULL;
-    device->unique_id = device->path;
-    device->unique_id_len = SDL_strlen(device->path);
-
-    device->name = product_string;
+    entry->name = product_string;
     product_string = NULL;
 
-    device->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(vendor, product, device->path);
-
-    SDL_AddJoystickDeviceMatchVIDPID(device, vendor, product);
-
-    if (enum_data->tail) {
-        enum_data->tail->next = device;
-    } else {
-        enum_data->devices = device;
-    }
-    enum_data->tail = device;
-    device = NULL;
-
 err:
-    if (device) {
-        SDL_DestroyJoystickDevice(device);
-    }
-
     SDL_free(hidPath);
     SDL_free(product_string);
 
@@ -860,18 +843,101 @@ static bool DINPUT_JoystickInit(void)
     return true;
 }
 
+static void FreeCachedDevices(void)
+{
+    while (DINPUT_cached_devices) {
+        DINPUT_CachedDevice *entry = DINPUT_cached_devices;
+        DINPUT_cached_devices = DINPUT_cached_devices->next;
+
+        SDL_free(entry->path);
+        SDL_free(entry->name);
+        SDL_free(entry);
+    }
+}
+
+static void UpdateCachedDevices(void)
+{
+    ULONG HID_interfaces_length = 0;
+    WCHAR *HID_interfaces;
+
+    HID_interfaces = WIN_GetHIDDeviceInterfaces(&HID_interfaces_length);
+    if (HID_interfaces && DINPUT_cached_interfaces &&
+        HID_interfaces_length == DINPUT_cached_interfaces_length &&
+        SDL_memcmp(HID_interfaces, DINPUT_cached_interfaces, HID_interfaces_length * sizeof(*HID_interfaces)) == 0) {
+        // Our cache is still valid
+        SDL_free(HID_interfaces);
+        return;
+    }
+
+    // Look for DirectInput joysticks, wheels, head trackers, gamepads, etc..
+    FreeCachedDevices();
+    IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoystickDetectCallback, &DINPUT_cached_devices, DIEDFL_ATTACHEDONLY);
+
+    SDL_free(DINPUT_cached_interfaces);
+    DINPUT_cached_interfaces = HID_interfaces;
+    DINPUT_cached_interfaces_length = HID_interfaces_length;
+}
+
+static SDL_JoystickDevice *CreateDInputDevice(const DINPUT_CachedDevice *entry)
+{
+    SDL_JoystickDevice *device;
+    SDL_JoystickDeviceData *data;
+    Uint16 version = 0;
+
+    if (SDL_ShouldIgnoreJoystick(entry->vendor, entry->product, version, entry->name)) {
+        return NULL;
+    }
+
+    device = SDL_CreateJoystickDevice(&SDL_DINPUT_JoystickDriver, sizeof(*data));
+    if (!device) {
+        return NULL;
+    }
+
+    data = (SDL_JoystickDeviceData *)(device + 1);
+    SDL_memcpy(&data->dxdevice, &entry->dxdevice, sizeof(data->dxdevice));
+    data->vendor = entry->vendor;
+    data->product = entry->product;
+    device->internal = data;
+    device->free = FreeDInputDevice;
+
+    device->path = SDL_strdup(entry->path);
+    device->name = SDL_strdup(entry->name);
+    if (!device->path || !device->name) {
+        SDL_DestroyJoystickDevice(device);
+        return NULL;
+    }
+
+    // The device path is the unique ID for the device
+    device->unique_id = device->path;
+    device->unique_id_len = SDL_strlen(device->path);
+
+    device->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(entry->vendor, entry->product, device->path);
+
+    SDL_AddJoystickDeviceMatchVIDPID(device, entry->vendor, entry->product);
+
+    return device;
+}
+
 static SDL_JoystickDevice *DINPUT_JoystickQueryDevices(void)
 {
-    DINPUT_EnumData enum_data;
+    SDL_JoystickDevice *devices = NULL;
+
+    SDL_AssertJoysticksLocked();
 
     if (!dinput) {
         return NULL;
     }
 
-    // Look for DirectInput joysticks, wheels, head trackers, gamepads, etc..
-    SDL_zero(enum_data);
-    IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoystickDetectCallback, &enum_data, DIEDFL_ATTACHEDONLY);
-    return enum_data.devices;
+    UpdateCachedDevices();
+
+    for (DINPUT_CachedDevice *entry = DINPUT_cached_devices; entry; entry = entry->next) {
+        SDL_JoystickDevice *device = CreateDInputDevice(entry);
+        if (device) {
+            device->next = devices;
+            devices = device;
+        }
+    }
+    return devices;
 }
 
 static bool DINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
@@ -1157,6 +1223,14 @@ static void DINPUT_JoystickClose(SDL_Joystick *joystick)
 
 static void DINPUT_JoystickQuit(void)
 {
+    if (DINPUT_cached_interfaces) {
+        SDL_free(DINPUT_cached_interfaces);
+        DINPUT_cached_interfaces = NULL;
+        DINPUT_cached_interfaces_length = 0;
+    }
+
+    FreeCachedDevices();
+
     if (dinput != NULL) {
         IDirectInput8_Release(dinput);
         dinput = NULL;
