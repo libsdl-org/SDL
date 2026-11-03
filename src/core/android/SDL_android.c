@@ -59,6 +59,9 @@
 #include <dlfcn.h>
 #include <time.h>
 
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "SDL", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "SDL", __VA_ARGS__))
+
 #define SDL_JAVA_PREFIX                               org_libsdl_app
 #define CONCAT1(prefix, class, function)              CONCAT2(prefix, class, function)
 #define CONCAT2(prefix, class, function)              Java_##prefix##_##class##_##function
@@ -728,7 +731,7 @@ static bool Android_JNI_SetEnv(JNIEnv *env)
 {
     int status = pthread_setspecific(mThreadKey, env);
     if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
+        LOGE("Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
         return false;
     }
     return true;
@@ -751,7 +754,7 @@ static void Android_JNI_CreateKey(void)
 {
     int status = pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed);
     if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing mThreadKey with pthread_key_create() (err=%d)", status);
+        LOGE("Error initializing mThreadKey with pthread_key_create() (err=%d)", status);
     }
 }
 
@@ -759,7 +762,7 @@ static void Android_JNI_CreateKey_once(void)
 {
     int status = pthread_once(&key_once, Android_JNI_CreateKey);
     if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing mThreadKey with pthread_once() (err=%d)", status);
+        LOGE("Error initializing mThreadKey with pthread_once() (err=%d)", status);
     }
 }
 
@@ -767,7 +770,7 @@ static void register_methods(JNIEnv *env, const char *classname, JNINativeMethod
 {
     jclass clazz = (*env)->FindClass(env, classname);
     if (!clazz || (*env)->RegisterNatives(env, clazz, methods, nb) < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to register methods of %s", classname);
+        LOGE("Failed to register methods of %s", classname);
         return;
     }
 }
@@ -780,7 +783,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     mJavaVM = vm;
 
     if ((*mJavaVM)->GetEnv(mJavaVM, (void **)&env, JNI_VERSION_1_4) != JNI_OK) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to get JNI Env");
+        LOGE("Failed to get JNI Env");
         return JNI_VERSION_1_4;
     }
 
@@ -836,7 +839,7 @@ JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jcla
 // Activity initialization -- called before SDL_main() to initialize JNI bindings
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
+    LOGI("nativeSetupJNI()");
 
     // Start with a clean slate
     SDL_ClearError();
@@ -855,13 +858,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     Android_JNI_SetEnv(env);
 
     if (!mJavaVM) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to found a JavaVM");
+        LOGE("failed to found a JavaVM");
     }
 
 #define ALLOC_SEM(foo)                                                                          \
     foo = SDL_CreateSemaphore(0);                                                               \
     if (! foo) {                                                                                \
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create " #foo "semaphore");    \
+        LOGE("failed to create " #foo "semaphore");    \
     }                                                                                           \
 
     ALLOC_SEM(Android_PauseSem);
@@ -909,7 +912,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 #endif
         !midGetPreferredLocales ||
         !midSetBackButtonTrapEnabled) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some core Java callbacks, do you have the latest version of SDLActivity.java?");
+        LOGE("Missing some core Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
 #ifndef SDL_VIDEO_DISABLED
@@ -950,7 +953,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midShouldMinimizeOnFocusLoss ||
         !midShowTextInput ||
         !midSupportsRelativeMouse) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some video Java callbacks, do you have the latest version of SDLActivity.java?");
+        LOGE("Missing some video Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 #endif // !SDL_VIDEO_DISABLED
 
@@ -996,7 +999,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeIsHIDAPIEnabled)(JNIEnv *env
 // Audio initialization -- called before SDL_main() to initialize JNI bindings
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "AUDIO nativeSetupJNI()");
+    LOGI("AUDIO nativeSetupJNI()");
 
     mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
@@ -1010,8 +1013,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
                                                           "audioSetThreadPriority", "(ZI)V");
 
     if (!midRegisterAudioDeviceCallback || !midUnregisterAudioDeviceCallback || !midAudioSetThreadPriority) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL",
-                            "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
+        LOGE("Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
 
     checkJNIReady();
@@ -1029,7 +1031,7 @@ static void Android_JNI_AudioSetThreadPriority(int recording, int device_id)
 // Controller initialization -- called before SDL_main() to initialize JNI bindings
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "CONTROLLER nativeSetupJNI()");
+    LOGI("CONTROLLER nativeSetupJNI()");
 
     mControllerManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
@@ -1055,7 +1057,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
         || !midDetectHapticDevices || !midHapticRun || !midHapticRumble || !midHapticStop
 #endif
         ) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
+        LOGE("Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
     checkJNIReady();
@@ -1084,7 +1086,7 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_INTERFACE(nativeAllowRecreateActivity)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeInitMainThread)(
     JNIEnv *env, jclass jcls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeInitSDLThread() %d time", run_count);
+    LOGI("nativeInitSDLThread() %d time", run_count);
     run_count += 1;
 
     // Save JNIEnv of SDLThread
@@ -1148,7 +1150,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 
             void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
             if (!args) { // uhoh.
-                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
+                LOGE("nativeRunMain(): Out of memory parsing command line!");
             } else {
                 size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
                 int argc = 0;
@@ -1182,14 +1184,14 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
                 free(args);  // This should NOT be SDL_free()
             }
         } else {
-            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+            LOGE("nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
         }
         (*env)->ReleaseStringUTFChars(env, function, function_name);
 
         dlclose(library_handle);
 
     } else {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
+        LOGE("nativeRunMain(): Couldn't load library %s", library_file);
     }
     (*env)->ReleaseStringUTFChars(env, library, library_file);
 
@@ -1656,7 +1658,7 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 // Called from surfaceCreated()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, jclass jcls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceCreated");
+    LOGI("onNativeSurfaceCreated");
 
     RPC_SendWithoutData(onNativeSurfaceCreated);
 }
@@ -1664,7 +1666,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
 // Called from surfaceChanged()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, jclass jcls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceChanged");
+    LOGI("onNativeSurfaceChanged");
 
     RPC_SendWithoutData(onNativeSurfaceChanged);
 }
@@ -1672,7 +1674,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 // Called from surfaceDestroyed()
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "onNativeSurfaceDestroyed");
+    LOGI("onNativeSurfaceDestroyed");
 
     RPC_SendWithoutData(onNativeSurfaceDestroyed);
 }
@@ -1940,9 +1942,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 
     str = SDL_GetError();
     if (str && str[0]) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "SDLActivity thread ends (error=%s)", str);
+        LOGE("SDLActivity thread ends (error=%s)", str);
     } else {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDLActivity thread ends");
+        LOGI("SDLActivity thread ends");
     }
 }
 
@@ -1950,14 +1952,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
     JNIEnv *env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
+    LOGI("nativePause()");
 
     bool ret = RPC_SendWithPriorityWithoutData(nativePause);
 
     // Wait for completion
     if (ret) {
         if (!SDL_WaitSemaphoreTimeoutNS(Android_PauseSem, SDL_MS_TO_NS(500))) {
-            SDL_Log("nativePause timeout expired");
+            LOGE("nativePause timeout expired");
             RPC_SendWithPriorityWithoutData(nativePause_CancelSem);
         }
     }
@@ -1967,7 +1969,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
     JNIEnv *env, jclass cls)
 {
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
+    LOGI("nativeResume()");
 
     // First: send the resume CMD.
 
@@ -1981,11 +1983,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
     // Wait for completion
     if (ret) {
         if (!SDL_WaitSemaphoreTimeoutNS(Android_ResumeSem, SDL_MS_TO_NS(500))) {
-            SDL_Log("nativeResume timeout expired");
+            LOGE("nativeResume timeout expired");
             RPC_SendWithPriorityWithoutData(nativeResume_CancelSem);
         }
     }
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume() done");
+    LOGI("nativeResume() done");
 }
 
 void Android_WaitForResume(void)
@@ -2888,7 +2890,7 @@ Uint32 SDL_GetAndroidExternalStorageState(void)
     state_string = (*env)->GetStringUTFChars(env, stateString, NULL);
 
     // Print an info message so people debugging know the storage state
-    __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state_string);
+    SDL_Log("external storage state: %s", state_string);
 
     if (SDL_strcmp(state_string, "mounted") == 0) {
         stateFlags = SDL_ANDROID_EXTERNAL_STORAGE_READ |
@@ -3538,7 +3540,7 @@ bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info)
 void Android_JNI_GetManifestEnvironmentVariables(void)
 {
     if (!mActivityClass || !midGetManifestEnvironmentVariables) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Request to get environment variables before JNI is ready");
+        LOGE("Request to get environment variables before JNI is ready");
         return;
     }
 
@@ -3778,14 +3780,14 @@ void Android_JNI_HapticStop(int device_id)
 JNIEnv *Android_JNI_GetEnv(void)
 {
     // Get JNIEnv from the Thread local storage
-    JNIEnv *env = pthread_getspecific(mThreadKey);
+    JNIEnv *env = (JNIEnv *)pthread_getspecific(mThreadKey);
     if (!env) {
         // If it fails, try to attach ! (e.g the thread isn't created with SDL_CreateThread()
         int status;
 
         // There should be a JVM
         if (!mJavaVM) {
-            __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
+            LOGE("Failed, there is no JavaVM");
             return NULL;
         }
 
@@ -3793,7 +3795,7 @@ JNIEnv *Android_JNI_GetEnv(void)
          * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed' */
         status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
         if (status < 0) {
-            __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
+            LOGE("Failed to attach current thread (err=%d)", status);
             return NULL;
         }
 
@@ -3814,7 +3816,7 @@ bool Android_JNI_SetupThread(void)
 
     // There should be a JVM
     if (!mJavaVM) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
+        LOGE("Failed, there is no JavaVM");
         return false;
     }
 
@@ -3822,7 +3824,7 @@ bool Android_JNI_SetupThread(void)
      * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed' */
     status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
     if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
+        LOGE("Failed to attach current thread (err=%d)", status);
         return false;
     }
 
@@ -4091,7 +4093,7 @@ static void RPC_Init(void)
     }
 
     if (!RPC_Mutex) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create RPC_Mutex mutex");
+        LOGE("failed to create RPC_Mutex mutex");
     }
 
 }
@@ -4108,13 +4110,13 @@ static bool RPC_Send__(void *data, RPC_cmd_t cmd, int len, bool priority)
         RPC_cur_size += len;
         RPC_cur_nb_cmd += 1;
 #ifdef DEBUG_RPC
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "send RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+        LOGE("send RPC of len %d, cmd=%s", len, cmd2Str(cmd));
 #endif
     } else {
 #ifdef DEBUG_RPC
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "cannot add RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+        LOGE("cannot add RPC of len %d, cmd=%s", len, cmd2Str(cmd));
 #else
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "cannot add RPC of len %d, cmd=%u", len, cmd);
+        LOGE("cannot add RPC of len %d, cmd=%u", len, cmd);
 #endif
         ret = false;
     }
@@ -4387,7 +4389,7 @@ void Android_PumpRPC(SDL_Window *window)
             case RPC_cmd_onNativePen:
                 {
                     RPC_Get(onNativePen);
-                    Android_OnPen(window, data.pen_id_in, data.device_type, data.button, data.action, data.x, data.y, data.p);
+                    Android_OnPen(window, data.pen_id_in, (SDL_PenDeviceType)data.device_type, data.button, data.action, data.x, data.y, data.p);
                 }
                 break;
 
@@ -4432,7 +4434,7 @@ void Android_PumpRPC(SDL_Window *window)
             case RPC_cmd_nativeFocusChanged:
                 {
                     RPC_Get(nativeFocusChanged);
-                    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
+                    SDL_Log("nativeFocusChanged()");
                     SDL_SendWindowEvent(window, (data.hasFocus ? SDL_EVENT_WINDOW_FOCUS_GAINED : SDL_EVENT_WINDOW_FOCUS_LOST), 0, 0);
                 }
                 break;
@@ -4714,7 +4716,7 @@ bool Android_JNI_ReadInt(const char *name, int *val)
     return true;
 
 error:
-    __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to find 'int' parameter '%s'", name);
+    SDL_Log("Failed to find 'int' parameter '%s'", name);
     return false;
 }
 
@@ -4742,7 +4744,7 @@ bool Android_JNI_ReadFloat(const char *name, float *val)
     return true;
 
 error:
-    __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to find 'float' parameter '%s'", name);
+    SDL_Log("Failed to find 'float' parameter '%s'", name);
     return false;
 }
 
@@ -4770,7 +4772,7 @@ bool Android_JNI_ReadBoolean(const char *name, bool *val)
     return true;
 
 error:
-    __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to find 'bool' parameter '%s'", name);
+    SDL_Log("Failed to find 'bool' parameter '%s'", name);
     return false;
 }
 

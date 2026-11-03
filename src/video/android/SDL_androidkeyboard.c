@@ -22,8 +22,6 @@
 
 #ifdef SDL_VIDEO_DRIVER_ANDROID
 
-#include <android/log.h>
-
 #include "../../events/SDL_events_c.h"
 
 #include "SDL_androidkeyboard.h"
@@ -364,7 +362,7 @@ static SDL_Scancode TranslateKeycode(int keycode)
         if (keycode >= 96 /* AKEYCODE_BUTTON_A */ && keycode < 111 /* AKEYCODE_ESCAPE */) {
             // Ignore game controller buttons
         } else {
-            __android_log_print(ANDROID_LOG_INFO, "SDL", "Unknown keycode %d", keycode);
+            SDL_Log("Unknown keycode %d", keycode);
         }
     }
     return scancode;
