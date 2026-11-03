@@ -616,6 +616,7 @@ static void BlitRGBtoRGBPixelAlpha(SDL_BlitInfo *info)
         Uint32 d1;
         Uint32 s = *srcp;
         Uint32 alpha = s >> 24;
+        Uint32 x;
         /* FIXME: Here we special-case opaque alpha since the
            compositioning used (>>8 instead of /255) doesn't handle
            it correctly. Also special-case alpha=0 for speed?
@@ -636,7 +637,8 @@ static void BlitRGBtoRGBPixelAlpha(SDL_BlitInfo *info)
             s &= 0xff00;
             d &= 0xff00;
             d = (d + ((s - d) * alpha >> 8)) & 0xff00;
-            dalpha = alpha + (dalpha * (alpha ^ 0xFF) >> 8);
+            x = alpha * 0xff + (alpha ^ 0xff) * dalpha + 0x80;
+            dalpha = (x + (x >> 8)) >> 8;
             *dstp = d1 | d | (dalpha << 24);
           }
         }
@@ -668,6 +670,7 @@ static void BlitRGBtoBGRPixelAlpha(SDL_BlitInfo *info)
         Uint32 d1;
         Uint32 s = *srcp;
         Uint32 alpha = s >> 24;
+        Uint32 x;
         /* FIXME: Here we special-case opaque alpha since the
            compositioning used (>>8 instead of /255) doesn't handle
            it correctly. Also special-case alpha=0 for speed?
@@ -690,7 +693,8 @@ static void BlitRGBtoBGRPixelAlpha(SDL_BlitInfo *info)
             d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff;
             d &= 0xff00;
             d = (d + ((s - d) * alpha >> 8)) & 0xff00;
-            dalpha = alpha + (dalpha * (alpha ^ 0xFF) >> 8);
+            x = alpha * 0xff + (alpha ^ 0xff) * dalpha + 0x80;
+            dalpha = (x + (x >> 8)) >> 8;
             *dstp = d1 | d | (dalpha << 24);
           }
         }
