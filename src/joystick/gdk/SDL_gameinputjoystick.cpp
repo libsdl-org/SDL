@@ -360,7 +360,6 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
     Uint16 bus = SDL_HARDWARE_BUS_USB;
     Uint16 vendor = 0;
     Uint16 product = 0;
-    Uint16 version = 0;
     Uint8 driver_signature = 'g';
     Uint8 subtype = 0;
     int raw_type = SDL_GAMEINPUT_RAWTYPE_NONE;
@@ -398,10 +397,7 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
     char *product_string = NULL;
     QueryDeviceName(pDevice, &product_string);
 
-    SDL_JoystickDevice *device = NULL;
-    if (!SDL_ShouldIgnoreJoystick(vendor, product, version, product_string)) {
-        device = SDL_CreateJoystickDevice(&SDL_GAMEINPUT_JoystickDriver, sizeof(SDL_JoystickDeviceData));
-    }
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_GAMEINPUT_JoystickDriver, sizeof(SDL_JoystickDeviceData));
     if (device) {
         SDL_JoystickDeviceData *data = (SDL_JoystickDeviceData *)(device + 1);
 #if GAMEINPUT_API_VERSION >= 4

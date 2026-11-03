@@ -307,6 +307,8 @@ typedef struct
     int num_initial_entries;
     Uint32 *initial_entries;
 
+    bool affects_ignored_joysticks;
+
     bool initialized;
 } SDL_vidpid_list;
 

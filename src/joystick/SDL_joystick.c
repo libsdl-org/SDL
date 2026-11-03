@@ -295,6 +295,7 @@ static SDL_vidpid_list old_xboxone_controllers = {
     "SDL_JOYSTICK_OLD_XBOXONE_CONTROLLERS", 0, 0, NULL,
     "SDL_JOYSTICK_OLD_XBOXONE_CONTROLLERS_EXCLUDED", 0, 0, NULL,
     SDL_arraysize(initial_old_xboxone_controllers), initial_old_xboxone_controllers,
+    false,
     false
 };
 
@@ -336,6 +337,7 @@ static SDL_vidpid_list arcadestick_devices = {
     SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_arcadestick_devices), initial_arcadestick_devices,
+    false,
     false
 };
 
@@ -466,6 +468,7 @@ static SDL_vidpid_list blacklist_devices = {
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_blacklist_devices), initial_blacklist_devices,
+    true,
     false
 };
 
@@ -495,6 +498,7 @@ static SDL_vidpid_list flightstick_devices = {
     SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_flightstick_devices), initial_flightstick_devices,
+    false,
     false
 };
 
@@ -514,6 +518,7 @@ static SDL_vidpid_list gamecube_devices = {
     SDL_HINT_JOYSTICK_GAMECUBE_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_gamecube_devices), initial_gamecube_devices,
+    false,
     false
 };
 
@@ -530,6 +535,7 @@ static SDL_vidpid_list rog_gamepad_mice = {
     SDL_HINT_ROG_GAMEPAD_MICE, 0, 0, NULL,
     SDL_HINT_ROG_GAMEPAD_MICE_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_rog_gamepad_mice), initial_rog_gamepad_mice,
+    true,
     false
 };
 
@@ -543,6 +549,7 @@ static SDL_vidpid_list throttle_devices = {
     SDL_HINT_JOYSTICK_THROTTLE_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_throttle_devices), initial_throttle_devices,
+    false,
     false
 };
 
@@ -623,6 +630,7 @@ static SDL_vidpid_list wheel_devices = {
     SDL_HINT_JOYSTICK_WHEEL_DEVICES, 0, 0, NULL,
     SDL_HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED, 0, 0, NULL,
     SDL_arraysize(initial_wheel_devices), initial_wheel_devices,
+    false,
     false
 };
 
@@ -652,6 +660,7 @@ static SDL_vidpid_list guitar_devices = {
     SDL_HINT_JOYSTICK_GUITAR_DEVICES, 0, 0, NULL,
     NULL, 0, 0, NULL,
     SDL_arraysize(initial_guitar_devices), initial_guitar_devices,
+    false,
     false
 };
 
@@ -672,6 +681,7 @@ static SDL_vidpid_list drum_devices = {
     SDL_HINT_JOYSTICK_DRUM_DEVICES, 0, 0, NULL,
     NULL, 0, 0, NULL,
     SDL_arraysize(initial_drum_devices), initial_drum_devices,
+    false,
     false
 };
 
@@ -683,6 +693,7 @@ static SDL_vidpid_list zero_centered_devices = {
     SDL_HINT_JOYSTICK_ZERO_CENTERED_DEVICES, 0, 0, NULL,
     NULL, 0, 0, NULL,
     SDL_arraysize(initial_zero_centered_devices), initial_zero_centered_devices,
+    false,
     false
 };
 
@@ -849,6 +860,14 @@ static void SDL_FreeJoystickEvents(SDL_JoystickEventEntry *entries)
         SDL_free(entry);
         entry = next;
     }
+}
+
+static bool SDL_ShouldIgnoreDevice(SDL_JoystickDevice *device)
+{
+    Uint16 vendor, product, version;
+
+    SDL_GetJoystickGUIDInfo(device->guid, &vendor, &product, &version, NULL);
+    return SDL_ShouldIgnoreJoystick(vendor, product, version, device->name);
 }
 
 SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver, size_t extra_length)
@@ -1105,8 +1124,10 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
     SDL_JoystickDevice *old = SDL_joystick_devices;
     while (old) {
         SDL_JoystickDevice *next = old->next;
-        bool keep = false;
-        if (old->manually_added) {
+        bool keep;
+        if (old->ignored && old->published) {
+            keep = false;
+        } else if (old->manually_added) {
             keep = true;
         } else {
             // Pull the new device matching the old one out of the list
@@ -1116,6 +1137,8 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
                 old->initializing = device->initializing;
                 SDL_DestroyJoystickDevice(device);
                 keep = true;
+            } else {
+                keep = false;
             }
         }
 
@@ -1151,7 +1174,7 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
 
     // Send events for devices that are ready to be published
     for (SDL_JoystickDevice *device = devices; device; device = device->next) {
-        if (!device->published && !device->initializing) {
+        if (!device->published && !device->initializing && !device->ignored) {
             bool deferred = false;
             for (SDL_JoystickDevice *entry = removed; entry; entry = entry->next) {
                 if (entry->published &&
@@ -1168,11 +1191,17 @@ static void SDL_ProcessPendingJoystickDevices(SDL_JoystickDevice *pending_device
                 continue;
             }
 
-            bool prepared = true;
-            if (device->driver->PrepareDevice) {
-                prepared = device->driver->PrepareDevice(device);
+            if (!device->prepared) {
+                bool prepared = true;
+                if (device->driver->PrepareDevice) {
+                    prepared = device->driver->PrepareDevice(device);
+                }
+                device->prepared = prepared;
             }
-            if (prepared) {
+
+            device->ignored = SDL_ShouldIgnoreDevice(device);
+
+            if (device->prepared && !device->ignored) {
                 if (!device->instance_id) {
                     device->instance_id = SDL_GetNextObjectID();
                 }
@@ -4755,6 +4784,24 @@ void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_Game
     }
 }
 
+static void SDL_IgnoreJoystickHintUpdated(void)
+{
+    SDL_LockJoysticks();
+    for (SDL_JoystickDevice *device = SDL_joystick_devices; device; device = device->next) {
+        if (device->prepared) {
+            device->ignored = SDL_ShouldIgnoreDevice(device);
+        }
+    }
+#ifdef SDL_JOYSTICK_HIDAPI
+    // HIDAPI doesn't open ignored devices, so it needs to re-check them
+    HIDAPI_IgnoredDevicesChanged();
+#endif
+    SDL_UnlockJoysticks();
+
+    // Make sure we re-enumerate devices as how they show up may have changed
+    SDL_RequestJoystickDeviceUpdate(true);
+}
+
 static void SDL_LoadVIDPIDListFromHint(const char *hint, int *num_entries, int *max_entries, Uint32 **entries)
 {
     Uint32 entry;
@@ -4852,6 +4899,10 @@ static void SDLCALL SDL_VIDPIDIncludedHintChanged(void *userdata, const char *na
         excluded_list = SDL_GetHint(list->excluded_hint_name);
     }
     SDL_LoadVIDPIDListFromHints(list, included_list, excluded_list);
+
+    if (list->affects_ignored_joysticks) {
+        SDL_IgnoreJoystickHintUpdated();
+    }
 }
 
 static void SDLCALL SDL_VIDPIDExcludedHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -4868,6 +4919,10 @@ static void SDLCALL SDL_VIDPIDExcludedHintChanged(void *userdata, const char *na
         included_list = SDL_GetHint(list->included_hint_name);
     }
     SDL_LoadVIDPIDListFromHints(list, included_list, excluded_list);
+
+    if (list->affects_ignored_joysticks) {
+        SDL_IgnoreJoystickHintUpdated();
+    }
 }
 
 void SDL_LoadVIDPIDList(SDL_vidpid_list *list)

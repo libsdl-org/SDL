@@ -520,10 +520,6 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         SDL_free(name);
     }
 
-    if (SDL_ShouldIgnoreJoystick(vendor, product, version, pDevice->product)) {
-        return false;
-    }
-
     pDevice->vendor_id = (Uint16)vendor;
     pDevice->product_id = (Uint16)product;
     pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);

@@ -468,6 +468,11 @@ static void HIDAPI_SetupDeviceDriver(SDL_HIDAPI_Device *device, bool *removed)
         } else {
             enabled = device->driver->enabled;
         }
+        // The ignore lists may have changed since this device was set up
+        if (enabled && device->num_children == 0 &&
+            SDL_ShouldIgnoreJoystick(device->vendor_id, device->product_id, device->version, device->name)) {
+            enabled = false;
+        }
         if (device->children) {
             int i;
 
@@ -1384,6 +1389,11 @@ static SDL_JoystickDevice *HIDAPI_CreateJoystickDevice(SDL_HIDAPI_Device *entry,
     HIDAPI_AddDeviceMatches(device, entry);
 
     return device;
+}
+
+void HIDAPI_IgnoredDevicesChanged(void)
+{
+    SDL_HIDAPI_hints_changed = true;
 }
 
 static SDL_JoystickDevice *HIDAPI_JoystickQueryDevices(void)
