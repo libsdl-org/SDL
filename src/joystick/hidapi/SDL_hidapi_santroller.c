@@ -256,46 +256,6 @@ static bool HIDAPI_DriverSantroller_InitDevice(SDL_HIDAPI_Device *device)
     }
 
     device->joystick_type = SDL_GetJoystickTypeForSantroller(ctx->sub_type);
-    switch (ctx->sub_type) {
-    case SDL_SANTROLLER_SUB_TYPE_BEAT_MANIA:
-    case SDL_SANTROLLER_SUB_TYPE_KEYBOARD_MANIA:
-    case SDL_SANTROLLER_SUB_TYPE_POP_N_MUSIC:
-    case SDL_SANTROLLER_SUB_TYPE_PROJECT_DIVA:
-        device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_DJ_MAX:
-    case SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_KEYS:
-        device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_GAMEPAD:
-        device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_DANCEPAD:
-        device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_WHEEL:
-        device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_POWER_GIG_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_REVOLUTION_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_FREAKS:
-        device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-        break;
-    case SDL_SANTROLLER_SUB_TYPE_TAIKO:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
-    case SDL_SANTROLLER_SUB_TYPE_POWER_GIG_DRUM:
-    case SDL_SANTROLLER_SUB_TYPE_DRUM_MANIA:
-        device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-        break;
-    }
 
     return HIDAPI_JoystickConnected(device, NULL);
 }
