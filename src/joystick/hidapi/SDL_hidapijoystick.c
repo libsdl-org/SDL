@@ -981,7 +981,6 @@ static SDL_HIDAPI_Device *HIDAPI_AddDevice(const struct SDL_hid_device_info *inf
 static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 {
     SDL_HIDAPI_Device *curr, *last;
-    int i;
 
     SDL_AssertJoysticksLocked();
 
@@ -999,8 +998,26 @@ static void HIDAPI_DelDevice(SDL_HIDAPI_Device *device)
 
             HIDAPI_CleanupDeviceDriver(device);
 
-            for (i = 0; i < device->num_children; ++i) {
+            if (device->parent) {
+                SDL_HIDAPI_Device *parent = device->parent;
+                for (int i = 0; i < parent->num_children; ++i) {
+                    if (device == parent->children[i]) {
+                        --parent->num_children;
+                        if (i < parent->num_children) {
+                            int count = (parent->num_children - i);
+                            SDL_memmove(&parent->children[i], &parent->children[i+1], count * sizeof(parent->children[i]));
+                        }
+                        if (parent->num_children == 0) {
+                            HIDAPI_DelDevice(parent);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            for (int i = 0; i < device->num_children; ++i) {
                 device->children[i]->parent = NULL;
+                device->children[i]->orphaned = true;
             }
 
             SDL_SetObjectValid(device, SDL_OBJECT_TYPE_HIDAPI_JOYSTICK, false);
@@ -1156,18 +1173,9 @@ check_removed:
         if (!device->seen ||
             ((device->driver || device->children) && device->num_joysticks == 0 && !device->dev)) {
             if (device->parent) {
-                // When a child device goes away, so does the parent
-                int i;
-                device = device->parent;
-                for (i = 0; i < device->num_children; ++i) {
-                    HIDAPI_DelDevice(device->children[i]);
-                }
                 HIDAPI_DelDevice(device);
 
-                // Update the device list again to pick up any children left
-                SDL_RequestJoystickDeviceUpdate(true);
-
-                // We deleted more than one device here, restart the loop
+                // We may have deleted more than one device here, restart the loop
                 goto check_removed;
             } else {
                 bool seen = device->seen;
@@ -1192,6 +1200,16 @@ check_removed:
 
     // See if we can create any combined Joy-Con controllers
     while (HIDAPI_CreateCombinedJoyCons()) {
+    }
+
+    // Children that weren't recombined become joysticks on their own
+    for (device = SDL_HIDAPI_devices; device; device = device->next) {
+        if (device->orphaned) {
+            device->orphaned = false;
+            if (device->driver && !device->parent && !device->broken && device->num_joysticks == 0) {
+                HIDAPI_JoystickConnected(device, NULL);
+            }
+        }
     }
 
     SDL_UnlockJoysticks();
@@ -1384,14 +1402,27 @@ static SDL_JoystickDevice *HIDAPI_JoystickQueryDevices(void)
     }
 
     for (entry = SDL_HIDAPI_devices; entry; entry = entry->next) {
-        if (entry->parent || entry->broken || !entry->driver) {
+        if (entry->parent || !entry->driver) {
             continue;
         }
 
-        // Create an entry for all supported devices even if they don't have any joysticks yet
-        int count = SDL_max(entry->num_joysticks, 1);
+        int count;
+        if (entry->broken) {
+            // Create an entry so broken devices aren't exposed by other drivers
+            // This can happen for Bluetooth devices that we've detected are gone
+            // but the kernel still thinks are connected.
+            count = 1;
+        } else if (entry->num_joysticks > 0) {
+            count = entry->num_joysticks;
+        } else {
+            // Create an entry for devices that we'll handle once they're ready
+            count = 1;
+        }
         for (int i = 0; i < count; ++i) {
-            SDL_JoystickID joystickID = (i < entry->num_joysticks) ? entry->joysticks[i] : 0;
+            SDL_JoystickID joystickID = 0;
+            if (entry->num_joysticks > 0 && !entry->broken) {
+                joystickID = entry->joysticks[i];
+            }
             SDL_JoystickDevice *device = HIDAPI_CreateJoystickDevice(entry, joystickID);
             if (device) {
                 if (tail) {
