@@ -290,6 +290,7 @@ static bool HIDAPI_DriverPS4_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
+    ctx->last_packet = SDL_GetTicks();
 
     ctx->gyro_numerator = 1;
     ctx->gyro_denominator = 16;

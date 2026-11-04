@@ -385,6 +385,7 @@ static bool HIDAPI_DriverPS5_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
+    ctx->last_packet = SDL_GetTicks();
 
     device->context = ctx;
 
