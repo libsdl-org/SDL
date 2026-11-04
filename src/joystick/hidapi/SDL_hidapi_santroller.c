@@ -118,36 +118,6 @@ typedef struct
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverSantroller_Context;
 
-
-static Uint8 HIDAPI_DriverSantroller_TranslateOldSubType(Uint16 version)
-{
-    // Old firmware used slightly different subtypes so we need to translate them to the current ones
-    switch (version >> 8) {
-    case SDL_SANTROLLER_SUB_TYPE_GAMEPAD:
-    case SDL_SANTROLLER_SUB_TYPE_DANCEPAD:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE:
-    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_KEYS:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE:
-    case SDL_SANTROLLER_SUB_TYPE_TAIKO:
-        return version >> 8;
-    case 21:
-        return SDL_SANTROLLER_SUB_TYPE_DISNEY_INFINITY;
-    case 22:
-        return SDL_SANTROLLER_SUB_TYPE_SKYLANDERS;
-    case 23:
-        return SDL_SANTROLLER_SUB_TYPE_LEGO_DIMENSIONS;
-    default:
-        return SDL_SANTROLLER_SUB_TYPE_GAMEPAD;
-    }
-}
-
 static Uint8 HIDAPI_DriverSantroller_ConvertHat(Uint8 hat)
 {
     switch (hat & 0x0f) {
@@ -264,7 +234,8 @@ static bool RetrieveSDLFeatures(SDL_HIDAPI_Device *device)
         }
     } else {
         // Older revision device, sub_type is encoded into device version
-        ctx->sub_type = HIDAPI_DriverSantroller_TranslateOldSubType(device->version);
+        // In terms of subtypes, the ones that matter are encoded the same
+        ctx->sub_type = (device->version >> 8);
         // Older devices don't expose capabilities, but will ignore anything
         // they don't support, so just assume everything is supported
         ctx->player_leds_supported = true;
