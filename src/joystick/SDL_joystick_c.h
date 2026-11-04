@@ -123,6 +123,9 @@ extern Uint16 SDL_GetJoystickGUIDBus(SDL_GUID guid);
 extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, bool forUI);
 extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_GUID guid, const char *name);
 
+// Function to return the joystick type for an XInput device based on its subtype
+extern SDL_JoystickType SDL_GetJoystickTypeForXInput(uint8_t subtype);
+
 // Function to return whether a joystick GUID uses the version field
 extern bool SDL_JoystickGUIDUsesVersion(SDL_GUID guid);
 
@@ -197,6 +200,9 @@ extern bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
+
+// Function to return whether a joystick guid comes from the SysJoystick driver
+extern bool SDL_IsJoystickSysJoystick(SDL_GUID guid);
 
 // Function to return whether a joystick guid comes from the GameInput driver
 extern bool SDL_IsJoystickGameInput(SDL_GUID guid);

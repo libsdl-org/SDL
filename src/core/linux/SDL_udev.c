@@ -30,10 +30,14 @@
 
 #ifdef SDL_USE_LIBUDEV
 
+#include <fcntl.h>
 #include <linux/input.h>
+#include <linux/usb/ch9.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "SDL_evdev_capabilities.h"
+#include "../../joystick/SDL_joystick_c.h"
 #include "../unix/SDL_poll.h"
 
 #define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0"
@@ -355,6 +359,179 @@ char *SDL_UDEV_GetProductSerial(const char *device_path)
     _this->syms.udev_device_unref(dev);
 
     return result;
+}
+
+bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
+{
+    int desc_fd = -1;
+    char *descriptors_path = NULL;
+    struct stat statbuf;
+    char type;
+    struct udev_device *dev;
+    struct udev_device *pdev = NULL;
+    const char *val;
+    int iface_number = -1;
+    int alt_setting = -1;
+    int santroller_type = -1;
+    bool found = false;
+    bool santroller2 = false;
+    bool xpad = false;
+    bool found_iface = false;
+
+    if (!_this->udev) {
+        return false;
+    }
+
+    if (stat(device_path, &statbuf) < 0) {
+        return false;
+    }
+
+    if (S_ISBLK(statbuf.st_mode)) {
+        type = 'b';
+    } else if (S_ISCHR(statbuf.st_mode)) {
+        type = 'c';
+    } else {
+        return false;
+    }
+
+    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
+    if (!dev) {
+        return false;
+    }
+    pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_interface");
+    if (pdev) {
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceNumber");
+        if (val) {
+            iface_number = SDL_strtol(val, NULL, 16);
+        }
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bAlternateSetting");
+        if (val) {
+            alt_setting = SDL_strtol(val, NULL, 16);
+        }
+    }
+    val = _this->syms.udev_device_get_driver(dev);
+    if (!val) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_USB_DRIVER");
+    }
+    if (val && SDL_strcmp(val, "xpad") == 0) {
+        // Look for a wired XInput interface
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceClass");
+        if (val && SDL_strcmp(val, "ff") == 0) {
+            val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceSubClass");
+            if (val && SDL_strcmp(val, "5d") == 0) {
+                val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceProtocol");
+                if (val && SDL_strcmp(val, "01") == 0) {
+                    xpad = true;
+                }
+            }
+        }
+    } else if (val && SDL_strcmp(val, "usbhid") == 0) {
+        // Look for a Santroller interface
+        val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+        if (val && SDL_strcmp(val, "1209") == 0) {
+            val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+            if (val && SDL_strcmp(val, "2883") == 0) {
+                // Santroller 2 devices act like a hub, so they needed a more complicated detection
+                santroller2 = true;
+            } else if (val && SDL_strcmp(val, "2882") == 0) {
+                // Santroller 1 devices just encode the device type into the revision
+                val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+                if (val) {
+                    santroller_type = (Uint16)SDL_strtol(val, NULL, 16) >> 8;
+                    found = true;
+                }
+            }
+        }
+    }
+    if (xpad || santroller2) {
+        pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
+        if (pdev) {
+            device_path = _this->syms.udev_device_get_syspath(pdev);
+            if (SDL_asprintf(&descriptors_path, "%s/descriptors", device_path) >= 0) {
+                desc_fd = open(descriptors_path, O_RDONLY);
+                if (desc_fd >= 0) {
+                    char buffer[9];
+                    memset(buffer, 0, sizeof(buffer));
+                    struct usb_descriptor_header *header = (struct usb_descriptor_header *)buffer;
+                    while (read(desc_fd, buffer, sizeof(struct usb_descriptor_header)) > 0) {
+                        // Look for the XInput vendor descriptor
+                        if (found_iface && xpad && header->bDescriptorType == 0x21) {
+                            read(desc_fd, buffer + 2, 7);
+                            *joystick_type = SDL_GetJoystickTypeForXInput(buffer[4]);
+                            found = true;
+                            break;
+                        }
+                        if (found_iface && santroller2 && header->bDescriptorType == 0xFF) {
+                            read(desc_fd, buffer + 2, 7);
+                            // Find the Santroller vendor descriptor
+                            if (SDL_memcmp(buffer + 2, "SANT", 4) == 0) {
+                                santroller_type = buffer[7];
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (header->bDescriptorType != USB_DT_INTERFACE) {
+                            lseek(desc_fd, header->bLength - 2, SEEK_CUR);
+                            continue;
+                        }
+                        struct usb_interface_descriptor *iface_desc = (struct usb_interface_descriptor *)buffer;
+                        read(desc_fd, buffer + 2, sizeof(struct usb_interface_descriptor) - 2);
+                        if (iface_desc->bInterfaceNumber == iface_number && iface_desc->bAlternateSetting == alt_setting) {
+                            found_iface = true;
+                        }
+                    }
+                    close(desc_fd);
+                }
+            }
+        }
+    }
+    if (santroller_type != -1) {
+        switch (santroller_type) {
+            case 0x1D: //SDL_SANTROLLER_SUB_TYPE_BEAT_MANIA
+            case 0x1F: //SDL_SANTROLLER_SUB_TYPE_KEYBOARD_MANIA
+            case 0x16: //SDL_SANTROLLER_SUB_TYPE_POP_N_MUSIC
+            case 0x0D: //SDL_SANTROLLER_SUB_TYPE_PROJECT_DIVA
+                *joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
+                break;
+            case 0x08: //SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE
+            case 0x17: //SDL_SANTROLLER_SUB_TYPE_DJ_MAX
+            case 0x10: //SDL_SANTROLLER_SUB_TYPE_PRO_KEYS
+                *joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                break;
+            case 0x01: //SDL_SANTROLLER_SUB_TYPE_GAMEPAD
+            case 0x14: //SDL_SANTROLLER_SUB_TYPE_FIGHT_STICK
+            case 0x15: //SDL_SANTROLLER_SUB_TYPE_FLIGHT_STICK
+            case 0x09: //SDL_SANTROLLER_SUB_TYPE_STAGE_KIT
+                *joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
+                break;
+            case 0x02: //SDL_SANTROLLER_SUB_TYPE_DANCEPAD
+                *joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
+                break;
+            case 0x0F: //SDL_SANTROLLER_SUB_TYPE_WHEEL
+                *joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
+                break;
+            case 0x03: //SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR
+            case 0x04: //SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR
+            case 0x07: //SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR
+            case 0x11: //SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG
+            case 0x12: //SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE
+            case 0x1A: //SDL_SANTROLLER_SUB_TYPE_POWER_GIG_GUITAR
+            case 0x1B: //SDL_SANTROLLER_SUB_TYPE_ROCK_REVOLUTION_GUITAR
+            case 0x0E: //SDL_SANTROLLER_SUB_TYPE_GUITAR_FREAKS
+                *joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case 0x05: //SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS
+            case 0x06: //SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS
+            case 0x18: //SDL_SANTROLLER_SUB_TYPE_TAIKO
+            case 0x19: //SDL_SANTROLLER_SUB_TYPE_POWER_GIG_DRUM
+            case 0x1E: //SDL_SANTROLLER_SUB_TYPE_DRUM_MANIA
+                *joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+        }
+    }
+    _this->syms.udev_device_unref(dev);
+
+    return found;
 }
 
 static void SDL_UDEV_UnloadLibrary(void)
