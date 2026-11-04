@@ -115,6 +115,9 @@ typedef struct SDL_HIDAPI_Device
     // This can happen on Windows with Bluetooth devices that have turned off
     bool broken;
 
+    // Used to flag children whose parent has been removed
+    bool orphaned;
+
     struct SDL_HIDAPI_Device *parent;
     int num_children;
     struct SDL_HIDAPI_Device **children;
