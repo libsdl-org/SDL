@@ -4220,6 +4220,7 @@ static bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
 SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
     switch (subtype) {
     case SDL_XINPUT_SUBTYPE_GAMEPAD:
+    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
         return SDL_JOYSTICK_TYPE_GAMEPAD;
     case SDL_XINPUT_SUBTYPE_WHEEL:
         return SDL_JOYSTICK_TYPE_WHEEL;
@@ -4260,6 +4261,7 @@ SDL_JoystickType SDL_GetJoystickTypeForSantroller(SDL_SantrollerSubType santroll
     case SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE:
         return SDL_JOYSTICK_TYPE_TURNTABLE;
     case SDL_SANTROLLER_SUB_TYPE_GAMEPAD:
+    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
         return SDL_JOYSTICK_TYPE_GAMEPAD;
     case SDL_SANTROLLER_SUB_TYPE_DANCEPAD:
         return SDL_JOYSTICK_TYPE_DANCE_PAD;
@@ -4277,7 +4279,6 @@ SDL_JoystickType SDL_GetJoystickTypeForSantroller(SDL_SantrollerSubType santroll
     case SDL_SANTROLLER_SUB_TYPE_TAIKO:
     case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS:
     case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
     case SDL_SANTROLLER_SUB_TYPE_POWER_GIG_DRUM:
     case SDL_SANTROLLER_SUB_TYPE_DRUM_MANIA:
         return SDL_JOYSTICK_TYPE_DRUM_KIT;
