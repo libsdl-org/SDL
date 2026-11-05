@@ -1396,6 +1396,29 @@ void HIDAPI_IgnoredDevicesChanged(void)
     SDL_HIDAPI_hints_changed = true;
 }
 
+// Flydigi controllers always have an XInput interface, and an enhanced mode interface
+// that comes and goes as enhanced mode is enabled in the FlyDigi Space Station app.
+static bool HIDAPI_HiddenByFlydigiDevice(SDL_HIDAPI_Device *device)
+{
+#ifdef SDL_JOYSTICK_HIDAPI_FLYDIGI
+    if (device->driver == &SDL_HIDAPI_DriverFlydigi) {
+        // This is the enhanced mode interface, don't hide it
+        return false;
+    }
+
+    // This is the XInput interface, check for an available enhanced mode interface
+    for (SDL_HIDAPI_Device *entry = SDL_HIDAPI_devices; entry; entry = entry->next) {
+        if (entry->driver == &SDL_HIDAPI_DriverFlydigi &&
+            !entry->unavailable && !entry->broken &&
+            entry->vendor_id == device->vendor_id &&
+            entry->product_id == device->product_id) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+
 static SDL_JoystickDevice *HIDAPI_JoystickQueryDevices(void)
 {
     SDL_JoystickDevice *devices = NULL;
@@ -1413,6 +1436,10 @@ static SDL_JoystickDevice *HIDAPI_JoystickQueryDevices(void)
 
     for (entry = SDL_HIDAPI_devices; entry; entry = entry->next) {
         if (entry->parent || !entry->driver) {
+            continue;
+        }
+
+        if (HIDAPI_HiddenByFlydigiDevice(entry)) {
             continue;
         }
 
