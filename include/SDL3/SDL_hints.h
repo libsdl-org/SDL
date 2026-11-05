@@ -339,8 +339,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio channel count when opening the
  * device, this hint can be used to specify a default channel count that will
- * be used. If the application didn't specify and this hint isn't set, SDL will
- * choose a reasonable value.
+ * be used. If the application didn't specify and this hint isn't set, SDL
+ * will choose a reasonable value.
  *
  * This hint should be set before an audio device is opened.
  *
