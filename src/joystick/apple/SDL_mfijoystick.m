@@ -374,9 +374,9 @@ static void IOS_AddMFIJoystickMatches(SDL_JoystickDevice *device, SDL_JoystickDe
     }
     if (SDL_strstr(name, "GameCube Controller Adapter")) {
         SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3);
+        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER1);
+        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2);
+        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER3);
     }
     if (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0) {
         SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO);
