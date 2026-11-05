@@ -1120,9 +1120,9 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
 
     if ((vendor == USB_VENDOR_NINTENDO && product == USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER) ||
         (vendor == USB_VENDOR_DRAGONRISE &&
-         (product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-          product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
-          product == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3))) {
+         (product == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER1 ||
+          product == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2 ||
+          product == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER3))) {
         // GameCube driver has 12 buttons and 6 axes
         SDL_strlcat(mapping_string, "a:b0,b:b2,dpdown:b6,dpleft:b4,dpright:b5,dpup:b7,lefttrigger:a4,leftx:a0,lefty:a1~,rightshoulder:b9,righttrigger:a5,rightx:a2,righty:a3~,start:b8,x:b1,y:b3,misc3:b11,misc4:b10,hint:!SDL_GAMECONTROLLER_USE_GAMECUBE_LABELS:=1,", sizeof(mapping_string));
     } else if (vendor == USB_VENDOR_NINTENDO &&

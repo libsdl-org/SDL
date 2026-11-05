@@ -42,6 +42,7 @@
 typedef struct
 {
     bool pc_mode;
+    bool device_per_slot;
     SDL_JoystickID joysticks[MAX_CONTROLLERS];
     Uint8 wireless[MAX_CONTROLLERS];
     Uint8 min_axis[MAX_CONTROLLERS * SDL_GAMEPAD_AXIS_COUNT];
@@ -79,10 +80,10 @@ static bool HIDAPI_DriverGameCube_IsSupportedDevice(SDL_HIDAPI_Device *device, c
         return true;
     }
     if (vendor_id == USB_VENDOR_DRAGONRISE &&
-        (product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1 ||
-         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2 ||
-         product_id == USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3)) {
-        // EVORETRO GameCube Controller Adapter
+        (product_id == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER1 ||
+         product_id == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2 ||
+         product_id == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER3)) {
+        // DragonRise GameCube Controller Adapter
         return true;
     }
     return false;
@@ -104,6 +105,21 @@ static void SDLCALL SDL_JoystickGameCubeRumbleBrakeHintChanged(void *userdata, c
         SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)userdata;
         ctx->useRumbleBrake = SDL_GetStringBoolean(hint, false);
     }
+}
+
+// In PC mode some adapters have a separate device for each slot
+static bool HIDAPI_DriverGameCube_HasDevicePerSlot(SDL_HIDAPI_Device *device)
+{
+#ifdef SDL_PLATFORM_WIN32
+    return true;
+#else
+    // This Mayflash adapter has a separate interface for each slot
+    if (device->vendor_id == USB_VENDOR_DRAGONRISE &&
+        device->product_id == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2) {
+        return true;
+    }
+    return false;
+#endif
 }
 
 static bool HIDAPI_DriverGameCube_EnableAdapter(SDL_HIDAPI_Device *device)
@@ -144,8 +160,17 @@ static bool HIDAPI_DriverGameCube_EnableAdapter(SDL_HIDAPI_Device *device)
                     }
                 }
 
+                bool claimed;
                 if (libusb_ctx->claim_interface(handle, 0) == 0) {
-                    libusb_ctx->control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
+                    claimed = true;
+                } else {
+                    // The control transfer may go through anyway (and does on macOS)
+                    claimed = false;
+                }
+
+                libusb_ctx->control_transfer(handle, 0x21, 11, 0x0001, 0, NULL, 0, 1000);
+
+                if (claimed) {
                     libusb_ctx->release_interface(handle, 0);
                 }
 
@@ -170,8 +195,8 @@ static bool HIDAPI_DriverGameCube_EnableAdapter(SDL_HIDAPI_Device *device)
     }
 #endif // HAVE_LIBUSB
 
-    Uint8 initMagic = 0x13;
-    if (SDL_hid_write(device->dev, &initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
+    Uint8 initMagic[] = { 0x13 };
+    if (SDL_hid_write(device->dev, initMagic, sizeof(initMagic)) != sizeof(initMagic)) {
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT,
                      "HIDAPI_DriverGameCube_InitDevice(): Couldn't initialize WUP-028");
         return false;
@@ -202,12 +227,13 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
 
     if (device->vendor_id != USB_VENDOR_NINTENDO) {
         ctx->pc_mode = true;
+        ctx->device_per_slot = HIDAPI_DriverGameCube_HasDevicePerSlot(device);
     }
 
     if (ctx->pc_mode) {
         // Check to see if this firmware supports rumble
         bool rumbleAllowed = false;
-        if ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 0)) > 0) {
+        if ((size = SDL_hid_read_timeout(device->dev, packet, sizeof(packet), 10)) > 0) {
 #ifdef DEBUG_GAMECUBE_PROTOCOL
             HIDAPI_DumpPacket("Nintendo GameCube packet: size = %d", packet, size);
 #endif
@@ -217,18 +243,17 @@ static bool HIDAPI_DriverGameCube_InitDevice(SDL_HIDAPI_Device *device)
                 rumbleAllowed = true;
             }
         }
-#ifdef SDL_PLATFORM_WIN32
-        // We get a separate device for each slot
-        ctx->rumbleAllowed[0] = rumbleAllowed;
-        ResetAxisRange(ctx, 0);
-        HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
-#else
-        for (i = 0; i < MAX_CONTROLLERS; ++i) {
-            ctx->rumbleAllowed[i] = rumbleAllowed;
-            ResetAxisRange(ctx, i);
-            HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
+        if (ctx->device_per_slot) {
+            ctx->rumbleAllowed[0] = rumbleAllowed;
+            ResetAxisRange(ctx, 0);
+            HIDAPI_JoystickConnected(device, &ctx->joysticks[0]);
+        } else {
+            for (i = 0; i < MAX_CONTROLLERS; ++i) {
+                ctx->rumbleAllowed[i] = rumbleAllowed;
+                ResetAxisRange(ctx, i);
+                HIDAPI_JoystickConnected(device, &ctx->joysticks[i]);
+            }
         }
-#endif
     } else {
         if (!HIDAPI_DriverGameCube_EnableAdapter(device)) {
             return false;
@@ -280,7 +305,18 @@ static int HIDAPI_DriverGameCube_GetDevicePlayerIndex(SDL_HIDAPI_Device *device,
     SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)device->context;
     Uint8 i;
 
-    for (i = 0; i < 4; ++i) {
+    if (ctx->device_per_slot) {
+        // This Mayflash adapter has a separate interface for each slot
+        if (instance_id == ctx->joysticks[0] &&
+            device->vendor_id == USB_VENDOR_DRAGONRISE &&
+            device->product_id == USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2 &&
+            device->interface_number >= 0 && device->interface_number < MAX_CONTROLLERS) {
+            return device->interface_number;
+        }
+        return -1;
+    }
+
+    for (i = 0; i < MAX_CONTROLLERS; ++i) {
         if (instance_id == ctx->joysticks[i]) {
             return i;
         }
@@ -296,16 +332,15 @@ static void HIDAPI_DriverGameCube_HandleJoystickPacket(SDL_HIDAPI_Device *device
     Sint16 axis_value;
     Uint64 timestamp = SDL_GetTicksNS();
 
-#ifdef SDL_PLATFORM_WIN32
-    // We get a separate device for each slot
-    i = 0;
-#else
-    i = slot;
-    if (i >= MAX_CONTROLLERS) {
-        // Invalid packet?
-        return;
+    if (ctx->device_per_slot) {
+        i = 0;
+    } else {
+        i = slot;
+        if (i >= MAX_CONTROLLERS) {
+            // Invalid packet?
+            return;
+        }
     }
-#endif
 
     joystick = SDL_GetJoystickFromID(ctx->joysticks[i]);
     if (!joystick) {
