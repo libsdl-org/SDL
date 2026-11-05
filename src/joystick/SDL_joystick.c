@@ -449,10 +449,8 @@ static Uint32 initial_blacklist_devices[] = {
     MAKE_VIDPID(0x04d9, 0xa292), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04d9, 0xa293), // OBINLB USB-HID Keyboard (Anne Pro II)
     MAKE_VIDPID(0x04f2, 0xa13c), // HP Deluxe Webcam KQ246AA
-    MAKE_VIDPID(0x0e6f, 0x018a), // PDP REALMz Wireless Controller for Switch, USB charging
     MAKE_VIDPID(0x1532, 0x0266), // Razer Huntsman V2 Analog, non-functional DInput device
     MAKE_VIDPID(0x1532, 0x0282), // Razer Huntsman Mini Analog, non-functional DInput device
-    MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch (charging port only)
     MAKE_VIDPID(0x256c, 0x006d), // Huion Tablet_GS1331, Huion Tablet_GS1331 Touch Strip
     MAKE_VIDPID(0x256c, 0x006e), // Huion Tablet Kamvas Pro 22, Huion Tablet Kamvas Pro 22 Touch Strip
     MAKE_VIDPID(0x26ce, 0x01a2), // ASRock LED Controller
@@ -867,6 +865,12 @@ static bool SDL_ShouldIgnoreDevice(SDL_JoystickDevice *device)
     Uint16 vendor, product, version;
 
     SDL_GetJoystickGUIDInfo(device->guid, &vendor, &product, &version, NULL);
+
+    if (SDL_GetJoystickGUIDBus(device->guid) == SDL_HARDWARE_BUS_USB &&
+        SDL_IsJoystickUSBChargingOnly(vendor, product)) {
+        return true;
+    }
+
     return SDL_ShouldIgnoreJoystick(vendor, product, version, device->name);
 }
 
@@ -3691,10 +3695,17 @@ bool SDL_JoystickEventsEnabled(void)
     return enabled;
 }
 
+Uint16 SDL_GetJoystickGUIDBus(SDL_GUID guid)
+{
+    Uint16 *guid16 = (Uint16 *)guid.data;
+
+    return SDL_Swap16LE(guid16[0]);
+}
+
 void SDL_GetJoystickGUIDInfo(SDL_GUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
-    Uint16 bus = SDL_Swap16LE(guid16[0]);
+    Uint16 bus = SDL_GetJoystickGUIDBus(guid);
 
     if ((bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) && guid16[3] == 0x0000 && guid16[5] == 0x0000) {
         /* This GUID fits the standard form:
@@ -4332,6 +4343,27 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
+}
+
+bool SDL_IsJoystickUSBChargingOnly(Uint16 vendor_id, Uint16 product_id)
+{
+    // Wireless controllers that only charge over USB, and may use the same VID/PID over Bluetooth
+    static const Uint32 usb_charging_only_devices[] = {
+        MAKE_VIDPID(0x0e6f, 0x0186), // PDP Afterglow Wireless Switch Controller
+        MAKE_VIDPID(0x0e6f, 0x018a), // PDP REALMz Wireless Controller for Switch
+        MAKE_VIDPID(0x0e6f, 0x0193), // Turtle Beach Rematch Wireless Controller for Nintendo Switch 2
+        MAKE_VIDPID(0x0e6f, 0x0195), // Turtle Beach Afterglow Wireless Controller for Switch 2
+        MAKE_VIDPID(0x20d6, 0x0002), // PowerA Enhanced Wireless Controller for Nintendo Switch
+    };
+
+    Uint32 id = MAKE_VIDPID(vendor_id, product_id);
+
+    for (int i = 0; i < SDL_arraysize(usb_charging_only_devices); ++i) {
+        if (id == usb_charging_only_devices[i]) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)

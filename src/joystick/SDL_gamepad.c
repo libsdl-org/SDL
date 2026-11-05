@@ -1302,7 +1302,7 @@ static GamepadMapping_t *SDL_CreateMappingForHIDAPIGamepad(SDL_GUID guid)
                 SDL_strlcat(mapping_string, "misc2:b15,misc3:b16,", sizeof(mapping_string));
             }
         } else if (SDL_IsJoystickGameSirController(vendor, product) &&
-                   guid.data[0] == SDL_HARDWARE_BUS_USB) {
+                   SDL_GetJoystickGUIDBus(guid) == SDL_HARDWARE_BUS_USB) {
             // The GameSir controllers have a set of paddles and shoulder macro buttons
             SDL_strlcat(mapping_string, "misc1:b11,paddle1:b13,paddle2:b12,paddle3:b15,paddle4:b14,", sizeof(mapping_string));
             if (product == USB_PRODUCT_GAMESIR_GAMEPAD_TARANTULA_8K) {

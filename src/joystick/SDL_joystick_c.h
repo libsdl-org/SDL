@@ -116,6 +116,9 @@ extern void SDL_SetJoystickGUIDVersion(SDL_GUID *guid, Uint16 version);
 // Function to set the CRC field of a joystick GUID
 extern void SDL_SetJoystickGUIDCRC(SDL_GUID *guid, Uint16 crc);
 
+// Function to get the bus field of a joystick GUID
+extern Uint16 SDL_GetJoystickGUIDBus(SDL_GUID guid);
+
 // Function to return the type of a controller
 extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, bool forUI);
 extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_GUID guid, const char *name);
@@ -206,6 +209,9 @@ extern bool SDL_IsJoystickVIRTUAL(SDL_GUID guid);
 
 // Function to return whether a joystick is a wheel
 extern bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id, Uint16 crc);
+
+// Function to return whether a joystick only charges over USB and doesn't provide input
+extern bool SDL_IsJoystickUSBChargingOnly(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick should be ignored
 extern bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
