@@ -50,6 +50,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_asprintf(&wav_path, "%ssample.wav", SDL_GetBasePath());  /* allocate a string of the full file path */
     if (!SDL_LoadWAV(wav_path, &spec, &wav_data, &wav_data_len)) {
         SDL_Log("Couldn't load .wav file: %s", SDL_GetError());
+        SDL_free(wav_path);
         return SDL_APP_FAILURE;
     }
 

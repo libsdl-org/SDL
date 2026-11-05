@@ -14,7 +14,7 @@
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
-#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID)
+#if (defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_VISIONOS) && !TARGET_OS_MACCATALYST) || defined(SDL_PLATFORM_ANDROID)
 #define HAVE_OPENGLES
 #endif
 
@@ -103,7 +103,8 @@ int main(int argc, char *argv[])
     int i, done;
     const SDL_DisplayMode *mode;
     SDL_Event event;
-    Uint32 then, now, frames;
+    Uint32 frames;
+    Uint64 then, now;
 
     /* Initialize parameters */
     fsaa = 0;

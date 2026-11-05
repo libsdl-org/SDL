@@ -226,7 +226,7 @@ static void RefreshPhysicalDevices(void)
             char *unique_id = GetAudioDeviceStringProperty(dev, &addr);  // it's okay if this one fails.
 
             // Some devices have whitespace at the end...trim it.
-            int len = SDL_strlen(name);
+            size_t len = SDL_strlen(name);
             while ((len > 0) && (name[len - 1] == ' ')) {
                 len--;
             }

@@ -1053,7 +1053,7 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
 {
     GLES_RenderData *data = NULL;
     GLint value;
-    Uint32 window_flags;
+    SDL_WindowFlags window_flags;
     int profile_mask = 0, major = 0, minor = 0;
     bool changed_window = false;
 

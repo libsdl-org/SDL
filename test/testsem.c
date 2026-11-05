@@ -282,7 +282,7 @@ int main(int argc, char **argv)
                 consumed = 1;
             } else if (arg_count == 0) {
                 char *endptr;
-                init_sem = SDL_strtol(argv[i], &endptr, 0);
+                init_sem = (int) SDL_strtol(argv[i], &endptr, 0);
                 if (endptr != argv[i] && *endptr == '\0') {
                     arg_count++;
                     consumed = 1;
