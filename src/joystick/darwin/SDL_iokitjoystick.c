@@ -529,9 +529,16 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         SDL_free(name);
     }
 
+    Uint16 bus = SDL_HARDWARE_BUS_USB;
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDTransportKey));
+    if (refCF && CFGetTypeID(refCF) == CFStringGetTypeID() &&
+        CFStringHasPrefix((CFStringRef)refCF, CFSTR(kIOHIDTransportBluetoothValue))) {
+        bus = SDL_HARDWARE_BUS_BLUETOOTH;
+    }
+
     pDevice->vendor_id = (Uint16)vendor;
     pDevice->product_id = (Uint16)product;
-    pDevice->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
+    pDevice->guid = SDL_CreateJoystickGUID(bus, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
 
     if (vendor == USB_VENDOR_NACON_ALT &&
