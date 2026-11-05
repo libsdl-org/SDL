@@ -223,9 +223,18 @@ static bool GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(recDevice *
     return false;
 }
 
-static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
+static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
 {
-    recDevice *device = (recDevice *)ctx;
+    recDevice *device;
+
+    for (device = gpDeviceList; device; device = device->pNext) {
+        if (!device->removed && device->deviceRef == ioHIDDeviceObject) {
+            break;
+        }
+    }
+    if (!device) {
+        return;
+    }
     device->removed = true;
     if (device->deviceRef) {
         // deviceRef was invalidated due to the remove
@@ -581,8 +590,6 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
         return; // not a device we care about, probably.
     }
 
-    // Get notified when this device is disconnected.
-    IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
     device->runLoopAttached = true;
 
@@ -616,6 +623,10 @@ static bool ConfigHIDManager(CFArrayRef matchingArray)
 
     IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
     IOHIDManagerRegisterDeviceMatchingCallback(hidman, JoystickDeviceWasAddedCallback, NULL);
+
+    // Get notified when devices are disconnected. This is registered on the manager rather
+    // than the device so we don't miss devices that are removed while we're adding them.
+    IOHIDManagerRegisterDeviceRemovalCallback(hidman, JoystickDeviceWasRemovedCallback, NULL);
     IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
 
     while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
