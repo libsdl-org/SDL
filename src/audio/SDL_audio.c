@@ -1831,35 +1831,23 @@ static SDL_AudioFormat ParseAudioFormatString(const char *string)
     return SDL_AUDIO_UNKNOWN;
 }
 
-static void PrepareAudioFormat(bool recording, SDL_AudioSpec *spec)
+static void PrepareAudioFormat(SDL_AudioSpec *spec, const SDL_AudioSpec *devspec)
 {
     if (spec->freq == 0) {
-        spec->freq = recording ? DEFAULT_AUDIO_RECORDING_FREQUENCY : DEFAULT_AUDIO_PLAYBACK_FREQUENCY;
-
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_FREQUENCY);
-        if (hint) {
-            const int val = SDL_atoi(hint);
-            if (val > 0) {
-                spec->freq = val;
-            }
-        }
+        const int val = hint ? SDL_atoi(hint) : 0;
+        spec->freq = (val > 0) ? val : devspec->freq;
     }
 
     if (spec->channels == 0) {
-        spec->channels = recording ? DEFAULT_AUDIO_RECORDING_CHANNELS : DEFAULT_AUDIO_PLAYBACK_CHANNELS;
-
         const char *hint = SDL_GetHint(SDL_HINT_AUDIO_CHANNELS);
-        if (hint) {
-            const int val = SDL_atoi(hint);
-            if (val > 0) {
-                spec->channels = val;
-            }
-        }
+        const int val = hint ? SDL_atoi(hint) : 0;
+        spec->channels = (val > 0) ? val : devspec->channels;
     }
 
     if (spec->format == 0) {
         const SDL_AudioFormat val = ParseAudioFormatString(SDL_GetHint(SDL_HINT_AUDIO_FORMAT));
-        spec->format = (val != SDL_AUDIO_UNKNOWN) ? val : (recording ? DEFAULT_AUDIO_RECORDING_FORMAT : DEFAULT_AUDIO_PLAYBACK_FORMAT);
+        spec->format = (val != SDL_AUDIO_UNKNOWN) ? val : devspec->format;
     }
 }
 
@@ -1897,8 +1885,12 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
     const char *devtypestr = device->recording ? "recording" : "playback";
 
     SDL_AudioSpec spec;
-    SDL_copyp(&spec, inspec ? inspec : &device->default_spec);
-    PrepareAudioFormat(device->recording, &spec);
+    if (inspec) {
+        SDL_copyp(&spec, inspec);
+    } else {
+        SDL_zero(spec);
+    }
+    PrepareAudioFormat(&spec, &device->default_spec);
 
     if (device->currently_opened) {
         SDL_AudioSpec current;
