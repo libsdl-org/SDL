@@ -47,9 +47,20 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_SetRenderLogicalPresentation(renderer, 640, 480, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     /* Load the .wav file from wherever the app is being run from. */
+#ifdef SWIFT_PACKAGE
+    extern bool SwiftPackage_GetLibraryBundleResource(const char *name, char *buffer, int size);
+
+    wav_path = SDL_malloc(4096);
+    if (!SwiftPackage_GetLibraryBundleResource("sample.wav", wav_path, 4096)) {
+        SDL_free(wav_path);
+        wav_path = NULL;
+    }
+#else
     SDL_asprintf(&wav_path, "%ssample.wav", SDL_GetBasePath());  /* allocate a string of the full file path */
+#endif
     if (!SDL_LoadWAV(wav_path, &spec, &wav_data, &wav_data_len)) {
         SDL_Log("Couldn't load .wav file: %s", SDL_GetError());
+        SDL_free(wav_path);
         return SDL_APP_FAILURE;
     }
 

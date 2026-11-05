@@ -92,6 +92,16 @@ char *GetNearbyFilename(const char *file)
             return path;
         }
 
+#ifdef SWIFT_PACKAGE
+        extern bool SwiftPackage_GetLibraryBundleResource(const char *name, char *buffer, int size);
+
+        SDL_free(path);
+        path = SDL_malloc(4096);
+        if (SwiftPackage_GetLibraryBundleResource(file, path, 4096)) {
+            return path;
+        }
+#endif
+
         /* Couldn't find the file in the base path */
         SDL_free(path);
     }

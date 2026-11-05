@@ -276,7 +276,7 @@ internal struct SDL_CurvedContentView: View {
                 curvedUIEntity.components.set(CollisionComponent(shapes: [shape]))
 
                 // Dimming is possible now that we have a collision component
-                Task {
+                _ = Task {
                     try await Task.sleep(nanoseconds: 1_000_000_000 / 4)
 
                     settings.dimmingReady = true

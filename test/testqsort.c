@@ -223,7 +223,7 @@ static int SDLCALL qsort_testAlreadySorted(void *arg)
     (void)arg;
 
     for (iteration = 0; iteration < count_arraylens; iteration++) {
-        const unsigned int arraylen = arraylens[iteration];
+        const unsigned int arraylen = (unsigned int) arraylens[iteration];
         unsigned int i;
         int *ints = SDL_malloc(sizeof(int) * arraylen);
         int **intptrs = SDL_malloc(sizeof(int *) * arraylen);
@@ -263,7 +263,7 @@ static int SDLCALL qsort_testAlreadySortedExceptLast(void *arg)
     (void)arg;
 
     for (iteration = 0; iteration < count_arraylens; iteration++) {
-        const unsigned int arraylen = arraylens[iteration];
+        const unsigned int arraylen = (unsigned int) arraylens[iteration];
         unsigned int i;
         int *ints = SDL_malloc(sizeof(int) * arraylen);
         int **intptrs = SDL_malloc(sizeof(int *) * arraylen);
@@ -314,7 +314,7 @@ static int SDLCALL qsort_testReverseSorted(void *arg)
     (void)arg;
 
     for (iteration = 0; iteration < count_arraylens; iteration++) {
-        const unsigned int arraylen = arraylens[iteration];
+        const unsigned int arraylen = (unsigned int) arraylens[iteration];
         unsigned int i;
         int *ints = SDL_malloc(sizeof(int) * arraylen);
         int **intptrs = SDL_malloc(sizeof(int *) * arraylen);
@@ -412,7 +412,7 @@ static int SDLCALL qsort_testRandomSorted(void *arg)
     (void)arg;
 
     for (iteration = 0; iteration < count_arraylens; iteration++) {
-        const unsigned int arraylen = arraylens[iteration];
+        const unsigned int arraylen = (unsigned int) arraylens[iteration];
         unsigned int i;
         int *ints = SDL_malloc(sizeof(int) * arraylen);
         float *floats = SDL_malloc(sizeof(float) * arraylen);

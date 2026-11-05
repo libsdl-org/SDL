@@ -59,10 +59,6 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 
-#ifdef SDL_PLATFORM_VISIONOS
-- (void)initializeVisionOSCurvedUI;
-#endif
-
 #ifndef SDL_PLATFORM_TVOS
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
@@ -98,4 +94,10 @@ bool UIKit_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Proper
 bool UIKit_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props);
 bool UIKit_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
+#endif
+
+#ifdef SDL_PLATFORM_VISIONOS
+@interface SDL_uikitviewcontroller (VisionOSCurvedUI)
+- (void)initializeVisionOSCurvedUI API_AVAILABLE(visionos(26.0));
+@end
 #endif

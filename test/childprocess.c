@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             } else if (SDL_strcmp(argv[i], "--exit-code") == 0) {
                 if (i + 1 < argc) {
                     char *endptr = NULL;
-                    exit_code = SDL_strtol(argv[i + 1], &endptr, 0);
+                    exit_code = (int) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr && *endptr == '\0') {
                         consumed = 2;
                     }

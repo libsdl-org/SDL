@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
             if (SDL_strcmp(argv[i], "--nbthreads") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    nb_threads = SDL_strtol(argv[i + 1], &endptr, 0);
+                    nb_threads = (int) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && nb_threads > 0) {
                         consumed = 2;
                     }
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcmp(argv[i], "--worktime") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    worktime = SDL_strtol(argv[i + 1], &endptr, 0);
+                    worktime = (int) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && worktime > 0) {
                         consumed = 2;
                     }
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcmp(argv[i], "--writerworktime") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    writerworktime = SDL_strtol(argv[i + 1], &endptr, 0);
+                    writerworktime = (int) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && writerworktime > 0) {
                         consumed = 2;
                     }
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
             } else if (SDL_strcmp(argv[i], "--timeout") == 0) {
                 if (argv[i + 1]) {
                     char *endptr;
-                    timeout = (Uint64) SDL_strtol(argv[i + 1], &endptr, 0);
+                    timeout = (int) SDL_strtol(argv[i + 1], &endptr, 0);
                     if (endptr != argv[i + 1] && *endptr == '\0' && timeout > 0) {
                         consumed = 2;
                     }
