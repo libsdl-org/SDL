@@ -24,6 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM_TRITON
 
@@ -594,7 +595,6 @@ static bool HIDAPI_DriverSteamTriton_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
-    int rc;
 
     ctx->low_frequency_rumble = low_frequency_rumble;
     ctx->high_frequency_rumble = high_frequency_rumble;
@@ -611,13 +611,8 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     msg->payload.hapticRumble.right.speed = high_frequency_rumble;
     msg->payload.hapticRumble.right.gain = 0;
 
-    rc = SDL_hid_write(device->dev, buffer, sizeof(buffer));
-    if (rc < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_INPUT, 
-            "Steam Controller HID Write FAILED! rc: %d. SDL_Error: %s", 
-            rc, SDL_GetError());
-
-        return false;
+    if (SDL_HIDAPI_SendRumble(device, buffer, sizeof(buffer)) != sizeof(buffer)) {
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return true;
 }
