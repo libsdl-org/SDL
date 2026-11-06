@@ -38,6 +38,9 @@
 
 #include "../SDL_sysaudio.h"
 #include "SDL_alsa_audio.h"
+#ifdef SDL_PLATFORM_LINUX
+#include "../../core/linux/SDL_sysfs.h"
+#endif
 #include "../../core/linux/SDL_udev.h"
 
 #if SDL_ALSA_DEBUG
@@ -107,6 +110,7 @@ static const char *(*ALSA_snd_ctl_card_info_get_id)(const snd_ctl_card_info_t *)
 static const char *(*ALSA_snd_pcm_info_get_name)(const snd_pcm_info_t *);
 static const char *(*ALSA_snd_pcm_info_get_subdevice_name)(const snd_pcm_info_t *);
 static const char *(*ALSA_snd_ctl_card_info_get_name)(const snd_ctl_card_info_t *);
+static int (*ALSA_snd_ctl_card_info_get_card)(const snd_ctl_card_info_t *);
 static void (*ALSA_snd_ctl_card_info_clear)(snd_ctl_card_info_t *);
 static int (*ALSA_snd_pcm_hw_free)(snd_pcm_t *);
 static int (*ALSA_snd_pcm_hw_params_set_channels_near)(snd_pcm_t *, snd_pcm_hw_params_t *, unsigned int *);
@@ -202,6 +206,7 @@ static bool load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_info_get_name);
     SDL_ALSA_SYM(snd_pcm_info_get_subdevice_name);
     SDL_ALSA_SYM(snd_ctl_card_info_get_name);
+    SDL_ALSA_SYM(snd_ctl_card_info_get_card);
     SDL_ALSA_SYM(snd_ctl_card_info_clear);
     SDL_ALSA_SYM(snd_pcm_hw_free);
     SDL_ALSA_SYM(snd_pcm_hw_params_set_channels_near);
@@ -1364,7 +1369,14 @@ static int hotplug_device_process(snd_ctl_t *ctl, snd_ctl_card_info_t *ctl_card_
             adev->device_index = dev_idx;
             adev->recording = (direction == SND_PCM_STREAM_CAPTURE);
 
-            if (SDL_AddAudioDevice(recording, adev->name, NULL, NULL, adev) == NULL) {
+            char *container_id = NULL;
+#ifdef SDL_PLATFORM_LINUX
+            container_id = SDL_GetContainerIDFromALSACard(ALSA_snd_ctl_card_info_get_card(ctl_card_info));
+#endif
+            SDL_AudioDevice *device = SDL_AddAudioDevice(recording, adev->name, container_id, NULL, NULL, adev);
+            SDL_free(container_id);
+
+            if (device == NULL) {
                 SDL_small_free(pcm_info, isstack);
                 SDL_free(adev->id);
                 SDL_free(adev->name);
@@ -1592,10 +1604,10 @@ static void ALSA_DetectDevices(SDL_AudioDevice **default_playback, SDL_AudioDevi
     bool has_default_playback = false, has_default_recording = false;
     ALSA_HotplugIteration(&has_default_playback, &has_default_recording); // run once now before a thread continues to check.
     if (has_default_playback) {
-        *default_playback = SDL_AddAudioDevice(/*recording=*/false, "ALSA default playback device", NULL, NULL, (void *)&default_playback_handle);
+        *default_playback = SDL_AddAudioDevice(/*recording=*/false, "ALSA default playback device", NULL, NULL, NULL, (void *)&default_playback_handle);
     }
     if (has_default_recording) {
-        *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, NULL, (void *)&default_recording_handle);
+        *default_recording = SDL_AddAudioDevice(/*recording=*/true, "ALSA default recording device", NULL, NULL, NULL, (void *)&default_recording_handle);
     }
 
     if (!ALSA_start_udev()) {

@@ -35,6 +35,8 @@ extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
 extern bool SDL_startswith(const char *string, const char *prefix);
 extern bool SDL_endswith(const char *string, const char *suffix);
 
+extern bool SDL_IsZeroGUID(const SDL_GUID *guid);
+
 /** Convert URI to a local filename, stripping the "file://"
  *  preamble and hostname if present, and writes the result
  *  to the dst buffer. Since URI-encoded characters take

@@ -2317,6 +2317,8 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.h"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.c"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.h"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_threadprio.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ubuntu_touch.c"
     )
@@ -2758,6 +2760,13 @@ elseif(APPLE)
   # TODO: rework this all for proper macOS, iOS and Darwin support
 
   # !!! FIXME: all the `if(IOS OR TVOS OR VISIONOS)` checks should get merged into one variable, so we're ready for the next platform (or just WatchOS).
+
+  if(MACOS)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.c"
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.h"
+    )
+  endif()
 
   # We always need these libs on macOS at the moment.
   # !!! FIXME: we need Carbon for some very old API calls in

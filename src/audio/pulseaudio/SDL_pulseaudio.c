@@ -34,6 +34,9 @@
 #include "../SDL_sysaudio.h"
 #include "SDL_pulseaudio.h"
 #include "../../thread/SDL_systhread.h"
+#ifdef SDL_PLATFORM_LINUX
+#include "../../core/linux/SDL_sysfs.h"
+#endif
 
 #if (PA_PROTOCOL_VERSION < 28)
 typedef void (*pa_operation_notify_cb_t) (pa_operation *o, void *userdata);
@@ -69,6 +72,7 @@ static const char *(*PULSEAUDIO_pa_strerror)(int);
 static pa_proplist *(*PULSEAUDIO_pa_proplist_new)(void);
 static void (*PULSEAUDIO_pa_proplist_free)(pa_proplist *);
 static int (*PULSEAUDIO_pa_proplist_sets)(pa_proplist *, const char *, const char *);
+static const char *(*PULSEAUDIO_pa_proplist_gets)(const pa_proplist *, const char *);
 
 static pa_threaded_mainloop *(*PULSEAUDIO_pa_threaded_mainloop_new)(void);
 static void (*PULSEAUDIO_pa_threaded_mainloop_set_name)(pa_threaded_mainloop *, const char *);
@@ -252,6 +256,7 @@ static bool load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_proplist_new);
     SDL_PULSEAUDIO_SYM(pa_proplist_free);
     SDL_PULSEAUDIO_SYM(pa_proplist_sets);
+    SDL_PULSEAUDIO_SYM(pa_proplist_gets);
 
     // optional
 #ifdef SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC
@@ -840,10 +845,17 @@ static SDL_AudioFormat PulseFormatToSDLFormat(pa_sample_format_t format)
     }
 }
 
-static void AddPulseAudioDevice(const bool recording, const char *description, const char *name, const uint32_t index, const pa_sample_spec *sample_spec)
+static void AddPulseAudioDevice(const bool recording, const char *description, const char *name, const uint32_t index, const pa_sample_spec *sample_spec, const pa_proplist *proplist)
 {
     SDL_AudioSpec spec;
+    char *container_id = NULL;
     SDL_zero(spec);
+#ifdef SDL_PLATFORM_LINUX
+    const char *card = PULSEAUDIO_pa_proplist_gets(proplist, "alsa.card");
+    if (card) {
+        container_id = SDL_GetContainerIDFromALSACard(SDL_atoi(card));
+    }
+#endif
     spec.format = PulseFormatToSDLFormat(sample_spec->format);
     spec.channels = sample_spec->channels;
     spec.freq = sample_spec->rate;
@@ -854,16 +866,17 @@ static void AddPulseAudioDevice(const bool recording, const char *description, c
             SDL_free(handle);
         } else {
             handle->device_index = index;
-            SDL_AddAudioDevice(recording, description, NULL, &spec, handle);
+            SDL_AddAudioDevice(recording, description, container_id, NULL, &spec, handle);
         }
     }
+    SDL_free(container_id);
 }
 
 // This is called when PulseAudio adds an playback ("sink") device.
 static void SinkInfoCallback(pa_context *c, const pa_sink_info *i, int is_last, void *data)
 {
     if (i) {
-        AddPulseAudioDevice(false, i->description, i->name, i->index, &i->sample_spec);
+        AddPulseAudioDevice(false, i->description, i->name, i->index, &i->sample_spec, i->proplist);
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }
@@ -873,7 +886,7 @@ static void SourceInfoCallback(pa_context *c, const pa_source_info *i, int is_la
 {
     // Maybe skip "monitor" sources. These are just output from other sinks.
     if (i && (include_monitors || (i->monitor_of_sink == PA_INVALID_INDEX))) {
-        AddPulseAudioDevice(true, i->description, i->name, i->index, &i->sample_spec);
+        AddPulseAudioDevice(true, i->description, i->name, i->index, &i->sample_spec, i->proplist);
     }
     PULSEAUDIO_pa_threaded_mainloop_signal(pulseaudio_threaded_mainloop, 0);
 }

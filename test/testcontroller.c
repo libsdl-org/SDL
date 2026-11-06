@@ -1320,6 +1320,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
+            const char *container_id = SDL_GetStringProperty(props, SDL_PROP_GAMEPAD_CONTAINER_ID_STRING, NULL);
             SDL_GUID guid = SDL_GetGamepadGUIDForID(id);
             char guid_string[33];
             SDL_GUIDToString(guid, guid_string, sizeof(guid_string));
@@ -1344,6 +1345,26 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
 
             if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
                 SDL_Log("Player index: %d", SDL_GetGamepadPlayerIndex(gamepad));
+            }
+
+            if (container_id) {
+                SDL_Log("Container ID: %s", container_id);
+
+                // Look for associated audio devices
+                for (int recording = 0; recording <= 1; ++recording) {
+                    int num_devices = 0;
+                    SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&num_devices) : SDL_GetAudioPlaybackDevices(&num_devices);
+                    if (devices) {
+                        for (int j = 0; j < num_devices; ++j) {
+                            SDL_PropertiesID audio_props = SDL_GetAudioDeviceProperties(devices[j]);
+                            const char *audio_container_id = SDL_GetStringProperty(audio_props, SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING, NULL);
+                            if (audio_container_id && SDL_strcmp(audio_container_id, container_id) == 0) {
+                                SDL_Log("Audio %s device: %s", recording ? "recording" : "playback", SDL_GetAudioDeviceName(devices[j]));
+                            }
+                        }
+                        SDL_free(devices);
+                    }
+                }
             }
 
             switch (SDL_GetJoystickTypeForID(id)) {
@@ -2522,6 +2543,9 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    /* Initialize audio so we can look up audio devices associated with controllers */
+    SDL_Init(SDL_INIT_AUDIO);
 
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 

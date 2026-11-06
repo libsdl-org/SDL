@@ -807,6 +807,7 @@ extern SDL_DECLSPEC SDL_Gamepad * SDLCALL SDL_GetGamepadFromPlayerIndex(int play
  *
  * The following read-only properties are provided by SDL:
  *
+ * - `SDL_PROP_GAMEPAD_CONTAINER_ID_STRING`: a string identifying the container for this gamepad, if available. This can be compared with SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING to find associated audio devices.
  * - `SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN`: true if this gamepad has an LED
  *   that has adjustable brightness
  * - `SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN`: true if this gamepad has an LED
@@ -829,6 +830,7 @@ extern SDL_DECLSPEC SDL_Gamepad * SDLCALL SDL_GetGamepadFromPlayerIndex(int play
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGamepadProperties(SDL_Gamepad *gamepad);
 
+#define SDL_PROP_GAMEPAD_CONTAINER_ID_STRING        SDL_PROP_JOYSTICK_CONTAINER_ID_STRING
 #define SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN       SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN
 #define SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN        SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
 #define SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN     SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN
