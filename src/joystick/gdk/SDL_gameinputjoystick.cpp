@@ -56,7 +56,6 @@ struct SDL_JoystickDeviceData
     Uint16 vendor;
     Uint16 product;
     Uint16 bus;
-    Uint8 driver_signature;
     Uint8 subtype;
     int raw_type;
 };
@@ -291,6 +290,23 @@ static void FreeGameInputDevice(SDL_JoystickDevice *device)
     device->internal->device->Release();
 }
 
+static bool IsXInputGameInputDevice(IGameInputDevice *pDevice, Uint16 vendor, Uint16 product)
+{
+#if GAMEINPUT_API_VERSION >= 4
+    uint32_t xinput_index;
+    if (pDevice->GetXInputDeviceIndex(&xinput_index)) {
+        return true;
+    }
+
+    char pnpPath[256] = { 0 };
+    pDevice->GetPnpPath(sizeof(pnpPath), pnpPath);
+    return SDL_IsXInputDevice(vendor, product, pnpPath);
+#else
+    // GameInput v0 only supports Xbox controllers
+    return true;
+#endif
+}
+
 static bool SupportedGameInputDevice(IGameInputDevice *pDevice)
 {
 #if GAMEINPUT_API_VERSION < 4
@@ -311,7 +327,7 @@ static bool SupportedGameInputDevice(IGameInputDevice *pDevice)
     raw_type = GAMEINPUT_GetDeviceRawType(pDevice);
 
     if (IsXbox360WirelessAdapter(vendor, product)) {
-        return NULL;
+        return false;
     }
 
 #if defined(SDL_JOYSTICK_DINPUT) && defined(SDL_HAPTIC_DINPUT)
@@ -331,6 +347,13 @@ static bool SupportedGameInputDevice(IGameInputDevice *pDevice)
         if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_GAMEINPUT, SDL_GAMEINPUT_DEFAULT)) {
             return false;
         }
+#if defined(SDL_JOYSTICK_DINPUT)
+        // DirectInput sees devices sooner and has more mappings, so let it handle everything except XInput controllers
+        if (SDL_GetHintBoolean(SDL_HINT_JOYSTICK_DIRECTINPUT, true) &&
+            !IsXInputGameInputDevice(pDevice, vendor, product)) {
+            return false;
+        }
+#endif
     } else if (raw_type == SDL_GAMEINPUT_RAWTYPE_NONE) {
 #if defined(SDL_JOYSTICK_DINPUT)
         // Let other backends handle non-gamepad controllers to possibly avoid bugs and/or regressions.
@@ -360,7 +383,6 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
     Uint16 bus = SDL_HARDWARE_BUS_USB;
     Uint16 vendor = 0;
     Uint16 product = 0;
-    Uint8 driver_signature = 'g';
     Uint8 subtype = 0;
     int raw_type = SDL_GAMEINPUT_RAWTYPE_NONE;
 
@@ -381,19 +403,6 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
     subtype = GAMEINPUT_GetDeviceSubtype(pDevice);
     raw_type = GAMEINPUT_GetDeviceRawType(pDevice);
 
-    if (!GAMEINPUT_InternalIsGamepad(pDevice) && (raw_type == SDL_GAMEINPUT_RAWTYPE_NONE)) {
-#if GAMEINPUT_API_VERSION >= 4
-        if (pDevice->GetSupportedInput() & GameInputKindController)
-#else
-        if (info->supportedInput & GameInputKindController)
-#endif
-        {
-            // Maintain GUID compatibility with DirectInput controller mappings.
-            driver_signature = 0;
-            subtype = 0;
-        }
-    }
-
     char *product_string = NULL;
     QueryDeviceName(pDevice, &product_string);
 
@@ -411,7 +420,6 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
         data->vendor = vendor;
         data->product = product;
         data->bus = bus;
-        data->driver_signature = driver_signature;
         data->subtype = subtype;
         data->raw_type = raw_type;
         device->internal = data;
@@ -477,7 +485,7 @@ static bool GAMEINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
     }
 
     device->name = SDL_CreateJoystickName(data->vendor, data->product, manufacturer_string, product_string);
-    device->guid = SDL_CreateJoystickGUID(data->bus, data->vendor, data->product, version, manufacturer_string, product_string, data->driver_signature, data->subtype);
+    device->guid = SDL_CreateJoystickGUID(data->bus, data->vendor, data->product, version, manufacturer_string, product_string, 'g', data->subtype);
     SDL_free(manufacturer_string);
     SDL_free(product_string);
 
