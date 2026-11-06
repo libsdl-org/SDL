@@ -146,6 +146,40 @@ static char *GetAudioDeviceStringProperty(AudioDeviceID dev, const AudioObjectPr
     return retval;
 }
 
+// Apple's USB audio driver includes the USB location ID in the device UID, e.g.
+// "AppleUSBAudioEngine:Sony Interactive Entertainment:Wireless Controller:2120000:1"
+// We use that as the container ID, so audio devices can be matched with USB controllers.
+static char *GetContainerIDFromUID(const char *unique_id)
+{
+    char *result = NULL;
+
+    if (!unique_id || SDL_strncmp(unique_id, "AppleUSBAudioEngine:", 20) != 0) {
+        return NULL;
+    }
+
+    // The location ID is the second to last field
+    const char *end = SDL_strrchr(unique_id, ':');
+    if (!end) {
+        return NULL;
+    }
+    const char *start = end;
+    while (start > unique_id && start[-1] != ':') {
+        --start;
+    }
+    if (start == unique_id) {
+        return NULL;
+    }
+
+    Uint32 location_id = (Uint32)SDL_strtoul(start, NULL, 16);
+    if (location_id == 0) {
+        return NULL;
+    }
+
+    // This needs to match the format used by SDL_GetContainerIDFromRegistryEntryID()
+    SDL_asprintf(&result, "0x%08" SDL_PRIx32, location_id);
+    return result;
+}
+
 
 // This only _adds_ new devices. Removal is handled by devices triggering kAudioDevicePropertyDeviceIsAlive property changes.
 static void RefreshPhysicalDevices(void)
@@ -244,7 +278,9 @@ static void RefreshPhysicalDevices(void)
             if (newhandle) {
                 newhandle->devid = dev;
                 newhandle->recording = recording ? true : false;
-                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", unique_id, &spec, newhandle);
+                char *container_id = GetContainerIDFromUID(unique_id);
+                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", container_id, unique_id, &spec, newhandle);
+                SDL_free(container_id);
                 if (device) {
                     AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
                 } else {

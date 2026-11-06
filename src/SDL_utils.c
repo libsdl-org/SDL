@@ -131,6 +131,16 @@ bool SDL_endswith(const char *string, const char *suffix)
     return false;
 }
 
+bool SDL_IsZeroGUID(const SDL_GUID *guid)
+{
+    for (int i = 0; i < SDL_arraysize(guid->data); ++i) {
+        if (guid->data[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
 SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
 
 Uint32 SDL_GetNextObjectID(void)

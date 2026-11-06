@@ -79,6 +79,7 @@ struct SDL_JoystickDevice
     char *name;
     char *path;
     SDL_GUID guid;
+    char *container_id;
     int player_index;
     int steam_virtual_gamepad_slot;
 
