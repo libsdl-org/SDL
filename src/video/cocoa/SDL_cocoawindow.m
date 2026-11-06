@@ -2568,7 +2568,11 @@ bool Cocoa_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         }
 #endif // SDL_VIDEO_OPENGL_EGL
 #endif // SDL_VIDEO_OPENGL_ES2
-        [nswindow setContentView:nsview];
+        // A caller-provided view may be a subview of an existing NSWindow.
+        // Do not replace the host application's root content view.
+        if (!(window->flags & SDL_WINDOW_EXTERNAL)) {
+            [nswindow setContentView:nsview];
+        }
 
         if (!SetupWindowData(_this, window, nswindow, nsview)) {
             return false;
