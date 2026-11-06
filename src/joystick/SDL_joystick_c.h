@@ -126,6 +126,9 @@ extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_GUID guid, const char *nam
 // Function to return whether a joystick GUID uses the version field
 extern bool SDL_JoystickGUIDUsesVersion(SDL_GUID guid);
 
+// Function to return whether a Windows device is handled by XInput
+extern bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *path);
+
 // Function to return whether a joystick is an Xbox One controller
 extern bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
 

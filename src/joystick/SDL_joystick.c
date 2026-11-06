@@ -56,7 +56,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_PRIVATE
     &SDL_PRIVATE_JoystickDriver,
 #endif
-#ifdef SDL_JOYSTICK_GAMEINPUT // Higher priority than other Windows drivers
+#ifdef SDL_JOYSTICK_GAMEINPUT
     &SDL_GAMEINPUT_JoystickDriver,
 #endif
 #if defined(SDL_JOYSTICK_XINPUT)
@@ -3987,6 +3987,25 @@ bool SDL_JoystickGUIDUsesVersion(SDL_GUID guid)
 
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL, NULL);
     if (vendor && product) {
+        return true;
+    }
+    return false;
+}
+
+bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *path)
+{
+    SDL_GamepadType type;
+
+    // If device path contains "IG_" then it's an XInput device
+    // See: https://docs.microsoft.com/windows/win32/xinput/xinput-and-directinput
+    if (path && SDL_strcasestr(path, "IG_") != NULL) {
+        return true;
+    }
+
+    type = SDL_GetGamepadTypeFromVIDPID(vendor_id, product_id, NULL, false);
+    if (type == SDL_GAMEPAD_TYPE_XBOX360 ||
+        type == SDL_GAMEPAD_TYPE_XBOXONE ||
+        (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
         return true;
     }
     return false;

@@ -262,25 +262,6 @@ static bool SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() DirectX error 0x%8.8" SDL_PRIxSLONG, function, code);
 }
 
-static bool IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *hidPath)
-{
-    SDL_GamepadType type;
-
-    // If device path contains "IG_" then its an XInput device
-    // See: https://docs.microsoft.com/windows/win32/xinput/xinput-and-directinput
-    if (SDL_strstr(hidPath, "IG_") != NULL) {
-        return true;
-    }
-
-    type = SDL_GetGamepadTypeFromVIDPID(vendor_id, product_id, NULL, false);
-    if (type == SDL_GAMEPAD_TYPE_XBOX360 ||
-        type == SDL_GAMEPAD_TYPE_XBOXONE ||
-        (vendor_id == USB_VENDOR_VALVE && product_id == USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD)) {
-        return true;
-    }
-    return false;
-}
-
 static bool QueryDeviceName(LPDIRECTINPUTDEVICE8 device, char **product_string)
 {
     DIPROPSTRING dipstr;
@@ -431,7 +412,7 @@ static BOOL CALLBACK EnumJoystickDetectCallback(LPCDIDEVICEINSTANCE pDeviceInsta
     CHECK(QueryDevicePath(dxdevice, &hidPath));
     CHECK(QueryDeviceInfo(dxdevice, &vendor, &product));
     CHECK(QueryDeviceName(dxdevice, &product_string));
-    CHECK(DINPUT_handle_xinput || !IsXInputDevice(vendor, product, hidPath));
+    CHECK(DINPUT_handle_xinput || !SDL_IsXInputDevice(vendor, product, hidPath));
 
     entry = (DINPUT_CachedDevice *)SDL_calloc(1, sizeof(*entry));
     CHECK(entry);
