@@ -759,7 +759,7 @@ static void FreeCursorData(SDL_CursorData *d)
 
                 // Custom cursor buffers are about to be destroyed, so ensure they are detached.
                 if (!d->is_system_cursor && tool->cursor_state.surface) {
-                    wl_surface_attach(seat->pointer.cursor_state.surface, NULL, 0, 0);
+                    wl_surface_attach(tool->cursor_state.surface, NULL, 0, 0);
                 }
 
                 tool->cursor_state.current_cursor = NULL;
