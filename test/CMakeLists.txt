@@ -391,6 +391,11 @@ if(MACOS)
             testnativecocoa.m
             testnativex11.c
     )
+    # Manual Cocoa/Metal regression for embedding SDL in a host application's NSView.
+    add_sdl_test_executable(testcocoaexternalsubview SOURCES testcocoaexternalsubview.m)
+    target_compile_options(testcocoaexternalsubview PRIVATE "-fobjc-arc")
+    target_link_libraries(testcocoaexternalsubview PRIVATE
+        "-framework Cocoa" "-framework QuartzCore" "-framework Metal")
 elseif(WINDOWS OR CYGWIN)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
