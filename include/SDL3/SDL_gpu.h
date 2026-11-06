@@ -3121,52 +3121,20 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *
  * ```wgsl
  * // Sampled textures come first, followed by the sampler, in SDL slot order.
- * @group(0) @binding(0) var sampledTextureBoundToSlot0: ...
- * @group(0) @binding(1) var samplerBoundToSlot0: sampler
- * @group(0) @binding(2) var sampledTextureBoundToSlot1: ...
- * @group(0) @binding(3) var samplerBoundToSlot1: sampler
+ * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
+ * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
+ * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
+ * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
  * // Any storage textures come next, in SDL slot order.
- * @group(0) @binding(4) var storageTextureBoundToSlot0: ...
- * @group(0) @binding(5) var storageTextureBoundToSlot1: ...
+ * \@group(0) \@binding(4) var storageTextureBoundToSlot0: ...
+ * \@group(0) \@binding(5) var storageTextureBoundToSlot1: ...
  * // Any storage buffers come next, in SDL slot order.
- * @group(0) @binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
- * @group(0) @binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
+ * \@group(0) \@binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
+ * \@group(0) \@binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
  * // Any uniform buffers are in their own set, in SDL slot order.
- * @group(1) @binding(0) var<uniform> uniformBufferBoundToSlot0: ...
- * @group(1) @binding(1) var<uniform> uniformBufferBoundToSlot0: ...
+ * \@group(1) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * \@group(1) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
  * ```
- *
- * WebGPU has stricter rules regarding sampling certain texture types, so some
- * formats do require additional work to sample.
- * 
- * The default sampling type for all textures is `WGPUTextureSampleType_Float`,
- * however some formats do not support float filtering. 
- * (See the [WebGPU spec](https://www.w3.org/TR/webgpu/#texture-format-caps)).
- *
- * The most common unsupported format is any depth format. Attempting to sample
- * a depth format will fail unless you're either using a comparison sampler, or
- * you forced `WGPUTextureSampleType_Float` through the macro-ish comment
- * `//SDLGPU_ForceAllowSamplingForTexture(group, binding)`
- *
- * This is an SDLGPU specific hint, which forces a binding and its corresponding
- * sampler to be unfilterable. This allows the shader to (e.g) sample depth textures
- * as if they were regular `f32` textures.
- *
- * **Example**
- * 
- * ```wgsl
- * // BAD! This will throw an error when bound, since the backend expects a 
- * // texture format which supports float filtering!
- * @group(0) @binding(0) var depthTexture: texture_2d<f32>; 
- *
- * // However, if you were to add this comment to your WGSL source, it will 
- * // tell the backend to expect an unfilterable texture format.
- * // SDLGPU_ForceAllowSamplingForTexture(0, 0)
- *
- * ```
- * 
- * The "macro" is forced to be a comment, since WGSL does not currently have a system
- * for implementing custom functions.
  *
  * ---
  *

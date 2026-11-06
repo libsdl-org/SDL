@@ -205,7 +205,7 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
     Asteroid *asteroidData = SDL_MapGPUTransferBuffer(app.device, asteroidTransferBuffer, false);
 
     for (int i = 0; i < app.numAsteroids; i++) {
-        Uint32 distance = SDL_max(SDL_rand(app.maxDistance), app.minDistance);
+        Uint32 distance = SDL_max(SDL_rand(app.maxDistance), (Sint32)app.minDistance);
 
         float theta = (2.0f * SDL_PI_F * i) / app.numAsteroids;
         float finalDist = EARTH_RADIUS + distance;
@@ -366,7 +366,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_BindGPUComputePipeline(computePass, app.computePipeline);
     SDL_PushGPUComputeUniformData(cmdBuf, 0, &(UniformDataCompute){
                                                  .deltaTime = app.deltaTime,
-                                                 .numAsteroids = app.numAsteroids,
+                                                 .numAsteroids = (float)app.numAsteroids,
                                                  .timescale = app.timescale,
                                              },
                                   sizeof(UniformDataCompute));
@@ -383,9 +383,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         800.0f / 600.0f, 0.001f, 200.0f);
     Matrix4x4 view = Matrix4x4_CreateLookAt(
         (Vector3){
-            (app.cameraDistance * 1000) * SDL_sinf(app.cameraRotation),
-            (app.cameraDistance * 1000),
-            (app.cameraDistance * 1000) * SDL_cosf(app.cameraRotation),
+            ((float)app.cameraDistance * 1000) * SDL_sinf(app.cameraRotation),
+            ((float)app.cameraDistance * 1000),
+            ((float)app.cameraDistance * 1000) * SDL_cosf(app.cameraRotation),
         },
         (Vector3){ 0, 0, 0 },
         (Vector3){ 0, 1, 0 });
