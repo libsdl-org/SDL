@@ -897,6 +897,28 @@ static void pointer_handle_leave(void *data, struct wl_pointer *pointer,
     }
 }
 
+bool Wayland_BeginWindowDrag(SDL_WindowData *window_data)
+{
+    SDL_VideoData *vid = window_data->waylandData;
+    Wayland_Seat *seat = vid->last_implicit_grab_seat;
+
+    if (vid->xdg_toplevel_drag_manager) {
+        SDL_Mouse *m = SDL_GetMouse();
+        const int m_x = seat->pointer.last_motion.x + (m->focus ? m->focus->x : 0);
+        const int m_y = seat->pointer.last_motion.y + (m->focus ? m->focus->y : 0);
+
+        const int offset_x = m_x - window_data->sdlwindow->x;
+        const int offset_y = m_y - window_data->sdlwindow->y;
+        SDL_PropertiesID props = SDL_GetWindowProperties(window_data->sdlwindow);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_X_NUMBER, offset_x);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_DRAG_OFFSET_Y_NUMBER, offset_y);
+
+        return Wayland_CreateWindowDragOffer(seat->data_device, window_data, offset_x, offset_y);
+    }
+
+    return false;
+}
+
 static bool ProcessHitTest(Wayland_Seat *seat)
 {
     // Pointer is immobilized, do nothing.
@@ -927,18 +949,23 @@ static bool ProcessHitTest(Wayland_Seat *seat)
 
         switch (window_data->hit_test_result) {
         case SDL_HITTEST_DRAGGABLE:
-#ifdef HAVE_LIBDECOR_H
-            if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
-                if (window_data->shell_surface.libdecor.frame) {
-                    libdecor_frame_move(window_data->shell_surface.libdecor.frame, seat->wl_seat, serial);
-                }
-            } else
-#endif
-                if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
+            if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL) {
                 if (window_data->shell_surface.xdg.toplevel.xdg_toplevel) {
-                    xdg_toplevel_move(window_data->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, serial);
+                    if (!Wayland_BeginWindowDrag(window_data)) {
+                        xdg_toplevel_move(window_data->shell_surface.xdg.toplevel.xdg_toplevel, seat->wl_seat, serial);
+                    }
                 }
             }
+#ifdef HAVE_LIBDECOR_H
+            else if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
+                if (window_data->shell_surface.libdecor.frame) {
+                    if (!Wayland_BeginWindowDrag(window_data)) {
+                        libdecor_frame_move(window_data->shell_surface.libdecor.frame, seat->wl_seat, serial);
+                    }
+                }
+            }
+#endif
+
             return true;
 
         case SDL_HITTEST_RESIZE_TOPLEFT:
