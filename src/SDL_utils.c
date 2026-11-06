@@ -131,6 +131,32 @@ bool SDL_endswith(const char *string, const char *suffix)
     return false;
 }
 
+bool SDL_IsZeroGUID(const SDL_GUID *guid)
+{
+    for (int i = 0; i < SDL_arraysize(guid->data); ++i) {
+        if (guid->data[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool SDL_IsSystemContainerGUID(const SDL_GUID *guid)
+{
+    // The system container ID is {00000000-0000-0000-FFFF-FFFFFFFFFFFF}
+    for (int i = 0; i < 8; ++i) {
+        if (guid->data[i] != 0) {
+            return false;
+        }
+    }
+    for (int i = 0; i < 8; ++i) {
+        if (guid->data[8 + i] != 0xFF) {
+            return false;
+        }
+    }
+    return true;
+}
+
 SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
 
 Uint32 SDL_GetNextObjectID(void)

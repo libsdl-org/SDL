@@ -120,7 +120,6 @@ typedef struct
 
 #undef _guarded
 
-static SDL_GUID s_zeroGUID;
 static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
@@ -1370,7 +1369,7 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bo
     for (mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
         SDL_GUID mapping_guid;
 
-        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+        if (SDL_IsZeroGUID(&mapping->guid)) {
             continue;
         }
 
@@ -2783,7 +2782,7 @@ char **SDL_GetGamepadMappings(int *count)
     SDL_LockJoysticks();
 
     for (GamepadMapping_t *mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
-        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+        if (SDL_IsZeroGUID(&mapping->guid)) {
             continue;
         }
         num_mappings++;
@@ -2797,7 +2796,7 @@ char **SDL_GetGamepadMappings(int *count)
     } else {
         int i = 0;
         for (GamepadMapping_t *mapping = s_pSupportedGamepads; mapping; mapping = mapping->next) {
-            if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            if (SDL_IsZeroGUID(&mapping->guid)) {
                 continue;
             }
 
@@ -2894,7 +2893,7 @@ bool SDL_SetGamepadMapping(SDL_JoystickID instance_id, const char *mapping)
     SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
     bool result = false;
 
-    CHECK_PARAM(SDL_memcmp(&guid, &s_zeroGUID, sizeof(guid)) == 0) {
+    CHECK_PARAM(SDL_IsZeroGUID(&guid)) {
         return SDL_InvalidParamError("instance_id");
     }
 

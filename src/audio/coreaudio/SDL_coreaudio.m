@@ -244,7 +244,7 @@ static void RefreshPhysicalDevices(void)
             if (newhandle) {
                 newhandle->devid = dev;
                 newhandle->recording = recording ? true : false;
-                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", unique_id, &spec, newhandle);
+                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", NULL, unique_id, &spec, newhandle);
                 if (device) {
                     AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
                 } else {

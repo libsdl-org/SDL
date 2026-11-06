@@ -214,4 +214,10 @@ extern void WIN_QuitDeviceNotification(void);
 
 extern WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length);
 
+// Get the container ID for a device instance ID, e.g. an audio endpoint "SWD\MMDEVAPI\{0.0.0.00000000}.{...}"
+extern bool WIN_GetContainerIDFromInstanceID(const WCHAR *instance_id, SDL_GUID *container_id);
+
+// Get the container ID for a device interface path, e.g. a HID device path
+extern bool WIN_GetContainerIDFromInterfacePath(const char *path, SDL_GUID *container_id);
+
 #endif // SDL_hid_h_

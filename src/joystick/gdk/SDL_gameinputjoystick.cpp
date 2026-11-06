@@ -442,6 +442,8 @@ static SDL_JoystickDevice *CreateGameInputDevice(IGameInputDevice *pDevice)
         pDevice->GetPnpPath(sizeof(pnpPath), pnpPath);
         device->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot(pnpPath);
 
+        pDevice->GetContainerId((GUID *)&device->container_id);
+
         uint32_t xinput_index;
         if (pDevice->GetXInputDeviceIndex(&xinput_index)) {
             int slot = (int)xinput_index;

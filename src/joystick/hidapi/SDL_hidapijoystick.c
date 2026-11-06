@@ -26,8 +26,8 @@
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
 #include "../../SDL_hints_c.h"
-
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+#include "../../core/windows/SDL_hid.h"
 #endif
 
 
@@ -1487,6 +1487,14 @@ static SDL_JoystickDevice *HIDAPI_JoystickQueryDevices(void)
     return devices;
 }
 
+static bool HIDAPI_JoystickPrepareDevice(SDL_JoystickDevice *device)
+{
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    WIN_GetContainerIDFromInterfacePath(device->path, &device->container_id);
+#endif
+    return true;
+}
+
 static bool HIDAPI_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *joystick_device)
 {
     SDL_JoystickID joystickID = joystick_device->instance_id;
@@ -1724,6 +1732,7 @@ static void HIDAPI_JoystickQuit(void)
 SDL_JoystickDriver SDL_HIDAPI_JoystickDriver = {
     .Init = HIDAPI_JoystickInit,
     .QueryDevices = HIDAPI_JoystickQueryDevices,
+    .PrepareDevice = HIDAPI_JoystickPrepareDevice,
     .Open = HIDAPI_JoystickOpen,
     .Rumble = HIDAPI_JoystickRumble,
     .RumbleTriggers = HIDAPI_JoystickRumbleTriggers,
