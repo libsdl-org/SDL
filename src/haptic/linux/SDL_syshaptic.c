@@ -35,6 +35,7 @@
 #include <errno.h>       // errno
 #include <string.h>      // strerror
 #include <sys/stat.h>    // stat
+#include <sys/sysmacros.h>
 
 #define MAX_HAPTICS 32 // It's doubtful someone has more then 32 evdev
 
@@ -237,6 +238,36 @@ static bool MaybeAddDevice(const char *path)
 
     if (!path) {
         return false;
+    }
+
+    // Avoid opening devices that cannot provide force feedback. Fall back to
+    // the normal probe if sysfs capabilities are unavailable or unrecognized.
+    if (stat(path, &sb) == 0 && S_ISCHR(sb.st_mode)) {
+        char sysfs_path[128], capabilities[64], *end;
+        unsigned long events;
+        ssize_t length;
+        int capabilities_fd;
+
+        SDL_snprintf(sysfs_path, sizeof(sysfs_path),
+                     "/sys/dev/char/%u:%u/device/capabilities/ev",
+                     major(sb.st_rdev), minor(sb.st_rdev));
+        capabilities_fd = open(sysfs_path, O_RDONLY | O_CLOEXEC);
+        if (capabilities_fd >= 0) {
+            length = read(capabilities_fd, capabilities, sizeof(capabilities) - 1);
+            close(capabilities_fd);
+            if (length > 0 && length < sizeof(capabilities) - 1) {
+                capabilities[length] = '\0';
+                events = SDL_strtoul(capabilities, &end, 16);
+                if (end != capabilities) {
+                    while (SDL_isspace((unsigned char)*end)) {
+                        ++end;
+                    }
+                    if (!*end && !(events & (1UL << EV_FF))) {
+                        return false;
+                    }
+                }
+            }
+        }
     }
 
     // try to open
