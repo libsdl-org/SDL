@@ -494,9 +494,9 @@ static void *GetOfferDataFromSelf(Wayland_DataOffer *offer, size_t *length)
         return NULL;
     }
 
-    // The timeout is 0, as the data will already be in the pipe if it is from this process.
+    // Wait a brief period for the read end of the pipe to be marked as ready to avoid racing the system.
     void *buffer = NULL;
-    while (ReadPipe(offer->read_fd, &buffer, length, 0) > 0) {
+    while (ReadPipe(offer->read_fd, &buffer, length, SDL_MS_TO_NS(4)) > 0) {
     }
 
     return buffer;
