@@ -56,7 +56,7 @@ typedef struct SDL_JoystickDeviceMatch
 } SDL_JoystickDeviceMatch;
 
 // Everything that an application can see about a joystick before it's opened
-typedef struct SDL_JoystickDevice
+struct SDL_JoystickDevice
 {
     // Data generated at enumeration time
     SDL_JoystickDriver *driver;
@@ -84,7 +84,7 @@ typedef struct SDL_JoystickDevice
 
     struct SDL_JoystickDevice *next;
 
-} SDL_JoystickDevice;
+};
 
 typedef struct SDL_JoystickAxisInfo
 {
@@ -219,7 +219,7 @@ struct SDL_Joystick
 // Macro to combine a USB vendor ID and product ID into a single Uint32 value
 #define MAKE_VIDPID(VID, PID) (((Uint32)(VID)) << 16 | (PID))
 
-typedef struct SDL_JoystickDriver
+struct SDL_JoystickDriver
 {
     // Optional function to initialize the driver
     bool (*Init)(void);
@@ -274,7 +274,7 @@ typedef struct SDL_JoystickDriver
     // Optional function to perform any system-specific joystick related cleanup
     void (*Quit)(void);
 
-} SDL_JoystickDriver;
+};
 
 // Windows and Mac OSX has a limit of MAX_DWORD / 1000, Linux kernel has a limit of 0xFFFF
 #define SDL_MAX_RUMBLE_DURATION_MS 0xFFFF
