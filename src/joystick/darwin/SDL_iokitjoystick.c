@@ -41,6 +41,155 @@ static IOHIDManagerRef hidman = NULL;
 // Linked list of all available devices
 static recDevice *gpDeviceList = NULL;
 
+// Hashtable of devices seen by IOKit, indexed by product string, used to identify MFi controllers
+typedef struct
+{
+    IOHIDDeviceRef deviceRef; // Not retained, only used to identify the device when it's removed
+    Uint16 bus;
+    Uint16 vendor_id;
+    Uint16 product_id;
+    char *name;
+} KnownDevice;
+
+static SDL_HashTable *gKnownDevices = NULL;
+
+static Sint32 GetDeviceNumberProperty(IOHIDDeviceRef hidDevice, CFStringRef key)
+{
+    Sint32 value = 0;
+    CFTypeRef refCF = IOHIDDeviceGetProperty(hidDevice, key);
+    if (refCF) {
+        CFNumberGetValue(refCF, kCFNumberSInt32Type, &value);
+    }
+    return value;
+}
+
+static void GetDeviceStringProperty(IOHIDDeviceRef hidDevice, CFStringRef key, char *string, size_t size)
+{
+    CFTypeRef refCF = IOHIDDeviceGetProperty(hidDevice, key);
+    if (!refCF || !CFStringGetCString(refCF, string, size, kCFStringEncodingUTF8)) {
+        string[0] = '\0';
+    }
+}
+
+static Uint16 GetDeviceBus(IOHIDDeviceRef hidDevice)
+{
+    CFTypeRef refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDTransportKey));
+    if (refCF && CFGetTypeID(refCF) == CFStringGetTypeID() &&
+        CFStringHasPrefix((CFStringRef)refCF, CFSTR(kIOHIDTransportBluetoothValue))) {
+        return SDL_HARDWARE_BUS_BLUETOOTH;
+    }
+    return SDL_HARDWARE_BUS_USB;
+}
+
+static void SDLCALL DARWIN_DestroyKnownDevice(void *unused, const void *key, const void *value)
+{
+    KnownDevice *entry = (KnownDevice *)value;
+
+    SDL_free((void *)key);
+    SDL_free(entry->name);
+    SDL_free(entry);
+}
+
+static void DARWIN_AddKnownDevice(IOHIDDeviceRef hidDevice)
+{
+    char manufacturer_string[256];
+    char product_string[256];
+
+    Uint16 vendor = (Uint16)GetDeviceNumberProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
+    Uint16 product = (Uint16)GetDeviceNumberProperty(hidDevice, CFSTR(kIOHIDProductIDKey));
+    if (!vendor && !product) {
+        return;
+    }
+
+    GetDeviceStringProperty(hidDevice, CFSTR(kIOHIDProductKey), product_string, sizeof(product_string));
+    if (!*product_string) {
+        return;
+    }
+    GetDeviceStringProperty(hidDevice, CFSTR(kIOHIDManufacturerKey), manufacturer_string, sizeof(manufacturer_string));
+
+    if (!gKnownDevices) {
+        gKnownDevices = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, DARWIN_DestroyKnownDevice, NULL);
+        if (!gKnownDevices) {
+            return;
+        }
+    }
+
+    char *name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
+    char *key = SDL_strdup(product_string);
+    KnownDevice *value = (KnownDevice *)SDL_calloc(1, sizeof(*value));
+    if (!name || !key || !value) {
+        SDL_free(name);
+        SDL_free(key);
+        SDL_free(value);
+        return;
+    }
+    value->deviceRef = hidDevice;
+    value->bus = GetDeviceBus(hidDevice);
+    value->vendor_id = vendor;
+    value->product_id = product;
+    value->name = name;
+    SDL_InsertIntoHashTable(gKnownDevices, key, value, true);
+}
+
+typedef struct
+{
+    IOHIDDeviceRef deviceRef;
+    const char *key;
+} KnownDeviceSearch;
+
+static bool SDLCALL DARWIN_FindKnownDevice(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    KnownDeviceSearch *search = (KnownDeviceSearch *)userdata;
+    const KnownDevice *entry = (const KnownDevice *)value;
+
+    if (entry->deviceRef == search->deviceRef) {
+        search->key = (const char *)key;
+        return false;
+    }
+    return true;
+}
+
+static void DARWIN_RemoveKnownDevice(IOHIDDeviceRef hidDevice)
+{
+    if (!gKnownDevices) {
+        return;
+    }
+
+    // If another device with the same product string replaced this entry, it won't be found and is left alone
+    KnownDeviceSearch search = { hidDevice, NULL };
+    SDL_IterateHashTable(gKnownDevices, DARWIN_FindKnownDevice, &search);
+    if (search.key) {
+        SDL_RemoveFromHashTable(gKnownDevices, search.key);
+    }
+}
+
+// Returns the bus, VID/PID and a copy of the joystick name, which should be freed with SDL_free()
+bool DARWIN_GetKnownDevice(const char *product_string, Uint16 *bus, Uint16 *vendor_id, Uint16 *product_id, char **name)
+{
+    const void *value;
+    if (!gKnownDevices || !SDL_FindInHashTable(gKnownDevices, product_string, &value)) {
+        return false;
+    }
+
+    const KnownDevice *entry = (const KnownDevice *)value;
+    *name = SDL_strdup(entry->name);
+    if (!*name) {
+        return false;
+    }
+    *bus = entry->bus;
+    *vendor_id = entry->vendor_id;
+    *product_id = entry->product_id;
+    return true;
+}
+
+static void DARWIN_DestroyKnownDevices(void)
+{
+    if (gKnownDevices) {
+        SDL_DestroyHashTable(gKnownDevices);
+        gKnownDevices = NULL;
+    }
+}
+
 void FreeRumbleEffectData(FFEFFECT *effect)
 {
     if (!effect) {
@@ -226,6 +375,8 @@ static bool GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(recDevice *
 static void JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
 {
     recDevice *device;
+
+    DARWIN_RemoveKnownDevice(ioHIDDeviceObject);
 
     for (device = gpDeviceList; device; device = device->pNext) {
         if (!device->removed && device->deviceRef == ioHIDDeviceObject) {
@@ -487,20 +638,9 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     */
     pDevice->deviceRef = hidDevice;
 
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
-    if (refCF) {
-        CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
-    }
-
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductIDKey));
-    if (refCF) {
-        CFNumberGetValue(refCF, kCFNumberSInt32Type, &product);
-    }
-
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVersionNumberKey));
-    if (refCF) {
-        CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
-    }
+    vendor = GetDeviceNumberProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
+    product = GetDeviceNumberProperty(hidDevice, CFSTR(kIOHIDProductIDKey));
+    version = GetDeviceNumberProperty(hidDevice, CFSTR(kIOHIDVersionNumberKey));
 
     if (!IsControlledBy360ControllerDriver(hidDevice) && SDL_IsJoystickXboxOne(vendor, product)) {
         // We can't actually use this API for Xbox controllers without the 360Controller driver
@@ -515,26 +655,15 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     }
 
     // get device name
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDManufacturerKey));
-    if ((!refCF) || (!CFStringGetCString(refCF, manufacturer_string, sizeof(manufacturer_string), kCFStringEncodingUTF8))) {
-        manufacturer_string[0] = '\0';
-    }
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey));
-    if ((!refCF) || (!CFStringGetCString(refCF, product_string, sizeof(product_string), kCFStringEncodingUTF8))) {
-        product_string[0] = '\0';
-    }
+    GetDeviceStringProperty(hidDevice, CFSTR(kIOHIDManufacturerKey), manufacturer_string, sizeof(manufacturer_string));
+    GetDeviceStringProperty(hidDevice, CFSTR(kIOHIDProductKey), product_string, sizeof(product_string));
     name = SDL_CreateJoystickName(vendor, product, manufacturer_string, product_string);
     if (name) {
         SDL_strlcpy(pDevice->product, name, sizeof(pDevice->product));
         SDL_free(name);
     }
 
-    Uint16 bus = SDL_HARDWARE_BUS_USB;
-    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDTransportKey));
-    if (refCF && CFGetTypeID(refCF) == CFStringGetTypeID() &&
-        CFStringHasPrefix((CFStringRef)refCF, CFSTR(kIOHIDTransportBluetoothValue))) {
-        bus = SDL_HARDWARE_BUS_BLUETOOTH;
-    }
+    Uint16 bus = GetDeviceBus(hidDevice);
 
     pDevice->vendor_id = (Uint16)vendor;
     pDevice->product_id = (Uint16)product;
@@ -560,8 +689,9 @@ static bool JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
     recDevice *i;
 
 #ifdef SDL_JOYSTICK_MFI
-    extern bool IOS_SupportedHIDDevice(IOHIDDeviceRef device);
-    if (!IsControlledBy360ControllerDriver(ioHIDDeviceObject) && IOS_SupportedHIDDevice(ioHIDDeviceObject)) {
+    extern bool GCController_SupportedHIDDevice(IOHIDDeviceRef device);
+    if (!IsControlledBy360ControllerDriver(ioHIDDeviceObject) &&
+        GCController_SupportedHIDDevice(ioHIDDeviceObject)) {
         return true;
     }
 #endif
@@ -582,6 +712,8 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
     if (res != kIOReturnSuccess) {
         return;
     }
+
+    DARWIN_AddKnownDevice(ioHIDDeviceObject);
 
     if (JoystickAlreadyKnown(ioHIDDeviceObject)) {
         return; // IOKit sent us a duplicate.
@@ -1071,6 +1203,8 @@ static void DARWIN_JoystickQuit(void)
         CFRelease(hidman);
         hidman = NULL;
     }
+
+    DARWIN_DestroyKnownDevices();
 }
 
 SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {

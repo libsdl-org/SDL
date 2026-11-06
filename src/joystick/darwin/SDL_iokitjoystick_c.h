@@ -79,4 +79,6 @@ struct joystick_hwdata
 };
 typedef struct joystick_hwdata recDevice;
 
+extern bool DARWIN_GetKnownDevice(const char *product_string, Uint16 *bus, Uint16 *vendor_id, Uint16 *product_id, char **name);
+
 #endif // SDL_JOYSTICK_IOKIT_H
