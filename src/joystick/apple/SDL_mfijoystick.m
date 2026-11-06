@@ -54,6 +54,7 @@ typedef struct joystick_hwdata
     Uint64 pause_button_pressed;
 
     char *name;
+    Uint16 bus;
     Uint16 vendor;
     Uint16 product;
     Uint8 subtype;
@@ -341,62 +342,6 @@ static void IOS_InitializeController(GCController *controller)
     }
 }
 
-static void IOS_AddMFIJoystickMatches(SDL_JoystickDevice *device, SDL_JoystickDeviceItem *data, const char *name)
-{
-    // Let higher priority drivers take care of devices they support
-    if (data->is_xbox) {
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_XBOXONE);
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_XBOX360);
-    }
-    if (data->is_ps4) {
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_PS4);
-    }
-    if (data->is_ps5) {
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_PS5);
-    }
-    if (data->is_switch_pro) {
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO);
-    }
-    if (data->is_switch_joycon_pair) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR);
-    }
-    if (data->is_shield) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NVIDIA, USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104);
-    }
-    if (data->is_stadia) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_GOOGLE, USB_PRODUCT_GOOGLE_STADIA_CONTROLLER);
-    }
-    if (data->is_switch_joyconL) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT);
-    }
-    if (data->is_switch_joyconR) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT);
-    }
-    if (SDL_strstr(name, "GameCube Controller Adapter")) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_NINTENDO, USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER1);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_DRAGONRISE, USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER3);
-    }
-    if (SDL_strcmp(name, "8Bitdo SN30 Pro") == 0) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_SN30_PRO_BT);
-    }
-    if (SDL_strcmp(name, "8BitDo Pro 2") == 0) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2);
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_2_BT);
-    }
-    if (SDL_strcmp(name, "8BitDo Pro 3") == 0) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_PRO_3);
-    }
-    if (SDL_startswith(name, "8BitDo Ultimate 2 Wireless")) {
-        SDL_AddJoystickDeviceMatchVIDPID(device, USB_VENDOR_8BITDO, USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS);
-    }
-    if (SDL_startswith(name, "Steam Controller")) {
-        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_STEAM);
-    }
-}
-
 static void IOS_FreeJoystickDevice(SDL_JoystickDevice *device)
 {
     SDL_JoystickDeviceItem *data = (SDL_JoystickDeviceItem *)device->internal;
@@ -434,10 +379,12 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
 {
     SDL_JoystickDevice *device;
     SDL_JoystickDeviceItem *data;
+    Uint16 bus = SDL_HARDWARE_BUS_BLUETOOTH;
     Uint16 vendor = 0;
     Uint16 product = 0;
     Uint8 subtype = 0;
     const char *name = NULL;
+    char *temp_name = NULL;
 
     device = SDL_CreateJoystickDevice(&SDL_IOS_JoystickDriver, sizeof(*data));
     if (!device) {
@@ -594,16 +541,34 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
         return NULL;
     }
 
+#ifdef SDL_JOYSTICK_IOKIT
+    extern bool DARWIN_GetKnownDevice(const char *product_string, Uint16 *bus, Uint16 *vendor_id, Uint16 *product_id, char **name);
+
+    // Use the actual device information if IOKit has seen this controller
+    if (controller.vendorName &&
+        DARWIN_GetKnownDevice(controller.vendorName.UTF8String, &bus, &vendor, &product, &temp_name)) {
+        name = temp_name;
+    }
+#endif
+
+    data->bus = bus;
     data->vendor = vendor;
     data->product = product;
     data->subtype = subtype;
     data->name = SDL_strdup(name);
+    SDL_free(temp_name);
     if (!data->name) {
         SDL_DestroyJoystickDevice(device);
         return NULL;
     }
 
-    IOS_AddMFIJoystickMatches(device, data, name);
+    if (vendor && product) {
+        SDL_AddJoystickDeviceMatchVIDPID(device, vendor, product);
+    }
+    if (SDL_startswith(data->name, "Steam Controller")) {
+        // The Steam Controller doesn't have a gamepad HID collection, so it isn't seen by IOKit
+        SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_STEAM);
+    }
 
     return device;
 }
@@ -764,7 +729,7 @@ static bool IOS_JoystickPrepareDevice(SDL_JoystickDevice *device)
     } else {
         signature = data->button_mask;
     }
-    device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, data->vendor, data->product, signature, NULL, data->name, 'm', subtype);
+    device->guid = SDL_CreateJoystickGUID(data->bus, data->vendor, data->product, signature, NULL, data->name, 'm', subtype);
 
     /* This will be set when the first button press of the controller is
      * detected. */
@@ -1746,7 +1711,7 @@ static bool IOS_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_Gamepa
 }
 
 #if defined(SDL_JOYSTICK_MFI) && defined(SDL_PLATFORM_MACOS)
-bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
+bool GCController_SupportedHIDDevice(IOHIDDeviceRef device)
 {
     if (!SDL_GetHintBoolean(SDL_HINT_JOYSTICK_MFI, true)) {
         return false;
@@ -1757,16 +1722,8 @@ bool IOS_SupportedHIDDevice(IOHIDDeviceRef device)
         return false;
     }
 
-    if (@available(macOS 11.0, *)) {
-        const int MAX_ATTEMPTS = 3;
-        for (int attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
-            if ([GCController supportsHIDDevice:device]) {
-                return true;
-            }
-
-            // The framework may not have seen the device yet
-            SDL_Delay(10);
-        }
+    if (@available(macOS 27.4, *)) {
+        return [GCController supportsHIDDevice:device];
     }
     return false;
 }
