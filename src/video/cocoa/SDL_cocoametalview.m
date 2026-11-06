@@ -138,14 +138,14 @@ SDL_MetalView Cocoa_Metal_CreateView(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-        NSView *view = data.nswindow.contentView;
+        NSView *view = data.sdlContentView;
         BOOL highDPI = (window->flags & SDL_WINDOW_HIGH_PIXEL_DENSITY) != 0;
         BOOL opaque = (window->flags & SDL_WINDOW_TRANSPARENT) == 0;
         Uint32 windowID = SDL_GetWindowID(window);
         SDL3_cocoametalview *newview;
         SDL_MetalView metalview;
 
-        newview = [[SDL3_cocoametalview alloc] initWithFrame:view.frame
+        newview = [[SDL3_cocoametalview alloc] initWithFrame:view.bounds
                                                     highDPI:highDPI
                                                    windowID:windowID
                                                      opaque:opaque];
