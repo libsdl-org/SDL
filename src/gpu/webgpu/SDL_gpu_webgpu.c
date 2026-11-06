@@ -15,8 +15,6 @@
 
 #include "SDL_internal.h"
 
-#include "SDL_internal.h"
-
 #ifdef SDL_GPU_WEBGPU
 
 #include "../SDL_sysgpu.h"
@@ -719,9 +717,6 @@ typedef struct WebGPURenderer
     // For how many submissions can a bind group be unused until it's automatically freed?
     // Set to -1 to disable pruning, and 0 to instantly free it.
     int bindGroupsExpireAfter;
-
-    // TODO: REMOVE THIS!!! IT SUCKS!!!!
-    WebGPUFence *queueDoneFence;
 
     bool debugMode;
     bool destroyingSelf;
@@ -1754,22 +1749,6 @@ static WebGPUFence *WEBGPU_INTERNAL_CreateFenceFromFuture(WGPUFuture future)
     return fence;
 }
 
-static void WEBGPU_INTERNAL_ReregisterFence(WGPUQueue queue, WebGPUFence *fence)
-{
-    if (fence == NULL) {
-        return;
-    }
-
-    SDL_SetAtomicInt(&fence->status, 0);
-    fence->future.future = wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
-                                                                   .callback = WEBGPU_INTERNAL_FenceCallback,
-                                                                   .mode = WGPUCallbackMode_WaitAnyOnly,
-                                                                   .nextInChain = NULL,
-                                                                   .userdata1 = fence,
-                                                                   .userdata2 = NULL,
-                                                               });
-}
-
 static bool WEBGPU_INTERNAL_QueryFence(WebGPURenderer *renderer, WebGPUFence *fence)
 {
     if (fence != NULL) {
@@ -1820,7 +1799,23 @@ static bool WEBGPU_WaitForFences(SDL_GPURenderer *device, bool waitAll, SDL_GPUF
 
 static bool WEBGPU_Wait(SDL_GPURenderer *driverData)
 {
-    return WEBGPU_WaitForFences(driverData, true, (SDL_GPUFence **)&((WebGPURenderer *)driverData)->queueDoneFence, 1);
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+    // We'll wait until all the submitted command buffer fences have been called.
+    WebGPUFence **fences = NULL;
+
+    Uint32 fenceCapacity = 0;
+    Uint32 fenceCount = 0;
+
+    for (int i = 0; i < renderer->submittedCommandBufferCount; i++) {
+        WEBGPU_INTERNAL_InsertElementIntoArray(fences, fenceCapacity, fenceCount, WebGPUFence *, renderer->submittedCommandBuffers[i]->fence);
+    }
+
+    if (fenceCount > 0) {
+        WEBGPU_INTERNAL_WaitForFences(renderer, true, fences, fenceCount);
+    }
+
+    // I can't really think of a scenario in which this'd fail?
+    return true;
 }
 
 static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebGPUCommandBuffer *cmdBuf)
@@ -5170,13 +5165,6 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
     if (!cmdBuf) {
         SDL_free(commandBuffer);
         return false;
-    }
-
-    if (wrapper->renderer->queueDoneFence != NULL) {
-        // Reregister the fence
-        WEBGPU_INTERNAL_ReregisterFence(wrapper->queue, wrapper->renderer->queueDoneFence);
-    } else {
-        wrapper->renderer->queueDoneFence = WEBGPU_INTERNAL_CreateFence(wrapper->queue);
     }
 
     wrapper->submitted.fence = WEBGPU_INTERNAL_CreateFence(wrapper->queue);
