@@ -22,6 +22,7 @@
 
 #include "SDL_audio_c.h"
 #include "SDL_sysaudio.h"
+#include "../SDL_properties_c.h"
 #include "../thread/SDL_systhread.h"
 
 // Available audio drivers
@@ -643,7 +644,7 @@ void RefPhysicalAudioDevice(SDL_AudioDevice *device)
     SDL_AtomicIncRef(&device->refcount);
 }
 
-static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, const char *unique_id, bool recording, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
+static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, const SDL_GUID *container_id, const char *unique_id, bool recording, const SDL_AudioSpec *spec, void *handle, SDL_AtomicInt *device_count)
 {
     SDL_assert(name != NULL);
 
@@ -672,6 +673,10 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, const char *
             SDL_free(device);
             return NULL;
         }
+    }
+
+    if (container_id) {
+        SDL_copyp(&device->container_id, container_id);
     }
 
     device->lock = SDL_CreateMutex();
@@ -719,19 +724,19 @@ static SDL_AudioDevice *CreatePhysicalAudioDevice(const char *name, const char *
     return device;
 }
 
-static SDL_AudioDevice *CreateAudioRecordingDevice(const char *name, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
+static SDL_AudioDevice *CreateAudioRecordingDevice(const char *name, const SDL_GUID *container_id, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
 {
     SDL_assert(current_audio.impl.HasRecordingSupport);
-    return CreatePhysicalAudioDevice(name, unique_id, true, spec, handle, &current_audio.recording_device_count);
+    return CreatePhysicalAudioDevice(name, container_id, unique_id, true, spec, handle, &current_audio.recording_device_count);
 }
 
-static SDL_AudioDevice *CreateAudioPlaybackDevice(const char *name, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
+static SDL_AudioDevice *CreateAudioPlaybackDevice(const char *name, const SDL_GUID *container_id, const char *unique_id, const SDL_AudioSpec *spec, void *handle)
 {
-    return CreatePhysicalAudioDevice(name, unique_id, false, spec, handle, &current_audio.playback_device_count);
+    return CreatePhysicalAudioDevice(name, container_id, unique_id, false, spec, handle, &current_audio.playback_device_count);
 }
 
 // The audio backends call this when a new device is plugged in.
-SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const char *unique_id, const SDL_AudioSpec *inspec, void *handle)
+SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_GUID *container_id, const char *unique_id, const SDL_AudioSpec *inspec, void *handle)
 {
     // device handles MUST be unique! If the target reuses the same handle for hardware with both recording and playback interfaces, wrap it in a pointer you SDL_malloc'd!
     SDL_assert(SDL_FindPhysicalAudioDeviceByHandle(handle) == NULL);
@@ -752,7 +757,7 @@ SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const char
         spec.freq = (inspec->freq != 0) ? inspec->freq : default_freq;
     }
 
-    SDL_AudioDevice *device = recording ? CreateAudioRecordingDevice(name, unique_id, &spec, handle) : CreateAudioPlaybackDevice(name, unique_id, &spec, handle);
+    SDL_AudioDevice *device = recording ? CreateAudioRecordingDevice(name, container_id, unique_id, &spec, handle) : CreateAudioPlaybackDevice(name, container_id, unique_id, &spec, handle);
 
     // Add a device add event to the pending list, to be pushed when the event queue is pumped (away from any of our internal threads).
     if (device) {
@@ -900,9 +905,9 @@ static void SDL_AudioDetectDevices_Default(SDL_AudioDevice **default_playback, S
     SDL_assert(current_audio.impl.OnlyHasDefaultPlaybackDevice);
     SDL_assert(current_audio.impl.OnlyHasDefaultRecordingDevice || !current_audio.impl.HasRecordingSupport);
 
-    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, NULL, (void *)((size_t)0x1));
+    *default_playback = SDL_AddAudioDevice(false, DEFAULT_PLAYBACK_DEVNAME, NULL, NULL, NULL, (void *)((size_t)0x1));
     if (current_audio.impl.HasRecordingSupport) {
-        *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, NULL, (void *)((size_t)0x2));
+        *default_recording = SDL_AddAudioDevice(true, DEFAULT_RECORDING_DEVNAME, NULL, NULL, NULL, (void *)((size_t)0x2));
     }
 }
 
@@ -1722,6 +1727,10 @@ SDL_PropertiesID SDL_GetAudioDeviceProperties(SDL_AudioDeviceID devid)
         if (!props) {
             props = *propsptr = SDL_CreateProperties();
             if (props != 0) {  // fill in some basic properties.
+                if (!SDL_IsZeroGUID(&device->container_id) &&
+                    !SDL_IsSystemContainerGUID(&device->container_id)) {
+                    SDL_SetGUIDProperty(props, SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING, &device->container_id);
+                }
                 SDL_SetStringProperty(props, SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING, device->unique_id);
             }
         }

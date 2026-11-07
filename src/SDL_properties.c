@@ -436,6 +436,14 @@ static void SDLCALL CleanupSurface(void *userdata, void *value)
     SDL_DestroySurface(surface);
 }
 
+void SDL_SetGUIDProperty(SDL_PropertiesID props, const char *name, const SDL_GUID *guid)
+{
+    char value[sizeof(*guid)*2 + 1];
+
+    SDL_GUIDToString(*guid, value, sizeof(value));
+    SDL_SetStringProperty(props, name, value);
+}
+
 bool SDL_SetSurfaceProperty(SDL_PropertiesID props, const char *name, SDL_Surface *surface)
 {
     return SDL_SetPointerPropertyWithCleanup(props, name, surface, CleanupSurface, NULL);

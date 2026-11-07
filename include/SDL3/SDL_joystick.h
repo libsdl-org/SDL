@@ -763,6 +763,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick 
  *
  * The following read-only properties are provided by SDL:
  *
+ * - `SDL_PROP_JOYSTICK_CONTAINER_ID_STRING`: the hex string of the joystick's container ID, if available
  * - `SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN`: true if this joystick has an
  *   LED that has adjustable brightness
  * - `SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN`: true if this joystick has an LED
@@ -784,6 +785,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick 
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
 
+#define SDL_PROP_JOYSTICK_CONTAINER_ID_STRING           "SDL.joystick.container_id"
 #define SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN          "SDL.joystick.cap.mono_led"
 #define SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN           "SDL.joystick.cap.rgb_led"
 #define SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN        "SDL.joystick.cap.player_led"

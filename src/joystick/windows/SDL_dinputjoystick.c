@@ -948,6 +948,8 @@ static bool DINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
         return false;
     }
 
+    WIN_GetContainerIDFromInterfacePath(device->path, &device->container_id);
+
 #ifdef SDL_HAPTIC_DINPUT
     SDL_DINPUT_HapticMaybeAddDevice(&device->internal->dxdevice);
 #endif
