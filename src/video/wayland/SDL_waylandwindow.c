@@ -2451,15 +2451,21 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
     if (data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR) {
         if (data->shell_surface.libdecor.frame) {
             while (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
+                /* libdecor_dispatch() with a non-zero timeout will enter a blocking wait even if events
+                 * were already prepared and read into the queue on another thread. It needs to be called
+                 * to run plugin related tasks, but it is not safe to wait for the configure event with it,
+                 * as it can end up blocking indefinitely, even when events were already dispatched.
+                 */
                 if (libdecor_dispatch(c->shell.libdecor, 0) < 0) {
                     if (!Wayland_HandleDisplayDisconnected(_this)) {
                         return;
                     }
                 }
-                if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE &&
-                    WAYLAND_wl_display_dispatch(c->display) < 0) {
-                    if (!Wayland_HandleDisplayDisconnected(_this)) {
-                        return;
+                if (data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_WAITING_FOR_CONFIGURE) {
+                    if (WAYLAND_wl_display_dispatch(c->display) < 0) {
+                        if (!Wayland_HandleDisplayDisconnected(_this)) {
+                            return;
+                        }
                     }
                 }
             }
