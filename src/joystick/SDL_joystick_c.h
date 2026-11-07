@@ -40,7 +40,6 @@ typedef struct SDL_JoystickEventEntry
     SDL_Event event;
     struct SDL_JoystickEventEntry *next;
 } SDL_JoystickEventEntry;
-
 // Initialization and shutdown functions
 extern bool SDL_InitJoysticks(void);
 extern void SDL_QuitJoysticks(void);
