@@ -594,10 +594,10 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);
 /**
  * Save a surface to a seekable SDL data stream in BMP format.
  *
- * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
+ * Surfaces with a 24-bit, 32-bit and paletted format get saved in the
  * BMP directly. Other RGB formats with 8-bit or higher get converted to a
  * 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit
- * surface before they are saved. YUV and paletted 1-bit and 4-bit formats are
+ * surface before they are saved. YUV and LSB paletted 1-bit and 4-bit formats are
  * not supported.
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
@@ -620,10 +620,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStre
 /**
  * Save a surface to a file in BMP format.
  *
- * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
+ * Surfaces with a 24-bit, 32-bit, paletted formats get saved in the
  * BMP directly. Other RGB formats with 8-bit or higher get converted to a
  * 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit
- * surface before they are saved. YUV and paletted 1-bit and 4-bit formats are
+ * surface before they are saved. YUV and LSB paletted 1-bit and 4-bit formats are
  * not supported.
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
