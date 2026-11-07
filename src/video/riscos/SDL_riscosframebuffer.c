@@ -48,16 +48,14 @@ bool RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
 
     // Create a new one
     mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
-    if ((SDL_ISPIXELFORMAT_PACKED(mode->format) || SDL_ISPIXELFORMAT_ARRAY(mode->format))) {
-        *format = mode->format;
-        sprite_mode = (unsigned int)mode->internal;
-    } else {
-        *format = SDL_PIXELFORMAT_XBGR8888;
-        sprite_mode = (1 | (90 << 1) | (90 << 14) | (6 << 27));
-    }
+    sprite_mode = (unsigned int)mode->internal;
+    *format = mode->format;
 
     // Calculate pitch
-    *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
+    if (SDL_ISPIXELFORMAT_INDEXED(*format))
+        *pitch = (((w * SDL_BITSPERPIXEL(*format)) + 31) & ~31) >> 3;
+    else
+        *pitch = (((w * SDL_BYTESPERPIXEL(*format)) + 3) & ~3);
 
     // Allocate the sprite area
     size = sizeof(sprite_area) + sizeof(sprite_header) + ((*pitch) * h);
@@ -88,6 +86,8 @@ bool RISCOS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
     internal->fb_sprite = (sprite_header *)(((Uint8 *)internal->fb_area) + internal->fb_area->start);
     *pixels = ((Uint8 *)internal->fb_sprite) + internal->fb_sprite->image_offset;
 
+    // TODO: Read in the currently set palette and provide it as the default
+
     return true;
 }
 
@@ -97,14 +97,34 @@ bool RISCOS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, 
     _kernel_swi_regs regs;
     _kernel_oserror *error;
 
-    regs.r[0] = 512 + 52;
+    // Update the palette if it has changed since the last update.
+    if (window->surface) {
+        SDL_Palette *pal = window->surface->palette;
+        if (pal && pal->version != internal->palette_version) {
+            Uint32 palette[256];
+            for (int i = 0; i < pal->ncolors && i < 256; i++) {
+                palette[i] = ((pal->colors[i].b) << 24) |
+                             ((pal->colors[i].g) << 16) |
+                             ((pal->colors[i].r) << 8);
+            }
+
+            regs.r[0] = -1;
+            regs.r[1] = -1;
+            regs.r[2] = (int)palette;
+            regs.r[3] = 0;
+            regs.r[4] = 0;
+            _kernel_swi(ColourTrans_WritePalette, &regs, &regs);
+
+            internal->palette_version = pal->version;
+        }
+    }
+
+    regs.r[0] = 512 + 34;
     regs.r[1] = (int)internal->fb_area;
     regs.r[2] = (int)internal->fb_sprite;
     regs.r[3] = 0; // window->x << 1;
     regs.r[4] = 0; // window->y << 1;
-    regs.r[5] = 0x50;
-    regs.r[6] = 0;
-    regs.r[7] = 0;
+    regs.r[5] = 0;
     error = _kernel_swi(OS_SpriteOp, &regs, &regs);
     if (error) {
         return SDL_SetError("OS_SpriteOp 52 failed: %s (%i)", error->errmess, error->errnum);

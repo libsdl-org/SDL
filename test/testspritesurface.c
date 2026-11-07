@@ -50,8 +50,8 @@ static SDL_Surface *CreateSurface(unsigned char *data, unsigned int len, int *w,
 static void MoveSprites(void)
 {
     int i;
-    int window_w = WINDOW_WIDTH;
-    int window_h = WINDOW_HEIGHT;
+    int window_w = window_surf->w;
+    int window_h = window_surf->h;
     SDL_Rect *position, *velocity;
     Uint32 background = SDL_MapSurfaceRGB(window_surf, 0xA0, 0xA0, 0xA0);
     SDL_FillSurfaceRect(window_surf, NULL, background);
@@ -128,10 +128,13 @@ int main(int argc, char *argv[])
         goto quit;
     }
 
+    /* Initialize the palette for the display mode if needed */
+    SDL_SetSurfacePalette(window_surf, SDL_GetSurfacePalette(sprite));
+
     /* Initialize the sprite positions */
     for (i = 0; i < NUM_SPRITES; ++i) {
-        positions[i].x = SDL_rand(WINDOW_WIDTH - sprite_w);
-        positions[i].y = SDL_rand(WINDOW_HEIGHT - sprite_h);
+        positions[i].x = SDL_rand(window_surf->w - sprite_w);
+        positions[i].y = SDL_rand(window_surf->h - sprite_h);
         positions[i].w = sprite_w;
         positions[i].h = sprite_h;
         velocities[i].x = 0;
