@@ -3746,6 +3746,100 @@ bool SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamepad, int touchpad, int finger
     return result;
 }
 
+bool SDL_GamepadHasInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis input)
+{
+    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+    if (joystick) {
+        for (int i = 0; i < joystick->ninstrumentaxes; ++i) {
+            if (joystick->instrumentaxes[i].type == input) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+/*
+ * Get the current state of an instrument input on a gamepad
+ */
+float SDL_GetGamepadInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis input)
+{
+    float result = 0.0f;
+
+    SDL_LockJoysticks();
+    {
+        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+        if (joystick) {
+            for (int i = 0; i < joystick->ninstrumentaxes; ++i) {
+                if (joystick->instrumentaxes[i].type == input) {
+                    result = joystick->instrumentaxes[i].velocity;
+                    break;
+                }
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+bool SDL_GamepadHasInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton input)
+{
+    SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+    if (joystick) {
+        for (int i = 0; i < joystick->ninstrumentbuttons; ++i) {
+            if (joystick->instrumentbuttons[i].type == input) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+
+/*
+ * Get the current state of an instrument input on a gamepad
+ */
+bool SDL_GetGamepadInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton input)
+{
+    bool result = false;
+
+    SDL_LockJoysticks();
+    {
+        SDL_Joystick *joystick = SDL_GetGamepadJoystick(gamepad);
+        if (joystick) {
+            for (int i = 0; i < joystick->ninstrumentbuttons; ++i) {
+                if (joystick->instrumentbuttons[i].type == input) {
+                    result = joystick->instrumentbuttons[i].state;
+                    break;
+                }
+            }
+        }
+    }
+    SDL_UnlockJoysticks();
+
+    return result;
+}
+
+int SDL_GetNumGamepadInstrumentKeys(SDL_Gamepad *gamepad) {
+    return 0;
+}
+
+SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentKey(SDL_Gamepad *gamepad, int key, float *velocity) {
+    return false;
+}
+
+int SDL_GetNumGamepadInstrumentGuitarStrings(SDL_Gamepad *gamepad) {
+    return 0;
+}
+
+bool SDL_GetGamepadInstrumentGuitarString(SDL_Gamepad *gamepad, int string, int *fret, float *velocity) {
+    return false;
+}
+
 bool SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_SensorType type)
 {
     return SDL_JoystickHasSensor(SDL_GetGamepadJoystick(gamepad), type);

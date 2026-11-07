@@ -251,6 +251,92 @@ typedef enum SDL_GamepadCapSenseType
 } SDL_GamepadCapSenseType;
 
 /**
+ * The list of instrument axes on a gamepad
+ * Instrument axis types represent various controls found on musical instrument controllers, such as guitars, drums, and turntables.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasInstrumentAxisInput
+ * \sa SDL_GetGamepadInstrumentAxisInput
+ */
+typedef enum SDL_GamepadInstrumentAxis
+{
+    SDL_GAMEPAD_INSTRUMENT_AXIS_INVALID = -1,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_RED_PAD,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_YELLOW_PAD,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_BLUE_PAD,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_GREEN_PAD,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_YELLOW_CYMBAL,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_BLUE_CYMBAL,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_GREEN_CYMBAL,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_ORANGE_CYMBAL,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_KICK_1,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_KICK_2,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_LEFT_SPIN,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_RIGHT_SPIN,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_CROSSFADER,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_EFFECTS_KNOB,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_PRO_KEYS_TOUCH_STRIP,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_PEDAL,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT
+} SDL_GamepadInstrumentAxis;
+
+
+/**
+ * The list of instrument buttons on a gamepad
+ * Instrument button types represent various controls found on musical instrument controllers, such as guitars, drums, and turntables.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasInstrumentButtonInput
+ * \sa SDL_GetGamepadInstrumentButtonInput
+ */
+typedef enum SDL_GamepadInstrumentButton
+{
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_INVALID = -1,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_GREEN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_RED,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_BLUE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_ORANGE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_1,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_2,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_3,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_1,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_2,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_3,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_GHTV,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_LEFT,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_RIGHT,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_KA_LEFT,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_KA_RIGHT,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_GREEN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_RED,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_BLUE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_GREEN,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_RED,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_BLUE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_EUPHORIA_BUTTON,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_PRO_KEYS_OVERDRIVE,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT
+} SDL_GamepadInstrumentButton;
+
+/**
  * Types of gamepad control bindings.
  *
  * A gamepad is a collection of bindings that map arbitrary joystick buttons,
@@ -1705,6 +1791,126 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForButt
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
+/**
+ * Return whether a gamepad supports a particular instrument axis
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the axis on the instrument to query.
+ * \returns true if the axis is present, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadInstrumentAxisInput
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+
+/**
+ * Get the current state of an analog instrument input on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the axis on the instrument to query.
+ * \returns the current state of the analog instrument input, or 0.0 if inactive (not pressed).
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasInstrumentAxisInput
+ */
+extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+
+/**
+ * Return whether a gamepad supports a particular instrument button.
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the button on the instrument to query.
+ * \returns true if the button exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadInstrumentButtonInput
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
+
+/**
+ * Get the current state of an instrument button on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the button on the instrument to query.
+ * \returns true if the button is pressed, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasInstrumentButtonInput
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
+/**
+ * Get the number of index based keys on an instrument.
+ * This would represent something like the number of piano keys on a piano instrument.
+ *
+ * \param gamepad a gamepad.
+ * \returns number of instrument keys.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetNumGamepadInstrumentKeys
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadInstrumentKeys(SDL_Gamepad *gamepad);
+
+/**
+ * Get the current state of an index based key on an instrument.
+ *
+ * \param gamepad a gamepad.
+ * \param key the index of an instrument key.
+ * \param velocity a pointer filled with the velocity value, may be NULL.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetNumGamepadInstrumentKeys
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentKey(SDL_Gamepad *gamepad, int key, float *velocity);
+/**
+ * Get the number of guitar strings on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \returns number of guitar strings.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetNumGamepadInstrumentGuitarStrings
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadInstrumentGuitarStrings(SDL_Gamepad *gamepad);
+
+/**
+ * Get the current state of an instrument guitar string on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param string the guitar string index.
+ * \param fret a pointer filled with the currently pressed fret, may be NULL.
+ * \param velocity a pointer filled with the current strum velocity, may be NULL.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetNumGamepadInstrumentGuitarStrings
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentGuitarString(SDL_Gamepad *gamepad, int string, int *fret, float *velocity);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

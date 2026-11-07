@@ -350,6 +350,7 @@ static GamepadDisplay *gamepad_elements = NULL;
 static GyroDisplay *gyro_elements = NULL;
 static GamepadTypeDisplay *gamepad_type = NULL;
 static JoystickDisplay *joystick_elements = NULL;
+static InstrumentDisplay *instrument_elements = NULL;
 static GamepadButton *setup_mapping_button = NULL;
 static GamepadButton *done_mapping_button = NULL;
 static GamepadButton *cancel_button = NULL;
@@ -571,6 +572,7 @@ static void UpdateButtonHighlights(float x, float y, bool button_down)
         SDL_FPoint point;
         int gamepad_highlight_element = SDL_GAMEPAD_ELEMENT_INVALID;
         char *joystick_highlight_element;
+        char *instrument_highlight_element;
 
         point.x = x;
         point.y = y;
@@ -606,6 +608,10 @@ static void UpdateButtonHighlights(float x, float y, bool button_down)
         joystick_highlight_element = GetJoystickDisplayElementAt(joystick_elements, controller->joystick, x, y);
         SetJoystickDisplayHighlight(joystick_elements, joystick_highlight_element, button_down);
         SDL_free(joystick_highlight_element);
+
+        instrument_highlight_element = GetInstrumentDisplayElementAt(instrument_elements, controller->gamepad, x, y);
+        SetInstrumentDisplayHighlight(instrument_elements, instrument_highlight_element, button_down);
+        SDL_free(instrument_highlight_element);
 
         SetGamepadButtonHighlight(done_mapping_button, GamepadButtonContains(done_mapping_button, x, y), button_down);
         SetGamepadButtonHighlight(cancel_button, GamepadButtonContains(cancel_button, x, y), button_down);
@@ -2193,6 +2199,12 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 
 #ifdef VERBOSE_AXES
+    case SDL_EVENT_GAMEPAD_INSTRUMENT_INPUT:
+        SDL_Log("Gamepad %" SDL_PRIu32 " instrument input %s changed to %f",
+                event->ginstrumentinput.which,
+                SDL_GetGamepadStringForInstrumentInput((SDL_GamepadInstrumentInput) event->ginstrumentinput.input),
+                event->ginstrumentinput.velocity);
+        break;
     case SDL_EVENT_GAMEPAD_AXIS_MOTION:
         if (display_mode == CONTROLLER_MODE_TESTING) {
             if (event->gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event->gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
@@ -2454,6 +2466,7 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
             RenderGamepadDisplay(gamepad_elements, controller->gamepad);
         }
         RenderJoystickDisplay(joystick_elements, controller->joystick);
+        RenderInstrumentDisplay(instrument_elements, controller->gamepad);
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
             RenderGamepadButton(setup_mapping_button);
@@ -2640,6 +2653,13 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     area.h = GAMEPAD_HEIGHT;
     SetJoystickDisplayArea(joystick_elements, &area);
 
+    instrument_elements = CreateInstrumentDisplay(screen);
+    area.x = PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING;
+    area.y = TITLE_HEIGHT + GAMEPAD_HEIGHT/2 + PANEL_SPACING;
+    area.w = PANEL_WIDTH;
+    area.h = GAMEPAD_HEIGHT;
+    SetInstrumentDisplayArea(instrument_elements, &area);
+
     setup_mapping_button = CreateGamepadButton(screen, "Setup Mapping");
     area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(setup_mapping_button) + 2 * BUTTON_PADDING);
     area.h = GetGamepadButtonLabelHeight(setup_mapping_button) + 2 * BUTTON_PADDING;
@@ -2708,6 +2728,7 @@ void SDLCALL SDL_AppQuit(void *appstate, SDL_AppResult result)
     DestroyGyroDisplay(gyro_elements);
     DestroyGamepadTypeDisplay(gamepad_type);
     DestroyJoystickDisplay(joystick_elements);
+    DestroyInstrumentDisplay(instrument_elements);
     DestroyGamepadButton(setup_mapping_button);
     DestroyGamepadButton(done_mapping_button);
     DestroyGamepadButton(cancel_button);

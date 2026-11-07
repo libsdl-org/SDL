@@ -2763,6 +2763,416 @@ void DestroyJoystickDisplay(JoystickDisplay *ctx)
 }
 
 
+static const char *instrument_axis_names[] = {
+    "Whammy",
+    "Tilt",
+    "Pickup",
+    "Red Pad",
+    "Yellow Pad",
+    "Blue Pad",
+    "Green Pad",
+    "Yellow Cymbal",
+    "Blue Cymbal",
+    "Green Cymbal",
+    "Orange Cymbal",
+    "Kick 1",
+    "Kick 2",
+    "Platter Left Spin",
+    "Platter Right Spin",
+    "Crossfader",
+    "Effects Knob",
+    "Touch Strip",
+    "Pedal",
+};
+SDL_COMPILE_TIME_ASSERT(instrument_axis_names, SDL_arraysize(instrument_axis_names) == SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT);
+
+static const char *instrument_button_names[] = {
+    "Strum Up",
+    "Strum Down",
+    "Green Fret",
+    "Red Fret",
+    "Yellow Fret",
+    "Blue Fret",
+    "Orange Fret",
+    "Solo Green Fret",
+    "Solo Red Fret",
+    "Solo Yellow Fret",
+    "Solo Blue Fret",
+    "Solo Orange Fret",
+    "Slider Green",
+    "Slider Red",
+    "Slider Yellow",
+    "Slider Blue",
+    "Slider Orange",
+    "Black 1 Fret",
+    "Black 2 Fret",
+    "Black 3 Fret",
+    "White 1 Fret",
+    "White 2 Fret",
+    "White 3 Fret",
+    "GHTV Button",
+    "Don Left",
+    "Don Right",
+    "Ka Left",
+    "Ka Right",
+    "Platter Left Green",
+    "Platter Left Red",
+    "Platter Left Blue",
+    "Platter Right Green",
+    "Platter Right Red",
+    "Platter Right Blue",
+    "Euphoria Button",
+    "Overdrive",
+};
+SDL_COMPILE_TIME_ASSERT(instrument_button_names, SDL_arraysize(instrument_button_names) == SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT);
+
+static const char *joystick_type_names[] = {
+    "Unknown",
+    "Gamepad",
+    "Wheel",
+    "Arcade Stick",
+    "Flight Stick",
+    "Dance Pad",
+    "Guitar",
+    "Drum Kit",
+    "Arcade Pad",
+    "Throttle"
+};
+SDL_COMPILE_TIME_ASSERT(joystick_type_names, SDL_arraysize(joystick_type_names) == SDL_JOYSTICK_TYPE_COUNT);
+
+
+struct InstrumentDisplay
+{
+    SDL_Renderer *renderer;
+    SDL_Texture *button_texture;
+    SDL_Texture *arrow_texture;
+    float button_width;
+    float button_height;
+    float arrow_width;
+    float arrow_height;
+
+    SDL_FRect area;
+
+    char *element_highlighted;
+    bool element_pressed;
+};
+
+InstrumentDisplay *CreateInstrumentDisplay(SDL_Renderer *renderer)
+{
+    InstrumentDisplay *ctx = SDL_calloc(1, sizeof(*ctx));
+    if (ctx) {
+        ctx->renderer = renderer;
+
+        ctx->button_texture = CreateTexture(renderer, gamepad_button_small_png, gamepad_button_small_png_len);
+        SDL_GetTextureSize(ctx->button_texture, &ctx->button_width, &ctx->button_height);
+
+        ctx->arrow_texture = CreateTexture(renderer, gamepad_axis_arrow_png, gamepad_axis_arrow_png_len);
+        SDL_GetTextureSize(ctx->arrow_texture, &ctx->arrow_width, &ctx->arrow_height);
+    }
+    return ctx;
+}
+
+void SetInstrumentDisplayArea(InstrumentDisplay *ctx, const SDL_FRect *area)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_copyp(&ctx->area, area);
+}
+
+char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *Instrument, float x, float y)
+{
+    SDL_FPoint point;
+    int i;
+    char text[32];
+    const float margin = 8.0f;
+    const float center = 80.0f;
+    const float arrow_extent = 48.0f;
+    SDL_FRect highlight;
+    char *element = NULL;
+
+    if (!ctx) {
+        return NULL;
+    }
+
+    point.x = x;
+    point.y = y;
+
+    x = ctx->area.x + margin + center + margin;
+    y = ctx->area.y + margin;
+
+    for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT; ++i) {
+        if (SDL_GamepadHasInstrumentButtonInput(Instrument, i)) {
+           SDL_snprintf(text, sizeof(text), "%d:", i);
+
+            highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
+            highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            highlight.w = ctx->arrow_width + arrow_extent;
+            highlight.h = ctx->button_height;
+            if (SDL_PointInRectFloat(&point, &highlight)) {
+                SDL_asprintf(&element, "-a%d", i);
+                return element;
+            }
+
+            highlight.x += highlight.w;
+            if (SDL_PointInRectFloat(&point, &highlight)) {
+                SDL_asprintf(&element, "+a%d", i);
+                return element;
+            }
+
+            y += ctx->button_height + 2;
+
+        }        
+    }
+    for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT; ++i) {
+        if (SDL_GamepadHasInstrumentAxisInput(Instrument, i)) {
+           SDL_snprintf(text, sizeof(text), "%d:", i);
+
+            highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
+            highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            highlight.w = ctx->arrow_width + arrow_extent;
+            highlight.h = ctx->button_height;
+            if (SDL_PointInRectFloat(&point, &highlight)) {
+                SDL_asprintf(&element, "-a%d", i);
+                return element;
+            }
+
+            highlight.x += highlight.w;
+            if (SDL_PointInRectFloat(&point, &highlight)) {
+                SDL_asprintf(&element, "+a%d", i);
+                return element;
+            }
+
+            y += ctx->button_height + 2;
+
+        }        
+    }
+    return NULL;
+}
+
+void SetInstrumentDisplayHighlight(InstrumentDisplay *ctx, const char *element, bool pressed)
+{
+    if (ctx->element_highlighted) {
+        SDL_free(ctx->element_highlighted);
+        ctx->element_highlighted = NULL;
+        ctx->element_pressed = false;
+    }
+
+    if (element) {
+        ctx->element_highlighted = SDL_strdup(element);
+        ctx->element_pressed = pressed;
+    }
+}
+
+
+
+static void RenderInstrumentButtonHighlight(InstrumentDisplay *ctx, int button, const SDL_FRect *area)
+{
+    if (!ctx->element_highlighted || *ctx->element_highlighted != 'b') {
+        return;
+    }
+
+    if (SDL_atoi(ctx->element_highlighted + 1) == button) {
+        Uint8 r, g, b, a;
+
+        SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+        if (ctx->element_pressed) {
+            SDL_SetRenderDrawColor(ctx->renderer, PRESSED_COLOR);
+        } else {
+            SDL_SetRenderDrawColor(ctx->renderer, HIGHLIGHT_COLOR);
+        }
+        SDL_RenderFillRect(ctx->renderer, area);
+
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+    }
+}
+
+static void RenderInstrumentAxisHighlight(InstrumentDisplay *ctx, int axis, int direction, const SDL_FRect *area)
+{
+    char prefix = (direction < 0 ? '-' : '+');
+
+    if (!ctx->element_highlighted ||
+        ctx->element_highlighted[0] != prefix ||
+        ctx->element_highlighted[1] != 'a') {
+        return;
+    }
+
+    if (SDL_atoi(ctx->element_highlighted + 2) == axis) {
+        Uint8 r, g, b, a;
+
+        SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+        if (ctx->element_pressed) {
+            SDL_SetRenderDrawColor(ctx->renderer, PRESSED_COLOR);
+        } else {
+            SDL_SetRenderDrawColor(ctx->renderer, HIGHLIGHT_COLOR);
+        }
+        SDL_RenderFillRect(ctx->renderer, area);
+
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+    }
+}
+
+void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
+{
+    float x, y;
+    int i;
+    char text[32];
+    const float margin = 8.0f;
+    const float center = 80.0f;
+    const float arrow_extent = 48.0f;
+    SDL_FRect dst, rect, highlight;
+    Uint8 r, g, b, a;
+    bool found = false;
+
+    if (!ctx) {
+        return;
+    }
+
+    SDL_GetRenderDrawColor(ctx->renderer, &r, &g, &b, &a);
+
+    x = ctx->area.x + margin;
+    y = ctx->area.y + margin;
+
+    for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT; ++i) {
+        SDL_GamepadInstrumentButton button = (SDL_GamepadInstrumentButton)i;
+        if (!SDL_GamepadHasInstrumentButtonInput(instrument, button)) {
+            continue;
+        }
+        if (!found) {
+            SDL_snprintf(text, sizeof(text), "%s BUTTONS", joystick_type_names[SDL_GetJoystickType(SDL_GetGamepadJoystick(instrument))]);
+            SDLTest_DrawString(ctx->renderer, x, y, text);
+            x += (FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f) / 2;
+            y += FONT_LINE_HEIGHT + 2;
+            found = true;
+        }
+        highlight.x = x;
+        highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+        highlight.w = center - (margin * 2);
+        highlight.h = ctx->button_height;
+        RenderInstrumentButtonHighlight(ctx, button, &highlight);
+
+        SDL_snprintf(text, sizeof(text), "%s:", instrument_button_names[button]);
+        float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
+        SDLTest_DrawString(ctx->renderer, x_pos, y, text);
+
+        if (SDL_GetGamepadInstrumentButtonInput(instrument, button)) {
+            SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
+        } else {
+            SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
+        }
+
+        dst.x = x + 2;
+        dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+        dst.w = ctx->button_width;
+        dst.h = ctx->button_height;
+        SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
+
+        y += ctx->button_height + 2;
+    }
+    found = false;
+    x = ctx->area.x + margin;
+    for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT; ++i) {
+        SDL_GamepadInstrumentAxis axis = (SDL_GamepadInstrumentAxis)i;
+        bool has_negative = (axis == SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT || axis == SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_CROSSFADER);
+        
+        if (!SDL_GamepadHasInstrumentAxisInput(instrument, axis)) {
+            continue;
+        }
+        if (!found) {
+            SDL_snprintf(text, sizeof(text), "%s AXES", joystick_type_names[SDL_GetJoystickType(SDL_GetGamepadJoystick(instrument))]);
+            SDLTest_DrawString(ctx->renderer, x, y, text);
+            x += (FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f) / 2;
+            y += FONT_LINE_HEIGHT + 2;
+            found = true;
+        }
+        SDL_snprintf(text, sizeof(text), "%s: ", instrument_axis_names[axis]);
+        float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
+        SDLTest_DrawString(ctx->renderer, x_pos, y, text);
+        float value = SDL_GetGamepadInstrumentAxisInput(instrument, axis);
+
+        highlight.x = x_pos + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
+        highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+        highlight.w = ctx->arrow_width + arrow_extent;
+        highlight.h = ctx->button_height;
+        RenderInstrumentAxisHighlight(ctx, axis, -1, &highlight);
+
+        highlight.x += highlight.w;
+        RenderInstrumentAxisHighlight(ctx, axis, 1, &highlight);
+
+        dst.x = x;
+        dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
+        dst.w = ctx->arrow_width;
+        dst.h = ctx->arrow_height;
+
+        if (has_negative) {
+            if (value == -1) {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+            } else {
+                SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+            }
+            SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
+        }
+        dst.x += ctx->arrow_width;
+
+        SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
+        rect.x = dst.x + arrow_extent - 2.0f;
+        rect.y = dst.y;
+        rect.w = 4.0f;
+        rect.h = ctx->arrow_height;
+        SDL_RenderFillRect(ctx->renderer, &rect);
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+        if (value < 0) {
+            SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+            rect.w = value * arrow_extent;
+            rect.x = dst.x + arrow_extent - rect.w;
+            rect.y = dst.y + ctx->arrow_height * 0.25f;
+            rect.h = ctx->arrow_height / 2.0f;
+            SDL_RenderFillRect(ctx->renderer, &rect);
+        }
+
+        dst.x += arrow_extent;
+
+        if (value > 0) {
+            SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
+            rect.w = value * arrow_extent;
+            rect.x = dst.x;
+            rect.y = dst.y + ctx->arrow_height * 0.25f;
+            rect.h = ctx->arrow_height / 2.0f;
+            SDL_RenderFillRect(ctx->renderer, &rect);
+        }
+
+        dst.x += arrow_extent;
+
+        if (value == SDL_MAX_SINT16) {
+            SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
+        } else {
+            SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
+        }
+        SDL_RenderTexture(ctx->renderer, ctx->arrow_texture, NULL, &dst);
+
+        SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+
+        y += ctx->button_height + 2;
+
+    }
+
+}
+
+void DestroyInstrumentDisplay(InstrumentDisplay *ctx)
+{
+    if (!ctx) {
+        return;
+    }
+
+    SDL_DestroyTexture(ctx->button_texture);
+    SDL_DestroyTexture(ctx->arrow_texture);
+    SDL_free(ctx);
+}
+
 struct GamepadButton
 {
     SDL_Renderer *renderer;

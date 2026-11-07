@@ -132,6 +132,31 @@ typedef struct SDL_JoystickCapSenseInfo
     bool down;
 } SDL_JoystickCapSenseInfo;
 
+typedef struct SDL_JoystickInstrumentButtonInfo
+{
+    SDL_GamepadInstrumentButton type;
+    bool state;
+} SDL_JoystickInstrumentButtonInfo;
+
+typedef struct SDL_JoystickInstrumentAxisInfo
+{
+    SDL_GamepadInstrumentAxis type;
+    float velocity;
+} SDL_JoystickInstrumentAxisInfo;
+
+typedef struct SDL_JoystickInstrumentKeyInfo
+{
+    int key;
+    float velocity;
+} SDL_JoystickInstrumentKeyInfo;
+
+typedef struct SDL_JoystickInstrumentStringInfo
+{
+    int string;
+    int fret;
+    float velocity;
+} SDL_JoystickInstrumentStringInfo;
+
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
 struct SDL_Joystick
@@ -167,6 +192,18 @@ struct SDL_Joystick
 
     int ncapsenses _guarded;                      // Number of capsense sources on the joystick
     SDL_JoystickCapSenseInfo *capsenses _guarded; // Current capsense states
+
+    int ninstrumentbuttons _guarded;                      // Number of instrument buttons on the joystick
+    SDL_JoystickInstrumentButtonInfo *instrumentbuttons _guarded; // Current instrument buttons states
+
+    int ninstrumentaxes _guarded;                      // Number of analog instrument axis on the joystick
+    SDL_JoystickInstrumentAxisInfo *instrumentaxes _guarded; // Current instrument axis states
+
+    int ninstrumentkeys _guarded;                      // Number of instrument keys on the joystick
+    SDL_JoystickInstrumentKeyInfo *instrumentkeys _guarded; // Current instrument key states
+
+    int ninstrumentstrings _guarded;                      // Number of guitar strings on the joystick
+    SDL_JoystickInstrumentStringInfo *instrumentstrings _guarded; // Current guitar string states
 
     Uint16 low_frequency_rumble _guarded;
     Uint16 high_frequency_rumble _guarded;
