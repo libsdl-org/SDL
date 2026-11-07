@@ -132,6 +132,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008a ), k_eControllerType_PS4Controller, NULL },	// HORI Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x009c ), k_eControllerType_PS4Controller, NULL },	// HORI TAC PRO mousething
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00a0 ), k_eControllerType_PS4Controller, NULL },	// HORI TAC4 mousething
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00c9 ), k_eControllerType_PS4Controller, NULL },	// Hori Taiko Controller DX
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ed ), k_eControllerType_XInputPS4Controller, NULL },	// Hori Fighting Stick mini 4 kai - becomes an Xbox 360 controller on PC
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00ee ), k_eControllerType_PS4Controller, NULL },	// Hori mini wired https://www.playstation.com/en-us/explore/accessories/gaming-controllers/mini-wired-gamepad/
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x011c ), k_eControllerType_PS4Controller, NULL },	// Hori Fighting Stick α
@@ -180,6 +181,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0209 ), k_eControllerType_PS5Controller, NULL },	// Victrix Pro FS PS4/PS5 (PS5 mode)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0163 ), k_eControllerType_PS5Controller, NULL },	// HORI Fighting Commander OCTA
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0184 ), k_eControllerType_PS5Controller, NULL },	// Hori Fighting Stick α
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x01b0 ), k_eControllerType_PS5Controller, NULL },	// Hori Taiko Controller DX
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100b ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wired)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x100c ), k_eControllerType_PS5Controller, NULL },	// Razer Wolverine V2 Pro (Wireless)
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1012 ), k_eControllerType_PS5Controller, NULL },	// Razer Kitsune
@@ -258,6 +260,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008c ), k_eControllerType_XBox360Controller, NULL },	// Hori Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00db ), k_eControllerType_XBox360Controller, "HORI Slime Controller" },	// Hori Dragon Quest Slime Controller
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x011e ), k_eControllerType_XBox360Controller, NULL },	// Hori Fighting Stick α
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x01b1 ), k_eControllerType_XBox360Controller, NULL },	// Hori Taiko Controller DX
 	{ MAKE_CONTROLLER_ID( 0x1038, 0x1430 ), k_eControllerType_XBox360Controller, "SteelSeries Stratus Duo" },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x1038, 0x1431 ), k_eControllerType_XBox360Controller, "SteelSeries Stratus Duo" },	// SteelSeries Stratus Duo
 	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller, NULL },	// SteelSeries Nimbus/Stratus XL
