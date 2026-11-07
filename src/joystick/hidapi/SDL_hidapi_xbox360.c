@@ -498,9 +498,9 @@ SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
     case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
         return SDL_JOYSTICK_TYPE_ARCADE_PAD;
     case SDL_XINPUT_SUBTYPE_PRO_KEYS:
-        return SDL_JOYSTICK_TYPE_MUSICAL_KEYBOARD;
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
     case SDL_XINPUT_SUBTYPE_TURNTABLE:
-        return SDL_JOYSTICK_TYPE_TURNTABLE;
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
     default:
         return SDL_JOYSTICK_TYPE_UNKNOWN;
     }
