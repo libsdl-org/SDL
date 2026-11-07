@@ -273,7 +273,7 @@ static void HIDAPI_DriverSantroller_SetDevicePlayerIndex(SDL_HIDAPI_Device *devi
     if (ctx->player_leds_supported) {
         Uint8 playerReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_PLAYER_LED, (Uint8)(player_index) };
 
-        SDL_hid_write(device->dev, playerReport, sizeof(playerReport));
+        SDL_HIDAPI_SendRumble(device, playerReport, sizeof(playerReport));
     }
 }
 
@@ -306,7 +306,7 @@ static bool HIDAPI_DriverSantroller_RumbleJoystick(SDL_HIDAPI_Device *device, SD
     if (ctx->rumble_supported) {
         Uint8 hapticReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_RUMBLE, (Uint8)(low_frequency_rumble >> 8), (Uint8)(high_frequency_rumble >> 8) };
 
-        SDL_hid_write(device->dev, hapticReport, sizeof(hapticReport));
+        SDL_HIDAPI_SendRumble(device, hapticReport, sizeof(hapticReport));
         return true;
     }
 
@@ -348,7 +348,7 @@ static bool HIDAPI_DriverSantroller_SetJoystickLED(SDL_HIDAPI_Device *device, SD
 
         Uint8 playerReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_RGB_LED, red, green, blue};
 
-        SDL_hid_write(device->dev, playerReport, sizeof(playerReport));
+        SDL_HIDAPI_SendRumble(device, playerReport, sizeof(playerReport));
 
         return true;
     }
@@ -358,7 +358,7 @@ static bool HIDAPI_DriverSantroller_SetJoystickLED(SDL_HIDAPI_Device *device, SD
         Uint8 brightness = SDL_max(red, SDL_max(green, blue));
         Uint8 euphoriaReport[32] = { SANTROLLER_DEVICE_REPORT_ID_COMMAND_OUTPUT, SANTROLLER_DEVICE_REPORT_COMMAND_RUMBLE, brightness, brightness };
 
-        SDL_hid_write(device->dev, euphoriaReport, sizeof(euphoriaReport));
+        SDL_HIDAPI_SendRumble(device, euphoriaReport, sizeof(euphoriaReport));
 
         return true;
     }
