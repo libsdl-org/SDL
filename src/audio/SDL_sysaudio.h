@@ -404,6 +404,7 @@ extern AudioBootStrap PSPAUDIO_bootstrap;
 extern AudioBootStrap VITAAUD_bootstrap;
 extern AudioBootStrap N3DSAUDIO_bootstrap;
 extern AudioBootStrap NGAGEAUDIO_bootstrap;
+extern AudioBootStrap PUMPKINAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap DOSSOUNDBLASTER_bootstrap;

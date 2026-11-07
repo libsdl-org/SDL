@@ -149,6 +149,15 @@
         /* Private platforms may have their own ideas about entry points. */
         #include "SDL_main_private.h"
 
+    #elif defined(SDL_PLATFORM_PUMPKINOS)
+        /* On PumpkinOS the application is a shared library loaded by the
+           PumpkinOS launcher, which calls its PilotMain() entry point. SDL
+           provides a PilotMain() that runs your main() for a normal launch.
+
+           If you provide your own PilotMain(), you may define SDL_MAIN_HANDLED
+         */
+        #define SDL_MAIN_NEEDED
+
     #elif defined(SDL_PLATFORM_WIN32)
         /* On Windows SDL provides WinMain(), which parses the command line and passes
            the arguments to your main function.

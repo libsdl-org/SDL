@@ -546,6 +546,7 @@ extern VideoBootStrap VITA_bootstrap;
 extern VideoBootStrap RISCOS_bootstrap;
 extern VideoBootStrap N3DS_bootstrap;
 extern VideoBootStrap NGAGE_bootstrap;
+extern VideoBootStrap PUMPKIN_bootstrap;
 extern VideoBootStrap RPI_bootstrap;
 extern VideoBootStrap KMSDRM_bootstrap;
 extern VideoBootStrap DUMMY_bootstrap;
