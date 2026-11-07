@@ -313,11 +313,6 @@ static bool HIDAPI_DriverSantroller_RumbleJoystick(SDL_HIDAPI_Device *device, SD
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSantroller_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSantroller_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSantroller_Context *ctx = (SDL_DriverSantroller_Context *)device->context;
@@ -362,16 +357,6 @@ static bool HIDAPI_DriverSantroller_SetJoystickLED(SDL_HIDAPI_Device *device, SD
 
         return true;
     }
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSantroller_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSantroller_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
     return SDL_Unsupported();
 }
 
@@ -853,11 +838,8 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSantroller = {
     .UpdateDevice = HIDAPI_DriverSantroller_UpdateDevice,
     .OpenJoystick = HIDAPI_DriverSantroller_OpenJoystick,
     .RumbleJoystick = HIDAPI_DriverSantroller_RumbleJoystick,
-    .RumbleJoystickTriggers = HIDAPI_DriverSantroller_RumbleJoystickTriggers,
     .GetJoystickCapabilities = HIDAPI_DriverSantroller_GetJoystickCapabilities,
     .SetJoystickLED = HIDAPI_DriverSantroller_SetJoystickLED,
-    .SendJoystickEffect = HIDAPI_DriverSantroller_SendJoystickEffect,
-    .SetJoystickSensorsEnabled = HIDAPI_DriverSantroller_SetJoystickSensorsEnabled,
     .CloseJoystick = HIDAPI_DriverSantroller_CloseJoystick,
     .FreeDevice = HIDAPI_DriverSantroller_FreeDevice,
 };
