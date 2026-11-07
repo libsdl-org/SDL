@@ -58,8 +58,8 @@ enum
 #define SENSOR_INTERVAL_VADER5_PRO_RATE_HZ        500
 #define SENSOR_INTERVAL_VADER5_PRO_NS            (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER5_PRO_RATE_HZ)
 
-/* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 295hz */
-#define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     295
+/* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 580hz */
+#define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     580
 #define SENSOR_INTERVAL_APEX5_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
 /* Rate of IMU Sensor Packets over wired connection observed in testcontroller at 970hz */
 #define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      970
