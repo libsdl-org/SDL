@@ -817,14 +817,6 @@ static bool HIDAPI_DriverSantroller_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_DriverSantroller_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_DriverSantroller_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSantroller = {
     .name = SDL_HINT_JOYSTICK_HIDAPI_SANTROLLER,
     .enabled = true,
@@ -840,8 +832,6 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSantroller = {
     .RumbleJoystick = HIDAPI_DriverSantroller_RumbleJoystick,
     .GetJoystickCapabilities = HIDAPI_DriverSantroller_GetJoystickCapabilities,
     .SetJoystickLED = HIDAPI_DriverSantroller_SetJoystickLED,
-    .CloseJoystick = HIDAPI_DriverSantroller_CloseJoystick,
-    .FreeDevice = HIDAPI_DriverSantroller_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SANTROLLER
