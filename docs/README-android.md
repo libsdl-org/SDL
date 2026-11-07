@@ -168,6 +168,34 @@ The `build-scripts/create-android-project.py` script can create a project using 
 build-scripts/create-android-project.py --variant aar com.yourcompany.yourapp < sources.list
 ```
 
+Building SDL3 as a static library
+================================================================================
+
+The static library can be built with the Android.mk compilation file. It builds the SDL3 library with a weak reference
+to main(), so it requires your application (built as a shared object) to provide the main() function.
+
+Create a version script (e.g., custom_version_script.vs) to control symbol visibility and expose JNI_OnLoad:
+```
+{
+global:
+    JNI_OnLoad;
+local:
+    *;
+};
+```
+
+Add the following compiler and linker flags to your Android.mk:
+```
+LOCAL_CFLAGS += -ffunction-sections -fdata-sections
+LOCAL_LDFLAGS += -Wl,--gc-sections
+LOCAL_LDFLAGS += -Wl,-version-script -Wl,custom_version_script.vs
+```
+
+Advantage: significantly reduces the total binary size by enabling garbage collection of unused sections (--gc-sections).
+
+Limitation: your application's primary library cannot implement its own JNI_OnLoad, as SDL3 already defines it. If additional custom JNI initialization is required, split it into separate shared libraries, each can define its own JNI_OnLoad.
+
+
 Customizing your application name
 ================================================================================
 
