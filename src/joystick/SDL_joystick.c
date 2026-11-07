@@ -32,6 +32,8 @@
 #include "../video/SDL_sysvideo.h"
 #include "../sensor/SDL_sensor_c.h"
 #include "hidapi/SDL_hidapijoystick_c.h"
+#include "hidapi/SDL_hidapi_santroller.h"
+#include "hidapi/SDL_hidapi_xbox360.h"
 #include "../hidapi/SDL_hidapi_c.h"
 
 // This is included in only one place because it has a large static list of controllers
@@ -4293,76 +4295,6 @@ static bool SDL_IsJoystickGuitar(Uint16 vendor_id, Uint16 product_id)
 static bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_VIDPIDInList(vendor_id, product_id, &drum_devices);
-}
-
-SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
-    switch (subtype) {
-    case SDL_XINPUT_SUBTYPE_GAMEPAD:
-    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
-        return SDL_JOYSTICK_TYPE_GAMEPAD;
-    case SDL_XINPUT_SUBTYPE_WHEEL:
-        return SDL_JOYSTICK_TYPE_WHEEL;
-    case SDL_XINPUT_SUBTYPE_ARCADE_STICK:
-        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
-    case SDL_XINPUT_SUBTYPE_FLIGHT_STICK:
-        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-    case SDL_XINPUT_SUBTYPE_DANCE_PAD:
-        return SDL_JOYSTICK_TYPE_DANCE_PAD;
-    case SDL_XINPUT_SUBTYPE_GUITAR:
-    case SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE:
-    case SDL_XINPUT_SUBTYPE_GUITAR_BASS:
-    case SDL_XINPUT_SUBTYPE_PRO_GUITAR:
-        return SDL_JOYSTICK_TYPE_GUITAR;
-    case SDL_XINPUT_SUBTYPE_DRUMS:
-        return SDL_JOYSTICK_TYPE_DRUM_KIT;
-    case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
-        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
-    case SDL_XINPUT_SUBTYPE_PRO_KEYS:
-        return SDL_JOYSTICK_TYPE_MUSICAL_KEYBOARD;
-    case SDL_XINPUT_SUBTYPE_TURNTABLE:
-        return SDL_JOYSTICK_TYPE_TURNTABLE;
-    default:
-        return SDL_JOYSTICK_TYPE_UNKNOWN;
-    }
-}
-
-SDL_JoystickType SDL_GetJoystickTypeForSantroller(SDL_SantrollerSubType santroller_type) {
-    switch (santroller_type) {
-    case SDL_SANTROLLER_SUB_TYPE_BEAT_MANIA:
-    case SDL_SANTROLLER_SUB_TYPE_POP_N_MUSIC:
-    case SDL_SANTROLLER_SUB_TYPE_PROJECT_DIVA:
-        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
-    case SDL_SANTROLLER_SUB_TYPE_PRO_KEYS:
-    case SDL_SANTROLLER_SUB_TYPE_KEYBOARD_MANIA:
-        return SDL_JOYSTICK_TYPE_MUSICAL_KEYBOARD;
-    case SDL_SANTROLLER_SUB_TYPE_DJ_MAX:
-    case SDL_SANTROLLER_SUB_TYPE_DJ_HERO_TURNTABLE:
-        return SDL_JOYSTICK_TYPE_TURNTABLE;
-    case SDL_SANTROLLER_SUB_TYPE_GAMEPAD:
-    case SDL_SANTROLLER_SUB_TYPE_STAGE_KIT:
-        return SDL_JOYSTICK_TYPE_GAMEPAD;
-    case SDL_SANTROLLER_SUB_TYPE_DANCEPAD:
-        return SDL_JOYSTICK_TYPE_DANCE_PAD;
-    case SDL_SANTROLLER_SUB_TYPE_WHEEL:
-        return SDL_JOYSTICK_TYPE_WHEEL;
-    case SDL_SANTROLLER_SUB_TYPE_POWER_GIG_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_REVOLUTION_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_LIVE_GUITAR:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_MUSTANG:
-    case SDL_SANTROLLER_SUB_TYPE_PRO_GUITAR_SQUIRE:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_FREAKS:
-        return SDL_JOYSTICK_TYPE_GUITAR;
-    case SDL_SANTROLLER_SUB_TYPE_TAIKO:
-    case SDL_SANTROLLER_SUB_TYPE_GUITAR_HERO_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_ROCK_BAND_DRUMS:
-    case SDL_SANTROLLER_SUB_TYPE_POWER_GIG_DRUM:
-    case SDL_SANTROLLER_SUB_TYPE_DRUM_MANIA:
-        return SDL_JOYSTICK_TYPE_DRUM_KIT;
-    default:
-        return SDL_JOYSTICK_TYPE_UNKNOWN;
-    }
 }
 
 static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)

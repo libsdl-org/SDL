@@ -37,7 +37,8 @@
 #include <unistd.h>
 
 #include "SDL_evdev_capabilities.h"
-#include "../../joystick/SDL_joystick_c.h"
+#include "../../joystick/hidapi/SDL_hidapi_santroller.h"
+#include "../../joystick/hidapi/SDL_hidapi_xbox360.h"
 #include "../unix/SDL_poll.h"
 
 #define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0"
