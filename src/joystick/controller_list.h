@@ -58,6 +58,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0085 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander PS3
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0086 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Commander PC (Uses the Xbox 360 protocol, but has PS3 buttons)
 	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x0088 ), k_eControllerType_PS3Controller, NULL },	// HORI Fighting Stick mini 4
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x008b ), k_eControllerType_PS3Controller, NULL },	// HORI Real Arcade Pro 4
 	{ MAKE_CONTROLLER_ID( 0x0f30, 0x1100 ), k_eControllerType_PS3Controller, NULL },	// Qanba Q1 fight stick
 	{ MAKE_CONTROLLER_ID( 0x11ff, 0x3331 ), k_eControllerType_PS3Controller, NULL },	// SRXJ-PH2400
 	{ MAKE_CONTROLLER_ID( 0x12ba, 0x0100 ), k_eControllerType_PS3Controller, NULL },	// PS3 Guitar Hero Guitar
