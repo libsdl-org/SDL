@@ -346,8 +346,19 @@ static bool IsJoystick(const char *path, int *fd, char **name_return, Uint16 *ve
     *vendor_return = inpid.vendor;
     *product_return = inpid.product;
     *version_return = inpid.version;
+    int joystick_type = -1;
+
+#ifdef SDL_USE_LIBUDEV
+    if (SDL_UDEV_GetJoystickType(path, &joystick_type)) {
+        *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 's', joystick_type);
+    } else {
+        *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 0, 0);
+    }
+    return true;
+#else
     *guid = SDL_CreateJoystickGUID(inpid.bustype, inpid.vendor, inpid.product, inpid.version, NULL, product_string, 0, 0);
     return true;
+#endif
 
 error:
     SDL_free(driver);
