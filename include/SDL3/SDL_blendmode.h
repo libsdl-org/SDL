@@ -96,7 +96,11 @@ typedef enum SDL_BlendFactor
     SDL_BLENDFACTOR_DST_COLOR           = 0x7,  /**< dstR, dstG, dstB, dstA */
     SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR = 0x8,  /**< 1-dstR, 1-dstG, 1-dstB, 1-dstA */
     SDL_BLENDFACTOR_DST_ALPHA           = 0x9,  /**< dstA, dstA, dstA, dstA */
-    SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA = 0xA   /**< 1-dstA, 1-dstA, 1-dstA, 1-dstA */
+    SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA = 0xA,  /**< 1-dstA, 1-dstA, 1-dstA, 1-dstA */
+    SDL_BLENDFACTOR_SRC1_COLOR           = 0xB, /**< src1R, src1G, src1B, src1A */
+    SDL_BLENDFACTOR_ONE_MINUS_SRC1_COLOR = 0xC, /**< 1-src1R, 1-src1G, 1-src1B, 1-src1A */
+    SDL_BLENDFACTOR_SRC1_ALPHA           = 0xD, /**< src1A, src1A, src1A, src1A */
+    SDL_BLENDFACTOR_ONE_MINUS_SRC1_ALPHA = 0xE  /**< 1-src1A, 1-src1A, 1-src1A, 1-src1A */
 } SDL_BlendFactor;
 
 /**
