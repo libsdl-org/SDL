@@ -2811,7 +2811,7 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 
     p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
 
-    if (bytes_per_pixel <= sizeof(pixel) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+    if (bytes_per_pixel > 0 && bytes_per_pixel <= sizeof(pixel) && !SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         /* Fill the appropriate number of least-significant bytes of pixel,
          * leaving the most-significant bytes set to zero */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
@@ -2821,7 +2821,7 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 #endif
         SDL_GetRGBA(pixel, surface->fmt, surface->palette, r, g, b, a);
         result = true;
-    } else if (SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
+    } else if (bytes_per_pixel == 0 || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
         // FIXME: We need code to extract a single macroblock from a YUV surface
         SDL_Surface *converted = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_ARGB8888);
         if (converted) {
