@@ -65,6 +65,12 @@ enum
 #define SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ      970
 #define SENSOR_INTERVAL_APEX5_WIRED_NS          (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_WIRED_RATE_HZ)
 
+/* Not measured, left as they were before Apex 5 and Apex 6 split */
+#define SENSOR_INTERVAL_APEX6_DONGLE_RATE_HZ     295
+#define SENSOR_INTERVAL_APEX6_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX6_DONGLE_RATE_HZ)
+#define SENSOR_INTERVAL_APEX6_WIRED_RATE_HZ      970
+#define SENSOR_INTERVAL_APEX6_WIRED_NS          (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX6_WIRED_RATE_HZ)
+
 #define FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME  1000 * 30
 
 #define FLYDIGI_V1_CMD_REPORT_ID        0x05
@@ -258,7 +264,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
         ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
-        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX6_DONGLE_NS : SENSOR_INTERVAL_APEX6_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER2:
         // The Vader 2 controller has sensors, but they're only reported when gyro mouse is enabled
