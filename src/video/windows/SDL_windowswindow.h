@@ -68,7 +68,8 @@ struct SDL_WindowData
     HDC mdc;
     HINSTANCE hinstance;
     HBITMAP hbm;
-    HICON hicon;
+    HICON hicon_small;
+    HICON hicon_large;
     WNDPROC wndproc;
     HHOOK keyboard_hook;
     WPARAM mouse_button_flags;
