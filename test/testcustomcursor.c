@@ -199,13 +199,16 @@ static SDL_Cursor *init_system_cursor(const char *image[])
             }
             switch (image[4 + row][col]) {
             case 'X':
+                // Black
                 data[i] |= 0x01;
                 mask[i] |= 0x01;
                 break;
             case '.':
+                // White
                 mask[i] |= 0x01;
                 break;
             case 'o':
+                // Inverted or black
                 data[i] |= 0x01;
                 break;
             case ' ':
@@ -321,7 +324,7 @@ static const char *get_active_cursor_name()
     case CUSTOM_CURSOR_ARROW:
         return "Custom cursor (arrow)";
     case CUSTOM_CURSOR_CROSS:
-        return "Custom cursor (cross)";
+        return "Custom cursor (cross - inverted pixels)";
     case CUSTOM_ANIMATED_CURSOR_ONE_SHOT:
         return "Animated custom cursor (one-shot)";
     case CUSTOM_ANIMATED_CURSOR:
@@ -459,8 +462,8 @@ static void loop(void)
                 black = !black;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xFF);
-        SDL_RenderDebugText(renderer, 0.0f, 0.0f, get_active_cursor_name());
+        SDL_SetRenderDrawColor(renderer, 0xDD, 0x33, 0x00, 0xFF);
+        SDL_RenderDebugText(renderer, 4.0f, 4.0f, get_active_cursor_name());
         SDL_RenderPresent(renderer);
     }
 #ifdef SDL_PLATFORM_EMSCRIPTEN
