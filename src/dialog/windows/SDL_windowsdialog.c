@@ -619,11 +619,8 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
 
         if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
             const char * const results[] = { NULL };
-            UINT selected_filter;
 
-            // This is a one-based index, not zero-based. Doc link in similar comment below
-            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
-            callback(userdata, results, selected_filter - 1);
+            callback(userdata, results, -1);
             callback_called = true;
             goto quit;
         } else if (!SUCCEEDED(hr)) {
@@ -634,11 +631,8 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
 
         if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
             const char * const results[] = { NULL };
-            UINT selected_filter;
 
-            // This is a one-based index, not zero-based. Doc link in similar comment below
-            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
-            callback(userdata, results, selected_filter - 1);
+            callback(userdata, results, -1);
             callback_called = true;
             goto quit;
         } else if (!SUCCEEDED(hr)) {
@@ -1028,12 +1022,9 @@ void windows_ShowFileDialog(void *ptr)
         DWORD error = pCommDlgExtendedError();
         // Error code 0 means the user clicked the cancel button.
         if (error == 0) {
-            /* Unlike SDL's handling of errors, Windows does reset the error
-               code to 0 after calling GetOpenFileName if another Windows
-               function before set a different error code, so it's safe to
-               check for success. */
-            const char *opts[1] = { NULL };
-            callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
+            const char * const results[] = { NULL };
+
+            callback(userdata, results, -1);
         } else {
             SDL_SetError("Windows error, CommDlgExtendedError: %" SDL_PRIuULONG, pCommDlgExtendedError());
             callback(userdata, NULL, -1);
