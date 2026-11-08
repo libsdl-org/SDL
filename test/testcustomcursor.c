@@ -221,13 +221,16 @@ static SDL_Cursor *init_system_cursor(const char *image[])
             }
             switch (image[4 + row][col]) {
             case 'X':
+                // Black
                 data[i] |= 0x01;
                 mask[i] |= 0x01;
                 break;
             case '.':
+                // White
                 mask[i] |= 0x01;
                 break;
             case 'o':
+                // Inverted or black
                 data[i] |= 0x01;
                 break;
             case ' ':

@@ -1547,6 +1547,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
             maskb <<= 1;
         }
     }
+    SDL_SetBooleanProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_MONOCHROME_CURSOR_BOOLEAN, true);
 
     cursor = SDL_CreateColorCursor(surface, hot_x, hot_y);
 

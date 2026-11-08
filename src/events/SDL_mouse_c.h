@@ -29,6 +29,9 @@
 // The default mouse input device, for platforms that don't have multiple mice
 #define SDL_DEFAULT_MOUSE_ID    1
 
+// Set on surfaces created by SDL_CreateCursor(), which may have inverted pixels
+#define SDL_PROP_SURFACE_MONOCHROME_CURSOR_BOOLEAN "SDL.internal.surface.monochrome_cursor"
+
 typedef struct SDL_CursorData SDL_CursorData;
 
 struct SDL_Cursor;
