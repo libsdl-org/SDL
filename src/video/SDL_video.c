@@ -464,7 +464,7 @@ static bool SDL_CreateWindowTexture(SDL_VideoDevice *_this, SDL_Window *window, 
     return true;
 }
 
-bool SDL_SetWindowTextureVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync)
+static bool SDL_SetWindowTextureVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync)
 {
     SDL_WindowTextureData *data;
 
@@ -3679,44 +3679,35 @@ static SDL_Surface *SDL_CreateWindowFramebuffer(SDL_Window *window)
     SDL_PixelFormat format = SDL_PIXELFORMAT_UNKNOWN;
     void *pixels = NULL;
     int pitch = 0;
-    bool created_framebuffer = false;
     int w, h;
 
     SDL_GetWindowSizeInPixels(window, &w, &h);
 
-    /* This will switch the video backend from using a software surface to
-       using a GPU texture through the 2D render API, if we think this would
-       be more efficient. This only checks once, on demand. */
-    if (!_this->checked_texture_framebuffer) {
+    if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_NONE) {
         if (ShouldAttemptTextureFramebuffer()) {
-            if (!SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch)) {
-                /* !!! FIXME: if this failed halfway (made renderer, failed to make texture, etc),
-                   !!! FIXME:  we probably need to clean this up so it doesn't interfere with
-                   !!! FIXME:  a software fallback at the system level (can we blit to an
-                   !!! FIXME:  OpenGL window? etc). */
+            if (SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch)) {
+                window->framebuffer_type = SDL_WINDOW_FRAMEBUFFER_TEXTURE;
             } else {
-                // future attempts will just try to use a texture framebuffer.
-                /* !!! FIXME:  maybe we shouldn't override these but check if we used a texture
-                   !!! FIXME:  framebuffer at the right places; is it feasible we could have an
-                   !!! FIXME:  accelerated OpenGL window and a second ends up in software? */
-                _this->CreateWindowFramebuffer = SDL_CreateWindowTexture;
-                _this->SetWindowFramebufferVSync = SDL_SetWindowTextureVSync;
-                _this->GetWindowFramebufferVSync = SDL_GetWindowTextureVSync;
-                _this->UpdateWindowFramebuffer = SDL_UpdateWindowTexture;
-                _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
-                created_framebuffer = true;
+                SDL_DestroyWindowTexture(_this, window);
             }
         }
 
-        _this->checked_texture_framebuffer = true; // don't check this again.
-    }
+        if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_NONE) {
+            if (!_this->CreateWindowFramebuffer || !_this->UpdateWindowFramebuffer) {
+                SDL_SetError("Window framebuffer support not available");
+                return NULL;
+            }
 
-    if (!created_framebuffer) {
-        if (!_this->CreateWindowFramebuffer || !_this->UpdateWindowFramebuffer) {
-            SDL_SetError("Window framebuffer support not available");
+            if (!_this->CreateWindowFramebuffer(_this, window, &format, &pixels, &pitch)) {
+                return NULL;
+            }
+            window->framebuffer_type = SDL_WINDOW_FRAMEBUFFER_NATIVE;
+        }
+    } else if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_TEXTURE) {
+        if (!SDL_CreateWindowTexture(_this, window, &format, &pixels, &pitch)) {
             return NULL;
         }
-
+    } else {
         if (!_this->CreateWindowFramebuffer(_this, window, &format, &pixels, &pitch)) {
             return NULL;
         }
@@ -3761,6 +3752,9 @@ bool SDL_SetWindowSurfaceVSync(SDL_Window *window, int vsync)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
+    if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_TEXTURE) {
+        return SDL_SetWindowTextureVSync(_this, window, vsync);
+    }
     if (!_this->SetWindowFramebufferVSync) {
         return SDL_Unsupported();
     }
@@ -3771,6 +3765,9 @@ bool SDL_GetWindowSurfaceVSync(SDL_Window *window, int *vsync)
 {
     CHECK_WINDOW_MAGIC(window, false);
 
+    if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_TEXTURE) {
+        return SDL_GetWindowTextureVSync(_this, window, vsync);
+    }
     if (!_this->GetWindowFramebufferVSync) {
         return SDL_Unsupported();
     }
@@ -3799,8 +3796,9 @@ bool SDL_UpdateWindowSurfaceRects(SDL_Window *window, const SDL_Rect *rects,
         return SDL_SetError("Window surface is invalid, please call SDL_GetWindowSurface() to get a new surface");
     }
 
-    SDL_assert(_this->checked_texture_framebuffer); // we should have done this before we had a valid surface.
-
+    if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_TEXTURE) {
+        return SDL_UpdateWindowTexture(_this, window, rects, numrects);
+    }
     return _this->UpdateWindowFramebuffer(_this, window, rects, numrects);
 }
 
@@ -3815,11 +3813,14 @@ bool SDL_DestroyWindowSurface(SDL_Window *window)
         window->surface_valid = false;
     }
 
-    if (_this->checked_texture_framebuffer) { // never checked? No framebuffer to destroy. Don't risk calling the wrong implementation.
+    if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_TEXTURE) {
+        SDL_DestroyWindowTexture(_this, window);
+    } else if (window->framebuffer_type == SDL_WINDOW_FRAMEBUFFER_NATIVE) {
         if (_this->DestroyWindowFramebuffer) {
             _this->DestroyWindowFramebuffer(_this, window);
         }
     }
+    window->framebuffer_type = SDL_WINDOW_FRAMEBUFFER_NONE;
     return true;
 }
 

@@ -41,6 +41,13 @@ typedef struct
     float HDR_headroom;
 } SDL_HDROutputProperties;
 
+typedef enum
+{
+    SDL_WINDOW_FRAMEBUFFER_NONE,
+    SDL_WINDOW_FRAMEBUFFER_NATIVE,
+    SDL_WINDOW_FRAMEBUFFER_TEXTURE
+} SDL_WindowFramebufferType;
+
 // Define the SDL window structure, corresponding to toplevel windows
 struct SDL_Window
 {
@@ -97,6 +104,7 @@ struct SDL_Window
 
     float opacity;
 
+    SDL_WindowFramebufferType framebuffer_type;
     SDL_Surface *surface;
     bool surface_valid;
 
@@ -413,7 +421,6 @@ struct SDL_VideoDevice
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
-    bool checked_texture_framebuffer;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;
