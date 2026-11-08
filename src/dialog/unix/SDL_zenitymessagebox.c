@@ -58,7 +58,16 @@ bool SDL_get_zenity_version(int *major, int *minor)
     const char *argv[] = { "zenity", "--version", NULL };
     bool result = false;
 
-    SDL_Process *process = SDL_CreateProcess(argv, true);
+    SDL_PropertiesID props = SDL_CreateProperties();
+    if (!props) {
+        return false;
+    }
+    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, argv);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_APP);
+    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
+    SDL_Process *process = SDL_CreateProcessWithProperties(props);
+    SDL_DestroyProperties(props);
     if (!process) {
         return false;
     }

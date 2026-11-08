@@ -352,21 +352,7 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
 bool SDL_Zenity_detect(void)
 {
-    const char *args[] = {
-        "zenity", "--version", NULL
-    };
-    int status = -1;
+    int major, minor;
 
-    SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_Process *process = SDL_CreateProcessWithProperties(props);
-    SDL_DestroyProperties(props);
-    if (process) {
-        SDL_WaitProcess(process, true, &status);
-        SDL_DestroyProcess(process);
-    }
-    return (status == 0);
+    return SDL_get_zenity_version(&major, &minor);
 }
