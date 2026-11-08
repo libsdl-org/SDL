@@ -1716,10 +1716,10 @@ static bool ChoosePresentMode(SDL_GPUDevice *device, SDL_Window *window, const i
 
     switch (vsync) {
     case 0:
-        mode = SDL_GPU_PRESENTMODE_MAILBOX;
+        mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
 
         if (!SDL_WindowSupportsGPUPresentMode(device, window, mode)) {
-            mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
+            mode = SDL_GPU_PRESENTMODE_MAILBOX;
 
             if (!SDL_WindowSupportsGPUPresentMode(device, window, mode)) {
                 mode = SDL_GPU_PRESENTMODE_VSYNC;
