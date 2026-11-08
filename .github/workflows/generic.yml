@@ -72,6 +72,11 @@ jobs:
           echo "chromedriver_dir=${chromedriver_dir}"
           echo "${chrome_dir}" >>${GITHUB_PATH}
           echo "${chromedriver_dir}" >>${GITHUB_PATH}
+      - name: 'Generate Emscripten joystick mappings'
+        if: ${{ matrix.platform.platform == 'emscripten' }}
+        run: |
+          cd src/joystick
+          python generate_emscripten_mappings.py
       - uses: nttld/setup-ndk@v1
         if: ${{ matrix.platform.android-ndk }}
         id: setup-ndk
