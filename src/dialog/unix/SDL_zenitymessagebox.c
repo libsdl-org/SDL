@@ -21,6 +21,7 @@
 
 #include "SDL_internal.h"
 
+#include "../../process/SDL_sysprocess.h"
 #include "SDL_zenitymessagebox.h"
 
 #define ZENITY_VERSION_LEN 32 // Number of bytes to read from zenity --version (including NUL)
@@ -160,9 +161,7 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     }
     if (buttonID) {
         char *output = SDL_ReadProcess(process, NULL, &exit_code);
-        if (exit_code < 0 || exit_code == 255) {
-            SDL_free(output);
-        } else if (output) {
+        if (output) {
             // It likes to add a newline...
             char *tmp = SDL_strrchr(output, '\n');
             if (tmp) {
@@ -185,5 +184,9 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     }
     SDL_DestroyProcess(process);
 
+    if (exit_code == SDL_PROCESS_EXITCODE_UNKNOWN) {
+        // Zenity ran, but we don't know the result, use the output
+        return true;
+    }
     return !(exit_code < 0 || exit_code == 255);
 }
