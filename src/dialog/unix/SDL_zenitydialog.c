@@ -156,10 +156,25 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
     case SDL_FILEDIALOG_OPENFOLDER:
         argv[argc++] = "--directory";
+
+        // A folder dialog always treats the location as a folder
+        if (args->filename) {
+            size_t filename_length = SDL_strlen(args->filename);
+            if (filename_length > 0 && args->filename[filename_length - 1] != '/') {
+                char *filename = SDL_realloc(args->filename, filename_length + 2);
+                if (!filename) {
+                    goto cleanup;
+                }
+                filename[filename_length++] = '/';
+                filename[filename_length] = '\0';
+
+                args->filename = filename;
+            }
+        }
         break;
     }
 
-    if (args->filename) {
+    if (args->filename && *args->filename) {
         argv[argc++] = "--filename";
         argv[argc++] = args->filename;
     }
