@@ -542,21 +542,26 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
             goto quit;
         }
 
-        for (wchar_t *chrptr = default_folder_w; *chrptr; chrptr++) {
-            if (*chrptr == L'/' || *chrptr == L'\\') {
-                default_file_w = chrptr;
-            }
-        }
-
-        if (!default_file_w) {
-            default_file_w = default_folder_w;
-            default_folder_w = NULL;
+        if (is_folder) {
+            // A folder dialog always treats the location as a folder
         } else {
-            *default_file_w = L'\0';
-            default_file_w++;
+            // Split the location into a file and folder
+            for (wchar_t *chrptr = default_folder_w; *chrptr; chrptr++) {
+                if (*chrptr == L'/' || *chrptr == L'\\') {
+                    default_file_w = chrptr;
+                }
+            }
 
-            if (SDL_wcslen(default_file_w) == 0) {
-                default_file_w = NULL;
+            if (!default_file_w) {
+                default_file_w = default_folder_w;
+                default_folder_w = NULL;
+            } else {
+                *default_file_w = L'\0';
+                default_file_w++;
+
+                if (SDL_wcslen(default_file_w) == 0) {
+                    default_file_w = NULL;
+                }
             }
         }
     }
@@ -600,8 +605,9 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     }
 
     if (default_folder_w) {
-        CHECK(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
-        CHECK(pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem));
+        if (SUCCEEDED(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem)) {
+            pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem);
+        }
     }
 
     if (default_file_w) {
