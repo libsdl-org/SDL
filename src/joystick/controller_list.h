@@ -494,6 +494,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x201e ), k_eControllerType_XBoxOneController, NULL },    // 8BitDo Pro 2 Wired Controller for Xbox
 	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x3106 ), k_eControllerType_XBoxOneController, NULL },	// 8BitDo Ultimate Wired Controller. Windows, Android, Switch.
 	{ MAKE_CONTROLLER_ID( 0x2dc8, 0x310a ), k_eControllerType_XBoxOneController, NULL },	// 8BitDo Ultimate 2C Wireless Controller
+	{ MAKE_CONTROLLER_ID( 0x2e24, 0x0423 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin DuchesS
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x0652 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin Duke
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x072e ), k_eControllerType_XBoxOneController, NULL },    // Hyperkin Xenon
 	{ MAKE_CONTROLLER_ID( 0x2e24, 0x1618 ), k_eControllerType_XBoxOneController, NULL },	// Hyperkin Duke
