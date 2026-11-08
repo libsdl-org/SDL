@@ -462,8 +462,8 @@ static void loop(void)
                 black = !black;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xFF);
-        SDL_RenderDebugText(renderer, 0.0f, 0.0f, get_active_cursor_name());
+        SDL_SetRenderDrawColor(renderer, 0xDD, 0x33, 0x00, 0xFF);
+        SDL_RenderDebugText(renderer, 4.0f, 4.0f, get_active_cursor_name());
         SDL_RenderPresent(renderer);
     }
 #ifdef SDL_PLATFORM_EMSCRIPTEN
