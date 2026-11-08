@@ -197,7 +197,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                     const char *files[2] = { [[[dialog URL] path] UTF8String], NULL };
                     callback(userdata, files, -1);
                 }
-            } else if (result == NSModalResponseCancel) {
+            } else {
                 const char *files[1] = { NULL };
                 callback(userdata, files, -1);
             }
