@@ -355,9 +355,10 @@ struct SDL_VideoDevice
 
     /* * * */
     /*
-     * Experimental WGPU support
+     * Experimental WebGPU support
      */
-    WGPUSurface (*WGPU_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+    bool (*WGPU_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+    void (*WGPU_DestroySurface)(WGPUSurface surface);
 
     /* * * */
     /*

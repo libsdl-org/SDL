@@ -1303,3 +1303,4 @@ _SDL_GetDeviceFormFactor
 _SDL_GetDeviceFormFactorName
 _SDL_IsUbuntuTouch
 _SDL_GetNumProperties
+_SDL_WGPU_DestroySurface

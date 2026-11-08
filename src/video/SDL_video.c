@@ -6454,9 +6454,14 @@ void *SDL_Metal_GetLayer(SDL_MetalView view)
     }
 }
 
-WGPUSurface SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance)
+bool SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance, WGPUSurface *surface)
 {
-    return _this->WGPU_CreateSurface(_this, window, instance);
+    return _this->WGPU_CreateSurface(_this, window, instance, surface);
+}
+
+void SDL_WGPU_DestroySurface(WGPUSurface surface)
+{
+    return _this->WGPU_DestroySurface(surface);
 }
 
 #if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)

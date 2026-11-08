@@ -272,6 +272,7 @@ static SDL_VideoDevice *X11_CreateDevice(void)
 
 #ifdef SDL_VIDEO_WEBGPU
     device->WGPU_CreateSurface = X11_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = X11_WGPU_DestroySurface;
 #endif
 
 #ifdef SDL_USE_LIBDBUS

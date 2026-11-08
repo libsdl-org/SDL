@@ -12,7 +12,8 @@ extern "C" {
 extern
 #endif
 
-WGPUSurface Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+bool Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+void Emscripten_WGPU_DestroySurface(WGPUSurface surface);
 
 #ifdef __cplusplus
 }

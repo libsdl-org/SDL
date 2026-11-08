@@ -769,7 +769,9 @@ static SDL_VideoDevice *Wayland_CreateDevice(bool require_preferred_protocols)
 
 #ifdef SDL_VIDEO_WEBGPU
     device->WGPU_CreateSurface = Wayland_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = Wayland_WGPU_DestroySurface;
 #endif
+
     device->free = Wayland_DeleteDevice;
 
     device->device_caps = VIDEO_DEVICE_CAPS_MODE_SWITCHING_EMULATED |

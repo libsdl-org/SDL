@@ -1304,6 +1304,7 @@ SDL3_0.0.0 {
     SDL_GetDeviceFormFactorName;
     SDL_IsUbuntuTouch;
     SDL_GetNumProperties;
+    SDL_WGPU_DestroySurface;
     # extra symbols go here (don't modify this line)
   local: *;
 };

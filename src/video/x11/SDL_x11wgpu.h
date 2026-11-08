@@ -1,5 +1,5 @@
-#ifndef SDL_waylandwgpu_h_
-#define SDL_waylandwgpu_h_
+#ifndef SDL_x11wgpu_h_
+#define SDL_x11wgpu_h_
 
 #include <SDL3/SDL_wgpu.h>
 
@@ -11,7 +11,8 @@ extern "C" {
 extern
 #endif
 
-WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+bool X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+void X11_WGPU_DestroySurface(WGPUSurface surface);
 
 #ifdef __cplusplus
 }
@@ -19,4 +20,4 @@ WGPUSurface X11_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, W
 
 #endif
 
-#endif // SDL_waylandwgpu_h_
+#endif // SDL_x11wgpu_h_

@@ -7,11 +7,14 @@
 
 #include "SDL_emscriptenwgpu.h"
 
-#include <SDL3/SDL_wgpu.h>
-
-WGPUSurface
-Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance)
+bool
+Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface)
 {
+    if (!surface) {
+        SDL_SetError("Surface pointer is NULL!");
+        return false;
+    }
+
     SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
 
     const char *canvas = SDL_GetStringProperty(windowProperties, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, 0);
@@ -26,7 +29,16 @@ Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUIn
     desc.label = (WGPUStringView){ NULL, WGPU_STRLEN };
     desc.nextInChain = &source.chain;
 
-    return wgpuInstanceCreateSurface(instance, &desc);
+    *surface = wgpuInstanceCreateSurface(instance, &desc);
+    
+    if (!surface) {
+        SDL_SetError("Failed to create WebGPU surface!");
+        return false;
+    }
+
+    return true;
 }
+
+void Emscripten_WGPU_DestroySurface(WGPUSurface surface) { wgpuSurfaceRelease(surface); }
 
 #endif

@@ -12,7 +12,8 @@ extern "C" {
 extern
 #endif
 
-WGPUSurface Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+bool Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+void Wayland_WGPU_DestroySurface(WGPUSurface surface);
 
 #ifdef __cplusplus
 }

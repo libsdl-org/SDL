@@ -1,5 +1,3 @@
-// NOTE: I don't have a Windows machine to test this on. - TheStickmahn
-
 #ifndef SDL_windowswgpu_h_
 #define SDL_windowswgpu_h_
 
@@ -14,7 +12,8 @@ extern "C" {
 extern
 #endif
 
-WGPUSurface WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance);
+bool WIN_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+void WIN_WGPU_DestroySurface(WGPUSurface surface);
 
 #ifdef __cplusplus
 }

@@ -1,7 +1,6 @@
 // NOTE:
 // Dawn's a C++ library.
 // So, if you want to use C++, you have to have a .cpp file.
-// The code in this file is largely identical to the native one.
 // A couple changes though:
 // C++ isn't a fan of forward declaring enums, so we can't use SDL_waylandvideo.h,
 // but that's fine; we're not using anything that isn't in SDL_sysvideo.h.
@@ -17,13 +16,15 @@
 
 #include "SDL_waylandwgpu.h"
 
-#include <SDL3/SDL_wgpu.h>
-
-WGPUSurface
-Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance)
+bool
+Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *_surface)
 {
-    SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
+    if(!_surface){
+        SDL_SetError("Surface pointer is NULL!");
+        return false;
+    }
 
+    SDL_PropertiesID windowProperties = SDL_GetWindowProperties(window);
     struct wl_display *display = (wl_display *)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, 0);
     struct wl_surface *surface = (wl_surface *)SDL_GetPointerProperty(windowProperties, SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, 0);
 
@@ -41,7 +42,16 @@ Wayland_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInsta
     desc.nextInChain = &source.chain;
 
     // Dawn doesn't support dynamically loading, so we're just always using wgpuInstanceCreateSurface.
-    return wgpuInstanceCreateSurface(instance, &desc);
+    *_surface = wgpuInstanceCreateSurface(instance, &desc);
+
+    if(!_surface){
+        SDL_SetError("Failed to create WebGPU surface!");
+        return false;
+    }
+
+    return true;
 }
+
+void Wayland_WGPU_DestroySurface(WGPUSurface surface) { wgpuSurfaceRelease(surface); }
 
 #endif

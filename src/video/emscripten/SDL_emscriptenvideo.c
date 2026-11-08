@@ -188,7 +188,10 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
 
+#ifdef SDL_VIDEO_WEBGPU
     device->WGPU_CreateSurface = Emscripten_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = Emscripten_WGPU_DestroySurface;
+#endif
 
     device->free = Emscripten_DeleteDevice;
 

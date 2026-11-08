@@ -1,7 +1,7 @@
 /**
  * # CategoryWGPU
  *
- * Experimental support for the wgpu-native C bindings.
+ * Experimental video support for WebGPU.
  */
 
 #ifndef SDL_wgpu_h_
@@ -25,14 +25,33 @@ WGPU_OBJECT_ATTRIBUTE(WGPUInstance)
 #endif
 
 /**
- * Create a new WGPU surface.
+ * Create a new WebGPU surface.
+ * This will not configure the surface.
  *
- * \param window The window which the surface will attach itself to.
- * \param instance The WGPU instance.
+ * \param window the window which the surface will attach itself to.
+ * \param instance a WebGPU instance.
+ * \param surface a pointer to a WGPUSurface handle to output the newly
+ *                created WebGPU surface.
  *
- * \returns A WGPUSurface. Can be NULL if there was a failure.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \since This is part of SDL PR #16020, and is therefore not available in regular SDL.
+ *
+ * \sa SDL_WGPU_DestroySurface
  */
-extern SDL_DECLSPEC WGPUSurface SDLCALL SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance);
+extern SDL_DECLSPEC bool SDLCALL SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+
+/**
+ * Destroy a WebGPU surface.
+ *
+ * \param surface the surface to destroy.
+ *
+ * \since This is part of SDL PR #16020, and is therefore not available in regular SDL.
+ *
+ * \sa SDL_WGPU_CreateSurface
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_WGPU_DestroySurface(WGPUSurface surface);
 
 #ifdef __cplusplus
 }

@@ -5,10 +5,8 @@
 // - Documentation, documentation.
 //  - I have documented practically NOTHING, simply because documenting something means that I expect other people
 //    to use it, and I am afraid of commitment.
-// - Dynamically load WebGPU instead of statically linking it to SDL.
 // - Allow pipelines to recreate themselves if bind layouts are invalid.
 
-// FIXME: We create a WebGPU surface through the video backend, but we destroy it through the GPU backend?
 // FIXME: I'm pretty sure 2D array mipmap generation is broken?
 // FIXME: Uniform buffers are constant and therefore will break if the user pushes more than 1MiB of data
 //        to one within a single command buffer. Why would you ever do that? I have no idea. But it might happen.
@@ -25,6 +23,7 @@
 #define DEFAULT_BINDGROUP_EXPIRY                       10000
 #define DEFAULT_PSEUDOMAP_SIZE_THRESHOLD               (1 << 25) // 32MiB
 #define DEFAULT_UNIFORM_BUFFER_SIZE                    (1 << 20) // 1MiB
+#define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
 
 // map states
 #define MAP_STATE_UNMAPPED 0
@@ -42,6 +41,12 @@
 
 // Convert a regular char* to a WGPUStringView
 #define WEBGPU_INTERNAL_CharPtrToWebGPUStringView(str) str ? (WGPUStringView){ str, SDL_strlen(str) } : (WGPUStringView){ NULL, 0 }
+
+/**
+ * This checks if a feature's enabled for this WebGPURenderer*.
+ * This also does some bounds checking, so you should use this instead of directly reading the features array.
+ */
+#define WEBGPU_INTERNAL_IsFeatureEnabled(renderer, feature) (feature <= WEBGPU_FEATURE_AT_END_OF_ENUM) ? renderer->webgpuFeatureEnabled[feature] : false
 
 /**
  * Spin for 5000 nanoseconds.
@@ -207,11 +212,13 @@ fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
 // Also, note that while Firefox's documentation *claims* that a lot of features are unsupported,
 // I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
 
-const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[6] = {
+const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[7] = {
     // These three all have 99.98% coverage on WebGPU devices.
     WGPUFeatureName_Depth32FloatStencil8,
     WGPUFeatureName_RG11B10UfloatRenderable,
     WGPUFeatureName_IndirectFirstInstance,
+    // This one has 99.02%.
+    WGPUFeatureName_CoreFeaturesAndLimits,
     // This one has 98%, and only because of Samsung's weird browser.
     WGPUFeatureName_DepthClipControl,
     // This one has 95%, blame Samsung.
@@ -635,17 +642,6 @@ static WGPUTextureSampleType WebGPUTextureFormatToSampleType(WGPUTextureFormat f
     }
 }
 
-static bool WebGPUTextureFormatIsBlendable(WGPUTextureFormat format, bool blendableFloat32FeatureEnabled)
-{
-    // TODO: I couldn't find a list of which formats support blending so we'll just add them when we find them
-    switch (format) {
-    case WGPUTextureFormat_RGBA32Float:
-        return blendableFloat32FeatureEnabled;
-    default:
-        return true;
-    }
-}
-
 typedef struct WebGPUTexture WebGPUTexture;
 typedef struct WebGPUTextureContainer WebGPUTextureContainer;
 typedef struct WebGPUBuffer WebGPUBuffer;
@@ -718,6 +714,10 @@ typedef struct WebGPURenderer
     // Set to -1 to disable pruning, and 0 to instantly free it.
     int bindGroupsExpireAfter;
 
+    // This is an array of booleans which state whether or not a feature is enabled for this WebGPU device.
+    // Do not access this directly! Use WEBGPU_INTERNAL_IsFeatureEnabled, which does bounds checking.
+    bool webgpuFeatureEnabled[WEBGPU_FEATURE_AT_END_OF_ENUM];
+
     bool debugMode;
     bool destroyingSelf;
     bool preferLowPower;
@@ -741,7 +741,6 @@ struct WebGPUWindowData
     bool shouldUseFallbackFormat;
 };
 
-// FIXME: This has a really bad name.
 typedef enum WebGPUBindGroupType
 {
     // Vertex stage, sampler, sampled textures, and storage textures / buffers
@@ -950,6 +949,7 @@ struct WebGPUTexture
     SDL_GPUTextureType type;
     SDL_GPUTextureFormat format;
     SDL_GPUTextureUsageFlags usage;
+    SDL_GPUSampleCount sampleCount;
     SDL_AtomicInt referenceCount;
 
     Uint32 textureViewCount;
@@ -1076,8 +1076,6 @@ typedef struct WebGPUQueuedDestroy
     Uint32 destroysAttempted;
 } WebGPUQueuedDestroy;
 
-// TODO: Prevent the user from shooting off their foot if they bound an invalid resource
-
 typedef struct WebGPUShaderBindGroupLayouts
 {
     WGPUBindGroupLayout samplerStorageBindGroupLayout;
@@ -1091,7 +1089,6 @@ typedef struct WebGPUComputeShaderBindGroupLayouts
     WGPUBindGroupLayout uniformBindGroupLayout;
 } WebGPUComputeShaderBindGroupLayouts;
 
-// TODO: Maybe this should be called something like "WebGPUGraphicsShader" to specify that it's only for graphics and not compute?
 typedef struct WebGPUShader
 {
     WGPUShaderModule shader;
@@ -1269,6 +1266,129 @@ static inline Uint32 WEBGPU_INTERNAL_GetTextureViewIndex(Uint32 layer, Uint32 le
 {
     return (layer * numMips) + level;
 }
+
+// oh my god these functions were so annoying to write out
+static bool WEBGPU_INTERNAL_TextureFormatSupportsBlending(WGPUTextureFormat format, WebGPURenderer *renderer)
+{
+    switch (format) {
+    // always blendable
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Unorm:
+    case WGPUTextureFormat_R16Snorm:
+    case WGPUTextureFormat_R16Float:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Unorm:
+    case WGPUTextureFormat_RG16Snorm:
+    case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_RGBA16Unorm:
+    case WGPUTextureFormat_RGBA16Snorm:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA8UnormSrgb:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
+    case WGPUTextureFormat_RGB10A2Unorm:
+        return true;
+
+    // requires tier 1
+    case WGPUTextureFormat_R8Snorm:
+    case WGPUTextureFormat_RG8Snorm:
+    case WGPUTextureFormat_RGBA8Snorm:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
+
+    // these require float32-blendable
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG32Float:
+    case WGPUTextureFormat_RGBA32Float:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable);
+
+    // rg11b10ufloat is a special princess and requires its own feature
+    case WGPUTextureFormat_RG11B10Ufloat:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_RG11B10UfloatRenderable);
+
+    // never blendable
+    // NOTE: i struggled a bit wondering if I should explicitly define the unsupported ones,
+    // but I decided against it since it'd be a giant block of code (80 formats!)
+    // if the pros think it'd be better to have them explicit though, i'll add them back
+    default:
+        return false;
+    }
+}
+
+// there might be some inaccuracies here i've just been copying directly from the spec with my meaty, flawed eyes
+static bool WEBGPU_INTERNAL_TextureFormatSupportsStorageAccess(WebGPURenderer *renderer, WGPUTextureFormat format, WGPUStorageTextureAccess access)
+{
+    // Shortened names for convience
+    const bool t1 = WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
+    const bool t2 = WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier2);
+
+    switch (format) {
+    // always supports all accesses
+    case WGPUTextureFormat_R32Uint:
+    case WGPUTextureFormat_R32Sint:
+    case WGPUTextureFormat_R32Float:
+        return true;
+
+    // always supports write-only & read-only, read-write is supported with tier 2
+    case WGPUTextureFormat_RGBA8Uint:
+    case WGPUTextureFormat_RGBA8Sint:
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_RGBA16Uint:
+    case WGPUTextureFormat_RGBA16Sint:
+    case WGPUTextureFormat_RGBA32Uint:
+    case WGPUTextureFormat_RGBA32Sint:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA32Float:
+        return access != WGPUStorageTextureAccess_ReadWrite || t2;
+
+    // always supports write-only & read-only, read-write is not supported
+    case WGPUTextureFormat_R16Unorm:
+    case WGPUTextureFormat_R16Snorm:
+    // RG32 technically requires the "core-features-and-limits" feature so we could check for it,
+    // but since it's required for the WebGPU backend, we'll pretty safely assume that it's enabled.
+    case WGPUTextureFormat_RG32Uint:
+    case WGPUTextureFormat_RG32Sint:
+    case WGPUTextureFormat_RG32Float:
+    case WGPUTextureFormat_RG16Unorm:
+    case WGPUTextureFormat_RG16Snorm:
+    case WGPUTextureFormat_RGBA8Snorm:
+    case WGPUTextureFormat_RGBA16Unorm:
+    case WGPUTextureFormat_RGBA16Snorm:
+        return access != WGPUStorageTextureAccess_ReadWrite;
+
+    // supports write-only & read-only with t1, read-write with t2
+    case WGPUTextureFormat_R8Uint:
+    case WGPUTextureFormat_R8Sint:
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Uint:
+    case WGPUTextureFormat_R16Sint:
+    case WGPUTextureFormat_R16Float:
+        return (access != WGPUStorageTextureAccess_ReadWrite && t1) || t2;
+
+    // supports write-only & read-only wtih t1, read-write is not supported
+    case WGPUTextureFormat_R8Snorm:
+    case WGPUTextureFormat_RG8Uint:
+    case WGPUTextureFormat_RG8Sint:
+    case WGPUTextureFormat_RG8Snorm:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Uint:
+    case WGPUTextureFormat_RG16Sint:
+    case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_RGB10A2Uint:
+    case WGPUTextureFormat_RGB10A2Unorm:
+    case WGPUTextureFormat_RG11B10Ufloat:
+        return access != WGPUStorageTextureAccess_ReadWrite && t1;
+
+    // supports write-only with bgra8unorm-storage feature
+    case WGPUTextureFormat_BGRA8Unorm:
+        return access == WGPUStorageTextureAccess_WriteOnly && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_BGRA8UnormStorage);
+
+    // if not explicitly said to be fine, a texture format will be treated as unsupported
+    // see WEBGPU_INTERNAL_TextureFormatSupportsBlending for my reasoning behind this
+    default:
+        return false;
+    }
+};
 
 static SDL_PropertiesID WEBGPU_GetDeviceProperties(
     SDL_GPUDevice *device)
@@ -1540,6 +1660,9 @@ static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *succes
             SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
             SDL_assert_release(!"WebGPU adapter does not support all required features!");
         }
+
+        SDL_assert_release(WEBGPU_INTERNAL_RequiredFeatures[i] <= WEBGPU_FEATURE_AT_END_OF_ENUM);
+        renderer->webgpuFeatureEnabled[WEBGPU_INTERNAL_RequiredFeatures[i]] = supported;
     }
 
     for (int i = 0; i < SDL_arraysize(WEBGPU_INTERNAL_OptionalFeatures); i++) {
@@ -1556,6 +1679,9 @@ static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *succes
         if (!supported && renderer->debugMode) {
             SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support optional feature \"%s\".", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_OptionalFeatures[i]));
         }
+
+        SDL_assert_release(WEBGPU_INTERNAL_OptionalFeatures[i] <= WEBGPU_FEATURE_AT_END_OF_ENUM);
+        renderer->webgpuFeatureEnabled[WEBGPU_INTERNAL_OptionalFeatures[i]] = supported;
     }
 
     deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){
@@ -1788,7 +1914,6 @@ static bool WEBGPU_INTERNAL_WaitForFences(WebGPURenderer *renderer, bool waitAll
         }
     }
 
-    // TODO: Timeout functionality?
     return true;
 }
 
@@ -1812,6 +1937,10 @@ static bool WEBGPU_Wait(SDL_GPURenderer *driverData)
 
     if (fenceCount > 0) {
         WEBGPU_INTERNAL_WaitForFences(renderer, true, fences, fenceCount);
+    }
+
+    if (fences) {
+        SDL_free(fences);
     }
 
     // I can't really think of a scenario in which this'd fail?
@@ -1850,7 +1979,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
             WGPUBindGroupLayoutEntry textureEntry = {
                 .binding = offsetVert++,
                 .texture = {
-                    .multisampled = false, // TODO: Support multisampling!
+                    .multisampled = textureViewVert->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
                     .nextInChain = NULL,
                     .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureViewVert->parent->format]),
                     .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewVert->parent->type],
@@ -1885,7 +2014,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
             WGPUBindGroupLayoutEntry textureEntry = {
                 .binding = offsetFrag++,
                 .texture = {
-                    .multisampled = false, // TODO: Support multisampling!
+                    .multisampled = textureViewFrag->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
                     .nextInChain = NULL,
                     .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureViewFrag->parent->format]),
                     .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewFrag->parent->type],
@@ -2075,7 +2204,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
             WGPUBindGroupLayoutEntry textureEntry = {
                 .binding = offset++,
                 .texture = {
-                    .multisampled = false, // TODO: Multisampling!
+                    .multisampled = textureView->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
                     .nextInChain = NULL,
                     .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureView->parent->format]),
                     .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureView->parent->type],
@@ -2167,19 +2296,12 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
                 .visibility = WGPUShaderStage_Compute,
             };
 
-            if (textureView->parent->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
-                if (textureView->parent->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
-                    // WebGPU sucks and doesn't differentiate between simulaneous RW and
-                    // non-simulaneous RW so we'll just have to enable simu RW and pray nothing bad happens.
-                    //
-                    // There are features to allow simu RW for most formats (Tier1 & Tier2 features), but
-                    // Firefox doesn't support those, so there's a.... roughly 105% chance it'll blow up.
-                    // TODO: Check if the WebGPU gods snuck an IED into my SDLGPU app
-                }
-                storageTextureEntry.storageTexture.access = WGPUStorageTextureAccess_WriteOnly;
-            } else if (textureView->parent->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE) {
-                storageTextureEntry.storageTexture.access = WGPUStorageTextureAccess_ReadWrite;
-            }
+            // if the texture format doesn't support simu read-write, we'll fall back to write-only
+            storageTextureEntry.storageTexture.access =
+                WEBGPU_INTERNAL_TextureFormatSupportsStorageAccess(
+                    cmdBuf->renderer, storageTextureEntry.storageTexture.format, WGPUStorageTextureAccess_ReadWrite)
+                    ? WGPUStorageTextureAccess_ReadWrite
+                    : WGPUStorageTextureAccess_WriteOnly;
 
             WEBGPU_INTERNAL_InsertElementIntoArray(readWriteEntries, readWriteEntryCapacity, readWriteEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
             entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE_READWRITE;
@@ -2934,6 +3056,7 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     texture->type = createInfo->type;
     texture->format = createInfo->format;
     texture->usage = createInfo->usage;
+    texture->sampleCount = createInfo->sample_count;
     SDL_SetAtomicInt(&texture->referenceCount, 0);
     texture->texture = wgpuDeviceCreateTexture(renderer->device, &desc);
     // -1 signals that we want a texture view for all of the layers
@@ -3123,20 +3246,23 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *renderer, SDL_Window *window)
     windowData->window = window;
     windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;                 // default
     windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // default
-
-    windowData->surface = SDL_WGPU_CreateSurface(window, ((WebGPURenderer *)renderer)->instance);
     windowData->surfaceDirty = true;
+
+    if (!SDL_WGPU_CreateSurface(window, ((WebGPURenderer *)renderer)->instance, &windowData->surface)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create WebGPU surface: %s", SDL_GetError());
+        SDL_free(windowData);
+
+        return false;
+    }
 
     SDL_SetPointerProperty(props, WINDOW_PROPERTY_DATA, windowData);
 
-    // HACK:
     // We'll verify that the surface supports SDR surface composition.
     // This is also the only function that checks to see if a fallback format is needed.
-    // TODO: Throw this in the garbage.
+    // Bit jank since the function expects the window data to be assigned to the window but meh
     if (!WEBGPU_SupportsSwapchainComposition(renderer, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR)) {
         SDL_SetError("Failed to configure surface for SDR!");
 
-        // TODO: Proper clean up.
         wgpuSurfaceRelease(windowData->surface);
 
         SDL_SetPointerProperty(props, WINDOW_PROPERTY_DATA, NULL);
@@ -3148,7 +3274,6 @@ static bool WEBGPU_ClaimWindow(SDL_GPURenderer *renderer, SDL_Window *window)
     // We'll configure the surface right away since creating a surface doesn't
     // automatically configure it in WebGPU. (I think. Don't quote me on that.)
     WEBGPU_INTERNAL_ConfigureSurfaceIfNeeded((WebGPURenderer *)renderer, windowData);
-
     return true;
 }
 
@@ -3342,8 +3467,7 @@ static void WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(WebGPURenderer *rendere
     for (int i = 0; i < pipeline->createInfo.target_info.num_color_targets; i++) {
         const SDL_GPUColorTargetDescription *targetDesc = &pipeline->createInfo.target_info.color_target_descriptions[i];
 
-        bool float32Filterable = wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Filterable);
-        if (WebGPUTextureFormatIsBlendable(SDLToWebGPU_TextureFormat[targetDesc->format], float32Filterable)) {
+        if (WEBGPU_INTERNAL_TextureFormatSupportsBlending(SDLToWebGPU_TextureFormat[targetDesc->format], renderer)) {
             colorTargetBlendStates[i].color = (WGPUBlendComponent){
                 .dstFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.dst_color_blendfactor],
                 .srcFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.src_color_blendfactor],
@@ -3496,6 +3620,7 @@ static void WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(WebGPURenderer *rendere
     pipelineDesc.nextInChain = NULL;
 
     pipeline->pipeline = wgpuDeviceCreateRenderPipeline(renderer->device, &pipelineDesc);
+    wgpuPipelineLayoutRelease(pipelineLayout);
 
     for (int i = 0; i < pipeline->createInfo.vertex_input_state.num_vertex_buffers; i++) {
         SDL_free((void *)vertexBufferLayouts[i].attributes);
@@ -3575,6 +3700,9 @@ static void WEBGPU_ReleaseGraphicsPipeline(SDL_GPURenderer *device, SDL_GPUGraph
 
     if (pipeline->hasBeenCreated) {
         wgpuRenderPipelineRelease(pipeline->pipeline);
+
+        wgpuBindGroupLayoutRelease(pipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout);
     }
 
     // We only free these when the pipeline's released, since it might be recreated.
@@ -3659,8 +3787,10 @@ static void WEBGPU_INTERNAL_EnsureComputePipelineExists(WebGPURenderer *renderer
 
     pipeline->pipeline = wgpuDeviceCreateComputePipeline(renderer->device, &pipelineDesc);
 
-    wgpuShaderModuleRelease(shader);
     SDL_free(pipelineLayoutEntries);
+
+    wgpuShaderModuleRelease(shader);
+    wgpuPipelineLayoutRelease(pipelineLayout);
 
     if (pipeline->pipeline == NULL) {
         SDL_assert_release(!"Failed to create compute pipeline!");
@@ -3698,11 +3828,12 @@ static void WEBGPU_ReleaseComputePipeline(SDL_GPURenderer *driverData, SDL_GPUCo
 {
     WebGPUComputePipeline *pipeline = (WebGPUComputePipeline *)computePipeline;
 
-    wgpuComputePipelineRelease(pipeline->pipeline);
-    // FIXME: Releasing these breaks bind group queued destruction
-    // wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.readWriteStorageBindGroupLayout);
-    // wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.samplerStorageBindGroupLayout);
-    // wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.uniformBindGroupLayout);
+    if (pipeline->hasBeenCreated) {
+        wgpuComputePipelineRelease(pipeline->pipeline);
+
+        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.readWriteStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.samplerStorageBindGroupLayout);
+    }
 
     // const pointers aren't real wake up sheeple
     SDL_free((char *)pipeline->createInfo.code);
@@ -4381,7 +4512,7 @@ static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUT
 static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUTextureRegion *destination, bool cycle)
 {
     WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
-    WGPUTexelCopyBufferInfo sourceInfo = {};
+    WGPUTexelCopyBufferInfo sourceInfo = { 0 };
 
     // This should be NULL unless the user didn't pad their data correctly.
     WebGPUBufferContainer *interimBuffer = NULL;
@@ -4418,9 +4549,12 @@ static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, 
     if (bytesPerRow % 256 != 0) {
         // BytesPerRow isn't a multiple of 256! This is a Bad Thing!
         // WebGPU inherits D3D12's horrible 256-byte alignment requirement for BPR, so we'll need to do something about this.
-        // To do this, we'll create an interim buffer which'll be 256-byte aligned, and then we'll issue some GPU copies to
-        // put the user's data into said interim buffer.
-        // TODO: We should probably save this interim buffer for a while, just in case the user uploads another texture (which they'll probably do)
+        // To do this, we'll create an interim buffer which'll be 256-byte aligned, and then we'll issue some GPU copies to put the user's data into said interim buffer.
+
+        // NOTE: Since the D3D12 backend doesn't bother with caching the interim buffer, I decided not to either.
+        // However, I'm not sure if that's a good idea? Since the Web is just one giant attack vector WebGPU's pretty strict when it comes to GPU memory.
+        // This means that not only is it a royal PITA to do anything, it's also really slow to do anything. It wants to make sure 100% that you can't do anything bad.
+        // It's possible that this'll have a more noticeable performance impact than in D3D12. We should run some tests to see if this'd be a potential concern.
         Uint32 paddedBPR = ALIGN_VALUE(bytesPerRow, 256);
 
         // HACK: We need to add blockWidth since for some reason 1x1 texture uploads require 260 bytes of data
@@ -5213,6 +5347,8 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
 
 {
     WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
+    WEBGPU_Wait(device->driverData);
+
     renderer->destroyingSelf = true;
 
     SDL_LockMutex(renderer->destroyingSelfLock);
@@ -5225,6 +5361,8 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
         WEBGPU_INTERNAL_Spin();
     }
 
+    SDL_DestroyHashTable(renderer->bindGroupHashTable);
+
     // Destroying mutexes
     SDL_DestroyMutex(renderer->submittingCommandBufferLock);
 
@@ -5233,8 +5371,6 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     // wgpuDeviceRelease(renderer->device);
     wgpuAdapterRelease(renderer->adapter);
     wgpuInstanceRelease(renderer->instance);
-
-    SDL_DestroyHashTable(renderer->bindGroupHashTable);
 
     SDL_DestroyProperties(renderer->props);
     SDL_UnlockMutex(renderer->destroyingSelfLock);
@@ -5252,9 +5388,7 @@ static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window
         return;
     }
 
-    // FIXME: This should be done in the video subsystem!
-    wgpuSurfaceUnconfigure(windowData->surface);
-    wgpuSurfaceRelease(windowData->surface);
+    SDL_WGPU_DestroySurface(windowData->surface);
     SDL_ClearProperty(window->props, WINDOW_PROPERTY_DATA);
 
     SDL_free(windowData);
@@ -5418,6 +5552,7 @@ static bool WEBGPU_SetSwapchainParameters(SDL_GPURenderer *driverData, SDL_Windo
 
 static bool WEBGPU_SupportsSampleCount(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUSampleCount sampleCount)
 {
+    // TODO: Check format. I really don't wanna write another one of those damn functions 🥀
     if (sampleCount == SDL_GPU_SAMPLECOUNT_2 || sampleCount == SDL_GPU_SAMPLECOUNT_8) {
         SDL_SetError("WebGPU only supports sample counts 1 and 4.");
         return false;
@@ -5604,7 +5739,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
-        return !hasDepthUsage && !hasReadWriteStorageUsage && !hasSamplerUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureFormatsTier1);
+        return !hasDepthUsage && !hasReadWriteStorageUsage && !hasSamplerUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
     case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
@@ -5638,7 +5773,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
         return !hasDepthUsage && !hasReadWriteStorageUsage;
     case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
     case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
-        if (hasStorageUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_BGRA8UnormStorage)) {
+        if (hasStorageUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_BGRA8UnormStorage)) {
             return true;
         } else if (!hasDepthUsage && !hasReadWriteStorageUsage) {
             return true;
@@ -5657,21 +5792,21 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
-        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionBC);
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureCompressionBC);
     case SDL_GPU_TEXTUREFORMAT_R32_FLOAT:
     case SDL_GPU_TEXTUREFORMAT_R32_UINT:
     case SDL_GPU_TEXTUREFORMAT_R32_INT:
         return !hasDepthUsage;
     case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
-        if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Filterable)) {
-            if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Blendable)) {
+        if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Filterable)) {
+            if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable)) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
                                                   "they're not filterable nor blendable as neither feature is supported on this device.");
             } else {
                 SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
                                                   "they're not filterable as the required WebGPU feature is not supported on this device.");
             }
-        } else if (!wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Float32Blendable)) {
+        } else if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable)) {
             SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
                                               "they're not blendable as the required WebGPU feature is not supported on this device.");
         }
@@ -5679,7 +5814,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
         return !hasDepthUsage && !hasReadWriteStorageUsage;
     case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT:
         if (hasColorTargetUsage) {
-            return wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_RG11B10UfloatRenderable) && !hasDepthUsage && !hasReadWriteStorageUsage;
+            return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_RG11B10UfloatRenderable) && !hasDepthUsage && !hasReadWriteStorageUsage;
         } else {
             return false;
         }
@@ -5689,7 +5824,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
         return hasDepthUsage && !hasReadWriteStorageUsage;
     case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
-        return hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_Depth32FloatStencil8);
+        return hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Depth32FloatStencil8);
     case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
     case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
     case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
@@ -5718,7 +5853,7 @@ static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTex
     case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
     case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
-        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && wgpuDeviceHasFeature(renderer->device, WGPUFeatureName_TextureCompressionASTC);
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureCompressionASTC);
     default:
         SDL_assert(!"Unsupported SDL_GPUTextureFormat");
         return false;
