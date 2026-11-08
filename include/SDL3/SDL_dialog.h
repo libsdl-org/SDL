@@ -289,8 +289,8 @@ typedef enum SDL_FileDialogType
  * - `SDL_PROP_FILE_DIALOG_WINDOW_POINTER`: the window that the dialog should
  *   be modal for.
  * - `SDL_PROP_FILE_DIALOG_LOCATION_STRING`: the default folder or file to
- *   start the dialog at. For SDL_FILEDIALOG_OPENFOLDER, the location is always
- *   a folder.
+ *   start the dialog at. For SDL_FILEDIALOG_OPENFOLDER, the location is
+ *   always a folder.
  * - `SDL_PROP_FILE_DIALOG_MANY_BOOLEAN`: true to allow the user to select
  *   more than one entry.
  * - `SDL_PROP_FILE_DIALOG_TITLE_STRING`: the title for the dialog.
