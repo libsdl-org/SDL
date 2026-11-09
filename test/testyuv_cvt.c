@@ -386,7 +386,7 @@ static void ConvertRGBtoPlanar2x2(Uint32 format, Uint8 *src, int pitch, Uint8 *o
         }
         /* Last column */
         if (x == (w - 1)) {
-            RGBtoYUV(rgb1, 8, yuv[0], 8, mode, monochrome, luminance);
+            RGBtoYUV(rgb1, 8, yuv[0], yuv_bits, mode, monochrome, luminance);
             COPY_VALUE(Y1, yuv[0][0], 1);
 
             COPY_VALUE(U, yuv[0][1], UV_advance);

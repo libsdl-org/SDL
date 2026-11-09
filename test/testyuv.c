@@ -24,6 +24,12 @@ static bool is_packed_yuv_format(Uint32 format)
     return format == SDL_PIXELFORMAT_YUY2 || format == SDL_PIXELFORMAT_UYVY || format == SDL_PIXELFORMAT_YVYU;
 }
 
+/* Return true if the YUV format has more than 8 bits per component */
+static bool is_high_bit_depth_yuv_format(Uint32 format)
+{
+    return format == SDL_PIXELFORMAT_P010 || format == SDL_PIXELFORMAT_I0FL || format == SDL_PIXELFORMAT_I4FL;
+}
+
 /* Create a surface with a good pattern for verifying YUV conversion */
 static SDL_Surface *generate_test_pattern(int pattern_size)
 {
@@ -401,6 +407,7 @@ static SW_YUVTexture *SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h, 
     case SDL_PIXELFORMAT_YVYU:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
+    case SDL_PIXELFORMAT_P010:
         break;
     default:
         SDL_SetError("Unsupported YUV format");
@@ -449,6 +456,12 @@ static SW_YUVTexture *SW_CreateYUVTexture(SDL_PixelFormat format, int w, int h, 
     case SDL_PIXELFORMAT_NV21:
         swdata->pitches[0] = w;
         swdata->pitches[1] = 2 * ((swdata->pitches[0] + 1) / 2);
+        swdata->planes[0] = swdata->pixels;
+        swdata->planes[1] = swdata->planes[0] + swdata->pitches[0] * h;
+        break;
+    case SDL_PIXELFORMAT_P010:
+        swdata->pitches[0] = w * bpp;
+        swdata->pitches[1] = (swdata->pitches[0] + 3) & ~3;
         swdata->planes[0] = swdata->pixels;
         swdata->planes[1] = swdata->planes[0] + swdata->pitches[0] * h;
         break;
@@ -606,6 +619,33 @@ static bool SW_UpdateYUVTexture(SW_YUVTexture *swdata, const SDL_Rect *rect, con
             }
         }
     } break;
+    case SDL_PIXELFORMAT_P010:
+    {
+        const int UVpitch = (pitch + 3) & ~3;
+        Uint8 *src, *dst;
+        int row;
+        size_t length;
+
+        // Copy the Y plane
+        src = (Uint8 *)pixels;
+        dst = swdata->planes[0] + rect->y * swdata->pitches[0] + rect->x * bpp;
+        length = rect->w * bpp;
+        for (row = 0; row < rect->h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += pitch;
+            dst += swdata->pitches[0];
+        }
+
+        // Copy the UV plane
+        src = (Uint8 *)pixels + rect->h * pitch;
+        dst = swdata->planes[1] + (rect->y / 2) * swdata->pitches[1] + (rect->x / 2) * 2 * bpp;
+        length = ((rect->w + 1) / 2) * 2 * bpp;
+        for (row = 0; row < (rect->h + 1) / 2; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += UVpitch;
+            dst += swdata->pitches[1];
+        }
+    } break;
     default:
         return SDL_SetError("Unsupported YUV format");
     }
@@ -634,7 +674,7 @@ static bool update_locked_texture(SDL_PixelFormat format, int w, int h, const vo
 
 static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_PixelFormat yuv_format, SDL_PixelFormat rgb_format, bool planar, bool lock, bool monochrome, int luminance, SDL_Texture *output[3])
 {
-    SDL_Colorspace rgb_colorspace = SDL_COLORSPACE_SRGB;
+    SDL_Colorspace rgb_colorspace;
     SDL_Colorspace yuv_colorspace;
     Uint8 *raw_yuv = NULL;
     int pitch;
@@ -643,9 +683,6 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
     size_t max_size;
 
     YUV_CONVERSION_MODE yuv_mode = GetYUVConversionModeForResolution(original->w, original->h);
-    if (yuv_mode == YUV_CONVERSION_BT2020) {
-        rgb_colorspace = SDL_COLORSPACE_HDR10;
-    }
     yuv_colorspace = GetColorspaceForYUVConversionMode(yuv_mode);
 
     max_size = MAX_YUV_SURFACE_SIZE(original->w, original->h, 0);
@@ -658,6 +695,7 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create converted surface: %s", SDL_GetError());
         goto done;
     }
+    rgb_colorspace = SDL_GetSurfaceColorspace(converted);
     SDL_ConvertPixelsAndColorspace(original->w, original->h, yuv_format, yuv_colorspace, 0, raw_yuv, pitch, rgb_format, rgb_colorspace, 0, converted->pixels, converted->pitch);
 
     output[0] = SDL_CreateTextureFromSurface(renderer, original);
@@ -683,7 +721,7 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
         const Uint8 *src_plane2 = src_plane1 + UVrows * src_UVpitch;
-        const int Ypitch = pitch + 37;
+        const int Ypitch = pitch + 37 * bpp;
         const int UVpitch = ((Ypitch / bpp + 1) / 2) * bpp;
         Uint8 *plane0 = (Uint8 *)SDL_calloc(1, Yrows * Ypitch);
         Uint8 *plane1 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
@@ -692,7 +730,7 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         const Uint8 *src;
         Uint8 *dst;
 
-        if (!plane0 || !plane1 || !plane0) {
+        if (!plane0 || !plane1 || !plane2) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV planes: %s", SDL_GetError());
             goto done;
         }
@@ -721,20 +759,25 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
             dst += UVpitch;
         }
 
+        bool updated;
         if (yuv_format == SDL_PIXELFORMAT_YV12) {
-            SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
+            updated = SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane2, UVpitch, plane1, UVpitch);
         } else {
-            SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+            updated = SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         }
         SDL_free(plane0);
         SDL_free(plane1);
         SDL_free(plane2);
+        if (!updated) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't update YUV texture: %s", SDL_GetError());
+            goto done;
+        }
     } else if (planar && (yuv_format == SDL_PIXELFORMAT_I444 || yuv_format == SDL_PIXELFORMAT_I4FL)) {
         const int rows = original->h;
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + rows * pitch;
         const Uint8 *src_plane2 = src_plane1 + rows * pitch;
-        const int Ypitch = pitch + 37;
+        const int Ypitch = pitch + 37 * SDL_BYTESPERPIXEL(yuv_format);
         const int UVpitch = Ypitch;
         Uint8 *plane0 = (Uint8 *)SDL_calloc(1, rows * Ypitch);
         Uint8 *plane1 = (Uint8 *)SDL_calloc(1, rows * UVpitch);
@@ -743,7 +786,7 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         const Uint8 *src;
         Uint8 *dst;
 
-        if (!plane0 || !plane1 || !plane0) {
+        if (!plane0 || !plane1 || !plane2) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create YUV planes: %s", SDL_GetError());
             goto done;
         }
@@ -772,10 +815,14 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
             dst += UVpitch;
         }
 
-        SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
+        bool updated = SDL_UpdateYUVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch, plane2, UVpitch);
         SDL_free(plane0);
         SDL_free(plane1);
         SDL_free(plane2);
+        if (!updated) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't update YUV texture: %s", SDL_GetError());
+            goto done;
+        }
     } else if (planar && (yuv_format == SDL_PIXELFORMAT_NV12 || yuv_format == SDL_PIXELFORMAT_NV21 || yuv_format == SDL_PIXELFORMAT_P010)) {
         const int Yrows = original->h;
         const int UVrows = ((original->h + 1) / 2);
@@ -783,8 +830,8 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
         const int src_UVpitch = (yuv_format == SDL_PIXELFORMAT_P010) ? ((pitch + 3) & ~3) : ((pitch + 1) & ~1);
         const Uint8 *src_plane0 = (const Uint8 *)raw_yuv;
         const Uint8 *src_plane1 = src_plane0 + Yrows * src_Ypitch;
-        const int Ypitch = pitch + 37;
-        const int UVpitch = ((Ypitch + 1) / 2) * 2;
+        const int Ypitch = pitch + 37 * SDL_BYTESPERPIXEL(yuv_format);
+        const int UVpitch = (yuv_format == SDL_PIXELFORMAT_P010) ? ((Ypitch + 3) & ~3) : ((Ypitch + 1) & ~1);
         Uint8 *plane0 = (Uint8 *)SDL_calloc(1, Yrows * Ypitch);
         Uint8 *plane1 = (Uint8 *)SDL_calloc(1, UVrows * UVpitch);
         int row;
@@ -812,9 +859,13 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
             dst += UVpitch;
         }
 
-        SDL_UpdateNVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch);
+        bool updated = SDL_UpdateNVTexture(output[2], NULL, plane0, Ypitch, plane1, UVpitch);
         SDL_free(plane0);
         SDL_free(plane1);
+        if (!updated) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't update YUV texture: %s", SDL_GetError());
+            goto done;
+        }
     } else if (lock) {
         void *dst;
         int dst_pitch;
@@ -829,7 +880,10 @@ static bool create_textures(SDL_Renderer *renderer, SDL_Surface *original, SDL_P
             goto done;
         }
     } else {
-        SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch);
+        if (!SDL_UpdateTexture(output[2], NULL, raw_yuv, pitch)) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't update YUV texture: %s", SDL_GetError());
+            goto done;
+        }
     }
 
     result = true;
@@ -922,7 +976,10 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
         SDL_PIXELFORMAT_UYVY,
         SDL_PIXELFORMAT_YVYU,
         SDL_PIXELFORMAT_NV12,
-        SDL_PIXELFORMAT_NV21
+        SDL_PIXELFORMAT_NV21,
+        SDL_PIXELFORMAT_P010,
+        SDL_PIXELFORMAT_I0FL,
+        SDL_PIXELFORMAT_I4FL
     };
     const SDL_PixelFormat rgb_formats[] = {
         SDL_PIXELFORMAT_XRGB1555,
@@ -930,7 +987,8 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
         SDL_PIXELFORMAT_RGB24,
         SDL_PIXELFORMAT_ABGR8888,
         SDL_PIXELFORMAT_RGBA8888,
-        SDL_PIXELFORMAT_BGRA8888
+        SDL_PIXELFORMAT_BGRA8888,
+        SDL_PIXELFORMAT_XBGR2101010
     };
     const struct
     {
@@ -940,7 +998,7 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
         { YUV_CONVERSION_JPEG, "JPEG" },
         { YUV_CONVERSION_BT601, "BT601" },
         { YUV_CONVERSION_BT709, "BT709" },
-        //{ YUV_CONVERSION_BT2020, "BT2020" }
+        { YUV_CONVERSION_BT2020, "BT2020" }
     };
     bool quit = false;
     bool result = true;
@@ -968,8 +1026,15 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
 
             for (int m = 0; m < SDL_arraysize(yuv_formats) && !quit; ++m) {
                 SDL_PixelFormat yuv_format = yuv_formats[m];
+                // BT.2020 PQ is only supported with high bit depth YUV formats
+                if (is_high_bit_depth_yuv_format(yuv_format) != (colorspaces[j].mode == YUV_CONVERSION_BT2020)) {
+                    continue;
+                }
                 for (int n = 0; n < SDL_arraysize(rgb_formats) && !quit; ++n) {
                     SDL_PixelFormat rgb_format = rgb_formats[n];
+                    if (SDL_ISPIXELFORMAT_10BIT(rgb_format) && colorspaces[j].mode != YUV_CONVERSION_BT2020) {
+                        continue;
+                    }
 
                     SDL_Log("Testing: %s %s %s %s (planar)", renderer_name, colorspaces[j].name, SDL_GetPixelFormatName(yuv_format), SDL_GetPixelFormatName(rgb_format));
                     result &= run_single_format_test(renderer, original, yuv_format, rgb_format, true, false);
