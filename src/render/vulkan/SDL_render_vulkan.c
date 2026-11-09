@@ -556,6 +556,8 @@ static VkDeviceSize VULKAN_GetBytesPerPixel(VkFormat vkFormat, int plane)
         return 1;
     case VK_FORMAT_R8G8_UNORM:
         return 2;
+    case VK_FORMAT_R16_UNORM:
+        return 2;
     case VK_FORMAT_R16G16_UNORM:
         return 4;
     case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
