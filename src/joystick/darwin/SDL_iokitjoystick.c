@@ -756,8 +756,6 @@ static void JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender
 
 static bool ConfigHIDManager(CFArrayRef matchingArray)
 {
-    CFRunLoopRef runloop = CFRunLoopGetCurrent();
-
     if (IOHIDManagerOpen(hidman, kIOHIDOptionsTypeNone) != kIOReturnSuccess) {
         return false;
     }
@@ -768,13 +766,6 @@ static bool ConfigHIDManager(CFArrayRef matchingArray)
     // Get notified when devices are disconnected. This is registered on the manager rather
     // than the device so we don't miss devices that are removed while we're adding them.
     IOHIDManagerRegisterDeviceRemovalCallback(hidman, JoystickDeviceWasRemovedCallback, NULL);
-    IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
-
-    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE, 0, TRUE) == kCFRunLoopRunHandledSource) {
-        // no-op. Callback fires once per existing device.
-    }
-
-    // future hotplug events will come through SDL_JOYSTICK_RUNLOOP_MODE now.
 
     return true; // good to go.
 }
@@ -846,6 +837,28 @@ static bool DARWIN_JoystickInit(void)
     }
 
     return true;
+}
+
+static void DARWIN_JoystickInitUpdates(void)
+{
+    // Hotplug callbacks are delivered on the run loop of the thread that queries devices
+    if (hidman) {
+        IOHIDManagerScheduleWithRunLoop(hidman, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+    }
+}
+
+static void DARWIN_JoystickQuitUpdates(void)
+{
+    for (recDevice *device = gpDeviceList; device; device = device->pNext) {
+        if (device->deviceRef && device->runLoopAttached) {
+            IOHIDDeviceUnscheduleFromRunLoop(device->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            device->runLoopAttached = false;
+        }
+    }
+
+    if (hidman) {
+        IOHIDManagerUnscheduleFromRunLoop(hidman, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+    }
 }
 
 static SDL_JoystickDevice *DARWIN_CreateJoystickDevice(recDevice *data)
@@ -1209,7 +1222,6 @@ static void DARWIN_JoystickQuit(void)
     }
 
     if (hidman) {
-        IOHIDManagerUnscheduleFromRunLoop(hidman, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
         IOHIDManagerClose(hidman, kIOHIDOptionsTypeNone);
         CFRelease(hidman);
         hidman = NULL;
@@ -1220,6 +1232,8 @@ static void DARWIN_JoystickQuit(void)
 
 SDL_JoystickDriver SDL_DARWIN_JoystickDriver = {
     .Init = DARWIN_JoystickInit,
+    .InitUpdates = DARWIN_JoystickInitUpdates,
+    .QuitUpdates = DARWIN_JoystickQuitUpdates,
     .QueryDevices = DARWIN_JoystickQueryDevices,
     .PrepareDevice = DARWIN_JoystickPrepareDevice,
     .Open = DARWIN_JoystickOpen,

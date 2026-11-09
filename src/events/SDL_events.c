@@ -433,9 +433,18 @@ void SDL_FreeTemporaryMemory(void)
 
 static bool SDL_update_joysticks = true;
 
+void SDL_OnUpdateJoysticksChanged(void)
+{
+    if (SDL_JoystickUpdateThreadRunning() && SDL_GetJoystickAsyncUpdateInterval() >= 0) {
+        SDL_update_joysticks = false;
+    } else {
+        SDL_update_joysticks = SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, true);
+    }
+}
+
 static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_update_joysticks = SDL_GetStringBoolean(hint, true);
+    SDL_OnUpdateJoysticksChanged();
 }
 
 #endif // !SDL_JOYSTICK_DISABLED

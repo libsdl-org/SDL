@@ -52,6 +52,15 @@ extern bool SDL_JoysticksInitialized(void);
 // Return whether the joystick system is shutting down
 extern bool SDL_JoysticksQuitting(void);
 
+// Return whether the joystick update thread is running
+extern bool SDL_JoystickUpdateThreadRunning(void);
+
+// Return the current polling interval for the joystick update thread
+extern int SDL_GetJoystickAsyncUpdateInterval(void);
+
+// Wake up the joystick update thread
+extern void SDL_WakeJoystickUpdateThread(void);
+
 // Return whether the joysticks are currently locked
 extern bool SDL_JoysticksLocked(void);
 

@@ -415,6 +415,8 @@ static void XINPUT_JoystickQuit(void)
 SDL_JoystickDriver SDL_XINPUT_JoystickDriver =
 {
     XINPUT_JoystickInit,
+    NULL, // InitUpdates
+    NULL, // QuitUpdates
     XINPUT_JoystickQueryDevices,
     NULL, // DetectDevices
     NULL, // PrepareDevice
