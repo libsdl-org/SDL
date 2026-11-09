@@ -318,9 +318,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
-        ctx->gyroScale[0] = -DEG2RAD(134000.0f);
-        ctx->gyroScale[1] = -DEG2RAD(131000.0f);
-        ctx->gyroScale[2] = -DEG2RAD(2030.0f);
+        ctx->gyroScale[0] = -DEG2RAD(132000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(130000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(2000.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS : SENSOR_INTERVAL_DIREWOLF4_WIRED_NS;
         break;
     default:
