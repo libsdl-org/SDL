@@ -1759,6 +1759,9 @@ bool Wayland_VideoInit(SDL_VideoDevice *_this)
     Wayland_InitMouse(data);
     Wayland_InitKeyboard(_this);
 
+    // Wayland requires the Unix-style mouse emulation mappings for pens.
+    SDL_SetPenUnixMouseButtonMapping(true);
+
     if (data->primary_selection_device_manager) {
         _this->SetPrimarySelectionText = Wayland_SetPrimarySelectionText;
         _this->GetPrimarySelectionText = Wayland_GetPrimarySelectionText;
