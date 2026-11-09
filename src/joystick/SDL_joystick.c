@@ -4007,6 +4007,11 @@ bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *path)
         return true;
     }
 
+    // If the device path has the XUSB interface class GUID then it's an XInput device
+    if (path && SDL_strcasestr(path, "{EC87F1E3-C13B-4100-B5F7-8B84D54260CB}") != NULL) {
+        return true;
+    }
+
     type = SDL_GetGamepadTypeFromVIDPID(vendor_id, product_id, NULL, false);
     if (type == SDL_GAMEPAD_TYPE_XBOX360 ||
         type == SDL_GAMEPAD_TYPE_XBOXONE ||
