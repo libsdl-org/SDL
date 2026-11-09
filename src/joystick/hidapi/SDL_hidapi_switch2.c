@@ -36,6 +36,30 @@
 #define RUMBLE_INTERVAL 12
 #define RUMBLE_MAX 29000
 
+/* The packet accepted by SDL_SendGamepadEffect() on the Switch 2 Pro Controller and Joy-Con:
+ * raw HD rumble for applications that need to set the actuators' frequencies themselves.
+ *
+ * Each side is one HD rumble sample in the controller's own 5 byte encoding, the one EncodeHDRumble()
+ * writes: four 10-bit fields packed little endian, high band frequency, high band amplitude, low band
+ * frequency, low band amplitude. The left side drives the Pro Controller's left actuator or a left
+ * Joy-Con, the right side the Pro Controller's right actuator or a right Joy-Con.
+ *
+ * The driver sends the packet in its regular rumble reports, in place of the rumble set with
+ * SDL_RumbleGamepad(), and keeps sending it until another SDL_RumbleGamepad() call or a packet with
+ * both amplitudes zero on both sides. Amplitudes are limited to the same maximum as SDL_RumbleGamepad().
+ *
+ * The Switch 2 controllers report the same gamepad types as the original Switch controllers, so
+ * the packet has its own size and type byte to keep it apart from the Switch rumble packet.
+ */
+#define SWITCH2_EFFECT_HD_RUMBLE 0x02
+
+typedef struct
+{
+    Uint8 ucPacketType; // SWITCH2_EFFECT_HD_RUMBLE
+    Uint8 rgucLeft[5];
+    Uint8 rgucRight[5];
+} Switch2HDRumblePacket_t;
+
 // Define this if you want to log all packets from the controller
 #if 0
 #define DEBUG_SWITCH2_PROTOCOL
@@ -107,6 +131,9 @@ typedef struct
     Uint16 rumble_lo_freq;
     Uint32 rumble_error;
     bool rumble_updated;
+    bool rumble_effect;
+    Uint8 rumble_effect_left[5];
+    Uint8 rumble_effect_right[5];
 
     Switch2_StickCalibration left_stick;
     Switch2_StickCalibration right_stick;
@@ -619,13 +646,65 @@ static bool HIDAPI_DriverSwitch2_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 {
     SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
 
-    if (low_frequency_rumble != ctx->rumble_lo_amp || high_frequency_rumble != ctx->rumble_hi_amp) {
+    if (ctx->rumble_effect || low_frequency_rumble != ctx->rumble_lo_amp || high_frequency_rumble != ctx->rumble_hi_amp) {
         ctx->rumble_lo_amp = low_frequency_rumble;
         ctx->rumble_hi_amp = high_frequency_rumble;
+        ctx->rumble_effect = false;
         ctx->rumble_updated = true;
     }
 
     return true;
+}
+
+static bool ClampHDRumble(const Uint8 data[5], Uint8 clamped[5])
+{
+    Uint64 bits = 0;
+    for (int i = 4; i >= 0; --i) {
+        bits = (bits << 8) | data[i];
+    }
+
+    Uint64 high_amp = (bits >> 10) & 0x3ff;
+    Uint64 low_amp = (bits >> 30) & 0x3ff;
+    const Uint64 max_amp = (RUMBLE_MAX >> 6);
+    high_amp = SDL_min(high_amp, max_amp);
+    low_amp = SDL_min(low_amp, max_amp);
+    bits = (bits & 0x3ff003ffULL) | (high_amp << 10) | (low_amp << 30);
+
+    for (int i = 0; i < 5; ++i) {
+        clamped[i] = (Uint8)(bits >> (i * 8));
+    }
+    return (high_amp || low_amp);
+}
+
+static bool HIDAPI_DriverSwitch2_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+{
+    SDL_DriverSwitch2_Context *ctx = (SDL_DriverSwitch2_Context *)device->context;
+
+    if (device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_GAMECUBE_CONTROLLER) {
+        // The GameCube controller has a plain rumble motor
+        return SDL_Unsupported();
+    }
+
+    if (size == sizeof(Switch2HDRumblePacket_t)) {
+        const Switch2HDRumblePacket_t *packet = (const Switch2HDRumblePacket_t *)data;
+
+        if (packet->ucPacketType != SWITCH2_EFFECT_HD_RUMBLE) {
+            return SDL_SetError("Unknown Nintendo Switch 2 effect type");
+        }
+
+        bool active = ClampHDRumble(packet->rgucLeft, ctx->rumble_effect_left);
+        if (ClampHDRumble(packet->rgucRight, ctx->rumble_effect_right)) {
+            active = true;
+        }
+
+        // This overrides any internal rumble
+        ctx->rumble_effect = active;
+        ctx->rumble_lo_amp = 0;
+        ctx->rumble_hi_amp = 0;
+        ctx->rumble_updated = true;
+        return true;
+    }
+    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverSwitch2_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -1019,7 +1098,9 @@ static void EncodeHDRumble(Uint16 high_freq, Uint16 high_amp, Uint16 low_freq, U
 
 static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
 {
-    if (!ctx->rumble_updated && !ctx->rumble_lo_amp && !ctx->rumble_hi_amp) {
+    const bool active = (ctx->rumble_effect || ctx->rumble_lo_amp || ctx->rumble_hi_amp);
+
+    if (!ctx->rumble_updated && !active) {
         return true;
     }
 
@@ -1057,7 +1138,16 @@ static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
         Uint16 low_amp = (Uint16)((int)ctx->rumble_lo_amp * RUMBLE_MAX / UINT16_MAX);
         Uint16 high_amp = (Uint16)((int)ctx->rumble_hi_amp * RUMBLE_MAX / UINT16_MAX);
         rumble_data[0x01] = 0x50 | (ctx->rumble_seq & 0xf);
-        EncodeHDRumble(ctx->rumble_hi_freq, high_amp, ctx->rumble_lo_freq, low_amp, &rumble_data[0x02]);
+        if (ctx->rumble_effect) {
+            // The effect amplitudes were clamped when the effect was set
+            if (ctx->device->product_id == USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT) {
+                SDL_memcpy(&rumble_data[0x02], ctx->rumble_effect_right, 5);
+            } else {
+                SDL_memcpy(&rumble_data[0x02], ctx->rumble_effect_left, 5);
+            }
+        } else {
+            EncodeHDRumble(ctx->rumble_hi_freq, high_amp, ctx->rumble_lo_freq, low_amp, &rumble_data[0x02]);
+        }
         switch (ctx->device->product_id) {
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT:
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT:
@@ -1070,12 +1160,15 @@ static bool UpdateRumble(SDL_DriverSwitch2_Context *ctx)
         case USB_PRODUCT_NINTENDO_SWITCH2_PRO:
             rumble_data[0] = 0x2;
             SDL_memcpy(&rumble_data[0x11], &rumble_data[0x01], 6);
+            if (ctx->rumble_effect) {
+                SDL_memcpy(&rumble_data[0x12], ctx->rumble_effect_right, 5);
+            }
             break;
         }
     }
     ctx->rumble_seq++;
     ctx->rumble_updated = false;
-    if (!ctx->rumble_lo_amp && !ctx->rumble_hi_amp) {
+    if (!active) {
         ctx->rumble_timestamp = 0;
     } else {
         if (!ctx->rumble_timestamp) {
@@ -1269,6 +1362,7 @@ static void HIDAPI_DriverSwitch2_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED,
                            SDL_PlayerLEDHintChanged, ctx);
 
+    ctx->rumble_effect = false;
     ctx->joystick = NULL;
 }
 
@@ -1301,6 +1395,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2 = {
     .OpenJoystick = HIDAPI_DriverSwitch2_OpenJoystick,
     .RumbleJoystick = HIDAPI_DriverSwitch2_RumbleJoystick,
     .GetJoystickCapabilities = HIDAPI_DriverSwitch2_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverSwitch2_SendJoystickEffect,
     .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch2_SetJoystickSensorsEnabled,
     .CloseJoystick = HIDAPI_DriverSwitch2_CloseJoystick,
     .FreeDevice = HIDAPI_DriverSwitch2_FreeDevice,

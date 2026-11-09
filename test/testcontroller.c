@@ -538,6 +538,57 @@ static void CyclePS5TriggerEffect(Controller *device)
     SDL_SendGamepadEffect(device->gamepad, &effects, sizeof(effects));
 }
 
+/* This is the Nintendo Switch 2 HD rumble effect, see SDL_hidapi_switch2.c */
+typedef struct
+{
+    Uint8 ucPacketType; /* 0x02 */
+    Uint8 rgucLeft[5];
+    Uint8 rgucRight[5];
+} Switch2HDRumblePacket_t;
+
+static bool IsSwitch2HDRumbleController(SDL_Gamepad *gamepad)
+{
+    if (SDL_GetGamepadVendor(gamepad) == 0x057e) {
+        switch (SDL_GetGamepadProduct(gamepad)) {
+        case 0x2066: /* Joy-Con (R) */
+        case 0x2067: /* Joy-Con (L) */
+        case 0x2069: /* Pro Controller */
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+static void EncodeSwitch2HDRumble(Uint16 high_freq, Uint16 high_amp, Uint16 low_freq, Uint16 low_amp, Uint8 data[5])
+{
+    /* Four 10-bit fields, packed little endian */
+    Uint64 bits = (Uint64)(high_freq & 0x3ff) |
+                  ((Uint64)(high_amp & 0x3ff) << 10) |
+                  ((Uint64)(low_freq & 0x3ff) << 20) |
+                  ((Uint64)(low_amp & 0x3ff) << 30);
+    int i;
+
+    for (i = 0; i < 5; ++i) {
+        data[i] = (Uint8)(bits >> (i * 8));
+    }
+}
+
+static void SetSwitch2HDRumble(Controller *device, bool on)
+{
+    Switch2HDRumblePacket_t packet;
+
+    SDL_zero(packet);
+    packet.ucPacketType = 0x02;
+    if (on) {
+        /* The low band on the left side and the high band on the right, at the frequencies SDL uses for rumble */
+        EncodeSwitch2HDRumble(0x187, 0, 0x112, 0x100, packet.rgucLeft);
+        EncodeSwitch2HDRumble(0x187, 0x100, 0x112, 0, packet.rgucRight);
+    }
+    SDL_SendGamepadEffect(device->gamepad, &packet, sizeof(packet));
+}
+
 static void ClearButtonHighlights(void)
 {
     title_highlighted = false;
@@ -2232,6 +2283,12 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 if (event->gbutton.button == SDL_GAMEPAD_BUTTON_NORTH) {
                     CyclePS5TriggerEffect(controller);
                 }
+            }
+
+            /* Play Nintendo Switch 2 HD rumble while the north face button is held */
+            if (controller && IsSwitch2HDRumbleController(controller->gamepad) &&
+                event->gbutton.button == SDL_GAMEPAD_BUTTON_NORTH) {
+                SetSwitch2HDRumble(controller, (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN));
             }
         }
         break;
