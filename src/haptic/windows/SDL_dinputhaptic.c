@@ -469,6 +469,10 @@ bool SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
     // Since it comes from a joystick we have to try to match it with a haptic device on our haptic list.
     for (item = SDL_hapticlist; item; item = item->next) {
         if (WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
+            // Force feedback requires exclusive access to the joystick device
+            if (!SDL_DINPUT_JoystickAcquireExclusive(joystick)) {
+                return false;
+            }
             haptic->instance_id = item->instance_id;
             haptic->name = SDL_strdup(item->name);
             return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, true);

@@ -68,12 +68,15 @@ struct joystick_hwdata
     input_t Inputs[MAX_INPUTS];
     int NumInputs;
     int NumSliders;
+    bool exclusive;
     bool ff_initialized;
     DIEFFECT *ffeffect;
     LPDIRECTINPUTEFFECT ffeffect_ref;
 };
 
 extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
+
+extern bool SDL_DINPUT_JoystickAcquireExclusive(SDL_Joystick *joystick);
 
 // Ends C function definitions when using C++
 #ifdef __cplusplus
