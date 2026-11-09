@@ -2833,7 +2833,7 @@ void Cocoa_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
 
             if (new_focus) {
-                NSWindow *newkey = ((__bridge SDL_CocoaWindowData *)window->internal).nswindow;
+                NSWindow *newkey = ((__bridge SDL_CocoaWindowData *)new_focus->internal).nswindow;
                 [newkey makeKeyAndOrderFront:nil];
             }
         }
