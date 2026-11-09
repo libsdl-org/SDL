@@ -249,9 +249,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
- * \param default_location the default folder to start the dialog at,
- *                         may be NULL to use the platform default. Not all
- *                         platforms support this option.
+ * \param default_location the default folder to start the dialog at, may be
+ *                         NULL to use the platform default. Not all platforms
+ *                         support this option.
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
@@ -302,8 +302,8 @@ typedef enum SDL_FileDialogType
  * - `SDL_PROP_FILE_DIALOG_LOCATION_STRING`: the default folder or file to
  *   start the dialog at. A location ending in a path separator is a folder;
  *   otherwise the dialog starts in the folder before the last separator, with
- *   the rest as the default file name. For SDL_FILEDIALOG_OPENFOLDER, the location is
- *   always a folder.
+ *   the rest as the default file name. For SDL_FILEDIALOG_OPENFOLDER, the
+ *   location is always a folder.
  * - `SDL_PROP_FILE_DIALOG_MANY_BOOLEAN`: true to allow the user to select
  *   more than one entry.
  * - `SDL_PROP_FILE_DIALOG_TITLE_STRING`: the title for the dialog.
