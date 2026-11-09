@@ -66,7 +66,8 @@ static Sint32 GetDeviceNumberProperty(IOHIDDeviceRef hidDevice, CFStringRef key)
 static void GetDeviceStringProperty(IOHIDDeviceRef hidDevice, CFStringRef key, char *string, size_t size)
 {
     CFTypeRef refCF = IOHIDDeviceGetProperty(hidDevice, key);
-    if (!refCF || !CFStringGetCString(refCF, string, size, kCFStringEncodingUTF8)) {
+    if (!refCF || CFGetTypeID(refCF) != CFStringGetTypeID() ||
+        !CFStringGetCString(refCF, string, size, kCFStringEncodingUTF8)) {
         string[0] = '\0';
     }
 }
@@ -940,6 +941,12 @@ static bool DARWIN_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *devi
     joystick->naxes = data->axes;
     joystick->nhats = data->hats;
     joystick->nbuttons = data->buttons;
+
+    char serial[256];
+    GetDeviceStringProperty(data->deviceRef, CFSTR(kIOHIDSerialNumberKey), serial, sizeof(serial));
+    if (*serial) {
+        joystick->serial = SDL_strdup(serial);
+    }
 
     if (data->ffservice) {
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
