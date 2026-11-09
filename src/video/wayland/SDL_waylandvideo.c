@@ -1635,6 +1635,7 @@ static inline int SDL_getresgid(gid_t *rgid, gid_t *egid, gid_t *sgid) {
 }
 #endif
 
+#ifdef HAVE_LIBDECOR_H
 static bool CanUseGtk(void)
 {
     // "Real", "effective" and "saved" IDs: see e.g. Linux credentials(7)
@@ -1679,6 +1680,7 @@ static bool CanUseGtk(void)
 
     return true;
 }
+#endif
 
 bool Wayland_LoadLibdecor(SDL_VideoData *data, bool ignore_xdg)
 {
