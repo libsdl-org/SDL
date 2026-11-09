@@ -105,6 +105,8 @@ static int SDL_Haptic_Get_Naxes(Uint16 vid, Uint16 pid)
     return naxes;
 }
 
+// The haptic device lists are protected by the joystick lock
+// Joystick drivers add and remove haptic devices while holding it, possibly on the joystick update thread
 static SDL_Haptic *SDL_haptics = NULL;
 
 #define CHECK_HAPTIC_MAGIC(haptic, result)                          \
@@ -115,22 +117,28 @@ static SDL_Haptic *SDL_haptics = NULL;
 
 bool SDL_InitHaptics(void)
 {
+    bool result = true;
+
+    SDL_LockJoysticks();
     if (!SDL_SYS_HapticInit()) {
-        return false;
+        result = false;
     }
     #ifdef SDL_JOYSTICK_HIDAPI
-    if (!SDL_HIDAPI_HapticInit()) {
+    else if (!SDL_HIDAPI_HapticInit()) {
         SDL_SYS_HapticQuit();
-        return false;
+        result = false;
     }
     #endif
+    SDL_UnlockJoysticks();
 
-    return true;
+    return result;
 }
 
 static bool SDL_GetHapticIndex(SDL_HapticID instance_id, int *driver_index)
 {
     int num_haptics, device_index;
+
+    SDL_AssertJoysticksLocked();
 
     if (instance_id > 0) {
         num_haptics = SDL_SYS_NumHaptics();
@@ -153,6 +161,8 @@ SDL_HapticID *SDL_GetHaptics(int *count)
     int haptic_index = 0, num_haptics = 0;
     SDL_HapticID *haptics;
 
+    SDL_LockJoysticks();
+
     num_haptics = SDL_SYS_NumHaptics();
 
     haptics = (SDL_HapticID *)SDL_malloc((num_haptics + 1) * sizeof(*haptics));
@@ -173,6 +183,8 @@ SDL_HapticID *SDL_GetHaptics(int *count)
         }
     }
 
+    SDL_UnlockJoysticks();
+
     return haptics;
 }
 
@@ -181,13 +193,16 @@ const char *SDL_GetHapticNameForID(SDL_HapticID instance_id)
     int device_index;
     const char *name = NULL;
 
+    SDL_LockJoysticks();
     if (SDL_GetHapticIndex(instance_id, &device_index)) {
         name = SDL_GetPersistentString(SDL_SYS_HapticName(device_index));
     }
+    SDL_UnlockJoysticks();
+
     return name;
 }
 
-SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
+static SDL_Haptic *OpenHaptic(SDL_HapticID instance_id)
 {
     SDL_Haptic *haptic;
     SDL_Haptic *hapticlist;
@@ -252,15 +267,29 @@ SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
     return haptic;
 }
 
+SDL_Haptic *SDL_OpenHaptic(SDL_HapticID instance_id)
+{
+    SDL_Haptic *haptic;
+
+    SDL_LockJoysticks();
+    haptic = OpenHaptic(instance_id);
+    SDL_UnlockJoysticks();
+
+    return haptic;
+}
+
 SDL_Haptic *SDL_GetHapticFromID(SDL_HapticID instance_id)
 {
     SDL_Haptic *haptic;
 
+    SDL_LockJoysticks();
     for (haptic = SDL_haptics; haptic; haptic = haptic->next) {
         if (instance_id == haptic->instance_id) {
             break;
         }
     }
+    SDL_UnlockJoysticks();
+
     return haptic;
 }
 
@@ -280,24 +309,32 @@ const char *SDL_GetHapticName(SDL_Haptic *haptic)
 
 bool SDL_IsMouseHaptic(void)
 {
-    if (SDL_SYS_HapticMouse() < 0) {
-        return false;
-    }
-    return true;
+    bool result;
+
+    SDL_LockJoysticks();
+    result = (SDL_SYS_HapticMouse() >= 0);
+    SDL_UnlockJoysticks();
+
+    return result;
 }
 
 SDL_Haptic *SDL_OpenHapticFromMouse(void)
 {
+    SDL_Haptic *haptic = NULL;
     int device_index;
 
-    device_index = SDL_SYS_HapticMouse();
+    SDL_LockJoysticks();
 
+    device_index = SDL_SYS_HapticMouse();
     if (device_index < 0) {
         SDL_SetError("Haptic: Mouse isn't a haptic device.");
-        return NULL;
+    } else {
+        haptic = OpenHaptic(device_index);
     }
 
-    return SDL_OpenHaptic(device_index);
+    SDL_UnlockJoysticks();
+
+    return haptic;
 }
 
 bool SDL_IsJoystickHaptic(SDL_Joystick *joystick)
@@ -383,7 +420,6 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         }
         SDL_assert(haptic->instance_id != 0);
     }
-    SDL_UnlockJoysticks();
 
     // Check if custom number of haptic axes was defined
     Uint16 vid = SDL_GetJoystickVendor(joystick);
@@ -414,16 +450,18 @@ SDL_Haptic *SDL_OpenHapticFromJoystick(SDL_Joystick *joystick)
         SDL_SetHapticAutocenter(haptic, 0);
     }
 
+    SDL_UnlockJoysticks();
+
     return haptic;
 }
 
-void SDL_CloseHaptic(SDL_Haptic *haptic)
+static void CloseHaptic(SDL_Haptic *haptic)
 {
     SDL_HapticEffectID i;
     SDL_Haptic *hapticlist;
     SDL_Haptic *hapticlistprev;
 
-    CHECK_HAPTIC_MAGIC(haptic,);
+    SDL_AssertJoysticksLocked();
 
     // Check if it's still in use
     if (--haptic->ref_count > 0) {
@@ -469,16 +507,29 @@ void SDL_CloseHaptic(SDL_Haptic *haptic)
     SDL_free(haptic);
 }
 
+void SDL_CloseHaptic(SDL_Haptic *haptic)
+{
+    CHECK_HAPTIC_MAGIC(haptic,);
+
+    SDL_LockJoysticks();
+    CloseHaptic(haptic);
+    SDL_UnlockJoysticks();
+}
+
 void SDL_QuitHaptics(void)
 {
+    SDL_LockJoysticks();
+
     while (SDL_haptics) {
-        SDL_CloseHaptic(SDL_haptics);
+        CloseHaptic(SDL_haptics);
     }
 
     #ifdef SDL_JOYSTICK_HIDAPI
     SDL_HIDAPI_HapticQuit();
     #endif
     SDL_SYS_HapticQuit();
+
+    SDL_UnlockJoysticks();
 }
 
 int SDL_GetMaxHapticEffects(SDL_Haptic *haptic)

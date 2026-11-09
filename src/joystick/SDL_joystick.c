@@ -115,8 +115,8 @@ static bool SDL_joysticks_initialized;
 static bool SDL_joysticks_opened;
 static bool SDL_joysticks_quitting;
 static bool SDL_joystick_being_added;
-static bool SDL_joystick_hid_notifications SDL_GUARDED_BY(SDL_joystick_lock);
-static Uint32 SDL_joystick_hid_change_count SDL_GUARDED_BY(SDL_joystick_lock);
+static bool SDL_joystick_hid_notifications;
+static Uint32 SDL_joystick_hid_change_count;
 static Uint64 SDL_last_device_update SDL_GUARDED_BY(SDL_joystick_lock);
 static SDL_JoystickDevice *SDL_joystick_devices SDL_GUARDED_BY(SDL_joystick_lock);
 static SDL_Joystick *SDL_joysticks SDL_GUARDED_BY(SDL_joystick_lock);
@@ -131,6 +131,19 @@ static int SDL_joystick_device_update_step SDL_GUARDED_BY(SDL_joystick_lock);
 static SDL_AtomicInt SDL_joystick_devices_changed;
 static SDL_AtomicInt SDL_joystick_devices_update;
 static bool SDL_joystick_allows_background_events;
+
+typedef struct SDL_JoystickUpdateThread
+{
+    SDL_Thread *thread;
+    SDL_Mutex *lock;
+    SDL_Condition *wake;
+    bool running SDL_GUARDED_BY(lock);
+    Uint32 passes_requested SDL_GUARDED_BY(lock);
+    Uint32 passes_started SDL_GUARDED_BY(lock);
+} SDL_JoystickUpdateThread;
+
+static SDL_JoystickUpdateThread SDL_joystick_device_thread;
+static int SDL_joystick_async_update_timeout;
 
 static Uint32 initial_old_xboxone_controllers[] = {
     MAKE_VIDPID(0x0000, 0x6686),
@@ -1278,8 +1291,10 @@ void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id)
     }
 }
 
-static void SDL_UpdateJoystickDevices(bool update)
+static void SDL_UpdateJoystickDevices(void)
 {
+    bool update = false;
+
     SDL_AssertJoysticksLocked();
 
     for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
@@ -1431,9 +1446,333 @@ static void SDLCALL SDL_JoystickAllowBackgroundEventsChanged(void *userdata, con
     }
 }
 
+static void SDLCALL SDL_JoystickAsyncUpdateIntervalChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    const char *value = SDL_GetHint(name);
+    if (!value || !*value) {
+        value = "-1";
+    }
+
+    int timeout = SDL_atoi(value);
+    if (timeout == 0) {
+        // Don't burn a full core
+        timeout = 1;
+    }
+    SDL_joystick_async_update_timeout = timeout;
+
+    SDL_OnUpdateJoysticksChanged();
+
+    if (SDL_JoystickUpdateThreadRunning()) {
+        SDL_WakeJoystickUpdateThread();
+    }
+}
+
+// Update the device info when Steam changes slots
+static void UpdateSteamVirtualGamepadSlots(void)
+{
+    SDL_AssertJoysticksLocked();
+
+    for (SDL_JoystickDevice *device = SDL_joystick_devices; device; device = device->next) {
+        if (!device->published || !device->driver->UpdateSteamVirtualGamepadSlot) {
+            continue;
+        }
+
+        device->driver->UpdateSteamVirtualGamepadSlot(device);
+
+        // Update the joystick name if needed
+        SDL_Joystick *joystick = SDL_GetJoystickFromID(device->instance_id);
+        if (joystick && device->name &&
+            (!joystick->name || SDL_strcmp(joystick->name, device->name) != 0)) {
+            SDL_free(joystick->name);
+            joystick->name = SDL_strdup(device->name);
+        }
+    }
+}
+
+static bool ShouldSwapFaceButtons(const SDL_SteamVirtualGamepadInfo *info)
+{
+    // When "Use Nintendo Button Layout" is enabled under Steam (the default)
+    // it will send button 0 for the A (east) button and button 1 for the
+    // B (south) button. This is done so that games that interpret the
+    // buttons as Xbox input will get button 0 for "A" as they expect.
+    //
+    // However, SDL reports positional buttons, so we need to swap
+    // the buttons so they show up in the correct position. This provides
+    // consistent behavior regardless of whether we're running under Steam,
+    // under the default settings.
+    if (info &&
+        (info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO ||
+         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT ||
+         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT ||
+         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR)) {
+        return true;
+    }
+    return false;
+}
+
+static void SendSteamHandleUpdateEvents(void)
+{
+    SDL_Joystick *joystick;
+    const SDL_SteamVirtualGamepadInfo *info;
+
+    SDL_AssertJoysticksLocked();
+
+    // Check to see if any Steam handles changed
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        bool changed = false;
+
+        if (!SDL_IsGamepad(joystick->instance_id)) {
+            continue;
+        }
+
+        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
+        if (info) {
+            if (joystick->steam_handle != info->handle) {
+                joystick->steam_handle = info->handle;
+                joystick->swap_face_buttons = ShouldSwapFaceButtons(info);
+                changed = true;
+            }
+        } else {
+            if (joystick->steam_handle != 0) {
+                joystick->steam_handle = 0;
+                joystick->swap_face_buttons = false;
+                changed = true;
+            }
+        }
+        if (changed) {
+            SDL_Event *event;
+            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED, 0, &event);
+            if (entry) {
+                event->gdevice.which = joystick->instance_id;
+                SDL_QueueJoystickEvent(entry);
+            }
+        }
+    }
+}
+
+// This is called on the thread that runs joystick updates, without the joystick lock held
+static void InitJoystickUpdates(void)
+{
+    if (SDL_hid_init() == 0) {
+        if (SDL_HIDAPI_HasDeviceNotifications()) {
+            SDL_joystick_hid_notifications = true;
+            SDL_joystick_hid_change_count = SDL_hid_device_change_count();
+        } else {
+            SDL_hid_exit();
+        }
+    }
+
+    // The driver init calls may take a long time, so call them without the joystick lock held
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_GetJoystickDriver(i);
+        if (driver && driver->InitUpdates) {
+            driver->InitUpdates();
+        }
+    }
+}
+
+static void RunJoystickUpdates(void)
+{
+    SDL_LockJoysticks();
+
+    if (SDL_UpdateSteamVirtualGamepadInfo()) {
+        UpdateSteamVirtualGamepadSlots();
+        SendSteamHandleUpdateEvents();
+    }
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    // Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks
+    HIDAPI_UpdateDevices();
+#endif // SDL_JOYSTICK_HIDAPI
+
+    for (SDL_Joystick *joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        if (!joystick->attached) {
+            continue;
+        }
+
+        joystick->driver->Update(joystick);
+
+        if (joystick->delayed_guide_button) {
+            SDL_GamepadHandleDelayedGuideButton(joystick);
+        }
+
+        Uint64 now = SDL_GetTicks();
+        if (joystick->rumble_expiration && now >= joystick->rumble_expiration) {
+            SDL_RumbleJoystick(joystick, 0, 0, 0);
+            joystick->rumble_resend = 0;
+        }
+
+        if (joystick->rumble_resend && now >= joystick->rumble_resend) {
+            joystick->driver->Rumble(joystick, joystick->low_frequency_rumble, joystick->high_frequency_rumble);
+            joystick->rumble_resend = now + SDL_RUMBLE_RESEND_MS;
+            if (joystick->rumble_resend == 0) {
+                joystick->rumble_resend = 1;
+            }
+        }
+
+        if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
+            SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
+            joystick->trigger_rumble_resend = 0;
+        }
+
+        if (joystick->trigger_rumble_resend && now >= joystick->trigger_rumble_resend) {
+            joystick->driver->RumbleTriggers(joystick, joystick->left_trigger_rumble, joystick->right_trigger_rumble);
+            joystick->trigger_rumble_resend = now + SDL_RUMBLE_RESEND_MS;
+            if (joystick->trigger_rumble_resend == 0) {
+                joystick->trigger_rumble_resend = 1;
+            }
+        }
+    }
+
+    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)) {
+        for (SDL_Joystick *joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+            if (joystick->update_complete) {
+                SDL_Event *event;
+                SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, joystick->update_complete, &event);
+                if (entry) {
+                    event->jdevice.which = joystick->instance_id;
+                    SDL_QueueJoystickEvent(entry);
+                }
+                joystick->update_complete = 0;
+            }
+        }
+    }
+
+    SDL_UpdateJoystickDevices();
+
+    SDL_UnlockJoysticks();
+
+    SDL_DispatchJoystickEvents();
+}
+
+// This is called on the thread that runs joystick updates, without the joystick lock held
+static void QuitJoystickUpdates(void)
+{
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+        SDL_JoystickDriver *driver = SDL_GetJoystickDriver(i);
+        if (driver && driver->QuitUpdates) {
+            driver->QuitUpdates();
+        }
+    }
+
+    if (SDL_joystick_hid_notifications) {
+        SDL_hid_exit();
+        SDL_joystick_hid_notifications = false;
+    }
+
+    SDL_DispatchJoystickEvents();
+}
+
+static int SDLCALL JoystickUpdateThread(void *data)
+{
+    SDL_JoystickUpdateThread *thread = (SDL_JoystickUpdateThread *)(data);
+
+    InitJoystickUpdates();
+
+    SDL_LockMutex(thread->lock);
+    for ( ; ; ) {
+        while (thread->running && thread->passes_requested == thread->passes_started) {
+            if (!SDL_WaitConditionTimeout(thread->wake, thread->lock, SDL_joystick_async_update_timeout)) {
+                // Timed out, go to work!
+                break;
+            }
+        }
+        if (!thread->running) {
+            break;
+        }
+
+        // Requests that arrive during this pass will trigger another pass
+        thread->passes_started = thread->passes_requested;
+        SDL_UnlockMutex(thread->lock);
+
+        RunJoystickUpdates();
+
+        SDL_LockMutex(thread->lock);
+    }
+    SDL_UnlockMutex(thread->lock);
+
+    QuitJoystickUpdates();
+
+    return 0;
+}
+
+int SDL_GetJoystickAsyncUpdateInterval(void)
+{
+    return SDL_joystick_async_update_timeout;
+}
+
+void SDL_WakeJoystickUpdateThread(void)
+{
+    SDL_JoystickUpdateThread *thread = &SDL_joystick_device_thread;
+
+    SDL_LockMutex(thread->lock);
+    ++thread->passes_requested;
+    SDL_SignalCondition(thread->wake);
+    SDL_UnlockMutex(thread->lock);
+}
+
+static void SDL_DestroyJoystickUpdateThread(void)
+{
+    SDL_JoystickUpdateThread *thread = &SDL_joystick_device_thread;
+
+    if (thread->thread) {
+        SDL_LockMutex(thread->lock);
+        thread->running = false;
+        SDL_SignalCondition(thread->wake);
+        SDL_UnlockMutex(thread->lock);
+
+        SDL_WaitThread(thread->thread, NULL);
+        thread->thread = NULL;
+    }
+
+    if (thread->lock) {
+        SDL_DestroyMutex(thread->lock);
+        thread->lock = NULL;
+    }
+    if (thread->wake) {
+        SDL_DestroyCondition(thread->wake);
+        thread->wake = NULL;
+    }
+
+    SDL_OnUpdateJoysticksChanged();
+}
+
+static bool SDL_CreateJoystickUpdateThread(void)
+{
+    SDL_JoystickUpdateThread *thread = &SDL_joystick_device_thread;
+
+    thread->lock = SDL_CreateMutex();
+    thread->wake = SDL_CreateCondition();
+    if (!thread->lock || !thread->wake) {
+        SDL_DestroyJoystickUpdateThread();
+        return false;
+    }
+
+    thread->running = true;
+    thread->passes_requested = 0;
+    thread->passes_started = 0;
+    thread->thread = SDL_CreateThread(JoystickUpdateThread, "SDLJoystickThread", thread);
+    if (!thread->thread) {
+        SDL_DestroyJoystickUpdateThread();
+        return false;
+    }
+
+    SDL_OnUpdateJoysticksChanged();
+    return true;
+}
+
+bool SDL_JoystickUpdateThreadRunning(void)
+{
+    if (SDL_joystick_device_thread.thread) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 bool SDL_InitJoysticks(void)
 {
-    int i;
+    bool joystick_thread = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_ASYNC, false);
     bool result = false;
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
@@ -1463,10 +1802,12 @@ bool SDL_InitJoysticks(void)
     // See if we should allow joystick events while in the background
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
+    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ASYNC_UPDATE_INTERVAL,
+                        SDL_JoystickAsyncUpdateIntervalChanged, NULL);
 
     SDL_InitSteamVirtualGamepadInfo();
 
-    for (i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
+    for (int i = 0; i < SDL_arraysize(SDL_joystick_drivers); ++i) {
         SDL_JoystickDriver *driver = SDL_joystick_drivers[i];
         bool initialized = true;
         if (driver->Init) {
@@ -1478,20 +1819,25 @@ bool SDL_InitJoysticks(void)
         SDL_joystick_drivers_initialized[i] = initialized;
     }
 
-    if (SDL_hid_init() == 0) {
-        if (SDL_HIDAPI_HasDeviceNotifications()) {
-            SDL_joystick_hid_notifications = true;
-            SDL_joystick_hid_change_count = SDL_hid_device_change_count();
-        } else {
-            SDL_hid_exit();
-        }
+    if (joystick_thread) {
+        joystick_thread = SDL_CreateJoystickUpdateThread();
     }
-
-    SDL_UpdateJoystickDevices(true);
 
     SDL_UnlockJoysticks();
 
-    SDL_DispatchJoystickEvents();
+    if (joystick_thread) {
+        SDL_RequestJoystickDeviceUpdate(true);
+        SDL_WakeJoystickUpdateThread();
+    } else {
+        InitJoystickUpdates();
+
+        SDL_LockJoysticks();
+        SDL_RequestJoystickDeviceUpdate(true);
+        SDL_UpdateJoystickDevices();
+        SDL_UnlockJoysticks();
+
+        SDL_DispatchJoystickEvents();
+    }
 
     if (!result) {
         SDL_QuitJoysticks();
@@ -1878,27 +2224,6 @@ static void CleanupSensorFusion(SDL_Joystick *joystick)
             SDL_QuitSubSystem(SDL_INIT_SENSOR);
         }
     }
-}
-
-static bool ShouldSwapFaceButtons(const SDL_SteamVirtualGamepadInfo *info)
-{
-    // When "Use Nintendo Button Layout" is enabled under Steam (the default)
-    // it will send button 0 for the A (east) button and button 1 for the
-    // B (south) button. This is done so that games that interpret the
-    // buttons as Xbox input will get button 0 for "A" as they expect.
-    //
-    // However, SDL reports positional buttons, so we need to swap
-    // the buttons so they show up in the correct position. This provides
-    // consistent behavior regardless of whether we're running under Steam,
-    // under the default settings.
-    if (info &&
-        (info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO ||
-         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT ||
-         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT ||
-         info->type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR)) {
-        return true;
-    }
-    return false;
 }
 
 /*
@@ -3031,8 +3356,18 @@ void SDL_QuitJoysticks(void)
     SDL_JoystickID *joysticks;
     SDL_JoystickEventEntry *final_events = NULL;
 
+    bool joystick_thread = false;
+    if (SDL_JoystickUpdateThreadRunning()) {
+        joystick_thread = true;
+        SDL_DestroyJoystickUpdateThread();
+    }
+
     // Dispatch any pending events while joysticks are still valid
     SDL_DispatchJoystickEvents();
+
+    if (!joystick_thread) {
+        QuitJoystickUpdates();
+    }
 
     SDL_LockJoysticks();
 
@@ -3064,23 +3399,18 @@ void SDL_QuitJoysticks(void)
         }
     }
 
-    if (SDL_joystick_hid_notifications) {
-        SDL_hid_exit();
-        SDL_joystick_hid_notifications = false;
-    }
-
     if (SDL_joystick_players) {
         SDL_free(SDL_joystick_players);
         SDL_joystick_players = NULL;
         SDL_joystick_player_count = 0;
     }
 
-    SDL_QuitSubSystem(SDL_INIT_EVENTS);
-
     SDL_QuitSteamVirtualGamepadInfo();
 
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
+    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_ASYNC_UPDATE_INTERVAL,
+                        SDL_JoystickAsyncUpdateIntervalChanged, NULL);
 
     SDL_FreeVIDPIDList(&old_xboxone_controllers);
     SDL_FreeVIDPIDList(&arcadestick_devices);
@@ -3119,6 +3449,8 @@ void SDL_QuitJoysticks(void)
 
     // Deliver any final joystick removed events
     SDL_DispatchFinalJoystickEvents(final_events);
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
 static bool SDL_PrivateJoystickShouldIgnoreEvent(void)
@@ -3523,147 +3855,17 @@ void SDL_SendJoystickButton(Uint64 timestamp, SDL_Joystick *joystick, Uint8 butt
     }
 }
 
-// Update the device info when Steam changes slots
-static void UpdateSteamVirtualGamepadSlots(void)
-{
-    SDL_AssertJoysticksLocked();
-
-    for (SDL_JoystickDevice *device = SDL_joystick_devices; device; device = device->next) {
-        if (!device->published || !device->driver->UpdateSteamVirtualGamepadSlot) {
-            continue;
-        }
-
-        device->driver->UpdateSteamVirtualGamepadSlot(device);
-
-        // Update the joystick name if needed
-        SDL_Joystick *joystick = SDL_GetJoystickFromID(device->instance_id);
-        if (joystick && device->name &&
-            (!joystick->name || SDL_strcmp(joystick->name, device->name) != 0)) {
-            SDL_free(joystick->name);
-            joystick->name = SDL_strdup(device->name);
-        }
-    }
-}
-
-static void SendSteamHandleUpdateEvents(void)
-{
-    SDL_Joystick *joystick;
-    const SDL_SteamVirtualGamepadInfo *info;
-
-    SDL_AssertJoysticksLocked();
-
-    // Check to see if any Steam handles changed
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-        bool changed = false;
-
-        if (!SDL_IsGamepad(joystick->instance_id)) {
-            continue;
-        }
-
-        info = SDL_GetJoystickVirtualGamepadInfoForID(joystick->instance_id);
-        if (info) {
-            if (joystick->steam_handle != info->handle) {
-                joystick->steam_handle = info->handle;
-                joystick->swap_face_buttons = ShouldSwapFaceButtons(info);
-                changed = true;
-            }
-        } else {
-            if (joystick->steam_handle != 0) {
-                joystick->steam_handle = 0;
-                joystick->swap_face_buttons = false;
-                changed = true;
-            }
-        }
-        if (changed) {
-            SDL_Event *event;
-            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED, 0, &event);
-            if (entry) {
-                event->gdevice.which = joystick->instance_id;
-                SDL_QueueJoystickEvent(entry);
-            }
-        }
-    }
-}
-
 void SDL_UpdateJoysticks(void)
 {
-    Uint64 now;
-    SDL_Joystick *joystick;
-
     if (!SDL_joysticks_initialized) {
         return;
     }
 
-    SDL_LockJoysticks();
-
-    if (SDL_UpdateSteamVirtualGamepadInfo()) {
-        UpdateSteamVirtualGamepadSlots();
-        SendSteamHandleUpdateEvents();
+    if (SDL_JoystickUpdateThreadRunning()) {
+        SDL_WakeJoystickUpdateThread();
+    } else {
+        RunJoystickUpdates();
     }
-
-#ifdef SDL_JOYSTICK_HIDAPI
-    // Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks
-    HIDAPI_UpdateDevices();
-#endif // SDL_JOYSTICK_HIDAPI
-
-    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-        if (!joystick->attached) {
-            continue;
-        }
-
-        joystick->driver->Update(joystick);
-
-        if (joystick->delayed_guide_button) {
-            SDL_GamepadHandleDelayedGuideButton(joystick);
-        }
-
-        now = SDL_GetTicks();
-        if (joystick->rumble_expiration && now >= joystick->rumble_expiration) {
-            SDL_RumbleJoystick(joystick, 0, 0, 0);
-            joystick->rumble_resend = 0;
-        }
-
-        if (joystick->rumble_resend && now >= joystick->rumble_resend) {
-            joystick->driver->Rumble(joystick, joystick->low_frequency_rumble, joystick->high_frequency_rumble);
-            joystick->rumble_resend = now + SDL_RUMBLE_RESEND_MS;
-            if (joystick->rumble_resend == 0) {
-                joystick->rumble_resend = 1;
-            }
-        }
-
-        if (joystick->trigger_rumble_expiration && now >= joystick->trigger_rumble_expiration) {
-            SDL_RumbleJoystickTriggers(joystick, 0, 0, 0);
-            joystick->trigger_rumble_resend = 0;
-        }
-
-        if (joystick->trigger_rumble_resend && now >= joystick->trigger_rumble_resend) {
-            joystick->driver->RumbleTriggers(joystick, joystick->left_trigger_rumble, joystick->right_trigger_rumble);
-            joystick->trigger_rumble_resend = now + SDL_RUMBLE_RESEND_MS;
-            if (joystick->trigger_rumble_resend == 0) {
-                joystick->trigger_rumble_resend = 1;
-            }
-        }
-    }
-
-    if (SDL_EventEnabled(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE)) {
-        for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-            if (joystick->update_complete) {
-                SDL_Event *event;
-                SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(SDL_EVENT_JOYSTICK_UPDATE_COMPLETE, joystick->update_complete, &event);
-                if (entry) {
-                    event->jdevice.which = joystick->instance_id;
-                    SDL_QueueJoystickEvent(entry);
-                }
-                joystick->update_complete = 0;
-            }
-        }
-    }
-
-    SDL_UpdateJoystickDevices(false);
-
-    SDL_UnlockJoysticks();
-
-    SDL_DispatchJoystickEvents();
 }
 
 static const Uint32 SDL_joystick_event_list[] = {

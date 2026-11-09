@@ -1404,6 +1404,38 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
 
 /**
+ * A variable controlling whether a separate thread should be used for
+ * joystick detection and updates.
+ *
+ * If this is enabled, joystick initialization will return immediately. Connected joysticks and gamepads will not be immediately visible, they will come in as hotplug events in the background. SDL_UpdateJoysticks() will also return immediately and joystick state will be updated asynchronously in the background. Joystick and gamepad events are delivered off the main thread.
+ *
+ * If you enable this hint, you should not hold the joystick lock while quitting the joystick subsystem.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": A separate thread is not used. (default)
+ * - "1": A separate thread is used for joystick updates.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC "SDL_JOYSTICK_ASYNC"
+
+/**
+ * A variable controlling the polling interval for asynchronous joystick updates.
+ *
+ * If this hint is set to "-1" (the default), asynchronous joystick updates will be triggered when the event loop runs. Otherwise this value is the polling interval, in milliseconds, for asynchronous joystick updates.
+ *
+ * Regardless of the value of this hint, you can trigger an update at a specific time using SDL_UpdateJoysticks()
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC_UPDATE_INTERVAL "SDL_JOYSTICK_ASYNC_UPDATE_INTERVAL"
+
+/**
  * A variable containing a list of devices that should not be considered
  * joysticks.
  *
