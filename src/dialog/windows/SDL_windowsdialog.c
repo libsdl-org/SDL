@@ -605,7 +605,7 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     }
 
     if (default_folder_w) {
-        if (SUCCEEDED(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem)) {
+        if (SUCCEEDED(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem))) {
             pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem);
         }
     }
