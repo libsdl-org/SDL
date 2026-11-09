@@ -43,6 +43,9 @@
 
 #include "../../events/SDL_events_c.h"
 #include "../../core/linux/SDL_evdev.h"
+#ifdef SDL_PLATFORM_LINUX
+#include "../../core/linux/SDL_sysfs.h"
+#endif
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../usb_ids.h"
@@ -1094,6 +1097,14 @@ static SDL_JoystickDevice *LINUX_CreateJoystickDevice(SDL_joylist_item *data)
     }
 
     return device;
+}
+
+static bool LINUX_JoystickPrepareDevice(SDL_JoystickDevice *device)
+{
+#ifdef SDL_PLATFORM_LINUX
+    device->container_id = SDL_GetContainerIDFromDevicePath(device->path);
+#endif
+    return true;
 }
 
 static void FreeRemovedJoylistItems(void)
@@ -2794,6 +2805,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver = {
     .Init = LINUX_JoystickInit,
     .QueryDevices = LINUX_JoystickQueryDevices,
     .DetectDevices = LINUX_JoystickDetectDevices,
+    .PrepareDevice = LINUX_JoystickPrepareDevice,
     .GetGamepadMapping = LINUX_JoystickGetGamepadMapping,
     .Open = LINUX_JoystickOpen,
     .Rumble = LINUX_JoystickRumble,

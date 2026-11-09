@@ -1132,8 +1132,7 @@ static bool METAL_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             if (!SDL_CalculateYUVSize(texture->format, rect->w, rect->h, &size, &calculated_pitch)) {
                 return false;
             }
-        } else
-        {
+        } else {
             calculated_pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
             size = rect->h * calculated_pitch;
         }
@@ -1160,7 +1159,6 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         id<MTLBlitCommandEncoder> blitcmd;
         SDL_Rect rect = texturedata.lockedrect;
         int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
-        SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
 
         if (texturedata.lockedbuffer == nil) {
             return;
@@ -1192,7 +1190,20 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
             id<MTLTexture> firstplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureV : texturedata.mtltextureU;
             id<MTLTexture> secondplane = texture->format == SDL_PIXELFORMAT_YV12 ? texturedata.mtltextureU : texturedata.mtltextureV;
             const int bpp = SDL_BYTESPERPIXEL(texture->format);
-            const int UVpitch = ((pitch / bpp + 1) / 2) * bpp;
+            int UVpitch;
+            SDL_Rect UVrect;
+
+            if (texture->format == SDL_PIXELFORMAT_I444 ||
+                texture->format == SDL_PIXELFORMAT_I4FL) {
+                UVpitch = pitch;
+                UVrect = rect;
+            } else {
+                UVpitch = ((pitch / bpp + 1) / 2) * bpp;
+                UVrect.x = rect.x / 2;
+                UVrect.y = rect.y / 2;
+                UVrect.w = (rect.w + 1) / 2;
+                UVrect.h = (rect.h + 1) / 2;
+            }
 
             [blitcmd copyFromBuffer:texturedata.lockedbuffer
                        sourceOffset:rect.h * pitch
@@ -1218,6 +1229,7 @@ static void METAL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         if (texturedata.nv12) {
             const int bpp = SDL_BYTESPERPIXEL(texture->format);
             const int UVpitch = ((pitch / bpp + 1) / 2) * 2 * bpp;
+            SDL_Rect UVrect = { rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2 };
 
             [blitcmd copyFromBuffer:texturedata.lockedbuffer
                        sourceOffset:rect.h * pitch

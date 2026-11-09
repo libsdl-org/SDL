@@ -42,6 +42,7 @@ struct haptic_hwdata
 #endif
     DWORD axes[3];        // Axes to use.
     bool is_joystick; // Device is loaded as joystick.
+    SDL_JoystickID joystickID;
     SDL_Thread *thread;
     SDL_Mutex *mutex;
     Uint64 stopTicks;

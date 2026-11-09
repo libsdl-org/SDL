@@ -396,6 +396,8 @@
 		F32DDAD12AB795A30041EAA5 /* SDL_audioqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */; };
 		F32DDAD32AB795A30041EAA5 /* SDL_audioqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */; };
 		F32DDAD42AB795A30041EAA5 /* SDL_audioresample.c in Sources */ = {isa = PBXBuildFile; fileRef = F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */; };
+		F332BC2C309E981500C967E5 /* SDL_ioreg.h in Headers */ = {isa = PBXBuildFile; fileRef = F332BC2A309E981500C967E5 /* SDL_ioreg.h */; platformFilters = (macos, ); };
+		F332BC2D309E981500C967E5 /* SDL_ioreg.c in Sources */ = {isa = PBXBuildFile; fileRef = F332BC2B309E981500C967E5 /* SDL_ioreg.c */; platformFilters = (macos, ); };
 		F338A1182D1B37D8007CDFDF /* SDL_tray.m in Sources */ = {isa = PBXBuildFile; fileRef = F338A1172D1B37D8007CDFDF /* SDL_tray.m */; };
 		F338A11A2D1B37E4007CDFDF /* SDL_tray.c in Sources */ = {isa = PBXBuildFile; fileRef = F338A1192D1B37E4007CDFDF /* SDL_tray.c */; };
 		F3395BA82D9A5971007246C8 /* SDL_hidapi_8bitdo.c in Sources */ = {isa = PBXBuildFile; fileRef = F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */; };
@@ -989,6 +991,8 @@
 		F32DDACB2AB795A30041EAA5 /* SDL_audioqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioqueue.c; sourceTree = "<group>"; };
 		F32DDACD2AB795A30041EAA5 /* SDL_audioqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audioqueue.h; sourceTree = "<group>"; };
 		F32DDACE2AB795A30041EAA5 /* SDL_audioresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audioresample.c; sourceTree = "<group>"; };
+		F332BC2A309E981500C967E5 /* SDL_ioreg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_ioreg.h; sourceTree = "<group>"; };
+		F332BC2B309E981500C967E5 /* SDL_ioreg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_ioreg.c; sourceTree = "<group>"; };
 		F338A1172D1B37D8007CDFDF /* SDL_tray.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDL_tray.m; sourceTree = "<group>"; };
 		F338A1192D1B37E4007CDFDF /* SDL_tray.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_tray.c; sourceTree = "<group>"; };
 		F3395BA72D9A5971007246C8 /* SDL_hidapi_8bitdo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_8bitdo.c; sourceTree = "<group>"; };
@@ -2453,6 +2457,15 @@
 			path = xr;
 			sourceTree = "<group>";
 		};
+		F332BC29309E97E500C967E5 /* macos */ = {
+			isa = PBXGroup;
+			children = (
+				F332BC2A309E981500C967E5 /* SDL_ioreg.h */,
+				F332BC2B309E981500C967E5 /* SDL_ioreg.c */,
+			);
+			path = macos;
+			sourceTree = "<group>";
+		};
 		F338A1142D1B3735007CDFDF /* tray */ = {
 			isa = PBXGroup;
 			children = (
@@ -2491,6 +2504,7 @@
 		F36C7ACF294B9F5E004D61C3 /* core */ = {
 			isa = PBXGroup;
 			children = (
+				F332BC29309E97E500C967E5 /* macos */,
 				E4F798192AD8D84800669F54 /* SDL_core_unsupported.c */,
 			);
 			path = core;
@@ -2793,6 +2807,7 @@
 				566E26E1246274CC00718109 /* SDL_syslocale.h in Headers */,
 				A7D8B44023E2514300DCD162 /* SDL_sysmutex_c.h in Headers */,
 				A7D8B5D523E2514300DCD162 /* SDL_syspower.h in Headers */,
+				F332BC2C309E981500C967E5 /* SDL_ioreg.h in Headers */,
 				A7D8B61123E2514300DCD162 /* SDL_syspower.h in Headers */,
 				A7D8B9D723E2514400DCD162 /* SDL_sysrender.h in Headers */,
 				A7D8A97B23E2514000DCD162 /* SDL_syssensor.h in Headers */,
@@ -3178,6 +3193,7 @@
 				A7D8B54523E2514300DCD162 /* SDL_hidapijoystick.c in Sources */,
 				A7D8B97423E2514400DCD162 /* SDL_malloc.c in Sources */,
 				A7D8B8C623E2514400DCD162 /* SDL_audio.c in Sources */,
+				F332BC2D309E981500C967E5 /* SDL_ioreg.c in Sources */,
 				A7D8B61D23E2514300DCD162 /* SDL_sysfilesystem.c in Sources */,
 				E4F257932C81903800FCEAFC /* SDL_gpu_metal.m in Sources */,
 				F3820713284F3609004DD584 /* controller_type.c in Sources */,

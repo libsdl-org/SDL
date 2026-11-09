@@ -574,9 +574,53 @@ static void SortDevObjects(SDL_Joystick *joystick)
     }
 }
 
+bool SDL_DINPUT_JoystickAcquireExclusive(SDL_Joystick *joystick)
+{
+    LPDIRECTINPUTDEVICE8 device = joystick->hwdata->InputDevice;
+    DIPROPDWORD dipdw;
+    HRESULT result;
+
+    if (joystick->hwdata->exclusive) {
+        return true;
+    }
+
+    // The cooperative level can only be changed while the device isn't acquired
+    IDirectInputDevice8_Unacquire(device);
+
+    result = IDirectInputDevice8_SetCooperativeLevel(device, SDL_HelperWindow, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
+    if (FAILED(result)) {
+        return SetDIerror("IDirectInputDevice8::SetCooperativeLevel", result);
+    }
+
+    // Turn on auto-centering for a ForceFeedback device (until told otherwise)
+    SDL_zero(dipdw);
+    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+    dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+    dipdw.diph.dwObj = 0;
+    dipdw.diph.dwHow = DIPH_DEVICE;
+    dipdw.dwData = DIPROPAUTOCENTER_ON;
+    IDirectInputDevice8_SetProperty(device, DIPROP_AUTOCENTER, &dipdw.diph);
+
+    result = IDirectInputDevice8_Acquire(device);
+    if (FAILED(result)) {
+        SetDIerror("IDirectInputDevice8::Acquire", result);
+
+        // Go back to shared access so input keeps working
+        IDirectInputDevice8_SetCooperativeLevel(device, SDL_HelperWindow, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+        return false;
+    }
+
+    joystick->hwdata->exclusive = true;
+    return true;
+}
+
 static bool DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitude)
 {
     HRESULT result;
+
+    if (!SDL_DINPUT_JoystickAcquireExclusive(joystick)) {
+        return false;
+    }
 
     // Reset and then enable actuators
     result = IDirectInputDevice8_SendForceFeedbackCommand(joystick->hwdata->InputDevice, DISFFC_RESET);
@@ -604,6 +648,8 @@ static bool DINPUT_JoystickInitRumble(SDL_Joystick *joystick, Sint16 magnitude)
     result = IDirectInputDevice8_CreateEffect(joystick->hwdata->InputDevice, &GUID_Sine,
                                               joystick->hwdata->ffeffect, &joystick->hwdata->ffeffect_ref, NULL);
     if (FAILED(result)) {
+        FreeRumbleEffectData(joystick->hwdata->ffeffect);
+        joystick->hwdata->ffeffect = NULL;
         return SetDIerror("IDirectInputDevice8::CreateEffect", result);
     }
     return true;
@@ -948,6 +994,8 @@ static bool DINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
         return false;
     }
 
+    device->container_id = WIN_GetContainerIDFromInterfacePath(device->path);
+
 #ifdef SDL_HAPTIC_DINPUT
     SDL_DINPUT_HapticMaybeAddDevice(&device->internal->dxdevice);
 #endif
@@ -983,12 +1031,10 @@ static bool DINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *devi
         goto error;
     }
 
-    /* Acquire shared access. Exclusive access is required for forces,
-     * though. */
+    // Use shared access until force feedback is needed
     result =
         IDirectInputDevice8_SetCooperativeLevel(joystick->hwdata->InputDevice, SDL_HelperWindow,
-                                                DISCL_EXCLUSIVE |
-                                                    DISCL_BACKGROUND);
+                                                DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
     if (FAILED(result)) {
         SetDIerror("IDirectInputDevice8::SetCooperativeLevel", result);
         goto error;
@@ -1016,46 +1062,6 @@ static bool DINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *devi
 
     // Force capable?
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
-        result = IDirectInputDevice8_Acquire(joystick->hwdata->InputDevice);
-        if (FAILED(result)) {
-            SetDIerror("IDirectInputDevice8::Acquire", result);
-            goto error;
-        }
-
-        // reset all actuators.
-        result =
-            IDirectInputDevice8_SendForceFeedbackCommand(joystick->hwdata->InputDevice,
-                                                         DISFFC_RESET);
-
-        /* Not necessarily supported, ignore if not supported.
-        if (FAILED(result)) {
-            return SetDIerror("IDirectInputDevice8::SendForceFeedbackCommand", result);
-        }
-        */
-
-        result = IDirectInputDevice8_Unacquire(joystick->hwdata->InputDevice);
-
-        if (FAILED(result)) {
-            SetDIerror("IDirectInputDevice8::Unacquire", result);
-            goto error;
-        }
-
-        /* Turn on auto-centering for a ForceFeedback device (until told
-         * otherwise). */
-        dipdw.diph.dwObj = 0;
-        dipdw.diph.dwHow = DIPH_DEVICE;
-        dipdw.dwData = DIPROPAUTOCENTER_ON;
-
-        result =
-            IDirectInputDevice8_SetProperty(joystick->hwdata->InputDevice,
-                                            DIPROP_AUTOCENTER, &dipdw.diph);
-
-        /* Not necessarily supported, ignore if not supported.
-        if (FAILED(result)) {
-            return SetDIerror("IDirectInputDevice8::SetProperty", result);
-        }
-        */
-
         SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
     }
 

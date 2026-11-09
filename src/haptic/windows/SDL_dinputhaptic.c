@@ -469,9 +469,17 @@ bool SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
     // Since it comes from a joystick we have to try to match it with a haptic device on our haptic list.
     for (item = SDL_hapticlist; item; item = item->next) {
         if (WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
+            // Force feedback requires exclusive access to the joystick device
+            if (!SDL_DINPUT_JoystickAcquireExclusive(joystick)) {
+                return false;
+            }
             haptic->instance_id = item->instance_id;
             haptic->name = SDL_strdup(item->name);
-            return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, true);
+            if (!SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, true)) {
+                return false;
+            }
+            haptic->hwdata->joystickID = joystick->instance_id;
+            return true;
         }
     }
 
@@ -480,10 +488,15 @@ bool SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystic
 
 void SDL_DINPUT_HapticClose(SDL_Haptic *haptic)
 {
-    IDirectInputDevice8_Unacquire(haptic->hwdata->device);
-
-    // Only release if isn't grabbed by a joystick.
-    if (haptic->hwdata->is_joystick == 0) {
+    if (haptic->hwdata->is_joystick) {
+        // The device belongs to the joystick, and is gone if the joystick was closed
+        SDL_LockJoysticks();
+        if (SDL_GetJoystickFromID(haptic->hwdata->joystickID)) {
+            IDirectInputDevice8_Unacquire(haptic->hwdata->device);
+        }
+        SDL_UnlockJoysticks();
+    } else {
+        IDirectInputDevice8_Unacquire(haptic->hwdata->device);
         IDirectInputDevice8_Release(haptic->hwdata->device);
     }
 }

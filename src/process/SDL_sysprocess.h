@@ -23,6 +23,9 @@
 #ifndef SDL_sysprocess_h_
 #define SDL_sysprocess_h_
 
+// The process exited, but its exit status isn't available
+#define SDL_PROCESS_EXITCODE_UNKNOWN -255
+
 typedef struct SDL_ProcessData SDL_ProcessData;
 
 struct SDL_Process
