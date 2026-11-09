@@ -46,7 +46,6 @@ this should probably be removed at some point in the future.  --ryan. */
 #define DONT_DRAW_WHILE_HIDDEN 0
 #endif
 
-#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
 #define SDL_PROP_TEXTURE_PARENT_POINTER "SDL.internal.texture.parent"
 
 #define CHECK_RENDERER_MAGIC_BUT_NOT_DESTROYED_FLAG(renderer, result)   \
@@ -197,6 +196,15 @@ void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color)
     if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
         SDL_ConvertColor709to2020(&color->r, &color->g, &color->b);
     }
+}
+
+float SDL_GetRendererMaxLuminance(SDL_Renderer *renderer)
+{
+    float luminance = (SCRGB_NITS * renderer->SDR_white_point * renderer->HDR_headroom);
+    if (luminance > 10000.0f) {
+        luminance = 10000.0f;
+    }
+    return luminance;
 }
 
 static SDL_INLINE void DebugLogRenderCommands(const SDL_RenderCommand *cmd)
@@ -836,6 +844,10 @@ static void UpdateColorScale(SDL_Renderer *renderer)
     float SDR_white_point;
     if (renderer->target) {
         SDR_white_point = renderer->target->SDR_white_point;
+        if (SDL_COLORSPACETRANSFER(renderer->target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+            // HDR10 textures specify their SDR white point in nits
+            SDR_white_point /= SCRGB_NITS;
+        }
     } else {
         SDR_white_point = renderer->SDR_white_point;
     }
@@ -859,11 +871,57 @@ static void UpdateHDRProperties(SDL_Renderer *renderer)
 
     if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
         renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
-        renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
-        renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+#ifdef SDL_PLATFORM_APPLE
+        if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            // Apple platforms display PQ 100 nits as SDR white (EDR 1.0)
+            const float SDR_reference_white_nits = 100.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else
+#endif
+#ifdef SDL_PLATFORM_ANDROID
+        if (renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+            // Android composites PQ in absolute nits, and the SDR white level isn't
+            // available, so assume the BT.2408 reference white of 203 nits for now.
+            const float SDR_reference_white_nits = 203.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else
+#endif
+        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+            // The Vulkan drivers don't set luminance for HDR10 swapchains, so the
+            // protocol default reference white of 203 nits is used. For linear
+            // swapchains, NVIDIA uses a reference white of 203 nits and Mesa uses
+            // 80 nits. Eventually we'll use VK_COLOR_SPACE_PASS_THROUGH_EXT and
+            // define the reference white ourselves, so always use 203 for now.
+            const float SDR_reference_white_nits = 203.0f;
+            renderer->SDR_white_point = SDR_reference_white_nits / SCRGB_NITS;
+        } else {
+            renderer->SDR_white_point = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+        }
+        if (renderer->HDR_headroom_override > 0.0f) {
+            renderer->HDR_headroom = renderer->HDR_headroom_override;
+        } else {
+            renderer->HDR_headroom = SDL_GetFloatProperty(window_props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+        }
+#ifdef SDL_PLATFORM_ANDROID
+        if (SDL_GetAndroidSDKVersion() < 35) {
+            if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+                // Requesting HDR headroom needs Android 15, and without it Android clips
+                // extended range content to SDR white, so tone map to that instead.
+                renderer->HDR_headroom = 1.0f;
+            }
+        } else {
+            // Ask for as much headroom as the display can do, which lets us report the headroom
+            // that's actually available, and applications can tone map to that. Android only shows
+            // extended range content above SDR white if it requests more than 1.01 headroom.
+            Android_JNI_SetDesiredHDRHeadroom(10000.0f);
+        }
+#endif
     } else {
         renderer->SDR_white_point = 1.0f;
         renderer->HDR_headroom = 1.0f;
+    }
+    if (renderer->UpdateHDRMetadata) {
+        renderer->UpdateHDRMetadata(renderer);
     }
 
     if (renderer->HDR_headroom > 1.0f) {
@@ -1035,17 +1093,144 @@ static void SDL_CalculateSimulatedVSyncInterval(SDL_Renderer *renderer, SDL_Wind
 #endif // !SDL_RENDER_DISABLED
 
 
+static bool SDL_UpdateSoftwareRendererOutput(SDL_Renderer *renderer, SDL_Window *window, SDL_Surface *surface)
+{
+#ifdef SDL_VIDEO_RENDER_SW
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    CHECK_PARAM(!renderer->software) {
+        return SDL_InvalidParamError("renderer");
+    }
+
+    SDL_PropertiesID props = SDL_GetRendererProperties(renderer);
+    if (window == renderer->window &&
+        surface == SDL_GetPointerProperty(props, SDL_PROP_RENDERER_SURFACE_POINTER, NULL)) {
+        return true;
+    }
+
+    CHECK_PARAM(window && SDL_WindowHasSurface(window)) {
+        return SDL_SetError("Window already has an associated surface");
+    }
+
+    CHECK_PARAM(window && SDL_GetRenderer(window)) {
+        return SDL_SetError("Window already has an associated renderer");
+    }
+
+    // Make sure all drawing to a surface is complete
+    FlushRenderCommands(renderer);
+
+    if (window) {
+        surface = SDL_GetWindowSurface(window);
+
+        if (!SDL_SurfaceValid(surface)) {
+            return false;
+        }
+
+        if (!SDL_AddWindowRenderer(window, renderer)) {
+            SDL_DestroyWindowSurface(window);
+            return false;
+        }
+    }
+
+    if (!SW_UpdateRendererSurface(renderer, surface)) {
+        if (window) {
+            SDL_RemoveWindowRenderer(window, renderer);
+            SDL_DestroyWindowSurface(window);
+        }
+        return false;
+    }
+
+    if (renderer->window) {
+        SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+        SDL_RemoveWindowRenderer(renderer->window, renderer);
+        SDL_DestroyWindowSurface(renderer->window);
+    }
+
+    renderer->window = window;
+
+    if (surface) {
+        renderer->main_view.pixel_w = surface->w;
+        renderer->main_view.pixel_h = surface->h;
+    } else {
+        renderer->main_view.pixel_w = 0;
+        renderer->main_view.pixel_h = 0;
+    }
+    renderer->main_view.viewport.w = -1;
+    renderer->main_view.viewport.h = -1;
+    UpdatePixelViewport(renderer, &renderer->main_view);
+    UpdatePixelClipRect(renderer, &renderer->main_view);
+    UpdateMainViewDimensions(renderer);
+
+    renderer->SDR_white_point = 1.0f;
+    renderer->HDR_headroom = 1.0f;
+
+    renderer->transparent_window = false;
+    renderer->hidden = false;
+
+    if (window) {
+        SDL_SetPointerProperty(props, SDL_PROP_RENDERER_WINDOW_POINTER, window);
+        SDL_SetPointerProperty(props, SDL_PROP_RENDERER_SURFACE_POINTER, NULL);
+
+        if (SDL_GetWindowFlags(window) & SDL_WINDOW_TRANSPARENT) {
+            renderer->transparent_window = true;
+        }
+
+        if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN | SDL_WINDOW_MINIMIZED)) {
+            renderer->hidden = true;
+        }
+
+        UpdateHDRProperties(renderer);
+        SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+    } else {
+        SDL_SetPointerProperty(props, SDL_PROP_RENDERER_WINDOW_POINTER, NULL);
+        SDL_SetPointerProperty(props, SDL_PROP_RENDERER_SURFACE_POINTER, surface);
+    }
+
+    int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_VSYNC_NUMBER, 0);
+    SDL_SetRenderVSync(renderer, vsync);
+    SDL_CalculateSimulatedVSyncInterval(renderer, window);
+
+    if (!renderer->target) {
+        SDL_SetRenderViewport(renderer, NULL);
+    }
+
+    SDL_ClearError();
+
+    return true;
+#else
+    return SDL_Unsupported();
+#endif
+}
+
+bool SDL_SetSoftwareRendererWindow(SDL_Renderer *renderer, SDL_Window *window)
+{
+    return SDL_UpdateSoftwareRendererOutput(renderer, window, NULL);
+}
+
+bool SDL_SetSoftwareRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface)
+{
+    return SDL_UpdateSoftwareRendererOutput(renderer, NULL, surface);
+}
+
 SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 {
 #ifndef SDL_RENDER_DISABLED
     SDL_Window *window = (SDL_Window *)SDL_GetPointerProperty(props, SDL_PROP_RENDERER_CREATE_WINDOW_POINTER, NULL);
     SDL_Surface *surface = (SDL_Surface *)SDL_GetPointerProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, NULL);
-    const char *driver_name = SDL_GetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, NULL);
+    const char *driver_name;
     const char *hint;
     SDL_PropertiesID new_props;
 
-    // The GPU renderer is the only one that can be created without a window or surface
-    CHECK_PARAM(!window && !surface && (!driver_name || SDL_strcmp(driver_name, SDL_GPU_RENDERER) != 0)) {
+    if (surface) {
+        driver_name = SDL_SOFTWARE_RENDERER;
+    } else {
+        driver_name = SDL_GetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, NULL);
+    }
+
+    // The GPU and software renderers are the only ones that can be created without a window or surface
+    CHECK_PARAM(!window && !surface &&
+                (!driver_name || (SDL_strcmp(driver_name, SDL_GPU_RENDERER) != 0 &&
+                                  SDL_strcmp(driver_name, SDL_SOFTWARE_RENDERER) != 0))) {
         SDL_InvalidParamError("window");
         return NULL;
     }
@@ -1056,12 +1241,12 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     }
 
     CHECK_PARAM(window && SDL_WindowHasSurface(window)) {
-        SDL_SetError("Surface already associated with window");
+        SDL_SetError("Window already has an associated surface");
         return NULL;
     }
 
     CHECK_PARAM(window && SDL_GetRenderer(window)) {
-        SDL_SetError("Renderer already associated with window");
+        SDL_SetError("Window already has an associated renderer");
         return NULL;
     }
 
@@ -1174,8 +1359,6 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     renderer->main_view.current_scale.x = 1.0f;
     renderer->main_view.current_scale.y = 1.0f;
     renderer->view = &renderer->main_view;
-    renderer->dpi_scale.x = 1.0f;
-    renderer->dpi_scale.y = 1.0f;
     UpdatePixelViewport(renderer, &renderer->main_view);
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
@@ -1225,19 +1408,17 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
 
     if (window) {
         UpdateHDRProperties(renderer);
-        SDL_SetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_RENDERER_POINTER, renderer);
-        SDL_AddWindowRenderer(window, renderer);
-    }
-
-    SDL_SetRenderViewport(renderer, NULL);
-
-    if (window) {
+        if (!SDL_AddWindowRenderer(window, renderer)) {
+            goto error;
+        }
         SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
     }
 
     int vsync = (int)SDL_GetNumberProperty(props, SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, 0);
     SDL_SetRenderVSync(renderer, vsync);
     SDL_CalculateSimulatedVSyncInterval(renderer, window);
+
+    SDL_SetRenderViewport(renderer, NULL);
 
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->name);
@@ -1311,12 +1492,8 @@ SDL_Renderer *SDL_CreateSoftwareRenderer(SDL_Surface *surface)
 #ifdef SDL_VIDEO_RENDER_SW
     SDL_Renderer *renderer;
 
-    CHECK_PARAM(!surface) {
-        SDL_InvalidParamError("surface");
-        return NULL;
-    }
-
     SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_RENDERER_CREATE_NAME_STRING, SDL_SOFTWARE_RENDERER);
     SDL_SetPointerProperty(props, SDL_PROP_RENDERER_CREATE_SURFACE_POINTER, surface);
     renderer = SDL_CreateRendererWithProperties(props);
     SDL_DestroyProperties(props);
@@ -1851,14 +2028,9 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     texture_colorspace = surface_colorspace;
 
     if (surface_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
-        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-        if (SDL_ISPIXELFORMAT_FLOAT(format)) {
-            texture_colorspace = SDL_COLORSPACE_SRGB_LINEAR;
-        } else if (SDL_ISPIXELFORMAT_10BIT(format)) {
-            texture_colorspace = SDL_COLORSPACE_HDR10;
-        } else {
-            texture_colorspace = SDL_COLORSPACE_SRGB;
-        }
+        SDL_COLORSPACETRANSFER(surface_colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ ||
+        (SDL_ISPIXELFORMAT_FOURCC(surface->format) && !SDL_ISPIXELFORMAT_FOURCC(format))) {
+        texture_colorspace = SDL_GetDefaultColorspaceForFormat(format);
     }
 
     props = SDL_CreateProperties();
@@ -3536,6 +3708,33 @@ bool SDL_GetRenderColorScale(SDL_Renderer *renderer, float *scale)
 
     if (scale) {
         *scale = renderer->desired_color_scale;
+    }
+    return true;
+}
+
+bool SDL_SetRenderHDRHeadroom(SDL_Renderer *renderer, float headroom)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    CHECK_PARAM(headroom < 1.0f && headroom != 0.0f) {
+        return SDL_InvalidParamError("headroom");
+    }
+
+    renderer->HDR_headroom_override = headroom;
+    UpdateHDRProperties(renderer);
+    return true;
+}
+
+bool SDL_GetRenderHDRHeadroom(SDL_Renderer *renderer, float *headroom)
+{
+    if (headroom) {
+        *headroom = 1.0f;
+    }
+
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    if (headroom) {
+        *headroom = renderer->HDR_headroom;
     }
     return true;
 }
@@ -5489,11 +5688,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_Texture *parent = SDL_GetPointerProperty(SDL_GetTextureProperties(target), SDL_PROP_TEXTURE_PARENT_POINTER, NULL);
             SDL_PixelFormat expected_format = (parent ? parent->format : target->format);
 
-            if (SDL_COLORSPACETRANSFER(target->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point * SCRGB_NITS);
-            } else {
-                SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
-            }
+            SDL_SetFloatProperty(props, SDL_PROP_SURFACE_SDR_WHITE_POINT_FLOAT, target->SDR_white_point);
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format
@@ -5703,13 +5898,16 @@ void SDL_DestroyRendererWithoutFreeing(SDL_Renderer *renderer)
 
     renderer->destroyed = true;
 
-    SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
+#ifdef SDL_PLATFORM_ANDROID
+    if (renderer->output_colorspace == SDL_COLORSPACE_SRGB_LINEAR ||
+        renderer->output_colorspace == SDL_COLORSPACE_HDR10) {
+        // We're no longer showing HDR content, so stop requesting HDR headroom
+        Android_JNI_SetDesiredHDRHeadroom(0.0f);
+    }
+#endif
 
     if (renderer->window) {
-        SDL_PropertiesID props = SDL_GetWindowProperties(renderer->window);
-        if (SDL_GetPointerProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER, NULL) == renderer) {
-            SDL_ClearProperty(props, SDL_PROP_WINDOW_RENDERER_POINTER);
-        }
+        SDL_RemoveWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, SDL_RendererEventWatch, renderer);
         SDL_RemoveWindowRenderer(renderer->window, renderer);
     }
 
@@ -5928,7 +6126,7 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
 
     renderer->wanted_vsync = vsync ? true : false;
 
-    // for the software renderer, forward the call to the WindowTexture renderer
+    // for the software renderer, forward the call to the presentation renderer
 #ifdef SDL_VIDEO_RENDER_SW
     if (renderer->software) {
         if (!renderer->window) {
@@ -5938,7 +6136,7 @@ bool SDL_SetRenderVSync(SDL_Renderer *renderer, int vsync)
                 return SDL_Unsupported();
             }
         }
-        if (SDL_SetWindowTextureVSync(NULL, renderer->window, vsync)) {
+        if (SDL_SetWindowSurfaceVSync(renderer->window, vsync)) {
             renderer->simulate_vsync = false;
             return true;
         }

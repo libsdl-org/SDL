@@ -688,11 +688,6 @@ static bool HIDAPI_DriverSInput_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverSInput_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverSInput_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
@@ -792,11 +787,6 @@ static bool HIDAPI_DriverSInput_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverSInput_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSInput_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSInput_Context *ctx = (SDL_DriverSInput_Context *)device->context;
@@ -832,11 +822,6 @@ static bool HIDAPI_DriverSInput_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 
         return true;
     }
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverSInput_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
     return SDL_Unsupported();
 }
 
@@ -1099,34 +1084,21 @@ static bool HIDAPI_DriverSInput_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_DriverSInput_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_DriverSInput_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput = {
-    SDL_HINT_JOYSTICK_HIDAPI_SINPUT,
-    true,
-    HIDAPI_DriverSInput_RegisterHints,
-    HIDAPI_DriverSInput_UnregisterHints,
-    HIDAPI_DriverSInput_IsEnabled,
-    HIDAPI_DriverSInput_IsSupportedDevice,
-    HIDAPI_DriverSInput_InitDevice,
-    HIDAPI_DriverSInput_GetDevicePlayerIndex,
-    HIDAPI_DriverSInput_SetDevicePlayerIndex,
-    HIDAPI_DriverSInput_UpdateDevice,
-    HIDAPI_DriverSInput_OpenJoystick,
-    HIDAPI_DriverSInput_RumbleJoystick,
-    HIDAPI_DriverSInput_RumbleJoystickTriggers,
-    HIDAPI_DriverSInput_GetJoystickCapabilities,
-    HIDAPI_DriverSInput_SetJoystickLED,
-    HIDAPI_DriverSInput_SendJoystickEffect,
-    HIDAPI_DriverSInput_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSInput_CloseJoystick,
-    HIDAPI_DriverSInput_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_SINPUT,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSInput_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSInput_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSInput_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSInput_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSInput_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSInput_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSInput_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSInput_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSInput_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSInput_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSInput_SetJoystickLED,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSInput_SetJoystickSensorsEnabled,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SINPUT

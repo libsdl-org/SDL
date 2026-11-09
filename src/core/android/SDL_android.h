@@ -71,6 +71,7 @@ extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 extern void Android_JNI_MinimizeWindow(void);
+extern void Android_JNI_SetDesiredHDRHeadroom(float headroom);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);

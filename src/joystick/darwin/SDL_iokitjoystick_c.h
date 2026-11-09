@@ -69,7 +69,8 @@ struct joystick_hwdata
     SDL_Joystick *joystick;
     bool runLoopAttached; // is 'deviceRef' attached to a CFRunLoop?
 
-    int instance_id;
+    Uint16 vendor_id;
+    Uint16 product_id;
     SDL_GUID guid;
     int steam_virtual_gamepad_slot;
     bool nacon_revolution_x_unlimited;
@@ -77,5 +78,7 @@ struct joystick_hwdata
     struct joystick_hwdata *pNext; // next device
 };
 typedef struct joystick_hwdata recDevice;
+
+extern bool DARWIN_GetKnownDevice(const char *product_string, Uint16 *bus, Uint16 *vendor_id, Uint16 *product_id, char **name);
 
 #endif // SDL_JOYSTICK_IOKIT_H

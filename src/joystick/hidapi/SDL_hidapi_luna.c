@@ -82,15 +82,6 @@ static bool HIDAPI_DriverLuna_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverLuna_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverLuna_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverLuna_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverLuna_Context *ctx = (SDL_DriverLuna_Context *)device->context;
@@ -130,11 +121,6 @@ static bool HIDAPI_DriverLuna_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joys
     return SDL_Unsupported();
 }
 
-static bool HIDAPI_DriverLuna_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     Uint32 result = 0;
@@ -146,21 +132,6 @@ static Uint32 HIDAPI_DriverLuna_GetJoystickCapabilities(SDL_HIDAPI_Device *devic
 #endif
 
     return result;
-}
-
-static bool HIDAPI_DriverLuna_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLuna_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLuna_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverLuna_HandleUSBStatePacket(SDL_Joystick *joystick, SDL_DriverLuna_Context *ctx, Uint8 *data, int size)
@@ -386,34 +357,18 @@ static bool HIDAPI_DriverLuna_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-static void HIDAPI_DriverLuna_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
-static void HIDAPI_DriverLuna_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLuna = {
-    SDL_HINT_JOYSTICK_HIDAPI_LUNA,
-    true,
-    HIDAPI_DriverLuna_RegisterHints,
-    HIDAPI_DriverLuna_UnregisterHints,
-    HIDAPI_DriverLuna_IsEnabled,
-    HIDAPI_DriverLuna_IsSupportedDevice,
-    HIDAPI_DriverLuna_InitDevice,
-    HIDAPI_DriverLuna_GetDevicePlayerIndex,
-    HIDAPI_DriverLuna_SetDevicePlayerIndex,
-    HIDAPI_DriverLuna_UpdateDevice,
-    HIDAPI_DriverLuna_OpenJoystick,
-    HIDAPI_DriverLuna_RumbleJoystick,
-    HIDAPI_DriverLuna_RumbleJoystickTriggers,
-    HIDAPI_DriverLuna_GetJoystickCapabilities,
-    HIDAPI_DriverLuna_SetJoystickLED,
-    HIDAPI_DriverLuna_SendJoystickEffect,
-    HIDAPI_DriverLuna_SetJoystickSensorsEnabled,
-    HIDAPI_DriverLuna_CloseJoystick,
-    HIDAPI_DriverLuna_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_LUNA,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverLuna_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverLuna_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverLuna_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverLuna_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverLuna_InitDevice,
+    .UpdateDevice = HIDAPI_DriverLuna_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverLuna_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverLuna_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverLuna_GetJoystickCapabilities,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_LUNA

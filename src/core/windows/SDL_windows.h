@@ -234,6 +234,13 @@ extern char *WIN_GetModulePath(HMODULE handle);
 // Return true if this system has a broken EZFRD64.DLL installed
 extern bool WIN_HasBrokenEZFRD64DLL(void);
 
+// Register for device interface arrival and removal notifications for all interface classes.
+// The callback is called on a system thread. Returns NULL if notifications aren't available.
+typedef struct WIN_DeviceInterfaceNotification WIN_DeviceInterfaceNotification;
+typedef void (*WIN_DeviceInterfaceCallback)(void *userdata);
+extern WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_DeviceInterfaceCallback callback, void *userdata);
+extern void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification);
+
 // Ends C function definitions when using C++
 #ifdef __cplusplus
 }

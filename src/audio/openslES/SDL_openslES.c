@@ -427,6 +427,8 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
 
 static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
 {
+    struct SDL_PrivateAudioData *audiodata = NULL;
+
     /* according to https://developer.android.com/ndk/guides/audio/opensl/opensl-for-android,
        Android's OpenSL ES only supports Uint8 and _littleendian_ Sint16.
        (and float32, with an extension we use, below.) */
@@ -588,7 +590,7 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
     }
 #endif
 
-    struct SDL_PrivateAudioData *audiodata = device->hidden;
+    audiodata = device->hidden;
 
     // Create the audio buffer semaphore
     audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);

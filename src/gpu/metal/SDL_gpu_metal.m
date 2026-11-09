@@ -213,37 +213,38 @@ static MTLPixelFormat SDLToMetal_TextureFormat(SDL_GPUTextureFormat format)
 #undef RETURN_FORMAT
 
 static MTLVertexFormat SDLToMetal_VertexFormat[] = {
-    MTLVertexFormatInvalid,           // INVALID
-    MTLVertexFormatInt,               // INT
-    MTLVertexFormatInt2,              // INT2
-    MTLVertexFormatInt3,              // INT3
-    MTLVertexFormatInt4,              // INT4
-    MTLVertexFormatUInt,              // UINT
-    MTLVertexFormatUInt2,             // UINT2
-    MTLVertexFormatUInt3,             // UINT3
-    MTLVertexFormatUInt4,             // UINT4
-    MTLVertexFormatFloat,             // FLOAT
-    MTLVertexFormatFloat2,            // FLOAT2
-    MTLVertexFormatFloat3,            // FLOAT3
-    MTLVertexFormatFloat4,            // FLOAT4
-    MTLVertexFormatChar2,             // BYTE2
-    MTLVertexFormatChar4,             // BYTE4
-    MTLVertexFormatUChar2,            // UBYTE2
-    MTLVertexFormatUChar4,            // UBYTE4
-    MTLVertexFormatChar2Normalized,   // BYTE2_NORM
-    MTLVertexFormatChar4Normalized,   // BYTE4_NORM
-    MTLVertexFormatUChar2Normalized,  // UBYTE2_NORM
-    MTLVertexFormatUChar4Normalized,  // UBYTE4_NORM
-    MTLVertexFormatShort2,            // SHORT2
-    MTLVertexFormatShort4,            // SHORT4
-    MTLVertexFormatUShort2,           // USHORT2
-    MTLVertexFormatUShort4,           // USHORT4
-    MTLVertexFormatShort2Normalized,  // SHORT2_NORM
-    MTLVertexFormatShort4Normalized,  // SHORT4_NORM
-    MTLVertexFormatUShort2Normalized, // USHORT2_NORM
-    MTLVertexFormatUShort4Normalized, // USHORT4_NORM
-    MTLVertexFormatHalf2,             // HALF2
-    MTLVertexFormatHalf4              // HALF4
+    MTLVertexFormatInvalid,              // INVALID
+    MTLVertexFormatInt,                  // INT
+    MTLVertexFormatInt2,                 // INT2
+    MTLVertexFormatInt3,                 // INT3
+    MTLVertexFormatInt4,                 // INT4
+    MTLVertexFormatUInt,                 // UINT
+    MTLVertexFormatUInt2,                // UINT2
+    MTLVertexFormatUInt3,                // UINT3
+    MTLVertexFormatUInt4,                // UINT4
+    MTLVertexFormatFloat,                // FLOAT
+    MTLVertexFormatFloat2,               // FLOAT2
+    MTLVertexFormatFloat3,               // FLOAT3
+    MTLVertexFormatFloat4,               // FLOAT4
+    MTLVertexFormatChar2,                // BYTE2
+    MTLVertexFormatChar4,                // BYTE4
+    MTLVertexFormatUChar2,               // UBYTE2
+    MTLVertexFormatUChar4,               // UBYTE4
+    MTLVertexFormatChar2Normalized,      // BYTE2_NORM
+    MTLVertexFormatChar4Normalized,      // BYTE4_NORM
+    MTLVertexFormatUChar2Normalized,     // UBYTE2_NORM
+    MTLVertexFormatUChar4Normalized,     // UBYTE4_NORM
+    MTLVertexFormatShort2,               // SHORT2
+    MTLVertexFormatShort4,               // SHORT4
+    MTLVertexFormatUShort2,              // USHORT2
+    MTLVertexFormatUShort4,              // USHORT4
+    MTLVertexFormatShort2Normalized,     // SHORT2_NORM
+    MTLVertexFormatShort4Normalized,     // SHORT4_NORM
+    MTLVertexFormatUShort2Normalized,    // USHORT2_NORM
+    MTLVertexFormatUShort4Normalized,    // USHORT4_NORM
+    MTLVertexFormatHalf2,                // HALF2
+    MTLVertexFormatHalf4,                // HALF4
+    MTLVertexFormatUInt1010102Normalized // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToMetal_VertexFormat, SDL_arraysize(SDLToMetal_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -1816,12 +1817,15 @@ static void METAL_UploadToTexture(
 
         MetalTexture *metalTexture = METAL_INTERNAL_PrepareTextureForWrite(renderer, textureContainer, cycle);
 
+        Uint32 pixelsPerRow = source->pixels_per_row == 0 ? destination->w : source->pixels_per_row;
+        Uint32 rowsPerLayer = source->rows_per_layer == 0 ? destination->h : source->rows_per_layer;
+
         [metalCommandBuffer->blitEncoder
                  copyFromBuffer:bufferContainer->activeBuffer->handle
                    sourceOffset:source->offset
-              sourceBytesPerRow:BytesPerRow(destination->w, textureContainer->header.info.format)
+              sourceBytesPerRow:BytesPerRow(pixelsPerRow, textureContainer->header.info.format)
             // sourceBytesPerImage expects the stride between 2D images (slices) of a 3D texture, not the size of the entire region
-            sourceBytesPerImage:SDL_CalculateGPUTextureFormatSize(textureContainer->header.info.format, destination->w, destination->h, 1)
+            sourceBytesPerImage:SDL_CalculateGPUTextureFormatSize(textureContainer->header.info.format, pixelsPerRow, rowsPerLayer, 1)
                      sourceSize:MTLSizeMake(destination->w, destination->h, destination->d)
                       toTexture:metalTexture->handle
                destinationSlice:destination->layer
@@ -4474,11 +4478,10 @@ static void METAL_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(createinfo);
     createinfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    createinfo.enable_anisotropy = 0;
-    createinfo.enable_compare = 0;
     createinfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.min_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;

@@ -1340,6 +1340,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     if (isFullscreenSpace && !window->fullscreen_exclusive) {
         Cocoa_ToggleFullscreenSpaceMenuVisibility(window);
+    } else if (!isFullscreenSpace && ![NSMenu menuBarVisible]) {
+        // windowDidResignKey skips restoring the menu bar if the app was deactivated.
+        [NSMenu setMenuBarVisible:YES];
     }
     {
         const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
@@ -1369,7 +1372,17 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     }
 
     if (isFullscreenSpace) {
-        [NSMenu setMenuBarVisible:YES];
+        /* Showing the menu bar while the app is being deactivated can make macOS
+         * reactivate it, so defer it and skip it if another app or a fullscreen
+         * window has taken key. */
+        NSWindow *nswindow = _data.nswindow;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSWindow *key = [NSApp keyWindow];
+            if ([NSApp isActive] && ![nswindow isKeyWindow] &&
+                !(key && ([key styleMask] & NSWindowStyleMaskFullScreen))) {
+                [NSMenu setMenuBarVisible:YES];
+            }
+        });
     }
 }
 

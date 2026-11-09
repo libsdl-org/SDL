@@ -80,6 +80,7 @@ static void (*PIPEWIRE_pw_thread_loop_lock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_unlock)(struct pw_thread_loop *);
 static void (*PIPEWIRE_pw_thread_loop_signal)(struct pw_thread_loop *, bool);
 static void (*PIPEWIRE_pw_thread_loop_wait)(struct pw_thread_loop *);
+static int (*PIPEWIRE_pw_thread_loop_timed_wait)(struct pw_thread_loop *, int);
 static int (*PIPEWIRE_pw_thread_loop_start)(struct pw_thread_loop *);
 static struct pw_context *(*PIPEWIRE_pw_context_new)(struct pw_loop *, struct pw_properties *, size_t);
 static void (*PIPEWIRE_pw_context_destroy)(struct pw_context *);
@@ -185,6 +186,7 @@ static bool load_pipewire_syms(void)
     SDL_PIPEWIRE_SYM(pw_thread_loop_unlock);
     SDL_PIPEWIRE_SYM(pw_thread_loop_signal);
     SDL_PIPEWIRE_SYM(pw_thread_loop_wait);
+    SDL_PIPEWIRE_SYM(pw_thread_loop_timed_wait);
     SDL_PIPEWIRE_SYM(pw_thread_loop_start);
     SDL_PIPEWIRE_SYM(pw_context_new);
     SDL_PIPEWIRE_SYM(pw_context_destroy);
@@ -572,7 +574,7 @@ static void PIPEWIRECAMERA_CloseDevice(SDL_Camera *device)
 static bool PIPEWIRECAMERA_WaitDevice(SDL_Camera *device)
 {
     PIPEWIRE_pw_thread_loop_lock(hotplug.loop);
-    PIPEWIRE_pw_thread_loop_wait(hotplug.loop);
+    PIPEWIRE_pw_thread_loop_timed_wait(hotplug.loop, 1);  // if this hangs for a full second and still doesn't have a frame, we will return SDL_CAMERA_FRAME_SKIP and that's that, but we won't hang forever if no events ever arrive.
     PIPEWIRE_pw_thread_loop_unlock(hotplug.loop);
     return true;
 }

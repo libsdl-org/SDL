@@ -49,9 +49,17 @@ extern "C" {
  * A struct to provide locale data.
  *
  * Locale data is split into a spoken language, like English, and an optional
- * country, like Canada. The language will be in ISO-639 format (so English
- * would be "en"), and the country, if not NULL, will be an ISO-3166 country
- * code (so Canada would be "CA").
+ * country, like Canada.
+ *
+ * Language strings are ISO-639 language specifiers (such as "en" for English,
+ * "de" for German, etc). Country strings are ISO-3166 country codes (such as
+ * "US" for the United States, "CA" for Canada, etc). The country might be
+ * NULL if there's no specific guidance on them (so you might have `{ "en",
+ * "US" }` for American English, but `{ "en", NULL }` means "English language,
+ * generically"). Language strings are never NULL.
+ *
+ * Please note that not all of these strings are 2 characters; some are three
+ * or more.
  *
  * \since This struct is available since SDL 3.2.0.
  *
@@ -66,27 +74,38 @@ typedef struct SDL_Locale
 /**
  * Report the user's preferred locale.
  *
- * Returned language strings are in the format xx, where 'xx' is an ISO-639
- * language specifier (such as "en" for English, "de" for German, etc).
- * Country strings are in the format YY, where "YY" is an ISO-3166 country
- * code (such as "US" for the United States, "CA" for Canada, etc). Country
- * might be NULL if there's no specific guidance on them (so you might get {
- * "en", "US" } for American English, but { "en", NULL } means "English
- * language, generically"). Language strings are never NULL, except to
- * terminate the array.
- *
- * Please note that not all of these strings are 2 characters; some are three
- * or more.
- *
- * The returned list of locales are in the order of the user's preference. For
+ * This returns a NULL-terminated array of pointers to locale information. The
+ * returned list of locales are in the order of the user's preference. For
  * example, a German citizen that is fluent in US English and knows enough
- * Japanese to navigate around Tokyo might have a list like: { "de", "en_US",
- * "jp", NULL }. Someone from England might prefer British English (where
- * "color" is spelled "colour", etc), but will settle for anything like it: {
- * "en_GB", "en", NULL }.
+ * Japanese to navigate around Tokyo might have a list like:
+ *
+ * ```c
+ * {
+ *     { "de", "DE" },
+ *     { "en", "US" },
+ *     { "jp", NULL },
+ *     NULL
+ * }
+ * ```
+ *
+ * Someone from England might prefer British English (where "color" is spelled
+ * "colour", etc), but will settle for anything like it:
+ *
+ * ```c
+ * {
+ *     { "en", "GB" },
+ *     { "en", NULL },
+ *     NULL
+ * }
+ * ```
  *
  * This function returns NULL on error, including when the platform does not
  * supply this information at all.
+ *
+ * Note that this information is merely guidance; some platforms don't supply
+ * it, some only supply a single language ever, some don't ever provide
+ * country information, etc. Be prepared to receive surprising results and
+ * plan to have fallbacks.
  *
  * This might be a "slow" call that has to query the operating system. It's
  * best to ask for this once and save the results. However, this list can
@@ -95,12 +114,20 @@ typedef struct SDL_Locale
  * if possible, and you can call this function again to get an updated copy of
  * preferred locales.
  *
+ * The returned pointer is a single allocation (all the strings and structures
+ * are allocated in a single chunk, even though they look like separate data),
+ * and should be disposed of with a single call to SDL_free() when it is no
+ * longer needed.
+ *
+ * If not NULL, `*count` will be set to number of items returned, not counting
+ * the terminating NULL pointer. `count` may be NULL if one plans to simply
+ * iterate the returned array directly.
+ *
  * \param count a pointer filled in with the number of locales returned, may
  *              be NULL.
- * \returns a NULL terminated array of locale pointers, or NULL on failure;
- *          call SDL_GetError() for more information. This is a single
- *          allocation that should be freed with SDL_free() when it is no
- *          longer needed.
+ * \returns a NULL-terminated array of locale pointers, or NULL on failure;
+ *          call SDL_GetError() for more information. Call SDL_free() when
+ *          done with this pointer.
  *
  * \threadsafety This function is not thread safe.
  *

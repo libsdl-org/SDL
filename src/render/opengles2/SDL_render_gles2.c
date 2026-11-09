@@ -199,8 +199,6 @@ typedef struct GLES2_RenderData
     GLES2_ShaderIncludeType texcoord_precision_hint;
 } GLES2_RenderData;
 
-#define GLES2_MAX_CACHED_PROGRAMS 8
-
 static const char *GL_TranslateError(GLenum error)
 {
 #define GL_ERROR_TRANSLATE(e) \
@@ -409,6 +407,9 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     }
     if (entry) {
         if (data->program_cache.head != entry) {
+            if (entry == data->program_cache.tail) {
+                data->program_cache.tail = entry->prev;
+            }
             if (entry->next) {
                 entry->next->prev = entry->prev;
             }
@@ -480,15 +481,6 @@ static GLES2_ProgramCacheEntry *GLES2_CacheProgram(GLES2_RenderData *data, GLuin
     data->program_cache.head = entry;
     ++data->program_cache.count;
 
-    // Evict the last entry from the cache if we exceed the limit
-    if (data->program_cache.count > GLES2_MAX_CACHED_PROGRAMS) {
-        GLES2_ProgramCacheEntry *oldest = data->program_cache.tail;
-        data->program_cache.tail = oldest->prev;
-        data->glDeleteProgram(oldest->id);
-        SDL_free(oldest->shader_params);
-        SDL_free(oldest);
-        --data->program_cache.count;
-    }
     return entry;
 }
 

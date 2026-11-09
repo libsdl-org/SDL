@@ -162,11 +162,15 @@ static struct
 
 
 SDL_Mutex *SDL_event_lock = NULL; // This needs to support recursive locks
+SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
 
 void SDL_CreateEventLock(void)
 {
     if (!SDL_event_lock) {
         SDL_event_lock = SDL_CreateMutex();
+    }
+    if (!SDL_joystick_lock) {
+        SDL_joystick_lock = SDL_CreateMutex();
     }
 }
 
@@ -175,6 +179,10 @@ void SDL_DestroyEventLock(void)
     if (SDL_event_lock) {
         SDL_DestroyMutex(SDL_event_lock);
         SDL_event_lock = NULL;
+    }
+    if (SDL_joystick_lock) {
+        SDL_DestroyMutex(SDL_joystick_lock);
+        SDL_joystick_lock = NULL;
     }
 }
 

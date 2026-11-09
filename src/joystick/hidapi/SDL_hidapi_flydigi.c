@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include <stdint.h>
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -91,23 +92,31 @@ typedef struct
 {
     SDL_HIDAPI_Device *device;
     Uint8 deviceID;
-    bool available;
     bool has_cz;
     bool has_lmrm;
     bool has_circle;
+    bool has_trigger_rumble;
     bool wireless;
     bool sensors_supported;
     bool sensors_enabled;
     Uint16 firmware_version;
     Uint64 sensor_timestamp_ns; // Simulate onboard clock. Advance by known time step. Nanoseconds.
     Uint64 sensor_timestamp_step_ns; // Based on observed rate of receipt of IMU sensor packets.
+    // Convertion from raw values to meters per second squared.
     float accelScale;
-    float gyroScale;
-    float gyroYawScale;
-    float gyroRollScale;
-    Sint8 gyroSign[3];
+    // Convertion from raw values to radians per second.
+    // A negative value means that the gyro axis is inverted.
+    // X Y Z
+    // https://wiki.libsdl.org/SDL2/SDL_SensorType
+    float gyroScale[3];
     Uint64 next_heartbeat;
+    Uint64 next_status_request;
     Uint64 last_packet;
+    bool acquired;
+    Uint8 low_frequency_rumble;
+    Uint8 high_frequency_rumble;
+    Uint8 left_trigger_rumble;
+    Uint8 right_trigger_rumble;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverFlydigi_Context;
 
@@ -249,7 +258,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_lmrm = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
         break;
     case SDL_FLYDIGI_APEX6:
@@ -257,7 +266,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_lmrm = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_APEX5_DONGLE_NS : SENSOR_INTERVAL_APEX5_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER2:
@@ -278,12 +287,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
-        ctx->gyroScale = DEG2RAD(72000.0f);
-        ctx->gyroYawScale = DEG2RAD(72000.0f);
-        ctx->gyroRollScale = DEG2RAD(1200.0f);
-        ctx->gyroSign[0] = -1;
-        ctx->gyroSign[1] = -1;
-        ctx->gyroSign[2] = -1;
+        ctx->gyroScale[0] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(1200.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER4_PRO:
@@ -291,12 +297,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
-        ctx->gyroScale = DEG2RAD(72000.0f);
-        ctx->gyroYawScale = DEG2RAD(72000.0f);
-        ctx->gyroRollScale = DEG2RAD(1200.0f);
-        ctx->gyroSign[0] = -1;
-        ctx->gyroSign[1] = -1;
-        ctx->gyroSign[2] = -1;
+        ctx->gyroScale[0] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(72000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(1200.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         break;
     case SDL_FLYDIGI_VADER5_PRO:
@@ -304,9 +307,10 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->has_lmrm = true;
         ctx->has_circle = true;
+        ctx->has_trigger_rumble = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
-        ctx->gyroScale = DEG2RAD(2000.0f);
+        ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = SENSOR_INTERVAL_VADER5_PRO_NS;
         break;
     case SDL_FLYDIGI_DIREWOLF_4:
@@ -314,12 +318,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->has_cz = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
-        ctx->gyroScale = DEG2RAD(134000.0f);
-        ctx->gyroYawScale = DEG2RAD(131000.0f);
-        ctx->gyroRollScale = DEG2RAD(2030.0f);
-        ctx->gyroSign[0] = -1;
-        ctx->gyroSign[1] = -1;
-        ctx->gyroSign[2] = -1;
+        ctx->gyroScale[0] = -DEG2RAD(134000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(131000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(2030.0f);
         ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS : SENSOR_INTERVAL_DIREWOLF4_WIRED_NS;
         break;
     default:
@@ -330,31 +331,35 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
 
 static void HIDAPI_DriverFlydigi_SetAvailable(SDL_HIDAPI_Device *device, bool available)
 {
-    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
-
-    if (available == ctx->available) {
-        return;
-    }
-
     if (available) {
+        // Include this device in queries so the Xbox endpoint is hidden
+        device->unavailable = false;
+
         if (device->num_joysticks == 0) {
             HIDAPI_JoystickConnected(device, NULL);
         }
-    } else {
+    } else if (!device->unavailable) {
+        // Don't include this device in queries so the Xbox endpoint shows up
+        device->unavailable = true;
+
         if (device->num_joysticks > 0) {
             HIDAPI_JoystickDisconnected(device, device->joysticks[0]);
+        } else {
+            SDL_RequestJoystickDeviceUpdate(true);
         }
     }
-    ctx->available = available;
+}
+
+static bool HIDAPI_DriverFlydigi_UsesUnnumberedReports(SDL_HIDAPI_Device *device)
+{
+    // We know that at the very least the Vader 5 now uses unnumbered reports for commands instead of FLYDIGI_V2_CMD_REPORT_ID.
+    // If other Flydigi things prove to do the same, we can tweak this check to be more general.
+    return (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && (device->product_id == USB_PRODUCT_FLYDIGI_V2_VADER || device->product_id == USB_PRODUCT_FLYDIGI_V2_APEX6));
 }
 
 static int HIDAPI_DriverFlydigi_WritePacket(SDL_HIDAPI_Device *device, const Uint8 *data, size_t size)
 {
-    // We know that at the very least the Vader 5 now uses unnumbered reports for commands instead of FLYDIGI_V2_CMD_REPORT_ID.
-    // If other Flydigi things prove to do the same, we can tweak this check to be more general.
-    bool bUsesUnnumberedReports = (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && (device->product_id == USB_PRODUCT_FLYDIGI_V2_VADER || device->product_id == USB_PRODUCT_FLYDIGI_V2_APEX6));
-
-    if (bUsesUnnumberedReports && data[0] == FLYDIGI_V2_CMD_REPORT_ID) {
+    if (HIDAPI_DriverFlydigi_UsesUnnumberedReports(device) && data[0] == FLYDIGI_V2_CMD_REPORT_ID) {
         // Zero out the report byte.
         Uint8 output[USB_PACKET_LENGTH];
         SDL_memcpy(output, data, SDL_min(size, USB_PACKET_LENGTH));
@@ -530,31 +535,6 @@ static void HIDAPI_DriverFlydigi_HandleInfoResponse(SDL_Joystick *joystick, SDL_
     SDL_SendJoystickPowerInfo(joystick, state, percent);
 }
 
-static bool SDL_HIDAPI_Flydigi_SendStatusRequest(SDL_HIDAPI_Device *device)
-{
-    const Uint8 cmd[] = {
-        FLYDIGI_V2_CMD_REPORT_ID,
-        FLYDIGI_V2_MAGIC1,
-        FLYDIGI_V2_MAGIC2,
-        FLYDIGI_V2_GET_STATUS_COMMAND
-    };
-
-    if (HIDAPI_DriverFlydigi_WritePacket(device, cmd, sizeof(cmd)) < 0) {
-        return SDL_SetError("Couldn't query controller status");
-    }
-    return true;
-}
-
-static void HIDAPI_DriverFlydigi_HandleStatusResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
-{
-    if (data[9] == 1) {
-        HIDAPI_DriverFlydigi_SetAvailable(device, true);
-    } else {
-        // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
-        HIDAPI_DriverFlydigi_SetAvailable(device, false);
-    }
-}
-
 static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, bool acquire)
 {
     const Uint8 cmd[32] = {
@@ -575,8 +555,40 @@ static bool SDL_HIDAPI_Flydigi_SendAcquireRequest(SDL_HIDAPI_Device *device, boo
 
 static void HIDAPI_DriverFlydigi_HandleAcquireResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
 {
-    if (data[5] != 1 && data[6] == 0) {
-        // Controller acquiring failed or has been disabled
+    // This response might be from another application (e.g. the Space Station Service)
+    // so let's rely on the status response to determine whether the controller is available
+}
+
+static bool SDL_HIDAPI_Flydigi_SendStatusRequest(SDL_HIDAPI_Device *device)
+{
+    const Uint8 cmd[] = {
+        FLYDIGI_V2_CMD_REPORT_ID,
+        FLYDIGI_V2_MAGIC1,
+        FLYDIGI_V2_MAGIC2,
+        FLYDIGI_V2_GET_STATUS_COMMAND
+    };
+
+    if (HIDAPI_DriverFlydigi_WritePacket(device, cmd, sizeof(cmd)) < 0) {
+        return SDL_SetError("Couldn't query controller status");
+    }
+    return true;
+}
+
+static void HIDAPI_DriverFlydigi_HandleStatusResponse(SDL_HIDAPI_Device *device, Uint8 *data, int size)
+{
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    if (data[9] == 1) {
+        HIDAPI_DriverFlydigi_SetAvailable(device, true);
+
+        // The Space Station service can stop input while third party apps are still allowed,
+        // so release and re-acquire the controller if it looks like we should be able to.
+        if (device->num_joysticks > 0 && ctx->acquired && data[6] == 0) {
+            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
+            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
+        }
+    } else {
+        // Click "Allow third-party apps to take over mappings" in the FlyDigi Space Station app
         HIDAPI_DriverFlydigi_SetAvailable(device, false);
     }
 }
@@ -661,7 +673,10 @@ static bool HIDAPI_DriverFlydigi_InitControllerV2(SDL_HIDAPI_Device *device)
     HIDAPI_DriverFlydigi_UpdateDeviceIdentity(device);
 
     // See whether we can acquire the controller
-    SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+    if (SDL_HIDAPI_Flydigi_SendStatusRequest(device) &&
+        GetReply(device, FLYDIGI_V2_GET_STATUS_COMMAND, data, sizeof(data))) {
+        HIDAPI_DriverFlydigi_HandleStatusResponse(device, data, sizeof(data));
+    }
 
     return true;
 }
@@ -683,15 +698,6 @@ static bool HIDAPI_DriverFlydigi_InitDevice(SDL_HIDAPI_Device *device)
     }
 }
 
-static int HIDAPI_DriverFlydigi_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverFlydigi_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
@@ -699,6 +705,10 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     SDL_AssertJoysticksLocked();
 
     SDL_zeroa(ctx->last_state);
+    ctx->low_frequency_rumble = 0;
+    ctx->high_frequency_rumble = 0;
+    ctx->left_trigger_rumble = 0;
+    ctx->right_trigger_rumble = 0;
 
     // Initialize the joystick capabilities
     joystick->nbuttons = SDL_GAMEPAD_NUM_BASE_FLYDIGI_BUTTONS;
@@ -726,6 +736,24 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     return true;
 }
 
+static bool HIDAPI_DriverFlydigi_SendRumbleV2(SDL_DriverFlydigi_Context *ctx)
+{
+    SDL_HIDAPI_Device *device = ctx->device;
+    Uint8 rumble_packet[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_HAPTIC_COMMAND, 6, 0, 0, 0, 0, 0 };
+    rumble_packet[5] = ctx->low_frequency_rumble;
+    rumble_packet[6] = ctx->high_frequency_rumble;
+    rumble_packet[7] = ctx->left_trigger_rumble;
+    rumble_packet[8] = ctx->right_trigger_rumble;
+    if (HIDAPI_DriverFlydigi_UsesUnnumberedReports(device)) {
+        rumble_packet[0] = 0;
+    }
+
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return true;
+}
+
 static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
@@ -740,6 +768,9 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
         Uint8 rumble_packet[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_HAPTIC_COMMAND, 6, 0, 0, 0, 0, 0 };
         rumble_packet[5] = low_frequency_rumble >> 8;
         rumble_packet[6] = high_frequency_rumble >> 8;
+        if (HIDAPI_DriverFlydigi_UsesUnnumberedReports(device)) {
+            rumble_packet[0] = 0;
+        }
 
         if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
             return SDL_SetError("Couldn't send rumble packet");
@@ -750,22 +781,26 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 
 static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
 {
-    return SDL_Unsupported();
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+
+    if (!ctx->has_trigger_rumble) {
+        return SDL_Unsupported();
+    }
+
+    ctx->left_trigger_rumble = left_rumble >> 8;
+    ctx->right_trigger_rumble = right_rumble >> 8;
+    return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
 }
 
 static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
-    return SDL_JOYSTICK_CAP_RUMBLE;
-}
+    SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
+    Uint32 caps = SDL_JOYSTICK_CAP_RUMBLE;
 
-static bool HIDAPI_DriverFlydigi_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverFlydigi_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
+    if (ctx->has_trigger_rumble) {
+        caps |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
+    }
+    return caps;
 }
 
 static bool HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -886,18 +921,10 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV1(SDL_Joystick *joystick, SDL
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        // Pitch and yaw scales may be receiving extra filtering for the sake of bespoke direct mouse output.
-        // As result, roll has a different scaling factor than pitch and yaw.
-        // The scales are per-model and even per-axis, so they are set per device
-        // in the identity switch (the Vader 3/4 Pro carry the 72000/1200
-        // estimates. RemapVal maps the full int16 range to +/- the scale.
-        const float flPitchScale = ctx->gyroScale;
-        const float flYawScale = ctx->gyroYawScale;
-        const float flRollScale = ctx->gyroRollScale;
-
-        values[0] = HIDAPI_RemapVal((float)ctx->gyroSign[0] * LOAD16(data[26], data[27]), INT16_MIN, INT16_MAX, -flPitchScale, flPitchScale);
-        values[1] = HIDAPI_RemapVal((float)ctx->gyroSign[1] * LOAD16(data[18], data[20]), INT16_MIN, INT16_MAX, -flYawScale, flYawScale);
-        values[2] = HIDAPI_RemapVal((float)ctx->gyroSign[2] * LOAD16(data[29], data[30]), INT16_MIN, INT16_MAX, -flRollScale, flRollScale);
+        const float *flGyroScale = ctx->gyroScale;
+        values[0] = LOAD16(data[26], data[27]) * flGyroScale[0] / INT16_MAX; // Acceleration along pitch axis
+        values[1] = LOAD16(data[18], data[20]) * flGyroScale[1] / INT16_MAX;  // Acceleration along yaw axis
+        values[2] = LOAD16(data[29], data[30]) * flGyroScale[2] / INT16_MAX;  // Acceleration along roll axis
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, values, 3);
 
         const float flAccelScale = ctx->accelScale;
@@ -1041,7 +1068,7 @@ static void HIDAPI_DriverFlydigi_HandleStatePacketV2(SDL_Joystick *joystick, SDL
         sensor_timestamp = ctx->sensor_timestamp_ns;
         ctx->sensor_timestamp_ns += ctx->sensor_timestamp_step_ns;
 
-        const float flGyroScale = ctx->gyroScale;
+        const float flGyroScale = ctx->gyroScale[0];
         values[0] = HIDAPI_RemapVal((float)LOAD16(data[17], data[18]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         values[1] = HIDAPI_RemapVal((float)LOAD16(data[21], data[22]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
         values[2] = HIDAPI_RemapVal(-(float)LOAD16(data[19], data[20]), INT16_MIN, INT16_MAX, -flGyroScale, flGyroScale);
@@ -1113,11 +1140,26 @@ static bool HIDAPI_DriverFlydigi_UpdateDevice(SDL_HIDAPI_Device *device)
         joystick = SDL_GetJoystickFromID(device->joysticks[0]);
     }
 
-    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2 && joystick) {
-        if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
-            SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true);
-            SDL_HIDAPI_Flydigi_SendInfoRequest(device);
-            ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V2) {
+        if (joystick) {
+            if (!ctx->next_heartbeat || now >= ctx->next_heartbeat) {
+                if (SDL_HIDAPI_Flydigi_SendAcquireRequest(device, true)) {
+                    ctx->acquired = true;
+                }
+                SDL_HIDAPI_Flydigi_SendInfoRequest(device);
+                SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+                ctx->next_heartbeat = now + FLYDIGI_ACQUIRE_CONTROLLER_HEARTBEAT_TIME;
+
+                // Time the input timeout from the heartbeat so we don't send it again before the replies arrive
+                ctx->last_packet = now;
+            }
+        } else if (device->num_joysticks == 0 && !device->unavailable) {
+            // We don't know yet whether we can use the controller, and the status reply might have been lost
+            const int STATUS_RETRY_MS = 1000;
+            if (now >= ctx->next_status_request) {
+                SDL_HIDAPI_Flydigi_SendStatusRequest(device);
+                ctx->next_status_request = now + STATUS_RETRY_MS;
+            }
         }
     }
 
@@ -1156,30 +1198,21 @@ static void HIDAPI_DriverFlydigi_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     //SDL_HIDAPI_Flydigi_SendAcquireRequest(device, false);
 }
 
-static void HIDAPI_DriverFlydigi_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi = {
-    SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI,
-    true,
-    HIDAPI_DriverFlydigi_RegisterHints,
-    HIDAPI_DriverFlydigi_UnregisterHints,
-    HIDAPI_DriverFlydigi_IsEnabled,
-    HIDAPI_DriverFlydigi_IsSupportedDevice,
-    HIDAPI_DriverFlydigi_InitDevice,
-    HIDAPI_DriverFlydigi_GetDevicePlayerIndex,
-    HIDAPI_DriverFlydigi_SetDevicePlayerIndex,
-    HIDAPI_DriverFlydigi_UpdateDevice,
-    HIDAPI_DriverFlydigi_OpenJoystick,
-    HIDAPI_DriverFlydigi_RumbleJoystick,
-    HIDAPI_DriverFlydigi_RumbleJoystickTriggers,
-    HIDAPI_DriverFlydigi_GetJoystickCapabilities,
-    HIDAPI_DriverFlydigi_SetJoystickLED,
-    HIDAPI_DriverFlydigi_SendJoystickEffect,
-    HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled,
-    HIDAPI_DriverFlydigi_CloseJoystick,
-    HIDAPI_DriverFlydigi_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_FLYDIGI,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverFlydigi_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverFlydigi_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverFlydigi_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverFlydigi_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverFlydigi_InitDevice,
+    .UpdateDevice = HIDAPI_DriverFlydigi_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverFlydigi_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverFlydigi_RumbleJoystick,
+    .RumbleJoystickTriggers = HIDAPI_DriverFlydigi_RumbleJoystickTriggers,
+    .GetJoystickCapabilities = HIDAPI_DriverFlydigi_GetJoystickCapabilities,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverFlydigi_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverFlydigi_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_FLYDIGI

@@ -85,6 +85,7 @@ class SdlPlatform(Enum):
     OpenBSD = "openbsd"
     NGage = "ngage"
     DJGPP = "djgpp"
+    HarmonyOS = "harmonyos"
 
 
 class Msys2Platform(Enum):
@@ -116,10 +117,12 @@ class JobSpec:
     xcode: bool = False
     android_mk: bool = False
     android_gradle: bool = False
+    harmonyos_hvigor: bool = False
     lean: bool = False
     android_arch: Optional[str] = None
     android_abi: Optional[str] = None
     android_platform: Optional[int] = None
+    openharmony_platform: Optional[str] = None
     msys2_platform: Optional[Msys2Platform] = None
     intel: Optional[IntelCompiler] = None
     apple_framework: Optional[bool] = None
@@ -130,6 +133,9 @@ class JobSpec:
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
     more_hard_deps: bool = False
+    allow_failure: bool = False
+
+
 JOB_SPECS = {
     "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
@@ -150,7 +156,7 @@ JOB_SPECS = {
     "steamrt4-arm64": JobSpec(name="Steam Linux Runtime 4.0 (arm64)",       priority=False, os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-steamrt4-arm64",     container="registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk/arm64:latest", more_hard_deps = True, ),
     "ubuntu-intel-icx": JobSpec(name="Ubuntu 24.04 (Intel oneAPI)",         priority=False, os=JobOs.Ubuntu24_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-oneapi", intel=IntelCompiler.Icx, ),
     "ubuntu-intel-icc": JobSpec(name="Ubuntu 22.04 (Intel Compiler)",       priority=False, os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04-icc",    intel=IntelCompiler.Icc, ),
-    "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x64)",         priority=False, os=JobOs.Macos14,           platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
+    "macos-framework-x64":  JobSpec(name="MacOS (Framework) (x64)",         priority=False, os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact="SDL-macos-framework",    apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-framework-arm64": JobSpec(name="MacOS (Framework) (arm64)",      priority=True,  os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, xcode=True, ),
     "macos-26-framework-arm64": JobSpec(name="MacOS 26 (Framework) (arm64)",priority=False, os=JobOs.Macos26,           platform=SdlPlatform.MacOS,       artifact=None,                     apple_framework=True,  apple_archs={AppleArch.Aarch64, AppleArch.X86_64, }, ),
     "macos-gnu-arm64": JobSpec(name="MacOS (GNU prefix)",                   priority=False, os=JobOs.MacosLatest,       platform=SdlPlatform.MacOS,       artifact="SDL-macos-arm64-gnu",    apple_framework=False, apple_archs={AppleArch.Aarch64, },  ),
@@ -176,6 +182,7 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "djgpp": JobSpec(name="DOS (DJGPP)",                                    priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
+    "harmonyos-hvigor": JobSpec(name="HarmonyOS/OpenHarmony (hvigor)",      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.HarmonyOS,   artifact=None,                     no_cmake=True, harmonyos_hvigor=True ),
 }
 
 
@@ -201,6 +208,7 @@ class JobDetails:
     platform: str
     artifact: str
     no_cmake: bool
+    commit: str = ""
     ccache: bool = False
     build_tests: bool = True
     container: str = ""
@@ -238,6 +246,7 @@ class JobDetails:
     android_ndk: bool = False
     android_mk: bool = False
     android_gradle: bool = False
+    harmonyos_hvigor: bool = False
     minidump: bool = False
     intel: bool = False
     msys2_msystem: str = ""
@@ -265,10 +274,12 @@ class JobDetails:
     setup_gage_sdk_path: str = ""
     binutils_strings: str = "strings"
     ctest_args: str = ""
+    allow_failure: bool = False
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
         data = {
             "name": self.name,
+            "commit": self.commit,
             "key": self.key,
             "os": self.os,
             "ccache": self.ccache,
@@ -312,6 +323,7 @@ class JobDetails:
             "android-apks": my_shlex_join(self.android_apks),
             "android-gradle": self.android_gradle,
             "android-mk": self.android_mk,
+            "harmonyos-hvigor": self.harmonyos_hvigor,
             "werror": self.werror,
             "sudo": self.sudo,
             "msvc-vcvars-arch": self.msvc_vcvars_arch,
@@ -336,6 +348,7 @@ class JobDetails:
             "setup-ngage-sdk-path": self.setup_gage_sdk_path,
             "binutils-strings": self.binutils_strings,
             "ctest-args": self.ctest_args,
+            "allow-failure": self.allow_failure,
         }
         return {k: v for k, v in data.items() if v != ""}
 
@@ -351,16 +364,18 @@ def my_shlex_join(s):
     return " ".join(escape(s))
 
 
-def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args: list[str]) -> JobDetails:
+def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args: list[str], commit: str) -> JobDetails:
     job = JobDetails(
         name=spec.name,
         key=key,
         os=spec.os.value,
+        commit=commit,
         artifact=spec.artifact or "",
         container=spec.container or "",
         platform=spec.platform.value,
         sudo="sudo",
         no_cmake=spec.no_cmake,
+        allow_failure=spec.allow_failure,
     )
     spec_arch = get_job_arch(spec.os)
     if job.os.startswith("ubuntu"):
@@ -806,13 +821,13 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.msys2_packages.extend([
                 f"{msys2_env}-cc",
                 f"{msys2_env}-cmake",
-                f"{msys2_env}-ffmpeg",
                 f"{msys2_env}-ninja",
                 f"{msys2_env}-pkg-config",
             ])
             if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
-                job.msys2_packages.append(f"{msys2_env}-perl")
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
+                job.msys2_packages.append(f"{msys2_env}-perl")
+                job.msys2_packages.append(f"{msys2_env}-ffmpeg")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
         case SdlPlatform.Cygwin:
@@ -859,23 +874,23 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             match spec.platform:
                 case SdlPlatform.FreeBSD:
                     job.cpactions_os = "freebsd"
-                    job.cpactions_version = "14.4"
+                    job.cpactions_version = "15.1"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "sudo pkg update"
-                    job.cpactions_install_cmd = "sudo pkg install -y cmake ninja pkgconf libXcursor libXext libXinerama libXi libXfixes libXrandr libXScrnSaver libXxf86vm wayland wayland-protocols libxkbcommon mesa-libs libglvnd evdev-proto libinotify alsa-lib jackit pipewire pulseaudio sndio dbus zh-fcitx ibus libudev-devd"
+                    job.cpactions_install_cmd = "sudo pkg install -y cmake-core ninja pkgconf libXcursor libXext libXinerama libXi libXfixes libXrandr libXScrnSaver libXxf86vm wayland wayland-protocols libxkbcommon mesa-libs libglvnd evdev-proto libinotify alsa-lib jackit pipewire pulseaudio sndio dbus zh-fcitx ibus libudev-devd"
                     job.cmake_arguments.extend((
                         "-DSDL_CHECK_REQUIRED_INCLUDES=/usr/local/include",
                         "-DSDL_CHECK_REQUIRED_LINK_OPTIONS=-L/usr/local/lib",
                     ))
                 case SdlPlatform.NetBSD:
                     job.cpactions_os = "netbsd"
-                    job.cpactions_version = "10.1"
+                    job.cpactions_version = "11.0"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "export PATH=\"/usr/pkg/sbin:/usr/pkg/bin:/sbin:$PATH\"; export PKG_CONFIG_PATH=\"/usr/pkg/lib/pkgconfig\";export PKG_PATH=\"https://cdn.netBSD.org/pub/pkgsrc/packages/NetBSD/$(uname -p)/$(uname -r|cut -f \"1 2\" -d.)/All/\";echo \"PKG_PATH=$PKG_PATH\";echo \"uname -a -> \"$(uname -a)\"\";sudo -E sysctl -w security.pax.aslr.enabled=0;sudo -E sysctl -w security.pax.aslr.global=0;sudo -E pkgin clean;sudo -E pkgin update"
                     job.cpactions_install_cmd = "sudo -E pkgin -y install cmake dbus pkgconf ninja-build pulseaudio libxkbcommon wayland wayland-protocols libinotify libusb1"
                 case SdlPlatform.OpenBSD:
                     job.cpactions_os = "openbsd"
-                    job.cpactions_version = "7.7"
+                    job.cpactions_version = "8.0"
                     job.cpactions_arch = "x86-64"
                     job.cpactions_setup_cmd = "sudo pkg_add -u"
                     job.cpactions_install_cmd = "sudo pkg_add cmake ninja pkgconf wayland wayland-protocols libxkbcommon libinotify pulseaudio dbus ibus"
@@ -906,6 +921,12 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.run_tests = False
             job.test_pkg_config = False
             job.cmake_toolchain_file = "$GITHUB_WORKSPACE/build-scripts/i586-pc-msdosdjgpp.cmake"
+        case SdlPlatform.HarmonyOS:
+            job.harmonyos_hvigor = spec.harmonyos_hvigor
+            job.run_tests = False
+            job.shared_lib = SharedLibType.SO
+            job.static_lib = StaticLibType.A
+            job.apt_packages = []
         case _:
             raise ValueError(f"Unsupported platform={spec.platform}")
 
@@ -941,13 +962,14 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
     return job
 
 
-def spec_to_platform(spec: JobSpec, key: str, enable_artifacts: bool, trackmem_symbol_names: bool, ctest_args:list[str]) -> dict[str, str|bool]:
+def spec_to_platform(spec: JobSpec, key: str, commit: str, enable_artifacts: bool, trackmem_symbol_names: bool, ctest_args:list[str]) -> dict[str, str|bool]:
     logger.info("spec=%r", spec)
     job = spec_to_job(
         spec,
         key=key,
         trackmem_symbol_names=trackmem_symbol_names,
         ctest_args=ctest_args,
+        commit=commit,
     )
     logger.info("job=%r", job)
     platform = job.to_workflow(enable_artifacts=enable_artifacts)
@@ -964,6 +986,7 @@ def main():
     parser.add_argument("--no-artifact", dest="enable_artifacts", action="store_false")
     parser.add_argument("--trackmem-symbol-names", dest="trackmem_symbol_names", action="store_true")
     parser.add_argument("--priority-only", dest="priority_only", action="store_true")
+    parser.add_argument("--commit", dest="commit", default="")
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.INFO if args.verbose else logging.WARNING)
@@ -1004,7 +1027,7 @@ def main():
 
     all_level_platforms = {}
 
-    all_platforms = {key: spec_to_platform(spec, key=key, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names, ctest_args=ctest_args) for key, spec in JOB_SPECS.items()}
+    all_platforms = {key: spec_to_platform(spec, key=key, commit=args.commit, enable_artifacts=args.enable_artifacts, trackmem_symbol_names=args.trackmem_symbol_names, ctest_args=ctest_args) for key, spec in JOB_SPECS.items()}
 
     for level_i, level_keys in enumerate(all_level_keys, 1):
         level_key = f"level{level_i}"

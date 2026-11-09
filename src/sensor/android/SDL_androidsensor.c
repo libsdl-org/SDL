@@ -71,7 +71,13 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
         Uint64 timestamp = SDL_GetTicksNS();
 
         if (ALooper_pollOnce(-1, NULL, &events, (void **)&source) == LOOPER_ID_USER) {
-            SDL_LockSensors();
+            // Don't block on the sensor lock, it may be held by a thread waiting for us to quit
+            while (!SDL_TryLockSensors()) {
+                if (!SDL_GetAtomicInt(&ctx->running)) {
+                    return 0;
+                }
+                SDL_DelayNS(SDL_US_TO_NS(100));
+            }
             for (i = 0; i < SDL_sensors_count; ++i) {
                 if (!SDL_sensors[i].event_queue) {
                     continue;
@@ -83,10 +89,10 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
                 }
             }
             SDL_UnlockSensors();
+
+            SDL_DispatchSensorEvents();
         }
     }
-
-    SDL_sensor_looper = NULL;
 
     return 0;
 }
@@ -103,6 +109,11 @@ static void SDL_ANDROID_StopSensorThread(SDL_AndroidSensorThreadContext *ctx)
         }
         SDL_WaitThread(ctx->thread, &result);
         ctx->thread = NULL;
+    }
+
+    if (SDL_sensor_looper) {
+        ALooper_release(SDL_sensor_looper);
+        SDL_sensor_looper = NULL;
     }
 
     if (ctx->sem) {
@@ -128,6 +139,9 @@ static bool SDL_ANDROID_StartSensorThread(SDL_AndroidSensorThreadContext *ctx)
 
     // Wait for the sensor thread to start
     SDL_WaitSemaphore(ctx->sem);
+
+    // Hold a reference to the sensor thread's looper so it stays valid until the thread has been stopped
+    ALooper_acquire(SDL_sensor_looper);
 
     return true;
 }
@@ -258,11 +272,9 @@ static void SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 
 static void SDL_ANDROID_SensorQuit(void)
 {
-    // All sensors are closed, but we need to unblock the sensor thread
+    // All sensors are closed, stop the sensor thread.
     SDL_AssertSensorsLocked();
-    SDL_UnlockSensors();
     SDL_ANDROID_StopSensorThread(&SDL_sensor_thread_context);
-    SDL_LockSensors();
 
     if (SDL_sensors) {
         SDL_free(SDL_sensors);

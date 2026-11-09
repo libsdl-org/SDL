@@ -582,6 +582,7 @@ struct SDL_VideoData
 #endif
 
     bool cleared;
+    bool dpi_unaware_context_declared;
 
     bool detect_device_hotplug;
 

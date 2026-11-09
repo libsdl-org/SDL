@@ -468,7 +468,14 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
     } else {
         ret = waitpid(pid, &wstatus, block ? 0 : WNOHANG);
         if (ret < 0) {
-            return SDL_SetError("Could not waitpid(): %s", strerror(errno));
+            if (errno == ECHILD) {
+                // We can't get the status because something else waited or
+                // set the SIGCHLD signal to SIG_IGN.
+                *exitcode = SDL_PROCESS_EXITCODE_UNKNOWN;
+                return true;
+            } else {
+                return SDL_SetError("Could not waitpid(): %s", strerror(errno));
+            }
         }
 
         if (ret == 0) {
@@ -481,7 +488,7 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
         } else if (WIFSIGNALED(wstatus)) {
             *exitcode = -WTERMSIG(wstatus);
         } else {
-            *exitcode = -255;
+            *exitcode = SDL_PROCESS_EXITCODE_UNKNOWN;
         }
 
         return true;

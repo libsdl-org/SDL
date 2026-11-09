@@ -336,10 +336,11 @@ static int CPU_haveAltiVec(void)
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
 #if (defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_OPENBSD)) && defined(__powerpc__) && defined(HAVE_ELF_AUX_INFO)
-    unsigned long cpufeatures = 0;
-    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
+    unsigned long cpufeatures;
+    if (elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures)) != 0) {
+        cpufeatures = 0;
+    }
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
-    return altivec;
 #elif (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))
 #ifdef SDL_PLATFORM_OPENBSD
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
@@ -488,9 +489,9 @@ static int CPU_haveNEON(void)
 #elif !defined(__arm__)
     return 0; // not an ARM CPU at all.
 #elif defined(HAVE_ELF_AUX_INFO)
-    unsigned long hasneon = 0;
+    unsigned long hasneon;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
-        return 0;
+        hasneon = 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
 #elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)

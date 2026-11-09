@@ -86,7 +86,8 @@ void WIN_UnloadHIDDLL(void)
 
 // CM_Register_Notification definitions
 
-#define CR_SUCCESS 0
+#define CR_SUCCESS      0x00
+#define CR_BUFFER_SMALL 0x1A
 
 DECLARE_HANDLE(HCMNOTIFICATION);
 typedef HCMNOTIFICATION *PHCMNOTIFICATION;
@@ -166,18 +167,49 @@ typedef DWORD (CALLBACK *PCM_NOTIFY_CALLBACK)(HCMNOTIFICATION hNotify, PVOID Con
 
 typedef DWORD (WINAPI *CM_Register_NotificationFunc)(PCM_NOTIFY_FILTER pFilter, PVOID pContext, PCM_NOTIFY_CALLBACK pCallback, PHCMNOTIFICATION pNotifyContext);
 typedef DWORD (WINAPI *CM_Unregister_NotificationFunc)(HCMNOTIFICATION NotifyContext);
+typedef DWORD (WINAPI *CM_Get_Device_Interface_List_SizeWFunc)(PULONG pulLen, LPGUID InterfaceClassGuid, WCHAR *pDeviceID, ULONG ulFlags);
+typedef DWORD (WINAPI *CM_Get_Device_Interface_ListWFunc)(LPGUID InterfaceClassGuid, WCHAR *pDeviceID, WCHAR *Buffer, ULONG BufferLen, ULONG ulFlags);
+
+#define CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES 0x00000001
+#define CM_GET_DEVICE_INTERFACE_LIST_PRESENT        0x00000000
 
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 
+static SDL_InitState SDL_cfgmgr32_init;
+static CM_Register_NotificationFunc SDL_CM_Register_Notification;
+static CM_Unregister_NotificationFunc SDL_CM_Unregister_Notification;
+static CM_Get_Device_Interface_List_SizeWFunc SDL_CM_Get_Device_Interface_List_SizeW;
+static CM_Get_Device_Interface_ListWFunc SDL_CM_Get_Device_Interface_ListW;
+
 static int s_DeviceNotificationsRequested;
-static HMODULE cfgmgr32_lib_handle;
-static CM_Register_NotificationFunc CM_Register_Notification;
-static CM_Unregister_NotificationFunc CM_Unregister_Notification;
 static HCMNOTIFICATION s_DeviceNotificationFuncHandle;
 static Uint64 s_LastDeviceNotification = 1;
 static HANDLE s_HotplugEvent = INVALID_HANDLE_VALUE;
 static SDL_AtomicInt s_HotplugRunning;
 static SDL_Thread *s_HotplugThread;
+
+static bool WIN_LoadCfgMgr32(void)
+{
+    if (SDL_ShouldInit(&SDL_cfgmgr32_init)) {
+        // We'll keep this loaded for future use
+        HMODULE cfgmgr32 = LoadLibraryA("cfgmgr32.dll");
+        if (cfgmgr32) {
+            SDL_CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Register_Notification");
+            SDL_CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32, "CM_Unregister_Notification");
+            SDL_CM_Get_Device_Interface_List_SizeW = (CM_Get_Device_Interface_List_SizeWFunc)GetProcAddress(cfgmgr32, "CM_Get_Device_Interface_List_SizeW");
+            SDL_CM_Get_Device_Interface_ListW = (CM_Get_Device_Interface_ListWFunc)GetProcAddress(cfgmgr32, "CM_Get_Device_Interface_ListW");
+        }
+        SDL_SetInitialized(&SDL_cfgmgr32_init, true);
+    }
+
+    if (!SDL_CM_Register_Notification ||
+        !SDL_CM_Unregister_Notification ||
+        !SDL_CM_Get_Device_Interface_List_SizeW ||
+        !SDL_CM_Get_Device_Interface_ListW) {
+        return false;
+    }
+    return true;
+}
 
 #ifdef SDL_VIDEO_DRIVER_WINDOWS
 // Defined in SDL_windowsevents.c
@@ -224,20 +256,15 @@ void WIN_InitDeviceNotification(void)
     s_HotplugEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     s_HotplugThread = SDL_CreateThread(DeviceHotplugThread, "DeviceHotplugThread", NULL);
 
-    cfgmgr32_lib_handle = LoadLibraryA("cfgmgr32.dll");
-    if (cfgmgr32_lib_handle) {
-        CM_Register_Notification = (CM_Register_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Register_Notification");
-        CM_Unregister_Notification = (CM_Unregister_NotificationFunc)GetProcAddress(cfgmgr32_lib_handle, "CM_Unregister_Notification");
-        if (CM_Register_Notification && CM_Unregister_Notification) {
-            CM_NOTIFY_FILTER notify_filter;
+    if (WIN_LoadCfgMgr32()) {
+        CM_NOTIFY_FILTER notify_filter;
 
-            SDL_zero(notify_filter);
-            notify_filter.cbSize = sizeof(notify_filter);
-            notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
-            notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
-            if (CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
-                return;
-            }
+        SDL_zero(notify_filter);
+        notify_filter.cbSize = sizeof(notify_filter);
+        notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+        notify_filter.u.DeviceInterface.ClassGuid = GUID_DEVINTERFACE_HID;
+        if (SDL_CM_Register_Notification(&notify_filter, NULL, SDL_DeviceNotificationFunc, &s_DeviceNotificationFuncHandle) == CR_SUCCESS) {
+            return;
         }
     }
 
@@ -247,6 +274,59 @@ void WIN_InitDeviceNotification(void)
 Uint64 WIN_GetLastDeviceNotification(void)
 {
     return s_LastDeviceNotification;
+}
+
+struct WIN_DeviceInterfaceNotification
+{
+    HCMNOTIFICATION handle;
+    WIN_DeviceInterfaceCallback callback;
+    void *userdata;
+};
+
+static DWORD CALLBACK WIN_DeviceInterfaceNotificationFunc(HCMNOTIFICATION hNotify, PVOID context, CM_NOTIFY_ACTION action, PCM_NOTIFY_EVENT_DATA eventData, DWORD event_data_size)
+{
+    WIN_DeviceInterfaceNotification *notification = (WIN_DeviceInterfaceNotification *)context;
+
+    if (action == CM_NOTIFY_ACTION_DEVICEINTERFACEARRIVAL ||
+        action == CM_NOTIFY_ACTION_DEVICEINTERFACEREMOVAL) {
+        notification->callback(notification->userdata);
+    }
+    return ERROR_SUCCESS;
+}
+
+WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_DeviceInterfaceCallback callback, void *userdata)
+{
+    WIN_DeviceInterfaceNotification *notification;
+    CM_NOTIFY_FILTER notify_filter;
+
+    if (!WIN_LoadCfgMgr32()) {
+        return NULL;
+    }
+
+    notification = (WIN_DeviceInterfaceNotification *)SDL_calloc(1, sizeof(*notification));
+    if (!notification) {
+        return NULL;
+    }
+    notification->callback = callback;
+    notification->userdata = userdata;
+
+    SDL_zero(notify_filter);
+    notify_filter.cbSize = sizeof(notify_filter);
+    notify_filter.Flags = CM_NOTIFY_FILTER_FLAG_ALL_INTERFACE_CLASSES;
+    notify_filter.FilterType = CM_NOTIFY_FILTER_TYPE_DEVICEINTERFACE;
+    if (SDL_CM_Register_Notification(&notify_filter, notification, WIN_DeviceInterfaceNotificationFunc, &notification->handle) != CR_SUCCESS) {
+        SDL_free(notification);
+        return NULL;
+    }
+    return notification;
+}
+
+void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification)
+{
+    if (notification) {
+        SDL_CM_Unregister_Notification(notification->handle);
+        SDL_free(notification);
+    }
 }
 
 void WIN_QuitDeviceNotification(void)
@@ -263,14 +343,45 @@ void WIN_QuitDeviceNotification(void)
     SDL_WaitThread(s_HotplugThread, NULL);
     s_HotplugThread = NULL;
 
-    if (cfgmgr32_lib_handle) {
-        if (s_DeviceNotificationFuncHandle && CM_Unregister_Notification) {
-            CM_Unregister_Notification(s_DeviceNotificationFuncHandle);
-            s_DeviceNotificationFuncHandle = NULL;
+    if (s_DeviceNotificationFuncHandle) {
+        SDL_CM_Unregister_Notification(s_DeviceNotificationFuncHandle);
+        s_DeviceNotificationFuncHandle = NULL;
+    }
+}
+
+WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
+{
+    WCHAR *list = NULL;
+    ULONG len = 0;
+    DWORD result;
+
+    if (!WIN_LoadCfgMgr32()) {
+        *length = 0;
+        return NULL;
+    }
+
+    // Retry in case the list changes between getting the size and getting the list
+    do {
+        result = SDL_CM_Get_Device_Interface_List_SizeW(&len, &GUID_DEVINTERFACE_HID, NULL, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+        if (result != CR_SUCCESS || len == 0) {
+            break;
         }
 
-        FreeLibrary(cfgmgr32_lib_handle);
-        cfgmgr32_lib_handle = NULL;
+        SDL_free(list);
+        list = (WCHAR *)SDL_malloc(len * sizeof(*list));
+        if (!list) {
+            return NULL;
+        }
+        result = SDL_CM_Get_Device_Interface_ListW(&GUID_DEVINTERFACE_HID, NULL, list, len, CM_GET_DEVICE_INTERFACE_LIST_PRESENT);
+    } while (result == CR_BUFFER_SMALL);
+
+    if (result == CR_SUCCESS && len > 0) {
+        *length = len;
+        return list;
+    } else {
+        SDL_free(list);
+        *length = 0;
+        return NULL;
     }
 }
 
@@ -287,6 +398,21 @@ Uint64 WIN_GetLastDeviceNotification( void )
 
 void WIN_QuitDeviceNotification(void)
 {
+}
+
+WIN_DeviceInterfaceNotification *WIN_RegisterDeviceInterfaceNotification(WIN_DeviceInterfaceCallback callback, void *userdata)
+{
+    return NULL;
+}
+
+void WIN_UnregisterDeviceInterfaceNotification(WIN_DeviceInterfaceNotification *notification)
+{
+}
+
+WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
+{
+    *length = 0;
+    return NULL;
 }
 
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

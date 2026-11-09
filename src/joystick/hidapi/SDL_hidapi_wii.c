@@ -754,11 +754,6 @@ static bool HIDAPI_DriverWii_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverWii_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverWii_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
@@ -839,24 +834,9 @@ static bool HIDAPI_DriverWii_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverWii_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverWii_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverWii_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverWii_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -1588,30 +1568,21 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     ctx->joystick = NULL;
 }
 
-static void HIDAPI_DriverWii_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii = {
-    SDL_HINT_JOYSTICK_HIDAPI_WII,
-    true,
-    HIDAPI_DriverWii_RegisterHints,
-    HIDAPI_DriverWii_UnregisterHints,
-    HIDAPI_DriverWii_IsEnabled,
-    HIDAPI_DriverWii_IsSupportedDevice,
-    HIDAPI_DriverWii_InitDevice,
-    HIDAPI_DriverWii_GetDevicePlayerIndex,
-    HIDAPI_DriverWii_SetDevicePlayerIndex,
-    HIDAPI_DriverWii_UpdateDevice,
-    HIDAPI_DriverWii_OpenJoystick,
-    HIDAPI_DriverWii_RumbleJoystick,
-    HIDAPI_DriverWii_RumbleJoystickTriggers,
-    HIDAPI_DriverWii_GetJoystickCapabilities,
-    HIDAPI_DriverWii_SetJoystickLED,
-    HIDAPI_DriverWii_SendJoystickEffect,
-    HIDAPI_DriverWii_SetJoystickSensorsEnabled,
-    HIDAPI_DriverWii_CloseJoystick,
-    HIDAPI_DriverWii_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_WII,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverWii_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverWii_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverWii_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverWii_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverWii_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverWii_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverWii_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverWii_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverWii_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverWii_GetJoystickCapabilities,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverWii_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverWii_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_WII

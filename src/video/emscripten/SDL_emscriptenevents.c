@@ -604,8 +604,8 @@ static const char *Emscripten_HandleBeforeUnload(int eventType, const void *rese
 {
     /* This event will need to be handled synchronously, e.g. using
        SDL_AddEventWatch, as the page is being closed *now*. */
-    // No need to send a SDL_EVENT_QUIT, the app won't get control again.
-    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
+    SDL_SendQuit();  // the app might see this if they installed an event watcher.
+    SDL_OnApplicationWillTerminate();  // calls SDL_AppQuit if appropriate, etc.
     return ""; // don't trigger confirmation dialog
 }
 

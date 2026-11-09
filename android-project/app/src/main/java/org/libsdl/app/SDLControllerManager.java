@@ -18,6 +18,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
@@ -188,17 +191,13 @@ class SDLDeviceListener implements InputDeviceListener
 {
     @Override
     public void onInputDeviceAdded(int deviceId) {
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            SDLControllerManager.mJoystickHandler.deviceAdded(deviceId);
-        }
+        SDLControllerManager.mJoystickHandler.deviceChanged(deviceId);
     }
 
     @Override
     public void onInputDeviceChanged(int deviceId) {
         // The controller might not have had joystick sources previously
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            SDLControllerManager.mJoystickHandler.deviceAdded(deviceId);
-        }
+        SDLControllerManager.mJoystickHandler.deviceChanged(deviceId);
     }
 
     @Override
@@ -224,6 +223,8 @@ class SDLJoystickHandler {
         SDLJoySensorListener sensorListener;
         Sensor accelerometerSensor;
         Sensor gyroscopeSensor;
+        volatile boolean sensorsRequested;
+        boolean sensorsEnabled;
     }
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
@@ -274,9 +275,45 @@ class SDLJoystickHandler {
 
     private final ArrayList<SDLJoystick> mJoysticks;
 
+    // Android builds controllers from several kernel devices, e.g. adding the motion sensors after the
+    // gamepad, so we wait for input devices to settle before adding a joystick. Android can also
+    // deadlock if a sensor listener is registered while an input device change is being processed,
+    // so we wait for input devices to settle before changing sensor registration.
+    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 50;
+    private volatile long mLastInputDeviceChangeTime;
+    private final Handler mHandler;
+
     SDLJoystickHandler() {
 
         mJoysticks = new ArrayList<SDLJoystick>();
+        mHandler = new Handler(Looper.getMainLooper());
+    }
+
+    private void postWhenInputDevicesSettle(final Runnable action) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                long delay = mLastInputDeviceChangeTime + INPUT_DEVICE_SETTLE_TIME_MS - SystemClock.uptimeMillis();
+                if (delay > 0) {
+                    // Input devices are still changing, try again once they settle
+                    mHandler.postDelayed(this, delay);
+                    return;
+                }
+                action.run();
+            }
+        });
+    }
+
+    void deviceChanged(final int device_id) {
+        mLastInputDeviceChangeTime = SystemClock.uptimeMillis();
+        postWhenInputDevicesSettle(new Runnable() {
+            @Override
+            public void run() {
+                if (SDLControllerManager.isDeviceSDLJoystick(device_id)) {
+                    deviceAdded(device_id);
+                }
+            }
+        });
     }
 
     /**
@@ -371,6 +408,7 @@ class SDLJoystickHandler {
     }
 
     void deviceRemoved(int device_id) {
+        mLastInputDeviceChangeTime = SystemClock.uptimeMillis();
         for (int i = 0; i < mJoysticks.size(); i++) {
             if (mJoysticks.get(i).device_id == device_id) {
 
@@ -602,21 +640,37 @@ class SDLJoystickHandler {
         if (joystick == null || joystick.sensorManager == null) {
             return;
         }
-        if (enabled) {
-            if (joystick.accelerometerSensor != null) {
-                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
+        joystick.sensorsRequested = enabled;
+        updateSensors(device_id);
+    }
+
+    private void updateSensors(final int device_id) {
+        postWhenInputDevicesSettle(new Runnable() {
+            @Override
+            public void run() {
+                SDLJoystick joystick = getJoystick(device_id);
+                if (joystick == null || joystick.sensorsEnabled == joystick.sensorsRequested) {
+                    return;
+                }
+                joystick.sensorsEnabled = joystick.sensorsRequested;
+
+                if (joystick.sensorsEnabled) {
+                    if (joystick.accelerometerSensor != null) {
+                        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
+                    }
+                    if (joystick.gyroscopeSensor != null) {
+                        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
+                    }
+                } else {
+                    if (joystick.accelerometerSensor != null) {
+                        SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
+                    }
+                    if (joystick.gyroscopeSensor != null) {
+                        SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
+                    }
+                }
             }
-            if (joystick.gyroscopeSensor != null) {
-                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
-            }
-        } else {
-            if (joystick.accelerometerSensor != null) {
-                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
-            }
-            if (joystick.gyroscopeSensor != null) {
-                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
-            }
-        }
+        });
     }
 }
 
@@ -810,7 +864,7 @@ class SDLHapticHandler {
     }
 }
 
-class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
+class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, View.OnCapturedPointerListener {
     protected static final int SDL_PEN_DEVICE_TYPE_UNKNOWN = 0;
     protected static final int SDL_PEN_DEVICE_TYPE_DIRECT = 1;
     protected static final int SDL_PEN_DEVICE_TYPE_INDIRECT = 2;
@@ -830,20 +884,35 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
             int toolType = event.getToolType(i);
 
             if (toolType == MotionEvent.TOOL_TYPE_MOUSE) {
+                int buttonState = event.getButtonState();
+                boolean isRelative = checkRelativeEvent(event);
+
+                if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */ && isRelative) {
+                    // We'll be using the onCapturedPointer event handler instead, so
+                    // just bounce.
+                    return false;
+                }
+
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                        SDLActivity.onNativeMouse(0, action, x, y, false);
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, false);
                         consumed = true;
                         break;
 
-                    case MotionEvent.ACTION_HOVER_MOVE:
+                    case MotionEvent.ACTION_HOVER_MOVE:     // Absolute mode mouse movement
+                    case MotionEvent.ACTION_MOVE:           // Relative mode mouse movement
+                    case MotionEvent.ACTION_BUTTON_PRESS:
+                    case MotionEvent.ACTION_BUTTON_RELEASE:
+                    case MotionEvent.ACTION_CANCEL:         // Mouse drag ended (e.g. button released)
+                    case MotionEvent.ACTION_HOVER_ENTER:
+                    case MotionEvent.ACTION_HOVER_EXIT:
                         x = getEventX(event, i);
                         y = getEventY(event, i);
 
-                        SDLActivity.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
-                        consumed = true;
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
+                        consumed = true;                            
                         break;
 
                     default:
@@ -910,6 +979,12 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
     int getPenDeviceType(InputDevice penDevice) {
         return SDL_PEN_DEVICE_TYPE_UNKNOWN;
     }
+
+    @Override
+    public boolean onCapturedPointer(View view, MotionEvent event) {
+        // We can't use captured pointer listener until API 26 or later.
+        return false;
+    }
 }
 
 class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
@@ -974,6 +1049,26 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     @Override
     boolean inRelativeMode() {
         return mRelativeModeEnabled;
+    }
+
+    @Override
+    public boolean onCapturedPointer(View view, MotionEvent event) {
+
+        // Captured Pointer events are *always* relative
+        float x ,y;
+        int buttonState = event.getButtonState();
+        int action = event.getActionMasked();
+
+        if (action == MotionEvent.ACTION_SCROLL) {
+            x = event.getAxisValue(MotionEvent.AXIS_HSCROLL);
+            y = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        } else {
+            x = event.getX();
+            y = event.getY();
+        }
+
+        SDLActivity.onNativeMouse(buttonState, action, x, y, true);
+        return true;
     }
 
     @Override

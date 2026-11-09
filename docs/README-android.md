@@ -10,7 +10,7 @@ The rest of this README covers the Android gradle style build process.
 Requirements
 ================================================================================
 
-Android SDK (version 35 or later)
+Android SDK (version 36 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r28c or later

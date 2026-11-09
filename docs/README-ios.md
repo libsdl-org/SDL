@@ -72,11 +72,16 @@ Embedding the SDL3 Xcode project makes SDL3.framework a target of your app, so i
         rm -rf "$INSTALL_ROOT/Library"
     fi
 ```
-3. Below the script entry uncheck the "Run Script:" options "For install builds only" and "Based on dependency analysis"
+3. Below the script entry uncheck the "Run Script:" options "For install builds only" and "Based on dependency analysis".
 4. Edit the Build Settings and set "User Script Sandboxing" to "No".
 
-TODO: Add information regarding App Store requirements such as icons, etc.
+### App Store Requirements and Asset Management
 
+When preparing your SDL3 application for App Store submission, you must configure standard Apple platform assets directly within your wrapper Xcode project:
+
+1. **App Icons & Assets:** Create an Asset Catalog (`Assets.xcassets` or `Media.xcassets`) via Xcode (*File > New > File... > Asset Catalog*). Add an "App Icon" set and populate all mandatory target resolutions for iPhone, iPad, or App Store presentation. Ensure the asset catalog is assigned to your app target's **Build Phases > Copy Bundle Resources**.
+2. **Target General Settings:** In your project settings under the **General** tab, explicitly point the **App Icons and Launch Images** configuration to your newly created asset catalog icon set.
+3. **Privacy Manifest (`PrivacyInfo.xcprivacy`):** If your app or its dependencies utilize any of Apple's declared "Required Reason APIs" (such as specific file timestamp or system boot time ticks), you must include a standard Apple Privacy Manifest file bundled into your target root directory to prevent automated App Store submission rejection.
 
 Notes -- Retina / High-DPI and window sizes
 ==============================================================================

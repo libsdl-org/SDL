@@ -115,6 +115,7 @@ static jmethodID midInitTouch;
 static jmethodID midMinimizeWindow;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
+static jmethodID midSetDesiredHDRHeadroom;
 static jmethodID midSetOrientation;
 static jmethodID midSetRelativeMouseEnabled;
 static jmethodID midSetSystemCursor;
@@ -204,6 +205,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
     jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom)(
+    JNIEnv *env, jclass jcls,
+    jfloat headroom);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
     JNIEnv *env, jclass cls);
@@ -376,6 +381,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     // Video/input methods, registered only when the video subsystem is enabled
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "nativeSetScreenHDRHeadroom", "(F)V", SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
     { "nativeSetNaturalOrientation", "(I)V", SDL_JAVA_INTERFACE(nativeSetNaturalOrientation) },
     { "onNativeRotationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeRotationChanged) },
@@ -718,6 +724,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow", "()V");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle", "(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
+    midSetDesiredHDRHeadroom = (*env)->GetStaticMethodID(env, mActivityClass, "setDesiredHDRHeadroom", "(F)V");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation", "(IIZLjava/lang/String;)V");
     midSetRelativeMouseEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
     midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
@@ -736,6 +743,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midMinimizeWindow ||
         !midSetActivityTitle ||
         !midSetCustomCursor ||
+        !midSetDesiredHDRHeadroom ||
         !midSetOrientation ||
         !midSetRelativeMouseEnabled ||
         !midSetSystemCursor ||
@@ -1161,6 +1169,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     SDL_LockMutex(Android_ActivityMutex);
 
     Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+// Set screen HDR headroom
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom)(
+    JNIEnv *env, jclass jcls,
+    jfloat headroom)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    Android_SetScreenHDRHeadroom(headroom);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -2850,6 +2870,12 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     (*env)->DeleteLocalRef(env, jhint);
 }
 
+void Android_JNI_SetDesiredHDRHeadroom(float headroom)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midSetDesiredHDRHeadroom, headroom);
+}
+
 void Android_JNI_MinimizeWindow(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -3111,7 +3137,7 @@ bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mo
 
     fileName = GetAssetPath(fileName);
 
-    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
+    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_RANDOM);
     if (!asset) {
         return SDL_SetError("Couldn't open asset '%s'", fileName);
     }

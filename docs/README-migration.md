@@ -1117,6 +1117,10 @@ Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
+## SDL_locale.h
+
+SDL_GetPreferredLocales() now returns a NULL-terminated array of pointers, instead of an array of structs where the last struct has its fields set to NULL, and also can optionally report the count of the array. The returned pointer is still disposed of by the caller with a single SDL_free() call, that will take care of all the strings and structs in one block.
+
 ## SDL_log.h
 
 SDL_Log() no longer prints a log prefix by default for SDL_LOG_PRIORITY_INFO and below. The log prefixes can be customized with SDL_SetLogPriorityPrefix().
@@ -1593,6 +1597,7 @@ static bool SDLCALL stdio_close(void *userdata)
             status = false;
         }
     }
+    SDL_free(rwopsdata);
     return status;
 }
 
@@ -1853,6 +1858,8 @@ SDL_PixelFormat is used instead of Uint32 for API functions that refer to pixel 
 SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE acceleration isn't controlled by the parameter, you should use SDL_SetSurfaceRLE() to change that separately.
 
 SDL_SetSurfaceRLE() takes an bool to enable and disable RLE acceleration.
+
+SDL_PremultiplyAlpha() takes an extra bool parameter ("linear"). For SDL2 compatibility, pass false for this parameter.
 
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns bool

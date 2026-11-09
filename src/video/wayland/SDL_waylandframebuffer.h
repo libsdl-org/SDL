@@ -18,15 +18,22 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "SDL_internal.h"
-#include "../../core/windows/SDL_windows.h"
 
-// Return true if the RawInput driver is enabled
-extern bool RAWINPUT_IsEnabled(void);
+#ifndef SDL_waylandframebuffer_h_
+#define SDL_waylandframebuffer_h_
 
-// Registers for input events
-extern bool RAWINPUT_RegisterNotifications(HWND hWnd);
-extern bool RAWINPUT_UnregisterNotifications(void);
+#include "SDL_waylandvideo.h"
 
-// Returns 0 if message was handled
-extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+typedef struct Wayland_Framebuffer Wayland_Framebuffer;
+
+extern void Wayland_WaitForSwapInterval(SDL_WindowData *wind);
+
+extern bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
+extern bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
+extern void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
+extern bool Wayland_SetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int vsync);
+extern bool Wayland_GetWindowFramebufferVSync(SDL_VideoDevice *_this, SDL_Window *window, int *vsync);
+
+#endif // SDL_waylandframebuffer_h_

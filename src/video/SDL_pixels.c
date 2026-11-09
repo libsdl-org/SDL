@@ -1016,8 +1016,6 @@ static const float *SDL_GetBT2020ConversionMatrix(SDL_Colorspace colorspace)
 
 const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel)
 {
-    const int YUV_SD_THRESHOLD = 576;
-
     switch (SDL_COLORSPACEMATRIX(colorspace)) {
     case SDL_MATRIX_COEFFICIENTS_BT601:
     case SDL_MATRIX_COEFFICIENTS_BT470BG:

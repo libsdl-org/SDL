@@ -77,9 +77,13 @@ static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
 
+static const float OUTPUTTYPE_SRGB = 1;
+static const float OUTPUTTYPE_SCRGB = 2;
+static const float OUTPUTTYPE_HDR10 = 3;
+
 typedef struct
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -124,6 +128,7 @@ typedef struct
     SIZE_T mainSRVIndex;
     D3D12_CPU_DESCRIPTOR_HANDLE mainTextureRenderTargetView;
     DXGI_FORMAT mainTextureFormat;
+    bool srgb_view;
     ID3D12Resource *stagingBuffer;
     D3D12_RESOURCE_STATES stagingResourceState;
     const float *YCbCr_matrix;
@@ -288,6 +293,7 @@ static const GUID SDL_IID_ID3D12InfoQueue = { 0x0742a90b, 0xc387, 0x483f, { 0xb9
 #pragma GCC diagnostic pop
 #endif
 
+static void D3D12_UpdateHDRMetadata(SDL_Renderer *renderer);
 static bool D3D12_UpdateTextureInternal(D3D12_RenderData *rendererData, ID3D12Resource *texture, int plane, int x, int y, int w, int h, const void *pixels, int pitch, D3D12_RESOURCE_STATES *resourceState);
 
 static UINT D3D12_Align(UINT location, UINT alignment)
@@ -349,6 +355,18 @@ static DXGI_FORMAT SDLPixelFormatToDXGITextureFormat(SDL_PixelFormat format, Uin
             }
         }
         return DXGI_FORMAT_UNKNOWN;
+    }
+}
+
+static bool DXGIFormatIsSRGB(DXGI_FORMAT format)
+{
+    switch (format) {
+    case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+    case DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+        return true;
+    default:
+        return false;
     }
 }
 
@@ -575,6 +593,9 @@ static void D3D12_GDKResumeRenderer(SDL_Renderer *renderer)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     data->commandQueue->ResumeX();
+    data->d3dDevice->SetFrameIntervalX(NULL, D3D12XBOX_FRAME_INTERVAL_60_HZ, 1, D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    data->d3dDevice->ScheduleFrameEventX(D3D12XBOX_FRAME_EVENT_ORIGIN, 0, NULL, D3D12XBOX_SCHEDULE_FRAME_EVENT_FLAG_NONE);
+    D3D12_XBOX_StartFrame(data->d3dDevice, &data->frameToken);
 }
 
 #endif
@@ -1310,6 +1331,8 @@ static HRESULT D3D12_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         result = DXGI_ERROR_UNSUPPORTED;
     }
 
+    D3D12_UpdateHDRMetadata(renderer);
+
     SDL_SetPointerProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_D3D12_SWAPCHAIN_POINTER, data->swapChain);
 
 done:
@@ -1619,7 +1642,9 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_TextureData *textureData;
     HRESULT result;
-    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, renderer->output_colorspace);
+    // Render targets use formats matching their own colorspace, so an sRGB target behaves like an sRGB swap chain
+    const Uint32 format_colorspace = (texture->access == SDL_TEXTUREACCESS_TARGET) ? texture->colorspace : renderer->output_colorspace;
+    DXGI_FORMAT textureFormat = SDLPixelFormatToDXGITextureFormat(texture->format, format_colorspace);
     D3D12_RESOURCE_DESC textureDesc;
     D3D12_HEAP_PROPERTIES heapProps;
     D3D12_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
@@ -1638,6 +1663,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
 
     texture->internal = textureData;
+    textureData->srgb_view = DXGIFormatIsSRGB(textureFormat);
     textureData->mainTextureFormat = textureFormat;
 
     SDL_zero(textureDesc);
@@ -1804,7 +1830,7 @@ static bool D3D12_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     }
     SDL_zero(resourceViewDesc);
     resourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, renderer->output_colorspace);
+    resourceViewDesc.Format = SDLPixelFormatToDXGIMainResourceViewFormat(texture->format, format_colorspace);
     resourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MipLevels = textureDesc.MipLevels;
 
@@ -2631,13 +2657,41 @@ static bool D3D12_UpdateViewport(SDL_Renderer *renderer)
     return true;
 }
 
+// Returns the input type for sRGB textures, based on whether the sampler converts them to linear
+static float GetSRGBInputType(SDL_Renderer *renderer, bool srgb_view)
+{
+    if (SDL_RenderingLinearSpace(renderer)) {
+        if (!srgb_view) {
+            // The shader needs to convert from sRGB to linear
+            return INPUTTYPE_SRGB;
+        }
+    } else {
+        if (srgb_view) {
+            // The sampler converts to linear, so the shader needs to convert back to sRGB
+            return INPUTTYPE_SCRGB;
+        }
+    }
+    // The texture is already in the colorspace we're rendering in
+    return INPUTTYPE_UNSPECIFIED;
+}
+
 static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Texture *texture, D3D12_PixelShaderConstants *constants)
 {
     float output_headroom;
 
     SDL_zerop(constants);
 
-    constants->scRGB_output = (float)SDL_RenderingLinearSpace(renderer);
+    switch (renderer->current_colorspace) {
+    case SDL_COLORSPACE_SRGB_LINEAR:
+        constants->output_type = OUTPUTTYPE_SCRGB;
+        break;
+    case SDL_COLORSPACE_HDR10:
+        constants->output_type = OUTPUTTYPE_HDR10;
+        break;
+    default:
+        constants->output_type = OUTPUTTYPE_SRGB;
+        break;
+    }
     constants->color_scale = cmd->data.draw.color_scale;
 
     if (texture) {
@@ -2658,6 +2712,11 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             default:
                 SDL_assert(!"Unknown scale mode");
                 break;
+            }
+            {
+                // The palette is stored in an RGBA32 texture
+                const DXGI_FORMAT paletteFormat = SDLPixelFormatToDXGITextureFormat(SDL_PIXELFORMAT_RGBA32, renderer->output_colorspace);
+                constants->input_type = GetSRGBInputType(renderer, DXGIFormatIsSRGB(paletteFormat));
             }
             break;
         case SDL_PIXELFORMAT_YV12:
@@ -2694,8 +2753,7 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
             } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
                 constants->input_type = INPUTTYPE_HDR10;
             } else {
-                // The sampler will convert from sRGB to linear on load if working in linear colorspace
-                constants->input_type = INPUTTYPE_UNSPECIFIED;
+                constants->input_type = GetSRGBInputType(renderer, textureData->srgb_view);
             }
             break;
         }
@@ -2729,33 +2787,12 @@ static void D3D12_SetupShaderConstants(SDL_Renderer *renderer, const SDL_RenderC
     }
 }
 
-static bool PQShaderScalesInput(const D3D12_PixelShaderConstants *shader_constants)
-{
-    if (shader_constants->tonemap_method != 0.0f) {
-        // Tone mapping always scales
-        return true;
-    }
-
-    // The shader normalizes the PQ input using the SDR white point and then multiplies by the color scale
-    if (SDL_fabs((shader_constants->sdr_white_point - (shader_constants->color_scale * SCRGB_NITS))) > 1.0f) {
-        return true;
-    }
-
-    return false;
-}
-
 static D3D12_Shader SelectShader(SDL_Renderer *renderer, const D3D12_PixelShaderConstants *shader_constants)
 {
     if (shader_constants) {
         if (renderer->current_colorspace == SDL_COLORSPACE_HDR10) {
-            if (shader_constants->texture_type == TEXTURETYPE_RGB &&
-                shader_constants->input_type == INPUTTYPE_HDR10 &&
-                !PQShaderScalesInput(shader_constants)) {
-                // Do a simple 1-1 copy
-                return SHADER_RGB_SIMPLE;
-            } else {
-                return SHADER_RGB_PQ;
-            }
+            // The advanced shader handles PQ output
+            return SHADER_ADVANCED;
         }
 
         if (shader_constants->texture_type == TEXTURETYPE_RGB &&
@@ -2892,11 +2929,9 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
             // Figure out the correct sampler descriptor table index based on the type of shader
             switch (shader) {
             case SHADER_RGB:
-            case SHADER_RGB_SIMPLE:
                 tableIndex = 3;
                 break;
             case SHADER_ADVANCED:
-            case SHADER_RGB_PQ:
                 tableIndex = 5;
                 break;
             default:
@@ -3559,6 +3594,40 @@ static bool D3D12_SetVSync(SDL_Renderer *renderer, const int vsync)
     return true;
 }
 
+static void D3D12_UpdateHDRMetadata(SDL_Renderer *renderer)
+{
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+    D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
+
+    if (renderer->output_colorspace != SDL_COLORSPACE_HDR10 ||
+        !data->swapChain) {
+        return;
+    }
+
+    // Set BT.2020 primaries with a D65 white point and our max content luminance
+    float maxLuminance = SDL_GetRendererMaxLuminance(renderer);
+    if (maxLuminance <= 0.0f) {
+        return;
+    }
+
+    DXGI_HDR_METADATA_HDR10 metadata;
+    SDL_zero(metadata);
+    metadata.RedPrimary[0] = 35400;
+    metadata.RedPrimary[1] = 14600;
+    metadata.GreenPrimary[0] = 8500;
+    metadata.GreenPrimary[1] = 39850;
+    metadata.BluePrimary[0] = 6550;
+    metadata.BluePrimary[1] = 2300;
+    metadata.WhitePoint[0] = 15635;
+    metadata.WhitePoint[1] = 16450;
+    metadata.MaxMasteringLuminance = (UINT)maxLuminance;
+    metadata.MinMasteringLuminance = 0;
+    metadata.MaxContentLightLevel = (UINT16)maxLuminance;
+    metadata.MaxFrameAverageLightLevel = 0;
+    IDXGISwapChain4_SetHDRMetaData(data->swapChain, DXGI_HDR_METADATA_TYPE_HDR10, sizeof(metadata), &metadata);
+#endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES
+}
+
 bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_PropertiesID create_props)
 {
     D3D12_RenderData *data;
@@ -3612,6 +3681,7 @@ bool D3D12_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Proper
     renderer->DestroyTexture = D3D12_DestroyTexture;
     renderer->DestroyRenderer = D3D12_DestroyRenderer;
     renderer->SetVSync = D3D12_SetVSync;
+    renderer->UpdateHDRMetadata = D3D12_UpdateHDRMetadata;
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
     renderer->GDKSuspendRenderer = D3D12_GDKSuspendRenderer;
     renderer->GDKResumeRenderer = D3D12_GDKResumeRenderer;

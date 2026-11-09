@@ -21,9 +21,12 @@ extern "C" {
 
 // VK_MVK_macos_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_MVK_macos_surface 1
+
 #define VK_MVK_MACOS_SURFACE_SPEC_VERSION 3
 #define VK_MVK_MACOS_SURFACE_EXTENSION_NAME "VK_MVK_macos_surface"
+
 typedef VkFlags VkMacOSSurfaceCreateFlagsMVK;
+
 typedef struct VkMacOSSurfaceCreateInfoMVK {
     VkStructureType                 sType;
     const void*                     pNext;
@@ -31,9 +34,11 @@ typedef struct VkMacOSSurfaceCreateInfoMVK {
     const void*                     pView;
 } VkMacOSSurfaceCreateInfoMVK;
 
+
 typedef VkResult (VKAPI_PTR *PFN_vkCreateMacOSSurfaceMVK)(VkInstance instance, const VkMacOSSurfaceCreateInfoMVK* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
 
 #ifndef VK_NO_PROTOTYPES
+
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateMacOSSurfaceMVK(
     VkInstance                                  instance,

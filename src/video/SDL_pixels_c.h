@@ -30,6 +30,10 @@
 // The value, in nits, of scRGB 1.0
 #define SCRGB_NITS  80.0f
 
+// The automatic SD/HD threshold for YUV colorspace
+#define YUV_SD_THRESHOLD 576
+
+
 // Pixel format functions
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat pixel_format);

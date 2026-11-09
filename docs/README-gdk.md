@@ -168,22 +168,56 @@ Please read the official GDK documentation for all the details, but here's what 
 - If any GPU API call happens in between suspension and resuming, the application will crash or hang.
 
 Unfortunately it's impossible for SDL to know for certain when your application is ready for suspension, so it cannot handle these events internally.
-Instead, SDL provides a few APIs you must use to handle these events yourself.
+Instead, SDL provides a few `SDL_GDK*` APIs you must use to handle these events yourself.
 
 On startup, your application should call `SDL_AddEventWatch` to register a callback function which will listen for the `SDL_EVENT_DID_ENTER_BACKGROUND` and `SDL_EVENT_WILL_ENTER_FOREGROUND` events.
 This callback function will be called from a background OS thread, so when one of these events occurs, you should notify your render thread about it rather than responding directly in the callback.
-A simple strategy for this is to make your callback function post custom `SDL_EVENT_USER` events that your main loop's event processor can respond to.
+A simple thread-safe strategy for this is to add an `SDL_AtomicInt` to act as a flag for whether the OS has requested suspension, like so:
 
-When your render thread receives your notification of the `SDL_EVENT_DID_ENTER_BACKGROUND` event, it should do the following:
-- Set a flag to suppress the entire render loop until the application resumes.
-- Call `SDL_GDKSuspendRenderer` if you are using the Render API, or call `SDL_GDKSuspendGPU` if you are using the GPU API.
-- Finally, regardless of what graphics API you are using, call `SDL_GDKSuspendComplete`.
+```c
+static SDL_AtomicInt suspend_requested; // has the OS requested suspension?
+static bool suspended; // have we responded and entered into a "suspended" state?
 
-When your render thread receives your notification of an `SDL_EVENT_WILL_ENTER_FOREGROUND` event, it should do the following:
-- Call `SDL_GDKResumeRenderer` if you are using the Render API, or call `SDL_GDKResumeGPU` if you are using the GPU API.
-- Unset the flag suppressing your render loop to allow drawing again.
+static bool SDLCALL GDKEventWatch(void *userdata, SDL_Event *event)
+{
+    if (event->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
+        SDL_SetAtomicInt(&suspend_requested, 1); // suspend
+    } else if (event->type == SDL_EVENT_WILL_ENTER_FOREGROUND) {
+        SDL_SetAtomicInt(&suspend_requested, 0); // resume
+    }
+    return false;
+}
 
-An example of this flow can be found in the testgdk project.
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
+{
+    // during startup...
+    SDL_AddEventWatch(GDKEventWatch, NULL);
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+    // check for suspend/resume state changes
+    if (SDL_GetAtomicInt(&suspend_requested)) {
+        if (!suspended) {
+            // call SDL_GDKSuspendRenderer() if you're using the Render API
+            // call SDL_GDKSuspendGPU() if you're using the GPU API
+            suspended = true;
+            SDL_GDKSuspendComplete(); // this call is always required!
+        }
+    } else if (suspended) {
+        // call SDL_GDKResumeRenderer() if you're using the Render API
+        // call SDL_GDKResumeGPU() if you're using the GPU API
+        suspended = false;
+    }
+
+    // skip drawing if the app is suspended
+    if (!suspended) {
+        draw();
+    }
+}
+```
+
+An example of this flow with a traditional SDL main function can be found in the testgdk project.
 
 Troubleshooting
 ---------------

@@ -171,8 +171,12 @@ static void image_description_info_handle_luminances(void *data,
                                                      uint32_t reference_lum)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
-    state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
-    state->HDR.SDR_white_level = (float)reference_lum / 80.0f;
+    if (max_lum > reference_lum && reference_lum > 0) {
+        state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
+    } else {
+        state->HDR.HDR_headroom = 1.0f;
+    }
+    state->HDR.SDR_white_level = 1.0f;
 }
 
 static void image_description_info_handle_target_primaries(void *data,
@@ -257,7 +261,7 @@ static void image_description_handle_ready2(void *data,
      */
     if (state->deferred_event_processing) {
         SDL_VideoData *vid = SDL_GetVideoDevice()->internal;
-        state->queue = Wayland_DisplayCreateQueue(vid->display, "SDL Color Management Queue");
+        state->queue = Wayland_CreateQueue(vid->display, "SDL Color Management Queue");
 
         struct wl_proxy *image_desc_wrapper = WAYLAND_wl_proxy_create_wrapper(state->wp_image_description);
         WAYLAND_wl_proxy_set_queue(image_desc_wrapper, state->queue);
@@ -299,7 +303,7 @@ void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event
         state->deferred_event_processing = defer_event_processing;
 
         if (!defer_event_processing) {
-            state->queue = Wayland_DisplayCreateQueue(window_data->waylandData->display, "SDL Color Management Queue");
+            state->queue = Wayland_CreateQueue(window_data->waylandData->display, "SDL Color Management Queue");
 
             struct wl_proxy *surface_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(window_data->wp_color_management_surface_feedback);
             WAYLAND_wl_proxy_set_queue(surface_feedback_wrapper, state->queue);
@@ -329,7 +333,7 @@ void Wayland_GetColorInfoForOutput(SDL_DisplayData *display_data, bool defer_eve
         state->deferred_event_processing = defer_event_processing;
 
         if (!defer_event_processing) {
-            state->queue = Wayland_DisplayCreateQueue(display_data->videodata->display, "SDL Color Management Queue");
+            state->queue = Wayland_CreateQueue(display_data->videodata->display, "SDL Color Management Queue");
 
             struct wl_proxy *output_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(display_data->wp_color_management_output);
             WAYLAND_wl_proxy_set_queue(output_feedback_wrapper, state->queue);

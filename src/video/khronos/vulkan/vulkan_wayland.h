@@ -21,9 +21,12 @@ extern "C" {
 
 // VK_KHR_wayland_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_KHR_wayland_surface 1
+
 #define VK_KHR_WAYLAND_SURFACE_SPEC_VERSION 6
 #define VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME "VK_KHR_wayland_surface"
+
 typedef VkFlags VkWaylandSurfaceCreateFlagsKHR;
+
 typedef struct VkWaylandSurfaceCreateInfoKHR {
     VkStructureType                   sType;
     const void*                       pNext;
@@ -32,10 +35,12 @@ typedef struct VkWaylandSurfaceCreateInfoKHR {
     struct wl_surface*                surface;
 } VkWaylandSurfaceCreateInfoKHR;
 
+
 typedef VkResult (VKAPI_PTR *PFN_vkCreateWaylandSurfaceKHR)(VkInstance instance, const VkWaylandSurfaceCreateInfoKHR* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
 typedef VkBool32 (VKAPI_PTR *PFN_vkGetPhysicalDeviceWaylandPresentationSupportKHR)(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, struct wl_display* display);
 
 #ifndef VK_NO_PROTOTYPES
+
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateWaylandSurfaceKHR(
     VkInstance                                  instance,
@@ -43,7 +48,6 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateWaylandSurfaceKHR(
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
 #endif
-
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceWaylandPresentationSupportKHR(
     VkPhysicalDevice                            physicalDevice,

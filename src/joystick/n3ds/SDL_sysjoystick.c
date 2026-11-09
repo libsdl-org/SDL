@@ -55,85 +55,82 @@ static inline int Correct_Axis_Y(int Y) {
     return Correct_Axis_X(-Y);
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state);
-static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_held_state, u32 current_held_state);
+struct joystick_hwdata
+{
+    u32 last_button_state;
+    circlePosition last_circle_state;
+    circlePosition last_cstick_state;
+};
+
+static void UpdateN3DSButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_button_state, u32 current_button_state);
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_button_state, u32 current_button_state);
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick);
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick);
 
 static bool N3DS_JoystickInit(void)
 {
+    const char *name = "Nintendo 3DS";
+
     hidInit();
-    SDL_PrivateJoystickAdded(1);
+
+    // There is always one builtin controller
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_N3DS_JoystickDriver, 0);
+    if (!device) {
+        hidExit();
+        return false;
+    }
+    device->name = SDL_strdup(name);
+    device->guid = SDL_CreateJoystickGUIDForName(name);
+
+    SDL_AddJoystickDevice(device);
     return true;
 }
 
-static const char *N3DS_JoystickGetDeviceName(int device_index)
+static bool N3DS_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    return "Nintendo 3DS";
-}
+    joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*joystick->hwdata));
+    if (!joystick->hwdata) {
+        return false;
+    }
 
-static int N3DS_JoystickGetCount(void)
-{
-    return 1;
-}
-
-static SDL_GUID N3DS_JoystickGetDeviceGUID(int device_index)
-{
-    SDL_GUID guid = SDL_CreateJoystickGUIDForName("Nintendo 3DS");
-    return guid;
-}
-
-static SDL_JoystickID N3DS_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
-}
-
-static bool N3DS_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
     joystick->nbuttons = NB_BUTTONS - 4;  // -4 for the dpad (which we treat as a hat).
     joystick->naxes = 4;
     joystick->nhats = 1;  // treat the dpad as a hat.
 
-    return true;
-}
+    // Make sure we send fresh state when the controller is opened
+    joystick->hwdata->last_circle_state.dx = SDL_MAX_SINT16;
+    joystick->hwdata->last_circle_state.dy = SDL_MAX_SINT16;
+    joystick->hwdata->last_cstick_state.dx = SDL_MAX_SINT16;
+    joystick->hwdata->last_cstick_state.dy = SDL_MAX_SINT16;
 
-static bool N3DS_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
+    return true;
 }
 
 static void N3DS_JoystickUpdate(SDL_Joystick *joystick)
 {
-    static u32 previous_down_state = 0;
-    static u32 previous_up_state = 0;
-    static u32 previous_held_state = 0;
     const Uint64 timestamp = SDL_GetTicksNS();
-    const u32 current_down_state = hidKeysDown();
-    const u32 current_up_state = hidKeysUp();
-    const u32 current_held_state = hidKeysHeld();
+    const u32 current_button_state = hidKeysHeld();
+    struct joystick_hwdata *hwdata = joystick->hwdata;
 
-    UpdateN3DSPressedButtons(timestamp, joystick, previous_down_state, current_down_state);
-    UpdateN3DSReleasedButtons(timestamp, joystick, previous_up_state, current_up_state);
-    UpdateN3DSHat(timestamp, joystick, previous_held_state, current_held_state);
+    UpdateN3DSButtons(timestamp, joystick, hwdata->last_button_state, current_button_state);
+    UpdateN3DSHat(timestamp, joystick, hwdata->last_button_state, current_button_state);
     UpdateN3DSCircle(timestamp, joystick);
     UpdateN3DSCStick(timestamp, joystick);
 
-    previous_down_state = current_down_state;
-    previous_up_state = current_up_state;
-    previous_held_state = current_held_state;
+    hwdata->last_button_state = current_button_state;
 }
 
-static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state)
+static void UpdateN3DSButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_button_state, u32 current_button_state)
 {
-    const u32 updated_down = (previous_state ^ current_state) & ~N3DS_HAT_MASK;
-    if (updated_down) {
+    const u32 updated_buttons = (previous_button_state ^ current_button_state) & ~N3DS_HAT_MASK;
+    if (updated_buttons) {
         Uint8 buttonidx = 0;
         Uint8 i = 0;
         while (i < joystick->nbuttons) {
             if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
-                if (current_state & BIT(buttonidx) & updated_down) {
-                    SDL_SendJoystickButton(timestamp, joystick, i, true);
+                if (updated_buttons & BIT(buttonidx)) {
+                    const bool down = ((current_button_state & BIT(buttonidx)) != 0);
+                    SDL_SendJoystickButton(timestamp, joystick, i, down);
                 }
                 i++;
             }
@@ -142,33 +139,15 @@ static void UpdateN3DSPressedButtons(Uint64 timestamp, SDL_Joystick *joystick, u
     }
 }
 
-static void UpdateN3DSReleasedButtons(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_state, u32 current_state)
-{
-    const u32 updated_up = (previous_state ^ current_state) & ~N3DS_HAT_MASK;
-    if (updated_up) {
-        Uint8 buttonidx = 0;
-        Uint8 i = 0;
-        while (i < joystick->nbuttons) {
-            if ((buttonidx < 4) || (buttonidx > 7)) {  // skip dpad (we treat it as a hat).
-                if (current_state & BIT(buttonidx) & updated_up) {
-                    SDL_SendJoystickButton(timestamp, joystick, i, false);
-                }
-                i++;
-             }
-            buttonidx++;
-        }
-    }
-}
-
-static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_held_state, u32 current_held_state)
+static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous_button_state, u32 current_button_state)
 {
     // The 3DS dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
     // (but they should _really_ be using the gamepad API.)
-    const u32 updated_hat = ((previous_held_state ^ current_held_state) & N3DS_HAT_MASK);  // did bits 4 through 7 change?
+    const u32 updated_hat = ((previous_button_state ^ current_button_state) & N3DS_HAT_MASK);  // did bits 4 through 7 change?
     if (updated_hat) {
         Uint8 hat = SDL_HAT_CENTERED;
 
-        #define HATSTATE(n3dsbit, sdlenum) if (current_held_state & BIT(n3dsbit)) { hat |= SDL_HAT_##sdlenum; }
+        #define HATSTATE(n3dsbit, sdlenum) if (current_button_state & BIT(n3dsbit)) { hat |= SDL_HAT_##sdlenum; }
         HATSTATE(4, RIGHT);
         HATSTATE(5, LEFT);
         HATSTATE(6, UP);
@@ -189,42 +168,44 @@ static void UpdateN3DSHat(Uint64 timestamp, SDL_Joystick *joystick, u32 previous
 
 static void UpdateN3DSCircle(Uint64 timestamp, SDL_Joystick *joystick)
 {
-    static circlePosition previous_state = { 0, 0 };
+    struct joystick_hwdata *hwdata = joystick->hwdata;
     circlePosition current_state;
     hidCircleRead(&current_state);
-    if (previous_state.dx != current_state.dx) {
+    if (hwdata->last_circle_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
                                 0,
                                 Correct_Axis_X(current_state.dx));
     }
-    if (previous_state.dy != current_state.dy) {
+    if (hwdata->last_circle_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
                                 1,
                                 Correct_Axis_Y(current_state.dy));
     }
-    previous_state = current_state;
+    hwdata->last_circle_state = current_state;
 }
 
 static void UpdateN3DSCStick(Uint64 timestamp, SDL_Joystick *joystick)
 {
-    static circlePosition previous_state = { 0, 0 };
+    struct joystick_hwdata *hwdata = joystick->hwdata;
     circlePosition current_state;
     hidCstickRead(&current_state);
-    if (previous_state.dx != current_state.dx) {
+    if (hwdata->last_cstick_state.dx != current_state.dx) {
         SDL_SendJoystickAxis(timestamp, joystick,
                                 2,
                                 Correct_Axis_X(current_state.dx));
     }
-    if (previous_state.dy != current_state.dy) {
+    if (hwdata->last_cstick_state.dy != current_state.dy) {
         SDL_SendJoystickAxis(timestamp, joystick,
                                 3,
                                 Correct_Axis_Y(current_state.dy));
     }
-    previous_state = current_state;
+    hwdata->last_cstick_state = current_state;
 }
 
 static void N3DS_JoystickClose(SDL_Joystick *joystick)
 {
+    SDL_free(joystick->hwdata);
+    joystick->hwdata = NULL;
 }
 
 static void N3DS_JoystickQuit(void)
@@ -232,7 +213,7 @@ static void N3DS_JoystickQuit(void)
     hidExit();
 }
 
-static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
+static bool N3DS_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_GamepadMapping *out)
 {
     // There is only one possible mapping.
     *out = (SDL_GamepadMapping){
@@ -266,77 +247,13 @@ static bool N3DS_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping 
     return true;
 }
 
-static void N3DS_JoystickDetect(void)
-{
-}
-
-static bool N3DS_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-static const char *N3DS_JoystickGetDevicePath(int device_index)
-{
-    return NULL;
-}
-
-static int N3DS_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int N3DS_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void N3DS_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static bool N3DS_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool N3DS_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
 SDL_JoystickDriver SDL_N3DS_JoystickDriver = {
-    N3DS_JoystickInit,
-    N3DS_JoystickGetCount,
-    N3DS_JoystickDetect,
-    N3DS_JoystickIsDevicePresent,
-    N3DS_JoystickGetDeviceName,
-    N3DS_JoystickGetDevicePath,
-    N3DS_JoystickGetDeviceSteamVirtualGamepadSlot,
-    N3DS_JoystickGetDevicePlayerIndex,
-    N3DS_JoystickSetDevicePlayerIndex,
-    N3DS_JoystickGetDeviceGUID,
-    N3DS_JoystickGetDeviceInstanceID,
-    N3DS_JoystickOpen,
-    N3DS_JoystickRumble,
-    N3DS_JoystickRumbleTriggers,
-    N3DS_JoystickSetLED,
-    N3DS_JoystickSendEffect,
-    N3DS_JoystickSetSensorsEnabled,
-    N3DS_JoystickUpdate,
-    N3DS_JoystickClose,
-    N3DS_JoystickQuit,
-    N3DS_JoystickGetGamepadMapping
+    .Init = N3DS_JoystickInit,
+    .GetGamepadMapping = N3DS_JoystickGetGamepadMapping,
+    .Open = N3DS_JoystickOpen,
+    .Update = N3DS_JoystickUpdate,
+    .Close = N3DS_JoystickClose,
+    .Quit = N3DS_JoystickQuit
 };
 
 #endif // SDL_JOYSTICK_N3DS

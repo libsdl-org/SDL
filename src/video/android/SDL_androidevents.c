@@ -171,7 +171,7 @@ static void Android_OnDestroy(void)
      * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
     SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
     SDL_SendQuit();
-    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
+    SDL_OnApplicationWillTerminate();
 
     Android_Destroyed = true;
 }

@@ -71,15 +71,69 @@ provideDataForType:(NSPasteboardType)type
 
 @end
 
+static void *GetTextURIsFromURLs(NSPasteboard *pasteboard, size_t *size)
+{
+    @autoreleasepool {
+        NSDictionary *options = @{NSPasteboardURLReadingFileURLsOnlyKey: @YES};
+        NSArray<NSURL *> *urls = [pasteboard readObjectsForClasses:@[[NSURL class]] options:options];
+        NSMutableString *string = [NSMutableString string];
+
+        for (NSURL *url in urls) {
+            [string appendFormat:@"%@\r\n", [[url filePathURL] absoluteString]];
+        }
+
+        if ([string length]) {
+            // Copy to the destination, trimming the trailing '/r/n'.
+            *size = [string length] - 1;
+            char *buf = SDL_malloc(*size);
+            if (buf) {
+                SDL_strlcpy(buf, [string UTF8String], *size);
+                return buf;
+            }
+        }
+
+        return NULL;
+    }
+}
+
+static void SetURLsFromTextURIs(SDL_VideoDevice *_this, NSPasteboard *pasteboard)
+{
+    @autoreleasepool {
+        size_t size = 0;
+        const char *urls = _this->clipboard_callback(_this->clipboard_userdata, "text/uri-list", &size);
+        if (urls) {
+            char *str = SDL_strdup(urls);
+            if (str) {
+                NSMutableArray *array = [NSMutableArray new];
+                char *saveptr = NULL;
+                char *token = SDL_strtok_r(str, "\r\n", &saveptr);
+                while (token) {
+                    NSURL *url = [NSURL URLWithString:[NSString stringWithUTF8String:token]];
+                    if (url && [url isFileURL]) {
+                        [array addObject:url];
+                    }
+                    token = SDL_strtok_r(NULL, "\r\n", &saveptr);
+                }
+                [pasteboard writeObjects:array];
+                SDL_free(str);
+            }
+        }
+    }
+}
+
 static char **GetMimeTypes(int *pnformats)
 {
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
     char **new_mime_types = NULL;
 
     *pnformats = 0;
 
     int nformats = 0;
     int formatsSz = 0;
-    NSArray<NSPasteboardItem *> *items = [[NSPasteboard generalPasteboard] pasteboardItems];
+    NSDictionary *options = @{NSPasteboardURLReadingFileURLsOnlyKey : @YES};
+    const bool has_urls = [pasteboard canReadObjectForClasses:@[ [NSURL class] ] options:options];
+    NSArray<NSPasteboardItem *> *items = [pasteboard pasteboardItems];
+    bool has_text_uri = false;
     NSUInteger nitems = [items count];
     if (nitems > 0) {
         for (NSPasteboardItem *item in items) {
@@ -92,12 +146,22 @@ static char **GetMimeTypes(int *pnformats)
                         NSUInteger len = [mime_type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
                         formatsSz += len;
                         ++nformats;
+                        if (!has_text_uri && [mime_type isEqualToString:@"text/uri-list"]) {
+                            has_text_uri = true;
+                        }
                     }
                 }
                 NSUInteger len = [type lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
                 formatsSz += len;
                 ++nformats;
             }
+        }
+
+        // Synthesize the "text/uri-list" type from URLs, if only the latter is present.
+        if (has_urls && !has_text_uri) {
+            NSUInteger len = [@"text/uri-list" lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+            formatsSz += len;
+            ++nformats;
         }
 
         new_mime_types = SDL_AllocateTemporaryMemory((nformats + 1) * sizeof(char *) + formatsSz);
@@ -122,6 +186,14 @@ static char **GetMimeTypes(int *pnformats)
                     new_mime_types[i++] = strPtr;
                     strPtr += len;
                 }
+            }
+
+            if (has_urls && !has_text_uri) {
+                NSString *text_uri_list = @"text/uri-list";
+                NSUInteger len = [text_uri_list lengthOfBytesUsingEncoding:NSUTF8StringEncoding] + 1;
+                SDL_memcpy(strPtr, [text_uri_list UTF8String], len);
+                new_mime_types[i++] = strPtr;
+                strPtr += len;
             }
 
             new_mime_types[nformats] = NULL;
@@ -174,6 +246,7 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
         Cocoa_PasteboardDataProvider *provider = [[Cocoa_PasteboardDataProvider alloc] initWith: _this->clipboard_callback userData: _this->clipboard_userdata];
         BOOL itemResult = FALSE;
         BOOL writeResult = FALSE;
+        BOOL appendURLs = FALSE;
 
         if (_this->clipboard_callback) {
             for (int i = 0; i < _this->num_clipboard_mime_types; i++) {
@@ -183,6 +256,10 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
 
                 [utiTypes addObject: (__bridge NSString *)utiType];
                 CFRelease(utiType);
+
+                if (SDL_strcmp(_this->clipboard_mime_types[i], "text/uri-list") == 0) {
+                    appendURLs = TRUE;
+                }
             }
             itemResult = [newItem setDataProvider: provider forTypes: utiTypes];
             if (itemResult == FALSE) {
@@ -193,6 +270,9 @@ bool Cocoa_SetClipboardData(SDL_VideoDevice *_this)
             writeResult = [pasteboard writeObjects: @[newItem]];
             if (writeResult == FALSE) {
                 return SDL_SetError("Unable to set clipboard data");
+            }
+            if (appendURLs) {
+                SetURLsFromTextURIs(_this, pasteboard);
             }
         } else {
             [pasteboard clearContents];
@@ -219,7 +299,9 @@ static bool IsMimeType(const char *tag)
 static CFStringRef GetUTIType(const char *tag)
 {
     CFStringRef utiType;
-    if (IsMimeType(tag)) {
+    if (SDL_strcmp(tag, "text/plain;charset=utf-8") == 0) {
+        utiType = CFRetain((__bridge CFStringRef)NSPasteboardTypeString);
+    } else if (IsMimeType(tag)) {
         CFStringRef mimeType = CFStringCreateWithCString(NULL, tag, kCFStringEncodingUTF8);
         utiType = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType, NULL);
         CFRelease(mimeType);
@@ -240,7 +322,6 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
             CFStringRef utiType = GetUTIType(mime_type);
             NSString *availableType = [pasteboard availableTypeFromArray:@[(__bridge NSString *) utiType]];
             itemData = [item dataForType: availableType];
-            CFRelease(utiType);
             if (itemData != nil) {
                 NSUInteger length = [itemData length];
                 *size = (size_t)length;
@@ -248,9 +329,28 @@ void *Cocoa_GetClipboardData(SDL_VideoDevice *_this, const char *mime_type, size
                 if (data) {
                     [itemData getBytes: data length: length];
                     SDL_memset((Uint8 *)data + length, 0, sizeof(Uint32));
+                    // if the app asked for, generically, "plain text" and we see a UTF-16 byte-order-mark, convert it to UTF-8.
+                    // almost all plain text comes through as UTF-8 on the Mac, but some things, like "copying" a file's icon to the clipboard from the Finder,
+                    // will still give you UTF-16. Other than the BOM, there's no indication of the encoding for the "public.plain-text" UTI,
+                    // so if the app didn't ask for something more specific, this is the best we can do.
+                    if ((*((const Uint16 *) data) == 0xFEFF) && (CFStringCompare(utiType, CFSTR("public.plain-text"), 0) == kCFCompareEqualTo)) {
+                        char *utf8 = SDL_iconv_string("UTF-8", "UTF-16", ((char *) data) + 2, length + sizeof (Uint32) - 2);
+                        if (utf8) {
+                            *size = (size_t) SDL_strlen(utf8);
+                            SDL_free(data);
+                            data = utf8;
+                        }
+                    }
                 }
+                CFRelease(utiType);
                 break;
             }
+            CFRelease(utiType);
+        }
+
+        if (!data && SDL_strcmp(mime_type, "text/uri-list") == 0) {
+            // Try to synthesize text/uri-list entries from public.file-url.
+            data = GetTextURIsFromURLs(pasteboard, size);
         }
         return data;
     }
@@ -266,6 +366,12 @@ bool Cocoa_HasClipboardData(SDL_VideoDevice *_this, const char *mime_type)
             result = true;
         }
         CFRelease(utiType);
+
+        // If there's no text/uri-list type, see if URLs are available.
+        if (!result && SDL_strcmp(mime_type, "text/uri-list") == 0) {
+            NSDictionary *options = @{NSPasteboardURLReadingFileURLsOnlyKey: @YES};
+            result = [pasteboard canReadObjectForClasses:@[ [NSURL class] ] options:options];
+        }
     }
     return result;
 

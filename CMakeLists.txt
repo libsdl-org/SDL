@@ -1676,7 +1676,7 @@ if(ANDROID)
       set(path_android_jar "${SDL_ANDROID_PLATFORM_ROOT}/android.jar")
       set(android_java_sources_root "${SDL3_SOURCE_DIR}/android-project/app/src/main/java")
       file(GLOB SDL_JAVA_SOURCES "${android_java_sources_root}/org/libsdl/app/*.java")
-      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8")
+      set(CMAKE_JAVA_COMPILE_FLAGS "-encoding;utf-8;-source;1.8;-target;1.8")
       add_jar(SDL3-jar
         SOURCES ${SDL_JAVA_SOURCES}
         INCLUDE_JARS "${path_android_jar}"
@@ -1689,7 +1689,7 @@ if(ANDROID)
       get_property(sdl3_jar_location TARGET SDL3-jar PROPERTY JAR_FILE)
       set_property(TARGET SDL3__Jar PROPERTY JAR_FILE "${sdl3_jar_location}")
       set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
-      string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
+      string(REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
       add_custom_command(
         OUTPUT "${javasourcesjar}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${javasourcesjar}" ${sdl_relative_java_sources}
@@ -2519,14 +2519,6 @@ elseif(WINDOWS OR CYGWIN)
     )
   endif()
 
-  # headers needed elsewhere
-  check_c_source_compiles("
-    #define COBJMACROS
-    #include <windows.gaming.input.h>
-    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
-  )
-
   set(HAVE_GAMEINPUT_H 1)
   sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
   sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
@@ -2722,7 +2714,6 @@ elseif(WINDOWS OR CYGWIN)
       "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
     )
 
-    set(SDL_JOYSTICK_RAWINPUT 1)
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       sdl_link_dependency(joystick LIBS dinput8)
@@ -2730,9 +2721,6 @@ elseif(WINDOWS OR CYGWIN)
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
       set(HAVE_XINPUT TRUE)
-    endif()
-    if(HAVE_WINDOWS_GAMING_INPUT_H)
-      set(SDL_JOYSTICK_WGI 1)
     endif()
     if(HAVE_GAMEINPUT_H)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")

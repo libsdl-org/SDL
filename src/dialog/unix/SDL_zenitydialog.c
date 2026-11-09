@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
+#include "../../process/SDL_sysprocess.h"
 #include "../SDL_dialog_utils.h"
 #include "SDL_zenitydialog.h"
 #include "SDL_zenitymessagebox.h"
@@ -155,10 +156,25 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
     case SDL_FILEDIALOG_OPENFOLDER:
         argv[argc++] = "--directory";
+
+        // A folder dialog always treats the location as a folder
+        if (args->filename) {
+            size_t filename_length = SDL_strlen(args->filename);
+            if (filename_length > 0 && args->filename[filename_length - 1] != '/') {
+                char *filename = SDL_realloc(args->filename, filename_length + 2);
+                if (!filename) {
+                    goto cleanup;
+                }
+                filename[filename_length++] = '/';
+                filename[filename_length] = '\0';
+
+                args->filename = filename;
+            }
+        }
         break;
     }
 
-    if (args->filename) {
+    if (args->filename && *args->filename) {
         argv[argc++] = "--filename";
         argv[argc++] = args->filename;
     }
@@ -263,32 +279,36 @@ static void run_zenity(SDL_DialogFileCallback callback, void *userdata, void *ar
         goto done;
     }
 
-    array = (char **)SDL_malloc((narray + 1) * sizeof(char *));
-    if (!array) {
-        goto done;
-    }
-    array[0] = container;
-    array[1] = NULL;
-
-    for (int i = 0; i < bytes_read; i++) {
-        if (container[i] == '\n') {
-            container[i] = '\0';
-            // Reading from a process often leaves a trailing \n, so ignore the last one
-            if (i < bytes_read - 1) {
-                array[narray] = container + i + 1;
-                narray++;
-                char **new_array = (char **)SDL_realloc(array, (narray + 1) * sizeof(char *));
-                if (!new_array) {
-                    goto done;
-                }
-                array = new_array;
-                array[narray] = NULL;
-            }
+    // status 1 = the user canceled the dialog
+    if (bytes_read > 0 || status == 1 || status == SDL_PROCESS_EXITCODE_UNKNOWN) {
+        array = (char **)SDL_malloc((narray + 1) * sizeof(char *));
+        if (!array) {
+            goto done;
         }
-    }
+        if (bytes_read > 0) {
+            array[0] = container;
+            array[1] = NULL;
 
-    // 0 = the user chose one or more files, 1 = the user canceled the dialog
-    if (status == 0 || status == 1) {
+            for (int i = 0; i < bytes_read; i++) {
+                if (container[i] == '\n') {
+                    container[i] = '\0';
+                    // Reading from a process often leaves a trailing \n, so ignore the last one
+                    if (i < bytes_read - 1) {
+                        array[narray] = container + i + 1;
+                        narray++;
+                        char **new_array = (char **)SDL_realloc(array, (narray + 1) * sizeof(char *));
+                        if (!new_array) {
+                            goto done;
+                        }
+                        array = new_array;
+                        array[narray] = NULL;
+                    }
+                }
+            }
+        } else {
+            array[0] = NULL;
+        }
+
         callback(userdata, (const char *const *)array, -1);
     } else {
         SDL_SetError("Could not run zenity: exit code %d", status);
@@ -352,21 +372,7 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
 bool SDL_Zenity_detect(void)
 {
-    const char *args[] = {
-        "zenity", "--version", NULL
-    };
-    int status = -1;
+    int major, minor;
 
-    SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_Process *process = SDL_CreateProcessWithProperties(props);
-    SDL_DestroyProperties(props);
-    if (process) {
-        SDL_WaitProcess(process, true, &status);
-        SDL_DestroyProcess(process);
-    }
-    return (status == 0);
+    return SDL_get_zenity_version(&major, &minor);
 }

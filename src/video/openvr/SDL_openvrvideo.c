@@ -624,6 +624,7 @@ static bool OPENVR_InitializeOverlay(SDL_VideoDevice *_this, SDL_Window *window)
         if (hint && *hint) {
             overlay_flags = SDL_atoi(hint);
         } else {
+            overlay_flags |= (1 << 17); //vr::VROverlayFlags_SendVRSmoothScrollEvents
             overlay_flags |= (1 << 23); //vr::VROverlayFlags_EnableControlBar
             overlay_flags |= (1 << 24); //vr::VROverlayFlags_EnableControlBarKeyboard
             overlay_flags |= (1 << 25); //vr::VROverlayFlags_EnableControlBarClose
@@ -1247,12 +1248,23 @@ static bool OPENVR_GL_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     return true;
 }
 
+static Uint8 OPENVR_MapMouseButton(int btn)
+{
+    if (btn == EVRMouseButton_VRMouseButton_Right) {
+        return SDL_BUTTON_RIGHT;
+    } else if (btn == EVRMouseButton_VRMouseButton_Middle) {
+        return SDL_BUTTON_MIDDLE;
+    } else {
+        return SDL_BUTTON_LEFT;
+    }
+}
+
 static void OPENVR_HandleMouse(float x, float y, int btn, int evt)
 {
     if (evt == 2) {
         SDL_SendMouseMotion(0, NULL, SDL_GLOBAL_MOUSE_ID, false, x, y);
     } else {
-        const Uint8 button = SDL_BUTTON_LEFT + btn;
+        const Uint8 button = OPENVR_MapMouseButton(btn);
         const bool down = (evt != 0);
         SDL_SendMouseButton(0, NULL, SDL_GLOBAL_MOUSE_ID, button, down);
     }
@@ -1474,10 +1486,14 @@ static void OPENVR_PumpEvents(SDL_VideoDevice *_this)
                 OPENVR_HandleMouse(nEvent.data.mouse.x, videodata->targh - nEvent.data.mouse.y, nEvent.data.mouse.button, 2);
                 break;
             case EVREventType_VREvent_MouseButtonDown:
-                OPENVR_HandleMouse(nEvent.data.mouse.x, videodata->targh - nEvent.data.mouse.y, 0, 1);
+                OPENVR_HandleMouse(nEvent.data.mouse.x, videodata->targh - nEvent.data.mouse.y, nEvent.data.mouse.button, 1);
                 break;
             case EVREventType_VREvent_MouseButtonUp:
-                OPENVR_HandleMouse(nEvent.data.mouse.x, videodata->targh - nEvent.data.mouse.y, 0, 0);
+                OPENVR_HandleMouse(nEvent.data.mouse.x, videodata->targh - nEvent.data.mouse.y, nEvent.data.mouse.button, 0);
+                break;
+            case EVREventType_VREvent_ScrollSmooth:
+            case EVREventType_VREvent_ScrollDiscrete:
+                SDL_SendMouseWheel(0, NULL, SDL_GLOBAL_MOUSE_ID, -nEvent.data.scroll.xdelta, nEvent.data.scroll.ydelta, SDL_MOUSEWHEEL_NORMAL);
                 break;
             case EVREventType_VREvent_KeyboardCharInput:
                 SDL_SendKeyboardUnicodeKey(SDL_GetTicksNS(), nEvent.data.keyboard.cNewInput[0]);

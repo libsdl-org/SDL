@@ -41,6 +41,13 @@ typedef struct
     float HDR_headroom;
 } SDL_HDROutputProperties;
 
+typedef enum
+{
+    SDL_WINDOW_FRAMEBUFFER_NONE,
+    SDL_WINDOW_FRAMEBUFFER_NATIVE,
+    SDL_WINDOW_FRAMEBUFFER_TEXTURE
+} SDL_WindowFramebufferType;
+
 // Define the SDL window structure, corresponding to toplevel windows
 struct SDL_Window
 {
@@ -97,6 +104,7 @@ struct SDL_Window
 
     float opacity;
 
+    SDL_WindowFramebufferType framebuffer_type;
     SDL_Surface *surface;
     bool surface_valid;
 
@@ -224,6 +232,15 @@ struct SDL_VideoDevice
      * displays for this driver, returning true (success) or false (error).
      */
     bool (*VideoInit)(SDL_VideoDevice *_this);
+
+    /*
+     * Called when Video subsystem is beginning to terminate. This allows for
+     * special case code that need to happen before internal SDL bits
+     * clean up that must happen before VideoQuit(). An example is stopping
+     * a hotplug thread that might add mice/keyboards after SDL has cleaned
+     * up its internal list. Most work is meant to happen in VideoQuit, though.
+     */
+    void (*VideoPreQuit)(SDL_VideoDevice *_this);
 
     /*
      * Reverse the effects VideoInit() -- called if VideoInit() fails or
@@ -404,7 +421,6 @@ struct SDL_VideoDevice
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
-    bool checked_texture_framebuffer;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;
@@ -412,6 +428,7 @@ struct SDL_VideoDevice
     SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
+    SDL_WindowID background_focus_windowID;
     Uint32 clipboard_sequence;
     SDL_ClipboardDataCallback clipboard_callback;
     SDL_ClipboardCleanupCallback clipboard_cleanup;

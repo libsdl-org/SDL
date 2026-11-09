@@ -90,7 +90,7 @@ extern bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, c
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
 
 // Find an SDL_AudioDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata);
+extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(void *userdata, SDL_AudioDevice *device), void *userdata);
 
 // Backends should call this if they change the device format, channels, freq, or sample_frames to keep other state correct.
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
@@ -154,6 +154,7 @@ typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
     bool (*OpenDevice)(SDL_AudioDevice *device);
+    bool (*PostOpenDevice)(SDL_AudioDevice *device);  // runs after OpenDevice _without the device lock held_.
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
     bool (*WaitDevice)(SDL_AudioDevice *device);

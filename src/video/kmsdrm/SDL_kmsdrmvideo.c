@@ -1863,7 +1863,6 @@ bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         result = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
         if (!result) {
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: SDL_EGL_MakeCurrent with GBM_FORMAT_%s failed: %s", gbm_formats[i].name, SDL_GetError());
-            continue;
         }
 
         _this->gl_config.red_size = gbm_formats[i].r;

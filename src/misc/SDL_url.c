@@ -29,3 +29,47 @@ bool SDL_OpenURL(const char *url)
     }
     return SDL_SYS_OpenURL(url);
 }
+
+char *SDL_EncodeURL(const char *str, const char *no_encode_chars)
+{
+    const size_t slen = SDL_strlen(str) + 1;
+    size_t allocation = slen + 64;   // at least this long plus a little more, in case one allocation covers it.
+    size_t dsti = 0;
+    char *retval = (char *) SDL_malloc(allocation);
+    if (!retval) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < slen; i++) {
+        if (dsti >= (allocation - 4)) {
+            allocation += 64;
+            char *ptr = (char *) SDL_realloc(retval, allocation);
+            if (!ptr) {
+                SDL_free(retval);
+                return NULL;
+            }
+            retval = ptr;
+        }
+
+        const char ch = str[i];
+
+        if ( ((ch >= 'A') && (ch <= 'Z')) || ((ch >= 'a') && (ch <= 'z')) ||
+             ((ch >= '0') && (ch <= '9')) ||
+             ((ch == '=') || (ch == '.') || (ch == '_') || (ch == '~') || (ch == '\0')) ||
+             (no_encode_chars && (SDL_strchr(no_encode_chars, ch) != NULL)) ) {
+            retval[dsti++] = ch;  // unreserved char, null terminator char, or explicitly requested not to encode.
+        } else {
+            SDL_snprintf(&retval[dsti], 4, "%%%02X", (unsigned int) ch);
+            dsti += 3;
+        }
+    }
+
+    // shrink the allocation, if possible.
+    char *ptr = (char *) SDL_realloc(retval, SDL_strlen(retval) + 1);
+    if (ptr) {
+        retval = ptr;
+    }
+
+    return retval;
+}
+

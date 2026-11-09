@@ -50,6 +50,7 @@ my $bugreporturl = 'https://github.com/libsdl-org/sdlwiki/issues/new';
 my $srcpath = undef;
 my $wikipath = undef;
 my $warn_about_missing = 0;
+my $generate_undocumented_page = 0;
 my $copy_direction = 0;
 my $optionsfname = undef;
 my $wikipreamble = undef;
@@ -74,6 +75,7 @@ my $gitrev = undef;
 
 foreach (@ARGV) {
     $warn_about_missing = 1, next if $_ eq '--warn-about-missing';
+    $generate_undocumented_page = 1, next if $_ eq '--generate-undocumented-page';
     $copy_direction = 1, next if $_ eq '--copy-to-headers';
     $copy_direction = 1, next if $_ eq '--copy-to-header';
     $copy_direction = -1, next if $_ eq '--copy-to-wiki';
@@ -118,6 +120,7 @@ if (defined $optionsfname) {
             $val =~ s/\A\s+//;
             $val =~ s/\s+\Z//;
             $warn_about_missing = int($val), next if $key eq 'warn_about_missing';
+            $generate_undocumented_page = int($val), next if $key eq 'generate_undocumented_page';
             $srcpath = $val, next if $key eq 'srcpath';
             $wikipath = $val, next if $key eq 'wikipath';
             $apiprefixregex = $val, next if $key eq 'apiprefixregex';
@@ -668,7 +671,7 @@ sub filecopy {
 }
 
 sub usage {
-    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing] [--manpath=<man path>]\n\n");
+    die("USAGE: $0 <source code git clone path> <wiki git clone path> [--copy-to-headers|--copy-to-wiki|--copy-to-manpages] [--warn-about-missing] [--generate-undocumented-page] [--manpath=<man path>]\n\n");
 }
 
 usage() if not defined $srcpath;
@@ -1128,8 +1131,8 @@ if (defined $readmesubdir) {
 }
 
 opendir(DH, $incpath) or die("Can't opendir '$incpath': $!\n");
-while (my $d = readdir(DH)) {
-    my $dent = $d;
+foreach (sort(readdir(DH))) {
+    my $dent = $_;
     next if not $dent =~ /$selectheaderregex/;  # just selected headers.
     open(FH, '<', "$incpath/$dent") or die("Can't open '$incpath/$dent': $!\n");
 
@@ -1866,7 +1869,7 @@ closedir(DH);
 
 delete $wikisyms{"Undocumented"};
 
-{
+if ($generate_undocumented_page) {
     my $path = "$wikipath/Undocumented.md";
     open(my $fh, '>', $path) or die("Can't open '$path': $!\n");
 

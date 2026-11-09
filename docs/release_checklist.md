@@ -1,5 +1,8 @@
 # Release checklist
 
+* Run `build-scripts/trigger-build.py -R libsdl-org/SDL --ref <branch>` to run
+  all ci tests. Verify all jobs finished successfully.
+
 * Run `build-scripts/create-release.py -R libsdl-org/SDL --ref <branch>` to do
   a dry run creating the release assets. Verify that the archives are correct.
 

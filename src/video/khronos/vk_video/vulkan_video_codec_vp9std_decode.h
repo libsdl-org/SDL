@@ -21,12 +21,14 @@ extern "C" {
 
 // vulkan_video_codec_vp9std_decode is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_vp9std_decode 1
+
 #include "vulkan_video_codec_vp9std.h"
 
 #define VK_STD_VULKAN_VIDEO_CODEC_VP9_DECODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
 
 #define VK_STD_VULKAN_VIDEO_CODEC_VP9_DECODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_VP9_DECODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_VP9_DECODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_vp9_decode"
+
 typedef struct StdVideoDecodeVP9PictureInfoFlags {
     uint32_t    error_resilient_mode : 1;
     uint32_t    intra_only : 1;

@@ -19,9 +19,10 @@ class HIDDeviceUSB implements HIDDevice {
     protected UsbEndpoint mInputEndpoint;
     protected UsbEndpoint mOutputEndpoint;
     protected InputThread mInputThread;
-    protected boolean mRunning;
-    protected boolean mFrozen;
-    protected boolean mClaimed;
+    protected volatile boolean mRunning;
+    protected volatile boolean mFrozen;
+    protected final Object mFrozenLock = new Object();
+    protected volatile boolean mClaimed;
 
     public HIDDeviceUSB(HIDDeviceManager manager, UsbDevice usbDevice, int interface_index) {
         mManager = manager;
@@ -298,21 +299,40 @@ class HIDDeviceUSB implements HIDDevice {
 
     @Override
     public void setFrozen(boolean frozen) {
-        mFrozen = frozen;
+        synchronized (mFrozenLock) {
+            mFrozen = frozen;
+            mFrozenLock.notifyAll();
+        }
+    }
 
-        /* If we have a valid device connection and the claim state doesn't match what we want, try to correct that. */
-        if (mConnection != null && mClaimed == mFrozen) {
-            UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
-            if (frozen) {
-                mClaimed = !mConnection.releaseInterface(iface);
-                if (mClaimed) {
-                    Log.e(TAG, "Tried to release claim on USB device, but failed!");
-                }
+    // Release our claim on the interface while we're frozen so the system can use the device, and
+    // reclaim it when we're unfrozen. This is called on the input thread so the UI thread never blocks
+    // on USB calls.
+    protected void waitWhileFrozen() {
+        UsbInterface iface = mDevice.getInterface(mInterfaceIndex);
+        if (mClaimed) {
+            if (mConnection.releaseInterface(iface)) {
+                mClaimed = false;
             } else {
-                mClaimed = mConnection.claimInterface(iface, true);
-                if (!mClaimed) {
-                    Log.e(TAG, "Tried to regain claim on USB device, but failed!");
+                Log.e(TAG, "Tried to release claim on USB device, but failed!");
+            }
+        }
+
+        synchronized (mFrozenLock) {
+            while (mRunning && mFrozen) {
+                try {
+                    mFrozenLock.wait();
+                } catch (InterruptedException e) {
+                    // close() interrupts us when it's time to stop
                 }
+            }
+        }
+
+        if (mRunning && !mClaimed) {
+            if (mConnection.claimInterface(iface, true)) {
+                mClaimed = true;
+            } else {
+                Log.e(TAG, "Tried to regain claim on USB device, but failed!");
             }
         }
     }
@@ -323,6 +343,11 @@ class HIDDeviceUSB implements HIDDevice {
             int packetSize = mInputEndpoint.getMaxPacketSize();
             byte[] packet = new byte[packetSize];
             while (mRunning) {
+                if (mFrozen) {
+                    waitWhileFrozen();
+                    continue;
+                }
+
                 int r;
                 try
                 {

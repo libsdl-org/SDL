@@ -19,50 +19,43 @@
 #include <SDL3/SDL_test.h>
 
 static SDL_RWLock *rwlock = NULL;
-static SDL_ThreadID mainthread;
 static SDL_AtomicInt doterminate;
 static int nb_threads = 6;
 static SDL_Thread **threads;
-static int worktime = 1000;
-static int writerworktime = 100;
+static int TheVariable = 0;
+static int worktime = 100;
+static int writerworktime = 10;
 static int timeout = 10000;
 static SDLTest_CommonState *state;
 
-static void DoWork(const int workticks)  /* "Work" */
+static int SDLCALL ReaderRun(void *data)
 {
-    const SDL_ThreadID tid = SDL_GetCurrentThreadID();
-    const bool is_reader = tid != mainthread;
-    const char *typestr = is_reader ? "Reader" : "Writer";
-
-    SDL_Log("%s Thread %" SDL_PRIu64 ": ready to work", typestr, tid);
-    if (is_reader) {
-        SDL_LockRWLockForReading(rwlock);
-    } else {
-        SDL_LockRWLockForWriting(rwlock);
-    }
-
-    SDL_Log("%s Thread %" SDL_PRIu64 ": start work!", typestr, tid);
-    SDL_Delay(workticks);
-    SDL_Log("%s Thread %" SDL_PRIu64 ": work done!", typestr, tid);
-    SDL_UnlockRWLock(rwlock);
-
-    /* If this sleep isn't done, then threads may starve */
-    SDL_Delay(10);
-}
-
-static int SDLCALL
-ReaderRun(void *data)
-{
-    SDL_Log("Reader Thread %" SDL_PRIu64 ": starting up", SDL_GetCurrentThreadID());
+    const int threadidx = (int) (uintptr_t) data;
+    SDL_Log("Reader Thread %d: starting up!", threadidx);
     while (!SDL_GetAtomicInt(&doterminate)) {
-        DoWork(worktime);
+        /* if we're past the timeout, just sleep and wait for doterminate. This makes sure we can't drown out the writer with so many read locks that it never gets control. */
+        if (SDL_GetTicks() > ((Uint32) timeout)) {
+            SDL_Delay(10);
+            continue;
+        }
+
+        SDL_Log("Reader Thread %d: Ready to grab lock!", threadidx);
+        SDL_LockRWLockForReading(rwlock);
+        SDL_Log("Reader Thread %d: TheVariable=%d", threadidx, TheVariable);
+        if (worktime) {
+            SDL_Delay(worktime);  /* hold the lock awhile. */
+        }
+        SDL_Log("Reader Thread %d: Releasing lock!", threadidx);
+        SDL_UnlockRWLock(rwlock);
+        SDL_Delay(200 + SDL_rand(200)); /* If this sleep isn't done, then threads may starve */
     }
-    SDL_Log("Reader Thread %" SDL_PRIu64 ": exiting!", SDL_GetCurrentThreadID());
+    SDL_Log("Reader Thread %d: terminating!", threadidx);
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
+    int remaining_ticks;
     int i;
 
     /* Initialize test framework */
@@ -146,19 +139,30 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    mainthread = SDL_GetCurrentThreadID();
-    SDL_Log("Writer thread: %" SDL_PRIu64, mainthread);
     for (i = 0; i < nb_threads; ++i) {
         char name[64];
         (void)SDL_snprintf(name, sizeof(name), "Reader%d", i);
-        threads[i] = SDL_CreateThread(ReaderRun, name, NULL);
+        threads[i] = SDL_CreateThread(ReaderRun, name, (void *)(uintptr_t) (i+1));
         if (threads[i] == NULL) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create reader thread! %s", SDL_GetError());
         }
     }
 
-    while (!SDL_GetAtomicInt(&doterminate) && (SDL_GetTicks() < ((Uint64) timeout))) {
-        DoWork(writerworktime);
+    remaining_ticks = timeout;
+    while (!SDL_GetAtomicInt(&doterminate) && (remaining_ticks > 0)) {
+        Uint64 now;
+        SDL_Log("## New iteration! (%d ticks remaining.)", remaining_ticks);
+        SDL_Log("Writer Thread: Ready to grab lock!");
+        SDL_LockRWLockForWriting(rwlock);
+        SDL_Log("Writer Thread: increment TheVariable to %d", ++TheVariable);
+        if (writerworktime) {
+            SDL_Delay(writerworktime);
+        }
+        SDL_Log("Writer Thread: Releasing lock!");
+        SDL_UnlockRWLock(rwlock);
+        SDL_Delay(50); /* If this sleep isn't done, then threads may starve */
+        now = SDL_GetTicks();
+        remaining_ticks = ((now < ((Uint64) timeout)) ? ((int) (((Uint64) timeout) - now)) : 0);
     }
 
     SDL_SetAtomicInt(&doterminate, 1);

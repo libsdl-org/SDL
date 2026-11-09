@@ -87,7 +87,6 @@ typedef unsigned int uintptr_t;
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00  /* Windows 10 SDK */
 #define HAVE_DXGI1_5_H 1
 #define HAVE_DXGI1_6_H 1
-#define HAVE_WINDOWS_GAMING_INPUT_H 1
 #endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
@@ -225,11 +224,7 @@ typedef unsigned int uintptr_t;
 #define SDL_JOYSTICK_DINPUT 1
 #define SDL_JOYSTICK_GAMEINPUT 1
 #define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_RAWINPUT 1
 #define SDL_JOYSTICK_VIRTUAL 1
-#ifdef HAVE_WINDOWS_GAMING_INPUT_H
-#define SDL_JOYSTICK_WGI 1
-#endif
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT 1
 

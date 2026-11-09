@@ -680,7 +680,8 @@ static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
     DXGI_FORMAT_R16G16_UNORM,       // USHORT2_NORM
     DXGI_FORMAT_R16G16B16A16_UNORM, // USHORT4_NORM
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
-    DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
+    DXGI_FORMAT_R16G16B16A16_FLOAT, // HALF4
+    DXGI_FORMAT_R10G10B10A2_UNORM   // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -7270,6 +7271,20 @@ static bool D3D12_SetAllowedFramesInFlight(
         }
     }
 
+#if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // Update the frame interval
+    HRESULT res;
+    res = renderer->device->SetFrameIntervalX(
+        NULL,
+        D3D12XBOX_FRAME_INTERVAL_60_HZ,
+        allowedFramesInFlight,
+        D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    if (FAILED(res)) {
+        SDL_SetError("Could not set frame interval: %X", res);
+        return false;
+    }
+#endif
+
     return true;
 }
 
@@ -8465,11 +8480,10 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(samplerCreateInfo);
     samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.enable_anisotropy = 0;
-    samplerCreateInfo.enable_compare = 0;
     samplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
@@ -10016,7 +10030,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -10114,7 +10128,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not set frame interval: %X", res);

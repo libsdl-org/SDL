@@ -1254,8 +1254,8 @@ extern SDL_DECLSPEC const SDL_PixelFormatDetails * SDLCALL SDL_GetPixelFormatDet
 /**
  * Create a palette structure with the specified number of color entries.
  *
- * If `ncolors` is larger than the palette's size - `firstcolor`,
- * it is truncated to the amount that will fit.
+ * If `ncolors` is larger than the palette's size - `firstcolor`, it is
+ * truncated to the amount that will fit.
  *
  * The palette entries are initialized to white.
  *

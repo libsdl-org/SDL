@@ -1882,6 +1882,10 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
         if (depth_stencil_target_info != NULL) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
+
+            COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_width, textureHeader->info.width);
+            COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_height, textureHeader->info.height);
+
             if (!(textureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
                 SDL_assert_release(!"Depth target must have been created with the DEPTH_STENCIL_TARGET usage flag!");
                 return NULL;
@@ -2058,6 +2062,10 @@ void SDL_BindGPUVertexBuffers(
     }
     if (bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("bindings");
+        return;
+    }
+    CHECK_PARAM(first_binding + num_bindings > MAX_VERTEX_BUFFERS) {
+        SDL_SetError("first_binding + num_bindings exceeds MAX_VERTEX_BUFFERS");
         return;
     }
 
