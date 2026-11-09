@@ -662,6 +662,11 @@ static bool D3D_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_
     D3D_TextureData *texturedata;
     DWORD usage;
 
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
+
     texturedata = (D3D_TextureData *)SDL_calloc(1, sizeof(*texturedata));
     if (!texturedata) {
         return false;

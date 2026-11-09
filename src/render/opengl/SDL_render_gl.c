@@ -561,6 +561,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
     renderdata->drawstate.texture = NULL; // we trash this state.
     renderdata->drawstate.texturing_dirty = true; // we trash this state.
 
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
+
     if (texture->access == SDL_TEXTUREACCESS_TARGET &&
         !renderdata->GL_EXT_framebuffer_object_supported) {
         return SDL_SetError("Render targets not supported by OpenGL");

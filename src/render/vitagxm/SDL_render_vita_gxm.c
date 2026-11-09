@@ -269,8 +269,15 @@ static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode ble
 static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
+    VITA_GXM_TextureData *vita_texture;
 
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        ((!SDL_ISCOLORSPACE_MATRIX_BT601(texture->colorspace) && !SDL_ISCOLORSPACE_MATRIX_BT709(texture->colorspace)) ||
+         SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ)) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
+
+    vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
     if (!vita_texture) {
         return false;
     }
@@ -319,8 +326,6 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
         } else {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
         }
-    } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV colorspace");
     }
 
     if (ret < 0) {

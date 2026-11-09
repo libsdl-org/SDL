@@ -1706,6 +1706,11 @@ static bool GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
     GLenum format;
     GLenum type;
 
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
+
     GLES2_ActivateRenderer(renderer);
 
     renderdata->drawstate.texture = NULL; // we trash this state.

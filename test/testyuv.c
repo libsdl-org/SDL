@@ -1026,16 +1026,11 @@ static bool run_all_format_test(SDL_Window *window, const char *requested_render
 
             for (int m = 0; m < SDL_arraysize(yuv_formats) && !quit; ++m) {
                 SDL_PixelFormat yuv_format = yuv_formats[m];
-                // BT.2020 PQ is only supported with high bit depth YUV formats
-                if (is_high_bit_depth_yuv_format(yuv_format) != (colorspaces[j].mode == YUV_CONVERSION_BT2020)) {
+                if (is_high_bit_depth_yuv_format(yuv_format) && !has_10bit_texture_format(renderer)) {
                     continue;
                 }
                 for (int n = 0; n < SDL_arraysize(rgb_formats) && !quit; ++n) {
                     SDL_PixelFormat rgb_format = rgb_formats[n];
-                    if (SDL_ISPIXELFORMAT_10BIT(rgb_format) && colorspaces[j].mode != YUV_CONVERSION_BT2020) {
-                        continue;
-                    }
-
                     SDL_Log("Testing: %s %s %s %s (planar)", renderer_name, colorspaces[j].name, SDL_GetPixelFormatName(yuv_format), SDL_GetPixelFormatName(rgb_format));
                     result &= run_single_format_test(renderer, original, yuv_format, rgb_format, true, false);
 

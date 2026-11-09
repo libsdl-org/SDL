@@ -946,25 +946,16 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
     case SDL_PIXELFORMAT_I444:
-        constants->texture_type = TEXTURETYPE_YUV;
-        constants->input_type = INPUTTYPE_SRGB;
-        break;
-    case SDL_PIXELFORMAT_NV12:
-        constants->texture_type = TEXTURETYPE_NV12;
-        constants->input_type = INPUTTYPE_SRGB;
-        break;
-    case SDL_PIXELFORMAT_NV21:
-        constants->texture_type = TEXTURETYPE_NV21;
-        constants->input_type = INPUTTYPE_SRGB;
-        break;
-    case SDL_PIXELFORMAT_P010:
-        constants->texture_type = TEXTURETYPE_NV12;
-        constants->input_type = INPUTTYPE_HDR10;
-        break;
     case SDL_PIXELFORMAT_I0FL:
     case SDL_PIXELFORMAT_I4FL:
         constants->texture_type = TEXTURETYPE_YUV;
-        constants->input_type = INPUTTYPE_HDR10;
+        break;
+    case SDL_PIXELFORMAT_NV12:
+    case SDL_PIXELFORMAT_P010:
+        constants->texture_type = TEXTURETYPE_NV12;
+        break;
+    case SDL_PIXELFORMAT_NV21:
+        constants->texture_type = TEXTURETYPE_NV21;
         break;
     default:
         switch (texture->format) {
@@ -984,14 +975,28 @@ static void CalculateAdvancedShaderConstants(SDL_Renderer *renderer, const SDL_R
             }
             break;
         }
-        if (texture->colorspace == SDL_COLORSPACE_SRGB_LINEAR) {
+        switch (SDL_COLORSPACETRANSFER(texture->colorspace)) {
+        case SDL_TRANSFER_CHARACTERISTICS_LINEAR:
             constants->input_type = INPUTTYPE_SCRGB;
-        } else if (texture->colorspace == SDL_COLORSPACE_HDR10) {
+            break;
+        case SDL_TRANSFER_CHARACTERISTICS_PQ:
             constants->input_type = INPUTTYPE_HDR10;
-        } else {
+            break;
+        default:
             constants->input_type = GetSRGBInputType(renderer, ((GPU_TextureData *)texture->internal)->format);
+            break;
         }
         break;
+    }
+
+    if (constants->texture_type == TEXTURETYPE_YUV ||
+        constants->texture_type == TEXTURETYPE_NV12 ||
+        constants->texture_type == TEXTURETYPE_NV21) {
+        if (SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+            constants->input_type = INPUTTYPE_HDR10;
+        } else {
+            constants->input_type = INPUTTYPE_SRGB;
+        }
     }
 
     if (constants->texture_type == TEXTURETYPE_PALETTE_LINEAR ||
