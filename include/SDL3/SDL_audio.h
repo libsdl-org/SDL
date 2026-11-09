@@ -675,7 +675,9 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  * The application can hang any data it wants here, but the following
  * properties are understood by SDL:
  *
- * - `SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING`: a string identifying the container for this audio device, if available. This can be compared with SDL_PROP_GAMEPAD_CONTAINER_ID_STRING to find associated controllers.
+ * - `SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING`: a string identifying the
+ *   container for this audio device, if available. This can be compared with
+ *   SDL_PROP_GAMEPAD_CONTAINER_ID_STRING to find associated controllers.
  * - `SDL_PROP_AUDIO_DEVICE_UNIQUE_ID_STRING`: This identifier can be used to
  *   locate a specific device. In optimal conditions, this identifier will not
  *   change between runs of an app, hardware disconnection, and system
