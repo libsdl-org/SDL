@@ -716,9 +716,20 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             }
         }
 
-        /* Note: We don't handle RI_MOUSE_WHEEL and RI_MOUSE_HWHEEL here because some
+        /* We prefer the legacy WM_MOUSEWHEEL/WM_MOUSEHWHEEL messages because some
            input devices have inverted wheel direction in raw mode. This avoids scroll
            direction changing unexpectedly when entering/exiting relative mouse mode. */
+        if (data->raw_mouse_flag_nolegacy) {
+            if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
+                SHORT amount = (SHORT)rawmouse->usButtonData;
+                float fAmount = (float)amount / WHEEL_DELTA;
+                SDL_SendMouseWheel(timestamp, window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+            } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
+                SHORT amount = (SHORT)rawmouse->usButtonData;
+                float fAmount = (float)amount / WHEEL_DELTA;
+                SDL_SendMouseWheel(timestamp, window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+            }
+        }
 
         /* Invalidate the mouse button flags. If we don't do this then disabling raw input
            will cause held down mouse buttons to persist when released. */
