@@ -71,6 +71,8 @@ typedef struct
 
 typedef struct
 {
+    bool last_x_valid;
+    bool last_y_valid;
     int scroll_info_count;
     SDL_XInput2ScrollInfo *scroll_info;
 } SDL_XInput2ScrollableDevice;
@@ -191,6 +193,32 @@ static void xinput2_parse_scrollable_valuators(SDL_XInput2ScrollableDevice *scro
 
                     SDL_Mouse *mouse = SDL_GetMouse();
                     SDL_SendMouseWheel(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, (float)-x, (float)y, SDL_MOUSEWHEEL_NORMAL);
+
+                    // A stop, or "lift-off" event is triggered by all active axes going to 0.
+                    bool send_stop = false;
+                    if (info->scroll_type == XIScrollTypeVertical) {
+                        if (y != 0.0) {
+                            scroll_dev->last_y_valid = true;
+                        } else {
+                            scroll_dev->last_y_valid = false;
+                            if (!scroll_dev->last_x_valid) {
+                                send_stop = true;
+                            }
+                        }
+                    } else if (info->scroll_type == XIScrollTypeHorizontal) {
+                        if (x != 0.0) {
+                            scroll_dev->last_x_valid = true;
+                        } else {
+                            scroll_dev->last_x_valid = false;
+                            if (!scroll_dev->last_y_valid) {
+                                send_stop = true;
+                            }
+                        }
+                    }
+
+                    if (send_stop) {
+                        SDL_SendMouseWheelStop(xev->time, mouse->focus, (SDL_MouseID)xev->sourceid, SDL_MOUSEWHEEL_NORMAL);
+                    }
                 }
                 info->prev_value = current_val;
                 info->prev_value_valid = true;
