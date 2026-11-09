@@ -408,6 +408,25 @@ bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
         if (val) {
             alt_setting = SDL_strtol(val, NULL, 16);
         }
+    } else {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_BUS");
+        if (val && SDL_strcmp(val, "bluetooth") == 0) {
+            pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "input", NULL);
+            if (pdev) {
+                val = _this->syms.udev_device_get_sysattr_value(pdev, "id/vendor");
+                if (val && SDL_strcmp(val, "1209") == 0) {
+                    val = _this->syms.udev_device_get_sysattr_value(pdev, "id/product");
+                    if (val && (SDL_strcmp(val, "2883") == 0 || SDL_strcmp(val, "2882") == 0)) {
+                        // Santroller bluetooth devices just encode the device type into the revision
+                        val = _this->syms.udev_device_get_sysattr_value(pdev, "id/version");
+                        if (val) {
+                            *joystick_type = SDL_GetJoystickTypeForSantroller((Uint16)SDL_strtol(val, NULL, 16) >> 8);
+                            found = true;
+                        }
+                    }
+                }
+            }
+        }
     }
     val = _this->syms.udev_device_get_driver(dev);
     if (!val) {
