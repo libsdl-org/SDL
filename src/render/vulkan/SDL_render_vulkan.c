@@ -2485,15 +2485,17 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
         SDL_free(rendererData->renderingFinishedSemaphores);
         rendererData->renderingFinishedSemaphores = NULL;
     }
-    if (rendererData->uploadBuffers) {
-        for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
-            for (uint32_t j = 0; j < SDL_VULKAN_NUM_UPLOAD_BUFFERS; j++) {
+    if (rendererData->currentUploadBuffer) {
+        for (uint32_t i = 0; i < rendererData->swapchainImageCount; ++i) {
+            for (int j = 0; j < rendererData->currentUploadBuffer[i]; ++j) {
                 VULKAN_DestroyBuffer(rendererData, &rendererData->uploadBuffers[i][j]);
             }
             SDL_free(rendererData->uploadBuffers[i]);
         }
         SDL_free(rendererData->uploadBuffers);
         rendererData->uploadBuffers = NULL;
+        SDL_free(rendererData->currentUploadBuffer);
+        rendererData->currentUploadBuffer = NULL;
     }
     if (rendererData->constantBuffers) {
         SDL_assert(rendererData->numConstantBuffers);
@@ -2811,7 +2813,6 @@ static VkResult VULKAN_CreateSwapChain(SDL_Renderer *renderer, int w, int h)
     for (uint32_t i = 0; i < rendererData->swapchainImageCount; i++) {
         rendererData->uploadBuffers[i] = (VULKAN_Buffer *)SDL_calloc(SDL_VULKAN_NUM_UPLOAD_BUFFERS, sizeof(VULKAN_Buffer));
     }
-    SDL_free(rendererData->currentUploadBuffer);
     rendererData->currentUploadBuffer = (int *)SDL_calloc(rendererData->swapchainImageCount, sizeof(int));
 
     // Constant buffers
