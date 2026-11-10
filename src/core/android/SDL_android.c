@@ -651,16 +651,13 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
 #endif
 
 
-// RPC TODO: enable timestamp ?
-#define RPC_Send                                                \
-    /* data.timestamp = SDL_GetTicks(); */                      \
-    RPC_Send__(&data, data.cmd, sizeof(data), false);           \
+#define RPC_Send                                                        \
+    RPC_Send__(&header, &data, sizeof(data), false);                    \
 
 #if 0
 
 #define RPC_SendWithPriority                                            \
-    /* data.timestamp = SDL_GetTicks(); */                              \
-    ret_send = RPC_Send__(&data, data.cmd, sizeof(data), true);         \
+    ret_send = RPC_Send__(&header, &data, sizeof(data), true);          \
 
 #endif
 
@@ -672,32 +669,32 @@ static const char *cmd2Str(RPC_cmd_t cmd) {
     (*env)->ReleaseStringUTFChars(env, foo, utf##foo);                  \
 
 #define RPC_Prepare(foo)                \
+    RPC_header_t header;                \
     RPC_data_##foo##_t data;            \
-    data.cmd = RPC_cmd_##foo;           \
+    header.cmd = RPC_cmd_##foo;         \
 
-#define RPC_SendWithoutData(foo)        \
-    RPC_data_t data;                    \
-    data.cmd = RPC_cmd_##foo;           \
-    data.timestamp = SDL_GetTicks();    \
-    RPC_Send__(&data, data.cmd, sizeof(data), false); \
+#define RPC_SendWithoutData(foo)                                \
+    RPC_header_t header;                                        \
+    header.cmd = RPC_cmd_##foo;                                 \
+    RPC_Send__(&header, NULL, 0, false);                        \
 
 // returning value
 #define RPC_SendWithPriorityWithoutData(foo)                            \
     ({                                                                  \
-        RPC_data_t data;                                                \
-        data.cmd = RPC_cmd_##foo;                                       \
-        data.timestamp = SDL_GetTicks();                                \
-        RPC_Send__(&data, data.cmd, sizeof(data), true);                \
+        RPC_header_t header;                                            \
+        header.cmd = RPC_cmd_##foo;                                     \
+        RPC_Send__(&header, NULL, 0, true);                             \
     })                                                                  \
 
-static bool RPC_Send__(void *data, RPC_cmd_t cmd, int len, bool priority);
+
 static void RPC_Init(void);
 
-// header for command without data needed
+// Common RPC command header
 typedef struct {
     RPC_cmd_t cmd;
-    Uint64 timestamp;
-} RPC_data_t;
+} RPC_header_t;
+
+static bool RPC_Send__(RPC_header_t *header, void *data, int data_len, bool priority);
 
 
 /*******************************************************************************
@@ -1210,8 +1207,6 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 // Drop file
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     char *filename;
 } RPC_data_onNativeDropFile_t;
 
@@ -1226,8 +1221,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 
 // Set screen resolution
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int surfaceWidth;
     int surfaceHeight;
     int deviceWidth;
@@ -1253,8 +1246,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
 
 // Set screen HDR headroom
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     float headroom;
 } RPC_data_nativeSetScreenHDRHeadroom_t;
 
@@ -1275,8 +1266,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int rotation;
 } RPC_data_onNativeRotationChanged_t;
 
@@ -1291,8 +1280,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeRotationChanged)(
 
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int left;
     int right;
     int top;
@@ -1312,8 +1299,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeInsetsChanged)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int touchId;
     char *name;
 } RPC_data_nativeAddTouch_t;
@@ -1331,8 +1316,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
 #ifndef SDL_AUDIO_DISABLED
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     bool recording;
     char *name;
     int device_id;
@@ -1352,8 +1335,6 @@ SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolea
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     bool recording;
     int device_id;
 } RPC_data_nativeRemoveAudioDevice_t;
@@ -1374,8 +1355,6 @@ SDL_JAVA_AUDIO_INTERFACE(nativeRemoveAudioDevice)(JNIEnv *env, jclass jcls, jboo
 #ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
 // Paddown
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     int keycode;
     int scancode;
@@ -1409,8 +1388,6 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadDown)(
 
 // Padup
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     int keycode;
     int scancode;
@@ -1445,8 +1422,6 @@ JNIEXPORT jboolean JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePadUp)(
 
 // Joy
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     int axis;
     float value;
@@ -1471,8 +1446,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy)(
 
 // POV Hat
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     int hat_id;
     int x;
@@ -1498,8 +1471,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     int sensor_type;
     Uint64 sensor_timestamp;
@@ -1530,8 +1501,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     char *device_name;
     char *device_desc;
@@ -1586,8 +1555,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
 } RPC_data_nativeRemoveJoystick_t;
 
@@ -1610,8 +1577,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
 
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
     char *device_name;
 } RPC_data_nativeAddHaptic_t;
@@ -1635,8 +1600,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int device_id;
 } RPC_data_nativeRemoveHaptic_t;
 
@@ -1691,8 +1654,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeScreenKeyboardHidden)(JNIEnv *
 
 // Keydown
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int keycode;
 } RPC_data_onNativeKeyDown_t;
 
@@ -1707,8 +1668,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyDown)(
 
 // Keyup
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int keycode;
 } RPC_data_onNativeKeyUp_t;
 
@@ -1743,8 +1702,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeKeyboardFocusLost)(
 
 // Touch
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int touch_device_id_in;
     int pointer_finger_id_in;
     int action;
@@ -1769,8 +1726,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     float span_x;
     float span_y;
     float focus_x;
@@ -1789,8 +1744,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchStart)(
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     float scale;
     float span_x;
     float span_y;
@@ -1818,8 +1771,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativePinchEnd)(
 
 // Mouse
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int button;
     int action;
     float x;
@@ -1842,8 +1793,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
 
 // Pen
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int pen_id_in;
     int device_type;
     int button;
@@ -1893,8 +1842,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
 
 // Dark mode
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     bool enabled;
 } RPC_data_onNativeDarkModeChanged_t;
 
@@ -2002,8 +1949,6 @@ void Android_WakeUp(void)
 }
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     bool hasFocus;
 } RPC_data_nativeFocusChanged_t;
 
@@ -2021,8 +1966,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
 
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     char *text;
     int newCursorPosition;
 } RPC_data_nativeCommitText_t;
@@ -2039,8 +1982,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
 
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     char chUnicode;
 } RPC_data_nativeGenerateScancodeForUnichar_t;
 
@@ -3016,8 +2957,6 @@ typedef struct NativePermissionRequestInfo
 static NativePermissionRequestInfo pending_permissions;
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
     int requestCode;
     bool result;
 } RPC_data_nativePermissionResult_t;
@@ -3077,15 +3016,10 @@ static struct AndroidFileDialog
 } mAndroidFileDialogData;
 
 typedef struct {
-    RPC_cmd_t cmd;
-    Uint64 timestamp;
-
     int requestCode;
     int filter;
-
     char **charFileList;
     size_t count;
-
 } RPC_data_onNativeFileDialog_t;
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeFileDialog)(
@@ -4098,25 +4032,33 @@ static void RPC_Init(void)
 
 }
 
-static bool RPC_Send__(void *data, RPC_cmd_t cmd, int len, bool priority)
+static bool RPC_Send__(RPC_header_t *header, void *data, int data_len, bool priority)
 {
     bool ret = true;
+
     SDL_LockMutex(RPC_Mutex);
 
     int max_size = (priority ? RPC_PAGE_SIZE + RPC_PAGE_SIZE_RESERVED : RPC_PAGE_SIZE);
+    int len = data_len + sizeof (RPC_header_t);
 
     if (RPC_cur_size + len < max_size) {
-        SDL_memcpy(RPC_cmd_buffer + RPC_cur_size, data, len);
-        RPC_cur_size += len;
+        SDL_memcpy(RPC_cmd_buffer + RPC_cur_size, header, sizeof (RPC_header_t));
+        RPC_cur_size += sizeof (RPC_header_t);
+
+        if (data) {
+            SDL_memcpy(RPC_cmd_buffer + RPC_cur_size, data, data_len);
+            RPC_cur_size += data_len;
+        }
+
         RPC_cur_nb_cmd += 1;
 #ifdef DEBUG_RPC
-        LOGE("send RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+        LOGE("send RPC of len %d, cmd=%s", len, cmd2Str(header->cmd));
 #endif
     } else {
 #ifdef DEBUG_RPC
-        LOGE("cannot add RPC of len %d, cmd=%s", len, cmd2Str(cmd));
+        LOGE("cannot add RPC of len %d, cmd=%s", len, cmd2Str(header->cmd));
 #else
-        LOGE("cannot add RPC of len %d, cmd=%u", len, cmd);
+        LOGE("cannot add RPC of len %d, cmd=%u", len, header->cmd);
 #endif
         ret = false;
     }
@@ -4162,14 +4104,13 @@ void Android_PumpRPC(SDL_Window *window)
     SDL_UnlockMutex(RPC_Mutex);
 
 
-#define RPC_Get(foo)                \
-    RPC_data_##foo##_t data;        \
-    len = sizeof (data);            \
-    SDL_memcpy(&data, cmd_buffer, len);   \
-
+#define RPC_Get(foo)                        \
+    RPC_data_##foo##_t data;                \
+    len = sizeof (data);                    \
+    SDL_memcpy(&data, cmd_buffer, len);     \
 
 #define RPC_GetNoData               \
-    len = sizeof (RPC_data_t);      \
+    len = 0;                        \
 
 #ifdef DEBUG_RPC
     if (nb_cmd) {
@@ -4178,15 +4119,16 @@ void Android_PumpRPC(SDL_Window *window)
 #endif
 
     while (nb_cmd--) {
-        RPC_cmd_t cmd;
+        RPC_header_t header;
         int len; // don't initialize so that it can trigger some warning with `-Wsometimes-uninitialized` if RPC_Get*() has be forgotten
-        SDL_memcpy(&cmd, cmd_buffer, sizeof (cmd));
+        SDL_memcpy(&header, cmd_buffer, sizeof (header));
+        cmd_buffer += sizeof (header);
 
 #ifdef DEBUG_RPC
-        SDL_Log("RPC cmd: %s", cmd2Str(cmd));
+        SDL_Log("RPC cmd: %s", cmd2Str(header.cmd));
 #endif
 
-        switch (cmd) {
+        switch (header.cmd) {
 
                 // ------------------------------
                 // SDLActivity_tab
@@ -4454,7 +4396,7 @@ void Android_PumpRPC(SDL_Window *window)
                 }
                 break;
 
-                // This command is send both from SDLActivity
+                // This command is sent both from SDLActivity
                 // and from SDLThread, through Android_InitTouch() -> Android_JNI_InitTouch() -> initTouch() (java)
             case RPC_cmd_nativeAddTouch:
                 {
@@ -4684,7 +4626,7 @@ onNativeFileDialog_end:
 
             default:
                 len = 0;
-                SDL_Log("Error unknown RPC cmd %u", cmd);
+                SDL_Log("Error unknown RPC cmd %u", header.cmd);
 
         }
 
