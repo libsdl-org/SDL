@@ -233,6 +233,15 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * not need to be null-terminated (e.g., you can directly copy a portion of a
  * document).
  *
+ * When the function returns success, the data passed to the function should
+ * remain valid until the cleanup callback is invoked. If no cleanup callback
+ * was provided, then the data should remain valid until the clipboard is
+ * cleared with SDL_ClearClipboardData(), or a subsequent successful call to
+ * SDL_SetClipboardData() replaces the existing clipboard data.
+ *
+ * On failure, the passed cleanup callback will be called, and no references
+ * to the data passed to the function are kept.
+ *
  * \param callback a function pointer to the function that provides the
  *                 clipboard data.
  * \param cleanup a function pointer to the function that cleans up the
