@@ -77,7 +77,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mIsSurfaceReady = false;
         if (Build.VERSION.SDK_INT >= 26) {
             // We can use CapturedPointerListener and avoid many shenanigans and problems
-            setOnCapturedPointerListener(SDLActivity.getMotionListener());
+            setOnCapturedPointerListener((View.OnCapturedPointerListener)SDLActivity.getMotionListener());
         }
     }
 
