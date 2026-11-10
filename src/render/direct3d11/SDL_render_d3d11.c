@@ -325,6 +325,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
 
 static void D3D11_UpdateHDRMetadata(SDL_Renderer *renderer);
 static void D3D11_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
+static bool SDLCALL D3D11_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value);
 
 static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 {
@@ -333,6 +334,11 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     // Release all textures
     for (SDL_Texture *texture = renderer->textures; texture; texture = texture->next) {
         D3D11_DestroyTexture(renderer, texture);
+    }
+
+    // Release all palettes, they'll be recreated the next time they're used
+    if (renderer->palettes) {
+        SDL_IterateHashTable(renderer->palettes, D3D11_ReleasePalette, NULL);
     }
 
     // Release/reset everything else
@@ -1153,14 +1159,9 @@ static bool GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D11T
     return true;
 }
 
-static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+static bool D3D11_CreatePaletteResources(SDL_Renderer *renderer, D3D11_PaletteData *palettedata)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
-    if (!palettedata) {
-        return false;
-    }
-    palette->internal = palettedata;
 
     if (!data->d3dDevice) {
         return SDL_SetError("Device lost and couldn't be recovered");
@@ -1201,10 +1202,47 @@ static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
     return true;
 }
 
+static void D3D11_DestroyPaletteResources(D3D11_PaletteData *palettedata)
+{
+    SAFE_RELEASE(palettedata->texture);
+    SAFE_RELEASE(palettedata->resourceView);
+}
+
+static bool SDLCALL D3D11_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    SDL_TexturePalette *palette = (SDL_TexturePalette *)value;
+    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        D3D11_DestroyPaletteResources(palettedata);
+    }
+
+    // Make sure UpdatePalette() is called before the palette is used again
+    palette->version = 0;
+    return true;
+}
+
+static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    return D3D11_CreatePaletteResources(renderer, palettedata);
+}
+
 static bool D3D11_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
     D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
+
+    if (!palettedata->texture) {
+        if (!D3D11_CreatePaletteResources(renderer, palettedata)) {
+            return false;
+        }
+    }
 
     return D3D11_UpdateTextureInternal(data, palettedata->texture, 4, 0, 0, ncolors, 1, colors, ncolors * sizeof(*colors));
 }
@@ -1214,8 +1252,7 @@ static void D3D11_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *pal
     D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
 
     if (palettedata) {
-        SAFE_RELEASE(palettedata->texture);
-        SAFE_RELEASE(palettedata->resourceView);
+        D3D11_DestroyPaletteResources(palettedata);
         SDL_free(palettedata);
     }
 }
