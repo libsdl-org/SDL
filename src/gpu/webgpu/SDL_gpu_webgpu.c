@@ -781,6 +781,8 @@ typedef enum WebGPUQueuedDestroyType
 
 typedef struct WebGPUBindGroupCacheKey
 {
+    WGPUShaderStage stage;
+
     Uint64 boundSamplersIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
     Uint64 boundTexturesIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
 
@@ -971,11 +973,8 @@ typedef struct WebGPUSampler
 {
     WGPUSampler sampler;
 
-    // This is a fallback sampler for unfilterable texture formats.
+    // This is a fallback sampler for non-filterable texture formats.
     // This sampler always defaults to NEAREST, and does not support anisotropy.
-    //
-    // It is a hacky fallback to resolve issues with depth textures.
-    // Until depth sampling is added to WebGPU, we'll have to do this.
     WGPUSampler fallbackSampler;
     Uint64 identifier;
 } WebGPUSampler;
@@ -1449,24 +1448,30 @@ static void WEBGPU_INTERNAL_RequestAdapterCallback(WGPURequestAdapterStatus stat
     }
 }
 
-// Bind group hashmap functions
-
+// Generate an FNV-1a hash for this data.
+//
 // This hash function is based on Landon Curt Noll's hash_32a.c FNV-1a implementation.
 // https://github.com/lcn2/fnv/blob/master/hash_32a.c
-static Uint32 WEBGPU_INTERNAL_HashBindGroupKey(void *unused, const void *key)
+static Uint32 WEBGPU_INTERNAL_GenFNV1aHash(Uint32 initialHash, const void *data, Uint32 size)
 {
-    Uint32 bufferSize = sizeof(WebGPUBindGroupCacheKey);
-    Uint32 hash = 0xAAA1ABEE; // There are no rules forcing this to be any specific number so I will take this rare opportunity to shitpost
+    Uint32 hash = initialHash;
 
-    char *keyDataBuf = (char *)key; // Is this void* -> char* cast a bad idea? Probably.
-    char *endOfBuf = keyDataBuf + bufferSize;
+    char *slice = (char *)data; // const pointers, much like turtles, were made up by the media to stop you from unleashing your full power (segfaulting)
+    const char *endOfData = data + size;
 
-    while (keyDataBuf < endOfBuf) {
+    while (slice < endOfData) {
         hash *= 0x01000193;
-        hash ^= (Uint32)*keyDataBuf++;
+        hash ^= (Uint32)*slice++;
     }
 
     return hash;
+}
+
+static Uint32 WEBGPU_INTERNAL_HashBindGroupKey(void *unused, const void *key)
+{
+    Uint32 bufferSize = sizeof(WebGPUBindGroupCacheKey);
+
+    return WEBGPU_INTERNAL_GenFNV1aHash(0, key, bufferSize);
 }
 
 static void WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey(void *unused, const void *key, const void *value)
@@ -1740,11 +1745,6 @@ static void WEBGPU_EndCopyPass(SDL_GPUCommandBuffer *copyPass)
 
 static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device)
 {
-    // HACK:
-    // WebGPU doesn't really have "command buffers" like SDL_GPU does.
-    // It does have a "command buffer", but that's something you get after saying "Hey, I'm not gonna do anything more with this.",
-    // which is the exact opposite of what a command buffer is in SDL_GPU.
-    // So, I had to do this gross hack. God, please forgive me.
     WebGPUCommandBuffer *wrapper;
     wrapper = (WebGPUCommandBuffer *)SDL_calloc(1, sizeof(*wrapper));
 
@@ -1904,6 +1904,8 @@ static bool WEBGPU_INTERNAL_WaitForFences(WebGPURenderer *renderer, bool waitAll
     Uint32 triggeredFenceThreshold = waitAll ? num_fences : 1;
 
     while (triggeredFenceCount < triggeredFenceThreshold) {
+        triggeredFenceCount = 0;
+
         for (int i = 0; i < num_fences; i++) {
             if (WEBGPU_INTERNAL_QueryFence(renderer, fences[i])) {
                 triggeredFenceCount++;
@@ -1969,6 +1971,8 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
     WebGPUBindGroupLayoutEntryType entriesFrag[1024] = { 0 };
     Uint32 entriesVertOffset = 0;
     Uint32 entriesFragOffset = 0;
+
+    Uint32 hash = 0;
 
     for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
         // We don't actually care about the sampler.
@@ -2046,8 +2050,6 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
         }
     }
 
-    offsetVert = 0;
-    offsetFrag = 0;
     for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
         WebGPUTextureView *textureViewVert = cmdBuf->vertexStageBinds.boundStorageTextures[i];
         WebGPUTextureView *textureViewFrag = cmdBuf->fragmentStageBinds.boundStorageTextures[i];
@@ -2083,8 +2085,6 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
         }
     }
 
-    offsetVert = 0;
-    offsetFrag = 0;
     for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
         WebGPUBuffer *storageBufferVert = cmdBuf->vertexStageBinds.boundStorageBuffers[i];
         WebGPUBuffer *storageBufferFrag = cmdBuf->fragmentStageBinds.boundStorageBuffers[i];
@@ -2122,28 +2122,10 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
         }
     }
 
-    // Modified version of the FNV-1a hash function used for bind group key hashing
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesVert, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesFrag, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
 
-    Uint32 hash = 0xAAA1ABEE;
-    WebGPUBindGroupLayoutEntryType combined[2048];
-
-    // FIXME: REALLY GROSS AND UNPERFORMANT
-    for (int i = 0; i < 1024; i++) {
-        combined[i] = entriesVert[i];
-    }
-    for (int i = 0; i < 1024; i++) {
-        combined[i + 1024] = entriesFrag[i];
-    }
-
-    char *keyDataBuf = (char *)combined;
-    char *endOfBuf = keyDataBuf + sizeof(WebGPUBindGroupLayoutEntryType) * 2048;
-
-    while (keyDataBuf < endOfBuf) {
-        hash *= 0x01000193;
-        hash ^= (Uint32)*keyDataBuf++;
-    }
-
-    if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0xAAA1ABEE) {
+    if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0) {
         goto finish;
     }
 
@@ -2192,6 +2174,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
     Uint32 readWriteEntryCapacity = 0;
 
     Uint32 offset = 0;
+    Uint32 hash = 0;
 
     // Excellent naming by yours truly.
     WebGPUBindGroupLayoutEntryType entriesHashStuff[1024] = { 0 };
@@ -2238,7 +2221,6 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
         };
     }
 
-    offset = 0;
     for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
         WebGPUTextureView *textureView = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i];
 
@@ -2258,7 +2240,6 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
         }
     }
 
-    offset = 0;
     for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
         WebGPUBuffer *storageBuffer = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i];
 
@@ -2308,7 +2289,6 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
         }
     }
 
-    offset = 0;
     for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
         WebGPUBuffer *storageBuffer = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i];
 
@@ -2329,17 +2309,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
         }
     }
 
-    // Modified version of the FNV-1a hash function used for bind group key hashing
-
-    Uint32 hash = 0xAAA1ABEE;
-
-    char *keyDataBuf = (char *)entriesHashStuff;
-    char *endOfBuf = keyDataBuf + sizeof(WebGPUBindGroupLayoutEntryType) * 1024;
-
-    while (keyDataBuf < endOfBuf) {
-        hash *= 0x01000193;
-        hash ^= (Uint32)*keyDataBuf++;
-    }
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesHashStuff, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
 
     if (cmdBuf->boundComputePipeline->currentPipelineHash == hash && hash != 0xAAA1ABEE) {
         goto finish;
@@ -2584,6 +2554,8 @@ static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPU
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
             result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->vertexStageBinds.boundStorageBuffers[i] ? cmdBuf->vertexStageBinds.boundStorageBuffers[i]->identifier : 0;
         }
+
+        result.stage = WGPUShaderStage_Vertex;
         break;
     }
     case WEBGPU_BINDGROUP_VERTEXUNIFORMS:
@@ -2605,6 +2577,8 @@ static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPU
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
             result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->fragmentStageBinds.boundStorageBuffers[i] ? cmdBuf->fragmentStageBinds.boundStorageBuffers[i]->identifier : 0;
         }
+
+        result.stage = WGPUShaderStage_Fragment;
         break;
     }
     case WEBGPU_BINDGROUP_FRAGMENTUNIFORMS:
@@ -2626,6 +2600,8 @@ static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPU
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
             result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i]->identifier : 0;
         }
+
+        result.stage = WGPUShaderStage_Compute;
         break;
     }
     case WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE:
@@ -2637,6 +2613,8 @@ static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPU
         for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
             result.boundReadWriteStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i]->identifier : 0;
         }
+
+        result.stage = WGPUShaderStage_Compute;
         break;
     }
     case WEBGPU_BINDGROUP_COMPUTEUNIFORMS:
@@ -3482,13 +3460,13 @@ static void WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(WebGPURenderer *rendere
 
             // WebGPU's strict about not allowing factors less than 1 for min & max so we'll set them here
             if (colorTargetBlendStates[i].color.operation == WGPUBlendOperation_Min || colorTargetBlendStates[i].color.operation == WGPUBlendOperation_Max) {
-                colorTargetBlendStates[i].color.dstFactor = 1;
-                colorTargetBlendStates[i].color.srcFactor = 1;
+                colorTargetBlendStates[i].color.dstFactor = WGPUBlendFactor_One;
+                colorTargetBlendStates[i].color.srcFactor = WGPUBlendFactor_One;
             }
 
             if (colorTargetBlendStates[i].alpha.operation == WGPUBlendOperation_Min || colorTargetBlendStates[i].alpha.operation == WGPUBlendOperation_Max) {
-                colorTargetBlendStates[i].alpha.dstFactor = 1;
-                colorTargetBlendStates[i].alpha.srcFactor = 1;
+                colorTargetBlendStates[i].alpha.dstFactor = WGPUBlendFactor_One;
+                colorTargetBlendStates[i].alpha.srcFactor = WGPUBlendFactor_One;
             }
 
             colorTargets[i].blend = &colorTargetBlendStates[i];
@@ -5195,10 +5173,11 @@ static void WEBGPU_INTERNAL_BindComputeReadWriteStorageTextures(WebGPUCommandBuf
             WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)bindings[i].texture);
         }
 
-        // FIXME: Our layer & mip level system is gross and I hate it
-        cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = ((WebGPUTextureContainer *)bindings->texture)->activeTexture->fullTextureView;
+        WebGPUTextureContainer *texture = (WebGPUTextureContainer *)bindings[i].texture;
+        Uint32 index = WEBGPU_INTERNAL_GetTextureViewIndex(bindings[i].layer, bindings[i].mip_level, texture->header.info.num_levels);
 
-        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)bindings[i].texture)->activeTexture);
+        cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = texture->activeTexture->textureViews[index];
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, texture->activeTexture);
     }
     cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
 }
