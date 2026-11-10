@@ -429,7 +429,13 @@ void SDL_FreeTemporaryMemory(void)
     }
 }
 
-#ifndef SDL_JOYSTICK_DISABLED
+#ifdef SDL_JOYSTICK_DISABLED
+
+void SDL_OnUpdateJoysticksChanged(void)
+{
+}
+
+#else
 
 static bool SDL_update_joysticks = true;
 
