@@ -44,7 +44,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
        Load a .png into a surface, move it to a texture from there. */
-    SDL_asprintf(&png_path, "%ssample.png", SDL_GetBasePath());  /* allocate a string of the full file path */
+    SDL_asprintf(&png_path, "%sthumbnail.png", SDL_GetBasePath());  /* allocate a string of the full file path */
     surface = SDL_LoadPNG(png_path);
     if (!surface) {
         SDL_Log("Couldn't load png: %s", SDL_GetError());
