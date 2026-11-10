@@ -850,16 +850,22 @@ static void VULKAN_DestroyAll(SDL_Renderer *renderer)
         rendererData->numConstantBuffers = NULL;
     }
 
-    if (rendererData->device != VK_NULL_HANDLE && !rendererData->device_external) {
-        vkDestroyDevice(rendererData->device, NULL);
+    if (rendererData->device != VK_NULL_HANDLE) {
+        if (!rendererData->device_external) {
+            vkDestroyDevice(rendererData->device, NULL);
+        }
         rendererData->device = VK_NULL_HANDLE;
     }
-    if (rendererData->surface != VK_NULL_HANDLE && !rendererData->surface_external) {
-        vkDestroySurfaceKHR(rendererData->instance, rendererData->surface, NULL);
+    if (rendererData->surface != VK_NULL_HANDLE) {
+        if (!rendererData->surface_external) {
+            vkDestroySurfaceKHR(rendererData->instance, rendererData->surface, NULL);
+        }
         rendererData->surface = VK_NULL_HANDLE;
     }
-    if (rendererData->instance != VK_NULL_HANDLE && !rendererData->instance_external) {
-        vkDestroyInstance(rendererData->instance, NULL);
+    if (rendererData->instance != VK_NULL_HANDLE) {
+        if (!rendererData->instance_external) {
+            vkDestroyInstance(rendererData->instance, NULL);
+        }
         rendererData->instance = VK_NULL_HANDLE;
     }
 }
