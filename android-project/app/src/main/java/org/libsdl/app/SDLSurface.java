@@ -61,7 +61,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         @Override
         public void run() {
             try {
-                if (Build.VERSION.SDK_INT >= 34) {
+                if (Build.VERSION.SDK_INT >= 34 /* Android 14 (U) */) {
                     if (mDisplay.getHdrSdrRatio() <= 1.01f) {
                         // We're not in HDR mode yet
                         return;
@@ -418,7 +418,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         if (mHDRActive && headroom > 1.0f) {
             try {
-                if (Build.VERSION.SDK_INT >= 34) {
+                if (Build.VERSION.SDK_INT >= 34 /* Android 14 (U) */) {
                     if (mDisplay.isHdrSdrRatioAvailable()) {
                         // We're requesting as much headroom as the display can do, so once the
                         // display has finished ramping up, the HDR/SDR ratio is the headroom that's
