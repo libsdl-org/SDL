@@ -177,12 +177,20 @@ static bool AAUDIO_WaitDevice(SDL_AudioDevice *device)
 {
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (AAUDIO_PauseDevices was called).
-        if (SDL_WaitSemaphoreTimeout(device->hidden->semaphore, 100)) {
+        if (SDL_WaitSemaphoreTimeout(device->hidden->semaphore, -1)) {
             return true;  // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }
     return true;
+}
+
+static void AAUDIO_UnblockWaitDevice(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *hidden = device->hidden;
+    if (hidden) {
+        SDL_SignalSemaphore(hidden->semaphore);
+    }
 }
 
 static bool BuildAAudioStream(SDL_AudioDevice *device);
@@ -613,6 +621,7 @@ static bool AAUDIO_Init(SDL_AudioDriverImpl *impl)
     impl->OpenDevice = AAUDIO_OpenDevice;
     impl->CloseDevice = AAUDIO_CloseDevice;
     impl->WaitDevice = AAUDIO_WaitDevice;
+    impl->UnblockWaitDevice = AAUDIO_UnblockWaitDevice;
     impl->PlayDevice = AAUDIO_PlayDevice;
     impl->GetDeviceBuf = AAUDIO_GetDeviceBuf;
     impl->WaitRecordingDevice = AAUDIO_WaitDevice;

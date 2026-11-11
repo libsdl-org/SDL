@@ -154,6 +154,7 @@ typedef struct SDL_AudioDriverImpl
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
     bool (*WaitDevice)(SDL_AudioDevice *device);
+    void (*UnblockWaitDevice)(SDL_AudioDevice *device);
     bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen); // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
@@ -290,6 +291,7 @@ struct SDL_AudioDevice
 
     // These are, initially, set from current_audio, but we might swap them out with Zombie versions on disconnect/failure.
     bool (*WaitDevice)(SDL_AudioDevice *device);
+    void (*UnblockWaitDevice)(SDL_AudioDevice *device);
     bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);

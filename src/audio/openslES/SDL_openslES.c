@@ -657,12 +657,21 @@ static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
 
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
-        if (SDL_WaitSemaphoreTimeout(audiodata->playsem, 100)) {
+        if (SDL_WaitSemaphoreTimeout(audiodata->playsem, -1)) {
             return true;  // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }
     return true;
+}
+
+static void OPENSLES_UnblockWaitDevice(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
+    LOGV("OPENSLES_UnblockWaitDevice()");
+    if (audiodata) {
+        SDL_SignalSemaphore(audiodata->playsem);
+    }
 }
 
 static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
@@ -763,6 +772,7 @@ static bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
     impl->ThreadInit = Android_AudioThreadInit;
     impl->OpenDevice = OPENSLES_OpenDevice;
     impl->WaitDevice = OPENSLES_WaitDevice;
+    impl->UnblockWaitDevice = OPENSLES_UnblockWaitDevice;
     impl->PlayDevice = OPENSLES_PlayDevice;
     impl->GetDeviceBuf = OPENSLES_GetDeviceBuf;
     impl->WaitRecordingDevice = OPENSLES_WaitDevice;
