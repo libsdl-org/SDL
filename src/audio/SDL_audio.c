@@ -885,6 +885,7 @@ void SDL_AudioDeviceDisconnected(SDL_AudioDevice *device)
 
 static void SDL_AudioThreadDeinit_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static bool SDL_AudioWaitDevice_Default(SDL_AudioDevice *device) { return true; /* no-op. */ }
+static void SDL_AudioUnblockWaitDevice_Default(SDL_AudioDevice *device) { /* no-op. */ }
 static bool SDL_AudioPlayDevice_Default(SDL_AudioDevice *device, const Uint8 *buffer, int buffer_size) { return true; /* no-op. */ }
 static bool SDL_AudioWaitRecordingDevice_Default(SDL_AudioDevice *device) { return true; /* no-op. */ }
 static void SDL_AudioFlushRecording_Default(SDL_AudioDevice *device) { /* no-op. */ }
@@ -942,6 +943,7 @@ static void CompleteAudioEntryPoints(void)
     FILL_STUB(ThreadInit);
     FILL_STUB(ThreadDeinit);
     FILL_STUB(WaitDevice);
+    FILL_STUB(UnblockWaitDevice);
     FILL_STUB(PlayDevice);
     FILL_STUB(GetDeviceBuf);
     FILL_STUB(WaitRecordingDevice);
@@ -1766,6 +1768,7 @@ static void ClosePhysicalAudioDevice(SDL_AudioDevice *device)
     }
 
     SDL_SetAtomicInt(&device->shutdown, 1);
+    current_audio.impl.UnblockWaitDevice(device);
 
     // YOU MUST PROTECT KEY POINTS WITH SerializePhysicalDeviceClose() WHILE THE THREAD JOINS
     SDL_UnlockMutex(device->lock);
@@ -1943,6 +1946,7 @@ static bool OpenPhysicalAudioDevice(SDL_AudioDevice *device, const SDL_AudioSpec
 
     // These start with the backend's implementation, but we might swap them out with zombie versions later.
     device->WaitDevice = current_audio.impl.WaitDevice;
+    device->UnblockWaitDevice = current_audio.impl.UnblockWaitDevice;
     device->PlayDevice = current_audio.impl.PlayDevice;
     device->GetDeviceBuf = current_audio.impl.GetDeviceBuf;
     device->WaitRecordingDevice = current_audio.impl.WaitRecordingDevice;
