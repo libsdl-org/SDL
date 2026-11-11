@@ -61,9 +61,11 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         @Override
         public void run() {
             try {
-                if (mDisplay.getHdrSdrRatio() <= 1.01f) {
-                    // We're not in HDR mode yet
-                    return;
+                if (Build.VERSION.SDK_INT >= 34) {
+                    if (mDisplay.getHdrSdrRatio() <= 1.01f) {
+                        // We're not in HDR mode yet
+                        return;
+                    }
                 }
             } catch (Exception ignored) {
                 return;
@@ -317,7 +319,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 y = motionListener.getEventY(event, i);
                 relative = motionListener.inRelativeMode();
 
-                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);                 
+                SDLActivity.onNativeMouse(buttonState, action, x, y, relative);
 
             } else if (toolType == MotionEvent.TOOL_TYPE_STYLUS || toolType == MotionEvent.TOOL_TYPE_ERASER) {
                 pointerId = event.getPointerId(i);
@@ -416,22 +418,24 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         if (mHDRActive && headroom > 1.0f) {
             try {
-                if (mDisplay.isHdrSdrRatioAvailable()) {
-                    // We're requesting as much headroom as the display can do, so once the
-                    // display has finished ramping up, the HDR/SDR ratio is the headroom that's
-                    // actually available.
-                    //
-                    // Until then, keep reporting the estimate so applications don't see the
-                    // headroom drop to nothing and then ramp back up.
-                    //
-                    // After that, report the ratio even if the display can't currently go above
-                    // the SDR white level, e.g. at maximum brightness, but keep it slightly
-                    // above 1.0 so HDR stays enabled.
-                    float current = mDisplay.getHdrSdrRatio();
-                    if (mHDRMeasured) {
-                        headroom = Math.max(current, 1.01f);
-                    } else {
-                        headroom = Math.max(headroom, current);
+                if (Build.VERSION.SDK_INT >= 34) {
+                    if (mDisplay.isHdrSdrRatioAvailable()) {
+                        // We're requesting as much headroom as the display can do, so once the
+                        // display has finished ramping up, the HDR/SDR ratio is the headroom that's
+                        // actually available.
+                        //
+                        // Until then, keep reporting the estimate so applications don't see the
+                        // headroom drop to nothing and then ramp back up.
+                        //
+                        // After that, report the ratio even if the display can't currently go above
+                        // the SDR white level, e.g. at maximum brightness, but keep it slightly
+                        // above 1.0 so HDR stays enabled.
+                        float current = mDisplay.getHdrSdrRatio();
+                        if (mHDRMeasured) {
+                            headroom = Math.max(current, 1.01f);
+                        } else {
+                            headroom = Math.max(headroom, current);
+                        }
                     }
                 }
             } catch (Exception ignored) {
