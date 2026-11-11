@@ -64,16 +64,9 @@ typedef struct joystick_hwdata
     int nbuttons;
     int nhats;
     Uint32 button_mask;
-    bool is_xbox;
-    bool is_ps4;
-    bool is_ps5;
-    bool is_switch_pro;
-    bool is_switch_joycon_pair;
-    bool is_switch_joyconL;
-    bool is_switch_joyconR;
-    bool is_shield;
-    bool is_stadia;
     bool is_backbone_one;
+    bool is_switch_joycon;
+    bool is_switch_joycon_pair;
     int is_siri_remote;
 
     NSArray __unsafe_unretained *axes;
@@ -147,6 +140,13 @@ static bool IsControllerXbox(GCController *controller)
         if ([controller.vendorName containsString:@"Xbox"]) {
             return true;
         }
+    }
+    return false;
+}
+static bool IsControllerSteam(GCController *controller)
+{
+    if ([controller.vendorName hasPrefix:@"Steam Controller"]) {
+        return true;
     }
     return false;
 }
@@ -436,17 +436,7 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
     }
 #endif // DEBUG_CONTROLLER_PROFILE
 
-    data->is_xbox = IsControllerXbox(controller);
-    data->is_ps4 = IsControllerPS4(controller);
-    data->is_ps5 = IsControllerPS5(controller);
-    data->is_switch_pro = IsControllerSwitchPro(controller);
-    data->is_switch_joycon_pair = IsControllerSwitchJoyConPair(controller);
-    data->is_shield = IsControllerNVIDIASHIELD(controller);
-    data->is_stadia = IsControllerStadia(controller);
-    data->is_backbone_one = IsControllerBackboneOne(controller);
-    data->is_switch_joyconL = IsControllerSwitchJoyConL(controller);
-    data->is_switch_joyconR = IsControllerSwitchJoyConR(controller);
-    if (data->is_xbox && SDL_strncmp(name, "GamePad-", 8) == 0) {
+    if (SDL_strncmp(name, "GamePad-", 8) == 0 && IsControllerXbox(controller)) {
         // This is a Steam Virtual Gamepad, which isn't supported by GCController
         SDL_DestroyJoystickDevice(device);
         return NULL;
@@ -471,14 +461,51 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
         }
     }
 
-    if (data->is_backbone_one) {
+    if (IsControllerBackboneOne(controller)) {
         vendor = USB_VENDOR_BACKBONE;
-        if (data->is_ps5) {
+        if (IsControllerPS5(controller)) {
             product = USB_PRODUCT_BACKBONE_ONE_IOS_PS5;
         } else {
             product = USB_PRODUCT_BACKBONE_ONE_IOS;
         }
-    } else if (data->is_xbox) {
+        data->is_backbone_one = true;
+    } else if (IsControllerPS4(controller)) {
+        // Assume DS4 Slim unless/until GCController flows VID/PID
+        vendor = USB_VENDOR_SONY;
+        product = USB_PRODUCT_SONY_DS4_SLIM;
+        if (data->has_dualshock_touchpad) {
+            subtype = 1;
+        }
+    } else if (IsControllerPS5(controller)) {
+        vendor = USB_VENDOR_SONY;
+        product = USB_PRODUCT_SONY_DS5;
+    } else if (IsControllerNVIDIASHIELD(controller)) {
+        vendor = USB_VENDOR_NVIDIA;
+        product = USB_PRODUCT_NVIDIA_SHIELD_CONTROLLER_V104;
+    } else if (IsControllerStadia(controller)) {
+        vendor = USB_VENDOR_GOOGLE;
+        product = USB_PRODUCT_GOOGLE_STADIA_CONTROLLER;
+    } else if (IsControllerSteam(controller)) {
+        vendor = USB_VENDOR_VALVE;
+        product = USB_PRODUCT_VALVE_STEAM_TRITON;
+    } else if (IsControllerSwitchJoyConL(controller)) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
+        data->is_switch_joycon = true;
+    } else if (IsControllerSwitchJoyConR(controller)) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
+        data->is_switch_joycon = true;
+    } else if (IsControllerSwitchJoyConPair(controller)) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
+        data->has_nintendo_buttons = true;
+        data->is_switch_joycon_pair = true;
+    } else if (IsControllerSwitchPro(controller)) {
+        vendor = USB_VENDOR_NINTENDO;
+        product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
+        data->has_nintendo_buttons = true;
+    } else if (IsControllerXbox(controller)) {
         vendor = USB_VENDOR_MICROSOFT;
         if (data->has_xbox_paddles) {
             // Assume Xbox One Elite Series 2 Controller unless/until GCController flows VID/PID
@@ -497,30 +524,6 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
             product = USB_PRODUCT_XBOX_ONE_S_REV1_BLUETOOTH;
             name = "Xbox One Wireless Controller";
         }
-    } else if (data->is_ps4) {
-        // Assume DS4 Slim unless/until GCController flows VID/PID
-        vendor = USB_VENDOR_SONY;
-        product = USB_PRODUCT_SONY_DS4_SLIM;
-        if (data->has_dualshock_touchpad) {
-            subtype = 1;
-        }
-    } else if (data->is_ps5) {
-        vendor = USB_VENDOR_SONY;
-        product = USB_PRODUCT_SONY_DS5;
-    } else if (data->is_switch_pro) {
-        vendor = USB_VENDOR_NINTENDO;
-        product = USB_PRODUCT_NINTENDO_SWITCH_PRO;
-        data->has_nintendo_buttons = TRUE;
-    } else if (data->is_switch_joycon_pair) {
-        vendor = USB_VENDOR_NINTENDO;
-        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_PAIR;
-        data->has_nintendo_buttons = TRUE;
-    } else if (data->is_switch_joyconL) {
-        vendor = USB_VENDOR_NINTENDO;
-        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_LEFT;
-    } else if (data->is_switch_joyconR) {
-        vendor = USB_VENDOR_NINTENDO;
-        product = USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT;
     } else if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
         vendor = USB_VENDOR_APPLE;
         product = 4;
@@ -563,9 +566,10 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
     }
 
     if (vendor && product) {
+        // We're relying on the IOKIT driver to get a reliable vendor and product here
         SDL_AddJoystickDeviceMatchVIDPID(device, vendor, product);
     }
-    if (SDL_startswith(data->name, "Steam Controller")) {
+    if (IsControllerSteam(controller)) {
         // The Steam Controller doesn't have a gamepad HID collection, so it isn't seen by IOKit
         SDL_AddJoystickDeviceMatchType(device, SDL_GAMEPAD_TYPE_STEAM);
     }
@@ -1626,7 +1630,7 @@ static bool IOS_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_Gamepa
             } else if ([(NSString *)key isEqualToString:GCInputButtonB]) {
                 if (data->has_nintendo_buttons) {
                     mapping = &out->a;
-                } else if (data->is_switch_joyconL || data->is_switch_joyconR) {
+                } else if (data->is_switch_joycon) {
                     mapping = &out->x;
                 } else {
                     mapping = &out->b;
@@ -1634,7 +1638,7 @@ static bool IOS_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_Gamepa
             } else if ([(NSString *)key isEqualToString:GCInputButtonX]) {
                 if (data->has_nintendo_buttons) {
                     mapping = &out->y;
-                } else if (data->is_switch_joyconL || data->is_switch_joyconR) {
+                } else if (data->is_switch_joycon) {
                     mapping = &out->b;
                 } else {
                     mapping = &out->x;
