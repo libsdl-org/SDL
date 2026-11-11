@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
@@ -912,7 +913,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
                         y = getEventY(event, i);
 
                         SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
-                        consumed = true;                            
+                        consumed = true;
                         break;
 
                     default:
@@ -1031,6 +1032,7 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
     }
 }
 
+@SuppressLint("NewApi") // prevent lint Error: Class requires API level 26 (current min is 21): android.view.View.OnCapturedPointerListener [NewApi]
 class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 implements View.OnCapturedPointerListener {
     // Generic Motion (mouse hover, joystick...) events go here
     private boolean mRelativeModeEnabled;
@@ -1127,6 +1129,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 impl
     }
 }
 
+@SuppressLint("NewApi") // prevent lint Error: Call requires API level 29 (current min is 21): android.view.InputDevice#isExternal [NewApi]
 class SDLGenericMotionListener_API29 extends SDLGenericMotionListener_API26 {
     @Override
     int getPenDeviceType(InputDevice penDevice)
