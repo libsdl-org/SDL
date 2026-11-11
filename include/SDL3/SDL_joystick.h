@@ -1422,6 +1422,22 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetJoystickLED(SDL_Joystick *joystick, Uint
  * \param joystick the joystick to affect.
  * \param data the data to send to the joystick.
  * \param size the size of the data to send to the joystick.
+
+ * For Nintendo Switch controllers driven by the HIDAPI driver, `data` can be a
+ * raw rumble packet: byte 0 is the output report ID `0x10` (rumble only), byte 1
+ * is a packet counter that must increment (mod 16) on every send, and bytes 2..9
+ * are the left and right actuators, four bytes each. Each actuator carries a
+ * high-band frequency, high-band amplitude, low-band frequency and low-band
+ * amplitude. The two amplitude fields come from the actuator's 101-step table and
+ * the two frequency fields are logarithmic codes, 32 codes per octave from 40 Hz.
+ * This is the path to use for frequency-aware ("HD") rumble; `SDL_RumbleJoystick()`
+ * drives both bands at a fixed frequency by design. Send at most one packet every
+ * ~30 ms and repeat the neutral packet a few times when stopping, since a
+ * write-without-response can be lost over Bluetooth.
+ *
+ * `0x01` (rumble and subcommand) is a different, larger report. Frames sent with
+ * `SDL_SendJoystickEffect()` for a raw subcommand use that path; a continuous
+ * rumble stream should not.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
