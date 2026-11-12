@@ -2779,6 +2779,7 @@ static const char *instrument_axis_names[] = {
     "Kick 2",
     "Platter Left Spin",
     "Platter Right Spin",
+    "Platter Spin",
     "Crossfader",
     "Effects Knob",
     "Touch Strip",
