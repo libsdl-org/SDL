@@ -112,26 +112,36 @@ static LONG NTAPI EmptyVectoredExceptionHandler(EXCEPTION_POINTERS *info)
 }
 
 typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+typedef HRESULT (WINAPI *pfnGetThreadDescription)(HANDLE, PWSTR *);
+
+static pfnSetThreadDescription pSetThreadDescription = NULL;
+static pfnGetThreadDescription pGetThreadDescription = NULL;
+static HMODULE kernel32 = NULL;
+
+static void CheckThreadNameAPIs(void)
+{
+    if (!kernel32) {
+        kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
+        if (kernel32) {
+            pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernel32, "SetThreadDescription");
+            pGetThreadDescription = (pfnGetThreadDescription)GetProcAddress(kernel32, "GetThreadDescription");
+        }
+        if (!kernel32 || !pSetThreadDescription) {
+            HMODULE kernelBase = GetModuleHandle(TEXT("KernelBase.dll"));
+            if (kernelBase) {
+                pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernelBase, "SetThreadDescription");
+                pGetThreadDescription = (pfnGetThreadDescription)GetProcAddress(kernelBase, "GetThreadDescription");
+            }
+        }
+    }
+}
 
 void SDL_SYS_SetupThread(const char *name)
 {
     if (name) {
         PVOID exceptionHandlerHandle;
-        static pfnSetThreadDescription pSetThreadDescription = NULL;
-        static HMODULE kernel32 = NULL;
 
-        if (!kernel32) {
-            kernel32 = GetModuleHandle(TEXT("kernel32.dll"));
-            if (kernel32) {
-                pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernel32, "SetThreadDescription");
-            }
-            if (!kernel32 || !pSetThreadDescription) {
-                HMODULE kernelBase = GetModuleHandle(TEXT("KernelBase.dll"));
-                if (kernelBase) {
-                    pSetThreadDescription = (pfnSetThreadDescription)GetProcAddress(kernelBase, "SetThreadDescription");
-                }
-            }
-        }
+        CheckThreadNameAPIs();
 
         if (pSetThreadDescription) {
             WCHAR *strw = WIN_UTF8ToStringW(name);
@@ -195,6 +205,25 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     CloseHandle(thread->handle);
+}
+
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    CheckThreadNameAPIs();
+
+    if (pGetThreadDescription) {
+        PWSTR wstr = NULL;
+        if (SUCCEEDED(pGetThreadDescription(GetCurrentThread(), &wstr))) {
+            char *utf8 = WIN_StringToUTF8W(wstr);
+            LocalFree(wstr);
+            if (utf8) {
+                SDL_strlcpy(buf, utf8, buflen);
+                SDL_free(utf8);
+                return true;
+            }
+        }
+    }
+    return false;  // not supported or something failed.
 }
 
 #endif // SDL_THREAD_WINDOWS

@@ -325,6 +325,17 @@ static bool ThreadValid(SDL_Thread *thread)
     return SDL_ObjectValid(thread, SDL_OBJECT_TYPE_THREAD);
 }
 
+static SDL_TLSID SDL_thread_ptr_tls;
+
+SDL_Thread *SDL_GetCurrentThread(void)
+{
+    SDL_Thread *retval = (SDL_Thread *) SDL_GetTLS(&SDL_thread_ptr_tls);
+    if (!retval) {
+        SDL_SetError("Thread was not created by SDL");
+    }
+    return retval;
+}
+
 void SDL_RunThread(SDL_Thread *thread)
 {
     void *userdata = thread->userdata;
@@ -334,6 +345,8 @@ void SDL_RunThread(SDL_Thread *thread)
 
     // Perform any system-dependent setup - this function may not fail
     SDL_SYS_SetupThread(thread->name);
+
+    SDL_SetTLS(&SDL_thread_ptr_tls, thread, NULL);  // so we can always find the `SDL_Thread *` for the current thread.
 
     // Run the function
     *statusloc = userfunc(userdata);
@@ -458,6 +471,18 @@ const char *SDL_GetThreadName(SDL_Thread *thread)
     } else {
         return NULL;
     }
+}
+
+const char *SDL_GetCurrentThreadName(void)
+{
+    SDL_Thread *thread = SDL_GetCurrentThread();
+    if (thread) {
+        return SDL_GetPersistentString(thread->name);
+    }
+
+    // This wasn't an SDL-created thread, let's try for the OS level answer. Not all platforms support this!
+    char buf[128];
+    return SDL_SYS_GetCurrentThreadName(buf, sizeof (buf)) ? SDL_GetPersistentString(buf) : NULL;
 }
 
 bool SDL_SetCurrentThreadPriority(SDL_ThreadPriority priority)

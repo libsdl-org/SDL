@@ -1347,3 +1347,4 @@
 #define SDL_EncodeURL SDL_EncodeURL_REAL
 #define SDL_SetRenderHDRHeadroom SDL_SetRenderHDRHeadroom_REAL
 #define SDL_GetRenderHDRHeadroom SDL_GetRenderHDRHeadroom_REAL
+#define SDL_GetCurrentThreadName SDL_GetCurrentThreadName_REAL
