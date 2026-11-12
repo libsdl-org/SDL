@@ -280,7 +280,7 @@ class SDLJoystickHandler {
     // gamepad, so we wait for input devices to settle before adding a joystick. Android can also
     // deadlock if a sensor listener is registered while an input device change is being processed,
     // so we wait for input devices to settle before changing sensor registration.
-    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 50;
+    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 200;
     private volatile long mLastInputDeviceChangeTime;
     private final Handler mHandler;
 
