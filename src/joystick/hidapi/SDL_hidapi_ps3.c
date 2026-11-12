@@ -795,12 +795,12 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     if (ctx->is_ghl) {
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_WHITE_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLACK_3);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_6);
         SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
         SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
     }
