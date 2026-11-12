@@ -329,6 +329,12 @@ class SDLJoystickHandler {
         }
     }
 
+    boolean deviceIsUnnamedQuestController(InputDevice joystickDevice) {
+        return Build.VERSION.SDK_INT >= 29 && 
+            Build.MANUFACTURER.equals("Oculus") && Build.MODEL.startsWith("Quest") && 
+            joystickDevice.getName().startsWith("Device 0x");
+    }
+
     void deviceAdded(int device_id) {
         InputDevice joystickDevice = InputDevice.getDevice(device_id);
         if (joystickDevice == null ) {
@@ -337,6 +343,15 @@ class SDLJoystickHandler {
 
         SDLJoystick joystick = getJoystick(device_id);
         if (joystick == null) {
+
+            if (deviceIsUnnamedQuestController(joystickDevice))
+            {
+                if (!joystickDevice.isExternal() && (joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == 0) {
+                    // This is the Quest's dummy controller, which we want to ignore.
+                    return;
+                }
+            }
+
             joystick = new SDLJoystick();
             joystick.device_id = device_id;
             joystick.name = getJoystickName(joystickDevice);
@@ -485,6 +500,12 @@ class SDLJoystickHandler {
             for (String suffix : HID_COLLECTION_SUFFIXES) {
                 if (name.endsWith(suffix) && name.length() > suffix.length()) {
                     return name.substring(0, name.length() - suffix.length());
+                }
+            }
+
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
+                if (joystickDevice.isExternal()) {
+                    return "Touch Controller Gamepad Mode";
                 }
             }
         }
