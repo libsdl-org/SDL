@@ -1130,6 +1130,9 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
     // Set the desktop display mode.
     SDL_SetDesktopDisplayMode(dpy, &desktop_mode);
 
+    // The desktop mode pixel density is always 1.0 when added as an exclusive fullscreen mode, as the native mode is exposed separately.
+    desktop_mode.pixel_density = 1.0f;
+
     // Expose the unscaled, native resolution if the scale is 1.0 or viewports are available...
     if (internal->scale_factor == 1.0 || video->viewporter) {
         SDL_AddFullscreenDisplayMode(dpy, &native_mode);
@@ -1139,8 +1142,6 @@ static void handle_wl_output_done(void *data, struct wl_output *output)
         }
     } else {
         // ...otherwise expose the integer scaled variants of the desktop resolution down to 1.
-        desktop_mode.pixel_density = 1.0f;
-
         for (int i = (int)internal->scale_factor; i > 0; --i) {
             desktop_mode.w = internal->logical.width * i;
             desktop_mode.h = internal->logical.height * i;
