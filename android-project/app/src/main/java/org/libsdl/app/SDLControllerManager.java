@@ -344,8 +344,7 @@ class SDLJoystickHandler {
         SDLJoystick joystick = getJoystick(device_id);
         if (joystick == null) {
 
-            if (deviceIsUnnamedQuestController(joystickDevice))
-            {
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
                 if (!joystickDevice.isExternal() && (joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == 0) {
                     // This is the Quest's dummy controller, which we want to ignore.
                     return;
