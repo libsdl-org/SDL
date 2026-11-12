@@ -2118,16 +2118,16 @@ static void GIP_HandleGuitarReport(
         SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, bytes[3] / 255.0);
         SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, bytes[2] / 255.0);
         SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP, bytes[4]);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN, (bytes[5] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED, (bytes[5] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW, (bytes[5] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE, (bytes[5] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE, (bytes[5] & (1 << 4)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN, (bytes[6] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED, (bytes[6] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW, (bytes[6] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE, (bytes[6] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE, (bytes[6] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, (bytes[5] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, (bytes[5] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, (bytes[5] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, (bytes[5] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, (bytes[5] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, (bytes[6] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, (bytes[6] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, (bytes[6] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, (bytes[6] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, (bytes[6] & (1 << 4)) ? 1 : 0);
     }
 }
 
@@ -2882,16 +2882,16 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
         device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
         SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
         SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE);
-        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
         SDL_PrivateJoystickAddInstrumentAxis(joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
         SDL_PrivateJoystickAddInstrumentAxis(joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
         SDL_PrivateJoystickAddInstrumentAxis(joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP);

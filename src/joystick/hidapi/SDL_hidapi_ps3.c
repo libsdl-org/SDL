@@ -766,26 +766,26 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR && !ctx->is_ghl) {
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
         SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
         SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
         if (ctx->has_solo_frets) {
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
         }
         if (ctx->has_gh5_slider || ctx->has_wt_slider) {
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_GREEN);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_RED);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_BLUE);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_ORANGE);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4);
+            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5);
         }
         if (ctx->has_pickup_selector) {
             SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP);
@@ -934,40 +934,40 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[0] & 0x10) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[0] & 0x20) != 0));
         if (ctx->is_gh && ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW, ((data[0] & 0x01) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN, ((data[0] & 0x02) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED, ((data[0] & 0x04) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE, ((data[0] & 0x08) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE, ((data[0] & 0x10) != 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[0] & 0x01) != 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[0] & 0x02) != 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[0] & 0x04) != 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[0] & 0x08) != 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[0] & 0x10) != 0));
             // WT style sliders have two fret multitouch
             if (ctx->has_wt_slider) {
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_GREEN, data[6] <= 0x3F);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_RED, data[6] > 0x2F && data[6] <= 0x6F);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW, (data[6] > 0x5F && data[6] <= 0x70) || (data[6] > 0x90 && data[6] <= 0xAF));
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_BLUE, data[6] > 0x9F && data[6] <= 0xEF);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_ORANGE, data[6] > 0xCF);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1, data[6] <= 0x3F);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2, data[6] > 0x2F && data[6] <= 0x6F);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3, (data[6] > 0x5F && data[6] <= 0x70) || (data[6] > 0x90 && data[6] <= 0xAF));
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4, data[6] > 0x9F && data[6] <= 0xEF);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5, data[6] > 0xCF);
             }
             // GH5 style sliders have full multitouch and so use a table for determining which frets are pressed
             if (ctx->has_gh5_slider) {
                 Uint8 fret = gh5_slider_frets[data[6]];
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_GREEN, (fret & 1<<0) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_RED, (fret & 1<<1) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW, (fret & 1<<2) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_BLUE, (fret & 1<<3) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_ORANGE, (fret & 1<<4) != 0);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1, (fret & 1<<0) != 0);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2, (fret & 1<<1) != 0);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3, (fret & 1<<2) != 0);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4, (fret & 1<<3) != 0);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5, (fret & 1<<4) != 0);
             }
         }
         if (ctx->is_rb && ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE, ((data[0] & 0x01) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN, ((data[0] & 0x02) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED, ((data[0] & 0x04) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW, ((data[0] & 0x08) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE, ((data[0] & 0x10) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE, ((data[0] & 0x01) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN, ((data[0] & 0x02) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED, ((data[0] & 0x04) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW, ((data[0] & 0x08) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE, ((data[0] & 0x10) != 0) && data[17]);
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[0] & 0x01) != 0) && (data[17] == 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[0] & 0x02) != 0) && (data[17] == 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[0] & 0x04) != 0) && (data[17] == 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[0] & 0x08) != 0) && (data[17] == 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[0] & 0x10) != 0) && (data[17] == 0));
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, ((data[0] & 0x01) != 0) && data[17]);
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, ((data[0] & 0x02) != 0) && data[17]);
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, ((data[0] & 0x04) != 0) && data[17]);
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, ((data[0] & 0x08) != 0) && data[17]);
+            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, ((data[0] & 0x10) != 0) && data[17]);
         }
     }
 

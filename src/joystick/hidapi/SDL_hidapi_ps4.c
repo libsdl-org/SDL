@@ -749,16 +749,16 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
         SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
+        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
     }
 
     if (ctx->official_controller) {
@@ -1229,16 +1229,16 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_GREEN, (packet->rgucDeviceSpecific[3] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_RED, (packet->rgucDeviceSpecific[3] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_YELLOW, (packet->rgucDeviceSpecific[3] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_BLUE, (packet->rgucDeviceSpecific[3] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_ORANGE, (packet->rgucDeviceSpecific[3] & (1 << 4)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_GREEN, (packet->rgucDeviceSpecific[4] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_RED, (packet->rgucDeviceSpecific[4] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_YELLOW, (packet->rgucDeviceSpecific[4] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_BLUE, (packet->rgucDeviceSpecific[4] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_SOLO_ORANGE, (packet->rgucDeviceSpecific[4] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, (packet->rgucDeviceSpecific[3] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, (packet->rgucDeviceSpecific[3] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, (packet->rgucDeviceSpecific[3] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, (packet->rgucDeviceSpecific[3] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, (packet->rgucDeviceSpecific[3] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, (packet->rgucDeviceSpecific[4] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, (packet->rgucDeviceSpecific[4] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, (packet->rgucDeviceSpecific[4] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, (packet->rgucDeviceSpecific[4] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, (packet->rgucDeviceSpecific[4] & (1 << 4)) ? 1 : 0);
 
     }
 
