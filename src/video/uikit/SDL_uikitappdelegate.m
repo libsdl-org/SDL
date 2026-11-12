@@ -485,6 +485,13 @@ API_AVAILABLE(ios(13.0))
     }
 }
 
+- (void)scene:(UIScene *)scene continueUserActivity:(NSUserActivity *)userActivity
+{
+    if (userActivity.webpageURL) {
+        [self handleURL:userActivity.webpageURL];
+    }
+}
+
 - (void)sceneDidBecomeActive:(UIScene *)scene
 {
     if (UIKit_IsExternalDisplayScene(scene)) {
@@ -750,6 +757,15 @@ API_AVAILABLE(ios(13.0))
     // TODO: Handle options
     [self sendDropFileForURL:url fromSourceApplication:NULL];
     return YES;
+}
+
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> *restorableObjects))restorationHandler
+{
+    if (userActivity.webpageURL) {
+        [self sendDropFileForURL:userActivity.webpageURL fromSourceApplication:NULL];
+        return YES;
+    }
+    return NO;
 }
 
 @end // SDLUIKitDelegate
