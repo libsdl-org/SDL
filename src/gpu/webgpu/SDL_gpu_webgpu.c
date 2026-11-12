@@ -504,16 +504,16 @@ static WGPUStencilOperation SDLToWebGPU_StencilOp[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_StencilOp, SDL_arraysize(SDLToWebGPU_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
 static WGPULoadOp SDLToWebGPU_LoadOp[] = {
-    WGPULoadOp_Load,
-    WGPULoadOp_Clear,
-    WGPULoadOp_Clear,
+    [SDL_GPU_LOADOP_LOAD] = WGPULoadOp_Load,
+    [SDL_GPU_LOADOP_CLEAR] = WGPULoadOp_Clear,
+    [SDL_GPU_LOADOP_DONT_CARE] = WGPULoadOp_Clear,
 };
 
 static WGPUStoreOp SDLToWebGPU_StoreOp[] = {
-    WGPUStoreOp_Store,
-    WGPUStoreOp_Discard,
-    WGPUStoreOp_Discard,
-    WGPUStoreOp_Store,
+    [SDL_GPU_STOREOP_STORE] = WGPUStoreOp_Store,
+    [SDL_GPU_STOREOP_DONT_CARE] = WGPUStoreOp_Discard,
+    [SDL_GPU_STOREOP_RESOLVE] = WGPUStoreOp_Discard,
+    [SDL_GPU_STOREOP_RESOLVE_AND_STORE] = WGPUStoreOp_Store,
 };
 
 static WGPUFilterMode SDLToWebGPU_FilterMode[] = {
@@ -2632,8 +2632,8 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
 {
     WebGPUBindGroup *result = NULL;
 
+    WGPUBindGroupEntry entries[(MAX_TEXTURE_SAMPLERS_PER_STAGE * 2) + MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE] = { 0 };
     WGPUBindGroupDescriptor desc = { 0 };
-    WGPUBindGroupEntry *entries = NULL;
     WGPUBindGroup bindGroup = NULL;
 
     Uint32 offset = 0;
@@ -2641,8 +2641,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     switch (type) {
     case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
     {
-        entries = SDL_calloc((MAX_TEXTURE_SAMPLERS_PER_STAGE * 2) + MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE, sizeof(*entries));
-
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
             WebGPUSampler *samplerBind = cmdBuf->vertexStageBinds.boundSamplers[i];
             WebGPUTextureView *textureBind = cmdBuf->vertexStageBinds.boundTextures[i];
@@ -2701,9 +2699,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     }
     case WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE:
     {
-        // We're almost always allocating more slots than needed, but since entries gets freed at the end of this function anyways it doesn't matter much.
-        entries = SDL_calloc((MAX_TEXTURE_SAMPLERS_PER_STAGE * 2) + MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE, sizeof(*entries));
-
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
             WebGPUSampler *samplerBind = cmdBuf->fragmentStageBinds.boundSamplers[i];
             WebGPUTextureView *textureBind = cmdBuf->fragmentStageBinds.boundTextures[i];
@@ -2763,8 +2758,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     }
     case WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE:
     {
-        entries = SDL_calloc((MAX_TEXTURE_SAMPLERS_PER_STAGE * 2) + MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE, sizeof(*entries));
-
         for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
             WebGPUSampler *samplerBind = cmdBuf->computeStageBinds.boundSamplers[i];
             WebGPUTextureView *textureBind = cmdBuf->computeStageBinds.boundTextures[i];
@@ -2818,8 +2811,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
     }
     case WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE:
     {
-        entries = SDL_calloc(MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE, sizeof(*entries));
-
         for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
             WebGPUTextureView *textureBind = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i];
             if (textureBind == NULL) {
@@ -2870,7 +2861,6 @@ static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmd
 
     SDL_InsertIntoHashTable(cmdBuf->renderer->bindGroupHashTable, &result->key, result, true);
 
-    SDL_free(entries);
     return result;
 }
 
@@ -2969,8 +2959,10 @@ static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, co
     texture = (WebGPUTexture *)SDL_calloc(1, sizeof(*texture));
     WGPUTextureDescriptor desc = { 0 };
 
-    if (!WEBGPU_SupportsTextureFormat((SDL_GPURenderer *)renderer, createInfo->format, createInfo->type, createInfo->usage)) {
-        SDL_assert_release(!"Texture format is not supported!");
+    if (renderer->debugMode) {
+        if (!WEBGPU_SupportsTextureFormat((SDL_GPURenderer *)renderer, createInfo->format, createInfo->type, createInfo->usage)) {
+            SDL_assert_release(!"Texture format is not supported!");
+        }
     }
 
     switch (createInfo->type) {

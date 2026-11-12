@@ -266,6 +266,41 @@
  * - iOS/tvOS requires an A9 GPU or newer
  * - iOS Simulator and tvOS Simulator are unsupported
  *
+ * ### WebGPU
+ *
+ * SDL driver name: "webgpu"
+ *
+ * WebGPU support is complicated and rapidly updating, so there's no exact list.
+ * Generally speaking, if you're using a modern browser you can use WebGPU.
+ *
+ * The backend requires these WebGPU features to run:
+ * - `BGRA8UnormStorage`
+ * - `CoreFeaturesAndLimits`
+ * - `Depth32FloatStencil8`
+ * - `DepthClipControl`
+ * - `Float32Filterable`
+ * - `IndirectFirstInstance`
+ * - `RG11B10UfloatRenderable`
+ *
+ * The backend also optionally supports some features. These features are not required
+ * for the backend to run, but they are required for specific SDLGPU functionality:
+ * - `Float32Blendable`
+ *   Required for blending Float32 textures. The backend will safely disable blending
+ *   if this is unsupported.
+ * - `TextureCompressionASTC`
+ * - `TextureCompressionASTCSliced3D`
+ *   Required for ASTC texture format support.
+ * - `TextureCompressionBC`
+ * - `TextureCompressionBCSliced3D`
+ *   Required for BC texture format support
+ * - `TextureFormatsTier1`
+ * - `TextureFormatsTier2`
+ *   Required for a lot of stuff, mostly related to texture sampling & access. It's
+ *   too much to list here.
+ *
+ * Both all required and optional features will be requested automatically during
+ * device creation. If debug mode is enabled, any unsupported features will be logged.
+ *
  * ## Coordinate System
  *
  * The GPU API uses a left-handed coordinate system, following the convention
@@ -368,6 +403,7 @@
  *   Debug Executable..., select your application, set "GPU Frame Capture" to
  *   "Metal" in scheme "Options" window, run your app, and click the small
  *   Metal icon on the bottom to capture a frame)
+ * * For WebGPU, check your browser's developer console.
  *
  * Aside from that, you may want to enable additional debug layers to receive
  * more detailed error messages, based on your GPU backend:
@@ -380,6 +416,9 @@
  *   that should be installed.
  * * For Metal, it should be enough just to run the application from XCode to
  *   receive detailed errors or warnings in the output.
+ * * For WebGPU, you usually don't need to do anything, as the browser will
+ *   report detailed errors. However, some browsers may only provide error
+ *   messages in beta / preview builds, so keep that in mind.
  *
  * Don't hesitate to use tools as RenderDoc when encountering runtime issues
  * or unexpected output on screen, quick GPU frame inspection can usually help
@@ -902,6 +941,9 @@ typedef enum SDL_GPUTextureFormat
  * responsible for avoiding data races, as there is no data synchronization
  * within a compute pass. Note that SIMULTANEOUS usage is only supported by a
  * limited number of texture formats.
+ *
+ * Note that WebGPU does not distinguish between READ | WRITE and SIMULTANEOUS
+ * read-write.
  *
  * \since This datatype is available since SDL 3.2.0.
  *
@@ -2386,10 +2428,10 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  *   TLDR: Don't touch this if you don't know EXACTLY what it does.
  * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB`:
  *   This sets the limit as to how large a GPU transfer buffer can be before it
- *   can no longer be "pseudo-mapped". Pseudo-mapping refers to an internal 
- *   optimization which disables traditional GPU buffer mapping in favor of a 
+ *   can no longer be "pseudo-mapped". Pseudo-mapping refers to an internal
+ *   optimization which disables traditional GPU buffer mapping in favor of a
  *   WebGPU owned staging buffer. This is almost always the best option, however
- *   it does come with the caveat of requiring an equally sized CPU buffer for 
+ *   it does come with the caveat of requiring an equally sized CPU buffer for
  *   each mapped GPU transfer buffer.
  *
  * \param props the properties to use.
@@ -2502,7 +2544,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * checked during initialization.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "vulkan",
- * "metal", "direct3d12", or "webgpu". These never have Unicode characters, 
+ * "metal", "direct3d12", or "webgpu". These never have Unicode characters,
  * and are not meant to be proper names.
  *
  * \param index the index of a GPU driver.
@@ -3113,6 +3155,10 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *
  * All storage buffers must come after all storage textures in the binding
  * order, in order of how they are bound via `SDL_Bind*StorageBuffers()`.
+ *
+ * Note that WebGPU has... odd alignment rules. All types must be aligned to a power of
+ * two, but can be any size.
+ * Consult the [WebGPU spec](https://www.w3.org/TR/WGSL/#alignment-and-size) for more.
  *
  * **Example**
  *
@@ -4265,7 +4311,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  * NOT call SDL_free() on the returned pointer.
  *
  * Note that for the WebGPU backend, mapping download buffers is a very expensive
- * procedure. Mapping download buffers with the WebGPU backend is strongly 
+ * procedure. Mapping download buffers with the WebGPU backend is strongly
  * discouraged.
  *
  * \param device a GPU context.
@@ -4322,7 +4368,7 @@ extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
  * size of the texture format.
  *
  * Note that if using the WebGPU backend, the data uploaded to the texture
- * may differ from the given transfer buffer's data. WebGPU has stricter rules 
+ * may differ from the given transfer buffer's data. WebGPU has stricter rules
  * regarding texture data alignment, which often times forces the backend to
  * pad any data before it gets uploaded.
  *
