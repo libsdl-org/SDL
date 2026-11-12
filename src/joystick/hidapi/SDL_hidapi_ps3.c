@@ -943,7 +943,7 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
             if (ctx->has_wt_slider) {
                 SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_GREEN, data[6] <= 0x3F);
                 SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_RED, data[6] > 0x2F && data[6] <= 0x6F);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW, data[6] > 0x5F && data[6] <= 0x70 || data[6] > 0x90 && data[6] <= 0xAF);
+                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_YELLOW, (data[6] > 0x5F && data[6] <= 0x70) || (data[6] > 0x90 && data[6] <= 0xAF));
                 SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_BLUE, data[6] > 0x9F && data[6] <= 0xEF);
                 SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_ORANGE, data[6] > 0xCF);
             }
