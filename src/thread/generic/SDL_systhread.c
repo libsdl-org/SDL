@@ -55,3 +55,8 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     return;
 }
+
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    return false;  // there are no threads, so there are no thread names.
+}

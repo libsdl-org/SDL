@@ -67,6 +67,7 @@ struct SDL_GLDriverData
     bool HAS_WGL_ARB_pixel_format_float;
     bool HAS_WGL_EXT_create_context_es2_profile;
     bool HAS_WGL_ARB_framebuffer_sRGB;
+    bool HAS_WGL_EXT_colorspace;
 
     /* Max version of OpenGL ES context that can be created if the
        implementation supports WGL_EXT_create_context_es2_profile.

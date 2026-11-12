@@ -280,7 +280,7 @@ class SDLJoystickHandler {
     // gamepad, so we wait for input devices to settle before adding a joystick. Android can also
     // deadlock if a sensor listener is registered while an input device change is being processed,
     // so we wait for input devices to settle before changing sensor registration.
-    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 50;
+    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 200;
     private volatile long mLastInputDeviceChangeTime;
     private final Handler mHandler;
 
@@ -339,7 +339,7 @@ class SDLJoystickHandler {
         if (joystick == null) {
             joystick = new SDLJoystick();
             joystick.device_id = device_id;
-            joystick.name = joystickDevice.getName();
+            joystick.name = getJoystickName(joystickDevice);
             joystick.desc = getJoystickDescriptor(joystickDevice);
             joystick.axes = new ArrayList<InputDevice.MotionRange>();
             joystick.hats = new ArrayList<InputDevice.MotionRange>();
@@ -465,6 +465,30 @@ class SDLJoystickHandler {
             }
         }
         return true;
+    }
+
+    // Linux splits HID devices with several top level collections into separate input devices, adding
+    // a suffix to the name of each extra one, e.g. "PG-9083S Consumer Control". Android merges them
+    // back into one input device, named after whichever was added first.
+    private static final String[] HID_COLLECTION_SUFFIXES = {
+        " Consumer Control",
+        " System Control",
+        " Keyboard",
+        " Mouse",
+    };
+
+    String getJoystickName(InputDevice joystickDevice) {
+        String name = joystickDevice.getName();
+
+        // Only rename gamepads, the suffixes identify devices that shouldn't be treated as gamepads
+        if ((joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            for (String suffix : HID_COLLECTION_SUFFIXES) {
+                if (name.endsWith(suffix) && name.length() > suffix.length()) {
+                    return name.substring(0, name.length() - suffix.length());
+                }
+            }
+        }
+        return name;
     }
 
     String getJoystickDescriptor(InputDevice joystickDevice) {

@@ -1320,6 +1320,7 @@ _SDL_SetSoftwareRendererSurface
 _SDL_EncodeURL
 _SDL_SetRenderHDRHeadroom
 _SDL_GetRenderHDRHeadroom
+_SDL_GetCurrentThreadName
 _SDL_GetNumGamepadInstrumentKeys
 _SDL_GetGamepadInstrumentKey
 _SDL_GetNumGamepadInstrumentGuitarStrings

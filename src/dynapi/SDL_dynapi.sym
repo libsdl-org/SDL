@@ -1321,6 +1321,7 @@ SDL3_0.0.0 {
     SDL_EncodeURL;
     SDL_SetRenderHDRHeadroom;
     SDL_GetRenderHDRHeadroom;
+    SDL_GetCurrentThreadName;
     SDL_GetNumGamepadInstrumentKeys;
     SDL_GetGamepadInstrumentKey;
     SDL_GetNumGamepadInstrumentGuitarStrings;
