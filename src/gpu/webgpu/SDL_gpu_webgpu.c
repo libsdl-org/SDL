@@ -10,6 +10,7 @@
 // FIXME: I'm pretty sure 2D array mipmap generation is broken?
 // FIXME: Uniform buffers are constant and therefore will break if the user pushes more than 1MiB of data
 //        to one within a single command buffer. Why would you ever do that? I have no idea. But it might happen.
+// FIXME: We should seperate the swapchain fences from the submitted command buffer fences!
 
 #include "SDL_internal.h"
 
@@ -25,13 +26,6 @@
 #define DEFAULT_UNIFORM_BUFFER_SIZE                    (1 << 20) // 1MiB
 #define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
 
-// map states
-#define MAP_STATE_UNMAPPED 0
-// This means that the buffer was mapped from the GPU.
-#define MAP_STATE_MAPPED_GPU 1
-// This means that the buffer is "pseudo-mapped". See BufferContainer.pseudoMappedRange for more.
-#define MAP_STATE_MAPPED_CPU 2
-
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
 #define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)    \
     do {                                                                                                         \
@@ -40,17 +34,19 @@
     } while (0)
 
 // Convert a regular char* to a WGPUStringView
-#define WEBGPU_INTERNAL_CharPtrToWebGPUStringView(str) str ? (WGPUStringView){ str, SDL_strlen(str) } : (WGPUStringView){ NULL, 0 }
+#define WEBGPU_INTERNAL_CharPtrToWebGPUStringView(str) (str ? (WGPUStringView){ str, SDL_strlen(str) } : (WGPUStringView){ NULL, 0 })
 
 /**
  * This checks if a feature's enabled for this WebGPURenderer*.
  * This also does some bounds checking, so you should use this instead of directly reading the features array.
  */
-#define WEBGPU_INTERNAL_IsFeatureEnabled(renderer, feature) (feature <= WEBGPU_FEATURE_AT_END_OF_ENUM) ? renderer->webgpuFeatureEnabled[feature] : false
+#define WEBGPU_INTERNAL_IsFeatureEnabled(renderer, feature) ((feature <= WEBGPU_FEATURE_AT_END_OF_ENUM) ? renderer->webgpuFeatureEnabled[feature] : false)
 
 /**
  * Spin for 5000 nanoseconds.
  * This allows Emscripten to catch up with browser events.
+ *
+ * Duration is fully arbitrary.
  */
 #define WEBGPU_INTERNAL_Spin() SDL_DelayNS(5000)
 
@@ -372,6 +368,20 @@ static WGPUTextureFormat SwapchainCompositionToFallbackFormat[] = {
     WGPUTextureFormat_RGB10A2Unorm,   // HDR10_ST2084
 };
 
+static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
+};
+
+static SDL_GPUTextureFormat SwapchainCompositionToFallbackSDLFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
+};
+
 static WGPUVertexFormat SDLToWebGPU_VertexFormat[] = {
     0,                          // INVALID
     WGPUVertexFormat_Sint32,    // INT
@@ -584,24 +594,6 @@ static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
     default:
         SDL_assert(!"Unsupported WGPUFeatureName");
         return "Unknown WGPUFeatureName";
-    }
-}
-
-static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat(
-    SDL_GPUSwapchainComposition composition,
-    bool usingFallback)
-{
-    switch (composition) {
-    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR:
-        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR:
-        return usingFallback ? SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB : SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR:
-        return SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT;
-    case SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084:
-        return SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM;
-    default:
-        return SDL_GPU_TEXTUREFORMAT_INVALID;
     }
 }
 
@@ -900,6 +892,16 @@ struct WebGPUBuffer
     SDL_AtomicInt referenceCount;
 };
 
+typedef enum WebGPUBufferMapState
+{
+    // Buffer is unmapped.
+    MAP_STATE_UNMAPPED,
+    // Buffer is mapped from GPU.
+    MAP_STATE_MAPPED_GPU,
+    // Buffer is pseudo-mapped.
+    MAP_STATE_MAPPED_CPU,
+} WebGPUBufferMapState;
+
 struct WebGPUBufferContainer
 {
     WebGPUBuffer *activeBuffer;
@@ -1150,7 +1152,6 @@ typedef struct WebGPUCommandBuffer
 {
     CommandBufferCommonHeader common;
 
-    // gross, i don't like this
     WebGPURenderer *renderer;
 
     WGPUCommandEncoder encoder;
@@ -1257,7 +1258,7 @@ WEBGPU_INTERNAL_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType 
     SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n%s", message.data);
 
     if (((WebGPURenderer *)renderer)->debugMode) {
-        SDL_assert_release(!"Uncaptured WebGPU error! SDL won't let me format this message though so check the console or smth");
+        SDL_assert_release(!"Uncaptured WebGPU error, message has been logged to SDL_LOG_CATEGORY_GPU");
     }
 }
 
@@ -1456,7 +1457,7 @@ static Uint32 WEBGPU_INTERNAL_GenFNV1aHash(Uint32 initialHash, const void *data,
 {
     Uint32 hash = initialHash;
 
-    char *slice = (char *)data; // const pointers, much like turtles, were made up by the media to stop you from unleashing your full power (segfaulting)
+    const char *slice = (char *)data;
     const char *endOfData = data + size;
 
     while (slice < endOfData) {
@@ -1972,7 +1973,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
     Uint32 entriesVertOffset = 0;
     Uint32 entriesFragOffset = 0;
 
-    Uint32 hash = 0;
+    Uint32 hash = 0xAAAA1BEE;
 
     for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
         // We don't actually care about the sampler.
@@ -2125,7 +2126,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
     hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesVert, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
     hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesFrag, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
 
-    if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0) {
+    if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0xAAAA1BEE) {
         goto finish;
     }
 
@@ -2174,7 +2175,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
     Uint32 readWriteEntryCapacity = 0;
 
     Uint32 offset = 0;
-    Uint32 hash = 0;
+    Uint32 hash = 0xAAAA1BEE;
 
     // Excellent naming by yours truly.
     WebGPUBindGroupLayoutEntryType entriesHashStuff[1024] = { 0 };
@@ -3176,7 +3177,8 @@ static WGPUSurfaceConfiguration WEBGPU_INTERNAL_GetSurfaceConfigurationForWindow
     WGPUSurfaceConfiguration config = (WGPUSurfaceConfiguration){
         .alphaMode = WGPUCompositeAlphaMode_Opaque, // SDLGPU does not support transparent windows. (Yet.)
         .presentMode = SDLToWebGPU_PresentMode[windowData->presentMode],
-        .format = SDLToWebGPU_TextureFormat[SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat)],
+        .format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackFormat[windowData->swapchainComposition]
+                                                      : SwapchainCompositionToFormat[windowData->swapchainComposition],
         .width = windowWidth,
         .height = windowHeight,
         .usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopyDst,
@@ -3313,7 +3315,8 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     texture->container = container;
     texture->texture = surfaceTexture.texture;
     texture->aspect = WGPUTextureAspect_All;
-    texture->format = SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat);
+    texture->format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition]
+                                                          : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
     texture->type = SDL_GPU_TEXTURETYPE_2D;
     texture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(cmdBuf->renderer, texture, -1, 0);
@@ -3327,7 +3330,8 @@ static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, 
     container->activeTexture = texture;
     container->header.info.width = wgpuTextureGetWidth(texture->texture);
     container->header.info.height = wgpuTextureGetHeight(texture->texture);
-    container->header.info.format = SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat);
+    container->header.info.format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition]
+                                                                        : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
     container->header.info.layer_count_or_depth = 1;
     container->header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
     container->header.info.num_levels = 1;
@@ -4077,7 +4081,7 @@ static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
 
     // The memory is allocated when the transfer buffer's first mapped.
     bufferContainer->pseudoMappedRange = NULL;
-    bufferContainer->shouldPseudomap = size <= renderer->pseudoMapBufferSizeThreshold;
+    bufferContainer->shouldPseudomap = size <= renderer->pseudoMapBufferSizeThreshold && bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD;
 
     return bufferContainer;
 }
@@ -5278,8 +5282,11 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
     if (!cmdBuf) {
         SDL_free(commandBuffer);
+        SDL_UnlockMutex(renderer->submittingCommandBufferLock);
         return false;
     }
+
+    wgpuQueueSubmit(wrapper->queue, 1, &cmdBuf);
 
     wrapper->submitted.fence = WEBGPU_INTERNAL_CreateFence(wrapper->queue);
 
@@ -5288,8 +5295,6 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
     WEBGPU_INTERNAL_InsertElementIntoArray(wrapper->renderer->submittedCommandBuffers, wrapper->renderer->submittedCommandBufferCapacity,
                                            wrapper->renderer->submittedCommandBufferCount, WebGPUSubmittedCommandBuffer *, submitted);
-
-    wgpuQueueSubmit(wrapper->queue, 1, &cmdBuf);
 
 #ifndef __EMSCRIPTEN__
     for (int i = 0; i < wrapper->surfaceCount; i++) {
@@ -5320,7 +5325,8 @@ static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandB
 {
     WEBGPU_Submit(commandBuffer);
 
-    return (SDL_GPUFence *)WEBGPU_INTERNAL_CreateFence(((WebGPUCommandBuffer *)commandBuffer)->queue);
+    // FIXME: i can't be bothered making this work right now i have the immune system of a dying housefly
+    return NULL;
 }
 
 static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
@@ -5384,9 +5390,11 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
 
     sourceInfo.aspect = WGPUTextureAspect_All;
     sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
-    sourceInfo.mipLevel = 0;
+    sourceInfo.mipLevel = source->mip_level;
     sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z };
 
+    // FIXME: This is still padded data.
+    // We need to unpad this via a staging buffer.
     destinationInfo.buffer = ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
     destinationInfo.layout = (WGPUTexelCopyBufferLayout){
         .bytesPerRow = paddedBPR,
@@ -5429,7 +5437,7 @@ static SDL_GPUTextureFormat WEBGPU_GetSwapchainTextureFormat(SDL_GPURenderer *de
     WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
 
     if (windowData != NULL) {
-        return SwapchainCompositionToSDLFormat(windowData->swapchainComposition, windowData->shouldUseFallbackFormat);
+        return windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition] : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
     } else {
         SDL_SetError("Window pointer is NULL!");
         return SDL_GPU_TEXTUREFORMAT_INVALID;
