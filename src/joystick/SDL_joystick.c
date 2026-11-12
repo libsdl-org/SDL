@@ -646,27 +646,27 @@ static SDL_vidpid_list wheel_devices = {
 };
 
 static Uint32 initial_guitar_devices[] = {
-    MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
-    MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
-    MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
-    MAKE_VIDPID(0x1BAD, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
-    MAKE_VIDPID(0x1BAD, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
     MAKE_VIDPID(0x0351, 0x1000), // CRKD Guitar
     MAKE_VIDPID(0x0351, 0x2000), // CRKD Guitar
     MAKE_VIDPID(0x0738, 0x02A6), // Mad Catz Wireless Rock Band Guitar
     MAKE_VIDPID(0x0738, 0x02AB), // Mad Catz Wireless Precision Bass Guitar
     MAKE_VIDPID(0x0738, 0x9806), // Mad Catz Precision Bass Guitar
+    MAKE_VIDPID(0x12ba, 0x0100), // PS3 Guitar Hero Guitar
+    MAKE_VIDPID(0x12ba, 0x0200), // PS3 Rock Band Guitar
+    MAKE_VIDPID(0x12ba, 0x074b), // PS3 / Wii U Guitar Hero Live Guitar
     MAKE_VIDPID(0x1430, 0x02a7), // Guitar Hero Wireless Guitar (Linux)
     MAKE_VIDPID(0x1430, 0x0705), // Guitar Hero 5 Guitar
     MAKE_VIDPID(0x1430, 0x070B), // Guitar Hero Live Guitar
     MAKE_VIDPID(0x1430, 0x4734), // Guitar Hero World Tour Kiosk
     MAKE_VIDPID(0x1430, 0x4748), // RedOctane Guitar Hero X-plorer
+    MAKE_VIDPID(0x1bad, 0x0004), // Wii RB1 Guitar (Uses PS3 protocol)
     MAKE_VIDPID(0x1bad, 0x02a6), // Rock Band 2 Wireless Guitar (Linux)
     MAKE_VIDPID(0x1bad, 0x02ab), // Rock Band Wireless Bass Guitar (Linux)
+    MAKE_VIDPID(0x1bad, 0x3010), // Wii RB2 Guitar (Uses PS3 protocol)
+    MAKE_VIDPID(0x1ccf, 0x1030), // Konami GITADORA Guitar Controller Premium Model
     MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
     MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
     MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
-    MAKE_VIDPID(0x1ccf, 0x1030), // Konami GITADORA Guitar Controller Premium Model
 };
 static SDL_vidpid_list guitar_devices = {
     SDL_HINT_JOYSTICK_GUITAR_DEVICES, 0, 0, NULL,
