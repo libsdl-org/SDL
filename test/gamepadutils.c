@@ -2820,6 +2820,17 @@ static const char *instrument_button_names[] = {
     "Platter Right Blue",
     "Euphoria Button",
     "Overdrive",
+    "Key 1",
+    "Key 2",
+    "Key 3",
+    "Key 4",
+    "Key 5",
+    "Key 6",
+    "Key 7",
+    "FX Key 1",
+    "FX Key 2",
+    "FX Key 3",
+    "FX Key 4"
 };
 SDL_COMPILE_TIME_ASSERT(instrument_button_names, SDL_arraysize(instrument_button_names) == SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT);
 
