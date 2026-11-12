@@ -666,6 +666,7 @@ static Uint32 initial_guitar_devices[] = {
     MAKE_VIDPID(0x2068, 0x0001), // Power Gig Guitar
     MAKE_VIDPID(0x3651, 0x1000), // CRKD Guitar
     MAKE_VIDPID(0x3651, 0x6000), // CRKD Guitar
+    MAKE_VIDPID(0x1ccf, 0x1030), // Konami GITADORA Guitar Controller Premium Model
 };
 static SDL_vidpid_list guitar_devices = {
     SDL_HINT_JOYSTICK_GUITAR_DEVICES, 0, 0, NULL,
