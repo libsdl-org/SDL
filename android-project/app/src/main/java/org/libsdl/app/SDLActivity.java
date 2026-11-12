@@ -487,6 +487,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSingleton = this;
         SDL.setContext(this);
 
+        // Set the manifest environment variables now, on the UI thread, before the first frame.
+        // Adding a new environment variable reallocates the environment, which can crash other
+        // threads reading it at the same time, e.g. graphics drivers initializing EGL on the
+        // render thread.
+        getManifestEnvironmentVariables();
+
         if (SDL.isControllerManagerReady()) {
             SDLControllerManager.initializeDeviceListener();
         }
