@@ -2115,8 +2115,8 @@ static void GIP_HandleGuitarReport(
         SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP, buttons & 0x0100);
         SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN, buttons & 0x0200);
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, bytes[3] / 255.0);
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, bytes[2] / 255.0);
+        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, bytes[3] / 255.0f);
+        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, bytes[2] / 255.0f);
         SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP, bytes[4]);
         SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, (bytes[5] & (1 << 0)) ? 1 : 0);
         SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, (bytes[5] & (1 << 1)) ? 1 : 0);
