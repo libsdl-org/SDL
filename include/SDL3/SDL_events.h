@@ -804,38 +804,6 @@ typedef struct SDL_GamepadInstrumentButtonEvent
 } SDL_GamepadInstrumentButtonEvent;
 
 /**
- * Gamepad instrument string event structure (event.ginstrumentstring.*)
- *
- * Represents a string-based guitar instrument event, such as a guitar string being pressed, strummed, or released.
- * \since This struct is available since SDL 3.2.0.
- */
-typedef struct SDL_GamepadInstrumentStringEvent
-{
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_FRET_PRESSED, SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_STRUMMED, or SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_FRET_RELEASED */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which; /**< The joystick instance id */
-    int fret;           /**< The fret number that is pressed */
-    float velocity;     /**< The velocity the string was strummed with */
-} SDL_GamepadInstrumentStringEvent;
-
-/**
- * Gamepad instrument key event structure (event.ginstrumentkey.*)
- *
- * Represents a key press or release event for an index-based instrument (e.g., a piano key).
- * \since This struct is available since SDL 3.2.0.
- */
-typedef struct SDL_GamepadInstrumentKeyEvent
-{
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_INSTRUMENT_KEY_DOWN, or SDL_EVENT_GAMEPAD_INSTRUMENT_KEY_UP */
-    Uint32 reserved;
-    Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
-    SDL_JoystickID which; /**< The joystick instance id */
-    bool down;              /**< true if the key is pressed */
-    float velocity;     /**< The velocity the key was pressed with */
-} SDL_GamepadInstrumentKeyEvent;
-
-/**
  * Audio device event structure (event.adevice.*)
  *
  * Note that SDL will send a SDL_EVENT_AUDIO_DEVICE_ADDED event for every
@@ -1196,10 +1164,8 @@ typedef union SDL_Event
     SDL_GamepadTouchpadEvent gtouchpad;     /**< Gamepad touchpad event data */
     SDL_GamepadSensorEvent gsensor;         /**< Gamepad sensor event data */
     SDL_GamepadCapSenseEvent gcapsense;     /**< Gamepad capsense event data */
-    SDL_GamepadInstrumentButtonEvent ginstrumentdigital; /**< Gamepad instrument digital input event data */
-    SDL_GamepadInstrumentAxisEvent ginstrumentanalog; /**< Gamepad instrument analog input event data */
-    SDL_GamepadInstrumentKeyEvent ginstrumentkey; /**< Gamepad instrument key event data */
-    SDL_GamepadInstrumentStringEvent ginstrumentstring; /**< Gamepad instrument string motion event data */
+    SDL_GamepadInstrumentButtonEvent ginstrumentbutton; /**< Gamepad instrument digital input event data */
+    SDL_GamepadInstrumentAxisEvent ginstrumentaxis; /**< Gamepad instrument analog input event data */
     SDL_AudioDeviceEvent adevice;           /**< Audio device event data */
     SDL_CameraDeviceEvent cdevice;          /**< Camera device event data */
     SDL_SensorEvent sensor;                 /**< Sensor event data */
