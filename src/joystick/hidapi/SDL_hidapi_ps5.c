@@ -1528,17 +1528,16 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     }
 
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        SDL_SendJoystickButton(timestamp, joystick, 12, (packet->rgucDeviceSpecific[3] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 13, (packet->rgucDeviceSpecific[3] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 14, (packet->rgucDeviceSpecific[3] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 15, (packet->rgucDeviceSpecific[3] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 16, (packet->rgucDeviceSpecific[3] & (1 << 4)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 17, (packet->rgucDeviceSpecific[4] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 18, (packet->rgucDeviceSpecific[4] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 19, (packet->rgucDeviceSpecific[4] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 20, (packet->rgucDeviceSpecific[4] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, 21, (packet->rgucDeviceSpecific[4] & (1 << 4)) ? 1 : 0);
-
+        SDL_SendJoystickButton(timestamp, joystick, 12, packet->rgucDeviceSpecific[3] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 13, packet->rgucDeviceSpecific[3] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 14, packet->rgucDeviceSpecific[3] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 15, packet->rgucDeviceSpecific[3] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 16, packet->rgucDeviceSpecific[3] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, 17, packet->rgucDeviceSpecific[4] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 18, packet->rgucDeviceSpecific[4] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 19, packet->rgucDeviceSpecific[4] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 20, packet->rgucDeviceSpecific[4] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 21, packet->rgucDeviceSpecific[4] & (1 << 4));
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

@@ -86,6 +86,7 @@ typedef struct
     Uint8 rumble_right;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
+
 static bool HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
 
 static void HIDAPI_DriverPS3_RegisterHints(SDL_HintCallback callback, void *userdata)

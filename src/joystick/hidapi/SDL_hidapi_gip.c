@@ -2120,16 +2120,16 @@ static void GIP_HandleGuitarReport(
         SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
         axis = ((int)bytes[4] * 257) - 32768;
         SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 10, (bytes[5] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 9, (bytes[5] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 8, (bytes[5] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 7, (bytes[5] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 6, (bytes[5] & (1 << 4)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 5, (bytes[6] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 4, (bytes[6] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 3, (bytes[6] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 2, (bytes[6] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 1, (bytes[6] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 10, bytes[5] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 9, bytes[5] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 8, bytes[5] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 7, bytes[5] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 6, bytes[5] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 5, bytes[6] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 4, bytes[6] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 3, bytes[6] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 2, bytes[6] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 1, bytes[6] & (1 << 4));
     }
 }
 
