@@ -3622,7 +3622,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
                     if (hat_mask & binding->input.hat.hat_mask) {
                         value = binding->output.axis.axis_max;
                     }
-                } 
+                }
 
                 if (binding->output.axis.axis_min < binding->output.axis.axis_max) {
                     valid_output_range = (value >= binding->output.axis.axis_min && value <= binding->output.axis.axis_max);
@@ -3705,7 +3705,7 @@ bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
                 } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
                     int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
                     result |= ((hat_mask & binding->input.hat.hat_mask) != 0);
-                } 
+                }
             }
         }
     }
