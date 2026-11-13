@@ -4,13 +4,13 @@
 
 SDL3 has been known to work on the following platforms at some point:
 
-- [Android](README-android.md)
+- [Android](README-android.md) (SDK 21, 5.0 and later)
 - [DOS](README-dos.md)
 - [Emscripten](README-emscripten.md) (Web browsers)
 - [FreeBSD](README-bsd.md)
 - [Haiku OS](README-haiku.md)
 - [HarmonyOS/OpenHarmony](README-harmonyos.md)
-- [iOS](README-ios.md)
+- [iOS](README-ios.md) (11.0 and later)
 - [Linux](README-linux.md)
 - [macOS](README-macos.md) (10.14 and later)
 - [NetBSD](README-bsd.md)
