@@ -49,9 +49,14 @@ static void FinishThread(SDL_Thread *thread)
 static int childThread(void *arg)
 {
     SDL_Thread *thread = (SDL_Thread *)arg;
-    int res = thread->userfunc(thread->userdata);
-    SignalSema((int)thread->endfunc);
-    return res;
+    /* Run the thread through SDL_RunThread(), like every other backend, so
+       that TLS and the thread state are set up. SDL_RunThread() frees a
+       detached thread, so keep the semaphore id first. */
+    int endsema = (int)thread->endfunc;
+
+    SDL_RunThread(thread);
+    SignalSema(endsema);
+    return 0;
 }
 
 bool SDL_SYS_CreateThread(SDL_Thread *thread,
@@ -66,7 +71,7 @@ bool SDL_SYS_CreateThread(SDL_Thread *thread,
 
     // Set priority of new thread to the same as the current thread
     // status.size = sizeof(ee_thread_t);
-    if (ReferThreadStatus(GetThreadId(), &status) == 0) {
+    if (ReferThreadStatus(GetThreadId(), &status) >= 0) {
         priority = status.current_priority;
     }
 
