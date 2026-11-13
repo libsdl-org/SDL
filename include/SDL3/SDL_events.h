@@ -224,13 +224,8 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_INSTRUMENT_AXIS_MOTION,     /**< Gamepad instrument axis motion */
     SDL_EVENT_GAMEPAD_INSTRUMENT_BUTTON_DOWN,     /**< Instrument button pressed */
     SDL_EVENT_GAMEPAD_INSTRUMENT_BUTTON_UP,       /**< Instrument button released */
-    SDL_EVENT_GAMEPAD_INSTRUMENT_KEY_DOWN,     /**< Instrument key was pressed */
-    SDL_EVENT_GAMEPAD_INSTRUMENT_KEY_UP,       /**< Instrument key was released */
-    SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_FRET_PRESSED,       /**< A string-based guitar string's fret was pressed */
-    SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_STRUMMED,       /**< A string-based guitar string was strummed */
-    SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_FRET_RELEASED,       /**< A string-based guitar string's fret was released */
     SDL_EVENT_GAMEPAD_FIRST = SDL_EVENT_GAMEPAD_AXIS_MOTION,
-    SDL_EVENT_GAMEPAD_LAST = SDL_EVENT_GAMEPAD_INSTRUMENT_STRING_FRET_RELEASED,
+    SDL_EVENT_GAMEPAD_LAST = SDL_EVENT_GAMEPAD_INSTRUMENT_BUTTON_UP,
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,

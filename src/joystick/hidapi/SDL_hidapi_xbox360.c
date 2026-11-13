@@ -333,32 +333,6 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 #ifdef HAVE_LIBUSB
     FetchXInputCapabilities(device);
 #endif
-    if (ctx->capabilities.subType == 0x06) {
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
-    }
-    if (ctx->capabilities.subType == 0x07) {
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5);
-    }
-    if (device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
-    }
     return true;
 }
 
@@ -443,25 +417,6 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[3] & 0x20) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[3] & 0x40) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[3] & 0x80) != 0));
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_PEDAL, ((data[3] & 0x02) != 0) ? 1.0f : 0.0f);
-        if (ctx->capabilities.subType == 0x07) {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[3] & 0x01) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[3] & 0x10) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[3] & 0x20) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[3] & 0x40) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[3] & 0x80) != 0));
-        } else {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[3] & 0x01) != 0) && ((data[2] & 0x40) == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[3] & 0x10) != 0) && ((data[2] & 0x40) == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[3] & 0x20) != 0) && ((data[2] & 0x40) == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[3] & 0x40) != 0) && ((data[2] & 0x40) == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[3] & 0x80) != 0) && ((data[2] & 0x40) == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, ((data[3] & 0x01) != 0) && ((data[2] & 0x40) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, ((data[3] & 0x10) != 0) && ((data[2] & 0x40) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, ((data[3] & 0x20) != 0) && ((data[2] & 0x40) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, ((data[3] & 0x40) != 0) && ((data[2] & 0x40) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, ((data[3] & 0x80) != 0) && ((data[2] & 0x40) != 0));
-        }
     }
 
     axis = ((int)data[4] * 257) - 32768;
@@ -475,20 +430,13 @@ static void HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, SDL_D
         axis = ~axis;
     }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
-    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        axis = SDL_Swap16LE(*(Sint16 *)(&data[10]));
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, (axis + 32768) / 65535.0f);
-        axis = SDL_Swap16LE(*(Sint16 *)(&data[12]));
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, (axis) / 32768.0f);
-    } else {
-        axis = SDL_Swap16LE(*(Sint16 *)(&data[10]));
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-        axis = SDL_Swap16LE(*(Sint16 *)(&data[12]));
-        if (invert_y_axes) {
-            axis = ~axis;
-        }
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[10]));
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    axis = SDL_Swap16LE(*(Sint16 *)(&data[12]));
+    if (invert_y_axes) {
+        axis = ~axis;
     }
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min((size_t)size, sizeof(ctx->last_state)));
 }

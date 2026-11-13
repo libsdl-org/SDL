@@ -2767,6 +2767,7 @@ static const char *instrument_axis_names[] = {
     "Whammy",
     "Tilt",
     "Pickup",
+    "Slider Bar",
     "Drum Pad 1",
     "Drum Pad 2",
     "Drum Pad 3",
@@ -2782,7 +2783,6 @@ static const char *instrument_axis_names[] = {
     "Platter Spin",
     "Crossfader",
     "Effects Knob",
-    "Touch Strip",
     "Pedal",
 };
 SDL_COMPILE_TIME_ASSERT(instrument_axis_names, SDL_arraysize(instrument_axis_names) == SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT);
@@ -2801,11 +2801,7 @@ static const char *instrument_button_names[] = {
     "Solo Fret 3",
     "Solo Fret 4",
     "Solo Fret 5",
-    "Slider Fret 1",
-    "Slider Fret 2",
-    "Slider Fret 3",
-    "Slider Fret 4",
-    "Slider Fret 5",
+    "Solo Flag",
     "GHTV Button",
     "Don Left",
     "Don Right",
@@ -2819,7 +2815,6 @@ static const char *instrument_button_names[] = {
     "Platter Right Red",
     "Platter Right Blue",
     "Euphoria Button",
-    "Overdrive",
     "Key 1",
     "Key 2",
     "Key 3",
@@ -2911,7 +2906,7 @@ char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *Instrum
     y = ctx->area.y + margin;
 
     for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT; ++i) {
-        if (SDL_GamepadHasInstrumentButtonInput(Instrument, i)) {
+        if (SDL_GamepadHasInstrumentButton(Instrument, i)) {
            SDL_snprintf(text, sizeof(text), "%d:", i);
 
             highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
@@ -2934,7 +2929,7 @@ char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *Instrum
         }        
     }
     for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT; ++i) {
-        if (SDL_GamepadHasInstrumentAxisInput(Instrument, i)) {
+        if (SDL_GamepadHasInstrumentAxis(Instrument, i)) {
            SDL_snprintf(text, sizeof(text), "%d:", i);
 
             highlight.x = x + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
@@ -3046,7 +3041,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
 
     for (i = 0; i < SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT; ++i) {
         SDL_GamepadInstrumentButton button = (SDL_GamepadInstrumentButton)i;
-        if (!SDL_GamepadHasInstrumentButtonInput(instrument, button)) {
+        if (!SDL_GamepadHasInstrumentButton(instrument, button)) {
             continue;
         }
         if (!found) {
@@ -3066,7 +3061,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
         float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
         SDLTest_DrawString(ctx->renderer, x_pos, y, text);
 
-        if (SDL_GetGamepadInstrumentButtonInput(instrument, button)) {
+        if (SDL_GetGamepadInstrumentButton(instrument, button)) {
             SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
         } else {
             SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
@@ -3086,7 +3081,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
         SDL_GamepadInstrumentAxis axis = (SDL_GamepadInstrumentAxis)i;
         bool has_negative = (axis == SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT || axis == SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_CROSSFADER);
         
-        if (!SDL_GamepadHasInstrumentAxisInput(instrument, axis)) {
+        if (!SDL_GamepadHasInstrumentAxis(instrument, axis)) {
             continue;
         }
         if (!found) {
@@ -3099,7 +3094,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
         SDL_snprintf(text, sizeof(text), "%s: ", instrument_axis_names[axis]);
         float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
         SDLTest_DrawString(ctx->renderer, x_pos, y, text);
-        float value = SDL_GetGamepadInstrumentAxisInput(instrument, axis);
+        Sint16 value = SDL_GetGamepadInstrumentAxis(instrument, axis);
 
         highlight.x = x_pos + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
         highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
@@ -3135,7 +3130,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
 
         if (value < 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = value * arrow_extent;
+            rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
             rect.x = dst.x + arrow_extent - rect.w;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;
@@ -3146,7 +3141,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *instrument)
 
         if (value > 0) {
             SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-            rect.w = value * arrow_extent;
+            rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
             rect.x = dst.x;
             rect.y = dst.y + ctx->arrow_height * 0.25f;
             rect.h = ctx->arrow_height / 2.0f;

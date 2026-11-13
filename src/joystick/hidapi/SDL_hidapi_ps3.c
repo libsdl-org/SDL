@@ -78,13 +78,6 @@ typedef struct
     SDL_HIDAPI_Device *device;
     SDL_Joystick *joystick;
     bool is_shanwan;
-    bool is_rb;
-    bool is_gh;
-    bool is_ghl;
-    bool has_solo_frets;
-    bool has_pickup_selector;
-    bool has_gh5_slider;
-    bool has_wt_slider;
     bool has_analog_buttons;
     bool report_sensors;
     bool effects_updated;
@@ -93,24 +86,6 @@ typedef struct
     Uint8 rumble_right;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
-static Uint8 gh5_slider_frets[256] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x00
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x10
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x20
-    0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x30
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, // 0x40
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x50
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x60
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x70
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x80
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, // 0x90
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0F, 0x0D, 0x0E, 0x0C, // 0xA0
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0xB0
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B, 0x09, 0x0A, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0xC0
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1F, // 0xD0
-    0x1B, 0x1D, 0x19, 0x1E, 0x1A, 0x1C, 0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 0xE0
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17, 0x13, 0x15, 0x11, 0x16, 0x12, 0x14, 0x10, // 0xF0
-};
 static bool HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size);
 
 static void HIDAPI_DriverPS3_RegisterHints(SDL_HintCallback callback, void *userdata)
@@ -687,13 +662,11 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
             case USB_PRODUCT_HARMONIX_WII_RB1_GUITAR:
             case USB_PRODUCT_HARMONIX_WII_RB2_GUITAR:
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                ctx->is_rb = true;
                 break;
             case USB_PRODUCT_HARMONIX_WII_RB1_DRUMS:
             case USB_PRODUCT_HARMONIX_WII_RB2_DRUMS:
             case USB_PRODUCT_HARMONIX_WII_RB3_MPA_DRUMS_MODE:
                 device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-                ctx->is_rb = true;
                 break;
             default:
                 break;
@@ -703,32 +676,19 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
     if (device->vendor_id == USB_VENDOR_SCEA) {
         switch (device->product_id) {
             case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
-                ctx->is_rb = true;
-                ctx->has_pickup_selector = true;
-                ctx->has_solo_frets = true;
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
                 break;
             case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
-                if (device->name && SDL_strstr(device->name, "Guitar Hero4") != NULL) {
-                    ctx->has_wt_slider = true;
-                }
-                if (device->name && SDL_strstr(device->name, "Guitar Hero5") != NULL) {
-                    ctx->has_gh5_slider = true;
-                }
-                ctx->is_gh = true;
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
                 break;
             case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                ctx->is_ghl = true;
                 break;
             case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
             case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
-                ctx->is_rb = true;
                 device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
                 break;
             case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
-                ctx->is_gh = true;
                 device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
                 break;
             default:
@@ -762,47 +722,17 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     }
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
-
-    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR && !ctx->is_ghl) {
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
-        if (ctx->has_solo_frets) {
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
+    if (device->vendor_id == USB_VENDOR_SCEA) {
+        switch (device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+                joystick->naxes += 1; // Add an extra axis for the tilt sensor
+                break;
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                joystick->naxes += 1; // Add an extra axis for the tilt sensor
+                break;
+            default:
+                break;
         }
-        if (ctx->has_gh5_slider || ctx->has_wt_slider) {
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4);
-            SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5);
-        }
-        if (ctx->has_pickup_selector) {
-            SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP);
-        }
-    }
-
-    if (ctx->is_ghl) {
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_6);
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
     }
 
     return true;
@@ -933,42 +863,6 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[0] & 0x08) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[0] & 0x10) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[0] & 0x20) != 0));
-        if (ctx->is_gh && ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[0] & 0x01) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[0] & 0x02) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[0] & 0x04) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[0] & 0x08) != 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[0] & 0x10) != 0));
-            // WT style sliders have two fret multitouch
-            if (ctx->has_wt_slider) {
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1, data[6] <= 0x3F);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2, data[6] > 0x2F && data[6] <= 0x6F);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3, (data[6] > 0x5F && data[6] <= 0x70) || (data[6] > 0x90 && data[6] <= 0xAF));
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4, data[6] > 0x9F && data[6] <= 0xEF);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5, data[6] > 0xCF);
-            }
-            // GH5 style sliders have full multitouch and so use a table for determining which frets are pressed
-            if (ctx->has_gh5_slider) {
-                Uint8 fret = gh5_slider_frets[data[6]];
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1, (fret & 1<<0) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2, (fret & 1<<1) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3, (fret & 1<<2) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4, (fret & 1<<3) != 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5, (fret & 1<<4) != 0);
-            }
-        }
-        if (ctx->is_rb && ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, ((data[0] & 0x01) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, ((data[0] & 0x02) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, ((data[0] & 0x04) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, ((data[0] & 0x08) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, ((data[0] & 0x10) != 0) && (data[17] == 0));
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, ((data[0] & 0x01) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, ((data[0] & 0x02) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, ((data[0] & 0x04) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, ((data[0] & 0x08) != 0) && data[17]);
-            SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, ((data[0] & 0x10) != 0) && data[17]);
-        }
     }
 
     if (ctx->last_state[1] != data[1]) {
@@ -1030,10 +924,6 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
                 break;
             }
             SDL_SendJoystickHat(timestamp, joystick, 0, hat);
-            if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP, (hat == SDL_HAT_UP || hat == SDL_HAT_RIGHTUP || hat == SDL_HAT_LEFTUP) ? 1 : 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN, (hat == SDL_HAT_DOWN || hat == SDL_HAT_RIGHTDOWN || hat == SDL_HAT_LEFTDOWN) ? 1 : 0);
-            }
         }
     }
 
@@ -1054,25 +944,26 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     axis = ((int)data[4] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
 
-    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        // Guitar tilt is reported differently depending on the guitar type
-        if (ctx->is_rb) {
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, ((float)data[5]) / 255);
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, ((data[0] & 0x20) != 0) ? 1 : 0);
-        } else if (ctx->is_ghl) {
-            // Whammy rests at 0x80 (128)
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, ((float)data[5] - 128) / 128);
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, data[19]);
-        } else {
-            // Whammy rests at 0x80 (128)
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, ((float)data[5] - 128) / 128);
-            SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, -(LOAD16(data[19], data[20]) - 512.0f) / 113.0f);
+    axis = ((int)data[5] * 257) - 32768;
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+    axis = ((int)data[6] * 257) - 32768;
+    SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
+    if (ctx->device->vendor_id == USB_VENDOR_SCEA) {
+        switch (ctx->device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+                // GH guitar tilt is between 385 and 640, but its flipped
+                axis = SDL_clamp((int)LOAD16(data[19], data[20]), 384, 640);
+                axis = (Sint16)((((640 - axis) * 65535) / 256) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, 16, axis);
+                break;
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                // GHL tilt is reported directly as a byte value
+                axis = ((int)data[19] * 257) - 32768;
+                SDL_SendJoystickAxis(timestamp, joystick, 16, axis);
+                break;
+            default:
+                break;
         }
-    } else {
-        axis = ((int)data[5] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-        axis = ((int)data[6] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
     }
     // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {

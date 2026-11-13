@@ -256,8 +256,8 @@ typedef enum SDL_GamepadCapSenseType
  *
  * \since This enum is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentAxisInput
- * \sa SDL_GetGamepadInstrumentAxisInput
+ * \sa SDL_GamepadHasInstrumentAxis
+ * \sa SDL_GetGamepadInstrumentAxis
  */
 typedef enum SDL_GamepadInstrumentAxis
 {
@@ -265,6 +265,7 @@ typedef enum SDL_GamepadInstrumentAxis
     SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY,
     SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT,
     SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP,
+    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_SLIDER_BAR,
     SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_1,
     SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_2,
     SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_3,
@@ -280,7 +281,6 @@ typedef enum SDL_GamepadInstrumentAxis
     SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_SPIN,
     SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_CROSSFADER,
     SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_EFFECTS_KNOB,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_PRO_KEYS_TOUCH_STRIP,
     SDL_GAMEPAD_INSTRUMENT_AXIS_PEDAL,
     SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT
 } SDL_GamepadInstrumentAxis;
@@ -292,8 +292,8 @@ typedef enum SDL_GamepadInstrumentAxis
  *
  * \since This enum is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentButtonInput
- * \sa SDL_GetGamepadInstrumentButtonInput
+ * \sa SDL_GamepadHasInstrumentButton
+ * \sa SDL_GetGamepadInstrumentButton
  */
 typedef enum SDL_GamepadInstrumentButton
 {
@@ -311,11 +311,7 @@ typedef enum SDL_GamepadInstrumentButton
     SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_2,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_3,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_4,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SLIDER_FRET_5,
+    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FLAG,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_GHTV,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_LEFT,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_RIGHT,
@@ -329,7 +325,6 @@ typedef enum SDL_GamepadInstrumentButton
     SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_RED,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_BLUE,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_EUPHORIA_BUTTON,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_PRO_KEYS_OVERDRIVE,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_1,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_2,
     SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_3,
@@ -359,7 +354,9 @@ typedef enum SDL_GamepadBindingType
     SDL_GAMEPAD_BINDTYPE_NONE = 0,
     SDL_GAMEPAD_BINDTYPE_BUTTON,
     SDL_GAMEPAD_BINDTYPE_AXIS,
-    SDL_GAMEPAD_BINDTYPE_HAT
+    SDL_GAMEPAD_BINDTYPE_HAT,
+    SDL_GAMEPAD_BINDTYPE_INSTRUMENT_BUTTON,
+    SDL_GAMEPAD_BINDTYPE_INSTRUMENT_AXIS
 } SDL_GamepadBindingType;
 
 /**
@@ -410,7 +407,15 @@ typedef struct SDL_GamepadBinding
             int axis_min;
             int axis_max;
         } axis;
+        
+        SDL_GamepadInstrumentButton instrument_button;
 
+        struct
+        {
+            SDL_GamepadInstrumentAxis instrument_axis;
+            int axis_min;
+            int axis_max;
+        } instrument_axis;
     } output;
 } SDL_GamepadBinding;
 
@@ -1810,9 +1815,9 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForAxis
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadInstrumentAxisInput
+ * \sa SDL_GetGamepadInstrumentAxis
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxis(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
 
 /**
  * Get the current state of an analog instrument input on a gamepad.
@@ -1825,9 +1830,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxisInput(SDL_Gamepad *
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentAxisInput
+ * \sa SDL_GamepadHasInstrumentAxis
  */
-extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadInstrumentAxisInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadInstrumentAxis(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
 
 /**
  * Return whether a gamepad supports a particular instrument button.
@@ -1840,9 +1845,9 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadInstrumentAxisInput(SDL_Gamepad 
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadInstrumentButtonInput
+ * \sa SDL_GetGamepadInstrumentButton
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentButton(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
 
 /**
  * Get the current state of an instrument button on a gamepad.
@@ -1855,70 +1860,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentButtonInput(SDL_Gamepad
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentButtonInput
+ * \sa SDL_GamepadHasInstrumentButton
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentButtonInput(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
-/**
- * Get the number of index based keys on an instrument.
- * This would represent something like the number of piano keys on a piano instrument.
- *
- * \param gamepad a gamepad.
- * \returns number of instrument keys.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.2.0.
- *
- * \sa SDL_GetNumGamepadInstrumentKeys
- */
-extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadInstrumentKeys(SDL_Gamepad *gamepad);
-
-/**
- * Get the current state of an index based key on an instrument.
- *
- * \param gamepad a gamepad.
- * \param key the index of an instrument key.
- * \param velocity a pointer filled with the velocity value, may be NULL.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.2.0.
- *
- * \sa SDL_GetNumGamepadInstrumentKeys
- */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentKey(SDL_Gamepad *gamepad, int key, float *velocity);
-/**
- * Get the number of guitar strings on a gamepad.
- *
- * \param gamepad a gamepad.
- * \returns number of guitar strings.
- *
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.2.0.
- *
- * \sa SDL_GetNumGamepadInstrumentGuitarStrings
- */
-extern SDL_DECLSPEC int SDLCALL SDL_GetNumGamepadInstrumentGuitarStrings(SDL_Gamepad *gamepad);
-
-/**
- * Get the current state of an instrument guitar string on a gamepad.
- *
- * \param gamepad a gamepad.
- * \param string the guitar string index.
- * \param fret a pointer filled with the currently pressed fret, may be NULL.
- * \param velocity a pointer filled with the current strum velocity, may be NULL.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- * \threadsafety It is safe to call this function from any thread.
- *
- * \since This function is available since SDL 3.2.0.
- *
- * \sa SDL_GetNumGamepadInstrumentGuitarStrings
- */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentGuitarString(SDL_Gamepad *gamepad, int string, int *fret, float *velocity);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentButton(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

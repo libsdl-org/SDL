@@ -229,8 +229,6 @@ extern bool SDL_IsJoystickUSBChargingOnly(Uint16 vendor_id, Uint16 product_id);
 extern bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
 
 // Internal event queueing functions
-extern void SDL_PrivateJoystickAddInstrumentAxis(SDL_Joystick *joystick, SDL_GamepadInstrumentAxis type);
-extern void SDL_PrivateJoystickAddInstrumentButton(SDL_Joystick *joystick, SDL_GamepadInstrumentButton type);
 extern void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers);
 extern void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate);
 extern void SDL_PrivateJoystickSensorRate(SDL_Joystick *joystick, SDL_SensorType type, float rate);
@@ -247,8 +245,6 @@ extern void SDL_SendJoystickTouchpad(Uint64 timestamp, SDL_Joystick *joystick, i
 extern void SDL_SendJoystickSensor(Uint64 timestamp, SDL_Joystick *joystick, SDL_SensorType type, Uint64 sensor_timestamp, const float *data, int num_values);
 extern void SDL_SendJoystickCapSense(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadCapSenseType type, bool down);
 extern void SDL_SendJoystickPowerInfo(SDL_Joystick *joystick, SDL_PowerState state, int percent);
-extern void SDL_SendJoystickInstrumentAxis(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadInstrumentAxis type, float velocity);
-extern void SDL_SendJoystickInstrumentButton(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadInstrumentButton type, bool state);
 
 // Function to get the Steam virtual gamepad info for a joystick
 extern const struct SDL_SteamVirtualGamepadInfo *SDL_GetJoystickVirtualGamepadInfoForID(SDL_JoystickID instance_id);

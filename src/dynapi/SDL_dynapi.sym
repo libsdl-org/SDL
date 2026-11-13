@@ -1322,14 +1322,10 @@ SDL3_0.0.0 {
     SDL_SetRenderHDRHeadroom;
     SDL_GetRenderHDRHeadroom;
     SDL_GetCurrentThreadName;
-    SDL_GetNumGamepadInstrumentKeys;
-    SDL_GetGamepadInstrumentKey;
-    SDL_GetNumGamepadInstrumentGuitarStrings;
-    SDL_GetGamepadInstrumentGuitarString;
-    SDL_GamepadHasInstrumentAxisInput;
-    SDL_GetGamepadInstrumentAxisInput;
-    SDL_GamepadHasInstrumentButtonInput;
-    SDL_GetGamepadInstrumentButtonInput;
+    SDL_GamepadHasInstrumentAxis;
+    SDL_GetGamepadInstrumentAxis;
+    SDL_GamepadHasInstrumentButton;
+    SDL_GetGamepadInstrumentButton;
     # extra symbols go here (don't modify this line)
   local: *;
 };

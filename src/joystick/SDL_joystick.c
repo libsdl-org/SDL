@@ -3497,46 +3497,6 @@ void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
 
 // These are global for SDL_sysjoystick.c and SDL_events.c
 
-void SDL_PrivateJoystickAddInstrumentAxis(SDL_Joystick *joystick, SDL_GamepadInstrumentAxis type)
-{
-    int ninstrumentinputs;
-    SDL_JoystickInstrumentAxisInfo *instrumentinputs;
-
-    SDL_AssertJoysticksLocked();
-
-    ninstrumentinputs = joystick->ninstrumentaxes + 1;
-    instrumentinputs = (SDL_JoystickInstrumentAxisInfo *)SDL_realloc(joystick->instrumentaxes, (ninstrumentinputs * sizeof(SDL_JoystickInstrumentAxisInfo)));
-    if (instrumentinputs) {
-        SDL_JoystickInstrumentAxisInfo *instrumentinput = &instrumentinputs[ninstrumentinputs - 1];
-
-        instrumentinput->type = type;
-        instrumentinput->velocity = 0;
-
-        joystick->ninstrumentaxes = ninstrumentinputs;
-        joystick->instrumentaxes = instrumentinputs;
-    }
-}
-
-void SDL_PrivateJoystickAddInstrumentButton(SDL_Joystick *joystick, SDL_GamepadInstrumentButton type)
-{
-    int ninstrumentinputs;
-    SDL_JoystickInstrumentButtonInfo *instrumentinputs;
-
-    SDL_AssertJoysticksLocked();
-
-    ninstrumentinputs = joystick->ninstrumentbuttons + 1;
-    instrumentinputs = (SDL_JoystickInstrumentButtonInfo *)SDL_realloc(joystick->instrumentbuttons, (ninstrumentinputs * sizeof(SDL_JoystickInstrumentButtonInfo)));
-    if (instrumentinputs) {
-        SDL_JoystickInstrumentButtonInfo *instrumentinput = &instrumentinputs[ninstrumentinputs - 1];
-
-        instrumentinput->type = type;
-        instrumentinput->state = false;
-
-        joystick->ninstrumentbuttons = ninstrumentinputs;
-        joystick->instrumentbuttons = instrumentinputs;
-    }
-}
-
 void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate)
 {
     int nsensors;
@@ -5105,90 +5065,6 @@ static void SDL_IgnoreJoystickHintUpdated(void)
 
     // Make sure we re-enumerate devices as how they show up may have changed
     SDL_RequestJoystickDeviceUpdate(true);
-}
-
-void SDL_SendJoystickInstrumentAxis(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadInstrumentAxis type, float velocity)
-{
-    SDL_AssertJoysticksLocked();
-
-    // We ignore events if we don't have keyboard focus, except for button
-    // (capsense) release
-    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (velocity != 0.0f) {
-            return;
-        }
-    }
-
-    for (int i = 0; i < joystick->ninstrumentaxes; ++i) {
-        SDL_JoystickInstrumentAxisInfo *input = &joystick->instrumentaxes[i];
-
-        if (input->type == type) {
-
-            // Ignore duplicate events
-            if (velocity == input->velocity) {
-                return;
-            }
-
-            // Update internal joystick state
-            input->velocity = velocity;
-            joystick->update_complete = timestamp;
-
-            // Post the event
-            SDL_EventType event_type = SDL_EVENT_GAMEPAD_INSTRUMENT_AXIS_MOTION;
-            SDL_Event *event;
-            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(event_type, timestamp, &event);
-            if (entry) {
-                event->ginstrumentanalog.which = joystick->instance_id;
-                event->ginstrumentanalog.input = type;
-                event->ginstrumentanalog.velocity = velocity;
-                SDL_QueueJoystickEvent(entry);
-            }
-
-            break;
-        }
-    }
-}
-
-void SDL_SendJoystickInstrumentButton(Uint64 timestamp, SDL_Joystick *joystick, SDL_GamepadInstrumentButton type, bool state)
-{
-    SDL_AssertJoysticksLocked();
-
-    // We ignore events if we don't have keyboard focus, except for button
-    // (capsense) release
-    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (state != false) {
-            return;
-        }
-    }
-
-    for (int i = 0; i < joystick->ninstrumentbuttons; ++i) {
-        SDL_JoystickInstrumentButtonInfo *input = &joystick->instrumentbuttons[i];
-
-        if (input->type == type) {
-
-            // Ignore duplicate events
-            if (state == input->state) {
-                return;
-            }
-
-            // Update internal joystick state
-            input->state = state;
-            joystick->update_complete = timestamp;
-
-            // Post the event
-            SDL_EventType event_type = state ? SDL_EVENT_GAMEPAD_INSTRUMENT_BUTTON_DOWN : SDL_EVENT_GAMEPAD_INSTRUMENT_BUTTON_UP;
-            SDL_Event *event;
-            SDL_JoystickEventEntry *entry = SDL_AllocJoystickEvent(event_type, timestamp, &event);
-            if (entry) {
-                event->ginstrumentdigital.which = joystick->instance_id;
-                event->ginstrumentdigital.input = type;
-                event->ginstrumentdigital.state = state;
-                SDL_QueueJoystickEvent(entry);
-            }
-
-            break;
-        }
-    }
 }
 
 static void SDL_LoadVIDPIDListFromHint(const char *hint, int *num_entries, int *max_entries, Uint32 **entries)

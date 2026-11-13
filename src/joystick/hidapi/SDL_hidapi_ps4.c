@@ -733,32 +733,9 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, (float)(1000 / ctx->report_interval));
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, (float)(1000 / ctx->report_interval));
     }
-
-    if (ctx->guitar_tilt_supported) {
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT);
-    }
-
-    if (ctx->guitar_effects_selector_supported) {
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP);
-    }
-
-    if (ctx->guitar_whammy_supported) {
-        SDL_PrivateJoystickAddInstrumentAxis(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY);
-    }
-
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4);
-        SDL_PrivateJoystickAddInstrumentButton(ctx->joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5);
+        ctx->joystick->nbuttons+=10;
+        ctx->joystick->nbuttons+=3;
     }
 
     if (ctx->official_controller) {
@@ -1117,10 +1094,6 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
                 break;
             }
             SDL_SendJoystickHat(timestamp, joystick, 0, hat);
-            if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP, (hat == SDL_HAT_UP || hat == SDL_HAT_RIGHTUP || hat == SDL_HAT_LEFTUP) ? 1 : 0);
-                SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN, (hat == SDL_HAT_DOWN || hat == SDL_HAT_RIGHTDOWN || hat == SDL_HAT_LEFTDOWN) ? 1 : 0);
-            }
         }
     }
 
@@ -1215,30 +1188,33 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
         data[2] = HIDAPI_DriverPS4_ApplyCalibrationData(ctx, 5, LOAD16(packet->rgucAccelZ[0], packet->rgucAccelZ[1]));
         SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, data, 3);
     }
-
+    
     if (ctx->guitar_whammy_supported) {
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY, (float)packet->rgucDeviceSpecific[1] / 255);
+        axis = ((int)packet->rgucDeviceSpecific[1] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 7, axis);
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP, packet->rgucDeviceSpecific[0]);
+        axis = ((int)packet->rgucDeviceSpecific[0] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
     }
 
     if (ctx->guitar_tilt_supported) {
-        SDL_SendJoystickInstrumentAxis(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT, (float)packet->rgucDeviceSpecific[2] / 255);
+        axis = ((int)packet->rgucDeviceSpecific[2] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
     }
 
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1, (packet->rgucDeviceSpecific[3] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2, (packet->rgucDeviceSpecific[3] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3, (packet->rgucDeviceSpecific[3] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4, (packet->rgucDeviceSpecific[3] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5, (packet->rgucDeviceSpecific[3] & (1 << 4)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1, (packet->rgucDeviceSpecific[4] & (1 << 0)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2, (packet->rgucDeviceSpecific[4] & (1 << 1)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3, (packet->rgucDeviceSpecific[4] & (1 << 2)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4, (packet->rgucDeviceSpecific[4] & (1 << 3)) ? 1 : 0);
-        SDL_SendJoystickInstrumentButton(timestamp, joystick, SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5, (packet->rgucDeviceSpecific[4] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 12, (packet->rgucDeviceSpecific[3] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 13, (packet->rgucDeviceSpecific[3] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 14, (packet->rgucDeviceSpecific[3] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 15, (packet->rgucDeviceSpecific[3] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 16, (packet->rgucDeviceSpecific[3] & (1 << 4)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 17, (packet->rgucDeviceSpecific[4] & (1 << 0)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 18, (packet->rgucDeviceSpecific[4] & (1 << 1)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 19, (packet->rgucDeviceSpecific[4] & (1 << 2)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 20, (packet->rgucDeviceSpecific[4] & (1 << 3)) ? 1 : 0);
+        SDL_SendJoystickButton(timestamp, joystick, 21, (packet->rgucDeviceSpecific[4] & (1 << 4)) ? 1 : 0);
 
     }
 
