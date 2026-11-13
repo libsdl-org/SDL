@@ -1824,7 +1824,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxis(SDL_Gamepad *gamep
  *
  * \param gamepad a gamepad.
  * \param type the axis on the instrument to query.
- * \returns the current state of the analog instrument input, or 0.0 if inactive (not pressed).
+ * \returns the current state of the axis, ranging from -32768 to 32767.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
