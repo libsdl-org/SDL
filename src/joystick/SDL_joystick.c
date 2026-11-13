@@ -3495,8 +3495,6 @@ void SDL_PrivateJoystickAddTouchpad(SDL_Joystick *joystick, int nfingers)
     }
 }
 
-// These are global for SDL_sysjoystick.c and SDL_events.c
-
 void SDL_PrivateJoystickAddSensor(SDL_Joystick *joystick, SDL_SensorType type, float rate)
 {
     int nsensors;
