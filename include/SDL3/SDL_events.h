@@ -783,7 +783,7 @@ typedef struct SDL_GamepadInstrumentAxisEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
-    Uint8 input;       /**< The gamepad instrument input (SDL_GamepadInstrumentInput) */
+    Uint8 axis;       /**< The gamepad instrument axis (SDL_GamepadInstrumentAxis) */
     float velocity;       /**< The velocity associated with the instrument input */
 } SDL_GamepadInstrumentAxisEvent;
 
@@ -799,7 +799,7 @@ typedef struct SDL_GamepadInstrumentButtonEvent
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
-    Uint8 input;       /**< The gamepad instrument input (SDL_GamepadInstrumentInput) */
+    Uint8 button;       /**< The gamepad instrument button (SDL_GamepadInstrumentButton) */
     bool state;        /**< true if the digital input is pressed */
 } SDL_GamepadInstrumentButtonEvent;
 
