@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
+#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -27,7 +28,6 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
-#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -114,36 +114,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
             ctx->capabilities.type = intf_desc->extra[3];
             ctx->capabilities.subType = intf_desc->extra[4];
-            switch (ctx->capabilities.subType) {
-                case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-                    break;
-                case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
-                    device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
-                    break;
-                case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
-                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
-                    break;
-                case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
-                    device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-                    break;
-                case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
-                    break;
-                case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
-                case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
-                case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
-                    device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                    break;
-                case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
-                    device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-                    break;
-                case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
-                    break;
-                default:
-                    break;
-            }
+            device->joystick_type = SDL_GetJoystickTypeForXInput(ctx->capabilities.subType);
             device->guid.data[15] = ctx->capabilities.subType;
             unsigned char buf[20];
             int ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
@@ -503,3 +474,34 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 = {
 #endif // SDL_JOYSTICK_HIDAPI_XBOX360
 
 #endif // SDL_JOYSTICK_HIDAPI
+
+SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
+    switch (subtype) {
+    case SDL_XINPUT_SUBTYPE_GAMEPAD:
+    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_WHEEL:
+        return SDL_JOYSTICK_TYPE_WHEEL;
+    case SDL_XINPUT_SUBTYPE_ARCADE_STICK:
+        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
+    case SDL_XINPUT_SUBTYPE_FLIGHT_STICK:
+        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    case SDL_XINPUT_SUBTYPE_DANCE_PAD:
+        return SDL_JOYSTICK_TYPE_DANCE_PAD;
+    case SDL_XINPUT_SUBTYPE_GUITAR:
+    case SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE:
+    case SDL_XINPUT_SUBTYPE_GUITAR_BASS:
+    case SDL_XINPUT_SUBTYPE_PRO_GUITAR:
+        return SDL_JOYSTICK_TYPE_GUITAR;
+    case SDL_XINPUT_SUBTYPE_DRUMS:
+        return SDL_JOYSTICK_TYPE_DRUM_KIT;
+    case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
+        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
+    case SDL_XINPUT_SUBTYPE_PRO_KEYS:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_TURNTABLE:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    default:
+        return SDL_JOYSTICK_TYPE_UNKNOWN;
+    }
+}

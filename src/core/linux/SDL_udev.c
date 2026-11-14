@@ -30,10 +30,15 @@
 
 #ifdef SDL_USE_LIBUDEV
 
+#include <fcntl.h>
 #include <linux/input.h>
+#include <linux/usb/ch9.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "SDL_evdev_capabilities.h"
+#include "../../joystick/hidapi/SDL_hidapi_santroller.h"
+#include "../../joystick/hidapi/SDL_hidapi_xbox360.h"
 #include "../unix/SDL_poll.h"
 
 #define SDL_UDEV_FALLBACK_LIBS "libudev.so.1", "libudev.so.0"
@@ -355,6 +360,156 @@ char *SDL_UDEV_GetProductSerial(const char *device_path)
     _this->syms.udev_device_unref(dev);
 
     return result;
+}
+
+bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type, char *signature)
+{
+    int desc_fd = -1;
+    char *descriptors_path = NULL;
+    struct stat statbuf;
+    char type;
+    struct udev_device *dev;
+    struct udev_device *pdev = NULL;
+    const char *val;
+    int iface_number = -1;
+    int alt_setting = -1;
+    bool found = false;
+    bool santroller2 = false;
+    bool xpad = false;
+    bool found_iface = false;
+
+    if (!_this->udev) {
+        return false;
+    }
+
+    if (stat(device_path, &statbuf) < 0) {
+        return false;
+    }
+
+    if (S_ISBLK(statbuf.st_mode)) {
+        type = 'b';
+    } else if (S_ISCHR(statbuf.st_mode)) {
+        type = 'c';
+    } else {
+        return false;
+    }
+
+    dev = _this->syms.udev_device_new_from_devnum(_this->udev, type, statbuf.st_rdev);
+    if (!dev) {
+        return false;
+    }
+    pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_interface");
+    if (pdev) {
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceNumber");
+        if (val) {
+            iface_number = SDL_strtol(val, NULL, 16);
+        }
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bAlternateSetting");
+        if (val) {
+            alt_setting = SDL_strtol(val, NULL, 16);
+        }
+    } else {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_BUS");
+        if (val && SDL_strcmp(val, "bluetooth") == 0) {
+            pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "input", NULL);
+            if (pdev) {
+                val = _this->syms.udev_device_get_sysattr_value(pdev, "id/vendor");
+                if (val && SDL_strcmp(val, "1209") == 0) {
+                    val = _this->syms.udev_device_get_sysattr_value(pdev, "id/product");
+                    if (val && (SDL_strcmp(val, "2883") == 0 || SDL_strcmp(val, "2882") == 0)) {
+                        // Santroller bluetooth devices just encode the device type into the revision
+                        val = _this->syms.udev_device_get_sysattr_value(pdev, "id/version");
+                        if (val) {
+                            *joystick_type = (Uint16)SDL_strtol(val, NULL, 16) >> 8;
+                            *signature = 's';
+                            found = true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    val = _this->syms.udev_device_get_driver(dev);
+    if (!val) {
+        val = _this->syms.udev_device_get_property_value(dev, "ID_USB_DRIVER");
+    }
+    if (val && SDL_strcmp(val, "xpad") == 0) {
+        // Look for a wired XInput interface
+        val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceClass");
+        if (val && SDL_strcmp(val, "ff") == 0) {
+            val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceSubClass");
+            if (val && SDL_strcmp(val, "5d") == 0) {
+                val = _this->syms.udev_device_get_sysattr_value(pdev, "bInterfaceProtocol");
+                if (val && SDL_strcmp(val, "01") == 0) {
+                    xpad = true;
+                }
+            }
+        }
+    } else if (val && SDL_strcmp(val, "usbhid") == 0) {
+        // Look for a Santroller interface
+        val = _this->syms.udev_device_get_property_value(dev, "ID_VENDOR_ID");
+        if (val && SDL_strcmp(val, "1209") == 0) {
+            val = _this->syms.udev_device_get_property_value(dev, "ID_MODEL_ID");
+            if (val && SDL_strcmp(val, "2883") == 0) {
+                // Santroller 2 devices act like a hub, so they needed a more complicated detection
+                santroller2 = true;
+            } else if (val && SDL_strcmp(val, "2882") == 0) {
+                // Santroller 1 devices just encode the device type into the revision
+                val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
+                if (val) {
+                    *joystick_type = (Uint16)SDL_strtol(val, NULL, 16) >> 8;
+                    found = true;
+                }
+            }
+        }
+    }
+    if (xpad || santroller2) {
+        pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(dev, "usb", "usb_device");
+        if (pdev) {
+            device_path = _this->syms.udev_device_get_syspath(pdev);
+            if (SDL_asprintf(&descriptors_path, "%s/descriptors", device_path) >= 0) {
+                desc_fd = open(descriptors_path, O_RDONLY);
+                if (desc_fd >= 0) {
+                    char buffer[9];
+                    memset(buffer, 0, sizeof(buffer));
+                    struct usb_descriptor_header *header = (struct usb_descriptor_header *)buffer;
+                    while (read(desc_fd, buffer, sizeof(struct usb_descriptor_header)) > 0) {
+                        // Look for the XInput vendor descriptor
+                        if (found_iface && xpad && header->bDescriptorType == 0x21) {
+                            read(desc_fd, buffer + 2, 7);
+                            *joystick_type = (Uint16)buffer[4];
+                            *signature = 'k';
+                            found = true;
+                            break;
+                        }
+                        if (found_iface && santroller2 && header->bDescriptorType == 0xFF) {
+                            read(desc_fd, buffer + 2, 7);
+                            // Find the Santroller vendor descriptor
+                            if (SDL_memcmp(buffer + 2, "SANT", 4) == 0) {
+                                *joystick_type = (Uint16)buffer[7];
+                                *signature = 's';
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (header->bDescriptorType != USB_DT_INTERFACE) {
+                            lseek(desc_fd, header->bLength - 2, SEEK_CUR);
+                            continue;
+                        }
+                        struct usb_interface_descriptor *iface_desc = (struct usb_interface_descriptor *)buffer;
+                        read(desc_fd, buffer + 2, sizeof(struct usb_interface_descriptor) - 2);
+                        if (iface_desc->bInterfaceNumber == iface_number && iface_desc->bAlternateSetting == alt_setting) {
+                            found_iface = true;
+                        }
+                    }
+                    close(desc_fd);
+                }
+            }
+        }
+    }
+    _this->syms.udev_device_unref(dev);
+
+    return found;
 }
 
 static void SDL_UDEV_UnloadLibrary(void)
