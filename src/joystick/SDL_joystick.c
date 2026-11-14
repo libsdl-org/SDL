@@ -322,8 +322,9 @@ static Uint32 initial_arcadestick_devices[] = {
     MAKE_VIDPID(0x0f0d, 0x0063), // Hori Real Arcade Pro Hayabusa (USA) Xbox One
     MAKE_VIDPID(0x0f0d, 0x006a), // Real Arcade Pro 4
     MAKE_VIDPID(0x0f0d, 0x0078), // Hori Real Arcade Pro V Kai Xbox One
-    MAKE_VIDPID(0x0f0d, 0x008a), // HORI Real Arcade Pro 4
-    MAKE_VIDPID(0x0f0d, 0x008c), // Hori Real Arcade Pro 4
+    MAKE_VIDPID(0x0f0d, 0x008a), // Hori Real Arcade Pro 4 in PS4 Mode
+    MAKE_VIDPID(0x0f0d, 0x008b), // Hori Real Arcade Pro 4 in PS3 Mode
+    MAKE_VIDPID(0x0f0d, 0x008c), // Hori Real Arcade Pro 4 in PC Mode
     MAKE_VIDPID(0x0f0d, 0x00aa), // HORI Real Arcade Pro V Hayabusa in Switch Mode
     MAKE_VIDPID(0x0f0d, 0x00ed), // Hori Fighting Stick mini 4 kai
     MAKE_VIDPID(0x0f0d, 0x011c), // Hori Fighting Stick Alpha in PS4 Mode
@@ -566,6 +567,7 @@ static SDL_vidpid_list throttle_devices = {
 
 static Uint32 initial_wheel_devices[] = {
     MAKE_VIDPID(0x0079, 0x1864), // DragonRise Inc. Wired Wheel (active mode) (also known as PXN V900 (PS3), Superdrive SV-750, or a Genesis Seaborg 400)
+    MAKE_VIDPID(0x044f, 0xb655), // ThrustMaster FGT Rumble 3-in-1 (PC/PS3 mode)
     MAKE_VIDPID(0x044f, 0xb65d), // Thrustmaster Wheel FFB
     MAKE_VIDPID(0x044f, 0xb65e), // Thrustmaster T500RS
     MAKE_VIDPID(0x044f, 0xb664), // Thrustmaster TX (initial mode)
