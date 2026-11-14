@@ -339,6 +339,7 @@ typedef struct
 
     int audio_route;
     int trigger_effect;
+    int switch_rumble;
 } Controller;
 
 static SDLTest_CommonState *state;
@@ -536,6 +537,53 @@ static void CyclePS5TriggerEffect(Controller *device)
     SDL_memcpy(effects.rgucRightTriggerEffect, trigger_effects[device->trigger_effect], sizeof(trigger_effects[0]));
     SDL_memcpy(effects.rgucLeftTriggerEffect, trigger_effects[device->trigger_effect], sizeof(trigger_effects[0]));
     SDL_SendGamepadEffect(device->gamepad, &effects, sizeof(effects));
+}
+
+static void CycleSwitchRumbleEffect(Controller *device)
+{
+    /* Nintendo Switch controllers take a raw HD rumble packet through
+     * SDL_SendJoystickEffect(). SDL_RumbleGamepad() asks for the same two
+     * frequencies every time, so this is how a caller asks for others.
+     *
+     * The packet is ten bytes. That length is what tells the driver it is a
+     * rumble packet and not a subcommand, so it is not optional:
+     *
+     *   0       packet type, 0x10 for a rumble-only report
+     *   1       packet counter, 0 to 15; the driver numbers the packets itself
+     *   2 to 5  left motor
+     *   6 to 9  right motor
+     *
+     * A motor carries a high band and a low band, a frequency and an amplitude
+     * for each, nine bits apiece, packed like this:
+     *
+     *   0       high band frequency & 0xFF
+     *   1       high band amplitude | ((high band frequency >> 8) & 0x01)
+     *   2       low band frequency | ((low band amplitude >> 8) & 0x80)
+     *   3       low band amplitude & 0xFF
+     *
+     * The codes are rows of the tables at
+     * https://github.com/dekuNukem/Nintendo_Switch_Reverse_Engineering/blob/master/rumble_data_table.md
+     * Here 0xC8 and 0x72 are a high and a low band amplitude at full strength,
+     * 0x40 is no low band amplitude at all, 0x74 and 0x3D are the frequencies
+     * SDL_RumbleGamepad() uses, and one octave is 32 counts of the frequency
+     * code, so 0x54 is half of 0x74.
+     *
+     * The driver writes at most one rumble packet every 30 ms, so send these no
+     * faster than that, and send one again to keep it going.
+     */
+    static const Uint8 rumble_effects[][10] = {
+        /* Both bands at full strength, at the frequencies SDL_RumbleGamepad() uses */
+        { 0x10, 0, 0x74, 0xc8, 0x3d, 0x72, 0x74, 0xc8, 0x3d, 0x72 },
+        /* Only the high band, an octave down from the frequency above */
+        { 0x10, 0, 0x54, 0xc8, 0x3d, 0x40, 0x54, 0xc8, 0x3d, 0x40 },
+        /* Only the low band, an octave up from the frequency above */
+        { 0x10, 0, 0x74, 0x00, 0x5d, 0x72, 0x74, 0x00, 0x5d, 0x72 },
+        /* Off */
+        { 0x10, 0, 0x00, 0x01, 0x40, 0x40, 0x00, 0x01, 0x40, 0x40 },
+    };
+
+    SDL_SendJoystickEffect(SDL_GetGamepadJoystick(device->gamepad), rumble_effects[device->switch_rumble], sizeof(rumble_effects[0]));
+    device->switch_rumble = (device->switch_rumble + 1) % SDL_arraysize(rumble_effects);
 }
 
 static void ClearButtonHighlights(void)
@@ -2231,6 +2279,21 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 /* Cycle PS5 trigger effects when the triangle button is pressed */
                 if (event->gbutton.button == SDL_GAMEPAD_BUTTON_NORTH) {
                     CyclePS5TriggerEffect(controller);
+                }
+            }
+
+            if (event->type == SDL_EVENT_GAMEPAD_BUTTON_DOWN && controller &&
+                event->gbutton.button == SDL_GAMEPAD_BUTTON_NORTH) {
+                switch (SDL_GetGamepadType(controller->gamepad)) {
+                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+                case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+                    /* Cycle Switch HD rumble effects when the X button is pressed */
+                    CycleSwitchRumbleEffect(controller);
+                    break;
+                default:
+                    break;
                 }
             }
         }
