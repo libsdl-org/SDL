@@ -1321,3 +1321,7 @@ _SDL_EncodeURL
 _SDL_SetRenderHDRHeadroom
 _SDL_GetRenderHDRHeadroom
 _SDL_GetCurrentThreadName
+_SDL_GamepadHasGuitarAxis
+_SDL_GetGamepadGuitarAxis
+_SDL_GamepadHasGuitarButton
+_SDL_GetGamepadGuitarButton

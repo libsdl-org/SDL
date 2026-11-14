@@ -733,9 +733,9 @@ static void HIDAPI_DriverPS4_SetEnhancedModeAvailable(SDL_DriverPS4_Context *ctx
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_GYRO, (float)(1000 / ctx->report_interval));
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, (float)(1000 / ctx->report_interval));
     }
-
-    if (ctx->guitar_tilt_supported) {
-        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, (float)(1000 / ctx->report_interval));
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        ctx->joystick->nbuttons+=10;
+        ctx->joystick->nbuttons+=3;
     }
 
     if (ctx->official_controller) {
@@ -1018,7 +1018,7 @@ static bool HIDAPI_DriverPS4_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
     HIDAPI_DriverPS4_UpdateEnhancedModeOnApplicationUsage(ctx);
 
-    if ((!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) && !ctx->guitar_tilt_supported) {
+    if (!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) {
         return SDL_Unsupported();
     }
 
@@ -1191,26 +1191,30 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
 
     if (ctx->guitar_whammy_supported) {
         axis = ((int)packet->rgucDeviceSpecific[1] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        SDL_SendJoystickAxis(timestamp, joystick, 7, axis);
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
-        if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
-        }
+        axis = ((int)packet->rgucDeviceSpecific[0] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
     }
 
     if (ctx->guitar_tilt_supported) {
-        float sensor_data[3];
-        sensor_data[0] = ((float)packet->rgucDeviceSpecific[2] / 255) * SDL_STANDARD_GRAVITY;
-        sensor_data[1] = 0;
-        sensor_data[2] = 0;
-        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
+        axis = ((int)packet->rgucDeviceSpecific[2] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
+    }
 
-        // Align tilt mappings with PS3 instruments
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, packet->rgucDeviceSpecific[2] > 0xF0);
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        SDL_SendJoystickButton(timestamp, joystick, 12, packet->rgucDeviceSpecific[3] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 13, packet->rgucDeviceSpecific[3] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 14, packet->rgucDeviceSpecific[3] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 15, packet->rgucDeviceSpecific[3] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 16, packet->rgucDeviceSpecific[3] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, 17, packet->rgucDeviceSpecific[4] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 18, packet->rgucDeviceSpecific[4] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 19, packet->rgucDeviceSpecific[4] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 20, packet->rgucDeviceSpecific[4] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 21, packet->rgucDeviceSpecific[4] & (1 << 4));
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

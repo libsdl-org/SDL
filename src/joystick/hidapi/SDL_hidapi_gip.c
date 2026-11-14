@@ -2076,6 +2076,7 @@ static void GIP_HandleGuitarReport(
     const Uint8 *bytes,
     int num_bytes)
 {
+    Sint16 axis;
     static uint16_t s_GuitarButtons[] = {
         0x0010,  // SDL_GAMEPAD_BUTTON_SOUTH
         0x0020,  // SDL_GAMEPAD_BUTTON_EAST
@@ -2113,14 +2114,22 @@ static void GIP_HandleGuitarReport(
             hat |= SDL_HAT_RIGHT;
         }
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, (bytes[3] * 257) - 32768);
-        // PS3 RB guitars had tilt on right shoulder
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, bytes[2] >= 0xD0);
-        // PS3 RB guitars send L2 when using solo buttons
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFT_TRIGGER, (bytes[6]) ? 32767 : -32768);
-        // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {-26880, -13568, -1792, 11008, 24576};
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[bytes[4] >> 4]);
+        axis = ((int)bytes[3] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 7, axis);
+        axis = ((int)bytes[2] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
+        axis = ((int)bytes[4] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 10, bytes[5] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 9, bytes[5] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 8, bytes[5] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 7, bytes[5] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 6, bytes[5] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 5, bytes[6] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 4, bytes[6] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 3, bytes[6] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 2, bytes[6] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 1, bytes[6] & (1 << 4));
     }
 }
 
@@ -2873,6 +2882,9 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     if (attachment->attachment_type == GIP_TYPE_GUITAR) {
         device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+        joystick->naxes += 3; // Guitar tilt, whammy, pickup
+        joystick->nbuttons += 10; // frets + solo frets 
+
     }
 
     if (attachment->attachment_type == GIP_TYPE_DRUM_KIT) {

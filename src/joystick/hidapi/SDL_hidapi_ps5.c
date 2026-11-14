@@ -860,8 +860,19 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
     }
 
     if (ctx->guitar_tilt_supported) {
-        float update_rate = 250.0f;
-        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
+        ctx->joystick->naxes++;
+    }
+
+    if (ctx->guitar_effects_selector_supported) {
+        ctx->joystick->naxes++;
+    }
+
+    if (ctx->guitar_whammy_supported) {
+        ctx->joystick->naxes++;
+    }
+
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        ctx->joystick->nbuttons+=10;
     }
 
     ctx->report_battery = true;
@@ -1150,7 +1161,7 @@ static bool HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
     HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
 
-    if ((!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) && !ctx->guitar_tilt_supported) {
+    if (!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) {
         return SDL_Unsupported();
     }
 
@@ -1453,9 +1464,9 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
 {
     static const float TOUCHPAD_SCALEX = 5.20833333e-4f; // 1.0f / 1920
     static const float TOUCHPAD_SCALEY = 9.34579439e-4f; // 1.0f / 1070
+    Sint16 axis;
     bool touchpad_down;
     int touchpad_x, touchpad_y;
-    Sint16 axis;
 
     if (ctx->report_touchpad) {
         touchpad_down = ((packet->ucTouchpadCounter1 & 0x80) == 0);
@@ -1503,26 +1514,30 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
 
     if (ctx->guitar_whammy_supported) {
         axis = ((int)packet->rgucDeviceSpecific[1] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        SDL_SendJoystickAxis(timestamp, joystick, 7, axis);
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
-        if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
-        }
+        axis = ((int)packet->rgucDeviceSpecific[0] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
     }
 
     if (ctx->guitar_tilt_supported) {
-        float sensor_data[3];
-        sensor_data[0] = ((float)packet->rgucDeviceSpecific[2] / 255) * SDL_STANDARD_GRAVITY;
-        sensor_data[1] = 0;
-        sensor_data[2] = 0;
-        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
+        axis = ((int)packet->rgucDeviceSpecific[2] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
+    }
 
-        // Align tilt mappings with PS3 instruments
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, packet->rgucDeviceSpecific[2] > 0xF0);
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        SDL_SendJoystickButton(timestamp, joystick, 12, packet->rgucDeviceSpecific[3] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 13, packet->rgucDeviceSpecific[3] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 14, packet->rgucDeviceSpecific[3] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 15, packet->rgucDeviceSpecific[3] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 16, packet->rgucDeviceSpecific[3] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, 17, packet->rgucDeviceSpecific[4] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, 18, packet->rgucDeviceSpecific[4] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, 19, packet->rgucDeviceSpecific[4] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, 20, packet->rgucDeviceSpecific[4] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, 21, packet->rgucDeviceSpecific[4] & (1 << 4));
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

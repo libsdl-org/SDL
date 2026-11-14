@@ -223,7 +223,7 @@ static bool HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
-    Uint8 effects[] = {
+    static Uint8 effects[] = {
         0x01, 0xff, 0x00, 0xff, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00,
         0xff, 0x27, 0x10, 0x00, 0x32,
@@ -676,14 +676,20 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
 
     if (device->vendor_id == USB_VENDOR_SCEA) {
         switch (device->product_id) {
-            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
             case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
             case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
                 break;
-            case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
-            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
             case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
+            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
                 device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
                 break;
             default:
@@ -717,6 +723,18 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     }
 
     SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+    if (device->vendor_id == USB_VENDOR_SCEA) {
+        switch (device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+                joystick->naxes += 1; // Add an extra axis for the tilt sensor
+                break;
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                joystick->naxes += 1; // Add an extra axis for the tilt sensor
+                break;
+            default:
+                break;
+        }
+    }
 
     return true;
 }
@@ -930,7 +948,23 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
     axis = ((int)data[6] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
-
+    if (ctx->device->vendor_id == USB_VENDOR_SCEA) {
+        switch (ctx->device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+                // GH guitar tilt is between 385 and 640, but its flipped
+                axis = SDL_clamp((int)LOAD16(data[19], data[20]), 384, 640);
+                axis = (Sint16)((((640 - axis) * 65535) / 256) - 32768);
+                SDL_SendJoystickAxis(timestamp, joystick, 16, axis);
+                break;
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                // GHL tilt is reported directly as a byte value
+                axis = ((int)data[19] * 257) - 32768;
+                SDL_SendJoystickAxis(timestamp, joystick, 16, axis);
+                break;
+            default:
+                break;
+        }
+    }
     // Buttons are mapped as axes in the order they appear in the button enumeration
     if (ctx->has_analog_buttons) {
         static int button_axis_offsets[] = {

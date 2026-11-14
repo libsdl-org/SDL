@@ -138,6 +138,17 @@ extern void SetJoystickDisplayHighlight(JoystickDisplay *ctx, const char *elemen
 extern void RenderJoystickDisplay(JoystickDisplay *ctx, SDL_Joystick *joystick);
 extern void DestroyJoystickDisplay(JoystickDisplay *ctx);
 
+/* Instrument element display */
+
+typedef struct InstrumentDisplay InstrumentDisplay;
+
+extern InstrumentDisplay *CreateInstrumentDisplay(SDL_Renderer *renderer);
+extern void SetInstrumentDisplayArea(InstrumentDisplay *ctx, const SDL_FRect *area);
+extern char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *Instrument, float x, float y);
+extern void SetInstrumentDisplayHighlight(InstrumentDisplay *ctx, const char *element, bool pressed);
+extern void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *Instrument);
+extern void DestroyInstrumentDisplay(InstrumentDisplay *ctx);
+
 /* Simple buttons */
 
 typedef struct GamepadButton GamepadButton;
