@@ -1326,10 +1326,6 @@ SDL3_0.0.0 {
     SDL_GetGamepadGuitarAxis;
     SDL_GamepadHasGuitarButton;
     SDL_GetGamepadGuitarButton;
-    SDL_GamepadHasDrumKitAxis;
-    SDL_GetGamepadDrumKitAxis;
-    SDL_GamepadHasDrumKitButton;
-    SDL_GetGamepadDrumKitButton;
     # extra symbols go here (don't modify this line)
   local: *;
 };

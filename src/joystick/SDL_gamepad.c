@@ -1737,97 +1737,6 @@ const char *SDL_GetGamepadStringForGuitarAxis(SDL_GamepadGuitarAxis axis)
     return NULL;
 }
 
-static const char *map_StringForDrumKitButton[] = {
-    "drum_don_left",
-    "drum_don_right",
-    "drum_ka_left",
-    "drum_ka_right",
-    "drum_hi_hat_pedal",
-};
-SDL_COMPILE_TIME_ASSERT(map_StringForDrumKitButton, SDL_arraysize(map_StringForDrumKitButton) == SDL_GAMEPAD_DRUM_KIT_BUTTON_COUNT);
-
-
-/*
- * convert a string to its enum equivalent
- */
-SDL_GamepadDrumKitButton SDL_GetGamepadDrumKitButtonFromString(const char *str)
-{
-    int i;
-
-    if (!str || str[0] == '\0') {
-        return SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID;
-    }
-
-    if (*str == '+' || *str == '-') {
-        ++str;
-    }
-
-    for (i = 0; i < SDL_arraysize(map_StringForDrumKitButton); ++i) {
-        if (SDL_strcasecmp(str, map_StringForDrumKitButton[i]) == 0) {
-            return (SDL_GamepadDrumKitButton)i;
-        }
-    }
-    return SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID;
-}
-
-/*
- * convert an enum to its string equivalent
- */
-const char *SDL_GetGamepadStringForDrumKitButton(SDL_GamepadDrumKitButton button)
-{
-    if (button > SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID && button < SDL_GAMEPAD_DRUM_KIT_BUTTON_COUNT) {
-        return map_StringForDrumKitButton[button];
-    }
-    return NULL;
-}
-
-static const char *map_StringForDrumKitAxis[] = {
-    "drum_pad_1",
-    "drum_pad_2",
-    "drum_pad_3",
-    "drum_pad_4",
-    "drum_cymbal_1",
-    "drum_cymbal_2",
-    "drum_cymbal_3",
-    "drum_cymbal_4",
-    "drum_kick_1",
-    "drum_kick_2",
-};
-SDL_COMPILE_TIME_ASSERT(map_StringForDrumKitAxis, SDL_arraysize(map_StringForDrumKitAxis) == SDL_GAMEPAD_DRUM_KIT_AXIS_COUNT);
-
-/*
- * convert a string to its enum equivalent
- */
-SDL_GamepadDrumKitAxis SDL_GetGamepadDrumKitAxisFromString(const char *str)
-{
-    int i;
-
-    if (!str || str[0] == '\0') {
-        return SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID;
-    }
-
-    if (*str == '+' || *str == '-') {
-        ++str;
-    }
-
-    for (i = 0; i < SDL_arraysize(map_StringForDrumKitAxis); ++i) {
-        if (SDL_strcasecmp(str, map_StringForDrumKitAxis[i]) == 0) {
-            return (SDL_GamepadDrumKitAxis)i;
-        }
-    }
-    return SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID;
-}
-
-/*
- * convert an enum to its string equivalent
- */
-const char *SDL_GetGamepadStringForDrumKitAxis(SDL_GamepadDrumKitAxis axis)
-{
-    if (axis > SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID && axis < SDL_GAMEPAD_DRUM_KIT_AXIS_COUNT) {
-        return map_StringForDrumKitAxis[axis];
-    }
-    return NULL;
-}
 
 /*
  * given a gamepad button name and a joystick name update our mapping structure with it
@@ -1839,8 +1748,6 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
     SDL_GamepadAxis axis;
     SDL_GamepadGuitarButton guitar_button;
     SDL_GamepadGuitarAxis guitar_axis;
-    SDL_GamepadDrumKitButton drum_kit_button;
-    SDL_GamepadDrumKitAxis drum_kit_axis;
     bool invert_input = false;
     char half_axis_input = 0;
     char half_axis_output = 0;
@@ -1871,8 +1778,6 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
     button = SDL_PrivateGetGamepadButtonFromString(szGameButton, axby_mapping, baxy_mapping);
     guitar_button = SDL_GetGamepadGuitarButtonFromString(szGameButton);
     guitar_axis = SDL_GetGamepadGuitarAxisFromString(szGameButton);
-    drum_kit_button = SDL_GetGamepadDrumKitButtonFromString(szGameButton);
-    drum_kit_axis = SDL_GetGamepadDrumKitAxisFromString(szGameButton);
     if (axis != SDL_GAMEPAD_AXIS_INVALID) {
         bind.output_type = SDL_GAMEPAD_BINDTYPE_AXIS;
         bind.output.axis.axis = axis;
@@ -1915,14 +1820,6 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
             bind.output.guitar_axis.axis_min = 0;
             bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
         }
-    } else if (drum_kit_button != SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID) {
-        bind.output_type = SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON;
-        bind.output.drum_kit_button = drum_kit_button;
-    } else if (drum_kit_axis != SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID) {
-        bind.output_type = SDL_GAMEPAD_BINDTYPE_DRUM_KIT_AXIS;
-        bind.output.drum_kit_axis.drum_kit_axis = drum_kit_axis;
-        bind.output.guitar_axis.axis_min = 0;
-        bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
     } else {
         return false;
     }
@@ -4106,170 +4003,6 @@ bool SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton bu
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == button) {
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    bool valid_input_range;
-
-                    int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
-                    int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                        if (valid_input_range) {
-                            result |= (value >= threshold);
-                        }
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                        if (valid_input_range) {
-                            result |= (value <= threshold);
-                        }
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    result |= SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    result |= ((hat_mask & binding->input.hat.hat_mask) != 0);
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
-}
-
-bool SDL_GamepadHasDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis axis)
-{
-    bool result = false;
-
-    SDL_LockJoysticks();
-    {
-        int i;
-
-        CHECK_GAMEPAD_MAGIC(gamepad, false);
-
-        for (i = 0; i < gamepad->num_bindings; ++i) {
-            const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_AXIS && binding->output.drum_kit_axis.drum_kit_axis == axis) {
-                result = true;
-                break;
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
-}
-
-
-
-/*
- * Get the current state of an instrument axis on a gamepad
- */
-Sint16 SDL_GetGamepadDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis axis)
-{
-    Sint16 result = 0;
-
-    SDL_LockJoysticks();
-    {
-        int i;
-
-        CHECK_GAMEPAD_MAGIC(gamepad, 0);
-
-        for (i = 0; i < gamepad->num_bindings; ++i) {
-            const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_AXIS && binding->output.drum_kit_axis.drum_kit_axis == axis) {
-                int value = 0;
-                bool valid_input_range;
-                bool valid_output_range;
-
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    const int input_axis = binding->input.axis.axis;
-                    /* Missing axes return zero, which would normalize to a half-pressed trigger. */
-                    if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
-                        continue;
-                    }
-                    value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                    }
-                    if (valid_input_range) {
-                        if (binding->input.axis.axis_min != binding->output.axis.axis_min || binding->input.axis.axis_max != binding->output.axis.axis_max) {
-                            float normalized_value = (float)(value - binding->input.axis.axis_min) / (binding->input.axis.axis_max - binding->input.axis.axis_min);
-                            value = binding->output.drum_kit_axis.axis_min + (int)(normalized_value * (binding->output.drum_kit_axis.axis_max - binding->output.drum_kit_axis.axis_min));
-                        }
-                    } else {
-                        value = 0;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
-                        value = binding->output.drum_kit_axis.axis_max;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    if (hat_mask & binding->input.hat.hat_mask) {
-                        value = binding->output.axis.axis_max;
-                    }
-                } 
-
-                if (binding->output.drum_kit_axis.axis_min < binding->output.drum_kit_axis.axis_max) {
-                    valid_output_range = (value >= binding->output.drum_kit_axis.axis_min && value <= binding->output.drum_kit_axis.axis_max);
-                } else {
-                    valid_output_range = (value >= binding->output.drum_kit_axis.axis_max && value <= binding->output.drum_kit_axis.axis_min);
-                }
-                // If the value is zero, there might be another binding that makes it non-zero
-                if (value != 0 && valid_output_range) {
-                    result = (Sint16)value;
-                    break;
-                }
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-    return result;
-}
-
-bool SDL_GamepadHasDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton input)
-{
-    bool result = false;
-
-    SDL_LockJoysticks();
-    {
-        int i;
-
-        CHECK_GAMEPAD_MAGIC(gamepad, false);
-
-        for (i = 0; i < gamepad->num_bindings; ++i) {
-            const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON && binding->output.drum_kit_button == input) {
-                result = true;
-                break;
-            }
-        }
-    }
-    SDL_UnlockJoysticks();
-
-    return result;
-}
-
-
-
-/*
- * Get the current state of an instrument input on a gamepad
- */
-bool SDL_GetGamepadDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton button)
-{
-    bool result = false;
-
-    SDL_LockJoysticks();
-    {
-        int i;
-
-        CHECK_GAMEPAD_MAGIC(gamepad, false);
-
-        for (i = 0; i < gamepad->num_bindings; ++i) {
-            const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON && binding->output.drum_kit_button == button) {
                 if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                     bool valid_input_range;
 

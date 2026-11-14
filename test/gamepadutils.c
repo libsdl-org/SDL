@@ -2790,29 +2790,6 @@ static const char *guitar_button_names[] = {
 };
 SDL_COMPILE_TIME_ASSERT(guitar_button_names, SDL_arraysize(guitar_button_names) == SDL_GAMEPAD_GUITAR_BUTTON_COUNT);
 
-static const char *drum_kit_axis_names[] = {
-    "Drum Pad 1",
-    "Drum Pad 2",
-    "Drum Pad 3",
-    "Drum Pad 4",
-    "Drum Cymbal 1",
-    "Drum Cymbal 2",
-    "Drum Cymbal 3",
-    "Drum Cymbal 4",
-    "Kick 1",
-    "Kick 2",
-};
-SDL_COMPILE_TIME_ASSERT(drum_kit_axis_names, SDL_arraysize(drum_kit_axis_names) == SDL_GAMEPAD_DRUM_KIT_AXIS_COUNT);
-
-static const char *drum_kit_button_names[] = {
-    "Don Left",
-    "Don Right",
-    "Ka Left",
-    "Ka Right",
-    "Hi Hat Pedal",
-};
-SDL_COMPILE_TIME_ASSERT(drum_kit_button_names, SDL_arraysize(drum_kit_button_names) == SDL_GAMEPAD_DRUM_KIT_BUTTON_COUNT);
-
 struct InstrumentDisplay
 {
     SDL_Renderer *renderer;
@@ -2863,6 +2840,7 @@ char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *gamepad
     const float arrow_extent = 48.0f;
     SDL_FRect highlight;
     char *element = NULL;
+    SDL_JoystickType type;
 
     if (!ctx) {
         return NULL;
@@ -2874,7 +2852,8 @@ char *GetInstrumentDisplayElementAt(InstrumentDisplay *ctx, SDL_Gamepad *gamepad
     x = ctx->area.x + margin + center + margin;
     y = ctx->area.y + margin;
     
-    if (SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad)) == SDL_JOYSTICK_TYPE_GUITAR) {
+    type = SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad));
+    if (type == SDL_JOYSTICK_TYPE_GUITAR) {
         for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
             if (SDL_GamepadHasGuitarButton(gamepad, i)) {
             SDL_snprintf(text, sizeof(text), "%d:", i);
@@ -3001,6 +2980,7 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *gamepad)
     SDL_FRect dst, rect, highlight;
     Uint8 r, g, b, a;
     bool found = false;
+    SDL_JoystickType type;
 
     if (!ctx) {
         return;
@@ -3011,7 +2991,8 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *gamepad)
     x = ctx->area.x + margin;
     y = ctx->area.y + margin;
 
-    if (SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad)) == SDL_JOYSTICK_TYPE_GUITAR) {
+    type = SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad));
+    if (type == SDL_JOYSTICK_TYPE_GUITAR) {
 
         for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
             SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
@@ -3092,123 +3073,6 @@ void RenderInstrumentDisplay(InstrumentDisplay *ctx, SDL_Gamepad *gamepad)
                 }
                 SDL_RenderTextureRotated(ctx->renderer, ctx->arrow_texture, NULL, &dst, 0.0f, NULL, SDL_FLIP_HORIZONTAL);
             }
-            dst.x += ctx->arrow_width;
-
-            SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);
-            rect.x = dst.x + arrow_extent - 2.0f;
-            rect.y = dst.y;
-            rect.w = 4.0f;
-            rect.h = ctx->arrow_height;
-            SDL_RenderFillRect(ctx->renderer, &rect);
-            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-
-            if (value < 0) {
-                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = ((float)value / SDL_MIN_SINT16) * arrow_extent;
-                rect.x = dst.x + arrow_extent - rect.w;
-                rect.y = dst.y + ctx->arrow_height * 0.25f;
-                rect.h = ctx->arrow_height / 2.0f;
-                SDL_RenderFillRect(ctx->renderer, &rect);
-            }
-
-            dst.x += arrow_extent;
-
-            if (value > 0) {
-                SDL_SetRenderDrawColor(ctx->renderer, 8, 200, 16, SDL_ALPHA_OPAQUE);
-                rect.w = ((float)value / SDL_MAX_SINT16) * arrow_extent;
-                rect.x = dst.x;
-                rect.y = dst.y + ctx->arrow_height * 0.25f;
-                rect.h = ctx->arrow_height / 2.0f;
-                SDL_RenderFillRect(ctx->renderer, &rect);
-            }
-
-            dst.x += arrow_extent;
-
-            if (value == SDL_MAX_SINT16) {
-                SDL_SetTextureColorMod(ctx->arrow_texture, 10, 255, 21);
-            } else {
-                SDL_SetTextureColorMod(ctx->arrow_texture, 255, 255, 255);
-            }
-            SDL_RenderTexture(ctx->renderer, ctx->arrow_texture, NULL, &dst);
-
-            SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-
-            y += ctx->button_height + 2;
-
-        }
-    }
-    if (SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad)) == SDL_JOYSTICK_TYPE_DRUM_KIT) {
-
-        for (i = 0; i < SDL_GAMEPAD_DRUM_KIT_BUTTON_COUNT; ++i) {
-            SDL_GamepadDrumKitButton button = (SDL_GamepadDrumKitButton)i;
-            if (!SDL_GamepadHasDrumKitButton(gamepad, button)) {
-                continue;
-            }
-            if (!found) {
-                SDL_snprintf(text, sizeof(text), "DRUM KIT BUTTONS");
-                SDLTest_DrawString(ctx->renderer, x, y, text);
-                x += (FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f) / 2;
-                y += FONT_LINE_HEIGHT + 2;
-                found = true;
-            }
-            highlight.x = x;
-            highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            highlight.w = center - (margin * 2);
-            highlight.h = ctx->button_height;
-            RenderInstrumentButtonHighlight(ctx, button, &highlight);
-
-            SDL_snprintf(text, sizeof(text), "%s:", drum_kit_button_names[button]);
-            float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
-            SDLTest_DrawString(ctx->renderer, x_pos, y, text);
-
-            if (SDL_GetGamepadDrumKitButton(gamepad, button)) {
-                SDL_SetTextureColorMod(ctx->button_texture, 10, 255, 21);
-            } else {
-                SDL_SetTextureColorMod(ctx->button_texture, 255, 255, 255);
-            }
-
-            dst.x = x + 2;
-            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            dst.w = ctx->button_width;
-            dst.h = ctx->button_height;
-            SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
-
-            y += ctx->button_height + 2;
-        }
-        found = false;
-        x = ctx->area.x + margin;
-        for (i = 0; i < SDL_GAMEPAD_DRUM_KIT_AXIS_COUNT; ++i) {
-            SDL_GamepadDrumKitAxis axis = (SDL_GamepadDrumKitAxis)i;
-            
-            if (!SDL_GamepadHasDrumKitAxis(gamepad, axis)) {
-                continue;
-            }
-            if (!found) {
-                SDL_snprintf(text, sizeof(text), "DRUM KIT AXES");
-                SDLTest_DrawString(ctx->renderer, x, y, text);
-                x += (FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f) / 2;
-                y += FONT_LINE_HEIGHT + 2;
-                found = true;
-            }
-            SDL_snprintf(text, sizeof(text), "%s: ", drum_kit_axis_names[axis]);
-            float x_pos = x - FONT_CHARACTER_SIZE * SDL_strlen(text) - 2.0f;
-            SDLTest_DrawString(ctx->renderer, x_pos, y, text);
-            Sint16 value = SDL_GetGamepadDrumKitAxis(gamepad, axis);
-
-            highlight.x = x_pos + FONT_CHARACTER_SIZE * SDL_strlen(text) + 2.0f;
-            highlight.y = y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-            highlight.w = ctx->arrow_width + arrow_extent;
-            highlight.h = ctx->button_height;
-            RenderInstrumentAxisHighlight(ctx, axis, -1, &highlight);
-
-            highlight.x += highlight.w;
-            RenderInstrumentAxisHighlight(ctx, axis, 1, &highlight);
-
-            dst.x = x;
-            dst.y = y + FONT_CHARACTER_SIZE / 2 - ctx->arrow_height / 2;
-            dst.w = ctx->arrow_width;
-            dst.h = ctx->arrow_height;
-
             dst.x += ctx->arrow_width;
 
             SDL_SetRenderDrawColor(ctx->renderer, 200, 200, 200, SDL_ALPHA_OPAQUE);

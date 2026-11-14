@@ -1325,7 +1325,3 @@ _SDL_GamepadHasGuitarAxis
 _SDL_GetGamepadGuitarAxis
 _SDL_GamepadHasGuitarButton
 _SDL_GetGamepadGuitarButton
-_SDL_GamepadHasDrumKitAxis
-_SDL_GetGamepadDrumKitAxis
-_SDL_GamepadHasDrumKitButton
-_SDL_GetGamepadDrumKitButton
