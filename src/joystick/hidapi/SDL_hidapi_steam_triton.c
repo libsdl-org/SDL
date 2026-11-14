@@ -136,14 +136,14 @@ static bool MaintainTritonState(SDL_HIDAPI_Device *device)
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
 
     msg->header.type = ID_SET_SETTINGS_VALUES;
-    msg->header.length = 2 * sizeof(ControllerSetting);
+    msg->header.length = 1 * sizeof(ControllerSetting);
     msg->payload.setSettingsValues.settings[0].settingNum = SETTING_LIZARD_MODE;
     msg->payload.setSettingsValues.settings[0].settingValue = LIZARD_MODE_OFF;
-    msg->payload.setSettingsValues.settings[1].settingNum = SETTING_IMU_MODE;
+
     if (ctx->report_sensors) {
+        msg->header.length += 1 * sizeof(ControllerSetting);
+        msg->payload.setSettingsValues.settings[1].settingNum = SETTING_IMU_MODE;
         msg->payload.setSettingsValues.settings[1].settingValue = (SETTING_GYRO_MODE_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO);
-    } else {
-        msg->payload.setSettingsValues.settings[1].settingValue = SETTING_GYRO_MODE_OFF;
     }
 
     rc = SDL_hid_send_feature_report(device->dev, buffer, sizeof(buffer));
