@@ -1901,9 +1901,6 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
         bind.output_type = SDL_GAMEPAD_BINDTYPE_GUITAR_AXIS;
         bind.output.guitar_axis.guitar_axis = guitar_axis;
         if (guitar_axis == SDL_GAMEPAD_GUITAR_AXIS_TILT) {
-            bind.output.guitar_axis.axis_min = 0;
-            bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
-        } else {
             if (half_axis_output == '+') {
                 bind.output.guitar_axis.axis_min = 0;
                 bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
@@ -1914,6 +1911,9 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
                 bind.output.guitar_axis.axis_min = SDL_JOYSTICK_AXIS_MIN;
                 bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
             }
+        } else {
+            bind.output.guitar_axis.axis_min = 0;
+            bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
         }
     } else if (drum_kit_button != SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID) {
         bind.output_type = SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON;
@@ -1921,16 +1921,8 @@ static bool SDL_PrivateParseGamepadElement(SDL_Gamepad *gamepad, const char *szG
     } else if (drum_kit_axis != SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID) {
         bind.output_type = SDL_GAMEPAD_BINDTYPE_DRUM_KIT_AXIS;
         bind.output.drum_kit_axis.drum_kit_axis = drum_kit_axis;
-        if (half_axis_output == '+') {
-            bind.output.drum_kit_axis.axis_min = 0;
-            bind.output.drum_kit_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
-        } else if (half_axis_output == '-') {
-            bind.output.drum_kit_axis.axis_min = 0;
-            bind.output.drum_kit_axis.axis_max = SDL_JOYSTICK_AXIS_MIN;
-        } else {
-            bind.output.drum_kit_axis.axis_min = SDL_JOYSTICK_AXIS_MIN;
-            bind.output.drum_kit_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
-        }
+        bind.output.guitar_axis.axis_min = 0;
+        bind.output.guitar_axis.axis_max = SDL_JOYSTICK_AXIS_MAX;
     } else {
         return false;
     }
@@ -4277,7 +4269,7 @@ bool SDL_GetGamepadDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton 
 
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON && binding->output.guitar_button == button) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON && binding->output.drum_kit_button == button) {
                 if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
                     bool valid_input_range;
 
