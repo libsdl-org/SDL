@@ -58,6 +58,12 @@ enum
 #define SENSOR_INTERVAL_VADER5_PRO_RATE_HZ        500
 #define SENSOR_INTERVAL_VADER5_PRO_NS            (SDL_NS_PER_SECOND / SENSOR_INTERVAL_VADER5_PRO_RATE_HZ)
 
+#define SENSOR_INTERVAL_DIREWOLF4_DONGLE_RATE_HZ 1000
+#define SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS    (SDL_NS_PER_SECOND / SENSOR_INTERVAL_DIREWOLF4_DONGLE_RATE_HZ)
+
+#define SENSOR_INTERVAL_DIREWOLF4_WIRED_RATE_HZ  500
+#define SENSOR_INTERVAL_DIREWOLF4_WIRED_NS      (SDL_NS_PER_SECOND / SENSOR_INTERVAL_DIREWOLF4_WIRED_RATE_HZ)
+
 /* Rate of IMU Sensor Packets over wireless dongle observed in testcontroller at 295hz */
 #define SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ     295
 #define SENSOR_INTERVAL_APEX5_DONGLE_NS         (SDL_NS_PER_SECOND / SENSOR_INTERVAL_APEX5_DONGLE_RATE_HZ)
@@ -191,6 +197,9 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case 130:
         controller_type = SDL_FLYDIGI_VADER5_PRO;
         break;
+    case 132:
+        controller_type = SDL_FLYDIGI_DIREWOLF_4;
+        break;
     case 133:
     case 134:
         controller_type = SDL_FLYDIGI_APEX5;
@@ -303,6 +312,16 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         ctx->accelScale = SDL_STANDARD_GRAVITY / 4096.0f;
         ctx->gyroScale[0] = DEG2RAD(2000.0f); // Scale is the same for all axis.
         ctx->sensor_timestamp_step_ns = SENSOR_INTERVAL_VADER5_PRO_NS;
+        break;
+    case SDL_FLYDIGI_DIREWOLF_4:
+        HIDAPI_SetDeviceName(device, "Flydigi Direwolf 4");
+        ctx->has_cz = true;
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
+        ctx->gyroScale[0] = -DEG2RAD(132000.0f);
+        ctx->gyroScale[1] = -DEG2RAD(130000.0f);
+        ctx->gyroScale[2] = -DEG2RAD(2000.0f);
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_DIREWOLF4_DONGLE_NS : SENSOR_INTERVAL_DIREWOLF4_WIRED_NS;
         break;
     default:
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "Unknown FlyDigi controller with ID %d, name '%s'", ctx->deviceID, device->name);
