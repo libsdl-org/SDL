@@ -362,7 +362,7 @@ char *SDL_UDEV_GetProductSerial(const char *device_path)
     return result;
 }
 
-bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
+bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type, char *signature)
 {
     int desc_fd = -1;
     char *descriptors_path = NULL;
@@ -420,7 +420,8 @@ bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
                         // Santroller bluetooth devices just encode the device type into the revision
                         val = _this->syms.udev_device_get_sysattr_value(pdev, "id/version");
                         if (val) {
-                            *joystick_type = SDL_GetJoystickTypeForSantroller((Uint16)SDL_strtol(val, NULL, 16) >> 8);
+                            *joystick_type = (Uint16)SDL_strtol(val, NULL, 16) >> 8;
+                            *signature = 's';
                             found = true;
                         }
                     }
@@ -456,7 +457,7 @@ bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
                 // Santroller 1 devices just encode the device type into the revision
                 val = _this->syms.udev_device_get_property_value(dev, "ID_REVISION");
                 if (val) {
-                    *joystick_type = SDL_GetJoystickTypeForSantroller((Uint16)SDL_strtol(val, NULL, 16) >> 8);
+                    *joystick_type = (Uint16)SDL_strtol(val, NULL, 16) >> 8;
                     found = true;
                 }
             }
@@ -476,7 +477,8 @@ bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
                         // Look for the XInput vendor descriptor
                         if (found_iface && xpad && header->bDescriptorType == 0x21) {
                             read(desc_fd, buffer + 2, 7);
-                            *joystick_type = SDL_GetJoystickTypeForXInput(buffer[4]);
+                            *joystick_type = (Uint16)buffer[4];
+                            *signature = 'k';
                             found = true;
                             break;
                         }
@@ -484,7 +486,8 @@ bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type)
                             read(desc_fd, buffer + 2, 7);
                             // Find the Santroller vendor descriptor
                             if (SDL_memcmp(buffer + 2, "SANT", 4) == 0) {
-                                *joystick_type = SDL_GetJoystickTypeForSantroller(buffer[7]);
+                                *joystick_type = (Uint16)buffer[7];
+                                *signature = 's';
                                 found = true;
                                 break;
                             }

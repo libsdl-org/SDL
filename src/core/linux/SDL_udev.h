@@ -96,7 +96,7 @@ extern void SDL_UDEV_Quit(void);
 extern void SDL_UDEV_Poll(void);
 extern bool SDL_UDEV_Scan(void);
 extern bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, int *class, char **driver);
-extern bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type);
+extern bool SDL_UDEV_GetJoystickType(const char *device_path, int *joystick_type, char *signature);
 extern char *SDL_UDEV_GetProductSerial(const char *device_path);
 extern bool SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);

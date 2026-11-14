@@ -4238,9 +4238,14 @@ bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id)
     return eType == k_eControllerType_SteamControllerTriton;
 }
 
-bool SDL_IsJoystickSysJoystick(SDL_GUID guid)
+bool SDL_IsJoystickSantroller(SDL_GUID guid)
 {
     return (guid.data[14] == 's') ? true : false;
+}
+
+bool SDL_IsJoystickXpad360(SDL_GUID guid)
+{
+    return (guid.data[14] == 'k') ? true : false;
 }
 
 bool SDL_IsJoystickXInput(SDL_GUID guid)
@@ -4334,7 +4339,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
         return SDL_JOYSTICK_TYPE_DRUM_KIT;
     }
 
-    if (SDL_IsJoystickXInput(guid)) {
+    if (SDL_IsJoystickXInput(guid) || SDL_IsJoystickXpad360(guid)) {
         // XInput GUID, get the type based on the XInput device subtype
         return SDL_GetJoystickTypeForXInput(guid.data[15]);
     }
@@ -4343,8 +4348,8 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
         return (SDL_JoystickType)guid.data[15];
     }
 
-    if (SDL_IsJoystickSysJoystick(guid)) {
-        return (SDL_JoystickType)guid.data[15];
+    if (SDL_IsJoystickSantroller(guid)) {
+        return SDL_GetJoystickTypeForSantroller(guid.data[15]);
     }
 
     if (SDL_IsJoystickVIRTUAL(guid)) {
