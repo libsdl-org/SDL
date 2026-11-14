@@ -3508,6 +3508,86 @@ void SDL_UpdateGamepads(void)
     SDL_UpdateJoysticks();
 }
 
+
+static bool SDL_GetGamepadInputAxis(SDL_Gamepad *gamepad, const SDL_GamepadBinding *binding, Sint16 *result, int axis_min, int axis_max)
+{
+    int value = 0;
+    bool valid_input_range;
+    bool valid_output_range;
+
+    if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
+        const int input_axis = binding->input.axis.axis;
+        /* Missing axes return zero, which would normalize to a half-pressed trigger. */
+        if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
+            return false;
+        }
+        value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
+        if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
+            valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
+        } else {
+            valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
+        }
+        if (valid_input_range) {
+            if (binding->input.axis.axis_min != axis_min || binding->input.axis.axis_max != axis_max) {
+                float normalized_value = (float)(value - binding->input.axis.axis_min) / (binding->input.axis.axis_max - binding->input.axis.axis_min);
+                value = axis_min + (int)(normalized_value * (axis_max - axis_min));
+            }
+        } else {
+            value = 0;
+        }
+    } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+        if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
+            value = axis_max;
+        }
+    } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
+        int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
+        if (hat_mask & binding->input.hat.hat_mask) {
+            value = axis_max;
+        }
+    }
+
+    if (axis_min < axis_max) {
+        valid_output_range = (value >= axis_min && value <= axis_max);
+    } else {
+        valid_output_range = (value >= axis_max && value <= axis_min);
+    }
+    // If the value is zero, there might be another binding that makes it non-zero
+    if (value != 0 && valid_output_range) {
+        *result = (Sint16)value;
+        return true;
+    }
+    return false;
+}
+
+static bool SDL_GetGamepadInputButton(SDL_Gamepad *gamepad, const SDL_GamepadBinding *binding)
+{
+    bool result = false;
+    if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
+        bool valid_input_range;
+
+        int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
+        int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
+        if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
+            valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
+            if (valid_input_range) {
+                result |= (value >= threshold);
+            }
+        } else {
+            valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
+            if (valid_input_range) {
+                result |= (value <= threshold);
+            }
+        }
+    } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
+        result |= SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
+    } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
+        int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
+        result |= ((hat_mask & binding->input.hat.hat_mask) != 0);
+    }
+    return result;
+}
+
+
 /**
  *  Return whether a gamepad has a given axis
  */
@@ -3550,49 +3630,7 @@ Sint16 SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis)
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_AXIS && binding->output.axis.axis == axis) {
-                int value = 0;
-                bool valid_input_range;
-                bool valid_output_range;
-
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    const int input_axis = binding->input.axis.axis;
-                    /* Missing axes return zero, which would normalize to a half-pressed trigger. */
-                    if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
-                        continue;
-                    }
-                    value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                    }
-                    if (valid_input_range) {
-                        if (binding->input.axis.axis_min != binding->output.axis.axis_min || binding->input.axis.axis_max != binding->output.axis.axis_max) {
-                            float normalized_value = (float)(value - binding->input.axis.axis_min) / (binding->input.axis.axis_max - binding->input.axis.axis_min);
-                            value = binding->output.axis.axis_min + (int)(normalized_value * (binding->output.axis.axis_max - binding->output.axis.axis_min));
-                        }
-                    } else {
-                        value = 0;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
-                        value = binding->output.axis.axis_max;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    if (hat_mask & binding->input.hat.hat_mask) {
-                        value = binding->output.axis.axis_max;
-                    }
-                }
-
-                if (binding->output.axis.axis_min < binding->output.axis.axis_max) {
-                    valid_output_range = (value >= binding->output.axis.axis_min && value <= binding->output.axis.axis_max);
-                } else {
-                    valid_output_range = (value >= binding->output.axis.axis_max && value <= binding->output.axis.axis_min);
-                }
-                // If the value is zero, there might be another binding that makes it non-zero
-                if (value != 0 && valid_output_range) {
-                    result = (Sint16)value;
+                if (SDL_GetGamepadInputAxis(gamepad, binding, &result, binding->output.axis.axis_min, binding->output.axis.axis_max)) {
                     break;
                 }
             }
@@ -3645,28 +3683,7 @@ bool SDL_GetGamepadButton(SDL_Gamepad *gamepad, SDL_GamepadButton button)
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_BUTTON && binding->output.button == button) {
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    bool valid_input_range;
-
-                    int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
-                    int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                        if (valid_input_range) {
-                            result |= (value >= threshold);
-                        }
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                        if (valid_input_range) {
-                            result |= (value <= threshold);
-                        }
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    result |= SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    result |= ((hat_mask & binding->input.hat.hat_mask) != 0);
-                }
+                result |= SDL_GetGamepadInputButton(gamepad, binding);
             }
         }
     }
@@ -3892,8 +3909,6 @@ bool SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis axis)
     return result;
 }
 
-
-
 /*
  * Get the current state of an instrument axis on a gamepad
  */
@@ -3910,49 +3925,7 @@ Sint16 SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis axis
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_AXIS && binding->output.guitar_axis.guitar_axis == axis) {
-                int value = 0;
-                bool valid_input_range;
-                bool valid_output_range;
-
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    const int input_axis = binding->input.axis.axis;
-                    /* Missing axes return zero, which would normalize to a half-pressed trigger. */
-                    if (input_axis < 0 || input_axis >= gamepad->joystick->naxes) {
-                        continue;
-                    }
-                    value = SDL_GetJoystickAxis(gamepad->joystick, input_axis);
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                    }
-                    if (valid_input_range) {
-                        if (binding->input.axis.axis_min != binding->output.guitar_axis.axis_min || binding->input.axis.axis_max != binding->output.guitar_axis.axis_max) {
-                            float normalized_value = (float)(value - binding->input.axis.axis_min) / (binding->input.axis.axis_max - binding->input.axis.axis_min);
-                            value = binding->output.guitar_axis.axis_min + (int)(normalized_value * (binding->output.guitar_axis.axis_max - binding->output.guitar_axis.axis_min));
-                        }
-                    } else {
-                        value = 0;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    if (SDL_GetJoystickButton(gamepad->joystick, binding->input.button)) {
-                        value = binding->output.guitar_axis.axis_max;
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    if (hat_mask & binding->input.hat.hat_mask) {
-                        value = binding->output.guitar_axis.axis_max;
-                    }
-                } 
-
-                if (binding->output.guitar_axis.axis_min < binding->output.guitar_axis.axis_max) {
-                    valid_output_range = (value >= binding->output.guitar_axis.axis_min && value <= binding->output.guitar_axis.axis_max);
-                } else {
-                    valid_output_range = (value >= binding->output.guitar_axis.axis_max && value <= binding->output.guitar_axis.axis_min);
-                }
-                // If the value is zero, there might be another binding that makes it non-zero
-                if (value != 0 && valid_output_range) {
-                    result = (Sint16)value;
+                if (SDL_GetGamepadInputAxis(gamepad, binding, &result, binding->output.guitar_axis.axis_min, binding->output.guitar_axis.axis_max)) {
                     break;
                 }
             }
@@ -4003,28 +3976,7 @@ bool SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton bu
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == button) {
-                if (binding->input_type == SDL_GAMEPAD_BINDTYPE_AXIS) {
-                    bool valid_input_range;
-
-                    int value = SDL_GetJoystickAxis(gamepad->joystick, binding->input.axis.axis);
-                    int threshold = binding->input.axis.axis_min + (binding->input.axis.axis_max - binding->input.axis.axis_min) / 2;
-                    if (binding->input.axis.axis_min < binding->input.axis.axis_max) {
-                        valid_input_range = (value >= binding->input.axis.axis_min && value <= binding->input.axis.axis_max);
-                        if (valid_input_range) {
-                            result |= (value >= threshold);
-                        }
-                    } else {
-                        valid_input_range = (value >= binding->input.axis.axis_max && value <= binding->input.axis.axis_min);
-                        if (valid_input_range) {
-                            result |= (value <= threshold);
-                        }
-                    }
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_BUTTON) {
-                    result |= SDL_GetJoystickButton(gamepad->joystick, binding->input.button);
-                } else if (binding->input_type == SDL_GAMEPAD_BINDTYPE_HAT) {
-                    int hat_mask = SDL_GetJoystickHat(gamepad->joystick, binding->input.hat.hat);
-                    result |= ((hat_mask & binding->input.hat.hat_mask) != 0);
-                }
+                result |= SDL_GetGamepadInputButton(gamepad, binding);
             }
         }
     }
