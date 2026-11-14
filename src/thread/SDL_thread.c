@@ -466,11 +466,16 @@ SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 
 const char *SDL_GetThreadName(SDL_Thread *thread)
 {
-    if (ThreadValid(thread)) {
-        return SDL_GetPersistentString(thread->name);
+    const char *name = NULL;
+
+    if (thread) {
+        if (ThreadValid(thread)) {
+            name = SDL_GetPersistentString(thread->name);
+        }
     } else {
-        return NULL;
+        name = SDL_GetCurrentThreadName();
     }
+    return name;
 }
 
 const char *SDL_GetCurrentThreadName(void)
