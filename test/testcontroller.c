@@ -2199,12 +2199,6 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         break;
 
 #ifdef VERBOSE_AXES
-    case SDL_EVENT_GAMEPAD_INSTRUMENT_INPUT:
-        SDL_Log("Gamepad %" SDL_PRIu32 " instrument input %s changed to %f",
-                event->ginstrumentinput.which,
-                SDL_GetGamepadStringForInstrumentInput((SDL_GamepadInstrumentInput) event->ginstrumentinput.input),
-                event->ginstrumentinput.velocity);
-        break;
     case SDL_EVENT_GAMEPAD_AXIS_MOTION:
         if (display_mode == CONTROLLER_MODE_TESTING) {
             if (event->gaxis.value <= (-SDL_JOYSTICK_AXIS_MAX / 2) || event->gaxis.value >= (SDL_JOYSTICK_AXIS_MAX / 2)) {
