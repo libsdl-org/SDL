@@ -172,6 +172,11 @@ function(add_sdl_test_executable TARGET)
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
     endif()
+    if(ANDROID)
+        if(NOT SDL_TESTS_LINK_SHARED)
+            target_link_options(${TARGET} PRIVATE "LINKER:SHELL:--version-script \"${CMAKE_CURRENT_SOURCE_DIR}/android/SDL_static_versyms.sym")
+        endif()
+    endif()
     target_compile_definitions(${TARGET} PRIVATE HAVE_BUILD_CONFIG)
     SDL_AddCommonCompilerFlags(${TARGET})
     target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
@@ -864,7 +869,7 @@ if(ANDROID AND TARGET SDL3::Jar)
                     -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     -d "${classes_path}"
                 COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
-                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                DEPENDS SDL3-jar $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
             )
             add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
             set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
