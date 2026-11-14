@@ -4019,6 +4019,9 @@ bool SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton bu
         if (uses_solo_flag && fret_flag) {
             result = solo_flag == is_solo;
         }
+        if (button == SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG) {
+            result = false;
+        }
     }
     SDL_UnlockJoysticks();
 
