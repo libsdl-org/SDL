@@ -377,6 +377,9 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 no
             state->updated_at = state->play_at;
         }
         state->direction_gain = sin_deg(effect_direction * 360 / 0x10000);
+        if (!state->direction_gain) {
+            state->direction_gain = 0x7fff;
+        }
         if (effect_is_periodic(effect)) {
             state->phase_adj = effect->periodic.phase * 360 / effect->periodic.period;
         }
@@ -390,6 +393,9 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 no
         __clear_bit(FF_EFFECT_PLAYING, &state->flags);
         state->play_at = state->updated_at + get_effect_replay_delay(effect);
         state->direction_gain = sin_deg(effect_direction * 360 / 0x10000);
+        if (!state->direction_gain) {
+            state->direction_gain = 0x7fff;
+        }
         if (get_effect_replay_length(effect)) {
             state->stop_at = state->updated_at + get_effect_replay_length(effect);
         }
