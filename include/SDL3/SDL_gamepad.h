@@ -1823,17 +1823,17 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForButt
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
 
 /**
- * Return whether a gamepad supports a particular instrument axis
+ * Return whether a gamepad supports a particular guitar axis
  *
  * \param gamepad the gamepad to query.
- * \param type the axis on the instrument to query.
+ * \param type the axis on the guitar to query.
  * \returns true if the axis is present, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadInstrumentAxis
+ * \sa SDL_GetGamepadGuitarAxis
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
 
@@ -1842,7 +1842,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, 
  *
  * \param gamepad a gamepad.
  * \param type the axis on the guitar to query.
- * \returns the current state of the axis, ranging from -32768 to 32767.
+ * \returns the current state of the axis
+ * 
+ * Tilt axis ranges from -32768 to 32767.
+ * Every other axis ranges from 0 to 32767.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1883,7 +1886,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
 
 /**
- * Return whether a gamepad supports a particular instrument axis
+ * Return whether a gamepad supports a particular drum kit axis
  *
  * \param gamepad the gamepad to query.
  * \param type the axis on the instrument to query.
@@ -1893,7 +1896,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadInstrumentAxis
+ * \sa SDL_GetGamepadDrumKitAxis
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis type);
 
@@ -1902,7 +1905,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitAxis(SDL_Gamepad *gamepad,
  *
  * \param gamepad a gamepad.
  * \param type the axis on the drum kit to query.
- * \returns the current state of the axis, ranging from -32768 to 32767.
+ * \returns the current state of the axis, ranging from 0 to 32767.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1913,17 +1916,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitAxis(SDL_Gamepad *gamepad,
 extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis type);
 
 /**
- * Return whether a gamepad supports a particular guitar button.
+ * Return whether a gamepad supports a particular drum kit button.
  *
  * \param gamepad the gamepad to query.
- * \param type the button on the guitar to query.
+ * \param type the button on the drum kit to query.
  * \returns true if the button exists, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadGuitarButton
+ * \sa SDL_GetGamepadDrumKitButton
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton type);
 
