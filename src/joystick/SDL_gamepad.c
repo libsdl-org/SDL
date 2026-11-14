@@ -3935,7 +3935,7 @@ Sint16 SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis axis
     return result;
 }
 
-bool SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton input)
+bool SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton button)
 {
     bool result = false;
 
@@ -3944,11 +3944,24 @@ bool SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton in
         int i;
 
         CHECK_GAMEPAD_MAGIC(gamepad, false);
-
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
-            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == input) {
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == button) {
                 result = true;
+                break;
+            }
+
+            // Some guitars send seperate buttons for the solo frets, while others send a button as a flag that dictates that
+            // the current frets are solo frets. Normalize the solo flag so that we have a single representation of solo frets.
+            if ((button >= SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_1 && button <= SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_5) && 
+                binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && 
+                binding->output.guitar_button == SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG) {
+                result = true;
+                break;
+            }
+            // Now that we have normalized the solo flag, we don't need to consider the solo flag itself as a button
+            if (button == SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG) {
+                result = false;
                 break;
             }
         }
@@ -3970,14 +3983,41 @@ bool SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton bu
     SDL_LockJoysticks();
     {
         int i;
-
         CHECK_GAMEPAD_MAGIC(gamepad, false);
 
+        // Some guitars send seperate buttons for the solo frets, while others send a button as a flag that dictates that
+        // the current frets are solo frets. Normalize the solo flag so that we have a single representation of solo frets.
+        bool solo_flag = false;
+        bool uses_solo_flag = false;
+        bool fret_flag = false;
+        bool is_solo = false;
+        SDL_GamepadGuitarButton fret_button = SDL_GAMEPAD_GUITAR_BUTTON_INVALID;
+        if (button >= SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_1 && button <= SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_5) {
+            fret_button = SDL_GAMEPAD_GUITAR_BUTTON_FRET_1 + (button - SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_1);
+            is_solo = true;
+        }
+
+        if (button >= SDL_GAMEPAD_GUITAR_BUTTON_FRET_1 && button <= SDL_GAMEPAD_GUITAR_BUTTON_FRET_5) {
+            fret_button = button;
+            is_solo = false;
+        }
         for (i = 0; i < gamepad->num_bindings; ++i) {
             const SDL_GamepadBinding *binding = &gamepad->bindings[i];
+            if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG) {
+                solo_flag |= SDL_GetGamepadInputButton(gamepad, binding);
+                uses_solo_flag = true;
+            }
+            if (fret_button != SDL_GAMEPAD_GUITAR_BUTTON_INVALID) {
+                if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == fret_button) {
+                    fret_flag |= SDL_GetGamepadInputButton(gamepad, binding);
+                }
+            }
             if (binding->output_type == SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON && binding->output.guitar_button == button) {
                 result |= SDL_GetGamepadInputButton(gamepad, binding);
             }
+        }
+        if (uses_solo_flag && fret_flag) {
+            result = solo_flag == is_solo;
         }
     }
     SDL_UnlockJoysticks();
