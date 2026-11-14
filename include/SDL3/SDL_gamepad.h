@@ -251,93 +251,100 @@ typedef enum SDL_GamepadCapSenseType
 } SDL_GamepadCapSenseType;
 
 /**
- * The list of instrument axes on a gamepad
- * Instrument axis types represent various controls found on musical instrument controllers, such as guitars, drums, and turntables.
+ * The list of buttons on a guitar controller
  *
  * \since This enum is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentAxis
- * \sa SDL_GetGamepadInstrumentAxis
+ * \sa SDL_GamepadHasGuitarButton
+ * \sa SDL_GetGamepadGuitarButton
  */
-typedef enum SDL_GamepadInstrumentAxis
+typedef enum SDL_GamepadGuitarButton
 {
-    SDL_GAMEPAD_INSTRUMENT_AXIS_INVALID = -1,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_WHAMMY,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_TILT,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_PICKUP,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_GUITAR_SLIDER_BAR,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_1,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_2,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_3,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_PAD_4,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_CYMBAL_1,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_CYMBAL_2,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_CYMBAL_3,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_CYMBAL_4,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_KICK_1,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_DRUM_KICK_2,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_LEFT_SPIN,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_RIGHT_SPIN,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_PLATTER_SPIN,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_CROSSFADER,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_TURNTABLE_EFFECTS_KNOB,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_PEDAL,
-    SDL_GAMEPAD_INSTRUMENT_AXIS_COUNT
-} SDL_GamepadInstrumentAxis;
+    SDL_GAMEPAD_GUITAR_BUTTON_INVALID = -1,
+    SDL_GAMEPAD_GUITAR_BUTTON_STRUM_UP,
+    SDL_GAMEPAD_GUITAR_BUTTON_STRUM_DOWN,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_1,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_2,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_3,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_4,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_5,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_6,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_1,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_2,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_3,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_4,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_5,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG,
+    SDL_GAMEPAD_GUITAR_BUTTON_GHTV,
+    SDL_GAMEPAD_GUITAR_BUTTON_COUNT
+} SDL_GamepadGuitarButton;
 
 
 /**
- * The list of instrument buttons on a gamepad
- * Instrument button types represent various controls found on musical instrument controllers, such as guitars, drums, and turntables.
+ * The list of guitar axes on a gamepad
+ * Guitar axis types represent various controls found on guitar controllers, such as whammy bars, tilt sensors, and sliders.
  *
  * \since This enum is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentButton
- * \sa SDL_GetGamepadInstrumentButton
+ * \sa SDL_GamepadHasGuitarAxis
+ * \sa SDL_GetGamepadGuitarAxis
  */
-typedef enum SDL_GamepadInstrumentButton
+typedef enum SDL_GamepadGuitarAxis
 {
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_INVALID = -1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_UP,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_STRUM_DOWN,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_2,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_3,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_4,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_5,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_FRET_6,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_2,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_3,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_4,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FRET_5,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_SOLO_FLAG,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_GUITAR_GHTV,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_LEFT,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_DON_RIGHT,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_KA_LEFT,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_KA_RIGHT,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_DRUM_HI_HAT_PEDAL,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_GREEN,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_RED,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_LEFT_BLUE,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_GREEN,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_RED,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_PLATTER_RIGHT_BLUE,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_TURNTABLE_EUPHORIA_BUTTON,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_2,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_3,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_4,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_5,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_6,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_KEY_7,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_FX_KEY_1,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_FX_KEY_2,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_FX_KEY_3,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_FX_KEY_4,
-    SDL_GAMEPAD_INSTRUMENT_BUTTON_COUNT
-} SDL_GamepadInstrumentButton;
+    SDL_GAMEPAD_GUITAR_AXIS_INVALID = -1,
+    SDL_GAMEPAD_GUITAR_AXIS_WHAMMY,
+    SDL_GAMEPAD_GUITAR_AXIS_TILT,
+    SDL_GAMEPAD_GUITAR_AXIS_PICKUP,
+    SDL_GAMEPAD_GUITAR_AXIS_SLIDER_BAR,
+    SDL_GAMEPAD_GUITAR_AXIS_COUNT
+} SDL_GamepadGuitarAxis;
+
+
+/**
+ * The list of drum kit buttons on a gamepad
+ * Drum kit button types represent various controls found on drum kit controllers, such as drum pads, cymbals, and kick pedals.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasDrumKitButton
+ * \sa SDL_GetGamepadDrumKitButton
+ */
+typedef enum SDL_GamepadDrumKitButton
+{
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_INVALID = -1,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_DRUM_DON_LEFT,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_DRUM_DON_RIGHT,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_DRUM_KA_LEFT,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_DRUM_KA_RIGHT,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_DRUM_HI_HAT_PEDAL,
+    SDL_GAMEPAD_DRUM_KIT_BUTTON_COUNT
+} SDL_GamepadDrumKitButton;
+
+/**
+ * The list of drum kit axes on a gamepad
+ * Drum kit axis types represent various controls found on drum kit controllers, such as drum pads, cymbals, and kick pedals.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasDrumKitAxis
+ * \sa SDL_GetGamepadDrumKitAxis
+ */
+typedef enum SDL_GamepadDrumKitAxis
+{
+    SDL_GAMEPAD_DRUM_KIT_AXIS_INVALID = -1,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_PAD_1,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_PAD_2,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_PAD_3,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_PAD_4,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_CYMBAL_1,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_CYMBAL_2,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_CYMBAL_3,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_CYMBAL_4,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_KICK_1,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_DRUM_KICK_2,
+    SDL_GAMEPAD_DRUM_KIT_AXIS_COUNT
+} SDL_GamepadDrumKitAxis;
+
 
 /**
  * Types of gamepad control bindings.
@@ -355,8 +362,10 @@ typedef enum SDL_GamepadBindingType
     SDL_GAMEPAD_BINDTYPE_BUTTON,
     SDL_GAMEPAD_BINDTYPE_AXIS,
     SDL_GAMEPAD_BINDTYPE_HAT,
-    SDL_GAMEPAD_BINDTYPE_INSTRUMENT_BUTTON,
-    SDL_GAMEPAD_BINDTYPE_INSTRUMENT_AXIS
+    SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON,
+    SDL_GAMEPAD_BINDTYPE_GUITAR_AXIS,
+    SDL_GAMEPAD_BINDTYPE_DRUM_KIT_BUTTON,
+    SDL_GAMEPAD_BINDTYPE_DRUM_KIT_AXIS
 } SDL_GamepadBindingType;
 
 /**
@@ -408,14 +417,23 @@ typedef struct SDL_GamepadBinding
             int axis_max;
         } axis;
         
-        SDL_GamepadInstrumentButton instrument_button;
+        SDL_GamepadDrumKitButton drum_kit_button;
 
         struct
         {
-            SDL_GamepadInstrumentAxis instrument_axis;
+            SDL_GamepadDrumKitAxis drum_kit_axis;
             int axis_min;
             int axis_max;
-        } instrument_axis;
+        } drum_kit_axis;
+        
+        SDL_GamepadGuitarButton guitar_button;
+
+        struct
+        {
+            SDL_GamepadGuitarAxis guitar_axis;
+            int axis_min;
+            int axis_max;
+        } guitar_axis;
     } output;
 } SDL_GamepadBinding;
 
@@ -1817,52 +1835,112 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForAxis
  *
  * \sa SDL_GetGamepadInstrumentAxis
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentAxis(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
 
 /**
- * Get the current state of an analog instrument input on a gamepad.
+ * Get the current state of an analog guitar input on a gamepad.
  *
  * \param gamepad a gamepad.
- * \param type the axis on the instrument to query.
+ * \param type the axis on the guitar to query.
  * \returns the current state of the axis, ranging from -32768 to 32767.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentAxis
+ * \sa SDL_GamepadHasGuitarAxis
  */
-extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadInstrumentAxis(SDL_Gamepad *gamepad, SDL_GamepadInstrumentAxis type);
+extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
 
 /**
- * Return whether a gamepad supports a particular instrument button.
+ * Return whether a gamepad supports a particular guitar button.
  *
  * \param gamepad the gamepad to query.
- * \param type the button on the instrument to query.
+ * \param type the button on the guitar to query.
  * \returns true if the button exists, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GetGamepadInstrumentButton
+ * \sa SDL_GetGamepadGuitarButton
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasInstrumentButton(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
 
 /**
- * Get the current state of an instrument button on a gamepad.
+ * Get the current state of a guitar button on a gamepad.
  *
  * \param gamepad a gamepad.
- * \param type the button on the instrument to query.
+ * \param type the button on the guitar to query.
  * \returns true if the button is pressed, false otherwise.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.6.0.
  *
- * \sa SDL_GamepadHasInstrumentButton
+ * \sa SDL_GamepadHasGuitarButton
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadInstrumentButton(SDL_Gamepad *gamepad, SDL_GamepadInstrumentButton type);
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
+
+/**
+ * Return whether a gamepad supports a particular instrument axis
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the axis on the instrument to query.
+ * \returns true if the axis is present, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadInstrumentAxis
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis type);
+
+/**
+ * Get the current state of an analog drum kit input on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the axis on the drum kit to query.
+ * \returns the current state of the axis, ranging from -32768 to 32767.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasDrumKitAxis
+ */
+extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadDrumKitAxis(SDL_Gamepad *gamepad, SDL_GamepadDrumKitAxis type);
+
+/**
+ * Return whether a gamepad supports a particular guitar button.
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the button on the guitar to query.
+ * \returns true if the button exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadGuitarButton
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton type);
+
+/**
+ * Get the current state of a drum kit button on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the button on the drum kit to query.
+ * \returns true if the button is pressed, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasDrumKitButton
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadDrumKitButton(SDL_Gamepad *gamepad, SDL_GamepadDrumKitButton type);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
