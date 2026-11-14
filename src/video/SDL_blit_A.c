@@ -182,8 +182,10 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 alpha = info->a;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint32 fill = ~(dstfmt->Rmask | dstfmt->Gmask | dstfmt->Bmask);
 
-    const __m128i alpha_fill_mask = _mm_set1_epi32((int)0xff000000);
+    const __m128i alpha_fill_mask = _mm_set1_epi32((int)fill);
     const __m128i srcA = _mm_set1_epi16(alpha);
 
     while (height--) {
@@ -233,7 +235,7 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
 
             FACTOR_BLEND_8888(src32, dst32, alpha);
 
-            *dst = dst32 | 0xff000000;
+            *(Uint32 *)dst = dst32 | fill;
 
             src += 4;
             dst += 4;
