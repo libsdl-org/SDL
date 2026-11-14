@@ -110,7 +110,7 @@ static void Android_ResumeAudio(void)
     }
 }
 
-static void Android_OnPause(void)
+void Android_OnPause(void)
 {
     SDL_OnApplicationWillEnterBackground();
     SDL_OnApplicationDidEnterBackground();
@@ -136,7 +136,7 @@ static void Android_OnPause(void)
     Android_Paused = true;
 }
 
-static void Android_OnResume(void)
+void Android_OnResume(void)
 {
     Android_Paused = false;
 
@@ -213,6 +213,10 @@ static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
 
 void Android_PumpEvents(Sint64 timeoutNS)
 {
+#if 1
+    extern void NativeActivity_PumpEvents(Sint64 timeoutNS);
+    NativeActivity_PumpEvents(timeoutNS);
+#else
     SDL_AndroidLifecycleEvent event;
     bool paused = Android_Paused;
 
@@ -236,10 +240,15 @@ void Android_PumpEvents(Sint64 timeoutNS)
             break;
         }
     }
+#endif
 }
 
 bool Android_WaitActiveAndLockActivity(void)
 {
+#if 1
+    extern bool NativeActivity_WaitActiveAndLockActivity(void);
+    return NativeActivity_WaitActiveAndLockActivity();
+#else
     /* Make sure we have pumped all events so that Android_Paused state is correct */
     SDL_AndroidLifecycleEvent event;
     while (!Android_Destroyed && Android_WaitLifecycleEvent(&event, 0)) {
@@ -257,6 +266,7 @@ bool Android_WaitActiveAndLockActivity(void)
 
     Android_LockActivityMutex();
     return true;
+#endif
 }
 
 void Android_QuitEvents(void)
