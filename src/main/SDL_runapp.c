@@ -30,7 +30,8 @@
     !defined(SDL_PLATFORM_PSP) && \
     !defined(SDL_PLATFORM_PS2) && \
     !defined(SDL_PLATFORM_3DS) && \
-    !defined(SDL_PLATFORM_DOS)
+    !defined(SDL_PLATFORM_DOS) && \
+    !defined(SDL_PLATFORM_PUMPKINOS)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {

@@ -220,6 +220,12 @@ if(VITA OR PSP OR PS2 OR N3DS OR RISCOS OR NGAGE OR DOS)
   set(SDL_SHARED_AVAILABLE OFF)
 endif()
 
+if(SDL_PUMPKINOS)
+  # A PumpkinOS application is itself a shared library (a .dlib loaded by the
+  # PumpkinOS launcher), so SDL is linked into it statically by default.
+  set(SDL_SHARED_DEFAULT OFF)
+endif()
+
 if((RISCOS OR UNIX_SYS) AND NOT (LINUX OR NETBSD OR OPENBSD))
   set(SDL_OSS_DEFAULT ON)
 else()
@@ -376,19 +382,22 @@ dep_option(SDL_WAYLAND_LIBDECOR    "Use client-side window decorations on Waylan
 dep_option(SDL_WAYLAND_LIBDECOR_SHARED     "Dynamically load libdecor support" ON "SDL_WAYLAND_LIBDECOR;SDL_WAYLAND_SHARED;SDL_DEPS_SHARED" OFF)
 dep_option(SDL_RPI                 "Use Raspberry Pi video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
 dep_option(SDL_ROCKCHIP            "Use ROCKCHIP Hardware Acceleration video driver" ON "SDL_VIDEO;UNIX_SYS;SDL_CPU_ARM32 OR SDL_CPU_ARM64" OFF)
-dep_option(SDL_COCOA               "Use Cocoa video driver" ON "APPLE" OFF)
+# A PumpkinOS build has no host window, so the host video/GPU drivers are left out.
+set_option(SDL_PUMPKINOS           "Build SDL as a PumpkinOS application library (video, audio and joystick drivers)" OFF)
+set(SDL_PUMPKINOS_DIR "" CACHE PATH "Root of a PumpkinOS source tree (contains src/libpit, src/libpumpkin and src/PalmOS)")
+dep_option(SDL_COCOA               "Use Cocoa video driver" ON "APPLE;NOT SDL_PUMPKINOS" OFF)
 dep_option(SDL_DIRECTX             "Use DirectX for Windows audio/video" ON "SDL_AUDIO OR SDL_VIDEO;WINDOWS OR CYGWIN" OFF)
 dep_option(SDL_XINPUT              "Use Xinput for Windows" ON "WINDOWS OR CYGWIN" OFF)
 dep_option(SDL_WASAPI              "Use the Windows WASAPI audio driver" ON "WINDOWS OR CYGWIN;SDL_AUDIO" OFF)
 dep_option(SDL_RENDER_D3D          "Enable the Direct3D 9 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D11        "Enable the Direct3D 11 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
 dep_option(SDL_RENDER_D3D12        "Enable the Direct3D 12 render driver" ON "SDL_RENDER;SDL_DIRECTX" OFF)
-dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;APPLE" OFF)
+dep_option(SDL_RENDER_METAL        "Enable the Metal render driver" ON "SDL_RENDER;APPLE;NOT SDL_PUMPKINOS" OFF)
 dep_option(SDL_RENDER_GPU          "Enable the SDL_GPU render driver" ON "SDL_RENDER;SDL_GPU" OFF)
 dep_option(SDL_VIVANTE             "Use Vivante EGL video driver" ON "${UNIX_SYS};SDL_CPU_ARM32" OFF)
-dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN OR OHOS" OFF)
+dep_option(SDL_VULKAN              "Enable Vulkan support" "${SDL_VULKAN_DEFAULT}" "SDL_VIDEO;NOT SDL_PUMPKINOS;ANDROID OR APPLE OR LINUX OR FREEBSD OR OPENBSD OR WINDOWS OR CYGWIN OR OHOS" OFF)
 dep_option(SDL_RENDER_VULKAN       "Enable the Vulkan render driver" ON "SDL_RENDER;SDL_VULKAN" OFF)
-dep_option(SDL_METAL               "Enable Metal support" ON "APPLE" OFF)
+dep_option(SDL_METAL               "Enable Metal support" ON "APPLE;NOT SDL_PUMPKINOS" OFF)
 set_option(SDL_OPENVR              "Use OpenVR video driver" OFF)
 dep_option(SDL_KMSDRM              "Use KMS DRM video driver" ${UNIX_SYS} "SDL_VIDEO" OFF)
 dep_option(SDL_KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "SDL_KMSDRM;SDL_DEPS_SHARED" OFF)
@@ -2818,7 +2827,7 @@ elseif(APPLE)
     CheckHIDAPI()
   endif()
 
-  if(SDL_JOYSTICK)
+  if(SDL_JOYSTICK AND NOT SDL_PUMPKINOS)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/joystick/apple/*.m"
       "${SDL3_SOURCE_DIR}/src/joystick/apple/*.h"
@@ -3846,6 +3855,153 @@ endif()
 
 # Platform-independent options
 
+if(SDL_PUMPKINOS)
+  # SDL inside PumpkinOS: the library is linked into a PumpkinOS application
+  # (a PalmOS program loaded by the PumpkinOS launcher) and drives the task
+  # screen, the PalmOS sound stream and the hard keys. The host platform's
+  # threads, timers and file system are used as usual.
+  if(NOT SDL_PUMPKINOS_DIR)
+    message(FATAL_ERROR "SDL_PUMPKINOS needs SDL_PUMPKINOS_DIR, the root of a PumpkinOS source tree")
+  endif()
+  set(PUMPKINOS_SRC "${SDL_PUMPKINOS_DIR}/src")
+  set(PUMPKINOS_PALMOS "${PUMPKINOS_SRC}/PalmOS")
+  foreach(_pumpkin_dir libpit libpumpkin PalmOS)
+    if(NOT IS_DIRECTORY "${PUMPKINOS_SRC}/${_pumpkin_dir}")
+      message(FATAL_ERROR "SDL_PUMPKINOS_DIR=${SDL_PUMPKINOS_DIR} does not contain src/${_pumpkin_dir}")
+    endif()
+  endforeach()
+  # the same include paths PumpkinOS uses for its own applications (commonp.mak)
+  set(PUMPKINOS_INCLUDE_DIRS
+    "${PUMPKINOS_SRC}/libpit"
+    "${PUMPKINOS_SRC}/libpumpkin"
+    "${PUMPKINOS_SRC}/font"
+    "${PUMPKINOS_PALMOS}"
+    "${PUMPKINOS_PALMOS}/Core"
+    "${PUMPKINOS_PALMOS}/Core/System"
+    "${PUMPKINOS_PALMOS}/Dynamic"
+    "${PUMPKINOS_PALMOS}/Core/UI"
+    "${PUMPKINOS_PALMOS}/Libraries"
+    "${PUMPKINOS_PALMOS}/Libraries/PalmOSGlue"
+    "${PUMPKINOS_PALMOS}/Libraries/Pdi"
+    "${PUMPKINOS_PALMOS}/Libraries/CPMLib"
+    "${PUMPKINOS_PALMOS}/Libraries/INet"
+    "${PUMPKINOS_PALMOS}/Libraries/SSL"
+    "${PUMPKINOS_PALMOS}/Extensions/ExpansionMgr"
+    "${PUMPKINOS_PALMOS}/Extensions/Bluetooth"
+    "${PUMPKINOS_PALMOS}/Core/Hardware"
+    "${PUMPKINOS_PALMOS}/Garmin"
+    "${PUMPKINOS_PALMOS}/PalmOne"
+    "${PUMPKINOS_PALMOS}/PalmOne/Common/System"
+    "${PUMPKINOS_PALMOS}/PalmOne/68K/System"
+    "${PUMPKINOS_PALMOS}/Sony"
+    "${PUMPKINOS_PALMOS}/Sony/System"
+    "${PUMPKINOS_PALMOS}/Sony/Libraries"
+  )
+  find_library(PUMPKINOS_PUMPKIN_LIBRARY NAMES pumpkin PATHS "${SDL_PUMPKINOS_DIR}/bin" NO_DEFAULT_PATH)
+  find_library(PUMPKINOS_PIT_LIBRARY NAMES pit PATHS "${SDL_PUMPKINOS_DIR}/bin" NO_DEFAULT_PATH)
+  set(PUMPKINOS_LIBS)
+  if(PUMPKINOS_PUMPKIN_LIBRARY AND PUMPKINOS_PIT_LIBRARY)
+    list(APPEND PUMPKINOS_LIBS "${PUMPKINOS_PUMPKIN_LIBRARY}" "${PUMPKINOS_PIT_LIBRARY}")
+  elseif(SDL_SHARED OR SDL_TESTS)
+    message(FATAL_ERROR "SDL_PUMPKINOS: libpumpkin and libpit were not found in ${SDL_PUMPKINOS_DIR}/bin. Build PumpkinOS first, or build only the static library (-DSDL_SHARED=OFF -DSDL_TESTS=OFF)")
+  endif()
+  # The dlib resource of a .prc is named after the host: dlib<id>.bin with
+  # id = os * 64 + cpu * 8 + size, as in PumpkinOS' src/common.mak. A
+  # universal library gets one resource per architecture.
+  if(LINUX OR MACOS)
+    set(_pumpkin_os 1)
+  elseif(WINDOWS)
+    set(_pumpkin_os 2)
+  elseif(CMAKE_SYSTEM_NAME MATCHES "Serenity")
+    set(_pumpkin_os 3)
+  elseif(ANDROID)
+    set(_pumpkin_os 4)
+  elseif(EMSCRIPTEN)
+    set(_pumpkin_os 5)
+  elseif(HAIKU OR DOS)
+    set(_pumpkin_os 7)
+  else()
+    message(FATAL_ERROR "SDL_PUMPKINOS: unknown host operating system ${CMAKE_SYSTEM_NAME}")
+  endif()
+  set(_pumpkin_cpus)
+  if(SDL_CPU_ARM32 OR SDL_CPU_ARM64 OR SDL_CPU_ARM64EC)
+    list(APPEND _pumpkin_cpus 1)
+  endif()
+  if(SDL_CPU_X86 OR SDL_CPU_X64)
+    list(APPEND _pumpkin_cpus 2)
+  endif()
+  if(SDL_CPU_RISCV32 OR SDL_CPU_RISCV64 OR SDL_CPU_POWERPC32 OR SDL_CPU_POWERPC64)
+    list(APPEND _pumpkin_cpus 3)
+  endif()
+  if(NOT _pumpkin_cpus)
+    message(FATAL_ERROR "SDL_PUMPKINOS: unknown host cpu")
+  endif()
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(_pumpkin_size 2)
+  else()
+    set(_pumpkin_size 1)
+  endif()
+  set(PUMPKINOS_DLIB_RESOURCES)
+  foreach(_pumpkin_cpu IN LISTS _pumpkin_cpus)
+    math(EXPR _pumpkin_dlib_id "${_pumpkin_os} * 64 + ${_pumpkin_cpu} * 8 + ${_pumpkin_size}" OUTPUT_FORMAT HEXADECIMAL)
+    string(SUBSTRING "${_pumpkin_dlib_id}" 2 -1 _pumpkin_dlib_id)
+    string(LENGTH "${_pumpkin_dlib_id}" _pumpkin_dlib_id_len)
+    while(_pumpkin_dlib_id_len LESS 4)
+      set(_pumpkin_dlib_id "0${_pumpkin_dlib_id}")
+      math(EXPR _pumpkin_dlib_id_len "${_pumpkin_dlib_id_len} + 1")
+    endwhile()
+    list(APPEND PUMPKINOS_DLIB_RESOURCES "dlib${_pumpkin_dlib_id}.bin")
+  endforeach()
+  find_program(PUMPKINOS_PRCBUILD NAMES prcbuild PATHS "${SDL_PUMPKINOS_DIR}/tools" NO_DEFAULT_PATH)
+  if(PUMPKINOS_PRCBUILD)
+    message(STATUS "PumpkinOS applications are packaged with ${PUMPKINOS_PRCBUILD} (dlib resources: ${PUMPKINOS_DLIB_RESOURCES})")
+  else()
+    message(STATUS "PumpkinOS prcbuild not found in ${SDL_PUMPKINOS_DIR}/tools: test programs are built as .dlib only")
+  endif()
+  sdl_link_dependency(pumpkinos LIBS ${PUMPKINOS_LIBS} PKG_CONFIG_LIBS -lpumpkin -lpit)
+  # Part of the public interface: SDL_platform_defines.h turns it into SDL_PLATFORM_PUMPKINOS,
+  # which selects the PilotMain() entry point in SDL_main.h.
+  sdl_compile_definitions(PUBLIC "__PUMPKINOS__")
+  # The PalmOS headers use generic names (event.h, list.h, font.h, ...) that
+  # shadow system headers on case-insensitive file systems, so they are only
+  # visible to the PumpkinOS driver sources.
+  set(PUMPKINOS_SOURCES)
+  sdl_glob_sources("${SDL3_SOURCE_DIR}/src/core/pumpkin/*.h")
+  # SDL_RunApp() for the PilotMain() entry point generated by SDL_main.h
+  file(GLOB _pumpkin_main_sources CONFIGURE_DEPENDS "${SDL3_SOURCE_DIR}/src/main/pumpkin/*.c")
+  list(APPEND PUMPKINOS_SOURCES ${_pumpkin_main_sources})
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_PUMPKINOS 1)
+    file(GLOB _pumpkin_video_sources CONFIGURE_DEPENDS "${SDL3_SOURCE_DIR}/src/video/pumpkin/*.c")
+    list(APPEND PUMPKINOS_SOURCES ${_pumpkin_video_sources})
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/video/pumpkin/*.h")
+    set(HAVE_SDL_VIDEO TRUE)
+  endif()
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_PUMPKINOS 1)
+    file(GLOB _pumpkin_audio_sources CONFIGURE_DEPENDS "${SDL3_SOURCE_DIR}/src/audio/pumpkin/*.c")
+    list(APPEND PUMPKINOS_SOURCES ${_pumpkin_audio_sources})
+    sdl_glob_sources("${SDL3_SOURCE_DIR}/src/audio/pumpkin/*.h")
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_PUMPKINOS 1)
+    file(GLOB _pumpkin_joystick_sources CONFIGURE_DEPENDS "${SDL3_SOURCE_DIR}/src/joystick/pumpkin/*.c")
+    list(APPEND PUMPKINOS_SOURCES ${_pumpkin_joystick_sources})
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+  sdl_sources(${PUMPKINOS_SOURCES})
+  if(MSVC)
+    set_property(SOURCE ${PUMPKINOS_SOURCES} APPEND PROPERTY INCLUDE_DIRECTORIES ${PUMPKINOS_INCLUDE_DIRS})
+  else()
+    # as system headers, so SDL's warning flags do not apply to the PalmOS SDK
+    foreach(_pumpkin_include IN LISTS PUMPKINOS_INCLUDE_DIRS)
+      set_property(SOURCE ${PUMPKINOS_SOURCES} APPEND PROPERTY COMPILE_OPTIONS "-isystem${_pumpkin_include}")
+    endforeach()
+  endif()
+  set(HAVE_PUMPKINOS TRUE)
+endif()
+
 if(SDL_VIDEO)
   if(SDL_OFFSCREEN)
     set(SDL_VIDEO_DRIVER_OFFSCREEN 1)
@@ -3860,7 +4016,7 @@ endif()
 
 sdl_glob_sources(${SDL3_SOURCE_DIR}/src/tray/*.c)
 
-if(SDL_GPU)
+if(SDL_GPU AND NOT SDL_PUMPKINOS)
   if(HAVE_DXGI1_6_H)
     sdl_glob_sources(
       "${SDL3_SOURCE_DIR}/src/gpu/d3d12/*.c"

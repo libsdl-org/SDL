@@ -167,7 +167,7 @@ function(add_sdl_test_executable TARGET)
     if(AST_NEEDS_RESOURCES)
         list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
-    if(ANDROID OR OHOS)
+    if(ANDROID OR OHOS OR SDL_PUMPKINOS)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
@@ -228,7 +228,26 @@ function(add_sdl_test_executable TARGET)
         endif()
     endif()
 
-    if(WINDOWS)
+    if(SDL_PUMPKINOS)
+        # A PumpkinOS application is a shared library named <app>.dlib whose
+        # only entry point is PilotMain(), provided by SDL_main.h.
+        set_target_properties(${TARGET} PROPERTIES
+            PREFIX ""
+            SUFFIX ".dlib"
+            C_VISIBILITY_PRESET hidden
+            CXX_VISIBILITY_PRESET hidden
+            OBJC_VISIBILITY_PRESET hidden
+        )
+        # SDL3-static is compiled with default visibility; keep its symbols
+        # out of the export table, so that several SDL applications can be
+        # loaded into the one PumpkinOS process without interposing on each
+        # other.
+        if(APPLE)
+            target_link_options(${TARGET} PRIVATE "-Wl,-exported_symbol,_PilotMain")
+        elseif(NOT MSVC)
+            target_link_options(${TARGET} PRIVATE "-Wl,--exclude-libs,ALL")
+        endif()
+    elseif(WINDOWS)
         # CET support was added in VS 16.7
         if(MSVC_VERSION GREATER 1926 AND CMAKE_GENERATOR_PLATFORM MATCHES "Win32|x64")
             set_property(TARGET ${TARGET} APPEND_STRING PROPERTY LINK_FLAGS " -CETCOMPAT")
@@ -384,7 +403,9 @@ add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevd
 add_sdl_test_executable(testdescriptor BUILD_DEPENDENT SOURCES testdescriptor.c NAME83 descriptr)
 target_compile_definitions(testdescriptor PRIVATE DEBUG_DESCRIPTOR)
 
-if(MACOS)
+if(SDL_PUMPKINOS)
+    # no host-native windows: the task screen is the only window
+elseif(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
         SOURCES
             testnative.c
@@ -565,7 +586,7 @@ if(OPENGL_FOUND)
         target_link_libraries(testgl PRIVATE ${OPENGL_gl_LIBRARY})
     endif()
 endif()
-if(MACOS)
+if(MACOS AND TARGET testnative)
     target_link_options(testnative PRIVATE "-Wl,-framework,Cocoa")
 endif()
 if(APPLE)
@@ -590,6 +611,38 @@ if(PSP)
             PREVIEW_PATH    NULL
             OUTPUT_DIR      $<TARGET_FILE_DIR:${APP}>/sdl-${APP}
         )
+    endforeach()
+endif()
+
+if(SDL_PUMPKINOS AND PUMPKINOS_PRCBUILD)
+    # Package every test as a PumpkinOS application: the .dlib becomes the
+    # dlib resource of <test>.prc, which can be installed by copying it into
+    # the vfs/app_install directory of a PumpkinOS tree.
+    set(PUMPKINOS_CREATORS)
+    foreach(APP ${SDL_TEST_EXECUTABLES})
+        string(MD5 APP_MD5 "${APP}")
+        string(SUBSTRING "${APP_MD5}" 0 4 APP_CREATOR)
+        if("${APP_CREATOR}" IN_LIST PUMPKINOS_CREATORS)
+            message(FATAL_ERROR "PumpkinOS creator id ${APP_CREATOR} of ${APP} is already in use")
+        endif()
+        list(APPEND PUMPKINOS_CREATORS "${APP_CREATOR}")
+        set(APP_PRC_DIR "$<TARGET_FILE_DIR:${APP}>/sdl-${APP}")
+        # one dlib resource per architecture of the (possibly universal) library
+        set(APP_COPY_COMMANDS)
+        set(APP_RESOURCES)
+        foreach(DLIB_RESOURCE IN LISTS PUMPKINOS_DLIB_RESOURCES)
+            list(APPEND APP_COPY_COMMANDS COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:${APP}>" "${APP_PRC_DIR}/${DLIB_RESOURCE}")
+            list(APPEND APP_RESOURCES "${APP_PRC_DIR}/${DLIB_RESOURCE}")
+        endforeach()
+        add_custom_command(TARGET ${APP} POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E make_directory "${APP_PRC_DIR}"
+            ${APP_COPY_COMMANDS}
+            COMMAND "${PUMPKINOS_PRCBUILD}" -f "$<TARGET_FILE_DIR:${APP}>/${APP}.prc" -t appl -c "${APP_CREATOR}" -n "${APP}" ${APP_RESOURCES}
+            COMMENT "Packaging ${APP}.prc"
+            VERBATIM
+        )
+        set_property(TARGET ${APP} APPEND PROPERTY ADDITIONAL_CLEAN_FILES "$<TARGET_FILE_DIR:${APP}>/${APP}.prc" "${APP_PRC_DIR}")
+        set_property(TARGET ${APP} APPEND PROPERTY EXTRA_INSTALL "$<TARGET_FILE_DIR:${APP}>/${APP}.prc")
     endforeach()
 endif()
 
@@ -658,6 +711,10 @@ set(TESTS_ENVIRONMENT
 
 function(add_sdl_test TEST TARGET)
     cmake_parse_arguments(ast "INSTALL" "" "" ${ARGN})
+    if(SDL_PUMPKINOS)
+        # the tests are PumpkinOS applications, which CTest cannot run
+        return()
+    endif()
     get_property(noninteractive TARGET ${TARGET} PROPERTY SDL_NONINTERACTIVE)
     if(noninteractive)
         if(EMSCRIPTEN)
@@ -727,7 +784,7 @@ foreach(TARGET ${SDL_TEST_EXECUTABLES})
     add_sdl_test(${TARGET} ${TARGET} INSTALL)
 endforeach()
 
-if(NOT EMSCRIPTEN)
+if(NOT EMSCRIPTEN AND NOT SDL_PUMPKINOS)
     add_sdl_test(testautomation-no-simd testautomation)
     add_sdl_test(testplatform-no-simd testplatform)
     set_property(TEST testautomation-no-simd testplatform-no-simd APPEND PROPERTY ENVIRONMENT "SDL_CPU_FEATURE_MASK=-all")

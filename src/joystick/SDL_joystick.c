@@ -68,7 +68,7 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_LINUX
     &SDL_LINUX_JoystickDriver,
 #endif
-#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)) && !defined(SDL_JOYSTICK_DISABLED)
+#if ((defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_TVOS)) && !defined(SDL_JOYSTICK_DISABLED) && !defined(SDL_JOYSTICK_PUMPKINOS))
     &SDL_IOS_JoystickDriver,
 #endif
 #ifdef SDL_JOYSTICK_IOKIT
@@ -103,6 +103,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #endif
 #ifdef SDL_JOYSTICK_DOS
     &SDL_DOS_JoystickDriver,
+#endif
+#ifdef SDL_JOYSTICK_PUMPKINOS
+    &SDL_PUMPKIN_JoystickDriver,
 #endif
 #if defined(SDL_JOYSTICK_DUMMY) || defined(SDL_JOYSTICK_DISABLED)
     &SDL_DUMMY_JoystickDriver

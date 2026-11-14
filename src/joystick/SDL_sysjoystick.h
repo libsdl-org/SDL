@@ -300,6 +300,7 @@ extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;
 extern SDL_JoystickDriver SDL_BSD_JoystickDriver;
 extern SDL_JoystickDriver SDL_DARWIN_JoystickDriver;
 extern SDL_JoystickDriver SDL_DUMMY_JoystickDriver;
+extern SDL_JoystickDriver SDL_PUMPKIN_JoystickDriver;
 extern SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver;
 extern SDL_JoystickDriver SDL_HAIKU_JoystickDriver;
 extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
