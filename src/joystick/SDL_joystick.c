@@ -4233,6 +4233,11 @@ bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id)
     return eType == k_eControllerType_SteamControllerTriton;
 }
 
+bool SDL_IsJoystickSantrollerController(Uint16 vendor_id, Uint16 product_id)
+{
+    return vendor_id == USB_VENDOR_PID_CODES && (product_id == USB_PRODUCT_SANTROLLER_SANTROLLER || product_id == USB_PRODUCT_SANTROLLER_SANTROLLER_V2);
+}
+
 bool SDL_IsJoystickSantroller(SDL_GUID guid)
 {
     return (guid.data[14] == 's') ? true : false;

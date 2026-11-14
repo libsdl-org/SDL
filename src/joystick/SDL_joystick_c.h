@@ -184,7 +184,7 @@ extern bool SDL_IsJoystickHoriSteamController(Uint16 vendor_id, Uint16 product_i
 extern bool SDL_IsJoystickSInputController(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick is an Santroller controller
-extern bool SDL_IsJoystickSantroller(Uint16 vendor_id, Uint16 product_id);
+extern bool SDL_IsJoystickSantrollerController(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick is a Flydigi controller
 extern bool SDL_IsJoystickFlydigiController(Uint16 vendor_id, Uint16 product_id);
@@ -203,6 +203,9 @@ extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 
 // Function to return whether a joystick guid comes from a wired xbox 360 controller via xpad on linux
 extern bool SDL_IsJoystickXpad360(SDL_GUID guid);
+
+// Function to return whether a joystick guid comes from a Santroller controlller, via xpad or evdev on linux
+extern bool SDL_IsJoystickSantroller(SDL_GUID guid);
 
 // Function to return whether a joystick guid comes from the SysJoystick driver
 extern bool SDL_IsJoystickSysJoystick(SDL_GUID guid);
