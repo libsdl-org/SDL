@@ -95,25 +95,20 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     /* Draw a single triangle with a different color at each vertex. Center this one and make it grow and shrink. */
     /* You always draw triangles with this, but you can string triangles together to form polygons. */
-    SDL_zeroa(vertices);
     vertices[0].position.x = ((float) WINDOW_WIDTH) / 2.0f;
     vertices[0].position.y = (((float) WINDOW_HEIGHT) - size) / 2.0f;
-    vertices[0].color.r = 1.0f;
-    vertices[0].color.a = 1.0f;
+    vertices[0].color = (SDL_FColor) { 1.0, 0.0f, 0.0f, 1.0f };
     vertices[1].position.x = (((float) WINDOW_WIDTH) + size) / 2.0f;
     vertices[1].position.y = (((float) WINDOW_HEIGHT) + size) / 2.0f;
-    vertices[1].color.g = 1.0f;
-    vertices[1].color.a = 1.0f;
+    vertices[1].color = (SDL_FColor) { 0.0, 1.0f, 0.0f, 1.0f };
     vertices[2].position.x = (((float) WINDOW_WIDTH) - size) / 2.0f;
     vertices[2].position.y = (((float) WINDOW_HEIGHT) + size) / 2.0f;
-    vertices[2].color.b = 1.0f;
-    vertices[2].color.a = 1.0f;
+    vertices[2].color = (SDL_FColor) { 0.0, 0.0f, 1.0f, 1.0f };
 
     SDL_RenderGeometry(renderer, NULL, vertices, 3, NULL, 0);
 
     /* you can also map a texture to the geometry! Texture coordinates go from 0.0f to 1.0f. That will be the location
        in the texture bound to this vertex. */
-    SDL_zeroa(vertices);
     vertices[0].position.x = 10.0f;
     vertices[0].position.y = 10.0f;
     vertices[0].color.r = vertices[0].color.g = vertices[0].color.b = vertices[0].color.a = 1.0f;
