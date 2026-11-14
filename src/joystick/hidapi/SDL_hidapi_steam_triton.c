@@ -108,7 +108,7 @@ typedef struct
     Uint32 last_sensor_tick32;
     Uint64 sensor_timestamp_ns;
     Uint64 last_button_state;
-    Uint64 last_lizard_update;
+    Uint64 last_maintenance_update;
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
     Uint64 last_rumble_time;
@@ -127,8 +127,10 @@ static bool IsProteusDongle(Uint16 product_id)
             product_id == USB_PRODUCT_VALVE_STEAM_NEREID_DONGLE);
 }
 
-static bool DisableSteamTritonLizardMode(SDL_hid_device *dev)
+static bool MaintainTritonState(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
+
     int rc;
     Uint8 buffer[HID_FEATURE_REPORT_BYTES] = { 1 };
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
@@ -138,7 +140,13 @@ static bool DisableSteamTritonLizardMode(SDL_hid_device *dev)
     msg->payload.setSettingsValues.settings[0].settingNum = SETTING_LIZARD_MODE;
     msg->payload.setSettingsValues.settings[0].settingValue = LIZARD_MODE_OFF;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (ctx->report_sensors) {
+        msg->header.length += 1 * sizeof(ControllerSetting);
+        msg->payload.setSettingsValues.settings[1].settingNum = SETTING_IMU_MODE;
+        msg->payload.setSettingsValues.settings[1].settingValue = (SETTING_GYRO_MODE_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO);
+    }
+
+    rc = SDL_hid_send_feature_report(device->dev, buffer, sizeof(buffer));
     if (rc != sizeof(buffer)) {
         return false;
     }
@@ -491,9 +499,9 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (ctx->connected && joystick) {
         Uint64 now = SDL_GetTicks();
-        if (!ctx->last_lizard_update || (now - ctx->last_lizard_update) >= 3000) {
-            DisableSteamTritonLizardMode(device->dev);
-            ctx->last_lizard_update = now;
+        if (!ctx->last_maintenance_update || (now - ctx->last_maintenance_update) >= 3000) {
+            MaintainTritonState(device);
+            ctx->last_maintenance_update = now;
         }
 
         if (ctx->low_frequency_rumble || ctx->high_frequency_rumble) {
