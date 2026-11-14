@@ -294,6 +294,7 @@ extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *w
 extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
 extern void Wayland_AcceptDragAndDrop(SDL_Window *window, bool accept);
 
+extern struct xdg_toplevel *Wayland_GetToplevelForWindow(SDL_WindowData *window_data);
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
 extern bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);

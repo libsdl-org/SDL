@@ -116,6 +116,7 @@ struct SDL_Window
     bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
+    bool dockable;
 
     int safe_inset_left;
     int safe_inset_right;
