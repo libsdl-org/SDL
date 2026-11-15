@@ -681,6 +681,12 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
 #endif
 
     if (flags & SDL_INIT_EVENTS) {
+        if (SDL_bInMainQuit) {
+            if (flags == SDL_INIT_EVENTS) {
+                // We're quitting an individual subsystem, wait for the final quit to shut down events
+                return;
+            }
+        }
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
             SDL_EventsThreadID = 0;
