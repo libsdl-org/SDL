@@ -872,7 +872,9 @@ static bool HIDAPI_DriverPS4_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     joystick->nbuttons = 11;
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
-        // Guitars have no touchpad, so their buttons and axes always start right after the standard ones
+        // Guitars shouldn't have a touchpad, so we disable it explicitly 
+        // so that guitars always start their buttons and axes after the standard ones
+        // that way, mapping entries are always using the same buttons
         ctx->touchpad_supported = false;
         ctx->guitar_button_idx = (Uint8)joystick->nbuttons;
         joystick->nbuttons += 10; // frets + solo frets
