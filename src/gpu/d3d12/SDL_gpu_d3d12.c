@@ -6942,11 +6942,13 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     }
 
     // Resize the swapchain
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        0, // use client window width
-        0, // use client window height
+        (UINT)width,
+        (UINT)height,
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
@@ -7021,9 +7023,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     // Min swapchain image count is 2
     windowData->swapchainTextureCount = SDL_clamp(renderer->allowedFramesInFlight, 2, 3);
 
+    // Use the window size rather than the client area, which is empty while minimized
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
+
     // Initialize the swapchain buffer descriptor
-    swapchainDesc.Width = 0;  // use client window width
-    swapchainDesc.Height = 0; // use client window height
+    swapchainDesc.Width = (UINT)width;
+    swapchainDesc.Height = (UINT)height;
     swapchainDesc.Format = swapchainFormat;
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
