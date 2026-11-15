@@ -442,6 +442,18 @@ static Uint32 HIDAPI_DriverSteamDeck_GetJoystickCapabilities(SDL_HIDAPI_Device *
     return SDL_JOYSTICK_CAP_RUMBLE;
 }
 
+static bool HIDAPI_DriverSteamDeck_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
+{
+    if (size == HID_FEATURE_REPORT_BYTES + 1) {
+        int rc = SDL_hid_send_feature_report(device->dev, data, size);
+        if (rc != size) {
+            return false;
+        }
+        return true;
+    }
+    return SDL_Unsupported();
+}
+
 static bool HIDAPI_DriverSteamDeck_SetSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
     // On steam deck, sensors are enabled by default. Nothing to do here.
@@ -465,6 +477,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamDeck = {
     .OpenJoystick = HIDAPI_DriverSteamDeck_OpenJoystick,
     .RumbleJoystick = HIDAPI_DriverSteamDeck_RumbleJoystick,
     .GetJoystickCapabilities = HIDAPI_DriverSteamDeck_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverSteamDeck_SendJoystickEffect,
     .SetJoystickSensorsEnabled = HIDAPI_DriverSteamDeck_SetSensorsEnabled,
     .CloseJoystick = HIDAPI_DriverSteamDeck_CloseJoystick,
 };
