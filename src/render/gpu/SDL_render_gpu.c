@@ -1534,6 +1534,11 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
+    if (!mapped_tbuf) {
+        SDL_ReleaseGPUTransferBuffer(data->device, tbuf);
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
 
     if ((size_t)surface->pitch == row_size) {
         SDL_memcpy(surface->pixels, mapped_tbuf, image_size);
