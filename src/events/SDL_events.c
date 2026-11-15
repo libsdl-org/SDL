@@ -1201,6 +1201,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                                   Uint32 minType, Uint32 maxType, bool include_sentinel)
 {
     int i, used, sentinels_expected = 0;
+    bool wakeup = false;
 
     // Lock the event queue
     used = 0;
@@ -1223,7 +1224,12 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                 return -1;
             }
             for (i = 0; i < numevents; ++i) {
-                used += SDL_AddEvent(&events[i]);
+                if (SDL_AddEvent(&events[i])) {
+                    if (events[i].type != SDL_EVENT_POLL_SENTINEL) {
+                        wakeup = true;
+                    }
+                    ++used;
+                }
             }
         } else {
             SDL_EventEntry *entry, *next;
@@ -1261,7 +1267,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
     }
     SDL_UnlockMutex(SDL_EventQ.lock);
 
-    if (used > 0 && action == SDL_ADDEVENT) {
+    if (wakeup) {
         SDL_SendWakeupEvent();
     }
 
