@@ -2468,7 +2468,7 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
 
         if (SDL_GetJoystickType(controller->joystick) == SDL_JOYSTICK_TYPE_GUITAR) {
             SetGamepadButtonArea(auxiliary_toggle_button, display_mode == CONTROLLER_MODE_BINDING ? &auxiliary_toggle_binding_area : &auxiliary_toggle_testing_area);
-            SetGamepadButtonLabel(auxiliary_toggle_button, GetGamepadDisplayShowAuxiliary(gamepad_elements) ? "Show Gamepad" : "Show Auxiliary Inputs");
+            SetGamepadButtonLabel(auxiliary_toggle_button, GetGamepadDisplayShowAuxiliary(gamepad_elements) ? "Show Gamepad Inputs" : "Show Auxiliary Inputs");
             RenderGamepadButton(auxiliary_toggle_button);
         }
 
