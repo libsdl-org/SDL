@@ -1360,3 +1360,7 @@ SDL_DYNAPI_PROC(bool,SDL_GamepadHasGuitarAxis,(SDL_Gamepad *a,SDL_GamepadGuitarA
 SDL_DYNAPI_PROC(Sint16,SDL_GetGamepadGuitarAxis,(SDL_Gamepad *a,SDL_GamepadGuitarAxis b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GamepadHasGuitarButton,(SDL_Gamepad *a,SDL_GamepadGuitarButton b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_GetGamepadGuitarButton,(SDL_Gamepad *a,SDL_GamepadGuitarButton b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_GamepadGuitarButton,SDL_GetGamepadGuitarButtonFromString,(const char *a),(a),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetGamepadStringForGuitarButton,(SDL_GamepadGuitarButton a),(a),return)
+SDL_DYNAPI_PROC(SDL_GamepadGuitarAxis,SDL_GetGamepadGuitarAxisFromString,(const char *a),(a),return)
+SDL_DYNAPI_PROC(const char*,SDL_GetGamepadStringForGuitarAxis,(SDL_GamepadGuitarAxis a),(a),return)

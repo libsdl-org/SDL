@@ -1856,10 +1856,11 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
-                // if (GetButtonBindingString(button, mapping, binding, sizeof(binding))) {
-                //     dst.x += dst.w + 2 * margin;
-                //     SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
-                // }
+                SDL_snprintf(text, sizeof(text), ",%s:", SDL_GetGamepadStringForGuitarButton(button));
+                if (GetBindingString(text, mapping, binding, sizeof(binding))) {
+                    dst.x += dst.w + 2 * margin;
+                    SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
+                }
             }
 
             y += ctx->button_height + 2.0f;
@@ -1922,16 +1923,6 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
                 SDL_RenderFillRect(ctx->renderer, &rect);
             }
 
-            if (ctx->display_mode == CONTROLLER_MODE_BINDING && has_negative) {
-                // if (GetAxisBindingString(axis, -1, mapping, binding, sizeof(binding))) {
-                //     float text_x;
-
-                //     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                //     text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-                //     SDLTest_DrawString(ctx->renderer, text_x, y, binding);
-                // }
-            }
-
             dst.x += arrow_extent;
 
             if (value > 0) {
@@ -1944,13 +1935,14 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             }
 
             if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
-                // if (GetAxisBindingString(axis, 1, mapping, binding, sizeof(binding))) {
-                //     float text_x;
+                SDL_snprintf(text, sizeof(text), ",%s:", SDL_GetGamepadStringForGuitarAxis(axis));
+                if (GetBindingString(text, mapping, binding, sizeof(binding))) {
+                    float text_x;
 
-                //     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                //     text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-                //     SDLTest_DrawString(ctx->renderer, text_x, y, binding);
-                // }
+                    SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+                    text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                    SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+                }
             }
 
             dst.x += arrow_extent;

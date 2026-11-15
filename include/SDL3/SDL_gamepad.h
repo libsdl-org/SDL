@@ -1802,7 +1802,41 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, 
  * \sa SDL_GamepadHasGuitarAxis
  */
 extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
+/**
+ * Convert a string into SDL_GamepadAxis enum.
+ *
+ * This function is called internally to translate SDL_Gamepad mapping strings
+ * for the underlying joystick device into the consistent SDL_Gamepad mapping.
+ * You do not normally need to call this function unless you are parsing
+ * SDL_Gamepad mappings in your own code.
+ *
+ * \param str string representing a SDL_GamepadGuitarAxis.
+ * \returns the SDL_GamepadGuitarAxis enum corresponding to the input string, or
+ *          `SDL_GAMEPAD_GUITAR_AXIS_INVALID` if no match was found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadStringForAxis
+ */
+extern SDL_DECLSPEC SDL_GamepadGuitarAxis SDLCALL SDL_GetGamepadGuitarAxisFromString(const char *str);
 
+/**
+ * Convert from an SDL_GamepadGuitarAxis enum to a string.
+ *
+ * \param axis an enum value for a given SDL_GamepadGuitarAxis.
+ * \returns a string for the given axis, or NULL if an invalid axis is
+ *          specified. The string returned is of the format used by
+ *          SDL_Gamepad guitar mapping strings, e.g., "tilt".
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadGuitarAxisFromString
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForGuitarAxis(SDL_GamepadGuitarAxis axis);
 /**
  * Return whether a gamepad supports a particular guitar button.
  *
@@ -1832,6 +1866,43 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad
  * \sa SDL_GamepadHasGuitarButton
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
+
+/**
+ * Convert a string into an SDL_GamepadGuitarButton enum.
+ *
+ * This function is called internally to translate SDL_Gamepad mapping strings
+ * for the underlying joystick device into the consistent SDL_Gamepad mapping.
+ * You do not normally need to call this function unless you are parsing
+ * SDL_Gamepad mappings in your own code.
+ *
+ * \param str string representing a SDL_Gamepad guitar button.
+ * \returns the SDL_GamepadGuitarButton enum corresponding to the input string, or
+ *          `SDL_GAMEPAD_GUITAR_BUTTON_INVALID` if no match was found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadStringForGuitarButton
+ */
+extern SDL_DECLSPEC SDL_GamepadGuitarButton SDLCALL SDL_GetGamepadGuitarButtonFromString(const char *str);
+
+/**
+ * Convert from an SDL_GamepadGuitarButton enum to a string.
+ *
+ * \param button an enum value for a given SDL_GamepadGuitarButton.
+ * \returns a string for the given button, or NULL if an invalid button is
+ *          specified. The string returned is of the format used by
+ *          SDL_Gamepad mapping strings.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadGuitarButtonFromString
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForGuitarButton(SDL_GamepadGuitarButton button);
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
