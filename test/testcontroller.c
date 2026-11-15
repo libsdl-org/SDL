@@ -355,6 +355,9 @@ static GamepadButton *done_mapping_button = NULL;
 static GamepadButton *cancel_button = NULL;
 static GamepadButton *clear_button = NULL;
 static GamepadButton *copy_button = NULL;
+static GamepadButton *auxiliary_toggle_button = NULL;
+static SDL_FRect auxiliary_toggle_testing_area;
+static SDL_FRect auxiliary_toggle_binding_area;
 static GamepadButton *paste_button = NULL;
 static char *backup_mapping = NULL;
 static bool done = false;
@@ -557,6 +560,7 @@ static void ClearButtonHighlights(void)
     SetGamepadButtonHighlight(clear_button, false, false);
     SetGamepadButtonHighlight(copy_button, false, false);
     SetGamepadButtonHighlight(paste_button, false, false);
+    SetGamepadButtonHighlight(auxiliary_toggle_button, false, false);
 }
 
 static void UpdateButtonHighlights(float x, float y, bool button_down)
@@ -564,6 +568,7 @@ static void UpdateButtonHighlights(float x, float y, bool button_down)
     ClearButtonHighlights();
     SetGamepadButtonHighlight(GetGyroResetButton(gyro_elements), GamepadButtonContains(GetGyroResetButton(gyro_elements), x, y), button_down);
     SetGamepadButtonHighlight(GetGyroCalibrateButton(gyro_elements), GamepadButtonContains(GetGyroCalibrateButton(gyro_elements), x, y), button_down);
+    SetGamepadButtonHighlight(auxiliary_toggle_button, GamepadButtonContains(auxiliary_toggle_button, x, y), button_down);
 
     if (display_mode == CONTROLLER_MODE_TESTING) {
         SetGamepadButtonHighlight(setup_mapping_button, GamepadButtonContains(setup_mapping_button, x, y), button_down);
@@ -2258,6 +2263,12 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
             VirtualGamepadMouseUp(event->button.x, event->button.y);
         }
 
+        if (controller && SDL_GetJoystickType(controller->joystick) == SDL_JOYSTICK_TYPE_GUITAR &&
+            GamepadButtonContains(auxiliary_toggle_button, event->button.x, event->button.y)) {
+            ToggleGamepadDisplayAuxiliary(gamepad_elements);
+            break;
+        }
+
         if (display_mode == CONTROLLER_MODE_TESTING) {
             if (controller && GamepadButtonContains(GetGyroResetButton(gyro_elements), event->button.x, event->button.y)) {
                 ResetGyroOrientation(controller->imu_state);
@@ -2454,6 +2465,12 @@ SDL_AppResult SDLCALL SDL_AppIterate(void *appstate)
             RenderGamepadDisplay(gamepad_elements, controller->gamepad);
         }
         RenderJoystickDisplay(joystick_elements, controller->joystick);
+
+        if (SDL_GetJoystickType(controller->joystick) == SDL_JOYSTICK_TYPE_GUITAR) {
+            SetGamepadButtonArea(auxiliary_toggle_button, display_mode == CONTROLLER_MODE_BINDING ? &auxiliary_toggle_binding_area : &auxiliary_toggle_testing_area);
+            SetGamepadButtonLabel(auxiliary_toggle_button, GetGamepadDisplayShowAuxiliary(gamepad_elements) ? "Show Gamepad" : "Show Auxiliary Inputs");
+            RenderGamepadButton(auxiliary_toggle_button);
+        }
 
         if (display_mode == CONTROLLER_MODE_TESTING) {
             RenderGamepadButton(setup_mapping_button);
@@ -2682,6 +2699,20 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
     area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
     SetGamepadButtonArea(done_mapping_button, &area);
 
+    auxiliary_toggle_button = CreateGamepadButton(screen, "Show Auxiliary Inputs");
+    area.x += area.w + BUTTON_PADDING;
+    area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(auxiliary_toggle_button) + 2 * BUTTON_PADDING);
+    area.h = GetGamepadButtonLabelHeight(auxiliary_toggle_button) + 2 * BUTTON_PADDING;
+    area.y = SCREEN_HEIGHT - BUTTON_MARGIN - area.h;
+    SDL_copyp(&auxiliary_toggle_binding_area, &area);
+
+    /* Next to the Setup Mapping button when not binding */
+    GetGamepadButtonArea(setup_mapping_button, &area);
+    area.x += area.w + BUTTON_PADDING;
+    area.w = SDL_max(MINIMUM_BUTTON_WIDTH, GetGamepadButtonLabelWidth(auxiliary_toggle_button) + 2 * BUTTON_PADDING);
+    SDL_copyp(&auxiliary_toggle_testing_area, &area);
+    SetGamepadButtonArea(auxiliary_toggle_button, &area);
+
     /* Process the initial gamepad list */
     SDL_AppIterate(NULL);
 
@@ -2714,6 +2745,7 @@ void SDLCALL SDL_AppQuit(void *appstate, SDL_AppResult result)
     DestroyGamepadButton(clear_button);
     DestroyGamepadButton(copy_button);
     DestroyGamepadButton(paste_button);
+    DestroyGamepadButton(auxiliary_toggle_button);
     SDLTest_CleanupTextDrawing();
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);

@@ -1155,6 +1155,7 @@ struct GamepadDisplay
     int element_highlighted;
     bool element_pressed;
     int element_selected;
+    bool show_auxiliary;
 
     SDL_FRect area;
 };
@@ -1410,6 +1411,22 @@ void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed)
     ctx->element_pressed = pressed;
 }
 
+void ToggleGamepadDisplayAuxiliary(GamepadDisplay *ctx)
+{
+    if (!ctx) {
+        return;
+    }
+
+    ctx->show_auxiliary = !ctx->show_auxiliary;
+    ctx->element_highlighted = SDL_GAMEPAD_ELEMENT_INVALID;
+    ctx->element_pressed = false;
+}
+
+bool GetGamepadDisplayShowAuxiliary(GamepadDisplay *ctx)
+{
+    return ctx && ctx->show_auxiliary;
+}
+
 void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element)
 {
     if (!ctx) {
@@ -1428,6 +1445,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
     SDL_FPoint point;
     SDL_FRect rect;
     SDL_JoystickType joystick_type = SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad));
+    bool show_auxiliary = ctx && ctx->show_auxiliary && joystick_type == SDL_JOYSTICK_TYPE_GUITAR;
 
     if (!ctx) {
         return SDL_GAMEPAD_ELEMENT_INVALID;
@@ -1441,7 +1459,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
     rect.w = ctx->area.w - (margin * 2);
     rect.h = ctx->button_height;
 
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
+    for (i = 0; i < (show_auxiliary ? 0 : SDL_GAMEPAD_BUTTON_COUNT); ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
@@ -1457,7 +1475,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
         rect.y += ctx->button_height + 2.0f;
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
+    for (i = 0; i < (show_auxiliary ? 0 : SDL_GAMEPAD_AXIS_COUNT); ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         SDL_FRect area;
 
@@ -1510,7 +1528,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
         rect.y += ctx->button_height + 2.0f;
     }
 
-    if (joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+    if (show_auxiliary) {
         for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
         SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
 
@@ -1634,6 +1652,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     bool has_accel;
     bool has_gyro;
     SDL_JoystickType joystick_type = SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad));
+    bool show_auxiliary = ctx && ctx->show_auxiliary && joystick_type == SDL_JOYSTICK_TYPE_GUITAR;
 
     if (!ctx) {
         return;
@@ -1646,7 +1665,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
     x = ctx->area.x + margin;
     y = ctx->area.y + margin;
 
-    for (i = 0; i < SDL_GAMEPAD_BUTTON_COUNT; ++i) {
+    for (i = 0; i < (show_auxiliary ? 0 : SDL_GAMEPAD_BUTTON_COUNT); ++i) {
         SDL_GamepadButton button = (SDL_GamepadButton)i;
 
         if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
@@ -1685,7 +1704,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         y += ctx->button_height + 2.0f;
     }
 
-    for (i = 0; i < SDL_GAMEPAD_AXIS_COUNT; ++i) {
+    for (i = 0; i < (show_auxiliary ? 0 : SDL_GAMEPAD_AXIS_COUNT); ++i) {
         SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
         bool has_negative = (axis != SDL_GAMEPAD_AXIS_LEFT_TRIGGER && axis != SDL_GAMEPAD_AXIS_RIGHT_TRIGGER);
         Sint16 value;
@@ -1825,7 +1844,7 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
         y += ctx->button_height + 2.0f;
     }
 
-    if (joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+    if (show_auxiliary) {
         for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
             SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
 
