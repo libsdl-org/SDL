@@ -1649,6 +1649,19 @@ static Sint64 SDL_events_get_polling_interval(void)
     return poll_intervalNS;
 }
 
+static bool SDL_HasMainThreadCallbacks(void)
+{
+    bool result = false;
+
+    SDL_LockMutex(SDL_main_callbacks_lock);
+    if (SDL_main_callbacks_head) {
+        result = true;
+    }
+    SDL_UnlockMutex(SDL_main_callbacks_lock);
+
+    return result;
+}
+
 static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
 {
     Sint64 loop_timeoutNS = timeoutNS;
@@ -1690,9 +1703,10 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
             }
         }
         SDL_SetAtomicPointer(&_this->wakeup_window, wakeup_window);
-        /* Check the queue before waiting: another thread might have
-           added an event (right before wakeup_window was set: race condition)*/
-        if (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0) {
+        // Check again before waiting: another thread might have added an event
+        // or a main thread callback before wakeup_window was set
+        if (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0 ||
+            SDL_HasMainThreadCallbacks()) {
             SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
             continue;
         }
