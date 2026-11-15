@@ -282,7 +282,12 @@ typedef enum SDL_GamepadGuitarButton
 
 /**
  * The list of guitar axes on a gamepad
- * Guitar axis types represent various controls found on guitar controllers, such as whammy bars, tilt sensors, and sliders.
+ * Guitar axis types represent various controls found on guitar controllers, such as whammy bars, tilt sensors, and slider bars.
+ *
+ * The tilt sensor is zeroed when the guitar is held flat and goes positive when tilted up and negative if tilted down.
+ * For guitars that don't support reporting tilt in both directions, tilt is just mapped to positive values.
+ *
+ * Whammy and slider bar just have positive values, as they just represent a specific value depending on what position they are in.
  *
  * \since This enum is available since SDL 3.6.0.
  *
