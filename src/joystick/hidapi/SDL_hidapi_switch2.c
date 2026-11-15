@@ -122,7 +122,9 @@ typedef struct
     bool sensors_enabled;
     bool sensors_ready;
     int sample_count;
-    Uint64 first_sensor_timestamp;
+    Uint32 first_sensor_timestamp;
+    Uint32 last_sensor_timestamp;
+    Uint64 sensor_ticks;
     Uint64 sensor_ts_coeff;
     float gyro_coeff;
 
@@ -1145,7 +1147,15 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
         break;
     }
 
-    Uint64 sensor_timestamp = (Uint32) (data[0x2b] | (data[0x2c] << 8U) | (data[0x2d] << 16U) | (data[0x2e] << 24U));
+    Uint32 sensor_timestamp = (Uint32) (data[0x2b] | (data[0x2c] << 8U) | (data[0x2d] << 16U) | (data[0x2e] << 24U));
+    if (sensor_timestamp) {
+        if (ctx->last_sensor_timestamp) {
+            ctx->sensor_ticks += (Uint32)(sensor_timestamp - ctx->last_sensor_timestamp);
+        } else {
+            ctx->sensor_ticks = sensor_timestamp;
+        }
+        ctx->last_sensor_timestamp = sensor_timestamp;
+    }
     if (sensor_timestamp && !ctx->sensors_ready) {
         ctx->sample_count++;
         if (ctx->sample_count >= 5 && !ctx->first_sensor_timestamp) {
@@ -1154,7 +1164,7 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
         } else if (ctx->sample_count == 100) {
             // Calculate timestamp coefficient
             // Timestamp are normally microseconds but sometimes it's something else for no apparent reason
-            Uint64 coeff = 1000 * (sensor_timestamp - ctx->first_sensor_timestamp) / (ctx->sample_count * 4);
+            Uint64 coeff = 1000 * (Uint64)(sensor_timestamp - ctx->first_sensor_timestamp) / (ctx->sample_count * 4);
             if ((coeff + 100000) / 200000 == 5) {
                 // Within 10% of 1000
                 ctx->sensor_ts_coeff = 10000;
@@ -1182,7 +1192,7 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
         }
     }
     if (ctx->sensors_enabled && sensor_timestamp && ctx->sensors_ready) {
-        sensor_timestamp = sensor_timestamp * ctx->sensor_ts_coeff / 10;
+        Uint64 sensor_timestamp_ns = ctx->sensor_ticks * ctx->sensor_ts_coeff / 10;
         float accel_data[3];
         float gyro_data[3];
         const float g = 9.80665f;
@@ -1199,8 +1209,8 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
         switch (ctx->device->product_id) {
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_LEFT:
             if (ctx->device->parent) {
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO_L, sensor_timestamp, gyro_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL_L, sensor_timestamp, accel_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO_L, sensor_timestamp_ns, gyro_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL_L, sensor_timestamp_ns, accel_data, 3);
             } else {
                 float tmp = -accel_data[0];
                 accel_data[0] = accel_data[2];
@@ -1210,16 +1220,16 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
                 gyro_data[0] = gyro_data[2];
                 gyro_data[2] = tmp;
 
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp_ns, gyro_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp_ns, accel_data, 3);
             }
             break;
         case USB_PRODUCT_NINTENDO_SWITCH2_JOYCON_RIGHT:
             if (ctx->device->parent) {
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO_R, sensor_timestamp, gyro_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL_R, sensor_timestamp, accel_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp_ns, gyro_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp_ns, accel_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO_R, sensor_timestamp_ns, gyro_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL_R, sensor_timestamp_ns, accel_data, 3);
             } else {
                 float tmp = accel_data[0];
                 accel_data[0] = -accel_data[2];
@@ -1229,13 +1239,13 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
                 gyro_data[0] = -gyro_data[2];
                 gyro_data[2] = tmp;
 
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_data, 3);
-                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp_ns, gyro_data, 3);
+                SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp_ns, accel_data, 3);
             }
             break;
         default:
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp, gyro_data, 3);
-            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp, accel_data, 3);
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_GYRO, sensor_timestamp_ns, gyro_data, 3);
+            SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, sensor_timestamp_ns, accel_data, 3);
             break;
         }
     }
