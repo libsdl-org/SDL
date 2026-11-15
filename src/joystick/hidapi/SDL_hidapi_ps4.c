@@ -1205,10 +1205,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->guitar_tilt_supported) {
-        // PS4 guitars don't report tilt in both directions as negative and positive
-        // they instead just report the tilt range across the axis, with zero as the guitar
-        // held in a resting position, and then tilting in either direction increases the axis value.
-        axis = ((int)packet->rgucDeviceSpecific[2] * SDL_JOYSTICK_AXIS_MAX) / 255;
+        axis = ((int)packet->rgucDeviceSpecific[2] * 257) - 32768;
         SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 1, axis);
     }
 
