@@ -476,7 +476,7 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         int i;
         int ncolors;
         int rmax, gmax, bmax;
-        int rmask, gmask, bmask;
+        Uint32 rmask, gmask, bmask;
         int rshift, gshift, bshift;
 
         xattr.colormap =
@@ -499,21 +499,21 @@ int X11_CreateWindow(_THIS, SDL_Window *window)
         bmax = 0xffff;
 
         rshift = 0;
-        rmask = visual->red_mask;
+        rmask = (Uint32) visual->red_mask;
         while (0 == (rmask & 1)) {
             rshift++;
             rmask >>= 1;
         }
 
         gshift = 0;
-        gmask = visual->green_mask;
+        gmask = (Uint32) visual->green_mask;
         while (0 == (gmask & 1)) {
             gshift++;
             gmask >>= 1;
         }
 
         bshift = 0;
-        bmask = visual->blue_mask;
+        bmask = (Uint32) visual->blue_mask;
         while (0 == (bmask & 1)) {
             bshift++;
             bmask >>= 1;
@@ -1525,7 +1525,7 @@ int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     Colormap colormap = data->colormap;
     XColor *colorcells;
     int ncolors;
-    int rmask, gmask, bmask;
+    Uint32 rmask, gmask, bmask;
     int rshift, gshift, bshift;
     int i;
 
@@ -1540,21 +1540,21 @@ int X11_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp)
     }
 
     rshift = 0;
-    rmask = visual->red_mask;
+    rmask = (Uint32) visual->red_mask;
     while (0 == (rmask & 1)) {
         rshift++;
         rmask >>= 1;
     }
 
     gshift = 0;
-    gmask = visual->green_mask;
+    gmask = (Uint32) visual->green_mask;
     while (0 == (gmask & 1)) {
         gshift++;
         gmask >>= 1;
     }
 
     bshift = 0;
-    bmask = visual->blue_mask;
+    bmask = (Uint32) visual->blue_mask;
     while (0 == (bmask & 1)) {
         bshift++;
         bmask >>= 1;
