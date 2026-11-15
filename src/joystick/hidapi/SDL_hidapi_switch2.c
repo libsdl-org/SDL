@@ -679,7 +679,7 @@ static bool HIDAPI_DriverSwitch2_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *de
         }
         RecvBulkData(ctx, reply, sizeof(reply));
     }
-    ctx->sensors_enabled = true;
+    ctx->sensors_enabled = enabled;
     return true;
 }
 
