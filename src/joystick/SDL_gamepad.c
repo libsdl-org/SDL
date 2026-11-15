@@ -3910,7 +3910,7 @@ bool SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis axis)
 }
 
 /*
- * Get the current state of an instrument axis on a gamepad
+ * Get the current state of an axis on a guitar
  */
 Sint16 SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis axis)
 {
@@ -3974,7 +3974,7 @@ bool SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton bu
 
 
 /*
- * Get the current state of an instrument input on a gamepad
+ * Get the current state of an button on a guitar
  */
 bool SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton button)
 {
