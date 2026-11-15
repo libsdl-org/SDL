@@ -248,9 +248,9 @@ typedef struct
     D3D12_TextureData *textureRenderTarget;
     D3D12_CPU_DESCRIPTOR_HANDLE currentRenderTargetView;
     int numCurrentShaderResources;
-    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResource;
+    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResources[3];
     int numCurrentShaderSamplers;
-    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderSampler;
+    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderSamplers[2];
     bool cliprectDirty;
     bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
@@ -451,9 +451,9 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
         data->swapFlags = 0;
         data->currentRenderTargetView.ptr = 0;
         data->numCurrentShaderResources = 0;
-        data->currentShaderResource.ptr = 0;
+        SDL_zeroa(data->currentShaderResources);
         data->numCurrentShaderSamplers = 0;
-        data->currentShaderSampler.ptr = 0;
+        SDL_zeroa(data->currentShaderSamplers);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         // Check for any leaks if in debug mode
@@ -2173,9 +2173,9 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             return false;
         }
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2211,9 +2211,9 @@ static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
             return false;
         }
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2236,9 +2236,9 @@ static bool D3D12_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, UVplane, UVpitch, &textureData->mainResourceState)) {
         return false;
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2881,13 +2881,13 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     bool shaderResourcesChanged = false;
     if (numShaderResources != rendererData->numCurrentShaderResources ||
-        (numShaderResources > 0 && shaderResources[0].ptr != rendererData->currentShaderResource.ptr)) {
+        (numShaderResources > 0 && SDL_memcmp(shaderResources, rendererData->currentShaderResources, numShaderResources * sizeof(*shaderResources)) != 0)) {
         shaderResourcesChanged = true;
     }
 
     bool shaderSamplersChanged = false;
     if (numShaderSamplers != rendererData->numCurrentShaderSamplers ||
-        (numShaderSamplers > 0 && shaderSamplers[0].ptr != rendererData->currentShaderSampler.ptr)) {
+        (numShaderSamplers > 0 && SDL_memcmp(shaderSamplers, rendererData->currentShaderSamplers, numShaderSamplers * sizeof(*shaderSamplers)) != 0)) {
         shaderSamplersChanged = true;
     }
 
@@ -2969,7 +2969,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         }
         rendererData->numCurrentShaderResources = numShaderResources;
         if (numShaderResources > 0) {
-            rendererData->currentShaderResource.ptr = shaderResources[0].ptr;
+            SDL_memcpy(rendererData->currentShaderResources, shaderResources, numShaderResources * sizeof(*shaderResources));
         }
     }
 
@@ -3001,7 +3001,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
         rendererData->numCurrentShaderSamplers = numShaderSamplers;
         if (numShaderSamplers > 0) {
-            rendererData->currentShaderSampler.ptr = shaderSamplers[0].ptr;
+            SDL_memcpy(rendererData->currentShaderSamplers, shaderSamplers, numShaderSamplers * sizeof(*shaderSamplers));
         }
     }
 
@@ -3171,9 +3171,9 @@ static void D3D12_InvalidateCachedState(SDL_Renderer *renderer)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     data->currentRenderTargetView.ptr = 0;
     data->numCurrentShaderResources = 0;
-    data->currentShaderResource.ptr = 0;
+    SDL_zeroa(data->currentShaderResources);
     data->numCurrentShaderSamplers = 0;
-    data->currentShaderSampler.ptr = 0;
+    SDL_zeroa(data->currentShaderSamplers);
     data->cliprectDirty = true;
     data->viewportDirty = true;
 }

@@ -199,9 +199,9 @@ typedef struct
     D3D11_Shader currentShader;
     D3D11_PixelShaderState currentShaderState[NUM_SHADERS];
     int numCurrentShaderResources;
-    ID3D11ShaderResourceView *currentShaderResource;
+    ID3D11ShaderResourceView *currentShaderResources[3];
     int numCurrentShaderSamplers;
-    ID3D11SamplerState *currentShaderSampler;
+    ID3D11SamplerState *currentShaderSamplers[2];
     bool cliprectDirty;
     bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
@@ -393,9 +393,9 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         data->currentShader = SHADER_NONE;
         SDL_zero(data->currentShaderState);
         data->numCurrentShaderResources = 0;
-        data->currentShaderResource = NULL;
+        SDL_zeroa(data->currentShaderResources);
         data->numCurrentShaderSamplers = 0;
-        data->currentShaderSampler = NULL;
+        SDL_zeroa(data->currentShaderSamplers);
 
         // Check for any leaks if in debug mode
         if (data->dxgiDebug) {
@@ -2407,13 +2407,13 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     bool shaderResourcesChanged = false;
     if (numShaderResources != rendererData->numCurrentShaderResources ||
-        (numShaderResources > 0 && shaderResources[0] != rendererData->currentShaderResource)) {
+        (numShaderResources > 0 && SDL_memcmp(shaderResources, rendererData->currentShaderResources, numShaderResources * sizeof(*shaderResources)) != 0)) {
         shaderResourcesChanged = true;
     }
 
     bool shaderSamplersChanged = false;
     if (numShaderSamplers != rendererData->numCurrentShaderSamplers ||
-        (numShaderSamplers > 0 && shaderSamplers[0] != rendererData->currentShaderSampler)) {
+        (numShaderSamplers > 0 && SDL_memcmp(shaderSamplers, rendererData->currentShaderSamplers, numShaderSamplers * sizeof(*shaderSamplers)) != 0)) {
         shaderSamplersChanged = true;
     }
 
@@ -2527,14 +2527,14 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, numShaderResources, shaderResources);
         rendererData->numCurrentShaderResources = numShaderResources;
         if (numShaderResources > 0) {
-            rendererData->currentShaderResource = shaderResources[0];
+            SDL_memcpy(rendererData->currentShaderResources, shaderResources, numShaderResources * sizeof(*shaderResources));
         }
     }
     if (shaderSamplersChanged) {
         ID3D11DeviceContext_PSSetSamplers(rendererData->d3dContext, 0, numShaderSamplers, shaderSamplers);
         rendererData->numCurrentShaderSamplers = numShaderSamplers;
-        if (numShaderSamplers) {
-            rendererData->currentShaderSampler = shaderSamplers[0];
+        if (numShaderSamplers > 0) {
+            SDL_memcpy(rendererData->currentShaderSamplers, shaderSamplers, numShaderSamplers * sizeof(*shaderSamplers));
         }
     }
 
@@ -2676,9 +2676,9 @@ static void D3D11_InvalidateCachedState(SDL_Renderer *renderer)
     data->currentBlendState = NULL;
     data->currentShader = SHADER_NONE;
     data->numCurrentShaderResources = 0;
-    data->currentShaderResource = NULL;
+    SDL_zeroa(data->currentShaderResources);
     data->numCurrentShaderSamplers = 0;
-    data->currentShaderSampler = NULL;
+    SDL_zeroa(data->currentShaderSamplers);
     data->cliprectDirty = true;
     data->viewportDirty = true;
 }
