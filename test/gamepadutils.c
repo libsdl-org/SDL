@@ -1104,9 +1104,6 @@ static const char *capsense_names[] = {
 };
 SDL_COMPILE_TIME_ASSERT(capsense_names, SDL_arraysize(capsense_names) == SDL_GAMEPAD_CAPSENSE_COUNT);
 
-
-
-
 static const char *guitar_axis_names[] = {
     "Whammy",
     "Tilt",
