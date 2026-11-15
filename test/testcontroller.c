@@ -571,7 +571,6 @@ static void UpdateButtonHighlights(float x, float y, bool button_down)
         SDL_FPoint point;
         int gamepad_highlight_element = SDL_GAMEPAD_ELEMENT_INVALID;
         char *joystick_highlight_element;
-        char *instrument_highlight_element;
 
         point.x = x;
         point.y = y;
