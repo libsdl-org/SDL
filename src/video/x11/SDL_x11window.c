@@ -675,7 +675,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
 
 #define CALC_MASK_AND_SHIFT(shiftvar, maskvar, origmask) \
         int shiftvar = 0; \
-        Uint32 maskvar = origmask; \
+        Uint32 maskvar = (Uint32) origmask; \
         while (0 == (maskvar & 1)) { \
             shiftvar++; \
             maskvar >>= 1; \
