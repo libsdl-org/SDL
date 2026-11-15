@@ -495,6 +495,8 @@ typedef struct GIP_Attachment
     Uint32 features;
     Uint32 quirks;
     Uint8 share_button_idx;
+    Uint8 guitar_button_idx;
+    Uint8 guitar_axis_idx;
     Uint8 paddle_idx;
 
     Uint8 extra_button_idx;
@@ -2115,21 +2117,22 @@ static void GIP_HandleGuitarReport(
         }
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
         axis = ((int)bytes[3] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, 7, axis);
-        axis = ((int)bytes[2] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, 8, axis);
+        SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx, axis);
+        // Tilt only uses the positive half of the axis
+        axis = ((int)bytes[2] * SDL_JOYSTICK_AXIS_MAX) / 255;
+        SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx + 1, axis);
         axis = ((int)bytes[4] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, 9, axis);
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 10, bytes[5] & (1 << 0));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 9, bytes[5] & (1 << 1));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 8, bytes[5] & (1 << 2));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 7, bytes[5] & (1 << 3));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 6, bytes[5] & (1 << 4));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 5, bytes[6] & (1 << 0));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 4, bytes[6] & (1 << 1));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 3, bytes[6] & (1 << 2));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 2, bytes[6] & (1 << 3));
-        SDL_SendJoystickButton(timestamp, joystick, joystick->nbuttons - 1, bytes[6] & (1 << 4));
+        SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx + 2, axis);
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 0, bytes[5] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 1, bytes[5] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 2, bytes[5] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 3, bytes[5] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 4, bytes[5] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 5, bytes[6] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 6, bytes[6] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 7, bytes[6] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 8, bytes[6] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 9, bytes[6] & (1 << 4));
     }
 }
 
@@ -2857,6 +2860,12 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     // Initialize the joystick capabilities
     joystick->nbuttons = 11;
+
+    if (attachment->attachment_type == GIP_TYPE_GUITAR) {
+        device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+        attachment->guitar_button_idx = (Uint8) joystick->nbuttons;
+        joystick->nbuttons += 10; // frets + solo frets
+    }
     GIP_EnableEliteButtons(attachment);
     if (attachment->xbe_format != GIP_BTN_FMT_UNKNOWN ||
         (device->vendor_id == USB_VENDOR_MICROSOFT &&
@@ -2875,16 +2884,14 @@ static bool HIDAPI_DriverGIP_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     }
 
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+
+    if (attachment->attachment_type == GIP_TYPE_GUITAR) {
+        attachment->guitar_axis_idx = (Uint8) joystick->naxes;
+        joystick->naxes += 3; // Guitar tilt, whammy, pickup
+    }
     if (attachment->attachment_type == GIP_TYPE_FLIGHT_STICK) {
         /* Flight sticks have at least 4 axes, but only 3 are signed values, so we leave RIGHTY unused */
         joystick->naxes += attachment->extra_axes - 1;
-    }
-
-    if (attachment->attachment_type == GIP_TYPE_GUITAR) {
-        device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-        joystick->naxes += 3; // Guitar tilt, whammy, pickup
-        joystick->nbuttons += 10; // frets + solo frets 
-
     }
 
     if (attachment->attachment_type == GIP_TYPE_DRUM_KIT) {
