@@ -2983,6 +2983,7 @@ void DestroyJoystickDisplay(JoystickDisplay *ctx)
     SDL_free(ctx);
 }
 
+
 struct GamepadButton
 {
     SDL_Renderer *renderer;
