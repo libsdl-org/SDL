@@ -2123,7 +2123,7 @@ static void GIP_HandleGuitarReport(
         // held in a resting position, and then tilting in either direction increases the axis value.
         axis = ((int)bytes[2] * SDL_JOYSTICK_AXIS_MAX) / 255;
         SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx + 1, axis);
-        axis = ((int)bytes[4] * 257) - 32768;
+        axis = ((int)bytes[4] * 65535) / 4 - 32768; // Five notches spread across the axis
         SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx + 2, axis);
         SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 0, bytes[5] & (1 << 0));
         SDL_SendJoystickButton(timestamp, joystick, attachment->guitar_button_idx + 1, bytes[5] & (1 << 1));

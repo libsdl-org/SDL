@@ -1512,7 +1512,7 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        axis = ((int)packet->rgucDeviceSpecific[0] * 257) - 32768;
+        axis = ((int)packet->rgucDeviceSpecific[0] * 65535) / 4 - 32768; // Five notches spread across the axis
         SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 2, axis);
     }
 

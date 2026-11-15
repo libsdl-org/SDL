@@ -84,6 +84,7 @@ typedef struct
     int player_index;
     Uint8 rumble_left;
     Uint8 rumble_right;
+    Uint8 pickup_notch;
     Uint8 last_state[USB_PACKET_LENGTH];
 } SDL_DriverPS3_Context;
 
@@ -707,6 +708,7 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     SDL_AssertJoysticksLocked();
 
     ctx->joystick = joystick;
+    ctx->pickup_notch = 0;
     SDL_zeroa(ctx->last_state);
 
     // Initialize the joystick capabilities
@@ -946,7 +948,16 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTY, axis);
     axis = ((int)data[5] * 257) - 32768;
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
-    axis = ((int)data[6] * 257) - 32768;
+    if (ctx->device->vendor_id == USB_VENDOR_SCEA &&
+        ctx->device->product_id == USB_PRODUCT_SCEA_PS3_RB_GUITAR) {
+        // The pickup switch has five notches. At rest it reports 0x7F, which has to be ignored
+        if (data[6] != 0x7F) {
+            ctx->pickup_notch = (Uint8)SDL_min(data[6] / (255 / 5), 4);
+        }
+        axis = (ctx->pickup_notch * 65535) / 4 - 32768;
+    } else {
+        axis = ((int)data[6] * 257) - 32768;
+    }
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, axis);
     if (ctx->device->vendor_id == USB_VENDOR_SCEA) {
         switch (ctx->device->product_id) {

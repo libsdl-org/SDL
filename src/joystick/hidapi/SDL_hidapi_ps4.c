@@ -1200,7 +1200,7 @@ static void HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_d
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        axis = ((int)packet->rgucDeviceSpecific[0] * 257) - 32768;
+        axis = ((int)packet->rgucDeviceSpecific[0] * 65535) / 4 - 32768; // Five notches spread across the axis
         SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 2, axis);
     }
 
