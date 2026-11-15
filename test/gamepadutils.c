@@ -1427,6 +1427,7 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
     const float arrow_extent = 48.0f;
     SDL_FPoint point;
     SDL_FRect rect;
+    SDL_JoystickType joystick_type = SDL_GetJoystickType(SDL_GetGamepadJoystick(gamepad));
 
     if (!ctx) {
         return SDL_GAMEPAD_ELEMENT_INVALID;
@@ -1507,6 +1508,51 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
         }
 
         rect.y += ctx->button_height + 2.0f;
+    }
+
+    if (joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
+        SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
+
+        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+            !SDL_GamepadHasGuitarButton(gamepad, button)) {
+            continue;
+        }
+
+
+        if (SDL_PointInRectFloat(&point, &rect)) {
+            return i + SDL_GAMEPAD_ELEMENT_AXIS_MAX;
+        }
+
+        rect.y += ctx->button_height + 2.0f;
+    }
+
+    for (i = 0; i < SDL_GAMEPAD_GUITAR_AXIS_COUNT; ++i) {
+        SDL_GamepadGuitarAxis axis = (SDL_GamepadGuitarAxis)i;
+        SDL_FRect area;
+
+        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+            !SDL_GamepadHasGuitarAxis(gamepad, axis)) {
+            continue;
+        }
+
+        area.x = rect.x + center + 2.0f;
+        area.y = rect.y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+        area.w = ctx->arrow_width + arrow_extent;
+        area.h = ctx->button_height;
+
+        if (SDL_PointInRectFloat(&point, &area)) {
+            return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
+        }
+
+        area.x += area.w;
+
+        if (SDL_PointInRectFloat(&point, &area)) {
+            return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
+        }
+
+        rect.y += ctx->button_height + 2.0f;
+    }
     }
     return SDL_GAMEPAD_ELEMENT_INVALID;
 }
@@ -1810,21 +1856,21 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             SDL_RenderTexture(ctx->renderer, ctx->button_texture, NULL, &dst);
 
             if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
-                if (GetButtonBindingString(button, mapping, binding, sizeof(binding))) {
-                    dst.x += dst.w + 2 * margin;
-                    SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
-                }
+                // if (GetButtonBindingString(button, mapping, binding, sizeof(binding))) {
+                //     dst.x += dst.w + 2 * margin;
+                //     SDLTest_DrawString(ctx->renderer, dst.x, y, binding);
+                // }
             }
 
             y += ctx->button_height + 2.0f;
         }
         for (i = 0; i < SDL_GAMEPAD_GUITAR_AXIS_COUNT; ++i) {
-            SDL_GamepadAxis axis = (SDL_GamepadAxis)i;
+            SDL_GamepadGuitarAxis axis = (SDL_GamepadGuitarAxis)i;
             bool has_negative = (axis == SDL_GAMEPAD_GUITAR_AXIS_TILT);
             Sint16 value;
 
             if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
-                !SDL_GamepadHasAxis(gamepad, axis)) {
+                !SDL_GamepadHasGuitarAxis(gamepad, axis)) {
                 continue;
             }
 
@@ -1877,13 +1923,13 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             }
 
             if (ctx->display_mode == CONTROLLER_MODE_BINDING && has_negative) {
-                if (GetAxisBindingString(axis, -1, mapping, binding, sizeof(binding))) {
-                    float text_x;
+                // if (GetAxisBindingString(axis, -1, mapping, binding, sizeof(binding))) {
+                //     float text_x;
 
-                    SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                    text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-                    SDLTest_DrawString(ctx->renderer, text_x, y, binding);
-                }
+                //     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+                //     text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                //     SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+                // }
             }
 
             dst.x += arrow_extent;
@@ -1898,13 +1944,13 @@ void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad)
             }
 
             if (ctx->display_mode == CONTROLLER_MODE_BINDING) {
-                if (GetAxisBindingString(axis, 1, mapping, binding, sizeof(binding))) {
-                    float text_x;
+                // if (GetAxisBindingString(axis, 1, mapping, binding, sizeof(binding))) {
+                //     float text_x;
 
-                    SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
-                    text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
-                    SDLTest_DrawString(ctx->renderer, text_x, y, binding);
-                }
+                //     SDL_SetRenderDrawColor(ctx->renderer, r, g, b, a);
+                //     text_x = dst.x + arrow_extent / 2 - (FONT_CHARACTER_SIZE * SDL_strlen(binding)) / 2;
+                //     SDLTest_DrawString(ctx->renderer, text_x, y, binding);
+                // }
             }
 
             dst.x += arrow_extent;
