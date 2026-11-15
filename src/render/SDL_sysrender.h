@@ -72,10 +72,18 @@ typedef struct SDL_RenderViewState
     SDL_FPoint current_scale;  // this is just `scale * logical_scale`, precalculated, since we use it a lot.
 } SDL_RenderViewState;
 
+// Hardware palettes are shared between textures with the same palette and color key
+typedef struct SDL_TexturePaletteKey
+{
+    SDL_Palette *palette;
+    int colorkey;               // -1 if there is no color key
+} SDL_TexturePaletteKey;
+
 // Define the SDL texture palette structure
 typedef struct SDL_TexturePalette
 {
     int refcount;
+    SDL_TexturePaletteKey key;
     Uint32 version;
     Uint32 last_command_generation; // last command queue generation this palette was in.
     void *internal;             // Driver specific palette representation
@@ -104,6 +112,7 @@ struct SDL_Texture
     SDL_Palette *public_palette;
     SDL_TexturePalette *palette;
     Uint32 palette_version;
+    int palette_colorkey;       // -1 if there is no color key
     SDL_Surface *palette_surface;
 
     // Support for formats not supported directly by the renderer
