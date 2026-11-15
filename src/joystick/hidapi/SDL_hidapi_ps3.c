@@ -224,7 +224,7 @@ static bool HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
 
-    static Uint8 effects[] = {
+    Uint8 effects[] = {
         0x01, 0xff, 0x00, 0xff, 0x00,
         0x00, 0x00, 0x00, 0x00, 0x00,
         0xff, 0x27, 0x10, 0x00, 0x32,
@@ -677,20 +677,14 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
 
     if (device->vendor_id == USB_VENDOR_SCEA) {
         switch (device->product_id) {
-            case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
-                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                break;
             case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
-                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                break;
+            case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
             case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
                 device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
                 break;
-            case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
-            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
-                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-                break;
             case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
                 device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
                 break;
             default:
