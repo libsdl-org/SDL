@@ -205,6 +205,7 @@ typedef DWORD (WINAPI *CM_Get_DevNode_PropertyWFunc)(DWORD dnDevInst, const DEVP
 static GUID GUID_DEVINTERFACE_HID = { 0x4D1E55B2L, 0xF16F, 0x11CF, { 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30 } };
 static const DEVPROPKEY SDL_DEVPKEY_Device_InstanceId = { { 0x78c34fc8, 0x104a, 0x4aca, { 0x9e, 0xa4, 0x52, 0x4d, 0x52, 0x99, 0x6e, 0x57 } }, 256 };
 static const DEVPROPKEY SDL_DEVPKEY_Device_ContainerId = { { 0x8c7ed206, 0x3f8a, 0x4827, { 0xb3, 0xab, 0xae, 0x9e, 0x1f, 0xae, 0xfc, 0x6c } }, 2 };
+static const DEVPROPKEY SDL_DEVPKEY_Device_UpperFilters = { { 0xa45c254e, 0xdf1c, 0x4efd, { 0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0 } }, 20 };
 
 static SDL_InitState SDL_cfgmgr32_init;
 static CM_Register_NotificationFunc SDL_CM_Register_Notification;
@@ -428,18 +429,44 @@ WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
     }
 }
 
-static char *GetContainerIDFromInstanceID(const WCHAR *instance_id)
+static bool GetDevNodeFromInterfacePath(const char *path, DWORD *devinst)
+{
+    WCHAR instance_id[MAX_DEVICE_ID_LEN];
+    ULONG size = sizeof(instance_id);
+    DEVPROPTYPE type = DEVPROP_TYPE_EMPTY;
+    DWORD result;
+
+    if (!path || !*path) {
+        return false;
+    }
+
+    if (!WIN_LoadCfgMgr32() || !SDL_CM_Get_Device_Interface_PropertyW || !SDL_CM_Locate_DevNodeW) {
+        return false;
+    }
+
+    WCHAR *wpath = WIN_UTF8ToStringW(path);
+    if (!wpath) {
+        return false;
+    }
+    result = SDL_CM_Get_Device_Interface_PropertyW(wpath, &SDL_DEVPKEY_Device_InstanceId, &type, (PBYTE)instance_id, &size, 0);
+    SDL_free(wpath);
+    if (result != CR_SUCCESS || type != DEVPROP_TYPE_STRING) {
+        return false;
+    }
+    if (SDL_CM_Locate_DevNodeW(devinst, instance_id, CM_LOCATE_DEVNODE_NORMAL) != CR_SUCCESS) {
+        return false;
+    }
+    return true;
+}
+
+char *WIN_GetContainerIDFromInterfacePath(const char *path)
 {
     DWORD devinst = 0;
     DEVPROPTYPE type = DEVPROP_TYPE_EMPTY;
     GUID container_id;
     ULONG size = sizeof(container_id);
 
-    if (!WIN_LoadCfgMgr32() || !SDL_CM_Locate_DevNodeW || !SDL_CM_Get_DevNode_PropertyW) {
-        return NULL;
-    }
-
-    if (SDL_CM_Locate_DevNodeW(&devinst, (WCHAR *)instance_id, CM_LOCATE_DEVNODE_NORMAL) != CR_SUCCESS) {
+    if (!GetDevNodeFromInterfacePath(path, &devinst) || !SDL_CM_Get_DevNode_PropertyW) {
         return NULL;
     }
     if (SDL_CM_Get_DevNode_PropertyW(devinst, &SDL_DEVPKEY_Device_ContainerId, &type, (PBYTE)&container_id, &size, 0) != CR_SUCCESS ||
@@ -449,32 +476,29 @@ static char *GetContainerIDFromInstanceID(const WCHAR *instance_id)
     return WIN_GetContainerIDString(&container_id);
 }
 
-char *WIN_GetContainerIDFromInterfacePath(const char *path)
+bool WIN_IsXInputHIDInterfacePath(const char *path)
 {
-    WCHAR instance_id[MAX_DEVICE_ID_LEN];
-    ULONG size = sizeof(instance_id);
+    DWORD devinst = 0;
     DEVPROPTYPE type = DEVPROP_TYPE_EMPTY;
-    DWORD result;
+    WCHAR filters[256];
+    ULONG size = sizeof(filters) - 2 * sizeof(WCHAR);
+    const WCHAR *filter;
 
-    if (!path) {
-        return NULL;
+    if (!GetDevNodeFromInterfacePath(path, &devinst) || !SDL_CM_Get_DevNode_PropertyW) {
+        return false;
     }
 
-    if (!WIN_LoadCfgMgr32() || !SDL_CM_Get_Device_Interface_PropertyW) {
-        return NULL;
+    SDL_zeroa(filters);
+    if (SDL_CM_Get_DevNode_PropertyW(devinst, &SDL_DEVPKEY_Device_UpperFilters, &type, (PBYTE)filters, &size, 0) != CR_SUCCESS ||
+        type != DEVPROP_TYPE_STRING_LIST) {
+        return false;
     }
-
-    WCHAR *wpath = WIN_UTF8ToStringW(path);
-    if (!wpath) {
-        return NULL;
+    for (filter = filters; *filter; filter += SDL_wcslen(filter) + 1) {
+        if (SDL_wcscasecmp(filter, L"xinputhid") == 0) {
+            return true;
+        }
     }
-    result = SDL_CM_Get_Device_Interface_PropertyW(wpath, &SDL_DEVPKEY_Device_InstanceId, &type, (PBYTE)instance_id, &size, 0);
-    SDL_free(wpath);
-
-    if (result != CR_SUCCESS || type != DEVPROP_TYPE_STRING) {
-        return NULL;
-    }
-    return GetContainerIDFromInstanceID(instance_id);
+    return false;
 }
 
 #else
@@ -510,6 +534,11 @@ WCHAR *WIN_GetHIDDeviceInterfaces(ULONG *length)
 char *WIN_GetContainerIDFromInterfacePath(const char *path)
 {
     return NULL;
+}
+
+bool WIN_IsXInputHIDInterfacePath(const char *path)
+{
+    return false;
 }
 
 #endif // !SDL_PLATFORM_XBOXONE && !SDL_PLATFORM_XBOXSERIES

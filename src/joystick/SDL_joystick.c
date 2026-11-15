@@ -40,6 +40,7 @@
 #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
 // Needed for checking for input remapping programs
 #include "../core/windows/SDL_windows.h"
+#include "../core/windows/SDL_hid.h"
 
 #undef UNICODE // We want ASCII functions
 #include <tlhelp32.h>
@@ -4214,6 +4215,14 @@ bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *path)
     if (path && SDL_strcasestr(path, "{EC87F1E3-C13B-4100-B5F7-8B84D54260CB}") != NULL) {
         return true;
     }
+
+#if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    // If the xinputhid filter driver is loaded then it's an XInput device, e.g. Xbox controllers
+    // over Bluetooth and third party XInputHID controllers. These don't have "IG_" in the path.
+    if (WIN_IsXInputHIDInterfacePath(path)) {
+        return true;
+    }
+#endif
 
     type = SDL_GetGamepadTypeFromVIDPID(vendor_id, product_id, NULL, false);
     if (type == SDL_GAMEPAD_TYPE_XBOX360 ||
