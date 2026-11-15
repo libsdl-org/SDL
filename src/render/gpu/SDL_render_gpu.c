@@ -1493,7 +1493,6 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     }
 
     SDL_Surface *surface = SDL_CreateSurfaceUninitialized(rect->w, rect->h, pixfmt);
-
     if (!surface) {
         return NULL;
     }
@@ -1504,8 +1503,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
-
     if (!tbuf) {
+        SDL_DestroySurface(surface);
         return NULL;
     }
 
