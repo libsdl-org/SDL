@@ -2140,7 +2140,7 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
         if (texture->public_palette) {
             SDL_DestroyPalette(texture->public_palette);
 
-            if (!texture->native) {
+            if (texture->palette) {
                 // Clean up the texture palette
                 --texture->palette->refcount;
                 if (texture->palette->refcount == 0) {
@@ -2170,17 +2170,20 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
                     }
                     if (!renderer->CreatePalette(renderer, texture_palette)) {
                         renderer->DestroyPalette(renderer, texture_palette);
+                        SDL_free(texture_palette);
+                        SDL_SetTexturePalette(texture, NULL);
+                        return false;
+                    }
+                    texture_palette->refcount = 1;
+                    texture_palette->key = key;
+
+                    if (!SDL_InsertIntoHashTable(renderer->palettes, &texture_palette->key, texture_palette, false)) {
+                        renderer->DestroyPalette(renderer, texture_palette);
+                        SDL_free(texture_palette);
                         SDL_SetTexturePalette(texture, NULL);
                         return false;
                     }
                     texture->palette = texture_palette;
-                    texture->palette->refcount = 1;
-                    texture->palette->key = key;
-
-                    if (!SDL_InsertIntoHashTable(renderer->palettes, &texture->palette->key, texture->palette, false)) {
-                        SDL_SetTexturePalette(texture, NULL);
-                        return false;
-                    }
                 }
             }
 
