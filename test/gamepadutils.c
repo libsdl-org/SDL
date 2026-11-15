@@ -1530,47 +1530,47 @@ int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float 
 
     if (show_auxiliary) {
         for (i = 0; i < SDL_GAMEPAD_GUITAR_BUTTON_COUNT; ++i) {
-        SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
+            SDL_GamepadGuitarButton button = (SDL_GamepadGuitarButton)i;
 
-        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
-            !SDL_GamepadHasGuitarButton(gamepad, button)) {
-            continue;
+            if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+                !SDL_GamepadHasGuitarButton(gamepad, button)) {
+                continue;
+            }
+
+
+            if (SDL_PointInRectFloat(&point, &rect)) {
+                return i + SDL_GAMEPAD_ELEMENT_AXIS_MAX;
+            }
+
+            rect.y += ctx->button_height + 2.0f;
         }
 
+        for (i = 0; i < SDL_GAMEPAD_GUITAR_AXIS_COUNT; ++i) {
+            SDL_GamepadGuitarAxis axis = (SDL_GamepadGuitarAxis)i;
+            SDL_FRect area;
 
-        if (SDL_PointInRectFloat(&point, &rect)) {
-            return i + SDL_GAMEPAD_ELEMENT_AXIS_MAX;
+            if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
+                !SDL_GamepadHasGuitarAxis(gamepad, axis)) {
+                continue;
+            }
+
+            area.x = rect.x + center + 2.0f;
+            area.y = rect.y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
+            area.w = ctx->arrow_width + arrow_extent;
+            area.h = ctx->button_height;
+
+            if (SDL_PointInRectFloat(&point, &area)) {
+                return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
+            }
+
+            area.x += area.w;
+
+            if (SDL_PointInRectFloat(&point, &area)) {
+                return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
+            }
+
+            rect.y += ctx->button_height + 2.0f;
         }
-
-        rect.y += ctx->button_height + 2.0f;
-    }
-
-    for (i = 0; i < SDL_GAMEPAD_GUITAR_AXIS_COUNT; ++i) {
-        SDL_GamepadGuitarAxis axis = (SDL_GamepadGuitarAxis)i;
-        SDL_FRect area;
-
-        if (ctx->display_mode == CONTROLLER_MODE_TESTING &&
-            !SDL_GamepadHasGuitarAxis(gamepad, axis)) {
-            continue;
-        }
-
-        area.x = rect.x + center + 2.0f;
-        area.y = rect.y + FONT_CHARACTER_SIZE / 2 - ctx->button_height / 2;
-        area.w = ctx->arrow_width + arrow_extent;
-        area.h = ctx->button_height;
-
-        if (SDL_PointInRectFloat(&point, &area)) {
-            return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
-        }
-
-        area.x += area.w;
-
-        if (SDL_PointInRectFloat(&point, &area)) {
-            return i+SDL_GAMEPAD_ELEMENT_AXIS_MAX+SDL_GAMEPAD_GUITAR_BUTTON_COUNT;
-        }
-
-        rect.y += ctx->button_height + 2.0f;
-    }
     }
     return SDL_GAMEPAD_ELEMENT_INVALID;
 }
