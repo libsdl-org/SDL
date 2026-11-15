@@ -3543,6 +3543,13 @@ bool SDL_WaitForGPUFences(
         return false;
     }
 
+    for (Uint32 i = 0; i < num_fences; ++i) {
+        CHECK_PARAM(fences[i] == NULL) {
+            SDL_InvalidParamError("fences");
+            return false;
+        }
+    }
+
     return device->WaitForFences(
         device->driverData,
         wait_all,
