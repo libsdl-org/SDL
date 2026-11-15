@@ -826,6 +826,15 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
     liveResizeTimer = nil;
 
+    const NSTimeInterval interval = 1.0 / 60.0;
+    moveTimer = [NSTimer timerWithTimeInterval:interval
+                                       repeats:TRUE
+                                         block:^(NSTimer *unusedTimer)
+    {
+        SDL_OnWindowLiveResizeUpdate(self->_data.window);
+    }];
+    [[NSRunLoop currentRunLoop] addTimer:moveTimer forMode:@"_NSMoveTimerRunLoopMode"];
+
     center = [NSNotificationCenter defaultCenter];
 
     if ([window delegate] != nil) {
@@ -987,6 +996,11 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     NSNotificationCenter *center;
     NSWindow *window = _data.nswindow;
     NSView *view = [window contentView];
+
+    [liveResizeTimer invalidate];
+    liveResizeTimer = nil;
+    [moveTimer invalidate];
+    moveTimer = nil;
 
     center = [NSNotificationCenter defaultCenter];
 
