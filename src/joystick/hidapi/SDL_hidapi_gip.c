@@ -2118,7 +2118,9 @@ static void GIP_HandleGuitarReport(
         SDL_SendJoystickHat(timestamp, joystick, 0, hat);
         axis = ((int)bytes[3] * 257) - 32768;
         SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx, axis);
-        // Tilt only uses the positive half of the axis
+        // GIP guitars don't report tilt in both directions as negative and positive
+        // they instead just report the tilt range across the axis, with zero as the guitar
+        // held in a resting position, and then tilting in either direction increases the axis value.
         axis = ((int)bytes[2] * SDL_JOYSTICK_AXIS_MAX) / 255;
         SDL_SendJoystickAxis(timestamp, joystick, attachment->guitar_axis_idx + 1, axis);
         axis = ((int)bytes[4] * 257) - 32768;

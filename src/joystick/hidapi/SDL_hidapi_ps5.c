@@ -1517,7 +1517,9 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
     }
 
     if (ctx->guitar_tilt_supported) {
-        // Tilt only uses the positive half of the axis
+        // PS5 guitars don't report tilt in both directions as negative and positive
+        // they instead just report the tilt range across the axis, with zero as the guitar
+        // held in a resting position, and then tilting in either direction increases the axis value.
         axis = ((int)packet->rgucDeviceSpecific[2] * SDL_JOYSTICK_AXIS_MAX) / 255;
         SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 1, axis);
     }
