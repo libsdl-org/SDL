@@ -187,7 +187,7 @@ static bool LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadSurface step repeatedly, but that's OK for test code. */
         sprites[i] = LoadTexture(state->renderers[i], file);
         if (!sprites[i]) {
             return false;

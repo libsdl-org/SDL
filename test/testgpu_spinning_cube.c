@@ -121,14 +121,9 @@ static void QuitSpriteOverlay(SpriteRenderState *rs)
 static SDL_Texture *CreateSpriteTexture(SDL_Renderer *renderer, unsigned char *data, unsigned int len)
 {
     SDL_Texture *texture = NULL;
-    SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadPNG_IO(src, true);
-        if (surface) {
-            texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_DestroySurface(surface);
-        }
+        texture = SDL_LoadTexture_IO(renderer, src, true);
     }
     return texture;
 }
