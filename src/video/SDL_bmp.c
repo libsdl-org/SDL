@@ -638,11 +638,17 @@ static bool InitBMPSaveState(BMPSaveState *state, SDL_Surface *surface)
     if (surface->palette && !state->save32bit) {
         if (SDL_BITSPERPIXEL(surface->format) == 8) {
             state->intermediate_surface = surface;
+        } else if (surface->format == SDL_PIXELFORMAT_INDEX1MSB || surface->format == SDL_PIXELFORMAT_INDEX4MSB) {
+            state->intermediate_surface = surface;
         } else {
             SDL_SetError("%u bpp BMP files not supported",
                          SDL_BITSPERPIXEL(surface->format));
             goto error;
         }
+    } else if (surface->format == SDL_PIXELFORMAT_INDEX1MSB || surface->format == SDL_PIXELFORMAT_INDEX4MSB) {
+        SDL_SetError("%u bpp BMP files require a palette",
+                     SDL_BITSPERPIXEL(surface->format));
+        goto error;
     } else if ((surface->format == SDL_PIXELFORMAT_BGR24 && !state->save32bit) ||
                (surface->format == SDL_PIXELFORMAT_BGRA32 && state->save32bit)) {
         state->intermediate_surface = surface;
@@ -726,7 +732,7 @@ static bool SDL_SaveBMP_IO_Internal(BMPSaveState *state, SDL_IOStream *dst, bool
     Uint32 bV5Reserved = 0;
 
     if (SDL_LockSurface(state->intermediate_surface)) {
-        const size_t bw = state->intermediate_surface->w * state->intermediate_surface->fmt->bytes_per_pixel;
+        const size_t bw = (state->intermediate_surface->w * SDL_BITSPERPIXEL(state->intermediate_surface->format) + 7) / 8;
 
         // Set the BMP file header values
         bfSize = 0; // We'll write this when we're done
