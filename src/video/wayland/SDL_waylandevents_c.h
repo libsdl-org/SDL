@@ -288,6 +288,7 @@ extern void Wayland_InitTextInputManager(SDL_VideoData *d);
 extern void Wayland_CreateSeat(SDL_VideoData *display, struct wl_seat *wl_seat, Uint32 id);
 extern void Wayland_ReleaseSeat(Wayland_Seat *seat, bool shutting_down);
 
+extern bool Wayland_BeginWindowDrag(SDL_WindowData *window_data);
 extern void Wayland_UpdatePointerGrab(Wayland_Seat *seat);
 extern void Wayland_UpdatePointerGrabs(SDL_VideoData *display, SDL_WindowData *window);
 extern void Wayland_UpdateKeyboardGrabs(SDL_VideoData *display, SDL_WindowData *window);

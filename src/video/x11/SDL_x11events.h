@@ -37,5 +37,6 @@ extern SDL_WindowData *X11_FindWindow(SDL_VideoData *videodata, Window window);
 extern bool X11_ProcessHitTest(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y, bool force_new_result);
 extern bool X11_TriggerHitTestAction(SDL_VideoDevice *_this, SDL_WindowData *data, const float x, const float y);
 extern bool X11_IsWheelEvent(int button, int *xticks, int *yticks);
+extern void X11_HandleImplicitDrag(SDL_VideoDevice *_this, SDL_Point *point);
 
 #endif // SDL_x11events_h_

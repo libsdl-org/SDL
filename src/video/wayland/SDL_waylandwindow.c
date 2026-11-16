@@ -2094,20 +2094,20 @@ bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
     return true; // just succeed, the real work is done elsewhere.
 }
 
-static struct xdg_toplevel *GetToplevelForWindow(SDL_WindowData *wind)
+struct xdg_toplevel *Wayland_GetToplevelForWindow(SDL_WindowData *window_data)
 {
-    if (wind) {
+    if (window_data) {
         /* Libdecor crashes on attempts to unset the parent by passing null, which is allowed by the
          * toplevel spec, so just use the raw xdg-toplevel instead (that's what libdecor does
          * internally anyways).
          */
 #ifdef HAVE_LIBDECOR_H
-        if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR && wind->shell_surface.libdecor.frame) {
-            return libdecor_frame_get_xdg_toplevel(wind->shell_surface.libdecor.frame);
+        if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR && window_data->shell_surface.libdecor.frame) {
+            return libdecor_frame_get_xdg_toplevel(window_data->shell_surface.libdecor.frame);
         } else
 #endif
-            if (wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL && wind->shell_surface.xdg.toplevel.xdg_toplevel) {
-                return wind->shell_surface.xdg.toplevel.xdg_toplevel;
+            if (window_data->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_XDG_TOPLEVEL && window_data->shell_surface.xdg.toplevel.xdg_toplevel) {
+                return window_data->shell_surface.xdg.toplevel.xdg_toplevel;
             }
     }
 
@@ -2127,8 +2127,8 @@ bool Wayland_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Win
         return true;
     }
 
-    struct xdg_toplevel *child_toplevel = GetToplevelForWindow(child_data);
-    struct xdg_toplevel *parent_toplevel = GetToplevelForWindow(parent_data);
+    struct xdg_toplevel *child_toplevel = Wayland_GetToplevelForWindow(child_data);
+    struct xdg_toplevel *parent_toplevel = Wayland_GetToplevelForWindow(parent_data);
 
     if (child_toplevel) {
         xdg_toplevel_set_parent(child_toplevel, parent_toplevel);
@@ -2151,7 +2151,7 @@ bool Wayland_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool mod
         data->reparenting_required = false;
     }
 
-    struct xdg_toplevel *toplevel = GetToplevelForWindow(data);
+    struct xdg_toplevel *toplevel = Wayland_GetToplevelForWindow(data);
 
     if (toplevel) {
         if (viddata->xdg_wm_dialog_v1) {
@@ -2172,7 +2172,7 @@ bool Wayland_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool mod
 
 static void RegisterToplevelForSession(SDL_WindowData *data)
 {
-    struct xdg_toplevel *toplevel = GetToplevelForWindow(data);
+    struct xdg_toplevel *toplevel = Wayland_GetToplevelForWindow(data);
     if (!toplevel) {
         return;
     }
@@ -2431,6 +2431,13 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
             }
 
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER, data->shell_surface.xdg.toplevel.xdg_toplevel);
+        }
+    }
+
+    if (window->dockable) {
+        Wayland_Seat *seat = c->last_implicit_grab_seat;
+        if (seat->pointer.buttons_pressed & SDL_BUTTON_LMASK) {
+            Wayland_BeginWindowDrag(data);
         }
     }
 

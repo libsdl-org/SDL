@@ -93,6 +93,10 @@ struct SDL_WindowData
     SDL_Rect expected;
     SDL_DisplayMode requested_fullscreen_mode;
 
+    SDL_Window *drop_target;
+    int drop_offset_x;
+    int drop_offset_y;
+
     enum
     {
         X11_PENDING_OP_NONE = 0x00,
