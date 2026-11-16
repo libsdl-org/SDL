@@ -3200,6 +3200,49 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetDefaultTextureScaleMode(SDL_Renderer *re
 extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale_mode);
 
 /**
+ * Load a BMP, PNG or JPEG image from a seekable SDL data stream.
+ *
+ * The new texture should be freed with SDL_DestroyTexture(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param renderer the renderer to use.
+ * \param src the data stream for the texture.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns a pointer to a new SDL_Texture structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroyTexture
+ * \sa SDL_LoadTexture
+ */
+extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_LoadTexture_IO(SDL_Renderer *renderer, SDL_IOStream *src, bool closeio);
+
+/**
+ * Load a BMP, PNG or JPEG image from a file.
+ *
+ * The new texture should be freed with SDL_DestroyTexture(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param renderer the renderer to use.
+ * \param file the file to load.
+ * \returns a pointer to a new SDL_Texture structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroyTexture
+ * \sa SDL_LoadTexture_IO
+ */
+extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_LoadTexture(SDL_Renderer *renderer, const char *file);
+
+
+/**
  * A structure specifying the parameters of a GPU render state.
  *
  * \since This struct is available since SDL 3.4.0.

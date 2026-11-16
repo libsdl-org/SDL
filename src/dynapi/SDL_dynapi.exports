@@ -1321,3 +1321,5 @@ _SDL_EncodeURL
 _SDL_SetRenderHDRHeadroom
 _SDL_GetRenderHDRHeadroom
 _SDL_GetCurrentThreadName
+_SDL_LoadTexture_IO
+_SDL_LoadTexture

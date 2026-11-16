@@ -6367,6 +6367,28 @@ bool SDL_GetDefaultTextureScaleMode(SDL_Renderer *renderer, SDL_ScaleMode *scale
     return true;
 }
 
+SDL_Texture *SDL_LoadTexture(SDL_Renderer *renderer, const char *file)
+{
+    SDL_Texture *texture = NULL;
+    SDL_Surface *surface = SDL_LoadSurface(file);
+    if (surface) {
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_DestroySurface(surface);
+    }
+    return texture;
+}
+
+SDL_Texture *SDL_LoadTexture_IO(SDL_Renderer *renderer, SDL_IOStream *src, bool closeio)
+{
+    SDL_Texture *texture = NULL;
+    SDL_Surface *surface = SDL_LoadSurface_IO(src, closeio);
+    if (surface) {
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        SDL_DestroySurface(surface);
+    }
+    return texture;
+}
+
 SDL_GPURenderState *SDL_CreateGPURenderState(SDL_Renderer *renderer, const SDL_GPURenderStateCreateInfo *createinfo)
 {
     CHECK_RENDERER_MAGIC(renderer, NULL);
