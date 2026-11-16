@@ -135,7 +135,8 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB;
@@ -146,7 +147,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
-        if ( Pixel != ckey ) {
+        if ( (Pixel & rgbmask) != ckey ) {
             dR = dstpal[*dst].r;
             dG = dstpal[*dst].g;
             dB = dstpal[*dst].b;
@@ -1004,7 +1005,8 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
     int dstskip = info->dst_skip;
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
@@ -1017,7 +1019,7 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         RETRIEVE_RGB_PIXEL(src, srcbpp, Pixel);
-        if (sA && Pixel != ckey) {
+        if (sA && (Pixel & rgbmask) != ckey) {
             RGB_FROM_PIXEL(Pixel, srcfmt, sR, sG, sB);
             DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);

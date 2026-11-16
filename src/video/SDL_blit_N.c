@@ -2132,7 +2132,7 @@ static void Blit2to2Key(SDL_BlitInfo *info)
     Uint16 *dstp = (Uint16 *)info->dst;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
-    Uint32 rgbmask = ~info->src_fmt->Amask;
+    Uint32 rgbmask = info->src_fmt->Rmask | info->src_fmt->Gmask | info->src_fmt->Bmask;
 
     // Set up some basic variables
     srcskip /= 2;
@@ -2170,7 +2170,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
-    Uint32 rgbmask = ~srcfmt->Amask;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
     int sfmt = srcfmt->format;
     int dfmt = dstfmt->format;
 
@@ -2438,7 +2438,7 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     Uint32 ckey = info->colorkey;
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    Uint32 rgbmask = ~srcfmt->Amask;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
 
     Uint8 srcbpp;
     Uint8 dstbpp;
