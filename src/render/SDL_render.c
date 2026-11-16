@@ -1400,13 +1400,13 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     renderer->render_command_generation = 1;
 
     if (renderer->software) {
-        // Software renderer always uses line method, for speed
+        // The software renderer prefers these, for speed
         renderer->line_method = SDL_RENDERLINEMETHOD_LINES;
+        renderer->scale_mode = SDL_SCALEMODE_NEAREST;
     } else {
         renderer->line_method = SDL_GetRenderLineMethod();
+        renderer->scale_mode = SDL_SCALEMODE_LINEAR;
     }
-
-    renderer->scale_mode = SDL_SCALEMODE_LINEAR;
 
     renderer->SDR_white_point = 1.0f;
     renderer->HDR_headroom = 1.0f;
