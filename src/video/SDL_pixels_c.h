@@ -33,6 +33,9 @@
 // The automatic SD/HD threshold for YUV colorspace
 #define YUV_SD_THRESHOLD 576
 
+#define SDL_ISPIXELFORMAT_PACKED_8888(format) \
+    (SDL_ISPIXELFORMAT_PACKED(format) && SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_8888)
+
 
 // Pixel format functions
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);

@@ -1485,7 +1485,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         case 2:
 #ifdef SDL_SVE2_INTRINSICS
             if (SDL_HasSVE2()) {
-                if (sf->bytes_per_pixel == 4 &&
+                if (SDL_PIXELLAYOUT(sf->format) == SDL_PACKEDLAYOUT_8888 &&
                     df->bytes_per_pixel == 2 &&
                     df->Rmask == 0x0000F800 &&
                     df->Gmask == 0x000007E0 &&

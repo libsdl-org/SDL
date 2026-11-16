@@ -3151,7 +3151,7 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
 #ifdef SDL_SVE2_INTRINSICS
         if (SDL_HasSVE2()) {
             /* RGBA8888/ARGB8888/XRGB8888 -> RGB565 */
-            if (srcfmt->bytes_per_pixel == 4 &&
+            if (SDL_PIXELLAYOUT(srcfmt->format) == SDL_PACKEDLAYOUT_8888 &&
                 dstfmt->bytes_per_pixel == 2 &&
                 dstfmt->Rmask == 0x0000F800 &&
                 dstfmt->Gmask == 0x000007E0 &&
