@@ -583,8 +583,14 @@ bool SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio)
             trns[i] = colors[i].a;
         }
     } else {
-        if (surface->format != SDL_PIXELFORMAT_RGBA32) {
-            surface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        SDL_PixelFormat format;
+        if (surface->format == SDL_PIXELFORMAT_RGB24 && !SDL_SurfaceHasColorKey(surface)) {
+            format = SDL_PIXELFORMAT_RGB24;
+        } else {
+            format = SDL_PIXELFORMAT_RGBA32;
+        }
+        if (surface->format != format) {
+            surface = SDL_ConvertSurface(surface, format);
             if (!surface) {
                 goto done;
             }
