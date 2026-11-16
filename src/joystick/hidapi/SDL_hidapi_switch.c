@@ -1837,8 +1837,10 @@ static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         // Doesn't have an RGB LED, so don't return SDL_JOYSTICK_CAP_RGB_LED here
         result |= SDL_JOYSTICK_CAP_RUMBLE;
-        // But has the HOME LED, so treat it like a mono LED
-        result |= SDL_JOYSTICK_CAP_MONO_LED;
+        if (HasHomeLED(ctx)) {
+            // But has the HOME LED, so treat it like a mono LED
+            result |= SDL_JOYSTICK_CAP_MONO_LED;
+        }
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
         result |= SDL_JOYSTICK_CAP_RUMBLE;
@@ -1855,6 +1857,9 @@ static bool HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 
     if (!(ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) &&
         ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        return SDL_Unsupported();
+    }
+    if (!HasHomeLED(ctx)) {
         return SDL_Unsupported();
     }
 
