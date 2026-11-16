@@ -1340,7 +1340,9 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
                 if (is_complex_copy_flags && !SDL_ISPIXELFORMAT_ALPHA(fmt)) {
                     fmt = SDL_PromotePixelFormatToAlpha(fmt);
                 }
-                tmp1 = SDL_ConvertSurfaceRect(src, srcrect, fmt);
+
+                // Keep the source colorspace, the final blit will convert to the destination colorspace
+                tmp1 = SDL_ConvertSurfaceRectAndColorspace(src, srcrect, fmt, NULL, src->colorspace, src->props);
                 if (!tmp1) {
                     return false;
                 }
@@ -1353,6 +1355,16 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
             if (is_complex_copy_flags || src->format != dst->format) {
                 SDL_Rect tmprect;
                 SDL_Surface *tmp2 = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, src->format);
+                if (!tmp2) {
+                    SDL_DestroySurface(tmp1);
+                    return false;
+                }
+                SDL_SetSurfaceColorspace(tmp2, src->colorspace);
+                if (src->props) {
+                    SDL_PropertiesID tmp2_props = SDL_GetSurfaceProperties(tmp2);
+                    SDL_CopyProperties(src->props, tmp2_props);
+                    SDL_ClearProperty(tmp2_props, "sdl2-compat.surface2");
+                }
                 SDL_StretchSurface(src, &srcrect2, tmp2, NULL, SDL_SCALEMODE_LINEAR);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
@@ -1880,7 +1892,7 @@ bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
     return result;
 }
 
-static SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
+SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
 {
     SDL_Palette *temp_palette = NULL;
     SDL_Surface *convert = NULL;
