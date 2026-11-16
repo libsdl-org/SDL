@@ -160,6 +160,9 @@
 #ifndef SDL_VIDEO_RENDER_VITA_GXM
 #define SDL_VIDEO_RENDER_VITA_GXM 0
 #endif
+#ifndef SDL_VIDEO_RENDER_N3DS
+#define SDL_VIDEO_RENDER_N3DS 0
+#endif
 #else /* define all as 0 */
 #undef SDL_VIDEO_RENDER_SW
 #define SDL_VIDEO_RENDER_SW 0
@@ -185,6 +188,8 @@
 #define SDL_VIDEO_RENDER_PSP 0
 #undef SDL_VIDEO_RENDER_VITA_GXM
 #define SDL_VIDEO_RENDER_VITA_GXM 0
+#undef SDL_VIDEO_RENDER_N3DS
+#define SDL_VIDEO_RENDER_N3DS 0
 #endif /* SDL_RENDER_DISABLED */
 
 #define SDL_HAS_RENDER_DRIVER \
@@ -199,7 +204,8 @@
         SDL_VIDEO_RENDER_DIRECTFB | \
         SDL_VIDEO_RENDER_PS2      | \
         SDL_VIDEO_RENDER_PSP      | \
-        SDL_VIDEO_RENDER_VITA_GXM)
+        SDL_VIDEO_RENDER_VITA_GXM | \
+        SDL_VIDEO_RENDER_N3DS)
 
 #if !defined(SDL_RENDER_DISABLED) && !SDL_HAS_RENDER_DRIVER
 #error SDL_RENDER enabled without any backend drivers.
