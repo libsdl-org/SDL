@@ -50,9 +50,13 @@ static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
     int attempt;
     HWND hwnd = NULL;
 
-    if (_this->windows) {
-        hwnd = _this->windows->internal->hwnd;
+    for (SDL_Window *window = _this->windows; window; window = window->next) {
+        if (window->internal) {
+            hwnd = window->internal->hwnd;
+            break;
+        }
     }
+
     for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
         if (OpenClipboard(hwnd)) {
             return TRUE;
