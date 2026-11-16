@@ -84,14 +84,11 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             }
 
             if (i < SDL_arraysize(pngs)) {  /* (just in case.) */
-                SDL_Surface *surface = SDL_LoadPNG_IO(SDL_IOFromConstMem(outcome.buffer, (size_t) outcome.bytes_transferred), true);
-                if (surface) {  /* the renderer is not multithreaded, so create the texture here once the data loads. */
-                    textures[i] = SDL_CreateTextureFromSurface(renderer, surface);
-                    if (!textures[i]) {
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create texture!", SDL_GetError(), NULL);
-                        return SDL_APP_FAILURE;
-                    }
-                    SDL_DestroySurface(surface);
+                /* the renderer is not multithreaded, so create the texture here once the data loads. */
+                textures[i] = SDL_LoadTexture_IO(renderer, SDL_IOFromConstMem(outcome.buffer, (size_t) outcome.bytes_transferred), true);
+                if (!textures[i]) {
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Couldn't create texture!", SDL_GetError(), NULL);
+                    return SDL_APP_FAILURE;
                 }
             }
         }
