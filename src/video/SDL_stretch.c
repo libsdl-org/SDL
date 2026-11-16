@@ -41,64 +41,6 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
         return SDL_InvalidParamError("dst");
     }
 
-    if (src->format != dst->format) {
-        // Slow!
-        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
-        if (!src_tmp) {
-            return false;
-        }
-        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
-        SDL_DestroySurface(src_tmp);
-        return result;
-    }
-
-    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
-        // Slow!
-        if (!dstrect) {
-            full_dst.x = 0;
-            full_dst.y = 0;
-            full_dst.w = dst->w;
-            full_dst.h = dst->h;
-            dstrect = &full_dst;
-        }
-
-        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
-        SDL_Surface *dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
-        if (src_tmp && dst_tmp) {
-            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
-            if (result) {
-                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
-                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
-                            dst_tmp->pixels, dst_tmp->pitch,
-                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
-                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
-            }
-        } else {
-            result = false;
-        }
-        SDL_DestroySurface(src_tmp);
-        SDL_DestroySurface(dst_tmp);
-        return result;
-    }
-
-    switch (scaleMode) {
-    case SDL_SCALEMODE_NEAREST:
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        break;
-    case SDL_SCALEMODE_PIXELART:
-        scaleMode = SDL_SCALEMODE_NEAREST;
-        break;
-    default:
-        return SDL_InvalidParamError("scaleMode");
-    }
-
-    if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (!SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
-            return SDL_SetError("Wrong format");
-        }
-    }
-
     // Verify the blit rectangles
     if (srcrect) {
         if ((srcrect->x < 0) || (srcrect->y < 0) ||
@@ -134,6 +76,56 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
     if (srcrect->w > SDL_MAX_UINT16 || srcrect->h > SDL_MAX_UINT16 ||
         dstrect->w > SDL_MAX_UINT16 || dstrect->h > SDL_MAX_UINT16) {
         return SDL_SetError("Size too large for scaling");
+    }
+
+    if (src->format != dst->format) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
+        if (!src_tmp) {
+            return false;
+        }
+        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
+        SDL_DestroySurface(src_tmp);
+        return result;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
+        SDL_Surface *dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
+        if (src_tmp && dst_tmp) {
+            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (result) {
+                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                            dst_tmp->pixels, dst_tmp->pitch,
+                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
+                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+            }
+        } else {
+            result = false;
+        }
+        SDL_DestroySurface(src_tmp);
+        SDL_DestroySurface(dst_tmp);
+        return result;
+    }
+
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        break;
+    case SDL_SCALEMODE_PIXELART:
+        scaleMode = SDL_SCALEMODE_NEAREST;
+        break;
+    default:
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode == SDL_SCALEMODE_LINEAR) {
+        if (!SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
+            return SDL_SetError("Wrong format");
+        }
     }
 
     // Lock the destination if it's in hardware
