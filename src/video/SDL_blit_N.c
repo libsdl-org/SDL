@@ -2451,30 +2451,23 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     ckey &= rgbmask;
 
     // Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster
-    if (srcfmt->format == dstfmt->format) {
-
-        if (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_RGBA8888) {
-
-            Uint32 *src32 = (Uint32 *)src;
-            Uint32 *dst32 = (Uint32 *)dst;
-            while (height--) {
-                /* *INDENT-OFF* */ // clang-format off
-                DUFFS_LOOP_TRIVIAL(
-                {
-                    if ((*src32 & rgbmask) != ckey) {
-                        *dst32 = *src32;
-                    }
-                    ++src32;
-                    ++dst32;
-                },
-                width);
-                /* *INDENT-ON* */ // clang-format on
-                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
-                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
-            }
+    if (srcfmt->format == dstfmt->format && srcbpp == 4) {
+        Uint32 *src32 = (Uint32 *)src;
+        Uint32 *dst32 = (Uint32 *)dst;
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ((*src32 & rgbmask) != ckey) {
+                    *dst32 = *src32;
+                }
+                ++src32;
+                ++dst32;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
         }
         return;
     }
