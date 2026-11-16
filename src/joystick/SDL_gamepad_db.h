@@ -33,6 +33,7 @@ static const char *s_GamepadMappings[] = {
     SDL_PRIVATE_GAMEPAD_DEFINITIONS
 #endif
 #ifdef SDL_JOYSTICK_XINPUT
+    "0300cd7e5e040000a102000000007806,Xbox 360 Wireless Rock Band Guitar,a:b0,b:b1,back:b4,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b5,leftx:a0,lefty:a1,start:b6,x:b2,y:b3,guitar_fret_1:b0,guitar_fret_2:b1,guitar_fret_3:b2,guitar_fret_4:b2,guitar_fret_5:b4,guitar_solo_flag:b8,guitar_strum_up:h0.1,guitar_strum_down:h0.4,guitar_pickup:a2,guitar_whammy:a3,guitar_tilt:a4,",
     "xinput,*,a:b0,b:b1,back:b6,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b10,leftshoulder:b4,leftstick:b8,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b9,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
 #endif
 #ifdef SDL_JOYSTICK_DINPUT
