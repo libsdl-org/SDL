@@ -67,7 +67,7 @@ bool Wayland_GetActivationTokenForExport(SDL_VideoDevice *_this, char **token, c
         }
     }
 
-    const char *xdg_activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
+    const char *xdg_activation_token = SDL_getenv_unsafe("XDG_ACTIVATION_TOKEN");
     if (!xdg_activation_token) {
         xdg_activation_token = SDL_GetNotificationActivationToken();
     }

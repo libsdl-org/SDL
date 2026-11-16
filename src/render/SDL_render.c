@@ -351,6 +351,19 @@ static bool FlushRenderCommandsIfTextureNeeded(SDL_Texture *texture)
     return true;
 }
 
+static Uint32 SDLCALL HashTexturePaletteKey(void *unused, const void *key)
+{
+    const SDL_TexturePaletteKey *palette_key = (const SDL_TexturePaletteKey *)key;
+    return SDL_murmur3_32(&palette_key->palette, sizeof(palette_key->palette), (Uint32)palette_key->colorkey);
+}
+
+static bool SDLCALL MatchTexturePaletteKey(void *unused, const void *a, const void *b)
+{
+    const SDL_TexturePaletteKey *A = (const SDL_TexturePaletteKey *)a;
+    const SDL_TexturePaletteKey *B = (const SDL_TexturePaletteKey *)b;
+    return A->palette == B->palette && A->colorkey == B->colorkey;
+}
+
 static bool FlushRenderCommandsIfPaletteNeeded(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
     if (palette->last_command_generation == renderer->render_command_generation) {
@@ -753,7 +766,22 @@ static bool UpdateTexturePalette(SDL_Texture *texture)
             return false;
         }
 
-        if (!renderer->UpdatePalette(renderer, palette, public->ncolors, public->colors)) {
+        SDL_Color *colors = public->colors;
+        int colorkey = palette->key.colorkey;
+        if (colorkey >= 0 && colorkey < public->ncolors) {
+            colors = SDL_stack_alloc(SDL_Color, public->ncolors);
+            if (!colors) {
+                return false;
+            }
+            SDL_memcpy(colors, public->colors, public->ncolors * sizeof(*colors));
+            colors[colorkey].a = SDL_ALPHA_TRANSPARENT;
+        }
+
+        bool result = renderer->UpdatePalette(renderer, palette, public->ncolors, colors);
+        if (colors != public->colors) {
+            SDL_stack_free(colors);
+        }
+        if (!result) {
             return false;
         }
 
@@ -1363,7 +1391,7 @@ SDL_Renderer *SDL_CreateRendererWithProperties(SDL_PropertiesID props)
     UpdatePixelClipRect(renderer, &renderer->main_view);
     UpdateMainViewDimensions(renderer);
 
-    renderer->palettes = SDL_CreateHashTable(0, false, SDL_HashPointer, SDL_KeyMatchPointer, SDL_DestroyHashValue, NULL);
+    renderer->palettes = SDL_CreateHashTable(0, false, HashTexturePaletteKey, MatchTexturePaletteKey, SDL_DestroyHashValue, NULL);
     if (!renderer->palettes) {
         goto error;
     }
@@ -1743,6 +1771,7 @@ SDL_Texture *SDL_CreateTextureWithProperties(SDL_Renderer *renderer, SDL_Propert
     texture->view.logical_scale.y = 1.0f;
     texture->view.current_scale.x = 1.0f;
     texture->view.current_scale.y = 1.0f;
+    texture->palette_colorkey = -1;
     texture->renderer = renderer;
     texture->next = renderer->textures;
     if (renderer->textures) {
@@ -1885,7 +1914,7 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
     if (surface->format == texture->format &&
         SDL_GetSurfaceColorspace(surface) == texture->colorspace) {
         if (SDL_ISPIXELFORMAT_INDEXED(surface->format)) {
-            // Update Texture directly - the color key is handled later
+            // Update Texture directly - the color key is handled by the texture palette
             direct_update = true;
         } else if (SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
             /* Surface and Renderer formats are identical.
@@ -1918,21 +1947,6 @@ static bool SDL_UpdateTextureFromSurface(SDL_Texture *texture, SDL_Rect *rect, S
         } else {
             return false;
         }
-    }
-
-    if (SDL_ISPIXELFORMAT_INDEXED(texture->format) && SDL_SurfaceHasColorKey(surface)) {
-        Uint32 key;
-        SDL_Color col;
-        SDL_Palette *palette;
-
-        palette = SDL_GetTexturePalette(texture);
-        if (!palette || !SDL_GetSurfaceColorKey(surface, &key) || key >= (Uint32)palette->ncolors) {
-            return false;
-        }
-
-        col = palette->colors[key];
-        col.a = SDL_ALPHA_TRANSPARENT;
-        SDL_SetPaletteColors(palette, &col, key, 1);
     }
 
     {
@@ -1976,24 +1990,11 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     // Try to have the best pixel format for the texture
     // No alpha, but a colorkey => promote to alpha
     if (!SDL_ISPIXELFORMAT_ALPHA(surface->format) && SDL_SurfaceHasColorKey(surface)) {
-        if (surface->format == SDL_PIXELFORMAT_XRGB8888) {
+        SDL_PixelFormat alpha_format = SDL_PromotePixelFormatToAlpha(surface->format);
+        if (alpha_format != SDL_PIXELFORMAT_UNKNOWN) {
             for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ARGB8888) {
-                    format = SDL_PIXELFORMAT_ARGB8888;
-                    break;
-                }
-            }
-        } else if (surface->format == SDL_PIXELFORMAT_XBGR8888) {
-            for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ABGR8888) {
-                    format = SDL_PIXELFORMAT_ABGR8888;
-                    break;
-                }
-            }
-        } else if (surface->format == SDL_PIXELFORMAT_XRGB4444) {
-            for (i = 0; i < renderer->num_texture_formats; ++i) {
-                if (renderer->texture_formats[i] == SDL_PIXELFORMAT_ARGB4444) {
-                    format = SDL_PIXELFORMAT_ARGB4444;
+                if (renderer->texture_formats[i] == alpha_format) {
+                    format = alpha_format;
                     break;
                 }
             }
@@ -2045,12 +2046,22 @@ SDL_Texture *SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *s
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_ACCESS_NUMBER, SDL_TEXTUREACCESS_STATIC);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_WIDTH_NUMBER, surface->w);
     SDL_SetNumberProperty(props, SDL_PROP_TEXTURE_CREATE_HEIGHT_NUMBER, surface->h);
-    SDL_SetPointerProperty(props, SDL_PROP_TEXTURE_CREATE_PALETTE_POINTER, surface->palette);
 
     texture = SDL_CreateTextureWithProperties(renderer, props);
     SDL_DestroyProperties(props);
     if (!texture) {
         return NULL;
+    }
+
+    if (SDL_ISPIXELFORMAT_INDEXED(texture->format) && surface->palette) {
+        Uint32 key;
+        if (SDL_GetSurfaceColorKey(surface, &key)) {
+            texture->palette_colorkey = (int)key;
+        }
+        if (!SDL_SetTexturePalette(texture, surface->palette)) {
+            SDL_DestroyTexture(texture);
+            return NULL;
+        }
     }
 
     if (!SDL_UpdateTextureFromSurface(texture, NULL, surface)) {
@@ -2116,13 +2127,13 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
         if (texture->public_palette) {
             SDL_DestroyPalette(texture->public_palette);
 
-            if (!texture->native) {
+            if (texture->palette) {
                 // Clean up the texture palette
                 --texture->palette->refcount;
                 if (texture->palette->refcount == 0) {
                     FlushRenderCommandsIfPaletteNeeded(renderer, texture->palette);
                     renderer->DestroyPalette(renderer, texture->palette);
-                    SDL_RemoveFromHashTable(renderer->palettes, texture->public_palette);
+                    SDL_RemoveFromHashTable(renderer->palettes, &texture->palette->key);
                 }
                 texture->palette = NULL;
             }
@@ -2135,7 +2146,8 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
             ++texture->public_palette->refcount;
 
             if (!texture->native) {
-                if (SDL_FindInHashTable(renderer->palettes, palette, (const void **)&texture->palette)) {
+                SDL_TexturePaletteKey key = { palette, texture->palette_colorkey };
+                if (SDL_FindInHashTable(renderer->palettes, &key, (const void **)&texture->palette)) {
                     ++texture->palette->refcount;
                 } else {
                     SDL_TexturePalette *texture_palette = (SDL_TexturePalette *)SDL_calloc(1, sizeof(*texture_palette));
@@ -2145,16 +2157,20 @@ bool SDL_SetTexturePalette(SDL_Texture *texture, SDL_Palette *palette)
                     }
                     if (!renderer->CreatePalette(renderer, texture_palette)) {
                         renderer->DestroyPalette(renderer, texture_palette);
+                        SDL_free(texture_palette);
+                        SDL_SetTexturePalette(texture, NULL);
+                        return false;
+                    }
+                    texture_palette->refcount = 1;
+                    texture_palette->key = key;
+
+                    if (!SDL_InsertIntoHashTable(renderer->palettes, &texture_palette->key, texture_palette, false)) {
+                        renderer->DestroyPalette(renderer, texture_palette);
+                        SDL_free(texture_palette);
                         SDL_SetTexturePalette(texture, NULL);
                         return false;
                     }
                     texture->palette = texture_palette;
-                    texture->palette->refcount = 1;
-
-                    if (!SDL_InsertIntoHashTable(renderer->palettes, palette, texture->palette, false)) {
-                        SDL_SetTexturePalette(texture, NULL);
-                        return false;
-                    }
                 }
             }
 
@@ -4681,6 +4697,10 @@ static bool SDL_RenderTextureTiled_Iterate(SDL_Renderer *renderer, SDL_Texture *
 {
     float tile_width = srcrect->w * scale;
     float tile_height = srcrect->h * scale;
+    if (tile_width <= 0.0f || tile_height <= 0.0f) {
+        return true;
+    }
+
     float float_rows, float_cols;
     float remaining_w = SDL_modff(dstrect->w / tile_width, &float_cols);
     float remaining_h = SDL_modff(dstrect->h / tile_height, &float_rows);
@@ -4761,7 +4781,7 @@ bool SDL_RenderTextureTiled(SDL_Renderer *renderer, SDL_Texture *texture, const 
     real_srcrect.w = (float)texture->w;
     real_srcrect.h = (float)texture->h;
     if (srcrect) {
-        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect)) {
+        if (!SDL_GetRectIntersectionFloat(srcrect, &real_srcrect, &real_srcrect) || real_srcrect.w == 0.0f || real_srcrect.h == 0.0f) {
             return true;
         }
     }
@@ -5692,10 +5712,7 @@ SDL_Surface *SDL_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
             SDL_SetFloatProperty(props, SDL_PROP_SURFACE_HDR_HEADROOM_FLOAT, target->HDR_headroom);
 
             // Set the expected surface format
-            if ((surface->format == SDL_PIXELFORMAT_ARGB8888 && expected_format == SDL_PIXELFORMAT_XRGB8888) ||
-                (surface->format == SDL_PIXELFORMAT_RGBA8888 && expected_format == SDL_PIXELFORMAT_RGBX8888) ||
-                (surface->format == SDL_PIXELFORMAT_ABGR8888 && expected_format == SDL_PIXELFORMAT_XBGR8888) ||
-                (surface->format == SDL_PIXELFORMAT_BGRA8888 && expected_format == SDL_PIXELFORMAT_BGRX8888)) {
+            if (surface->format != expected_format && surface->format == SDL_PromotePixelFormatToAlpha(expected_format)) {
                 surface->format = expected_format;
                 surface->fmt = SDL_GetPixelFormatDetails(expected_format);
             }

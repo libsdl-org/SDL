@@ -248,9 +248,9 @@ typedef struct
     D3D12_TextureData *textureRenderTarget;
     D3D12_CPU_DESCRIPTOR_HANDLE currentRenderTargetView;
     int numCurrentShaderResources;
-    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResource;
+    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderResources[3];
     int numCurrentShaderSamplers;
-    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderSampler;
+    D3D12_CPU_DESCRIPTOR_HANDLE currentShaderSamplers[2];
     bool cliprectDirty;
     bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
@@ -384,6 +384,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(SDL_PixelFormat fo
 }
 
 static void D3D12_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
+static bool SDLCALL D3D12_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value);
 
 static void D3D12_ReleaseAll(SDL_Renderer *renderer)
 {
@@ -396,6 +397,11 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
     // Release all textures
     for (SDL_Texture *texture = renderer->textures; texture; texture = texture->next) {
         D3D12_DestroyTexture(renderer, texture);
+    }
+
+    // Release all palettes, they'll be recreated the next time they're used
+    if (renderer->palettes) {
+        SDL_IterateHashTable(renderer->palettes, D3D12_ReleasePalette, renderer);
     }
 
     // Release/reset everything else
@@ -445,9 +451,9 @@ static void D3D12_ReleaseAll(SDL_Renderer *renderer)
         data->swapFlags = 0;
         data->currentRenderTargetView.ptr = 0;
         data->numCurrentShaderResources = 0;
-        data->currentShaderResource.ptr = 0;
+        SDL_zeroa(data->currentShaderResources);
         data->numCurrentShaderSamplers = 0;
-        data->currentShaderSampler.ptr = 0;
+        SDL_zeroa(data->currentShaderSamplers);
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
         // Check for any leaks if in debug mode
@@ -1555,14 +1561,9 @@ static bool GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D12R
     return true;
 }
 
-static bool D3D12_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+static bool D3D12_CreatePaletteResources(SDL_Renderer *renderer, D3D12_PaletteData *palettedata)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
-    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
-    if (!palettedata) {
-        return false;
-    }
-    palette->internal = palettedata;
 
     if (!data->d3dDevice) {
         return SDL_SetError("Device lost and couldn't be recovered");
@@ -1618,21 +1619,67 @@ static bool D3D12_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
     return true;
 }
 
+static void D3D12_DestroyPaletteResources(SDL_Renderer *renderer, D3D12_PaletteData *palettedata)
+{
+    if (palettedata->texture) {
+        D3D_SAFE_RELEASE(palettedata->texture);
+        D3D12_FreeSRVIndex(renderer, palettedata->SRVIndex);
+    }
+}
+
+static bool SDLCALL D3D12_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    SDL_Renderer *renderer = (SDL_Renderer *)userdata;
+    SDL_TexturePalette *palette = (SDL_TexturePalette *)value;
+    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        D3D12_DestroyPaletteResources(renderer, palettedata);
+    }
+
+    // Make sure UpdatePalette() is called before the palette is used again
+    palette->version = 0;
+    return true;
+}
+
+static bool D3D12_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    D3D12_PaletteData *palettedata = (D3D12_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    return D3D12_CreatePaletteResources(renderer, palettedata);
+}
+
 static bool D3D12_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
 {
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     D3D12_PaletteData *palettedata = (D3D12_PaletteData *)palette->internal;
+
+    if (!palettedata->texture) {
+        if (!D3D12_CreatePaletteResources(renderer, palettedata)) {
+            return false;
+        }
+    }
 
     return D3D12_UpdateTextureInternal(data, palettedata->texture, 0, 0, 0, ncolors, 1, colors, ncolors * sizeof(*colors), &palettedata->resourceState);
 }
 
 static void D3D12_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
+    D3D12_RenderData *rendererData = (D3D12_RenderData *)renderer->internal;
     D3D12_PaletteData *palettedata = (D3D12_PaletteData *)palette->internal;
 
     if (palettedata) {
-        D3D_SAFE_RELEASE(palettedata->texture);
-        D3D12_FreeSRVIndex(renderer, palettedata->SRVIndex);
+        if (palettedata->texture) {
+            // Because SDL_DestroyPalette might be called while the data is in-flight,
+            // we need to issue the batch first, which may cause performance issues
+            D3D12_IssueBatch(rendererData);
+
+            D3D12_DestroyPaletteResources(renderer, palettedata);
+        }
         SDL_free(palettedata);
     }
 }
@@ -1909,8 +1956,8 @@ static void D3D12_DestroyTexture(SDL_Renderer *renderer,
         return;
     }
 
-    /* Because SDL_DestroyTexture might be called while the data is in-flight, we need to issue the batch first
-       Unfortunately, this means that deleting a lot of textures mid-frame will have poor performance. */
+    // Because SDL_DestroyTexture might be called while the data is in-flight,
+    // we need to issue the batch first, which may cause performance issues
     D3D12_IssueBatch(rendererData);
 
     D3D_SAFE_RELEASE(textureData->mainTexture);
@@ -2126,9 +2173,9 @@ static bool D3D12_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             return false;
         }
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2164,9 +2211,9 @@ static bool D3D12_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
             return false;
         }
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2189,9 +2236,9 @@ static bool D3D12_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *texture,
     if (!D3D12_UpdateTextureInternal(rendererData, textureData->mainTexture, 1, rect->x, rect->y, (rect->w + 1) & ~1, (rect->h + 1) & ~1, UVplane, UVpitch, &textureData->mainResourceState)) {
         return false;
     }
-    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResource.ptr) {
+    if (textureData->mainTextureResourceView.ptr == rendererData->currentShaderResources[0].ptr) {
         // We'll need to rebind this resource after updating it
-        rendererData->currentShaderResource.ptr = 0;
+        rendererData->currentShaderResources[0].ptr = 0;
     }
     return true;
 }
@@ -2834,13 +2881,13 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     bool shaderResourcesChanged = false;
     if (numShaderResources != rendererData->numCurrentShaderResources ||
-        (numShaderResources > 0 && shaderResources[0].ptr != rendererData->currentShaderResource.ptr)) {
+        (numShaderResources > 0 && SDL_memcmp(shaderResources, rendererData->currentShaderResources, numShaderResources * sizeof(*shaderResources)) != 0)) {
         shaderResourcesChanged = true;
     }
 
     bool shaderSamplersChanged = false;
     if (numShaderSamplers != rendererData->numCurrentShaderSamplers ||
-        (numShaderSamplers > 0 && shaderSamplers[0].ptr != rendererData->currentShaderSampler.ptr)) {
+        (numShaderSamplers > 0 && SDL_memcmp(shaderSamplers, rendererData->currentShaderSamplers, numShaderSamplers * sizeof(*shaderSamplers)) != 0)) {
         shaderSamplersChanged = true;
     }
 
@@ -2922,7 +2969,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         }
         rendererData->numCurrentShaderResources = numShaderResources;
         if (numShaderResources > 0) {
-            rendererData->currentShaderResource.ptr = shaderResources[0].ptr;
+            SDL_memcpy(rendererData->currentShaderResources, shaderResources, numShaderResources * sizeof(*shaderResources));
         }
     }
 
@@ -2954,7 +3001,7 @@ static bool D3D12_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
         rendererData->numCurrentShaderSamplers = numShaderSamplers;
         if (numShaderSamplers > 0) {
-            rendererData->currentShaderSampler.ptr = shaderSamplers[0].ptr;
+            SDL_memcpy(rendererData->currentShaderSamplers, shaderSamplers, numShaderSamplers * sizeof(*shaderSamplers));
         }
     }
 
@@ -3124,9 +3171,9 @@ static void D3D12_InvalidateCachedState(SDL_Renderer *renderer)
     D3D12_RenderData *data = (D3D12_RenderData *)renderer->internal;
     data->currentRenderTargetView.ptr = 0;
     data->numCurrentShaderResources = 0;
-    data->currentShaderResource.ptr = 0;
+    SDL_zeroa(data->currentShaderResources);
     data->numCurrentShaderSamplers = 0;
-    data->currentShaderSampler.ptr = 0;
+    SDL_zeroa(data->currentShaderSamplers);
     data->cliprectDirty = true;
     data->viewportDirty = true;
 }

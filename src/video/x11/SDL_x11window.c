@@ -653,13 +653,6 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     xattr.border_pixel = 0;
 
     if (visual->class == DirectColor) {
-        XColor *colorcells;
-        int i;
-        int ncolors;
-        int rmax, gmax, bmax;
-        int rmask, gmask, bmask;
-        int rshift, gshift, bshift;
-
         xattr.colormap =
             X11_XCreateColormap(display, RootWindow(display, screen),
                                 visual, AllocAll);
@@ -670,38 +663,30 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         }
 
         // OK, we got a colormap, now fill it in as best as we can
-        colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
+        XColor *colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
         if (!colorcells) {
             return false;
         }
-        ncolors = visual->map_entries;
-        rmax = 0xffff;
-        gmax = 0xffff;
-        bmax = 0xffff;
 
-        rshift = 0;
-        rmask = visual->red_mask;
-        while (0 == (rmask & 1)) {
-            rshift++;
-            rmask >>= 1;
-        }
+        int ncolors = visual->map_entries;
+        int rmax = 0xffff;
+        int gmax = 0xffff;
+        int bmax = 0xffff;
 
-        gshift = 0;
-        gmask = visual->green_mask;
-        while (0 == (gmask & 1)) {
-            gshift++;
-            gmask >>= 1;
+#define CALC_MASK_AND_SHIFT(shiftvar, maskvar, origmask) \
+        int shiftvar = 0; \
+        Uint32 maskvar = (Uint32) origmask; \
+        while (0 == (maskvar & 1)) { \
+            shiftvar++; \
+            maskvar >>= 1; \
         }
-
-        bshift = 0;
-        bmask = visual->blue_mask;
-        while (0 == (bmask & 1)) {
-            bshift++;
-            bmask >>= 1;
-        }
+        CALC_MASK_AND_SHIFT(rshift, rmask, visual->red_mask);
+        CALC_MASK_AND_SHIFT(gshift, gmask, visual->green_mask);
+        CALC_MASK_AND_SHIFT(bshift, bmask, visual->blue_mask);
+#undef CALC_MASK_AND_SHIFT
 
         // build the color table pixel values
-        for (i = 0; i < ncolors; i++) {
+        for (int i = 0; i < ncolors; i++) {
             Uint32 red = (rmax * i) / (ncolors - 1);
             Uint32 green = (gmax * i) / (ncolors - 1);
             Uint32 blue = (bmax * i) / (ncolors - 1);

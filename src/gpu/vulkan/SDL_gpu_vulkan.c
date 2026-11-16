@@ -9970,7 +9970,8 @@ static bool VULKAN_ClaimWindow(
         }
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
-        if (createSwapchainResult == 1) {
+        if (createSwapchainResult == 1 ||
+            createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
@@ -9987,9 +9988,10 @@ static bool VULKAN_ClaimWindow(
 
             SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, VULKAN_INTERNAL_OnWindowResize, window);
 
-            return true;
-        } else if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
-            windowData->needsSwapchainRecreate = true;
+            if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+                // We successfully claimed the window, but we'll need to recreate the swap chain
+                windowData->needsSwapchainRecreate = true;
+            }
             return true;
         } else {
             // Failed to create swapchain, destroy surface and free data

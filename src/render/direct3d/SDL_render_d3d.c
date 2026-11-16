@@ -61,14 +61,10 @@ typedef struct
     IDirect3DTexture9 *staging;
 } D3D_TextureRep;
 
-struct D3D_PaletteData
+typedef struct
 {
     D3D_TextureRep texture;
-
-    struct D3D_PaletteData *prev;
-    struct D3D_PaletteData *next;
-};
-typedef struct D3D_PaletteData D3D_PaletteData;
+} D3D_PaletteData;
 
 // Direct3D renderer implementation
 
@@ -94,7 +90,6 @@ typedef struct
     int currentVertexBuffer;
     bool reportedVboProblem;
     D3D_DrawStateCache drawstate;
-    D3D_PaletteData *palettes;
 } D3D_RenderData;
 
 typedef struct
@@ -561,18 +556,7 @@ static bool D3D_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palett
     }
     palette->internal = palettedata;
 
-    if (!D3D_CreateTextureRep(data->device, &palettedata->texture, 0, SDL_PIXELFORMAT_ARGB8888, D3DFMT_A8R8G8B8, 256, 1)) {
-        SDL_free(palettedata);
-        return false;
-    }
-
-    // Keep a reference to the palette so we can restore the texture if we lose the D3D device
-    if (data->palettes) {
-        palettedata->next = data->palettes;
-        data->palettes->prev = palettedata;
-    }
-    data->palettes = palettedata;
-    return true;
+    return D3D_CreateTextureRep(data->device, &palettedata->texture, 0, SDL_PIXELFORMAT_ARGB8888, D3DFMT_A8R8G8B8, 256, 1);
 }
 
 static bool D3D_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
@@ -595,20 +579,10 @@ static bool D3D_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palett
 
 static void D3D_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
 {
-    D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     D3D_PaletteData *palettedata = (D3D_PaletteData *)palette->internal;
 
     if (palettedata) {
         D3D_DestroyTextureRep(&palettedata->texture);
-
-        if (data->palettes == palettedata) {
-            data->palettes = palettedata->next;
-        } else if (palettedata->prev) {
-            palettedata->prev->next = palettedata->next;
-        }
-        if (palettedata->next) {
-            palettedata->next->prev = palettedata->prev;
-        }
         SDL_free(palettedata);
     }
 }
@@ -1684,9 +1658,6 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
     if (data) {
         int i;
 
-        // Make sure the palettes have been freed
-        SDL_assert(!data->palettes);
-
         // Release the render target
         if (data->defaultRenderTarget) {
             IDirect3DSurface9_Release(data->defaultRenderTarget);
@@ -1721,13 +1692,24 @@ static void D3D_DestroyRenderer(SDL_Renderer *renderer)
     }
 }
 
+static bool SDLCALL D3D_RecreatePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    D3D_RenderData *data = (D3D_RenderData *)userdata;
+    SDL_TexturePalette *palette = (SDL_TexturePalette *)value;
+    D3D_PaletteData *palettedata = (D3D_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        D3D_RecreateTextureRep(data->device, &palettedata->texture);
+    }
+    return true;
+}
+
 static bool D3D_Reset(SDL_Renderer *renderer)
 {
     D3D_RenderData *data = (D3D_RenderData *)renderer->internal;
     const Float4X4 d3dmatrix = MatrixIdentity();
     HRESULT result;
     SDL_Texture *texture;
-    D3D_PaletteData *palette;
     int i;
 
     // Cancel any scene that we've started
@@ -1756,8 +1738,8 @@ static bool D3D_Reset(SDL_Renderer *renderer)
     }
 
     // Release all palettes
-    for (palette = data->palettes; palette; palette = palette->next) {
-        D3D_RecreateTextureRep(data->device, &palette->texture);
+    if (renderer->palettes) {
+        SDL_IterateHashTable(renderer->palettes, D3D_RecreatePalette, data);
     }
 
     // Release all vertex buffers

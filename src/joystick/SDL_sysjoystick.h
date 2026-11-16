@@ -225,6 +225,14 @@ struct SDL_JoystickDriver
     // Optional function to initialize the driver
     bool (*Init)(void);
 
+    // Optional function to initialize joystick updates
+    // This is called on the thread that runs joystick updates, without the joystick lock held
+    void (*InitUpdates)(void);
+
+    // Optional function to shutdown joystick updates
+    // This is called on the thread that runs joystick updates, without the joystick lock held
+    void (*QuitUpdates)(void);
+
     // Optional function to return a list of available devices
     // Drivers without this function publish devices directly with SDL_AddJoystickDevice()
     SDL_JoystickDevice *(*QueryDevices)(void);

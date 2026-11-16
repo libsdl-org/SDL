@@ -77,28 +77,39 @@ static void *RunThread(void *data)
 #if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)) && defined(HAVE_DLOPEN)
 static bool checked_setname = false;
 static int (*ppthread_setname_np)(const char *) = NULL;
+static int (*ppthread_getname_np)(pthread_t, char *, size_t) = NULL;
 #elif (defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)) && defined(HAVE_DLOPEN)
 static bool checked_setname = false;
 static int (*ppthread_setname_np)(pthread_t, const char *) = NULL;
+static int (*ppthread_getname_np)(pthread_t, char *, size_t) = NULL;
 #endif
+
+static void CheckThreadNameAPIs(void)
+{
+#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)) && defined(HAVE_DLOPEN)
+    if (!checked_setname) {
+        void *fn;
+        fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
+#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
+        ppthread_setname_np = (int (*)(const char *))fn;
+#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
+        ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
+#endif
+        fn = dlsym(RTLD_DEFAULT, "pthread_getname_np");
+        ppthread_getname_np = (int (*)(pthread_t, char *, size_t))fn;
+        checked_setname = true;
+    }
+#endif
+}
+
 bool SDL_SYS_CreateThread(SDL_Thread *thread,
                           SDL_FunctionPointer pfnBeginThread,
                           SDL_FunctionPointer pfnEndThread)
 {
     pthread_attr_t type;
 
-// do this here before any threads exist, so there's no race condition.
-#if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)) && defined(HAVE_DLOPEN)
-    if (!checked_setname) {
-        void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
-#if defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS)
-        ppthread_setname_np = (int (*)(const char *))fn;
-#elif defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
-        ppthread_setname_np = (int (*)(pthread_t, const char *))fn;
-#endif
-        checked_setname = true;
-    }
-    #endif
+    // do this here before any threads exist, so there's no race condition.
+    CheckThreadNameAPIs();
 
     // Set the thread attributes
     if (pthread_attr_init(&type) != 0) {
@@ -302,3 +313,16 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     pthread_detach(thread->handle);
 }
+
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    #if (defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)) && defined(HAVE_DLOPEN)
+    CheckThreadNameAPIs();
+
+    if (ppthread_getname_np) {
+        return (ppthread_getname_np(pthread_self(), buf, buflen) == 0);
+    }
+    #endif
+    return false;  // no thread names on this platform.
+}
+

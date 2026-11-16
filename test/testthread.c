@@ -65,9 +65,10 @@ static int SDLCALL ThreadFunc(void *data)
 {
     SDL_ThreadPriority prio = SDL_THREAD_PRIORITY_NORMAL;
 
+
     SDL_SetTLS(&tls, "baby thread", NULL);
-    SDL_Log("Started thread %s: My thread id is %" SDL_PRIu64 ", thread data = %s",
-            (char *)data, SDL_GetCurrentThreadID(), (const char *)SDL_GetTLS(&tls));
+    SDL_Log("Started thread %s: My thread id is %" SDL_PRIu64 ", thread name = '%s', thread data = %s",
+            (char *)data, SDL_GetCurrentThreadID(), SDL_GetCurrentThreadName(), (const char *)SDL_GetTLS(&tls));
     while (SDL_GetAtomicInt(&alive)) {
         SDL_Log("Thread '%s' is alive!", (char *)data);
 
@@ -129,6 +130,14 @@ int main(int argc, char *argv[])
     if (!SDL_IsMainThread()) {
         SDL_Log("SDL_IsMainThread() returned false for the main thread");
         quit(1);
+    }
+
+    const char *main_thread_name = SDL_GetCurrentThreadName();
+    if (!main_thread_name) {
+        SDL_Log("Couldn't determine main thread name: %s", SDL_GetError());
+        SDL_Log("(this is not necessarily a bug.)");
+    } else {
+        SDL_Log("Main thread's name is: %s", main_thread_name);
     }
 
     thread = SDL_CreateThread(CheckMainThread, "CheckMainThread", &child_is_main);

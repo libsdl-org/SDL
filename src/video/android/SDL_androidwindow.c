@@ -120,7 +120,21 @@ SDL_FullscreenResult Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
 
         // If the window is being destroyed don't change visible state
         if (!window->is_destroying) {
+            // Don't hold the activity mutex while changing the window style.
+            //
+            // SDLActivity.sendCommand() blocks for up to 500 ms, waiting for
+            // SDLSurface.surfaceChanged() so the new window size is available when
+            // we return. Changing the style makes the UI thread lay out the window,
+            // recalculating the insets, and calling onNativeInsetsChanged(), which
+            // locks the activity mutex, causing a deadlock until the timeout.
+            Android_UnlockActivityMutex();
             Android_JNI_SetWindowStyle(fullscreen);
+            Android_LockActivityMutex();
+
+            // Make sure the window didn't change while we were unlocked
+            if (window != Android_Window || window->is_destroying) {
+                goto endfunction;
+            }
         }
 
         /* Ensure our size matches reality after we've executed the window style change.

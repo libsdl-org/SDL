@@ -956,8 +956,8 @@ static bool RLEAlphaSurface(SDL_Surface *surface)
         return false;
     }
     df = dest->fmt;
-    if (surface->fmt->bits_per_pixel != 32) {
-        return false; // only 32bpp source supported
+    if (SDL_PIXELLAYOUT(surface->format) != SDL_PACKEDLAYOUT_8888) {
+        return false; // only 8888 source supported
     }
 
     /* find out whether the destination is one we support,
@@ -1219,7 +1219,7 @@ static bool RLEColorkeySurface(SDL_Surface *surface)
     srcbuf = (Uint8 *)surface->pixels;
     maxn = bpp == 4 ? 65535 : 255;
     dst = rlebuf + sizeof(SDL_PixelFormat);
-    rgbmask = ~surface->fmt->Amask;
+    rgbmask = surface->fmt->Rmask | surface->fmt->Gmask | surface->fmt->Bmask;
     ckey = surface->map.info.colorkey & rgbmask;
     lastline = dst;
     getpix = getpixes[bpp - 1];

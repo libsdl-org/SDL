@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
@@ -279,7 +280,7 @@ class SDLJoystickHandler {
     // gamepad, so we wait for input devices to settle before adding a joystick. Android can also
     // deadlock if a sensor listener is registered while an input device change is being processed,
     // so we wait for input devices to settle before changing sensor registration.
-    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 50;
+    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 200;
     private volatile long mLastInputDeviceChangeTime;
     private final Handler mHandler;
 
@@ -328,6 +329,12 @@ class SDLJoystickHandler {
         }
     }
 
+    boolean deviceIsUnnamedQuestController(InputDevice joystickDevice) {
+        return Build.VERSION.SDK_INT >= 29 && 
+            Build.MANUFACTURER.equals("Oculus") && Build.MODEL.startsWith("Quest") && 
+            joystickDevice.getName().startsWith("Device 0x");
+    }
+
     void deviceAdded(int device_id) {
         InputDevice joystickDevice = InputDevice.getDevice(device_id);
         if (joystickDevice == null ) {
@@ -336,9 +343,17 @@ class SDLJoystickHandler {
 
         SDLJoystick joystick = getJoystick(device_id);
         if (joystick == null) {
+
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
+                if (!joystickDevice.isExternal() && (joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == 0) {
+                    // This is the Quest's dummy controller, which we want to ignore.
+                    return;
+                }
+            }
+
             joystick = new SDLJoystick();
             joystick.device_id = device_id;
-            joystick.name = joystickDevice.getName();
+            joystick.name = getJoystickName(joystickDevice);
             joystick.desc = getJoystickDescriptor(joystickDevice);
             joystick.axes = new ArrayList<InputDevice.MotionRange>();
             joystick.hats = new ArrayList<InputDevice.MotionRange>();
@@ -464,6 +479,36 @@ class SDLJoystickHandler {
             }
         }
         return true;
+    }
+
+    // Linux splits HID devices with several top level collections into separate input devices, adding
+    // a suffix to the name of each extra one, e.g. "PG-9083S Consumer Control". Android merges them
+    // back into one input device, named after whichever was added first.
+    private static final String[] HID_COLLECTION_SUFFIXES = {
+        " Consumer Control",
+        " System Control",
+        " Keyboard",
+        " Mouse",
+    };
+
+    String getJoystickName(InputDevice joystickDevice) {
+        String name = joystickDevice.getName();
+
+        // Only rename gamepads, the suffixes identify devices that shouldn't be treated as gamepads
+        if ((joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            for (String suffix : HID_COLLECTION_SUFFIXES) {
+                if (name.endsWith(suffix) && name.length() > suffix.length()) {
+                    return name.substring(0, name.length() - suffix.length());
+                }
+            }
+
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
+                if (joystickDevice.isExternal()) {
+                    return "Touch Controller Gamepad Mode";
+                }
+            }
+        }
+        return name;
     }
 
     String getJoystickDescriptor(InputDevice joystickDevice) {
@@ -864,7 +909,7 @@ class SDLHapticHandler {
     }
 }
 
-class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, View.OnCapturedPointerListener {
+class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
     protected static final int SDL_PEN_DEVICE_TYPE_UNKNOWN = 0;
     protected static final int SDL_PEN_DEVICE_TYPE_DIRECT = 1;
     protected static final int SDL_PEN_DEVICE_TYPE_INDIRECT = 2;
@@ -912,7 +957,7 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, Vi
                         y = getEventY(event, i);
 
                         SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
-                        consumed = true;                            
+                        consumed = true;
                         break;
 
                     default:
@@ -979,12 +1024,6 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener, Vi
     int getPenDeviceType(InputDevice penDevice) {
         return SDL_PEN_DEVICE_TYPE_UNKNOWN;
     }
-
-    @Override
-    public boolean onCapturedPointer(View view, MotionEvent event) {
-        // We can't use captured pointer listener until API 26 or later.
-        return false;
-    }
 }
 
 class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
@@ -1037,7 +1076,8 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
     }
 }
 
-class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
+@SuppressLint("NewApi") // prevent lint Error: Class requires API level 26 (current min is 21): android.view.View.OnCapturedPointerListener [NewApi]
+class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 implements View.OnCapturedPointerListener {
     // Generic Motion (mouse hover, joystick...) events go here
     private boolean mRelativeModeEnabled;
 
@@ -1133,6 +1173,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     }
 }
 
+@SuppressLint("NewApi") // prevent lint Error: Call requires API level 29 (current min is 21): android.view.InputDevice#isExternal [NewApi]
 class SDLGenericMotionListener_API29 extends SDLGenericMotionListener_API26 {
     @Override
     int getPenDeviceType(InputDevice penDevice)

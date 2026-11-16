@@ -67,7 +67,8 @@ struct joystick_hwdata
 
     bool removed;
     SDL_Joystick *joystick;
-    bool runLoopAttached; // is 'deviceRef' attached to a CFRunLoop?
+    bool opened;          // has 'deviceRef' been opened with IOHIDDeviceOpen()?
+    Uint64 entry_id;      // IORegistry entry ID, used to match removal notifications
 
     Uint16 vendor_id;
     Uint16 product_id;

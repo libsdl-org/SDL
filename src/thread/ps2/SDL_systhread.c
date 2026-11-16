@@ -143,4 +143,9 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return true;
 }
 
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    return false;  // no thread names on this platform.
+}
+
 #endif // SDL_THREAD_PS2

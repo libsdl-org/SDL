@@ -188,6 +188,8 @@ extern "C"
     SDL_JoystickDriver SDL_HAIKU_JoystickDriver =
     {
         HAIKU_JoystickInit,
+        NULL, // InitUpdates
+        NULL, // QuitUpdates
         NULL, // QueryDevices
         NULL, // DetectDevices
         NULL, // PrepareDevice

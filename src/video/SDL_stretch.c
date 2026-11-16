@@ -20,10 +20,26 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 
 static bool SDL_StretchSurfaceUncheckedNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_ConvertAndStretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+
+static bool SDL_CanLinearStretchFormat(SDL_PixelFormat format)
+{
+    if (SDL_ISPIXELFORMAT_PACKED(format)) {
+        if (!SDL_ISPIXELFORMAT_10BIT(format)) {
+            return true;
+        }
+    } else if (SDL_ISPIXELFORMAT_ARRAY(format)) {
+        if (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) {
+            return true;
+        }
+    }
+    return false;
+}
 
 bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
@@ -38,64 +54,6 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
     }
     CHECK_PARAM(!dst) {
         return SDL_InvalidParamError("dst");
-    }
-
-    if (src->format != dst->format) {
-        // Slow!
-        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
-        if (!src_tmp) {
-            return false;
-        }
-        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
-        SDL_DestroySurface(src_tmp);
-        return result;
-    }
-
-    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
-        // Slow!
-        if (!dstrect) {
-            full_dst.x = 0;
-            full_dst.y = 0;
-            full_dst.w = dst->w;
-            full_dst.h = dst->h;
-            dstrect = &full_dst;
-        }
-
-        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
-        SDL_Surface *dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
-        if (src_tmp && dst_tmp) {
-            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
-            if (result) {
-                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
-                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
-                            dst_tmp->pixels, dst_tmp->pitch,
-                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
-                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
-            }
-        } else {
-            result = false;
-        }
-        SDL_DestroySurface(src_tmp);
-        SDL_DestroySurface(dst_tmp);
-        return result;
-    }
-
-    switch (scaleMode) {
-    case SDL_SCALEMODE_NEAREST:
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        break;
-    case SDL_SCALEMODE_PIXELART:
-        scaleMode = SDL_SCALEMODE_NEAREST;
-        break;
-    default:
-        return SDL_InvalidParamError("scaleMode");
-    }
-
-    if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
-            return SDL_SetError("Wrong format");
-        }
     }
 
     // Verify the blit rectangles
@@ -135,6 +93,57 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
         return SDL_SetError("Size too large for scaling");
     }
 
+    if (src->format != dst->format ||
+        (src->colorspace != dst->colorspace && dst->colorspace != SDL_COLORSPACE_UNKNOWN)) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
+        if (!src_tmp) {
+            return false;
+        }
+        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
+        SDL_DestroySurface(src_tmp);
+        return result;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
+        SDL_Surface *dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
+        if (src_tmp && dst_tmp) {
+            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (result) {
+                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                            dst_tmp->pixels, dst_tmp->pitch,
+                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
+                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+            }
+        } else {
+            result = false;
+        }
+        SDL_DestroySurface(src_tmp);
+        SDL_DestroySurface(dst_tmp);
+        return result;
+    }
+
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        break;
+    case SDL_SCALEMODE_PIXELART:
+        scaleMode = SDL_SCALEMODE_NEAREST;
+        break;
+    default:
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode == SDL_SCALEMODE_LINEAR) {
+        if (!SDL_CanLinearStretchFormat(src->format)) {
+            return SDL_SetError("Wrong format");
+        }
+    }
+
     // Lock the destination if it's in hardware
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
@@ -157,8 +166,10 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
 
     if (scaleMode == SDL_SCALEMODE_NEAREST) {
         result = SDL_StretchSurfaceUncheckedNearest(src, srcrect, dst, dstrect);
-    } else {
+    } else if (SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
         result = SDL_StretchSurfaceUncheckedLinear(src, srcrect, dst, dstrect);
+    } else {
+        result = SDL_ConvertAndStretchSurfaceUncheckedLinear(src, srcrect, dst, dstrect);
     }
 
     // We need to unlock the surfaces if they're locked
@@ -825,6 +836,49 @@ bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *s, const SDL_Rect *srcrect, 
         result = scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 
+    return result;
+}
+
+static bool SDL_ConvertAndStretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
+{
+    SDL_PixelFormat format = SDL_PromotePixelFormatTo8888(src->format);
+    SDL_Colorspace colorspace = src->colorspace;
+    SDL_PropertiesID props = src->props;
+    SDL_Surface *src_tmp = NULL;
+    SDL_Surface *dst_tmp = NULL;
+    SDL_Rect src_tmp_rect = { 0, 0, srcrect->w, srcrect->h };
+    SDL_Rect dst_tmp_rect = { 0, 0, dstrect->w, dstrect->h };
+    bool result = false;
+
+    src_tmp = SDL_CreateSurfaceUninitialized(srcrect->w, srcrect->h, format);
+    if (!src_tmp) {
+        goto done;
+    }
+    if (!SDL_ConvertPixelsAndColorspace(srcrect->w, srcrect->h, src->format, src->colorspace, src->props,
+                                        (const Uint8 *)src->pixels + srcrect->y * src->pitch + srcrect->x * SDL_BYTESPERPIXEL(src->format), src->pitch,
+                                        format, colorspace, props,
+                                        src_tmp->pixels, src_tmp->pitch)) {
+        goto done;
+    }
+    src = src_tmp;
+    srcrect = &src_tmp_rect;
+
+    dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, format);
+    if (!dst_tmp) {
+        goto done;
+    }
+
+    if (SDL_StretchSurfaceUncheckedLinear(src, srcrect, dst_tmp, &dst_tmp_rect)) {
+        result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                                                format, colorspace, props,
+                                                dst_tmp->pixels, dst_tmp->pitch,
+                                                dst->format, dst->colorspace, dst->props,
+                                                (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+    }
+
+done:
+    SDL_DestroySurface(src_tmp);
+    SDL_DestroySurface(dst_tmp);
     return result;
 }
 

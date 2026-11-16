@@ -199,9 +199,9 @@ typedef struct
     D3D11_Shader currentShader;
     D3D11_PixelShaderState currentShaderState[NUM_SHADERS];
     int numCurrentShaderResources;
-    ID3D11ShaderResourceView *currentShaderResource;
+    ID3D11ShaderResourceView *currentShaderResources[3];
     int numCurrentShaderSamplers;
-    ID3D11SamplerState *currentShaderSampler;
+    ID3D11SamplerState *currentShaderSamplers[2];
     bool cliprectDirty;
     bool currentCliprectEnabled;
     SDL_Rect currentCliprect;
@@ -325,6 +325,7 @@ static DXGI_FORMAT SDLPixelFormatToDXGIMainResourceViewFormat(Uint32 format, Uin
 
 static void D3D11_UpdateHDRMetadata(SDL_Renderer *renderer);
 static void D3D11_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture);
+static bool SDLCALL D3D11_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value);
 
 static void D3D11_ReleaseAll(SDL_Renderer *renderer)
 {
@@ -333,6 +334,11 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
     // Release all textures
     for (SDL_Texture *texture = renderer->textures; texture; texture = texture->next) {
         D3D11_DestroyTexture(renderer, texture);
+    }
+
+    // Release all palettes, they'll be recreated the next time they're used
+    if (renderer->palettes) {
+        SDL_IterateHashTable(renderer->palettes, D3D11_ReleasePalette, NULL);
     }
 
     // Release/reset everything else
@@ -387,9 +393,9 @@ static void D3D11_ReleaseAll(SDL_Renderer *renderer)
         data->currentShader = SHADER_NONE;
         SDL_zero(data->currentShaderState);
         data->numCurrentShaderResources = 0;
-        data->currentShaderResource = NULL;
+        SDL_zeroa(data->currentShaderResources);
         data->numCurrentShaderSamplers = 0;
-        data->currentShaderSampler = NULL;
+        SDL_zeroa(data->currentShaderSamplers);
 
         // Check for any leaks if in debug mode
         if (data->dxgiDebug) {
@@ -1153,14 +1159,9 @@ static bool GetTextureProperty(SDL_PropertiesID props, const char *name, ID3D11T
     return true;
 }
 
-static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+static bool D3D11_CreatePaletteResources(SDL_Renderer *renderer, D3D11_PaletteData *palettedata)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
-    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
-    if (!palettedata) {
-        return false;
-    }
-    palette->internal = palettedata;
 
     if (!data->d3dDevice) {
         return SDL_SetError("Device lost and couldn't be recovered");
@@ -1201,10 +1202,47 @@ static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *pale
     return true;
 }
 
+static void D3D11_DestroyPaletteResources(D3D11_PaletteData *palettedata)
+{
+    SAFE_RELEASE(palettedata->texture);
+    SAFE_RELEASE(palettedata->resourceView);
+}
+
+static bool SDLCALL D3D11_ReleasePalette(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    SDL_TexturePalette *palette = (SDL_TexturePalette *)value;
+    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
+
+    if (palettedata) {
+        D3D11_DestroyPaletteResources(palettedata);
+    }
+
+    // Make sure UpdatePalette() is called before the palette is used again
+    palette->version = 0;
+    return true;
+}
+
+static bool D3D11_CreatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette)
+{
+    D3D11_PaletteData *palettedata = (D3D11_PaletteData *)SDL_calloc(1, sizeof(*palettedata));
+    if (!palettedata) {
+        return false;
+    }
+    palette->internal = palettedata;
+
+    return D3D11_CreatePaletteResources(renderer, palettedata);
+}
+
 static bool D3D11_UpdatePalette(SDL_Renderer *renderer, SDL_TexturePalette *palette, int ncolors, SDL_Color *colors)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->internal;
     D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
+
+    if (!palettedata->texture) {
+        if (!D3D11_CreatePaletteResources(renderer, palettedata)) {
+            return false;
+        }
+    }
 
     return D3D11_UpdateTextureInternal(data, palettedata->texture, 4, 0, 0, ncolors, 1, colors, ncolors * sizeof(*colors));
 }
@@ -1214,8 +1252,7 @@ static void D3D11_DestroyPalette(SDL_Renderer *renderer, SDL_TexturePalette *pal
     D3D11_PaletteData *palettedata = (D3D11_PaletteData *)palette->internal;
 
     if (palettedata) {
-        SAFE_RELEASE(palettedata->texture);
-        SAFE_RELEASE(palettedata->resourceView);
+        D3D11_DestroyPaletteResources(palettedata);
         SDL_free(palettedata);
     }
 }
@@ -2370,13 +2407,13 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
 
     bool shaderResourcesChanged = false;
     if (numShaderResources != rendererData->numCurrentShaderResources ||
-        (numShaderResources > 0 && shaderResources[0] != rendererData->currentShaderResource)) {
+        (numShaderResources > 0 && SDL_memcmp(shaderResources, rendererData->currentShaderResources, numShaderResources * sizeof(*shaderResources)) != 0)) {
         shaderResourcesChanged = true;
     }
 
     bool shaderSamplersChanged = false;
     if (numShaderSamplers != rendererData->numCurrentShaderSamplers ||
-        (numShaderSamplers > 0 && shaderSamplers[0] != rendererData->currentShaderSampler)) {
+        (numShaderSamplers > 0 && SDL_memcmp(shaderSamplers, rendererData->currentShaderSamplers, numShaderSamplers * sizeof(*shaderSamplers)) != 0)) {
         shaderSamplersChanged = true;
     }
 
@@ -2490,14 +2527,14 @@ static bool D3D11_SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *
         ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, numShaderResources, shaderResources);
         rendererData->numCurrentShaderResources = numShaderResources;
         if (numShaderResources > 0) {
-            rendererData->currentShaderResource = shaderResources[0];
+            SDL_memcpy(rendererData->currentShaderResources, shaderResources, numShaderResources * sizeof(*shaderResources));
         }
     }
     if (shaderSamplersChanged) {
         ID3D11DeviceContext_PSSetSamplers(rendererData->d3dContext, 0, numShaderSamplers, shaderSamplers);
         rendererData->numCurrentShaderSamplers = numShaderSamplers;
-        if (numShaderSamplers) {
-            rendererData->currentShaderSampler = shaderSamplers[0];
+        if (numShaderSamplers > 0) {
+            SDL_memcpy(rendererData->currentShaderSamplers, shaderSamplers, numShaderSamplers * sizeof(*shaderSamplers));
         }
     }
 
@@ -2639,9 +2676,9 @@ static void D3D11_InvalidateCachedState(SDL_Renderer *renderer)
     data->currentBlendState = NULL;
     data->currentShader = SHADER_NONE;
     data->numCurrentShaderResources = 0;
-    data->currentShaderResource = NULL;
+    SDL_zeroa(data->currentShaderResources);
     data->numCurrentShaderSamplers = 0;
-    data->currentShaderSampler = NULL;
+    SDL_zeroa(data->currentShaderSamplers);
     data->cliprectDirty = true;
     data->viewportDirty = true;
 }

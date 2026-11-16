@@ -301,10 +301,16 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRenderer(SDL_Window *window
  *   renderer, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN`: the app is able to
  *   provide SPIR-V shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXBC_BOOLEAN`: the app is able to
+ *   provide DXBC shaders to SDL_GPURenderState, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN`: the app is able to
  *   provide DXIL shaders to SDL_GPURenderState, optional.
  * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN`: the app is able to
  *   provide MSL shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_METALLIB_BOOLEAN`: the app is able
+ *   to provide metallib shaders to SDL_GPURenderState, optional.
+ * - `SDL_PROP_RENDERER_CREATE_GPU_SHADERS_PRIVATE_BOOLEAN`: the app is able
+ *   to provide shaders for an NDA'd platform to SDL_GPURenderState, optional.
  *
  * With the metal renderer:
  *
@@ -353,8 +359,11 @@ extern SDL_DECLSPEC SDL_Renderer * SDLCALL SDL_CreateRendererWithProperties(SDL_
 #define SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER                       "SDL.renderer.create.present_vsync"
 #define SDL_PROP_RENDERER_CREATE_GPU_DEVICE_POINTER                         "SDL.renderer.create.gpu.device"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN                  "SDL.renderer.create.gpu.shaders_spirv"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXBC_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxbc"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN                   "SDL.renderer.create.gpu.shaders_dxil"
 #define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN                    "SDL.renderer.create.gpu.shaders_msl"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_METALLIB_BOOLEAN               "SDL.renderer.create.gpu.shaders_metallib"
+#define SDL_PROP_RENDERER_CREATE_GPU_SHADERS_PRIVATE_BOOLEAN                "SDL.renderer.create.gpu.shaders_private"
 #define SDL_PROP_RENDERER_CREATE_METAL_DEVICE_POINTER                       "SDL.renderer.create.metal.device"
 #define SDL_PROP_RENDERER_CREATE_METAL_COMMAND_QUEUE_POINTER                "SDL.renderer.create.metal.command_queue"
 #define SDL_PROP_RENDERER_CREATE_VULKAN_INSTANCE_POINTER                    "SDL.renderer.create.vulkan.instance"

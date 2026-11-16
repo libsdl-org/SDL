@@ -98,4 +98,7 @@ extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 extern bool SDL_Generic_SetTLSData(SDL_TLSData *data);
 extern void SDL_Generic_QuitTLSData(void);
 
+// Obtain the current thread's `SDL_Thread *`. Thread must have been created with SDL_CreateThread. The main thread and other OS-level threads will return NULL!
+extern SDL_Thread *SDL_GetCurrentThread(void);
+
 #endif // SDL_thread_c_h_

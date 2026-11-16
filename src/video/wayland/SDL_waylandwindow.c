@@ -2519,26 +2519,9 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #endif
     Wayland_SetWindowResizable(_this, window, !!(window->flags & SDL_WINDOW_RESIZABLE));
 
-    // We're finally done putting the window together, raise if possible
-    if (c->activation_manager && SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true)) {
-        /* if the process was passed an activation token, use it when showing
-         * the initial window.
-         *
-         * Note that we don't check for empty strings, as that is still
-         * considered a valid activation token!
-         */
-        const char *activation_token = SDL_getenv("XDG_ACTIVATION_TOKEN");
-        if (activation_token) {
-            xdg_activation_v1_activate(c->activation_manager,
-                                       activation_token,
-                                       data->surface);
-
-            // Clear this variable, per the protocol's request
-            SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
-        } else {
-            // Try to generate an activation token for this window.
-            Wayland_RaiseWindow(_this, window);
-        }
+    // We're finally done putting the window together. Try to raise it, if nothing is requesting otherwise.
+    if (!(window->flags & SDL_WINDOW_NOT_FOCUSABLE) && SDL_GetHintBoolean(SDL_HINT_WINDOW_ACTIVATE_WHEN_SHOWN, true)) {
+        Wayland_RaiseWindow(_this, window);
     } else {
         // Clear the ignored activation token, as it won't be used.
         SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
@@ -2769,17 +2752,25 @@ void Wayland_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window)
     SDL_WindowData *wind = window->internal;
 
     if (viddata->activation_manager) {
-        /* Check for an activation token, in case the window is being
-         * raised in response to a system notification.
+        /* Check for an activation token: first from the envvar, then from the
+         * notification system.
          *
-         * Note that we don't check for empty strings, as that is still
-         * considered a valid activation token!
+         * The unsafe getenv/unsetenv must be used here, as the token envvar may
+         * have been set via an out-of-band mechanism at some point after startup,
+         * resulting in the cached version being out-of-date.
+         *
+         * Note that we don't check for empty strings, as that is still considered
+         * a valid activation token!
          */
-        const char *activation_token = SDL_GetNotificationActivationToken();
+        const char *activation_token = SDL_getenv_unsafe("XDG_ACTIVATION_TOKEN");
+        if (!activation_token) {
+            activation_token = SDL_GetNotificationActivationToken();
+        }
         if (activation_token) {
-            xdg_activation_v1_activate(viddata->activation_manager,
-                                       activation_token,
-                                       wind->surface);
+            xdg_activation_v1_activate(viddata->activation_manager, activation_token, wind->surface);
+
+            // Clear this variable, per the protocol's request.
+            SDL_unsetenv_unsafe("XDG_ACTIVATION_TOKEN");
             return;
         }
     }

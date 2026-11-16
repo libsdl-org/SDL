@@ -1335,6 +1335,8 @@ static bool GAMEINPUT_JoystickGetGamepadMapping(SDL_JoystickDevice *device, SDL_
 SDL_JoystickDriver SDL_GAMEINPUT_JoystickDriver =
 {
     GAMEINPUT_JoystickInit,
+    NULL, // InitUpdates
+    NULL, // QuitUpdates
     GAMEINPUT_JoystickQueryDevices,
     NULL, // DetectDevices
     GAMEINPUT_JoystickPrepareDevice,

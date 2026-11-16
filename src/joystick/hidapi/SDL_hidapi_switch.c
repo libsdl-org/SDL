@@ -530,6 +530,17 @@ static bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs 
     return reply != NULL;
 }
 
+static bool WriteSubcommandAsync(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, const Uint8 *pBuf, Uint8 ucLen)
+{
+    if (ctx->m_bSyncWrite) {
+        return WriteSubcommand(ctx, ucCommandID, pBuf, ucLen, NULL);
+    }
+
+    SwitchSubcommandOutputPacket_t commandPacket;
+    ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
+    return WritePacket(ctx, &commandPacket, sizeof(commandPacket));
+}
+
 static bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, bool waitForReply)
 {
     int nTries;
@@ -771,7 +782,7 @@ static bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
     rgucBuffer[2] = ((ucLedIntensity & 0xF) << 4) | 0x0; // First cycle LED intensity, 0x0 intensity for second cycle
     rgucBuffer[3] = (0x0 << 4) | 0x0;                    // 8ms fade transition to first cycle, 8ms first cycle LED duration
 
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer), NULL);
+    return WriteSubcommandAsync(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer));
 }
 
 static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -804,7 +815,7 @@ static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
         if (ctx->m_bPlayerLights && ctx->m_nPlayerIndex >= 0) {
             led_data = player_pattern[ctx->m_nPlayerIndex % 8];
         }
-        WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
+        WriteSubcommandAsync(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data));
     }
 }
 
@@ -1854,8 +1865,10 @@ static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         // Doesn't have an RGB LED, so don't return SDL_JOYSTICK_CAP_RGB_LED here
         result |= SDL_JOYSTICK_CAP_RUMBLE;
-        // But has the HOME LED, so treat it like a mono LED
-        result |= SDL_JOYSTICK_CAP_MONO_LED;
+        if (HasHomeLED(ctx)) {
+            // But has the HOME LED, so treat it like a mono LED
+            result |= SDL_JOYSTICK_CAP_MONO_LED;
+        }
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
         result |= SDL_JOYSTICK_CAP_RUMBLE;
@@ -1872,6 +1885,9 @@ static bool HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 
     if (!(ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) &&
         ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        return SDL_Unsupported();
+    }
+    if (!HasHomeLED(ctx)) {
         return SDL_Unsupported();
     }
 

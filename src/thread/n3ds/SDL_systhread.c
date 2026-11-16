@@ -143,4 +143,9 @@ void SDL_SYS_DetachThread(SDL_Thread *thread)
     threadDetach(thread->handle);
 }
 
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    return false;  // no thread names on this platform.
+}
+
 #endif // SDL_THREAD_N3DS

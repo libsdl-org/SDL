@@ -1493,7 +1493,6 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     }
 
     SDL_Surface *surface = SDL_CreateSurfaceUninitialized(rect->w, rect->h, pixfmt);
-
     if (!surface) {
         return NULL;
     }
@@ -1504,8 +1503,8 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     tbci.usage = SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD;
 
     SDL_GPUTransferBuffer *tbuf = SDL_CreateGPUTransferBuffer(data->device, &tbci);
-
     if (!tbuf) {
+        SDL_DestroySurface(surface);
         return NULL;
     }
 
@@ -1530,11 +1529,21 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     SDL_EndGPUCopyPass(pass);
 
     SDL_GPUFence *fence = SDL_SubmitGPUCommandBufferAndAcquireFence(data->state.command_buffer);
+    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
+    if (!fence) {
+        SDL_ReleaseGPUTransferBuffer(data->device, tbuf);
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
     SDL_WaitForGPUFences(data->device, true, &fence, 1);
     SDL_ReleaseGPUFence(data->device, fence);
-    data->state.command_buffer = SDL_AcquireGPUCommandBuffer(data->device);
 
     void *mapped_tbuf = SDL_MapGPUTransferBuffer(data->device, tbuf, false);
+    if (!mapped_tbuf) {
+        SDL_ReleaseGPUTransferBuffer(data->device, tbuf);
+        SDL_DestroySurface(surface);
+        return NULL;
+    }
 
     if ((size_t)surface->pitch == row_size) {
         SDL_memcpy(surface->pixels, mapped_tbuf, image_size);

@@ -135,7 +135,8 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB;
@@ -146,7 +147,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
-        if ( Pixel != ckey ) {
+        if ( (Pixel & rgbmask) != ckey ) {
             dR = dstpal[*dst].r;
             dG = dstpal[*dst].g;
             dB = dstpal[*dst].b;
@@ -182,8 +183,10 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 alpha = info->a;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint32 fill = ~(dstfmt->Rmask | dstfmt->Gmask | dstfmt->Bmask);
 
-    const __m128i alpha_fill_mask = _mm_set1_epi32((int)0xff000000);
+    const __m128i alpha_fill_mask = _mm_set1_epi32((int)fill);
     const __m128i srcA = _mm_set1_epi16(alpha);
 
     while (height--) {
@@ -233,7 +236,7 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
 
             FACTOR_BLEND_8888(src32, dst32, alpha);
 
-            *dst = dst32 | 0xff000000;
+            *(Uint32 *)dst = dst32 | fill;
 
             src += 4;
             dst += 4;
@@ -1002,7 +1005,8 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
     int dstskip = info->dst_skip;
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
@@ -1015,7 +1019,7 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         RETRIEVE_RGB_PIXEL(src, srcbpp, Pixel);
-        if (sA && Pixel != ckey) {
+        if (sA && (Pixel & rgbmask) != ckey) {
             RGB_FROM_PIXEL(Pixel, srcfmt, sR, sG, sB);
             DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
@@ -1483,7 +1487,7 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
         case 2:
 #ifdef SDL_SVE2_INTRINSICS
             if (SDL_HasSVE2()) {
-                if (sf->bytes_per_pixel == 4 &&
+                if (SDL_PIXELLAYOUT(sf->format) == SDL_PACKEDLAYOUT_8888 &&
                     df->bytes_per_pixel == 2 &&
                     df->Rmask == 0x0000F800 &&
                     df->Gmask == 0x000007E0 &&

@@ -1302,9 +1302,7 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
     } else {
         if (!(src->map.info.flags & complex_copy_flags) &&
             src->format == dst->format &&
-            !SDL_ISPIXELFORMAT_INDEXED(src->format) &&
-            SDL_BYTESPERPIXEL(src->format) == 4 &&
-            src->format != SDL_PIXELFORMAT_ARGB2101010) {
+            SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
             // fast path
             return SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_LINEAR);
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
@@ -1337,15 +1335,14 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
             srcrect2.h = srcrect->h;
 
             // Change source format if not appropriate for scaling
-            if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
-                SDL_PixelFormat fmt;
-                if (SDL_BYTESPERPIXEL(dst->format) == 4 && dst->format != SDL_PIXELFORMAT_ARGB2101010 &&
-                    (SDL_ISPIXELFORMAT_ALPHA(dst->format) || !is_complex_copy_flags)) {
-                    fmt = dst->format;
-                } else {
-                    fmt = SDL_PIXELFORMAT_ARGB8888;
+            if (!SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
+                SDL_PixelFormat fmt = SDL_PromotePixelFormatTo8888(dst->format);
+                if (is_complex_copy_flags && !SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+                    fmt = SDL_PromotePixelFormatToAlpha(fmt);
                 }
-                tmp1 = SDL_ConvertSurfaceRect(src, srcrect, fmt);
+
+                // Keep the source colorspace, the final blit will convert to the destination colorspace
+                tmp1 = SDL_ConvertSurfaceRectAndColorspace(src, srcrect, fmt, NULL, src->colorspace, src->props);
                 if (!tmp1) {
                     return false;
                 }
@@ -1358,6 +1355,16 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
             if (is_complex_copy_flags || src->format != dst->format) {
                 SDL_Rect tmprect;
                 SDL_Surface *tmp2 = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, src->format);
+                if (!tmp2) {
+                    SDL_DestroySurface(tmp1);
+                    return false;
+                }
+                SDL_SetSurfaceColorspace(tmp2, src->colorspace);
+                if (src->props) {
+                    SDL_PropertiesID tmp2_props = SDL_GetSurfaceProperties(tmp2);
+                    SDL_CopyProperties(src->props, tmp2_props);
+                    SDL_ClearProperty(tmp2_props, "sdl2-compat.surface2");
+                }
                 SDL_StretchSurface(src, &srcrect2, tmp2, NULL, SDL_SCALEMODE_LINEAR);
 
                 SDL_SetSurfaceColorMod(tmp2, r, g, b);
@@ -1885,7 +1892,7 @@ bool SDL_FlipSurface(SDL_Surface *surface, SDL_FlipMode flip)
     return result;
 }
 
-static SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
+SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props)
 {
     SDL_Palette *temp_palette = NULL;
     SDL_Surface *convert = NULL;
@@ -2781,9 +2788,11 @@ Uint32 SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8
 bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a)
 {
     Uint32 pixel = 0;
+    Uint32 mask = 0xffffffff;
+    Uint32 shift = 0;
     size_t bytes_per_pixel;
     Uint8 unused;
-    Uint8 *p;
+    const Uint8 *p;
     bool result = false;
 
     if (r) {
@@ -2830,7 +2839,53 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
         }
     }
 
-    p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
+    if (bytes_per_pixel == 0) {
+        switch (surface->format) {
+        case SDL_PIXELFORMAT_INDEX4MSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 2;
+            shift = 4 * (1 - (x & 0x1));
+            mask = 0xf << shift;
+            bytes_per_pixel = 1;
+            break;
+        case SDL_PIXELFORMAT_INDEX4LSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 2;
+            shift = 4 * (x & 0x1);
+            mask = 0xf << shift;
+            bytes_per_pixel = 1;
+            break;
+        case SDL_PIXELFORMAT_INDEX2MSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 4;
+            shift = 2 * (3 - (x & 0x3));
+            mask = 0x3 << shift;
+            bytes_per_pixel = 1;
+            break;
+        case SDL_PIXELFORMAT_INDEX2LSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 4;
+            shift = 2 * (x & 0x3);
+            mask = 0x3 << shift;
+            bytes_per_pixel = 1;
+            break;
+        case SDL_PIXELFORMAT_INDEX1MSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 8;
+            shift = 7 - (x & 0x7);
+            mask = 0x1 << shift;
+            bytes_per_pixel = 1;
+            break;
+        case SDL_PIXELFORMAT_INDEX1LSB:
+            p = (Uint8 *)surface->pixels + y * surface->pitch + x / 8;
+            shift = x & 0x7;
+            mask = 0x1 << shift;
+            bytes_per_pixel = 1;
+            break;
+        default:
+            if (SDL_MUSTLOCK(surface)) {
+                SDL_UnlockSurface(surface);
+            }
+            return SDL_SetError("Unsupported format with 0 bpp");
+        }
+    } else {
+        p = (Uint8 *)surface->pixels + y * surface->pitch + x * bytes_per_pixel;
+    }
 
     if (bytes_per_pixel > 0 && bytes_per_pixel <= sizeof(pixel) &&
         !SDL_ISPIXELFORMAT_FOURCC(surface->format) &&
@@ -2842,6 +2897,7 @@ bool SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g
 #else
         SDL_memcpy(&pixel, p, bytes_per_pixel);
 #endif
+        pixel = (pixel & mask) >> shift;
         SDL_GetRGBA(pixel, surface->fmt, surface->palette, r, g, b, a);
         result = true;
     } else if (bytes_per_pixel == 0 || SDL_ISPIXELFORMAT_FOURCC(surface->format)) {
