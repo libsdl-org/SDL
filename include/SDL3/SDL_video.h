@@ -1194,9 +1194,9 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *
  * If SDL_WINDOW_TRANSPARENT is specified, the window contents are composited
  * with the desktop using premultiplied alpha, so the color channels must
- * already be multiplied by alpha. For example, white at 50% opacity is
- * (128, 128, 128, 128), not (255, 255, 255, 128). With SDL_Renderer, clearing
- * to transparent black and drawing with SDL_BLENDMODE_BLEND produces
+ * already be multiplied by alpha. For example, white at 50% opacity is (128,
+ * 128, 128, 128), not (255, 255, 255, 128). With SDL_Renderer, clearing to
+ * transparent black and drawing with SDL_BLENDMODE_BLEND produces
  * premultiplied output, but colors written with SDL_BLENDMODE_NONE or used
  * with SDL_RenderClear() must be premultiplied by the application.
  *
