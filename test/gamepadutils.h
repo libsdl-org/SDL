@@ -106,6 +106,8 @@ extern void SetGamepadDisplayGyroDriftCorrection(GamepadDisplay *ctx, float *gyr
 extern int GetGamepadDisplayElementAt(GamepadDisplay *ctx, SDL_Gamepad *gamepad, float x, float y);
 extern void SetGamepadDisplayHighlight(GamepadDisplay *ctx, int element, bool pressed);
 extern void SetGamepadDisplaySelected(GamepadDisplay *ctx, int element);
+extern void ToggleGamepadDisplayAuxiliary(GamepadDisplay *ctx);
+extern bool GetGamepadDisplayShowAuxiliary(GamepadDisplay *ctx);
 extern void RenderGamepadDisplay(GamepadDisplay *ctx, SDL_Gamepad *gamepad);
 extern void DestroyGamepadDisplay(GamepadDisplay *ctx);
 

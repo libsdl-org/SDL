@@ -251,6 +251,61 @@ typedef enum SDL_GamepadCapSenseType
 } SDL_GamepadCapSenseType;
 
 /**
+ * The list of buttons on a guitar controller
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasGuitarButton
+ * \sa SDL_GetGamepadGuitarButton
+ */
+typedef enum SDL_GamepadGuitarButton
+{
+    SDL_GAMEPAD_GUITAR_BUTTON_INVALID = -1,
+    SDL_GAMEPAD_GUITAR_BUTTON_STRUM_UP,
+    SDL_GAMEPAD_GUITAR_BUTTON_STRUM_DOWN,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_1,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_2,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_3,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_4,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_5,
+    SDL_GAMEPAD_GUITAR_BUTTON_FRET_6,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_1,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_2,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_3,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_4,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FRET_5,
+    SDL_GAMEPAD_GUITAR_BUTTON_SOLO_FLAG,
+    SDL_GAMEPAD_GUITAR_BUTTON_GHTV,
+    SDL_GAMEPAD_GUITAR_BUTTON_COUNT
+} SDL_GamepadGuitarButton;
+
+
+/**
+ * The list of guitar axes on a gamepad
+ * Guitar axis types represent various controls found on guitar controllers, such as whammy bars, tilt sensors, and slider bars.
+ *
+ * The tilt sensor is zeroed when the guitar is held flat and goes positive when tilted up and negative if tilted down.
+ * For guitars that don't support reporting tilt in both directions, tilt is just mapped to positive values.
+ *
+ * Whammy and slider bar just have positive values, as they just represent a specific value depending on what position they are in.
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasGuitarAxis
+ * \sa SDL_GetGamepadGuitarAxis
+ */
+typedef enum SDL_GamepadGuitarAxis
+{
+    SDL_GAMEPAD_GUITAR_AXIS_INVALID = -1,
+    SDL_GAMEPAD_GUITAR_AXIS_WHAMMY,
+    SDL_GAMEPAD_GUITAR_AXIS_TILT,
+    SDL_GAMEPAD_GUITAR_AXIS_PICKUP,
+    SDL_GAMEPAD_GUITAR_AXIS_SLIDER_BAR,
+    SDL_GAMEPAD_GUITAR_AXIS_COUNT
+} SDL_GamepadGuitarAxis;
+
+
+/**
  * Types of gamepad control bindings.
  *
  * A gamepad is a collection of bindings that map arbitrary joystick buttons,
@@ -265,7 +320,9 @@ typedef enum SDL_GamepadBindingType
     SDL_GAMEPAD_BINDTYPE_NONE = 0,
     SDL_GAMEPAD_BINDTYPE_BUTTON,
     SDL_GAMEPAD_BINDTYPE_AXIS,
-    SDL_GAMEPAD_BINDTYPE_HAT
+    SDL_GAMEPAD_BINDTYPE_HAT,
+    SDL_GAMEPAD_BINDTYPE_GUITAR_BUTTON,
+    SDL_GAMEPAD_BINDTYPE_GUITAR_AXIS,
 } SDL_GamepadBindingType;
 
 /**
@@ -316,7 +373,15 @@ typedef struct SDL_GamepadBinding
             int axis_min;
             int axis_max;
         } axis;
+        
+        SDL_GamepadGuitarButton guitar_button;
 
+        struct
+        {
+            SDL_GamepadGuitarAxis guitar_axis;
+            int axis_min;
+            int axis_max;
+        } guitar_axis;
     } output;
 } SDL_GamepadBinding;
 
@@ -1704,6 +1769,139 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForButt
  * \sa SDL_GetGamepadAppleSFSymbolsNameForButton
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadAppleSFSymbolsNameForAxis(SDL_Gamepad *gamepad, SDL_GamepadAxis axis);
+
+/**
+ * Return whether a gamepad supports a particular guitar axis
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the axis on the guitar to query.
+ * \returns true if the axis is present, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadGuitarAxis
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
+
+/**
+ * Get the current state of an analog guitar input on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the axis on the guitar to query.
+ * \returns the current state of the axis
+ * 
+ * Tilt axis ranges from -32768 to 32767.
+ * Every other axis ranges from 0 to 32767.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasGuitarAxis
+ */
+extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadGuitarAxis(SDL_Gamepad *gamepad, SDL_GamepadGuitarAxis type);
+/**
+ * Convert a string into SDL_GamepadAxis enum.
+ *
+ * This function is called internally to translate SDL_Gamepad mapping strings
+ * for the underlying joystick device into the consistent SDL_Gamepad mapping.
+ * You do not normally need to call this function unless you are parsing
+ * SDL_Gamepad mappings in your own code.
+ *
+ * \param str string representing a SDL_GamepadGuitarAxis.
+ * \returns the SDL_GamepadGuitarAxis enum corresponding to the input string, or
+ *          `SDL_GAMEPAD_GUITAR_AXIS_INVALID` if no match was found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadStringForAxis
+ */
+extern SDL_DECLSPEC SDL_GamepadGuitarAxis SDLCALL SDL_GetGamepadGuitarAxisFromString(const char *str);
+
+/**
+ * Convert from an SDL_GamepadGuitarAxis enum to a string.
+ *
+ * \param axis an enum value for a given SDL_GamepadGuitarAxis.
+ * \returns a string for the given axis, or NULL if an invalid axis is
+ *          specified. The string returned is of the format used by
+ *          SDL_Gamepad guitar mapping strings, e.g., "tilt".
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadGuitarAxisFromString
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForGuitarAxis(SDL_GamepadGuitarAxis axis);
+/**
+ * Return whether a gamepad supports a particular guitar button.
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the button on the guitar to query.
+ * \returns true if the button exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadGuitarButton
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
+
+/**
+ * Get the current state of a guitar button on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the button on the guitar to query.
+ * \returns true if the button is pressed, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasGuitarButton
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadGuitarButton(SDL_Gamepad *gamepad, SDL_GamepadGuitarButton type);
+
+/**
+ * Convert a string into an SDL_GamepadGuitarButton enum.
+ *
+ * This function is called internally to translate SDL_Gamepad mapping strings
+ * for the underlying joystick device into the consistent SDL_Gamepad mapping.
+ * You do not normally need to call this function unless you are parsing
+ * SDL_Gamepad mappings in your own code.
+ *
+ * \param str string representing a SDL_Gamepad guitar button.
+ * \returns the SDL_GamepadGuitarButton enum corresponding to the input string, or
+ *          `SDL_GAMEPAD_GUITAR_BUTTON_INVALID` if no match was found.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadStringForGuitarButton
+ */
+extern SDL_DECLSPEC SDL_GamepadGuitarButton SDLCALL SDL_GetGamepadGuitarButtonFromString(const char *str);
+
+/**
+ * Convert from an SDL_GamepadGuitarButton enum to a string.
+ *
+ * \param button an enum value for a given SDL_GamepadGuitarButton.
+ * \returns a string for the given button, or NULL if an invalid button is
+ *          specified. The string returned is of the format used by
+ *          SDL_Gamepad mapping strings.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_GetGamepadGuitarButtonFromString
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetGamepadStringForGuitarButton(SDL_GamepadGuitarButton button);
 
 
 /* Ends C function definitions when using C++ */

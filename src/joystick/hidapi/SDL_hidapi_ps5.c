@@ -236,6 +236,8 @@ typedef struct
     bool guitar_whammy_supported;
     bool guitar_tilt_supported;
     bool guitar_effects_selector_supported;
+    Uint8 guitar_button_idx;
+    Uint8 guitar_axis_idx;
     HIDAPI_PS5_EnhancedReportHint enhanced_report_hint;
     bool enhanced_reports;
     bool enhanced_mode;
@@ -859,11 +861,6 @@ static void HIDAPI_DriverPS5_SetEnhancedModeAvailable(SDL_DriverPS5_Context *ctx
         SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
     }
 
-    if (ctx->guitar_tilt_supported) {
-        float update_rate = 250.0f;
-        SDL_PrivateJoystickAddSensor(ctx->joystick, SDL_SENSOR_ACCEL, update_rate);
-    }
-
     ctx->report_battery = true;
 
     HIDAPI_UpdateDeviceProperties(ctx->device);
@@ -981,14 +978,24 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     ctx->player_lights = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, true);
 
     // Initialize the joystick capabilities
-    if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
+    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        // Guitars shouldn't have a touchpad, so we disable it explicitly 
+        // so that guitars always start their buttons and axes after the standard ones
+        // that way, mapping entries are always using the same buttons
+        ctx->touchpad_supported = false;
+        joystick->nbuttons = 11;
+        ctx->guitar_button_idx = (Uint8)joystick->nbuttons;
+        joystick->nbuttons += 10; // frets + solo frets
+        ctx->guitar_axis_idx = (Uint8)joystick->naxes;
+        joystick->naxes += 3; // whammy, tilt, effects selector
+    } else if (SDL_IsJoystickDualSenseEdge(device->vendor_id, device->product_id)) {
         joystick->nbuttons = 17; // paddles and touchpad and microphone
     } else if (ctx->touchpad_supported) {
         joystick->nbuttons = 13; // touchpad and microphone
     } else {
         joystick->nbuttons = 11;
     }
-    joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
     joystick->nhats = 1;
     joystick->firmware_version = ctx->firmware_version;
 
@@ -1150,7 +1157,7 @@ static bool HIDAPI_DriverPS5_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device
 
     HIDAPI_DriverPS5_UpdateEnhancedModeOnApplicationUsage(ctx);
 
-    if ((!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) && !ctx->guitar_tilt_supported) {
+    if (!ctx->sensors_supported || (enabled && !ctx->enhanced_mode)) {
         return SDL_Unsupported();
     }
 
@@ -1503,26 +1510,30 @@ static void HIDAPI_DriverPS5_HandleStatePacketAlt(SDL_Joystick *joystick, SDL_hi
 
     if (ctx->guitar_whammy_supported) {
         axis = ((int)packet->rgucDeviceSpecific[1] * 257) - 32768;
-        SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTX, axis);
+        SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx, axis);
     }
 
     if (ctx->guitar_effects_selector_supported) {
-        // Align pickup selector mappings with PS3 instruments
-        static const Sint16 effects_mappings[] = {24576, 11008, -1792, -13568, -26880};
-        if (packet->rgucDeviceSpecific[0] < SDL_arraysize(effects_mappings)) {
-            SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_RIGHTY, effects_mappings[packet->rgucDeviceSpecific[0]]);
-        }
+        axis = ((int)packet->rgucDeviceSpecific[0] * 65535) / 4 - 32768; // Five notches spread across the axis
+        SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 2, axis);
     }
 
     if (ctx->guitar_tilt_supported) {
-        float sensor_data[3];
-        sensor_data[0] = ((float)packet->rgucDeviceSpecific[2] / 255) * SDL_STANDARD_GRAVITY;
-        sensor_data[1] = 0;
-        sensor_data[2] = 0;
-        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
+        axis = ((int)packet->rgucDeviceSpecific[2] * 257) - 32768;
+        SDL_SendJoystickAxis(timestamp, joystick, ctx->guitar_axis_idx + 1, axis);
+    }
 
-        // Align tilt mappings with PS3 instruments
-        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, packet->rgucDeviceSpecific[2] > 0xF0);
+    if (ctx->device->joystick_type == SDL_JOYSTICK_TYPE_GUITAR) {
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 0, packet->rgucDeviceSpecific[3] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 1, packet->rgucDeviceSpecific[3] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 2, packet->rgucDeviceSpecific[3] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 3, packet->rgucDeviceSpecific[3] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 4, packet->rgucDeviceSpecific[3] & (1 << 4));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 5, packet->rgucDeviceSpecific[4] & (1 << 0));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 6, packet->rgucDeviceSpecific[4] & (1 << 1));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 7, packet->rgucDeviceSpecific[4] & (1 << 2));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 8, packet->rgucDeviceSpecific[4] & (1 << 3));
+        SDL_SendJoystickButton(timestamp, joystick, ctx->guitar_button_idx + 9, packet->rgucDeviceSpecific[4] & (1 << 4));
     }
 
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));

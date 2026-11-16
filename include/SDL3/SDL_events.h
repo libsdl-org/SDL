@@ -221,8 +221,11 @@ typedef enum SDL_EventType
     SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED,  /**< Gamepad Steam handle has changed */
     SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH,       /**< Gamepad capsense was touched */
     SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,     /**< Gamepad capsense was released */
+    SDL_EVENT_GAMEPAD_GUITAR_AXIS_MOTION,  /**< Gamepad guitar axis motion */
+    SDL_EVENT_GAMEPAD_GUITAR_BUTTON_DOWN,  /**< Gamepad guitar button pressed */
+    SDL_EVENT_GAMEPAD_GUITAR_BUTTON_UP,    /**< Gamepad guitar button released */
     SDL_EVENT_GAMEPAD_FIRST = SDL_EVENT_GAMEPAD_AXIS_MOTION,
-    SDL_EVENT_GAMEPAD_LAST = SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE,
+    SDL_EVENT_GAMEPAD_LAST = SDL_EVENT_GAMEPAD_GUITAR_BUTTON_UP,
 
     /* Touch events */
     SDL_EVENT_FINGER_DOWN      = 0x700,
@@ -664,7 +667,7 @@ typedef struct SDL_JoyBatteryEvent
  */
 typedef struct SDL_GamepadAxisEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_AXIS_MOTION */
+    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_AXIS_MOTION or SDL_EVENT_GAMEPAD_GUITAR_AXIS_MOTION */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
@@ -684,7 +687,7 @@ typedef struct SDL_GamepadAxisEvent
  */
 typedef struct SDL_GamepadButtonEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_BUTTON_DOWN or SDL_EVENT_GAMEPAD_BUTTON_UP */
+    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_BUTTON_DOWN or SDL_EVENT_GAMEPAD_BUTTON_UP or SDL_EVENT_GAMEPAD_GUITAR_BUTTON_DOWN or SDL_EVENT_GAMEPAD_GUITAR_BUTTON_UP */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
