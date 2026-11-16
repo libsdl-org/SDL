@@ -667,7 +667,7 @@ typedef struct SDL_JoyBatteryEvent
  */
 typedef struct SDL_GamepadAxisEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_AXIS_MOTION */
+    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_AXIS_MOTION or SDL_EVENT_GAMEPAD_GUITAR_AXIS_MOTION */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */
@@ -687,7 +687,7 @@ typedef struct SDL_GamepadAxisEvent
  */
 typedef struct SDL_GamepadButtonEvent
 {
-    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_BUTTON_DOWN or SDL_EVENT_GAMEPAD_BUTTON_UP */
+    SDL_EventType type; /**< SDL_EVENT_GAMEPAD_BUTTON_DOWN or SDL_EVENT_GAMEPAD_BUTTON_UP or SDL_EVENT_GAMEPAD_GUITAR_BUTTON_DOWN or SDL_EVENT_GAMEPAD_GUITAR_BUTTON_UP */
     Uint32 reserved;
     Uint64 timestamp;   /**< In nanoseconds, populated using SDL_GetTicksNS() */
     SDL_JoystickID which; /**< The joystick instance id */

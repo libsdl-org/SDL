@@ -2248,14 +2248,14 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
                 SetController(event->gaxis.which);
             }
         }
-        SDL_Log("Gamepad %" SDL_PRIu32 " axis %s changed to %d",
+        SDL_Log("Gamepad %" SDL_PRIu32 " guitar axis %s changed to %d",
                 event->gaxis.which,
                 SDL_GetGamepadStringForGuitarAxis((SDL_GamepadGuitarAxis) event->gaxis.axis),
                 event->gaxis.value);
         break;
     case SDL_EVENT_GAMEPAD_GUITAR_BUTTON_DOWN:
     case SDL_EVENT_GAMEPAD_GUITAR_BUTTON_UP:
-        SDL_Log("Gamepad %" SDL_PRIu32 " button %s %s",
+        SDL_Log("Gamepad %" SDL_PRIu32 " guitar button %s %s",
                 event->gbutton.which,
                 SDL_GetGamepadStringForGuitarButton((SDL_GamepadGuitarButton) event->gbutton.button),
                 event->gbutton.down ? "pressed" : "released");
