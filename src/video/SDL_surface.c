@@ -1336,12 +1336,9 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
 
             // Change source format if not appropriate for scaling
             if (!SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
-                SDL_PixelFormat fmt;
-                if (SDL_ISPIXELFORMAT_PACKED_8888(dst->format) &&
-                    (SDL_ISPIXELFORMAT_ALPHA(dst->format) || !is_complex_copy_flags)) {
-                    fmt = dst->format;
-                } else {
-                    fmt = SDL_PIXELFORMAT_ARGB8888;
+                SDL_PixelFormat fmt = SDL_PromotePixelFormatTo8888(dst->format);
+                if (is_complex_copy_flags && !SDL_ISPIXELFORMAT_ALPHA(fmt)) {
+                    fmt = SDL_PromotePixelFormatToAlpha(fmt);
                 }
                 tmp1 = SDL_ConvertSurfaceRect(src, srcrect, fmt);
                 if (!tmp1) {
