@@ -73,9 +73,9 @@ typedef enum SDL_PowerState
  * reports, or completely drain when reporting it has 20 percent left, etc.
  *
  * A failing battery might report SDL_POWERSTATE_CHARGED with 0 percent
- * battery life left. This can happen when the battery's fuel gauge is
- * not responding. In this case, the system will likely turn off as soon
- * as the charging cable is unplugged.
+ * battery life left. This can happen when the battery's fuel gauge is not
+ * responding. In this case, the system will likely turn off as soon as the
+ * charging cable is unplugged.
  *
  * Battery status can change at any time; if you are concerned with power
  * state, you should call this function frequently, and perhaps ignore changes
