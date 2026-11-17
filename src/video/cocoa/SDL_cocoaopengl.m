@@ -258,7 +258,6 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_DisplayData *displaydata = (SDL_DisplayData *)display->internal;
         NSOpenGLPixelFormatAttribute attr[32];
         NSOpenGLPixelFormat *fmt;
         SDL3OpenGLContext *context;
@@ -306,7 +305,7 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         attr[i++] = profile;
 
         attr[i++] = NSOpenGLPFAColorSize;
-        attr[i++] = SDL_BYTESPERPIXEL(display->current_mode->format) * 8;
+        attr[i++] = display ? SDL_BYTESPERPIXEL(display->current_mode->format) * 8 : 32;
 
         attr[i++] = NSOpenGLPFADepthSize;
         attr[i++] = _this->gl_config.depth_size;
@@ -355,8 +354,10 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
             }
         }
 
-        attr[i++] = NSOpenGLPFAScreenMask;
-        attr[i++] = CGDisplayIDToOpenGLDisplayMask(displaydata->display);
+        if (display) {
+            attr[i++] = NSOpenGLPFAScreenMask;
+            attr[i++] = CGDisplayIDToOpenGLDisplayMask(display->internal->display);
+        }
         attr[i] = 0;
 
         fmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:attr];

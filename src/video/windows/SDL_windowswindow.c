@@ -648,15 +648,16 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 
             // Constrain the popup window to the display of the toplevel parent
             displayID = SDL_GetDisplayForWindow(w);
-            SDL_GetDisplayBounds(displayID, &rect);
-            if (abs_x + width > rect.x + rect.w) {
-                abs_x -= (abs_x + width) - (rect.x + rect.w);
+            if (SDL_GetDisplayBounds(displayID, &rect)) {
+                if (abs_x + width > rect.x + rect.w) {
+                    abs_x -= (abs_x + width) - (rect.x + rect.w);
+                }
+                if (abs_y + height > rect.y + rect.h) {
+                    abs_y -= (abs_y + height) - (rect.y + rect.h);
+                }
+                abs_x = SDL_max(abs_x, rect.x);
+                abs_y = SDL_max(abs_y, rect.y);
             }
-            if (abs_y + height > rect.y + rect.h) {
-                abs_y -= (abs_y + height) - (rect.y + rect.h);
-            }
-            abs_x = SDL_max(abs_x, rect.x);
-            abs_y = SDL_max(abs_y, rect.y);
         }
 
         if (output_to_pending) {

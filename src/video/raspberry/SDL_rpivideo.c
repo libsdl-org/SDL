@@ -194,6 +194,9 @@ bool RPI_VideoInit(SDL_VideoDevice *_this)
 
     AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);    // your default display
     AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); // an "other" display...maybe DSI-connected screen while HDMI is your main
+    if (_this->num_displays == 0) {
+        return SDL_SetError("No displays available");
+    }
 
 #ifdef SDL_INPUT_LINUXEV
     if (!SDL_EVDEV_Init()) {

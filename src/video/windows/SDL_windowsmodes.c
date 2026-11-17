@@ -731,10 +731,6 @@ static void WIN_AddDisplays(SDL_VideoDevice *_this)
 bool WIN_InitModes(SDL_VideoDevice *_this)
 {
     WIN_AddDisplays(_this);
-
-    if (_this->num_displays == 0) {
-        return SDL_SetError("No displays available");
-    }
     return true;
 }
 

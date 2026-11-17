@@ -725,12 +725,6 @@ bool SDL_InitVideo(const char *driver_name)
         return false;
     }
 
-    // Make sure some displays were added
-    if (_this->num_displays == 0) {
-        SDL_QuitVideo();
-        return SDL_SetError("The video driver did not add any displays");
-    }
-
     SDL_AddHintCallback(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, SDL_SyncHintWatcher, NULL);
 
     /* Disable the screen saver by default. This is a change from <= 2.0.1,
@@ -1027,8 +1021,12 @@ SDL_VideoDisplay *SDL_GetVideoDisplayForWindow(SDL_Window *window)
 
 SDL_DisplayID SDL_GetPrimaryDisplay(void)
 {
-    if (!_this || _this->num_displays == 0) {
+    if (!_this) {
         SDL_UninitializedVideo();
+        return 0;
+    }
+    if (_this->num_displays == 0) {
+        SDL_SetError("No displays available");
         return 0;
     }
     return _this->displays[0]->id;
@@ -1925,8 +1923,9 @@ static void SDL_CheckWindowDisplayScaleChanged(SDL_Window *window)
     if (_this->GetWindowContentScale) {
         display_scale = _this->GetWindowContentScale(_this, window);
     } else {
+        const SDL_VideoDisplay *display = SDL_GetVideoDisplay(window->displayID);
         const float pixel_density = SDL_GetWindowPixelDensity(window);
-        const float content_scale = SDL_GetDisplayContentScale(window->displayID);
+        const float content_scale = display ? display->content_scale : 1.0f;
 
         display_scale = pixel_density * content_scale;
     }
@@ -1957,8 +1956,8 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
     if (fullscreen) {
         display = SDL_GetVideoDisplayForFullscreenWindow(window);
         if (!display) {
-            // This should never happen, but it did...
-            goto done;
+            SDL_SetError("No display available for fullscreen");
+            goto error;
         }
     } else {
         for (i = 0; i < _this->num_displays; ++i) {
@@ -2155,7 +2154,9 @@ done:
 error:
     if (fullscreen) {
         // Something went wrong and the window is no longer fullscreen.
+        SDL_PushError();
         SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_LEAVE, commit);
+        SDL_PopError();
     }
     return false;
 }
@@ -2496,10 +2497,13 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
         }
 
         SDL_zero(bounds);
-        SDL_GetDisplayUsableBounds(displayID, &bounds);
-        if (w > bounds.w || h > bounds.h) {
+        if (!SDL_GetDisplayUsableBounds(displayID, &bounds) || w > bounds.w || h > bounds.h) {
             // This window is larger than the usable bounds, just center on the display
-            SDL_GetDisplayBounds(displayID, &bounds);
+            if (!SDL_GetDisplayBounds(displayID, &bounds)) {
+                // There are no displays, put the window at the origin
+                bounds.w = w;
+                bounds.h = h;
+            }
         }
         if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISUNDEFINED(x)) {
             if (SDL_WINDOWPOS_ISUNDEFINED(x)) {
@@ -2576,11 +2580,12 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
     if (flags & SDL_WINDOW_FULLSCREEN || IsFullscreenOnly(_this)) {
         SDL_Rect bounds;
 
-        SDL_GetDisplayBounds(display ? display->id : SDL_GetPrimaryDisplay(), &bounds);
-        window->x = bounds.x;
-        window->y = bounds.y;
-        window->w = bounds.w;
-        window->h = bounds.h;
+        if (display && SDL_GetDisplayBounds(display->id, &bounds)) {
+            window->x = bounds.x;
+            window->y = bounds.y;
+            window->w = bounds.w;
+            window->h = bounds.h;
+        }
         window->pending_flags |= SDL_WINDOW_FULLSCREEN;
         flags |= SDL_WINDOW_FULLSCREEN;
     }
@@ -3063,7 +3068,9 @@ bool SDL_SetWindowPosition(SDL_Window *window, int x, int y)
         SDL_zero(bounds);
         if (!SDL_GetDisplayUsableBounds(displayID, &bounds) || w > bounds.w || h > bounds.h) {
             if (!SDL_GetDisplayBounds(displayID, &bounds)) {
-                return false;
+                // There are no displays, put the window at the origin
+                bounds.w = w;
+                bounds.h = h;
             }
         }
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
