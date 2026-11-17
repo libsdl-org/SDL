@@ -2774,11 +2774,9 @@ static bool HIDAPI_DriverGIP_IsSupportedDevice(SDL_HIDAPI_Device *device, const 
     if (device && device->is_bluetooth) {
         return false;
     }
-#if defined(SDL_PLATFORM_MACOS) && defined(SDL_JOYSTICK_MFI)
+#if defined(SDL_PLATFORM_MACOS)
     if (!SDL_IsJoystickBluetoothXboxOne(vendor_id, product_id)) {
-        // On macOS we get a shortened version of the real report and
-        // you can't write output reports for wired controllers, so
-        // we'll just use the GCController support instead.
+        // On macOS we don't get direct access to the reports
         return false;
     }
 #endif

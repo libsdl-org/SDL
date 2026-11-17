@@ -339,13 +339,22 @@ static bool HIDAPI_DriverXbox360_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
 static bool HIDAPI_DriverXbox360_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
 #ifdef SDL_PLATFORM_MACOS
-    if (((SDL_DriverXbox360_Context *)device->context)->controlled_by_360controller) {
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)device->context;
+    if (ctx->controlled_by_360controller) {
         // On macOS the 360Controller driver uses this short report,
         // and we need to prefix it with a magic token so hidapi passes it through untouched
-        Uint8 rumble_packet[] = { 'M', 'A', 'G', 'I', 'C', '0', 0x00, 0x04, 0x00, 0x00 };
-        rumble_packet[6 + 2] = (low_frequency_rumble >> 8);
-        rumble_packet[6 + 3] = (high_frequency_rumble >> 8);
-        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        Uint8 packet[] = {
+            // The magic token tells hidapi on macOS to send the rest as output report 0
+            'M', 'A', 'G', 'I', 'C', '0', 0x00,
+            0x00, 0x04, 0x00, 0x00
+        };
+        const int header_size = 7;
+        Uint8 *rumble_packet = &packet[header_size];
+
+        rumble_packet[2] = (low_frequency_rumble >> 8);
+        rumble_packet[3] = (high_frequency_rumble >> 8);
+
+        if (SDL_HIDAPI_SendRumble(device, packet, sizeof(packet)) != sizeof(packet)) {
             return SDL_SetError("Couldn't send rumble packet");
         }
         return true;
