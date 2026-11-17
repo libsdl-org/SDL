@@ -4035,6 +4035,13 @@ SDL_GUID SDL_CreateJoystickGUIDForName(const char *name)
     return SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_UNKNOWN, 0, 0, 0, NULL, name, 0, 0);
 }
 
+void SDL_SetJoystickGUIDBus(SDL_GUID *guid, Uint16 bus)
+{
+    Uint16 *guid16 = (Uint16 *)guid->data;
+
+    guid16[0] = SDL_Swap16LE(bus);
+}
+
 void SDL_SetJoystickGUIDVendor(SDL_GUID *guid, Uint16 vendor)
 {
     Uint16 *guid16 = (Uint16 *)guid->data;

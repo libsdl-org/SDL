@@ -1405,7 +1405,7 @@ static GamepadMapping_t *SDL_PrivateMatchGamepadMappingForGUID(SDL_GUID guid, bo
 /*
  * Helper function to scan the mappings database for a gamepad with the specified GUID
  */
-static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool adding_mapping)
+static GamepadMapping_t *SDL_PrivateFindGamepadMappingForGUID(SDL_GUID guid)
 {
     GamepadMapping_t *mapping;
 
@@ -1413,11 +1413,6 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
     mapping = SDL_PrivateMatchGamepadMappingForGUID(guid, true, true);
     if (mapping) {
         return mapping;
-    }
-
-    if (adding_mapping) {
-        // We didn't find an existing mapping
-        return NULL;
     }
 
     // Try without CRC match
@@ -1438,6 +1433,34 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
             return mapping;
         }
     }
+    return NULL;
+}
+
+static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool adding_mapping)
+{
+    GamepadMapping_t *mapping;
+
+    if (adding_mapping) {
+        return SDL_PrivateMatchGamepadMappingForGUID(guid, true, true);
+    }
+
+    mapping = SDL_PrivateFindGamepadMappingForGUID(guid);
+    if (mapping) {
+        return mapping;
+    }
+
+#ifdef SDL_JOYSTICK_IOKIT
+    // IOKit used to report Bluetooth gamepads on the USB bus, so fall back to existing mappings for those
+    if (SDL_GetJoystickGUIDBus(guid) == SDL_HARDWARE_BUS_BLUETOOTH && guid.data[14] == 0) {
+        SDL_GUID usb_guid = guid;
+
+        SDL_SetJoystickGUIDBus(&usb_guid, SDL_HARDWARE_BUS_USB);
+        mapping = SDL_PrivateFindGamepadMappingForGUID(usb_guid);
+        if (mapping) {
+            return mapping;
+        }
+    }
+#endif
 
 #ifdef SDL_JOYSTICK_XINPUT
     if (SDL_IsJoystickXInput(guid)) {
