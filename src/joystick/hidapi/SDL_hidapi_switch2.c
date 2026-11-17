@@ -1468,7 +1468,7 @@ static void HIDAPI_DriverSwitch2_HandleStatePacket(SDL_HIDAPI_Device *device, SD
     float accel_data[3];
     float gyro_data[3];
     bool sensor_data_ok = false;
-    Uint64 sensor_timestamp_ns;
+    Uint64 sensor_timestamp_ns = 0;
 
     if (size < 64) {
         // We don't know how to handle this report
