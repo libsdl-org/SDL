@@ -39,8 +39,9 @@
 static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd);
+static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor);
-static void IME_ClearComposition(SDL_VideoData *videodata);
+static void IME_ClearComposition(SDL_VideoData *videodata, HWND hwnd);
 static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd);
 static void IME_Quit(SDL_VideoData *videodata);
 #else
@@ -294,8 +295,7 @@ bool WIN_StartTextInput(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
     SDL_VideoData *videodata = _this->internal;
     IME_Init(videodata, window);
     IME_Enable(videodata, hwnd);
-
-    WIN_UpdateTextInputArea(_this, window);
+    IME_SetWindow(videodata, window);
 #endif // !SDL_DISABLE_WINDOWS_IME
 
     return true;
@@ -329,14 +329,14 @@ bool WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window)
 #ifndef SDL_DISABLE_WINDOWS_IME
     SDL_VideoData *videodata = _this->internal;
 
-    IME_ClearComposition(videodata);
+    IME_ClearComposition(videodata, window->internal->hwnd);
 #endif
     return true;
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
 
-bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_WindowData *data)
 {
     return false;
 }
@@ -384,7 +384,6 @@ void WIN_UpdateIMECandidates(SDL_VideoDevice *_this)
 #define SUBLANG()      SUBLANGID(LANG())
 
 static void IME_UpdateInputLocale(SDL_VideoData *videodata);
-static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window);
 static void IME_SetupAPI(SDL_VideoData *videodata);
 static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
@@ -406,7 +405,6 @@ static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window)
         videodata->ime_internal_candidates = true;
     }
 
-    videodata->ime_hwnd_main = hwnd;
     videodata->ime_initialized = true;
     videodata->ime_himm32 = SDL_LoadObject("imm32.dll");
     if (!videodata->ime_himm32) {
@@ -422,9 +420,9 @@ static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window)
     /* *INDENT-ON* */ // clang-format on
 
     IME_SetWindow(videodata, window);
-    videodata->ime_himc = ImmGetContext(hwnd);
-    ImmReleaseContext(hwnd, videodata->ime_himc);
-    if (!videodata->ime_himc) {
+    HIMC himc = ImmGetContext(hwnd);
+    ImmReleaseContext(hwnd, himc);
+    if (!himc) {
         videodata->ime_available = false;
         IME_Disable(videodata, hwnd);
         return true;
@@ -439,7 +437,7 @@ static bool IME_Init(SDL_VideoData *videodata, SDL_Window *window)
 
 static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
 {
-    if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
+    if (!videodata->ime_initialized) {
         return;
     }
 
@@ -447,26 +445,19 @@ static void IME_Enable(SDL_VideoData *videodata, HWND hwnd)
         IME_Disable(videodata, hwnd);
         return;
     }
-    if (videodata->ime_hwnd_current == videodata->ime_hwnd_main) {
-        ImmAssociateContext(videodata->ime_hwnd_current, videodata->ime_himc);
-    }
+    ImmAssociateContextEx(hwnd, NULL, IACE_DEFAULT);
 
-    videodata->ime_enabled = true;
     IME_UpdateInputLocale(videodata);
 }
 
 static void IME_Disable(SDL_VideoData *videodata, HWND hwnd)
 {
-    if (!videodata->ime_initialized || !videodata->ime_hwnd_current) {
+    if (!videodata->ime_initialized) {
         return;
     }
 
-    IME_ClearComposition(videodata);
-    if (videodata->ime_hwnd_current == videodata->ime_hwnd_main) {
-        ImmAssociateContext(videodata->ime_hwnd_current, (HIMC)0);
-    }
-
-    videodata->ime_enabled = false;
+    IME_ClearComposition(videodata, hwnd);
+    ImmAssociateContext(hwnd, (HIMC)0);
 }
 
 static void IME_Quit(SDL_VideoData *videodata)
@@ -475,12 +466,7 @@ static void IME_Quit(SDL_VideoData *videodata)
         return;
     }
 
-    if (videodata->ime_hwnd_main) {
-        ImmAssociateContext(videodata->ime_hwnd_main, videodata->ime_himc);
-    }
-
-    videodata->ime_hwnd_main = 0;
-    videodata->ime_himc = 0;
+    videodata->ime_hwnd_current = 0;
     if (videodata->ime_himm32) {
         SDL_UnloadObject(videodata->ime_himm32);
         videodata->ime_himm32 = 0;
@@ -590,14 +576,14 @@ static void IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     IME_SendEditingEvent(videodata);
 }
 
-static void IME_InputLangChanged(SDL_VideoData *videodata)
+static void IME_InputLangChanged(SDL_VideoData *videodata, HWND hwnd)
 {
     UINT lang = PRIMLANG();
     IME_UpdateInputLocale(videodata);
 
     IME_SetupAPI(videodata);
     if (lang != PRIMLANG()) {
-        IME_ClearComposition(videodata);
+        IME_ClearComposition(videodata, hwnd);
     }
 }
 
@@ -789,14 +775,14 @@ static void IME_UpdateInputLocale(SDL_VideoData *videodata)
     videodata->ime_candlistindexbase = (videodata->ime_hkl == CHT_HKL_DAYI) ? 0 : 1;
 }
 
-static void IME_ClearComposition(SDL_VideoData *videodata)
+static void IME_ClearComposition(SDL_VideoData *videodata, HWND hwnd)
 {
     HIMC himc = 0;
     if (!videodata->ime_initialized) {
         return;
     }
 
-    himc = ImmGetContext(videodata->ime_hwnd_current);
+    himc = ImmGetContext(hwnd);
     if (!himc) {
         return;
     }
@@ -805,7 +791,7 @@ static void IME_ClearComposition(SDL_VideoData *videodata)
     ImmSetCompositionString(himc, SCS_SETSTR, TEXT(""), sizeof(TCHAR), TEXT(""), sizeof(TCHAR));
 
     ImmNotifyIME(himc, NI_CLOSECANDIDATE, 0, 0);
-    ImmReleaseContext(videodata->ime_hwnd_current, himc);
+    ImmReleaseContext(hwnd, himc);
     IME_SendClearComposition(videodata);
 }
 
@@ -1085,8 +1071,9 @@ static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd)
     }
 }
 
-bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_VideoData *videodata)
+bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SDL_WindowData *data)
 {
+    SDL_VideoData *videodata = data->videodata;
     bool trap = false;
     HIMC himc = 0;
 
@@ -1115,8 +1102,12 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         }
     }
 
-    if (!videodata->ime_initialized || !videodata->ime_available || !videodata->ime_enabled) {
+    if (!videodata->ime_initialized || !videodata->ime_available || !data->window->text_input_active) {
         return false;
+    }
+
+    if (hwnd != videodata->ime_hwnd_current) {
+        IME_SetWindow(videodata, data->window);
     }
 
     switch (msg) {
@@ -1138,7 +1129,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
         break;
     case WM_INPUTLANGCHANGE:
         SDL_DebugIMELog("WM_INPUTLANGCHANGE");
-        IME_InputLangChanged(videodata);
+        IME_InputLangChanged(videodata, hwnd);
         break;
     case WM_IME_COMPOSITION:
         SDL_DebugIMELog("WM_IME_COMPOSITION %x", lParam);

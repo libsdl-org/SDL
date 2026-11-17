@@ -1215,7 +1215,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
+    if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data)) {
         return 0;
     }
 #endif

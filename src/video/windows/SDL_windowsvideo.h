@@ -604,14 +604,11 @@ struct SDL_VideoData
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     bool ime_initialized;
-    bool ime_enabled;
     bool ime_available;
     bool ime_internal_composition;
     bool ime_internal_candidates;
-    HWND ime_hwnd_main;
     HWND ime_hwnd_current;
     bool ime_needs_clear_composition;
-    HIMC ime_himc;
 
     WCHAR *ime_composition;
     int ime_composition_length;

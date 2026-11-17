@@ -605,6 +605,11 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
                 DestroyWindow(data->parent);
             }
         } else {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+            // Restore the default IME context
+            ImmAssociateContextEx(data->hwnd, NULL, IACE_DEFAULT);
+#endif
+
             // Restore any original event handler...
             if (data->wndproc) {
 #ifdef GWLP_WNDPROC
