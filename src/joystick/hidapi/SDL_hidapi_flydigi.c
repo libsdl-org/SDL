@@ -748,13 +748,12 @@ static bool HIDAPI_DriverFlydigi_SendRumbleV2(SDL_DriverFlydigi_Context *ctx)
 static bool HIDAPI_DriverFlydigi_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
-        Uint8 rumble_packet[] = { FLYDIGI_V1_CMD_REPORT_ID, FLYDIGI_V1_HAPTIC_COMMAND, 0x00, 0x00 };
-        rumble_packet[2] = low_frequency_rumble >> 8;
-        rumble_packet[3] = high_frequency_rumble >> 8;
+        SDL_DriverFlydigi_Context *ctx = (SDL_DriverFlydigi_Context *)device->context;
 
-        if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
-            return SDL_SetError("Couldn't send rumble packet");
-        }
+        ctx->low_frequency_rumble = low_frequency_rumble >> 8;
+        ctx->high_frequency_rumble = high_frequency_rumble >> 8;
+
+        return HIDAPI_DriverFlydigi_SendRumbleV1(ctx);
     } else {
         Uint8 rumble_packet[] = { FLYDIGI_V2_CMD_REPORT_ID, FLYDIGI_V2_MAGIC1, FLYDIGI_V2_MAGIC2, FLYDIGI_V2_HAPTIC_COMMAND, 6, 0, 0, 0, 0, 0 };
         rumble_packet[5] = low_frequency_rumble >> 8;
