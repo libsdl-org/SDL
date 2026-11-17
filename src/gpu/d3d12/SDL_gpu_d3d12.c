@@ -6610,8 +6610,8 @@ static bool D3D12_SupportsSwapchainComposition(
         SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", false);
     }
 
-    // Check the color space support if necessary
-    if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
+    // Assume that SDR and scRGB will be supported by the compositor
+    if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084) {
         IDXGISwapChain3_CheckColorSpaceSupport(
             windowData->swapchain,
             SwapchainCompositionToColorSpace[swapchainComposition],
@@ -7024,10 +7024,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     CHECK_D3D12_ERROR_AND_RETURN("Could not create IDXGISwapChain3", false);
 
     if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
-        // Support already verified if we hit this block
-        IDXGISwapChain3_SetColorSpace1(
+        res = IDXGISwapChain3_SetColorSpace1(
             swapchain3,
             SwapchainCompositionToColorSpace[swapchainComposition]);
+        if (FAILED(res)) {
+            IDXGISwapChain3_Release(swapchain3);
+        }
+        CHECK_D3D12_ERROR_AND_RETURN("Could not set swapchain color space", false);
     }
 
     /*
