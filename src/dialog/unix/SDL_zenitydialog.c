@@ -38,6 +38,7 @@ typedef struct
     int nfilters;
     char **filters_slice;
     char *filename;
+    char *app_id;
     char *title;
     char *accept;
     char *cancel;
@@ -84,6 +85,7 @@ static bool get_x11_window_handle(SDL_PropertiesID props, char *out)
  *     zenity --file-selection --separator=\n [--multiple]
  *                         [--directory] [--save --confirm-overwrite]
  *                         [--filename FILENAME] [--modal --attach 0x11w1nd0w]
+ *                         [--app-id APP_ID]
  *                         [--title TITLE] [--ok-label ACCEPT]
  *                         [--cancel-label CANCEL]
  *                         [--file-filter=Filter Name | *.filt *.fn ...]...
@@ -105,6 +107,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
                          + 2 /* --directory | --save --confirm-overwrite */
                          + 2 /* --filename [file] */
                          + 3 /* --modal --attach [handle] */
+                         + 2 /* --app-id [id] */
                          + 2 /* --title [title] */
                          + 2 /* --ok-label [label] */
                          + 2 /* --cancel-label [label] */
@@ -133,6 +136,17 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
     COPY_STRING_PROPERTY(args->accept, SDL_PROP_FILE_DIALOG_ACCEPT_STRING);
     COPY_STRING_PROPERTY(args->cancel, SDL_PROP_FILE_DIALOG_CANCEL_STRING);
 #undef COPY_STRING_PROPERTY
+
+    if (zenity_major > 4 ||
+        (zenity_major == 4 && zenity_minor >= 4)) {
+        const char *app_id = SDL_GetZenityAppID();
+        if (app_id) {
+            args->app_id = SDL_strdup(app_id);
+            if (!args->app_id) {
+                goto cleanup;
+            }
+        }
+    }
 
     // ARGV PASS
     int argc = 0;
@@ -186,6 +200,11 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
         argv[argc++] = args->x11_window_handle;
     }
 
+    if (args->app_id) {
+        argv[argc++] = "--app-id";
+        argv[argc++] = args->app_id;
+    }
+
     if (args->title) {
         argv[argc++] = "--title";
         argv[argc++] = args->title;
@@ -227,6 +246,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
 cleanup:
     SDL_free(args->filename);
+    SDL_free(args->app_id);
     SDL_free(args->title);
     SDL_free(args->accept);
     SDL_free(args->cancel);
@@ -336,6 +356,7 @@ static void free_zenity_args(zenityArgs *args)
         }
     }
     SDL_free(args->filename);
+    SDL_free(args->app_id);
     SDL_free(args->title);
     SDL_free(args->accept);
     SDL_free(args->cancel);

@@ -83,12 +83,30 @@ bool SDL_get_zenity_version(int *major, int *minor)
     return result;
 }
 
+const char *SDL_GetZenityAppID(void)
+{
+    const char *app_id = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_IDENTIFIER_STRING);
+
+#ifdef SDL_PLATFORM_LINUX
+    if (!app_id) {
+        app_id = SDL_getenv("FLATPAK_ID");
+    }
+#endif
+
+    // The Zenity app_id needs to be a real app identifier, including a dot
+    if (app_id && SDL_strchr(app_id, '.') == NULL) {
+        app_id = NULL;
+    }
+
+    return app_id;
+}
+
 bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonID)
 {
     int exit_code = -1;
     int zenity_major = 0, zenity_minor = 0, output_len = 0;
     int argc = 5, i;
-    const char *argv[5 + 2 /* icon name */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
+    const char *argv[5 + 2 /* icon name */ + 2 /* app id */ + 2 /* title */ + 2 /* message */ + 2 * MAX_BUTTONS + 1 /* NULL */] = {
         "zenity", "--question", "--switch", "--no-wrap", "--no-markup"
     };
     SDL_Process *process;
@@ -118,6 +136,15 @@ bool SDL_Zenity_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
     default:
         argv[argc++] = "dialog-information";
         break;
+    }
+
+    if (zenity_major > 4 ||
+        (zenity_major == 4 && zenity_minor >= 4)) {
+        const char *app_id = SDL_GetZenityAppID();
+        if (app_id) {
+            argv[argc++] = "--app-id";
+            argv[argc++] = app_id;
+        }
     }
 
     if (messageboxdata->title && messageboxdata->title[0]) {
