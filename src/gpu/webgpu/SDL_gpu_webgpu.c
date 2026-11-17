@@ -5315,10 +5315,11 @@ static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
 
 static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandBuffer)
 {
+    WGPUQueue queue = ((WebGPUCommandBuffer *)commandBuffer)->queue;
     WEBGPU_Submit(commandBuffer);
 
-    // FIXME: i can't be bothered making this work right now i have the immune system of a dying housefly
-    return NULL;
+    // I hate this. I'm not sure why I do, but I do. -- TheStickmahn
+    return (SDL_GPUFence *)WEBGPU_INTERNAL_CreateFence(queue);
 }
 
 static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
@@ -5379,15 +5380,21 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
 
     Uint32 unpaddedBPR = BytesPerRow(source->w, ((WebGPUTextureContainer *)source->texture)->header.info.format);
     Uint32 paddedBPR = ALIGN_VALUE(unpaddedBPR, 256);
+    bool bprMismatch = unpaddedBPR != paddedBPR;
+
+    // This buffer is used to turn the stinky padded image data into non-stinky good image data
+    WebGPUBufferContainer *interimDownloadBuffer = NULL;
+
+    if (bprMismatch) {
+        interimDownloadBuffer = WEBGPU_INTERNAL_CreateBufferContainer(((WebGPUCommandBuffer *)commandBuffer)->renderer, (Uint64)paddedBPR * source->h, 0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false, "Interim Download Buffer");
+    }
 
     sourceInfo.aspect = WGPUTextureAspect_All;
     sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
     sourceInfo.mipLevel = source->mip_level;
-    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z };
+    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z + source->layer };
 
-    // FIXME: This is still padded data.
-    // We need to unpad this via a staging buffer.
-    destinationInfo.buffer = ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
+    destinationInfo.buffer = bprMismatch ? interimDownloadBuffer->activeBuffer->buffer : ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
     destinationInfo.layout = (WGPUTexelCopyBufferLayout){
         .bytesPerRow = paddedBPR,
         .offset = destination->offset,
@@ -5400,8 +5407,21 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
     wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){
                                                                                                                               ALIGN_VALUE(source->w, blockWidth),
                                                                                                                               ALIGN_VALUE(source->h, blockHeight),
-                                                                                                                              source->layer,
+                                                                                                                              1,
                                                                                                                           });
+
+    if (bprMismatch) {
+        // Since WebGPU sucks and inherits D3D12's horrid 256-byte BPR alignment rule we can't just copy the data 1 to 1.
+        // So, we need to do this unpadding nonsense. We first copy the texture to an interim buffer and then for each row
+        // we copy the unpadded data from it into the user-given transfer buffer.
+        //
+        // Why do you do these things to me WebGPU?
+        for (int i = 0; i < source->h; i++) {
+            wgpuCommandEncoderCopyBufferToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, interimDownloadBuffer->activeBuffer->buffer, (Uint64)i * paddedBPR, ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer, (Uint64)i * unpaddedBPR, unpaddedBPR);
+        }
+
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease(((WebGPUCommandBuffer *)commandBuffer)->renderer, interimDownloadBuffer);
+    }
 }
 
 static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info)
