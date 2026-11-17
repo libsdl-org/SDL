@@ -1788,12 +1788,12 @@ static void HandleButtonPacket(SDL_DriverWii_Context *ctx, SDL_Joystick *joystic
     case k_eWiiInputReportIDs_ButtonDataD: // 3d EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE EE
         GetExtensionData(&data, ctx->m_rgucReadBuffer + 1, 21);
         break;
-    case k_eWiiInputReportIDs_ButtonDataE:
-    case k_eWiiInputReportIDs_ButtonDataF:
     // This was happening to me sometimes and Wiimote wouldn't work without me adding this here
     case k_eWiiInputReportIDs_Acknowledge: 
         HandleResponse(ctx, joystick);
         break;
+    case k_eWiiInputReportIDs_ButtonDataE:
+    case k_eWiiInputReportIDs_ButtonDataF:
     default:
         SDL_LogDebug(SDL_LOG_CATEGORY_INPUT, "HIDAPI Wii: Unsupported button data type %02x", ctx->m_rgucReadBuffer[0]);
         return;
