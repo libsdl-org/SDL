@@ -224,6 +224,11 @@ void Android_OnMouse(SDL_Window *window, int state, int action, float x, float y
         return;
     }
 
+    // We don't get mouse hotplug notifications, so register the mouse the
+    // first time we see input from it. This makes the mouse ID reported in
+    // relative mode valid for SDL_GetMouseNameForID() and SDL_GetMice().
+    SDL_AddMouse(SDL_DEFAULT_MOUSE_ID, NULL);
+
     switch (action) {
     case ACTION_MOVE:
     case ACTION_HOVER_MOVE:
