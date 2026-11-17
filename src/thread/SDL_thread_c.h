@@ -46,6 +46,9 @@
 #endif
 #include "../SDL_error_c.h"
 
+// Internal state while SDL_DetachThread() is detaching the system thread
+#define SDL_THREAD_DETACHING ((SDL_ThreadState)-1)
+
 // This is the system-independent thread info structure
 struct SDL_Thread
 {
