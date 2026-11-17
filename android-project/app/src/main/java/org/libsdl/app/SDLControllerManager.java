@@ -362,7 +362,16 @@ class SDLJoystickHandler {
 
             List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
             Collections.sort(ranges, new RangeComparator());
+
+            // TV remotes can have generic axes for their extra buttons, which makes them look like
+            // joysticks. Leave those axes out so the remote is just a D-pad and buttons, which lets
+            // SDL_HINT_TV_REMOTE_AS_JOYSTICK recognize it.
+            boolean isTVRemote = deviceIsTVRemote(joystickDevice, ranges);
+
             for (InputDevice.MotionRange range : ranges) {
+                if (isTVRemote && isGenericAxis(range.getAxis())) {
+                    continue;
+                }
                 if (((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) && axisStrsSet.add(range.getAxis())) {
                     if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
                         joystick.hats.add(range);
@@ -527,6 +536,27 @@ class SDLJoystickHandler {
 
     int getVendorId(InputDevice joystickDevice) {
         return joystickDevice.getVendorId();
+    }
+
+    static boolean isGenericAxis(int axis) {
+        return (axis >= MotionEvent.AXIS_GENERIC_1 && axis <= MotionEvent.AXIS_GENERIC_16);
+    }
+
+    // A TV remote has a D-pad but isn't a gamepad, and has no real joystick axes
+    static boolean deviceIsTVRemote(InputDevice device, List<InputDevice.MotionRange> ranges) {
+        int sources = device.getSources();
+        if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            return false;
+        }
+        if ((sources & InputDevice.SOURCE_DPAD) != InputDevice.SOURCE_DPAD) {
+            return false;
+        }
+        for (InputDevice.MotionRange range : ranges) {
+            if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && !isGenericAxis(range.getAxis())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     int getAxisMask(List<InputDevice.MotionRange> ranges) {
