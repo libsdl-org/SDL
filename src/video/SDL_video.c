@@ -3849,6 +3849,12 @@ bool SDL_SetWindowOpacity(SDL_Window *window, float opacity)
         opacity = 1.0f;
     }
 
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        // Fullscreen windows are always opaque, this will be applied when the window leaves fullscreen
+        window->opacity = opacity;
+        return true;
+    }
+
     result = _this->SetWindowOpacity(_this, window, opacity);
     if (result) {
         window->opacity = opacity;
@@ -4296,6 +4302,19 @@ void SDL_OnWindowHidden(SDL_Window *window)
 
     // The window is already hidden at this point, so just change the mode back if necessary.
     SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_LEAVE, false);
+}
+
+void SDL_OnWindowFullscreenChanged(SDL_Window *window)
+{
+    if (_this->SetWindowOpacity && window->opacity < 1.0f) {
+        float opacity;
+        if (window->flags & SDL_WINDOW_FULLSCREEN) {
+            opacity = 1.0f;
+        } else {
+            opacity = window->opacity;
+        }
+        _this->SetWindowOpacity(_this, window, opacity);
+    }
 }
 
 void SDL_OnWindowDisplayChanged(SDL_Window *window)

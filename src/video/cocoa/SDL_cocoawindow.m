@@ -1452,6 +1452,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     _data.was_zoomed = !!(window->flags & SDL_WINDOW_MAXIMIZED);
 
+    // Fullscreen windows are always opaque, make it opaque before the animation starts
+    [_data.nswindow setAlphaValue:1.0];
+
     isFullscreenSpace = YES;
     inFullscreenTransition = YES;
 }
@@ -1467,9 +1470,15 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
  */
 - (void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data.window;
+
     inFullscreenTransition = NO;
     isFullscreenSpace = NO;
     [self clearAllPendingWindowOperations];
+
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        [_data.nswindow setAlphaValue:window->opacity];
+    }
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification

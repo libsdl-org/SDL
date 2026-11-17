@@ -619,6 +619,7 @@ extern void SDL_OnWindowLeave(SDL_Window *window);
 extern void SDL_OnWindowFocusGained(SDL_Window *window);
 extern void SDL_OnWindowFocusLost(SDL_Window *window);
 extern void SDL_OnWindowDisplayChanged(SDL_Window *window);
+extern void SDL_OnWindowFullscreenChanged(SDL_Window *window);
 extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, bool commit);
 extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);

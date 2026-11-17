@@ -378,7 +378,7 @@ static void ConfigureWindowGeometry(SDL_Window *window)
     int viewport_width, viewport_height;
     bool window_size_changed;
     bool buffer_size_changed;
-    const bool is_opaque = !(window->flags & SDL_WINDOW_TRANSPARENT) && window->opacity == 1.0f;
+    const bool is_opaque = !(window->flags & SDL_WINDOW_TRANSPARENT) && (window->opacity == 1.0f || (window->flags & SDL_WINDOW_FULLSCREEN));
 
     if (data->is_fullscreen && window->fullscreen_exclusive) {
         window_width = window->current_fullscreen_mode.w;

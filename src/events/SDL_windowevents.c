@@ -299,6 +299,10 @@ bool SDL_SendWindowEvent(SDL_Window *window, SDL_EventType windowevent, int data
         case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
             SDL_OnWindowDisplayChanged(window);
             break;
+        case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+            SDL_OnWindowFullscreenChanged(window);
+            break;
         default:
             break;
         }
