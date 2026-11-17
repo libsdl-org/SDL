@@ -1452,9 +1452,9 @@ static bool D3D_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
                 }
 
                 if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_LINELIST, (UINT)start, (UINT)(count - 1));
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_LINELIST, (UINT)start, (UINT)(count / 2));
                 } else {
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_LINELIST, (UINT)(count - 1), verts, sizeof(Vertex));
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_LINELIST, (UINT)(count / 2), verts, sizeof(Vertex));
                 }
                 cmd = finalcmd; // skip any copy commands we just combined in here.
             }
