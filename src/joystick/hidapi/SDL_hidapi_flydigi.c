@@ -286,6 +286,7 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
     case SDL_FLYDIGI_VADER4_PRO:
         HIDAPI_SetDeviceName(device, "Flydigi Vader 4 Pro");
         ctx->has_cz = true;
+        ctx->has_trigger_rumble = true;
         ctx->sensors_supported = true;
         ctx->accelScale = SDL_STANDARD_GRAVITY / 256.0f;
         ctx->gyroScale[0] = -DEG2RAD(72000.0f);
@@ -711,6 +712,21 @@ static bool HIDAPI_DriverFlydigi_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     return true;
 }
 
+static bool HIDAPI_DriverFlydigi_SendRumbleV1(SDL_DriverFlydigi_Context *ctx)
+{
+    SDL_HIDAPI_Device *device = ctx->device;
+    Uint8 rumble_packet[] = { FLYDIGI_V1_CMD_REPORT_ID, FLYDIGI_V1_HAPTIC_COMMAND, 0, 0, 0, 0 };
+    rumble_packet[2] = ctx->low_frequency_rumble;
+    rumble_packet[3] = ctx->high_frequency_rumble;
+    rumble_packet[4] = ctx->left_trigger_rumble;
+    rumble_packet[5] = ctx->right_trigger_rumble;
+
+    if (SDL_HIDAPI_SendRumble(device, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
+        return SDL_SetError("Couldn't send rumble packet");
+    }
+    return true;
+}
+
 static bool HIDAPI_DriverFlydigi_SendRumbleV2(SDL_DriverFlydigi_Context *ctx)
 {
     SDL_HIDAPI_Device *device = ctx->device;
@@ -764,6 +780,10 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 
     ctx->left_trigger_rumble = left_rumble >> 8;
     ctx->right_trigger_rumble = right_rumble >> 8;
+
+    if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
+        return HIDAPI_DriverFlydigi_SendRumbleV1(ctx);
+    }
     return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
 }
 
