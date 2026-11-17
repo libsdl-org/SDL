@@ -1,5 +1,7 @@
-// I stole this math library from TheSpydog's SDLGPU examples.
+// I stole this math library from TheSpydog's SDLGPU examples:
+// https://github.com/TheSpydog/SDL_gpu_examples/blob/main/Examples/Common.c
 // Sorry!
+// TODO: Get more of the gpu_examples stuff into mainline SDL
 
 #include <SDL3/SDL_stdinc.h>
 

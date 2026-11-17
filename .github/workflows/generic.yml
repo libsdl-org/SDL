@@ -91,7 +91,7 @@ jobs:
         with:
           arch: ${{ matrix.platform.msvc-vcvars-arch }}
           sdk: ${{ matrix.platform.msvc-vcvars-sdk }}
-      - name: 'Set up Google Dawn N-Gage SDK'
+      - name: 'Set up Google Dawn SDK'
         uses: ./.github/actions/setup-dawn
         if: ${{ matrix.platform.dawn-platform != '' }}
         with:
