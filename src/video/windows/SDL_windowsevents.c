@@ -385,6 +385,9 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, LPPOINT pos)
         SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? true : false);
 
         WIN_UpdateWindowICCProfile(data->window, true);
+
+        // There's no notification when the SDR content brightness changes, so check it here
+        WIN_UpdateDisplaySDRWhiteLevels(SDL_GetVideoDevice());
     } else {
         data->in_window_deactivation = true;
 

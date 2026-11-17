@@ -4329,6 +4329,13 @@ void SDL_OnWindowDisplayChanged(SDL_Window *window)
         }
     }
 
+    if (!SDL_DriverSendsHDRChanges(_this)) {
+        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
+        if (display) {
+            SDL_SetWindowHDRProperties(window, &display->HDR, true);
+        }
+    }
+
     SDL_CheckWindowPixelSizeChanged(window);
 }
 
