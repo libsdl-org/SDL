@@ -2156,7 +2156,9 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *keyboard,
     if (seat->data_device->selection_offer) {
         Wayland_data_offer_destroy(seat->data_device->selection_offer);
         seat->data_device->selection_offer = NULL;
-        Wayland_data_offer_notify_from_mimes(NULL, false);
+        if (!seat->data_device->selection_source) {
+            Wayland_data_offer_notify_from_mimes(NULL, false);
+        }
     }
 }
 
