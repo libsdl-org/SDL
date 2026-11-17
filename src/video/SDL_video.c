@@ -2147,7 +2147,9 @@ bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, b
         }
     }
 
+#if defined(SDL_PLATFORM_MACOS) && defined(SDL_VIDEO_DRIVER_COCOA)
 done:
+#endif
     window->last_fullscreen_exclusive_display = display && (window->flags & SDL_WINDOW_FULLSCREEN) && window->fullscreen_exclusive ? display->id : 0;
     return true;
 
