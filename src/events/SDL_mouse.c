@@ -663,6 +663,31 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
 }
 
+void SDL_SendMouseWarp(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    // Ignore the previous position when we warp, as warps don't generate relative motion.
+    mouse->last_x = x;
+    mouse->last_y = y;
+    mouse->has_position = false;
+
+    if (mouse->relative_mode) {
+        /* Sending motion events when warping while relative mode is active can confuse
+         * clients that don't expect it, so just update the absolute position and don't
+         * generate a motion event unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
+         */
+        if (!mouse->relative_mode_warp_motion) {
+            mouse->x = x;
+            mouse->y = y;
+            mouse->has_position = true;
+            return;
+        }
+    }
+
+    SDL_SendMouseMotion(timestamp, window, mouseID, false, x, y);
+}
+
 static void ConstrainMousePosition(SDL_Mouse *mouse, SDL_Window *window, float *x, float *y)
 {
     /* make sure that the pointers find themselves inside the windows,
