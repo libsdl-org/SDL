@@ -1060,6 +1060,10 @@ if(SDL_LIBC)
     target_compile_definitions(sdl-build-options INTERFACE "-D_USE_MATH_DEFINES") # needed for M_PI
     set(STDC_HEADERS 1)
   else()
+    cmake_push_check_state()
+    if(UNIX)
+      list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1)
+    endif()
     set(HAVE_LIBC TRUE)
     set(headers_to_check
         ctype.h
@@ -1187,6 +1191,7 @@ if(SDL_LIBC)
 
     check_struct_has_member("struct sigaction" "sa_sigaction" "signal.h" HAVE_SA_SIGACTION)
   endif()
+  cmake_pop_check_state()
 else()
   if(WINDOWS)
     set(HAVE_STDARG_H 1)
