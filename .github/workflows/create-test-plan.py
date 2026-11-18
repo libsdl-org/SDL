@@ -182,7 +182,7 @@ JOB_SPECS = {
     "freebsd": JobSpec(name="FreeBSD",                                      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.FreeBSD,     artifact="SDL-freebsd-x64", ),
     "ngage": JobSpec(name="N-Gage",                                         priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.NGage,       artifact="SDL-ngage", ),
     "djgpp": JobSpec(name="DOS (DJGPP)",                                    priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.DJGPP,       artifact="SDL-djgpp", ),
-    "harmonyos-hvigor": JobSpec(name="HarmonyOS/OpenHarmony (hvigor)",      priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.HarmonyOS,   artifact=None,                     no_cmake=True, harmonyos_hvigor=True ),
+    "harmonyos-hvigor": JobSpec(name="HarmonyOS/OpenHarmony (hvigor)",      priority=False, os=JobOs.Ubuntu24_04,       platform=SdlPlatform.HarmonyOS,   artifact=None,                     no_cmake=True, harmonyos_hvigor=True ),
 }
 
 
