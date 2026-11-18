@@ -782,8 +782,9 @@ static bool HIDAPI_DriverFlydigi_RumbleJoystickTriggers(SDL_HIDAPI_Device *devic
 
     if (device->vendor_id == USB_VENDOR_FLYDIGI_V1) {
         return HIDAPI_DriverFlydigi_SendRumbleV1(ctx);
+    } else {
+        return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
     }
-    return HIDAPI_DriverFlydigi_SendRumbleV2(ctx);
 }
 
 static Uint32 HIDAPI_DriverFlydigi_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
