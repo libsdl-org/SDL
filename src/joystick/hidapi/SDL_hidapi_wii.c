@@ -168,10 +168,6 @@ typedef struct
     Sint32 m_iIRSensitivity;
     SDL_Point m_IRLastPoints[2];
     float m_fLastPosition[2];
-    bool m_bSpeakerEnabled;
-    Sint32 m_iSpeakerFormat;
-    Sint32 m_iSpeakerSampleRate;
-    Sint32 m_iSpeakerVolume;
 
     StickCalibrationData m_StickCalibrationData[6];
 } SDL_DriverWii_Context;
@@ -890,104 +886,6 @@ void IRSensitivityHintChanged(void *userdata, const char *name, const char *oldV
     }
 }
 
-// Speaker Initialization as Documented on https://wiibrew.org/wiki/Wiimote#Initialization_Sequence
-void SpeakerSetup(SDL_DriverWii_Context *ctx)
-{
-    Uint8 data[2];
-
-    data[0] = k_eWiiOutputReportIDs_SpeakerEnable;
-    if (ctx->m_bSpeakerEnabled) {
-        data[1] = 0x04 | ctx->m_bRumbleActive;
-    } else {
-        data[1] = 0x00 | ctx->m_bRumbleActive;
-    }
-    WriteOutput(ctx, data, sizeof(data), true);
-
-    data[0] = k_eWiiOutputReportIDs_SpeakerMute;
-    data[1] = 0x04 | ctx->m_bRumbleActive;
-    WriteOutput(ctx, data, sizeof(data), true);
-
-    Uint8 value = 0x01;
-    WriteRegister(ctx, 0xA20009, &value, sizeof(value), true);
-
-    value = 0x08;
-    WriteRegister(ctx, 0xA20001, &value, sizeof(value), true);
-
-    Uint8 speaker_format;
-    Uint8 speaker_volume;
-    Uint16 speaker_sample_rate;
-    if (ctx->m_iSpeakerFormat == 1) {
-        speaker_format = 0x00;
-        speaker_volume = SDL_clamp(0, 64, (Uint8)speaker_volume);
-        speaker_sample_rate = SDL_Swap16LE(6000000 / ctx->m_iSpeakerSampleRate);
-    } else {
-        speaker_format = 0x40;
-        speaker_volume = (Uint8)ctx->m_iSpeakerVolume;
-        speaker_sample_rate = SDL_Swap16LE(12000000 / ctx->m_iSpeakerSampleRate);
-    }
-
-    Uint8 config[7];
-    config[0] = 0;
-    config[1] = speaker_format;
-    config[2] = (speaker_sample_rate & 0xFF);
-    config[3] = (speaker_sample_rate >> 8) & 0xFF;
-    config[4] = speaker_volume;
-    config[5] = 0;
-    config[6] = 0;
-    WriteRegister(ctx, 0xA20001, config, sizeof(config), true);
-
-    value = 0x01;
-    WriteRegister(ctx, 0xA20008, &value, sizeof(value), true);
-
-    data[0] = k_eWiiOutputReportIDs_SpeakerMute;
-    data[1] = 0x00 | ctx->m_bRumbleActive;
-    WriteOutput(ctx, data, sizeof(data), true);
-}
-
-void SpeakerHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-
-    int bSpeakerEnabled = SDL_GetHintBoolean(name, true);
-    if (ctx->m_bSpeakerEnabled != bSpeakerEnabled) {
-        ctx->m_bSpeakerEnabled = bSpeakerEnabled;
-        SpeakerSetup(ctx);
-    }
-}
-
-void SpeakerFormatHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-
-    int iSpeakerFormat = GetHintInt(name, 0);
-    if (ctx->m_iSpeakerFormat != iSpeakerFormat) {
-        ctx->m_iSpeakerFormat = iSpeakerFormat;
-        SpeakerSetup(ctx);
-    }
-}
-
-void SpeakerSampleRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-
-    int iSpeakerSampleRate = GetHintInt(name, 3000);
-    if (ctx->m_iSpeakerSampleRate != iSpeakerSampleRate) {
-        ctx->m_iSpeakerSampleRate = iSpeakerSampleRate;
-        SpeakerSetup(ctx);
-    }
-}
-
-void SpeakerVolumeHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
-{
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)userdata;
-
-    int iSpeakerVolume = GetHintInt(name, 255);
-    if (ctx->m_iSpeakerVolume != iSpeakerVolume) {
-        ctx->m_iSpeakerVolume = iSpeakerVolume;
-        SpeakerSetup(ctx);
-    }
-}
-
 static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
@@ -1032,19 +930,6 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
     if (ctx->m_bIREnabled) {
         IRSetup(ctx);
         SDL_AddMouse((SDL_MouseID)(uintptr_t)joystick, "Nintendo Wii Remote");
-    }
-
-    // Speaker Hints
-    ctx->m_bSpeakerEnabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER, true);
-    ctx->m_iSpeakerFormat = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT, 0);
-    ctx->m_iSpeakerSampleRate = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE, 2000);
-    ctx->m_iSpeakerVolume = GetHintInt(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME, 255);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER, SpeakerHintChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT, SpeakerFormatHintChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE, SpeakerSampleRateHintChanged, ctx);
-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME, SpeakerVolumeHintChanged, ctx);
-    if (ctx->m_bSpeakerEnabled) {
-        SpeakerSetup(ctx);
     }
 
     // Initialize the joystick capabilities
@@ -1095,17 +980,6 @@ static bool HIDAPI_DriverWii_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joyst
 
 static bool HIDAPI_DriverWii_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
 {
-    SDL_DriverWii_Context *ctx = (SDL_DriverWii_Context *)device->context;
-
-    if (ctx->m_bSpeakerEnabled && 20 >= size) {
-        Uint8 report[22];
-        memset((void *)report, 0, sizeof(report));
-        report[0] = k_eWiiOutputReportIDs_SpeakerData;
-        report[1] = (Uint8)(size << 3);
-        SDL_memcpy(&report[2], data, size);
-        WriteOutput(ctx, report, sizeof(report), false);
-        return true;
-    }
     return SDL_Unsupported();
 }
 
@@ -1896,14 +1770,6 @@ static void HIDAPI_DriverWii_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
                            IRHintChanged, ctx);
     SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED,
                            IRSensitivityHintChanged, ctx);
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER,
-                           SpeakerHintChanged, ctx);
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT,
-                           SpeakerFormatHintChanged, ctx);
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE,
-                           SpeakerSampleRateHintChanged, ctx);
-    SDL_RemoveHintCallback(SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME,
-                           SpeakerVolumeHintChanged, ctx);
 
     if (ctx->m_bIREnabled) {
         SDL_RemoveMouse((SDL_MouseID)(uintptr_t)joystick);

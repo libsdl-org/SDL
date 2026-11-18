@@ -2216,60 +2216,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY "SDL_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY"
 
 /**
- * A variable controlling whether the Wii Controller's speaker is enabled
- * so data can be sent using SDL_SendJoystickEffect.
- *
- * The variable can be set to the following values:
- *
- * - "0": Speaker is disabled. (default)
- * - "1": Speaker is enabled.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER "SDL_JOYSTICK_HIDAPI_WII_SPEAKER"
-
-/**
- * A variable controlling whether the speaker should
- * use 4-bit Yamaha ADPCM or 8-bit signed PCM.
- *
- * The variable can be set to the following values:
- *
- * - "0": Speaker should use 8-bit signed PCM. (default)
- * - "1": Speaker should use 4-bit Yamaha ADPCM.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT "SDL_JOYSTICK_HIDAPI_WII_SPEAKER_FORMAT"
-
-/**
- * A variable controlling the sample rate of the audio data sent to the Wii Controller Speaker
- *
- * The variable should be set to an integer sample rate value, in hertz.
- * Defaults to 2000Hz.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE "SDL_JOYSTICK_HIDAPI_WII_SPEAKER_SAMPLE_RATE"
-
-/**
- * A variable controlling the volume of the Wii Controller's speaker.
- *
- * The variable can be set to value between 0 and 255.
- * NOTE: If using ADPCM 4-bit, this value will be clamped between 0 and 64.
- *
- * This hint can be set anytime.
- *
- * \since This hint is available since SDL 3.6.0.
- */
-#define SDL_HINT_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME "SDL_JOYSTICK_HIDAPI_WII_SPEAKER_VOLUME"
-
-/**
  * A variable controlling whether the HIDAPI driver for XBox controllers
  * should be used.
  *
