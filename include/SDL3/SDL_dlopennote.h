@@ -47,7 +47,7 @@
  *   }
  * ]==] COMPILER_SUPPORTS_SDL_ELF_NOTE_DLOPEN)
  * if(NOT COMPILER_SUPPORTS_SDL_ELF_NOTE_DLOPEN)
- *   add_compile_definitions(-DSDL_DISABLE_DLOPEN_NOTE)
+ *   target_compile_definitions(<your-game> PRIVATE SDL_DISABLE_DLOPEN_NOTE)
  * endif()
  * ```
  */
