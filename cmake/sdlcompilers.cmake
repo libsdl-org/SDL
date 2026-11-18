@@ -166,6 +166,10 @@ function(SDL_AddCommonCompilerFlags TARGET)
   if(USE_TCC)
       sdl_target_compile_option_all_languages(${TARGET} "-DSTBI_NO_SIMD")
   endif()
+
+  if(MSVC)
+    target_compile_options(${TARGET} PRIVATE /utf-8)
+  endif()
 endfunction()
 
 function(check_x86_source_compiles BODY VAR)
