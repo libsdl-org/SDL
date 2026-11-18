@@ -201,7 +201,7 @@ static void Android_HandleLifecycleEvent(SDL_AndroidLifecycleEvent event)
 
 static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
 {
-    if (Android_Paused) {
+    if (paused) {
         if (Android_BlockOnPause) {
             timeoutNS = -1;
         } else if (timeoutNS == 0) {
@@ -224,6 +224,10 @@ void Android_PumpEvents(Sint64 timeoutNS)
         case SDL_ANDROID_LIFECYCLE_WAKE:
             // Finish handling events quickly if we're not paused
             timeoutNS = 0;
+            if (!Android_BlockOnPause) {
+                // There are new events for the application, return to process them
+                paused = false;
+            }
             break;
         case SDL_ANDROID_LIFECYCLE_PAUSE:
             // Finish handling events at the current timeout and return to process events one more time before blocking.
