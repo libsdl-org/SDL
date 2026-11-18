@@ -12121,8 +12121,8 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
     bool isConformant;
 
     VkPhysicalDeviceType deviceType;
+    VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     if (physicalDeviceExtensions->KHR_driver_properties || physicalDeviceExtensions->MSFT_layered_driver) {
-        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
         VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = { 0 };
         VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties = { 0 };
         void** ppNext = &physicalDeviceProperties.pNext;
@@ -12172,11 +12172,10 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
             deviceType = physicalDeviceProperties.properties.deviceType;
         }
     } else {
-        VkPhysicalDeviceProperties physicalDeviceProperties;
         renderer->vkGetPhysicalDeviceProperties(
             physicalDevice,
-            &physicalDeviceProperties);
-        deviceType = physicalDeviceProperties.deviceType;
+            &physicalDeviceProperties.properties);
+        deviceType = physicalDeviceProperties.properties.deviceType;
         isConformant = true; // We can't check this, so just assume it's conformant
     }
 
@@ -12195,6 +12194,7 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
      * -flibit
      */
     if (!isConformant) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Device %s is not Vulkan-conformant, skipping", physicalDeviceProperties.properties.deviceName);
         return 0;
     }
 
