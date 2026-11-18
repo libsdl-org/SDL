@@ -546,7 +546,7 @@ static bool HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Jo
             return true;
         }
     }
-    return false; // Should never get here!
+    return SDL_SetError("Unexpected player index for GameCube adapter"); // Should never get here!
 }
 
 static bool HIDAPI_DriverGameCube_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
