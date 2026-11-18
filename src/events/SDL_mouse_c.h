@@ -215,7 +215,7 @@ extern bool SDL_UpdateMouseCapture(bool force_release);
 extern void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y);
 
 // Send a mouse motion event resulting from a pointer warp
-void SDL_SendMouseWarp(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y);
+extern void SDL_SendMouseWarp(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y);
 
 // Send a mouse button event
 extern void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, Uint8 button, bool down);
