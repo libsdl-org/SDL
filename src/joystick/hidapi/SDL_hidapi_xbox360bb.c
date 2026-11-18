@@ -108,7 +108,7 @@ static bool HIDAPI_DriverXBOX360BB_OpenJoystick(SDL_HIDAPI_Device *device, SDL_J
             return true;
         }
     }
-    return false; // Should never get here!
+    return SDL_SetError("Unexpected player index for BigButton adapter"); // Should never get here!
 }
 
 static void HIDAPI_DriverXBOX360BB_HandleStatePacket(SDL_DriverXbox360BB_Context *ctx, Uint8 *data, int size)
