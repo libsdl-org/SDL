@@ -1287,6 +1287,27 @@ void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent
             data->pending_operation &= ~X11_PENDING_OP_RESIZE;
         }
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, xevent->width, xevent->height);
+
+        // Update the pointer coordinates if the focused window moved under the cursor.
+        if (data->window == SDL_GetMouseFocus()) {
+            float m_x, m_y;
+            SDL_GetGlobalMouseState(&m_x, &m_y);
+            x = (int)SDL_floor(m_x);
+            y = (int)SDL_floor(m_y);
+
+            // Is the new position still in the window?
+            if (x >= xevent->x && y >= xevent->y && m_x < (xevent->x + data->window->w) && y < (xevent->y + data->window->h)) {
+                // Global to relative
+                m_x -= (float)xevent->x;
+                m_y -= (float)xevent->y;
+
+                // Dedup, as a configure event doesn't imply a move.
+                SDL_Mouse *m = SDL_GetMouse();
+                if (m->last_x != m_x || m->last_y != m_y) {
+                    SDL_SendMouseWarp(0, data->window, SDL_GLOBAL_MOUSE_ID, m_x, m_y);
+                }
+            }
+        }
     }
 
     SDL_copyp(&data->last_xconfigure, xevent);
