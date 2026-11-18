@@ -27,10 +27,10 @@
 #define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
 
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
-#define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)    \
-    do {                                                                                                         \
-        EXPAND_ARRAY_IF_NEEDED(array, elementType, arrayElementCount + 1, arrayCapacity, arrayElementCount + 1); \
-        ((elementType *)array)[arrayElementCount++] = element;                                                   \
+#define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)                                \
+    do {                                                                                                                                     \
+        EXPAND_ARRAY_IF_NEEDED(array, elementType, arrayElementCount + 1, arrayCapacity, SDL_max(arrayElementCount + 1, arrayCapacity * 2)); \
+        ((elementType *)array)[arrayElementCount++] = element;                                                                               \
     } while (0)
 
 // Convert a regular char* to a WGPUStringView
@@ -240,266 +240,263 @@ const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[7] = {
 };
 
 static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
-    WGPUPresentMode_Fifo,
-    WGPUPresentMode_Immediate,
-    WGPUPresentMode_Mailbox,
+    [SDL_GPU_PRESENTMODE_VSYNC] = WGPUPresentMode_Fifo,
+    [SDL_GPU_PRESENTMODE_IMMEDIATE] = WGPUPresentMode_Immediate,
+    [SDL_GPU_PRESENTMODE_MAILBOX] = WGPUPresentMode_Mailbox,
 };
 
 static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
-    WGPUTextureFormat_Undefined,            // INVALID
-    WGPUTextureFormat_Undefined,            // A8_UNORM, no such format in webgpu.h (i think?)
-    WGPUTextureFormat_R8Unorm,              // R8_UNORM
-    WGPUTextureFormat_RG8Unorm,             // R8G8_UNORM
-    WGPUTextureFormat_RGBA8Unorm,           // R8G8B8A8_UNORM
-    WGPUTextureFormat_R16Unorm,             // R16_UNORM
-    WGPUTextureFormat_RG16Unorm,            // R16G16_UNORM
-    WGPUTextureFormat_RGBA16Unorm,          // R16G16B16A16_UNORM
-    WGPUTextureFormat_RGB10A2Unorm,         // R10G10B10A2_UNORM
-    WGPUTextureFormat_Undefined,            // B5G6R5_UNORM (?)
-    WGPUTextureFormat_Undefined,            // B5G5R5A1_UNORM (?)
-    WGPUTextureFormat_Undefined,            // B4G4R4A4_UNORM (?)
-    WGPUTextureFormat_BGRA8Unorm,           // B8G8R8A8_UNORM
-    WGPUTextureFormat_BC1RGBAUnorm,         // BC1_UNORM
-    WGPUTextureFormat_BC2RGBAUnorm,         // BC2_UNORM
-    WGPUTextureFormat_BC3RGBAUnorm,         // BC3_UNORM
-    WGPUTextureFormat_BC4RUnorm,            // BC4_UNORM (?)
-    WGPUTextureFormat_BC5RGUnorm,           // BC5_UNORM
-    WGPUTextureFormat_BC7RGBAUnorm,         // BC7_UNORM
-    WGPUTextureFormat_BC6HRGBFloat,         // BC6H_FLOAT
-    WGPUTextureFormat_BC6HRGBUfloat,        // BC6H_UFLOAT
-    WGPUTextureFormat_R8Snorm,              // R8_SNORM
-    WGPUTextureFormat_RG8Snorm,             // R8G8_SNORM
-    WGPUTextureFormat_RGBA8Snorm,           // R8G8B8A8_SNORM
-    WGPUTextureFormat_R16Snorm,             // R16_SNORM
-    WGPUTextureFormat_RG16Snorm,            // R16G16_SNORM
-    WGPUTextureFormat_RGBA16Snorm,          // R16G16B16A16_SNORM
-    WGPUTextureFormat_R16Float,             // R16_FLOAT
-    WGPUTextureFormat_RG16Float,            // R16G16_FLOAT
-    WGPUTextureFormat_RGBA16Float,          // R16G16B16A16_FLOAT
-    WGPUTextureFormat_R32Float,             // R32_FLOAT
-    WGPUTextureFormat_RG32Float,            // R32G32_FLOAT
-    WGPUTextureFormat_RGBA32Float,          // R32G32B32A32_FLOAT
-    WGPUTextureFormat_RG11B10Ufloat,        // R11G11B10_UFLOAT
-    WGPUTextureFormat_R8Uint,               // R8_UINT
-    WGPUTextureFormat_RG8Uint,              // R8G8_UINT
-    WGPUTextureFormat_RGBA8Uint,            // R8G8B8A8_UINT
-    WGPUTextureFormat_R16Uint,              // R16_UINT
-    WGPUTextureFormat_RG16Uint,             // R16G16_UINT
-    WGPUTextureFormat_RGBA16Uint,           // R16G16B16A16_UINT
-    WGPUTextureFormat_R32Uint,              // R32_UINT
-    WGPUTextureFormat_RG32Uint,             // R32G32_UINT
-    WGPUTextureFormat_RGBA32Uint,           // R32G32B32A32_UINT
-    WGPUTextureFormat_R8Sint,               // R8_INT
-    WGPUTextureFormat_RG8Sint,              // R8G8_INT
-    WGPUTextureFormat_RGBA8Sint,            // R8G8B8A8_INT
-    WGPUTextureFormat_R16Sint,              // R16_INT
-    WGPUTextureFormat_RG16Sint,             // R16G16_INT
-    WGPUTextureFormat_RGBA16Sint,           // R16G16B16A16_INT
-    WGPUTextureFormat_R32Sint,              // R32_INT
-    WGPUTextureFormat_RG32Sint,             // R32G32_INT
-    WGPUTextureFormat_RGBA32Sint,           // R32G32B32A32_INT
-    WGPUTextureFormat_RGBA8UnormSrgb,       // R8G8B8A8_UNORM_SRGB
-    WGPUTextureFormat_BGRA8UnormSrgb,       // B8G8R8A8_UNORM_SRGB
-    WGPUTextureFormat_BC1RGBAUnormSrgb,     // BC1_UNORM_SRGB
-    WGPUTextureFormat_BC2RGBAUnormSrgb,     // BC2_UNORM_SRGB
-    WGPUTextureFormat_BC3RGBAUnormSrgb,     // BC3_UNORM_SRGB
-    WGPUTextureFormat_BC7RGBAUnormSrgb,     // BC7_UNORM_SRGB
-    WGPUTextureFormat_Depth16Unorm,         // D16_UNORM
-    WGPUTextureFormat_Depth24Plus,          // D24_UNORM,
-    WGPUTextureFormat_Depth32Float,         // D32_FLOAT
-    WGPUTextureFormat_Depth24PlusStencil8,  // D24_UNORM_S8_UINT
-    WGPUTextureFormat_Depth32FloatStencil8, // D32_FLOAT_S8_UINT, needs WGPUTextureFeature_Depth32FloatStencil8
-    WGPUTextureFormat_ASTC4x4Unorm,         // ASTC_4x4_UNORM
-    WGPUTextureFormat_ASTC5x4Unorm,         // ASTC_5x4_UNORM
-    WGPUTextureFormat_ASTC5x5Unorm,         // ASTC_5x5_UNORM
-    WGPUTextureFormat_ASTC6x5Unorm,         // ASTC_6x5_UNORM
-    WGPUTextureFormat_ASTC6x6Unorm,         // ASTC_6x6_UNORM
-    WGPUTextureFormat_ASTC8x5Unorm,         // ASTC_8x5_UNORM
-    WGPUTextureFormat_ASTC8x6Unorm,         // ASTC_8x6_UNORM
-    WGPUTextureFormat_ASTC8x8Unorm,         // ASTC_8x8_UNORM
-    WGPUTextureFormat_ASTC10x5Unorm,        // ASTC_10x5_UNORM
-    WGPUTextureFormat_ASTC10x6Unorm,        // ASTC_10x6_UNORM
-    WGPUTextureFormat_ASTC10x8Unorm,        // ASTC_10x8_UNORM
-    WGPUTextureFormat_ASTC10x10Unorm,       // ASTC_10x10_UNORM
-    WGPUTextureFormat_ASTC12x10Unorm,       // ASTC_12x10_UNORM
-    WGPUTextureFormat_ASTC12x12Unorm,       // ASTC_12x12_UNORM
-    WGPUTextureFormat_ASTC4x4UnormSrgb,     // ASTC_4x4_UNORM_SRGB
-    WGPUTextureFormat_ASTC5x4UnormSrgb,     // ASTC_5x4_UNORM_SRGB
-    WGPUTextureFormat_ASTC5x5UnormSrgb,     // ASTC_5x5_UNORM_SRGB
-    WGPUTextureFormat_ASTC6x5UnormSrgb,     // ASTC_6x5_UNORM_SRGB
-    WGPUTextureFormat_ASTC6x6UnormSrgb,     // ASTC_6x6_UNORM_SRGB
-    WGPUTextureFormat_ASTC8x5UnormSrgb,     // ASTC_8x5_UNORM_SRGB
-    WGPUTextureFormat_ASTC8x6UnormSrgb,     // ASTC_8x6_UNORM_SRGB
-    WGPUTextureFormat_ASTC8x8UnormSrgb,     // ASTC_8x8_UNORM_SRGB
-    WGPUTextureFormat_ASTC10x5UnormSrgb,    // ASTC_10x5_UNORM_SRGB
-    WGPUTextureFormat_ASTC10x6UnormSrgb,    // ASTC_10x6_UNORM_SRGB
-    WGPUTextureFormat_ASTC10x8UnormSrgb,    // ASTC_10x8_UNORM_SRGB
-    WGPUTextureFormat_ASTC10x10UnormSrgb,   // ASTC_10x10_UNORM_SRGB
-    WGPUTextureFormat_ASTC12x10UnormSrgb,   // ASTC_12x10_UNORM_SRGB
-    WGPUTextureFormat_ASTC12x12UnormSrgb,   // ASTC_12x12_UNORM_SRGB
-    WGPUTextureFormat_Undefined,            // ASTC_4x4_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_5x4_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_5x5_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_6x5_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_6x6_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_8x5_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_8x6_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_8x8_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_10x5_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_10x6_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_10x8_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_10x10_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_12x10_FLOAT
-    WGPUTextureFormat_Undefined,            // ASTC_12x12_FLOAT
+    [SDL_GPU_TEXTUREFORMAT_INVALID] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_A8_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_R8_UNORM] = WGPUTextureFormat_R8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_UNORM] = WGPUTextureFormat_RG8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM] = WGPUTextureFormat_RGBA8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_UNORM] = WGPUTextureFormat_R16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_UNORM] = WGPUTextureFormat_RG16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM] = WGPUTextureFormat_RGBA16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM] = WGPUTextureFormat_RGB10A2Unorm,
+    [SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM] = WGPUTextureFormat_BGRA8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM] = WGPUTextureFormat_BC1RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM] = WGPUTextureFormat_BC2RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM] = WGPUTextureFormat_BC3RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM] = WGPUTextureFormat_BC4RUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM] = WGPUTextureFormat_BC5RGUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM] = WGPUTextureFormat_BC7RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT] = WGPUTextureFormat_BC6HRGBFloat,
+    [SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT] = WGPUTextureFormat_BC6HRGBUfloat,
+    [SDL_GPU_TEXTUREFORMAT_R8_SNORM] = WGPUTextureFormat_R8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_SNORM] = WGPUTextureFormat_RG8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM] = WGPUTextureFormat_RGBA8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_SNORM] = WGPUTextureFormat_R16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_SNORM] = WGPUTextureFormat_RG16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM] = WGPUTextureFormat_RGBA16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_FLOAT] = WGPUTextureFormat_R16Float,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT] = WGPUTextureFormat_RG16Float,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_TEXTUREFORMAT_R32_FLOAT] = WGPUTextureFormat_R32Float,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT] = WGPUTextureFormat_RG32Float,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT] = WGPUTextureFormat_RGBA32Float,
+    [SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT] = WGPUTextureFormat_RG11B10Ufloat,
+    [SDL_GPU_TEXTUREFORMAT_R8_UINT] = WGPUTextureFormat_R8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_UINT] = WGPUTextureFormat_RG8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT] = WGPUTextureFormat_RGBA8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16_UINT] = WGPUTextureFormat_R16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_UINT] = WGPUTextureFormat_RG16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT] = WGPUTextureFormat_RGBA16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32_UINT] = WGPUTextureFormat_R32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_UINT] = WGPUTextureFormat_RG32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT] = WGPUTextureFormat_RGBA32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8_INT] = WGPUTextureFormat_R8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_INT] = WGPUTextureFormat_RG8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT] = WGPUTextureFormat_RGBA8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16_INT] = WGPUTextureFormat_R16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_INT] = WGPUTextureFormat_RG16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT] = WGPUTextureFormat_RGBA16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32_INT] = WGPUTextureFormat_R32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_INT] = WGPUTextureFormat_RG32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT] = WGPUTextureFormat_RGBA32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB] = WGPUTextureFormat_RGBA8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB] = WGPUTextureFormat_BGRA8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC1RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC2RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC3RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC7RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_D16_UNORM] = WGPUTextureFormat_Depth16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_D24_UNORM] = WGPUTextureFormat_Depth24Plus,
+    [SDL_GPU_TEXTUREFORMAT_D32_FLOAT] = WGPUTextureFormat_Depth32Float,
+    [SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT] = WGPUTextureFormat_Depth24PlusStencil8,
+    [SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT] = WGPUTextureFormat_Depth32FloatStencil8,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM] = WGPUTextureFormat_ASTC4x4Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM] = WGPUTextureFormat_ASTC5x4Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM] = WGPUTextureFormat_ASTC5x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM] = WGPUTextureFormat_ASTC6x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM] = WGPUTextureFormat_ASTC6x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM] = WGPUTextureFormat_ASTC8x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM] = WGPUTextureFormat_ASTC8x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM] = WGPUTextureFormat_ASTC8x8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM] = WGPUTextureFormat_ASTC10x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM] = WGPUTextureFormat_ASTC10x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM] = WGPUTextureFormat_ASTC10x8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM] = WGPUTextureFormat_ASTC10x10Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM] = WGPUTextureFormat_ASTC12x10Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM] = WGPUTextureFormat_ASTC12x12Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB] = WGPUTextureFormat_ASTC4x4UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB] = WGPUTextureFormat_ASTC5x4UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB] = WGPUTextureFormat_ASTC5x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB] = WGPUTextureFormat_ASTC6x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB] = WGPUTextureFormat_ASTC6x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB] = WGPUTextureFormat_ASTC8x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB] = WGPUTextureFormat_ASTC8x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB] = WGPUTextureFormat_ASTC8x8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB] = WGPUTextureFormat_ASTC10x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB] = WGPUTextureFormat_ASTC10x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB] = WGPUTextureFormat_ASTC10x8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB] = WGPUTextureFormat_ASTC10x10UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB] = WGPUTextureFormat_ASTC12x10UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB] = WGPUTextureFormat_ASTC12x12UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT] = WGPUTextureFormat_Undefined,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_TextureFormat, SDL_arraysize(SDLToWebGPU_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 static WGPUTextureFormat SwapchainCompositionToFormat[] = {
-    WGPUTextureFormat_RGBA8Unorm,     // SDR
-    WGPUTextureFormat_RGBA8UnormSrgb, // SDR_LINEAR
-    WGPUTextureFormat_RGBA16Float,    // HDR_EXTENDED_LINEAR (no fallback)
-    WGPUTextureFormat_RGB10A2Unorm    // HDR10_ST2084 (no fallback)
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = WGPUTextureFormat_RGBA8Unorm,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = WGPUTextureFormat_RGBA8UnormSrgb,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = WGPUTextureFormat_RGB10A2Unorm
 };
 
 static WGPUTextureFormat SwapchainCompositionToFallbackFormat[] = {
-    WGPUTextureFormat_BGRA8Unorm,     // SDR
-    WGPUTextureFormat_BGRA8UnormSrgb, // SDR_LINEAR
-    WGPUTextureFormat_RGBA16Float,    // HDR_EXTENDED_LINEAR
-    WGPUTextureFormat_RGB10A2Unorm,   // HDR10_ST2084
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = WGPUTextureFormat_BGRA8Unorm,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = WGPUTextureFormat_BGRA8UnormSrgb,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = WGPUTextureFormat_RGB10A2Unorm
 };
 
 static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat[] = {
     [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
     [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
-    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,
     [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
 };
 
 static SDL_GPUTextureFormat SwapchainCompositionToFallbackSDLFormat[] = {
     [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,
     [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB,
-    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,
     [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
 };
 
 static WGPUVertexFormat SDLToWebGPU_VertexFormat[] = {
-    0,                          // INVALID
-    WGPUVertexFormat_Sint32,    // INT
-    WGPUVertexFormat_Sint32x2,  // INT2
-    WGPUVertexFormat_Sint32x3,  // INT3
-    WGPUVertexFormat_Sint32x4,  // INT4
-    WGPUVertexFormat_Uint32,    // UINT
-    WGPUVertexFormat_Uint32x2,  // UINT2
-    WGPUVertexFormat_Uint32x3,  // UINT3
-    WGPUVertexFormat_Uint32x4,  // UINT4
-    WGPUVertexFormat_Float32,   // FLOAT
-    WGPUVertexFormat_Float32x2, // FLOAT2
-    WGPUVertexFormat_Float32x3, // FLOAT3
-    WGPUVertexFormat_Float32x4, // FLOAT4
-    WGPUVertexFormat_Sint8x2,   // BYTE2
-    WGPUVertexFormat_Sint8x4,   // BYTE4
-    WGPUVertexFormat_Uint8x2,   // UBYTE2
-    WGPUVertexFormat_Uint8x4,   // UBYTE4
-    WGPUVertexFormat_Snorm8x2,  // BYTE2_NORM
-    WGPUVertexFormat_Snorm8x4,  // BYTE4_NORM
-    WGPUVertexFormat_Unorm8x2,  // UBYTE2_NORM
-    WGPUVertexFormat_Unorm8x4,  // UBYTE4_NORM
-    WGPUVertexFormat_Sint16x2,  // SHORT2
-    WGPUVertexFormat_Sint16x4,  // SHORT4
-    WGPUVertexFormat_Uint16x2,  // USHORT2
-    WGPUVertexFormat_Uint16x4,  // USHORT4
-    WGPUVertexFormat_Snorm16x2, // SHORT2_NORM
-    WGPUVertexFormat_Snorm16x4, // SHORT4_NORM
-    WGPUVertexFormat_Unorm16x2, // USHORT2_NORM
-    WGPUVertexFormat_Unorm16x4, // USHORT4_NORM
-    WGPUVertexFormat_Float16x2, // HALF2
-    WGPUVertexFormat_Float16x4, // HALF4
+    [SDL_GPU_VERTEXELEMENTFORMAT_INVALID] = 0,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT] = WGPUVertexFormat_Sint32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT2] = WGPUVertexFormat_Sint32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT3] = WGPUVertexFormat_Sint32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT4] = WGPUVertexFormat_Sint32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT] = WGPUVertexFormat_Uint32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT2] = WGPUVertexFormat_Uint32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT3] = WGPUVertexFormat_Uint32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT4] = WGPUVertexFormat_Uint32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT] = WGPUVertexFormat_Float32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2] = WGPUVertexFormat_Float32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3] = WGPUVertexFormat_Float32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4] = WGPUVertexFormat_Float32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE2] = WGPUVertexFormat_Sint8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE4] = WGPUVertexFormat_Sint8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE2] = WGPUVertexFormat_Uint8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4] = WGPUVertexFormat_Uint8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE2_NORM] = WGPUVertexFormat_Snorm8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE4_NORM] = WGPUVertexFormat_Snorm8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE2_NORM] = WGPUVertexFormat_Unorm8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM] = WGPUVertexFormat_Unorm8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT2] = WGPUVertexFormat_Sint16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT4] = WGPUVertexFormat_Sint16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT2] = WGPUVertexFormat_Uint16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT4] = WGPUVertexFormat_Uint16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT2_NORM] = WGPUVertexFormat_Snorm16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT4_NORM] = WGPUVertexFormat_Snorm16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT2_NORM] = WGPUVertexFormat_Unorm16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT4_NORM] = WGPUVertexFormat_Unorm16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_HALF2] = WGPUVertexFormat_Float16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_HALF4] = WGPUVertexFormat_Float16x4,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_VertexFormat, SDL_arraysize(SDLToWebGPU_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
 static WGPUIndexFormat SDLToWebGPU_IndexFormat[] = {
-    WGPUIndexFormat_Uint16,
-    WGPUIndexFormat_Uint32,
+    [SDL_GPU_INDEXELEMENTSIZE_16BIT] = WGPUIndexFormat_Uint16,
+    [SDL_GPU_INDEXELEMENTSIZE_32BIT] = WGPUIndexFormat_Uint32,
 };
 
 static WGPUVertexStepMode SDLToWebGPU_VertexInputRate[] = {
-    WGPUVertexStepMode_Vertex,
-    WGPUVertexStepMode_Instance,
+    [SDL_GPU_VERTEXINPUTRATE_VERTEX] = WGPUVertexStepMode_Vertex,
+    [SDL_GPU_VERTEXINPUTRATE_INSTANCE] = WGPUVertexStepMode_Instance,
 };
 
 static WGPUPrimitiveTopology SDLToWebGPU_PrimitiveType[] = {
-    WGPUPrimitiveTopology_TriangleList,
-    WGPUPrimitiveTopology_TriangleStrip,
-    WGPUPrimitiveTopology_LineList,
-    WGPUPrimitiveTopology_LineStrip,
-    WGPUPrimitiveTopology_PointList,
+    [SDL_GPU_PRIMITIVETYPE_TRIANGLELIST] = WGPUPrimitiveTopology_TriangleList,
+    [SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP] = WGPUPrimitiveTopology_TriangleStrip,
+    [SDL_GPU_PRIMITIVETYPE_LINELIST] = WGPUPrimitiveTopology_LineList,
+    [SDL_GPU_PRIMITIVETYPE_LINESTRIP] = WGPUPrimitiveTopology_LineStrip,
+    [SDL_GPU_PRIMITIVETYPE_POINTLIST] = WGPUPrimitiveTopology_PointList,
 };
 
 static WGPUCullMode SDLToWebGPU_CullMode[] = {
-    WGPUCullMode_None,
-    WGPUCullMode_Front,
-    WGPUCullMode_Back,
-    // Back and front cull isn't supported.
-    // Who uses that anyways?
-    WGPUCullMode_Undefined,
+    [SDL_GPU_CULLMODE_NONE] = WGPUCullMode_None,
+    [SDL_GPU_CULLMODE_FRONT] = WGPUCullMode_Front,
+    [SDL_GPU_CULLMODE_BACK] = WGPUCullMode_Back,
 };
 
 static WGPUFrontFace SDLToWebGPU_FrontFace[] = {
-    WGPUFrontFace_CCW,
-    WGPUFrontFace_CW
+    [SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE] = WGPUFrontFace_CCW,
+    [SDL_GPU_FRONTFACE_CLOCKWISE] = WGPUFrontFace_CW
 };
 
 static WGPUBlendFactor SDLToWebGPU_BlendFactor[] = {
-    WGPUBlendFactor_Undefined,
-    WGPUBlendFactor_Zero,
-    WGPUBlendFactor_One,
-    WGPUBlendFactor_Src,
-    WGPUBlendFactor_OneMinusSrc,
-    WGPUBlendFactor_Dst,
-    WGPUBlendFactor_OneMinusDst,
-    WGPUBlendFactor_SrcAlpha,
-    WGPUBlendFactor_OneMinusSrcAlpha,
-    WGPUBlendFactor_DstAlpha,
-    WGPUBlendFactor_OneMinusDstAlpha,
-    WGPUBlendFactor_Constant,
-    WGPUBlendFactor_OneMinusConstant,
-    WGPUBlendFactor_SrcAlphaSaturated,
+    [SDL_GPU_BLENDFACTOR_INVALID] = WGPUBlendFactor_Undefined,
+    [SDL_GPU_BLENDFACTOR_ZERO] = WGPUBlendFactor_Zero,
+    [SDL_GPU_BLENDFACTOR_ONE] = WGPUBlendFactor_One,
+    [SDL_GPU_BLENDFACTOR_SRC_COLOR] = WGPUBlendFactor_Src,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_COLOR] = WGPUBlendFactor_OneMinusSrc,
+    [SDL_GPU_BLENDFACTOR_DST_COLOR] = WGPUBlendFactor_Dst,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_COLOR] = WGPUBlendFactor_OneMinusDst,
+    [SDL_GPU_BLENDFACTOR_SRC_ALPHA] = WGPUBlendFactor_SrcAlpha,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA] = WGPUBlendFactor_OneMinusSrcAlpha,
+    [SDL_GPU_BLENDFACTOR_DST_ALPHA] = WGPUBlendFactor_DstAlpha,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_ALPHA] = WGPUBlendFactor_OneMinusDstAlpha,
+    [SDL_GPU_BLENDFACTOR_CONSTANT_COLOR] = WGPUBlendFactor_Constant,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR] = WGPUBlendFactor_OneMinusConstant,
+    [SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE] = WGPUBlendFactor_SrcAlphaSaturated,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendFactor, SDL_arraysize(SDLToWebGPU_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
 
 static WGPUBlendOperation SDLToWebGPU_BlendOp[] = {
-    WGPUBlendOperation_Undefined, // INVALID
-    WGPUBlendOperation_Add,
-    WGPUBlendOperation_Subtract,
-    WGPUBlendOperation_ReverseSubtract,
-    WGPUBlendOperation_Min,
-    WGPUBlendOperation_Max,
+    [SDL_GPU_BLENDOP_INVALID] = WGPUBlendOperation_Undefined,
+    [SDL_GPU_BLENDOP_ADD] = WGPUBlendOperation_Add,
+    [SDL_GPU_BLENDOP_SUBTRACT] = WGPUBlendOperation_Subtract,
+    [SDL_GPU_BLENDOP_REVERSE_SUBTRACT] = WGPUBlendOperation_ReverseSubtract,
+    [SDL_GPU_BLENDOP_MIN] = WGPUBlendOperation_Min,
+    [SDL_GPU_BLENDOP_MAX] = WGPUBlendOperation_Max,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendOp, SDL_arraysize(SDLToWebGPU_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
 
 static WGPUCompareFunction SDLToWebGPU_CompareFunc[] = {
-    WGPUCompareFunction_Undefined, // SDL_GPU_COMPAREOP_INVALID
-    WGPUCompareFunction_Never,
-    WGPUCompareFunction_Less,
-    WGPUCompareFunction_Equal,
-    WGPUCompareFunction_LessEqual,
-    WGPUCompareFunction_Greater,
-    WGPUCompareFunction_NotEqual,
-    WGPUCompareFunction_GreaterEqual,
-    WGPUCompareFunction_Always,
+    [SDL_GPU_COMPAREOP_INVALID] = WGPUCompareFunction_Undefined,
+    [SDL_GPU_COMPAREOP_NEVER] = WGPUCompareFunction_Never,
+    [SDL_GPU_COMPAREOP_LESS] = WGPUCompareFunction_Less,
+    [SDL_GPU_COMPAREOP_EQUAL] = WGPUCompareFunction_Equal,
+    [SDL_GPU_COMPAREOP_LESS_OR_EQUAL] = WGPUCompareFunction_LessEqual,
+    [SDL_GPU_COMPAREOP_GREATER] = WGPUCompareFunction_Greater,
+    [SDL_GPU_COMPAREOP_NOT_EQUAL] = WGPUCompareFunction_NotEqual,
+    [SDL_GPU_COMPAREOP_GREATER_OR_EQUAL] = WGPUCompareFunction_GreaterEqual,
+    [SDL_GPU_COMPAREOP_ALWAYS] = WGPUCompareFunction_Always,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_CompareFunc, SDL_arraysize(SDLToWebGPU_CompareFunc) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
 
 static WGPUStencilOperation SDLToWebGPU_StencilOp[] = {
-    WGPUStencilOperation_Undefined, // INVALID
-    WGPUStencilOperation_Keep,
-    WGPUStencilOperation_Zero,
-    WGPUStencilOperation_Replace,
-    WGPUStencilOperation_IncrementClamp,
-    WGPUStencilOperation_DecrementClamp,
-    WGPUStencilOperation_Invert,
-    WGPUStencilOperation_IncrementWrap,
-    WGPUStencilOperation_DecrementWrap,
+    [SDL_GPU_STENCILOP_INVALID] = WGPUStencilOperation_Undefined, // INVALID
+    [SDL_GPU_STENCILOP_KEEP] = WGPUStencilOperation_Keep,
+    [SDL_GPU_STENCILOP_ZERO] = WGPUStencilOperation_Zero,
+    [SDL_GPU_STENCILOP_REPLACE] = WGPUStencilOperation_Replace,
+    [SDL_GPU_STENCILOP_INCREMENT_AND_CLAMP] = WGPUStencilOperation_IncrementClamp,
+    [SDL_GPU_STENCILOP_DECREMENT_AND_CLAMP] = WGPUStencilOperation_DecrementClamp,
+    [SDL_GPU_STENCILOP_INVERT] = WGPUStencilOperation_Invert,
+    [SDL_GPU_STENCILOP_INCREMENT_AND_WRAP] = WGPUStencilOperation_IncrementWrap,
+    [SDL_GPU_STENCILOP_DECREMENT_AND_WRAP] = WGPUStencilOperation_DecrementWrap,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_StencilOp, SDL_arraysize(SDLToWebGPU_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
 
@@ -517,27 +514,27 @@ static WGPUStoreOp SDLToWebGPU_StoreOp[] = {
 };
 
 static WGPUFilterMode SDLToWebGPU_FilterMode[] = {
-    WGPUFilterMode_Nearest,
-    WGPUFilterMode_Linear
+    [SDL_GPU_FILTER_NEAREST] = WGPUFilterMode_Nearest,
+    [SDL_GPU_FILTER_LINEAR] = WGPUFilterMode_Linear
 };
 
 static WGPUMipmapFilterMode SDLToWebGPU_MipmapFilterMode[] = {
-    WGPUMipmapFilterMode_Nearest,
-    WGPUMipmapFilterMode_Linear,
+    [SDL_GPU_SAMPLERMIPMAPMODE_NEAREST] = WGPUMipmapFilterMode_Nearest,
+    [SDL_GPU_SAMPLERMIPMAPMODE_LINEAR] = WGPUMipmapFilterMode_Linear,
 };
 
 static WGPUAddressMode SDLToWebGPU_AddressMode[] = {
-    WGPUAddressMode_Repeat,
-    WGPUAddressMode_MirrorRepeat,
-    WGPUAddressMode_ClampToEdge,
+    [SDL_GPU_SAMPLERADDRESSMODE_REPEAT] = WGPUAddressMode_Repeat,
+    [SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT] = WGPUAddressMode_MirrorRepeat,
+    [SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE] = WGPUAddressMode_ClampToEdge,
 };
 
 static WGPUTextureViewDimension SDLToWebGPU_TextureTypeToViewDimension[] = {
-    WGPUTextureViewDimension_2D,
-    WGPUTextureViewDimension_2DArray,
-    WGPUTextureViewDimension_3D,
-    WGPUTextureViewDimension_Cube,
-    WGPUTextureViewDimension_CubeArray,
+    [SDL_GPU_TEXTURETYPE_2D] = WGPUTextureViewDimension_2D,
+    [SDL_GPU_TEXTURETYPE_2D_ARRAY] = WGPUTextureViewDimension_2DArray,
+    [SDL_GPU_TEXTURETYPE_3D] = WGPUTextureViewDimension_3D,
+    [SDL_GPU_TEXTURETYPE_CUBE] = WGPUTextureViewDimension_Cube,
+    [SDL_GPU_TEXTURETYPE_CUBE_ARRAY] = WGPUTextureViewDimension_CubeArray,
 };
 
 static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
@@ -1402,32 +1399,9 @@ static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *succes
 
 static void WEBGPU_INTERNAL_DeviceLostCallback(WGPUDevice const *device, WGPUDeviceLostReason reason, WGPUStringView message, void *renderer, void *unused)
 {
-    bool debugMode = ((WebGPURenderer *)renderer)->debugMode;
-
-    if (!((WebGPURenderer *)renderer)->destroyingSelf) {
-        if (debugMode) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Device has been lost.");
-        }
-        // Since the device has been lost, there might be some larger issues within WebGPU.
-        // We'll double check that everything's in order.
-
-        if (((WebGPURenderer *)renderer)->instance == NULL) {
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU instance has been lost. It's so joever.");
-            return;
-        }
-
-        if (((WebGPURenderer *)renderer)->adapter == NULL) {
-            // TODO: We should just recreate the adapter if it's lost.
-            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Adapter is lost. It's so joever");
-        }
-
-        if (debugMode) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Attempting to recreate WebGPU device.");
-        }
-
-        WEBGPU_INTERNAL_RequestDevice(renderer, NULL);
-    } else {
-        return;
+    if (!((WebGPURenderer *)renderer)->destroyingSelf && ((WebGPURenderer *)renderer)->debugMode) {
+        // TODO: I couldn't really figure out how to write a good error message here?
+        SDL_assert_release(!"WebGPU device has been lost.");
     }
 }
 
@@ -1457,12 +1431,12 @@ static Uint32 WEBGPU_INTERNAL_GenFNV1aHash(Uint32 initialHash, const void *data,
 {
     Uint32 hash = initialHash;
 
-    const char *slice = (char *)data;
-    const char *endOfData = data + size;
+    const unsigned char *slice = data;
+    const unsigned char *endOfData = data + size;
 
     while (slice < endOfData) {
-        hash *= 0x01000193;
         hash ^= (Uint32)*slice++;
+        hash *= 0x01000193;
     }
 
     return hash;
@@ -1853,7 +1827,6 @@ static void WEBGPU_INTERNAL_FreeCommandBuffer(WebGPUCommandBuffer *cmdBuf)
 static WebGPUFence *WEBGPU_INTERNAL_CreateFence(WGPUQueue queue)
 {
     WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
-    SDL_SetAtomicInt(&fence->status, 0);
 
     fence->future.future = wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
                                                                    .callback = WEBGPU_INTERNAL_FenceCallback,
@@ -1869,7 +1842,6 @@ static WebGPUFence *WEBGPU_INTERNAL_CreateFence(WGPUQueue queue)
 static WebGPUFence *WEBGPU_INTERNAL_CreateFenceFromFuture(WGPUFuture future)
 {
     WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
-    SDL_SetAtomicInt(&fence->status, 0);
 
     fence->future.future = future;
 
@@ -2941,11 +2913,9 @@ static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPURenderer *rend
 
     result = SDL_calloc(1, sizeof(*result));
 
-    result->identifier = SDL_GetAtomicInt(&renderer->nextBindableResourceID);
+    result->identifier = SDL_AtomicIncRef(&renderer->nextBindableResourceID);
     result->view = wgpuTextureCreateView(texture->texture, &desc);
     result->parent = texture;
-
-    SDL_AtomicIncRef(&renderer->nextBindableResourceID);
 
     return result;
 }
@@ -3082,7 +3052,6 @@ static SDL_GPUTexture *WEBGPU_CreateTexture(
     container->textures = SDL_malloc(
         container->textureCapacity * sizeof(WebGPUTexture *));
     container->textures[0] = container->activeTexture;
-    container->header.info = *createInfo;
 
     texture->container = container;
 
@@ -3104,7 +3073,7 @@ static WebGPUSampler *WEBGPU_INTERNAL_CreateSampler(WebGPURenderer *renderer, co
         .addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w],
         .compare = createInfo->enable_compare ? SDLToWebGPU_CompareFunc[createInfo->compare_op] : WGPUCompareFunction_Undefined,
         .label = WEBGPU_INTERNAL_CharPtrToWebGPUStringView(debugName),
-        .lodMaxClamp = createInfo->max_lod == 0 ? 32.0f : createInfo->max_lod,
+        .lodMaxClamp = createInfo->max_lod,
         .lodMinClamp = createInfo->min_lod < 0 ? 0 : createInfo->min_lod,
         .magFilter = SDLToWebGPU_FilterMode[createInfo->mag_filter],
         .minFilter = SDLToWebGPU_FilterMode[createInfo->min_filter],
@@ -5378,7 +5347,8 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
     WGPUTexelCopyTextureInfo sourceInfo;
     WGPUTexelCopyBufferInfo destinationInfo;
 
-    Uint32 unpaddedBPR = BytesPerRow(source->w, ((WebGPUTextureContainer *)source->texture)->header.info.format);
+    // If the user's given us an explicit pixels_per_row we'll use that
+    Uint32 unpaddedBPR = BytesPerRow(destination->pixels_per_row != 0 ? destination->pixels_per_row : source->w, ((WebGPUTextureContainer *)source->texture)->header.info.format);
     Uint32 paddedBPR = ALIGN_VALUE(unpaddedBPR, 256);
     bool bprMismatch = unpaddedBPR != paddedBPR;
 
@@ -5386,7 +5356,7 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
     WebGPUBufferContainer *interimDownloadBuffer = NULL;
 
     if (bprMismatch) {
-        interimDownloadBuffer = WEBGPU_INTERNAL_CreateBufferContainer(((WebGPUCommandBuffer *)commandBuffer)->renderer, (Uint64)paddedBPR * source->h, 0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false, "Interim Download Buffer");
+        interimDownloadBuffer = WEBGPU_INTERNAL_CreateBufferContainer(((WebGPUCommandBuffer *)commandBuffer)->renderer, ((Uint64)paddedBPR * source->h) * SDL_min(source->d, 1), 0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false, "Interim Download Buffer");
     }
 
     sourceInfo.aspect = WGPUTextureAspect_All;
@@ -5397,18 +5367,16 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
     destinationInfo.buffer = bprMismatch ? interimDownloadBuffer->activeBuffer->buffer : ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
     destinationInfo.layout = (WGPUTexelCopyBufferLayout){
         .bytesPerRow = paddedBPR,
-        .offset = destination->offset,
-        .rowsPerImage = source->h,
+        .offset = bprMismatch ? 0 : destination->offset,
+        .rowsPerImage = destination->rows_per_layer != 0 ? destination->rows_per_layer : source->h,
     };
 
     Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
     Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
 
-    wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){
-                                                                                                                              ALIGN_VALUE(source->w, blockWidth),
-                                                                                                                              ALIGN_VALUE(source->h, blockHeight),
-                                                                                                                              1,
-                                                                                                                          });
+    // FIXME: 3D texture layers will almost certainly also have to be unpadded!
+    // Kill me, please.
+    wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){ ALIGN_VALUE(source->w, blockWidth), ALIGN_VALUE(source->h, blockHeight), source->d });
 
     if (bprMismatch) {
         // Since WebGPU sucks and inherits D3D12's horrid 256-byte BPR alignment rule we can't just copy the data 1 to 1.
@@ -5416,8 +5384,8 @@ static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, cons
         // we copy the unpadded data from it into the user-given transfer buffer.
         //
         // Why do you do these things to me WebGPU?
-        for (int i = 0; i < source->h; i++) {
-            wgpuCommandEncoderCopyBufferToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, interimDownloadBuffer->activeBuffer->buffer, (Uint64)i * paddedBPR, ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer, (Uint64)i * unpaddedBPR, unpaddedBPR);
+        for (int i = 0; i < (destination->rows_per_layer != 0 ? destination->rows_per_layer : source->h); i++) {
+            wgpuCommandEncoderCopyBufferToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, interimDownloadBuffer->activeBuffer->buffer, (Uint64)i * paddedBPR, ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer, destination->offset + (Uint64)i * unpaddedBPR, unpaddedBPR);
         }
 
         WEBGPU_INTERNAL_QueueBufferContainerForRelease(((WebGPUCommandBuffer *)commandBuffer)->renderer, interimDownloadBuffer);
