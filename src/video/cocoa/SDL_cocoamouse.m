@@ -635,6 +635,7 @@ static bool Cocoa_WarpMouse(SDL_Window *window, float x, float y)
 static bool Cocoa_SetRelativeMouseMode(bool enabled)
 {
     CGError result;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     // Update GCMouse relative mode state if available
     if (Cocoa_HasGCMouse()) {
@@ -675,7 +676,7 @@ static bool Cocoa_SetRelativeMouseMode(bool enabled)
     /* The hide/unhide calls are redundant most of the time, but they fix
      * https://bugzilla.libsdl.org/show_bug.cgi?id=2550
      */
-    if (enabled) {
+    if (enabled && mouse->relative_mode_hide_cursor) {
         [NSCursor hide];
     } else {
         [NSCursor unhide];
