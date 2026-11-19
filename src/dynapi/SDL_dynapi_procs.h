@@ -547,8 +547,6 @@ SDL_DYNAPI_PROC(SDL_Surface**,SDL_GetSurfaceImages,(SDL_Surface *a, int *b),(a,b
 SDL_DYNAPI_PROC(SDL_Palette*,SDL_GetSurfacePalette,(SDL_Surface *a),(a),return)
 SDL_DYNAPI_PROC(SDL_PropertiesID,SDL_GetSurfaceProperties,(SDL_Surface *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetSystemRAM,(void),(),return)
-SDL_DYNAPI_PROC(int,SDL_GetFreeRAM,(void),(),return)
-SDL_DYNAPI_PROC(int,SDL_GetUsedRAM,(void),(),return)
 SDL_DYNAPI_PROC(SDL_SystemTheme,SDL_GetSystemTheme,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_GetTLS,(SDL_TLSID *a),(a),return)
 SDL_DYNAPI_PROC(bool,SDL_GetTextInputArea,(SDL_Window *a, SDL_Rect *b, int *c),(a,b,c),return)
