@@ -75,12 +75,12 @@ char *SDL_SYS_GetExeName(void)
     return SDL_strdup(ptr ? ptr + 1 : name);
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetHaikuPath(const directory_which which, const char *org, const char *app)
 {
     char path[MAXPATHLEN];
     path[0] = '\0';
 
-    const status_t rc = find_directory(B_USER_SETTINGS_DIRECTORY, (dev_t) -1, true, path, sizeof (path));
+    const status_t rc = find_directory(which, (dev_t) -1, true, path, sizeof (path));
     if ((rc != B_OK) || (*path == '\0')) {
         SDL_SetError("find_directory() failed: %d", (int) rc);
         return NULL;
@@ -93,6 +93,16 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
     create_directory(retval, 0700);  // Haiku api: creates missing dirs
     return retval;
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetHaikuPath(B_USER_SETTINGS_DIRECTORY, org, app);
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetHaikuPath(B_USER_CACHE_DIRECTORY, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

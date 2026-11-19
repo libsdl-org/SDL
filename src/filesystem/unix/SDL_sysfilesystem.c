@@ -290,22 +290,12 @@ char *SDL_SYS_GetExeName(void)
 }
 
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetUnixPath(const char *envrvar, const char *fallback, const char *org, const char *app)
 {
-    /*
-     * We use XDG's base directory spec, even if you're not on Linux.
-     *  This isn't strictly correct, but the results are relatively sane
-     *  in any case.
-     *
-     * https://specifications.freedesktop.org/basedir/latest/
-     */
-    const char *envr = SDL_getenv("XDG_DATA_HOME");
-    const char *prepend = NULL;
-
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_IsUbuntuTouch()) {
         // On Ubuntu Touch, the only allowed data folder is:
-        //     ~/.local/share/<app id>/
+        //     ~/$FALLBACK/<app id>/
 
         SDL_PropertiesID props = SDL_GetGlobalProperties();
         if (!props) {
@@ -323,15 +313,21 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 #endif
 
+    // We use XDG's base directory spec, even if you're not on Linux.
+    // This isn't strictly correct, but the results are relatively sane
+    //  in any case.  https://specifications.freedesktop.org/basedir/latest/
+    const char *envr = SDL_getenv(envrvar);
+    const char *prepend = NULL;
+
     if (!envr || !*envr) {
-        // You end up with "$HOME/.local/share/Game Name 2"
+        // You end up with "$HOME/.local/share/Game Name 2" (or whatever)
         envr = SDL_getenv("HOME");
         if (!envr || !*envr) {
             // we could take heroic measures with /etc/passwd, but oh well.
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
-        prepend = ".local/share/";
+        prepend = fallback;
     } else {
         prepend = "";
     }
@@ -345,6 +341,16 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 
     return retval;
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetUnixPath("XDG_DATA_HOME", ".local/share/", org, app);
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetUnixPath("XDG_CACHE_HOME", ".cache/", org, app);
 }
 
 /*

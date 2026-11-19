@@ -542,6 +542,23 @@ char *SDL_GetPrefPath(const char *org, const char *app)
     return SDL_SYS_GetPrefPath(org, app);
 }
 
+char *SDL_GetCachePath(const char *org, const char *app)
+{
+    CHECK_PARAM(!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    CHECK_PARAM(!org) {
+        SDL_InvalidParamError("org");
+        return NULL;
+    }
+    CHECK_PARAM(!*org) {
+        SDL_InvalidParamError("org");
+        return NULL;
+    }
+    return SDL_SYS_GetCachePath(org, app);
+}
+
 char *SDL_GetCurrentDirectory(void)
 {
     return SDL_SYS_GetCurrentDirectory();

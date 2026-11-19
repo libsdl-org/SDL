@@ -1323,3 +1323,4 @@ _SDL_GetRenderHDRHeadroom
 _SDL_GetCurrentThreadName
 _SDL_LoadTexture_IO
 _SDL_LoadTexture
+_SDL_GetCachePath

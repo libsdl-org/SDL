@@ -38,19 +38,25 @@ char *SDL_SYS_GetExeName(void)
     return SDL_GetAndroidPackageName();
 }
 
+static char *GetPathWithDirSepAppended(const char *dir)
+{
+    char *retval = NULL;
+    if (dir) {
+        if (SDL_asprintf(&retval, "%s/", dir) < 0) {
+            retval = NULL;
+        }
+    }
+    return retval;
+}
+
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    const char *path = SDL_GetAndroidInternalStoragePath();
-    if (path) {
-        size_t pathlen = SDL_strlen(path) + 2;
-        char *fullpath = (char *)SDL_malloc(pathlen);
-        if (!fullpath) {
-            return NULL;
-        }
-        SDL_snprintf(fullpath, pathlen, "%s/", path);
-        return fullpath;
-    }
-    return NULL;
+    return GetPathWithDirSepAppended(SDL_GetAndroidInternalStoragePath());
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetPathWithDirSepAppended(SDL_GetAndroidInternalCachePath());
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

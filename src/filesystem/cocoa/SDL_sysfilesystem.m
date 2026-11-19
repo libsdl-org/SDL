@@ -85,7 +85,7 @@ char *SDL_SYS_GetExeName(void)
     }
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetAppleUserPath(NSSearchPathDirectory dir, const char *org, const char *app)
 {
     @autoreleasepool {
         char *result = NULL;
@@ -139,6 +139,35 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
         return result;
     }
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+#ifdef SDL_PLATFORM_TVOS
+    /* tvOS does not have persistent local storage!
+     * The only place on-device where we can store data is
+     * a cache directory that the OS can empty at any time.
+     *
+     * It's therefore very likely that save data will be erased
+     * between sessions. If you want your app's save data to
+     * actually stick around, you'll need to use iCloud storage.
+     */
+    {
+        static bool shown = false;
+        if (!shown) {
+            shown = true;
+            SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.");
+        }
+    }
+    return GetAppleUserPath(NSCachesDirectory, org, app);
+#else
+    return GetAppleUserPath(NSApplicationSupportDirectory, org, app);
+#endif // SDL_PLATFORM_TVOS
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetAppleUserPath(NSCachesDirectory, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

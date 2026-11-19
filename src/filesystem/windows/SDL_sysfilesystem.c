@@ -73,7 +73,7 @@ char *SDL_SYS_GetExeName(void)
     return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetWindowsUserPath(int folderid, const char *org, const char *app)
 {
     /*
      * Vista and later has a new API for this, but SHGetFolderPath works there,
@@ -83,15 +83,8 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *                          NULL, &wszPath);
      */
 
-    HRESULT hr = E_FAIL;
     WCHAR wpath[MAX_PATH];
-    char *result = NULL;
-    WCHAR *worg = NULL;
-    WCHAR *wapp = NULL;
-    size_t new_wpath_len = 0;
-    BOOL api_result = FALSE;
-
-    hr = SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, wpath);
+    HRESULT hr = SHGetFolderPathW(NULL, folderid | CSIDL_FLAG_CREATE, NULL, 0, wpath);
     if (!SUCCEEDED(hr)) {
         WIN_SetErrorFromHRESULT("Couldn't locate user's folder path", hr);
         return NULL;
@@ -113,6 +106,16 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     SDL_free(utf8path);
 
     return retval;
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_APPDATA, org, app);
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_LOCAL_APPDATA, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
