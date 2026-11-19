@@ -984,6 +984,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     SDL_main_func sdlmain = NULL;
     void *library_handle = NULL;
 
+    extern int main(int argc, char **argv) __attribute__((weak));
+
+    // try to get sdlmain from static linking
+    sdlmain = (SDL_main_func) main;
+
     // load the main function from user shared library
     if (!sdlmain) {
         const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
