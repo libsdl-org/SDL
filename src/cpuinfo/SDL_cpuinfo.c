@@ -40,6 +40,17 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
+#if defined(SDL_PLATFORM_MACOS)
+#include <mach/mach.h>
+#elif defined(SDL_PLATFORM_NETBSD)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <uvm/uvm_extern.h>
+#elif defined(SDL_PLATFORM_OPENBSD)
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <uvm/uvmexp.h>
+#endif
 #if defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))
 #include <sys/sysctl.h> // For AltiVec check
 #elif defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__) && !defined(HAVE_ELF_AUX_INFO)
