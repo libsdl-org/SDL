@@ -259,6 +259,18 @@ void SDL_DBus_Quit(void)
     SDL_SetInitialized(&dbus_init, false);
 }
 
+bool SDL_DBus_PortalsPreferred(void)
+{
+    static int portals_preferred = -1;
+
+    if (portals_preferred >= 0) {
+        return portals_preferred != 0;
+    }
+
+    portals_preferred = SDL_GetHintBoolean(SDL_HINT_DBUS_PREFER_PORTALS, false);
+    return portals_preferred != 0;
+}
+
 SDL_DBusContext *SDL_DBus_GetContext(void)
 {
     if (!dbus_handle || !dbus.session_conn) {
@@ -734,13 +746,13 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
     } else { // Auto-detect the interface to use
         const SDL_Sandbox sandbox = SDL_GetSandbox();
 
-        // If there's no sandbox, or the container type is unknown, first try the core interface.
-        if (sandbox == SDL_SANDBOX_NONE || sandbox == SDL_SANDBOX_UNKNOWN_CONTAINER) {
+        // If portals are not preferred, and there's no sandbox, or the container type is unknown, first try the core interface.
+        if (!SDL_DBus_PortalsPreferred() && (sandbox == SDL_SANDBOX_NONE || sandbox == SDL_SANDBOX_UNKNOWN_CONTAINER)) {
             use_core = SDL_DBus_ScreensaverCoreInhibit(inhibit, app, reason);
             if (!use_core) {
                 use_portal = SDL_DBus_ScreensaverPortalInhibit(inhibit, app, reason);
             }
-        } else { // Definitely in a sandbox; try the portal first.
+        } else { // Portals preferred or definitely in a sandbox.
             use_portal = SDL_DBus_ScreensaverPortalInhibit(inhibit, app, reason);
             if (!use_portal) {
                 use_core = SDL_DBus_ScreensaverCoreInhibit(inhibit, app, reason);
