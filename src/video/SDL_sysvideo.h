@@ -634,6 +634,7 @@ extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
 extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
+extern int SDL_GetTextInputKeyboardMargin(SDL_PropertiesID props);
 
 extern void SDL_SendScreenKeyboardShown(void);
 extern void SDL_SendScreenKeyboardHidden(void);

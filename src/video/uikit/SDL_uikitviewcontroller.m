@@ -646,7 +646,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight && self.textInputRect.h) {
-        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
+        int margin = SDL_GetTextInputKeyboardMargin(window->text_input_props);
+        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h + margin);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {
             offset.y = keybottom - rectbottom;
@@ -747,6 +748,11 @@ void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SD
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         [vc setTextFieldProperties:props];
+
+        // The keyboard margin may have changed
+        if (vc.textFieldFocused) {
+            [vc updateKeyboard];
+        }
     }
 }
 

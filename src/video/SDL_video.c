@@ -5863,6 +5863,19 @@ bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
     }
 }
 
+int SDL_GetTextInputKeyboardMargin(SDL_PropertiesID props)
+{
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER)) {
+        return (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER, 0);
+    }
+
+    const char *hint = SDL_GetHint(SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN);
+    if (hint && *hint) {
+        return SDL_atoi(hint);
+    }
+    return 0;
+}
+
 static bool AutoShowingScreenKeyboard(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ENABLE_SCREEN_KEYBOARD);
