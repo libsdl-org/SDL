@@ -1256,14 +1256,14 @@ int SDL_GetFreeRAM(void)
 #if defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
     SDL_FreeRAM = (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
 #endif
-#ifdef defined(SDL_PLATFORM_FREEBSD)
+#if defined(SDL_PLATFORM_FREEBSD)
     Uint64 buf = 0;
     size_t len = sizeof(buf);
     if (sysctlbyname("vm.stats.vm.v_free_count", &buf, &len, NULL, 0) == 0) {
         SDL_FreeRAM = (int)((Sint64)buf * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
 #endif
-#ifdef defined(SDL_PLATFORM_NETBSD)
+#if defined(SDL_PLATFORM_NETBSD)
     struct uvmexp_sysctl buf;
     int mib[2] = { CTL_VM, VM_UVMEXP2 };
     size_t len = sizeof(buf);
@@ -1271,7 +1271,7 @@ int SDL_GetFreeRAM(void)
         SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
 #endif
-#ifdef defined(SDL_PLATFORM_OPENBSD)
+#if defined(SDL_PLATFORM_OPENBSD)
     struct uvmexp buf;
     int mib[2] = { CTL_VM, VM_UVMEXP };
     size_t len = sizeof(buf);
@@ -1279,7 +1279,7 @@ int SDL_GetFreeRAM(void)
         SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
 #endif
-#ifdef defined(SDL_PLATFORM_MACOS)
+#if defined(SDL_PLATFORM_MACOS)
     vm_statistics64_data_t buf;
     mach_msg_type_number_t len = HOST_VM_INFO64_COUNT;
     if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&buf, &len) == KERN_SUCCESS) {
