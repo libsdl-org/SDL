@@ -2580,7 +2580,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         if (info->request_code == (int) requestCode) {
             prev->next = info->next;
             SDL_UnlockMutex(SDL_event_lock);
-            info->callback(info->userdata, info->permission, result ? true : false);
+            if (info->callback) {
+                info->callback(info->userdata, info->permission, result ? true : false);
+            }
             SDL_free(info->permission);
             SDL_free(info);
             return;
@@ -2595,8 +2597,6 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
-    } else if (!cb) {
-        return SDL_InvalidParamError("cb");
     }
 
     NativePermissionRequestInfo *info = (NativePermissionRequestInfo *) SDL_calloc(1, sizeof (NativePermissionRequestInfo));
