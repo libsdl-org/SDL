@@ -903,7 +903,7 @@ static void PostStickCalibrated(Uint64 timestamp, SDL_Joystick *joystick, StickC
  *`on` is the joystick value to be sent if a bit is on
  *`off` is the joystick value to be sent if a bit is off
  */
-static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, Uint8* hat, const Uint8 defs[][8], const Uint8 *data, int size, bool on, bool off)
+static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, Uint8 *hat, const Uint8 defs[][8], const Uint8 *data, int size, bool on, bool off)
 {
     int i, j;
 
@@ -914,10 +914,26 @@ static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, Uint8
                 bool down = (data[i] >> j) & 1 ? on : off;
                 switch (button)
                 {
-                    case SDL_GAMEPAD_BUTTON_DPAD_UP:    if (down) *hat |= SDL_HAT_UP; break;
-                    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:  if (down) *hat |= SDL_HAT_DOWN; break;
-                    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:  if (down) *hat |= SDL_HAT_LEFT; break;
-                    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: if (down) *hat |= SDL_HAT_RIGHT; break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                        if (down) {
+                            *hat |= SDL_HAT_UP;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                        if (down) {
+                            *hat |= SDL_HAT_DOWN;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+                        if (down) {
+                            *hat |= SDL_HAT_LEFT;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+                        if (down) {
+                            *hat |= SDL_HAT_RIGHT;
+                        }
+                        break;
                     default:
                         SDL_SendJoystickButton(timestamp, joystick, button, down);
                         break;
@@ -1047,7 +1063,7 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     UpdatePowerLevelWiiU(joystick, data->rgucExtension[10]);
 }
 
-static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8* hat, const WiiButtonData *data)
+static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     const Uint8(*buttons)[8] = (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) ? MP_GAMEPAD_BUTTON_DEFS : GAMEPAD_BUTTON_DEFS;
     Uint8 lx, ly, rx, ry, zl, zr;
@@ -1084,7 +1100,7 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[3], SDL_GAMEPAD_AXIS_RIGHTY, ry);
 }
 
-static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8* hat, const WiiButtonData *data)
+static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     static const Uint8 buttons[2][8] = {
         {
@@ -1113,7 +1129,7 @@ static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *
     }
 }
 
-static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8* hat, const WiiButtonData *data)
+static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     /* Wii remote maps really badly to a normal controller
      * Mapped 1 and 2 as X and Y
