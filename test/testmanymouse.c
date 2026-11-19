@@ -10,6 +10,7 @@
   freely.
 */
 
+#include <SDL3/SDL_init.h>
 #include <SDL3/SDL_test_common.h>
 #include <SDL3/SDL_main.h>
 
@@ -456,6 +457,9 @@ static void loop(void)
         case SDL_EVENT_KEY_DOWN:
             HandleKeyboardKeyDown(&event.key);
             break;
+        case SDL_EVENT_JOYSTICK_ADDED:
+            SDL_OpenJoystick(event.jdevice.which);
+            break;
         case SDL_EVENT_MOUSE_ADDED:
             /* Wait for events before activating this mouse */
             break;
@@ -500,13 +504,19 @@ int main(int argc, char *argv[])
     int i;
 
     /* Log all events, including mouse motion */
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII, "1");
+    SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_WII_IR, "1");
     SDL_SetHint(SDL_HINT_EVENT_LOGGING, "2");
 
     /* Support for multiple keyboards requires raw keyboard events on Windows */
     SDL_SetHint(SDL_HINT_WINDOWS_RAW_KEYBOARD, "1");
 
+    SDL_SetLogPriority(SDL_LOG_CATEGORY_INPUT, SDL_LOG_PRIORITY_DEBUG);
+
+
     /* Initialize test framework */
-    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+    state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
     if (!state) {
         return 1;
     }
@@ -525,6 +535,12 @@ int main(int argc, char *argv[])
     if (!SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);
         return 2;
+    }
+
+    int num_gamepads;
+    SDL_JoystickID* gamepads = SDL_GetJoysticks(&num_gamepads);
+    for(i = 0; i < num_gamepads; ++i) {
+        SDL_OpenJoystick(gamepads[i]);
     }
 
     /* Create the cursor textures */

@@ -2256,6 +2256,33 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED "SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"
 
 /**
+ * A variable controlling whether SDL should use the Wii Controllers IR data
+ * to expose a Mouse.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": IR Data will not be exposed as a mouse. (default).
+ * - "1": IR Data will be exposed as a mouse.
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_WII_IR "SDL_JOYSTICK_HIDAPI_WII_IR"
+
+/**
+ * A variable controlling the sensitivity of the Wii Controller's IR pointer
+ *
+ * The variable can be set to a value from "1" to "5".
+ * Defaults to "3"
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY "SDL_JOYSTICK_HIDAPI_WII_IR_SENSITIVITY"
+
+/**
  * A variable controlling whether the HIDAPI driver for XBox controllers
  * should be used.
  *
