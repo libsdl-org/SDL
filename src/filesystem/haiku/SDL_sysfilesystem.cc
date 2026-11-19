@@ -77,26 +77,22 @@ char *SDL_SYS_GetExeName(void)
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    // !!! FIXME: is there a better way to do this?
-    const char *home = SDL_getenv("HOME");
-    const char *prepend = "/config/settings/";
-    size_t len = SDL_strlen(home);
+    char path[MAXPATHLEN];
+    path[0] = '\0';
 
-    if (!len || (home[len - 1] == '/')) {
-        ++prepend; // home empty or ends with separator, skip the one from prepend
-    }
-    len += SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    char *result = (char *) SDL_malloc(len);
-    if (result) {
-        if (*org) {
-            SDL_snprintf(result, len, "%s%s%s/%s/", home, prepend, org, app);
-        } else {
-            SDL_snprintf(result, len, "%s%s%s/", home, prepend, app);
-        }
-        create_directory(result, 0700);  // Haiku api: creates missing dirs
+    const status_t rc = find_directory(B_USER_SETTINGS_DIRECTORY, (dev_t) -1, true, path, sizeof (path));
+    if ((rc != B_OK) || (*path == '\0')) {
+        SDL_SetError("find_directory() failed: %d", (int) rc);
+        return NULL;
     }
 
-    return result;
+    char *retval = NULL;
+    if (SDL_asprintf(&retval, "%s%s%s%s%s/", path, (path[strlen(path) - 1] != '/') ? "/" : "", org, *org ? "/" : "", app) < 0) {
+        retval = NULL;
+    }
+
+    create_directory(retval, 0700);  // Haiku api: creates missing dirs
+    return retval;
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
