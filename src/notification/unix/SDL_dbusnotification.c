@@ -1470,9 +1470,9 @@ static bool CheckInitNotifications(SDL_DBusContext *dbus)
         return true;
     }
 
-    // If there's no sandbox, or the container type is unknown, first try the native interface.
+    // If portals are not preferred, and there's no sandbox, or the container type is unknown, first try the native interface.
     const SDL_Sandbox sandbox = SDL_GetSandbox();
-    if (sandbox == SDL_SANDBOX_NONE || sandbox == SDL_SANDBOX_UNKNOWN_CONTAINER) {
+    if (!SDL_DBus_PortalsPreferred() && (sandbox == SDL_SANDBOX_NONE || sandbox == SDL_SANDBOX_UNKNOWN_CONTAINER)) {
         ret = InitCoreSignalListener(dbus);
         if (!ret) {
             ret = InitPortalSignalListener(dbus);
