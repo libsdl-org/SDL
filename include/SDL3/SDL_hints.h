@@ -3981,9 +3981,9 @@ extern "C" {
  *
  * This hint is only used if the video subsystem is using EGL for OpenGL
  * context management, and the EGL context supports the
- * EGL_EXT_swap_tearing_hint extension. This lets the app specify the
- * value for EGL_SWAP_TEARING_HINT_EXT in addition to the normal swap
- * interval value.
+ * EGL_EXT_swap_tearing_hint extension. This lets the app specify the value
+ * for EGL_SWAP_TEARING_HINT_EXT in addition to the normal swap interval
+ * value.
  *
  * Most apps should not set this hint. SDL will do the normal thing with
  * standard calls to SDL_GL_SetSwapInterval by default.
