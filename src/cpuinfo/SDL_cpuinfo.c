@@ -1250,64 +1250,49 @@ int SDL_GetSystemRAM(void)
     return SDL_SystemRAM;
 }
 
-static int SDL_FreeRAM = 0;
-
 int SDL_GetFreeRAM(void)
 {
-    if (!SDL_FreeRAM) {
+    int SDL_FreeRAM = 0;
 #if defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
-        if (SDL_FreeRAM <= 0) {
-            SDL_FreeRAM = (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
-        }
+    SDL_FreeRAM = (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
 #endif
 #ifdef defined(SDL_PLATFORM_FREEBSD)
-        if (SDL_FreeRAM <= 0) {
-            Uint64 buf = 0;
-            size_t len = sizeof(buf);
-            if (sysctlbyname("vm.stats.vm.v_free_count", &buf, &len, NULL, 0) == 0) {
-                SDL_FreeRAM = (int)((Sint64)buf * sysconf(_SC_PAGESIZE) / (1024 * 1024));
-            }
-        }
+    Uint64 buf = 0;
+    size_t len = sizeof(buf);
+    if (sysctlbyname("vm.stats.vm.v_free_count", &buf, &len, NULL, 0) == 0) {
+        SDL_FreeRAM = (int)((Sint64)buf * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+    }
 #endif
 #ifdef defined(SDL_PLATFORM_NETBSD)
-        if (SDL_FreeRAM <= 0) {
-            struct uvmexp_sysctl buf;
-            int mib[2] = { CTL_VM, VM_UVMEXP2 };
-            std::size_t len = sizeof(buf);
-            if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
-                SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
-            }
-        }
+    struct uvmexp_sysctl buf;
+    int mib[2] = { CTL_VM, VM_UVMEXP2 };
+    size_t len = sizeof(buf);
+    if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
+        SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+    }
 #endif
 #ifdef defined(SDL_PLATFORM_OPENBSD)
-        if (SDL_FreeRAM <= 0) {
-            struct uvmexp buf;
-            int mib[2] = { CTL_VM, VM_UVMEXP };
-            std::size_t len = sizeof(buf);
-            if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
-                SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
-            }
-        }
+    struct uvmexp buf;
+    int mib[2] = { CTL_VM, VM_UVMEXP };
+    size_t len = sizeof(buf);
+    if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
+        SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+    }
 #endif
 #ifdef defined(SDL_PLATFORM_MACOS)
-        if (SDL_FreeRAM <= 0) {
-            vm_statistics64_data_t buf;
-            mach_msg_type_number_t len = HOST_VM_INFO64_COUNT;
-            if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&buf, &len) == KERN_SUCCESS) {
-                SDL_FreeRAM = (int)((Sint64)(((buf.free_count - buf.speculative_count) + buf.external_page_count) * sysconf(_SC_PAGESIZE) / (1024 * 1024)));
-            }
-        }
+    vm_statistics64_data_t buf;
+    mach_msg_type_number_t len = HOST_VM_INFO64_COUNT;
+    if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&buf, &len) == KERN_SUCCESS) {
+        SDL_FreeRAM = (int)((Sint64)(((buf.free_count - buf.speculative_count) + buf.external_page_count) * sysconf(_SC_PAGESIZE) / (1024 * 1024)));
+    }
 #endif
 #if defined(SDL_PLATFORM_WINDOWS)
-        if (SDL_FreeRAM <= 0) {
-            MEMORYSTATUSEX buf;
-            stat.dwLength = sizeof(buf);
-            if (GlobalMemoryStatusEx(&buf)) {
-                SDL_FreeRAM = (int)((Sint64)buf.ullAvailPhys / (1024 * 1024));
-            }
-        }
-#endif
+    MEMORYSTATUSEX buf;
+    stat.dwLength = sizeof(buf);
+    if (GlobalMemoryStatusEx(&buf)) {
+        SDL_FreeRAM = (int)((Sint64)buf.ullAvailPhys / (1024 * 1024));
     }
+#endif
     return SDL_FreeRAM;
 }
 
@@ -1316,37 +1301,12 @@ static int SDL_UsedRAM = 0;
 int SDL_GetUsedRAM(void)
 {
     if (!SDL_UsedRAM) {
-#if defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
+#if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) &&
+defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) ||
+defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) ||
+defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
+        SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
 #endif
-#ifdef defined(SDL_PLATFORM_FREEBSD)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
-#endif
-#ifdef defined(SDL_PLATFORM_NETBSD)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
-#endif
-#ifdef defined(SDL_PLATFORM_OPENBSD)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
-#endif
-#ifdef defined(SDL_PLATFORM_MACOS)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
-#endif
-#if defined(SDL_PLATFORM_WINDOWS)
-        if (SDL_UsedRAM <= 0) {
-            SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
-        }
-#endif
-    }
     return SDL_UsedRAM;
 }
 
