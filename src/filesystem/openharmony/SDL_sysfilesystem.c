@@ -22,7 +22,6 @@
 
 #ifdef SDL_FILESYSTEM_OPENHARMONY
 
-
 // !!! FIXME: HACK to prevent <AbilityKit/ability_runtime/start_options.h> from including. It has '&' instead of '*' for some args, which suggests it's only been tested with C++.
 #define ABILITY_RUNTIME_START_OPTIONS_H
 typedef enum AbilityRuntime_StartOptions AbilityRuntime_StartOptions;
@@ -35,6 +34,8 @@ typedef enum AbilityRuntime_StartOptions AbilityRuntime_StartOptions;
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
+#include "../../core/openharmony/SDL_openharmony.h"
+
 
 char *SDL_SYS_GetBasePath(void)
 {
@@ -53,20 +54,32 @@ char *SDL_SYS_GetExeName(void)
     return SDL_strdup(buffer);
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+typedef const char *(*GetOHPathFn)(void);
+
+static char *GetOHPath(GetOHPathFn getohpathfn, const char *org, const char *app)
 {
-    const char *prefdir = SDL_GetOpenHarmonyInternalStoragePath();
+    const char *dir = getohpathfn();
     char *retval = NULL;
-    if (prefdir) {
-        if (SDL_asprintf(&retval, "%s/%s/", prefdir, app) < 0) {
+    if (dir) {
+        if (SDL_asprintf(&retval, "%s/%s/", dir, app) < 0) {
             retval = NULL;
         }
     }
 
-    mkdir(prefdir, 0755);
+    mkdir(dir, 0755);
     mkdir(retval, 0755);
 
     return retval;
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetOHPath(SDL_GetOpenHarmonyInternalStoragePath, org, app);
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetOHPath(SDL_GetOpenHarmonyInternalCachePath, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

@@ -2394,58 +2394,71 @@ bool SDL_IsDeXMode(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
 }
 
+static char *GetAndroidAppContextPath(const char *method)
+{
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    jmethodID mid;
+    jobject context;
+    jobject fileObject;
+    jstring pathString;
+    const char *path;
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // context = SDLActivity.getContext();
+    context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+    if (!context) {
+        SDL_SetError("Couldn't get Android context!");
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // fileObj = context.getFilesDir() or whatever;
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), method, "()Ljava/io/File;");
+    fileObject = (*env)->CallObjectMethod(env, context, mid);
+    if (!fileObject) {
+        SDL_SetError("Couldn't get internal directory");
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // path = fileObject.getCanonicalPath();
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject), "getCanonicalPath", "()Ljava/lang/String;");
+    pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    path = (*env)->GetStringUTFChars(env, pathString, NULL);
+    char *retval = SDL_strdup(path);
+    (*env)->ReleaseStringUTFChars(env, pathString, path);
+
+    LocalReferenceHolder_Cleanup(&refs);
+
+    return retval;
+}
+
 const char *SDL_GetAndroidInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
-
     if (!s_AndroidInternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
-        jmethodID mid;
-        jobject context;
-        jobject fileObject;
-        jstring pathString;
-        const char *path;
-
-        JNIEnv *env = Android_JNI_GetEnv();
-        if (!LocalReferenceHolder_Init(&refs, env)) {
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // context = SDLActivity.getContext();
-        context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
-        if (!context) {
-            SDL_SetError("Couldn't get Android context!");
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // fileObj = context.getFilesDir();
-        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
-                                  "getFilesDir", "()Ljava/io/File;");
-        fileObject = (*env)->CallObjectMethod(env, context, mid);
-        if (!fileObject) {
-            SDL_SetError("Couldn't get internal directory");
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // path = fileObject.getCanonicalPath();
-        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
-                                  "getCanonicalPath", "()Ljava/lang/String;");
-        pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
-        if (Android_JNI_ExceptionOccurred(false)) {
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        path = (*env)->GetStringUTFChars(env, pathString, NULL);
-        s_AndroidInternalFilesPath = SDL_strdup(path);
-        (*env)->ReleaseStringUTFChars(env, pathString, path);
-
-        LocalReferenceHolder_Cleanup(&refs);
+        s_AndroidInternalFilesPath = GetAndroidAppContextPath("getFilesDir");
     }
     return s_AndroidInternalFilesPath;
+}
+
+const char *SDL_GetAndroidInternalCachePath(void)
+{
+    static char *s_AndroidInternalCachePath = NULL;
+    if (!s_AndroidInternalCachePath) {
+        s_AndroidInternalCachePath = GetAndroidAppContextPath("getCacheDir");
+    }
+    return s_AndroidInternalCachePath;
 }
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
