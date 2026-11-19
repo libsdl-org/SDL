@@ -297,12 +297,10 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *  This isn't strictly correct, but the results are relatively sane
      *  in any case.
      *
-     * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
+     * https://specifications.freedesktop.org/basedir/latest/
      */
     const char *envr = SDL_getenv("XDG_DATA_HOME");
-    const char *prepend;
-    char *result = NULL;
-    char *ptr = NULL;
+    const char *prepend = NULL;
 
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_IsUbuntuTouch()) {
@@ -325,53 +323,28 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 #endif
 
-    if (!envr) {
+    if (!envr || !*envr) {
         // You end up with "$HOME/.local/share/Game Name 2"
         envr = SDL_getenv("HOME");
-        if (!envr) {
+        if (!envr || !*envr) {
             // we could take heroic measures with /etc/passwd, but oh well.
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
-        prepend = "/.local/share/";
+        prepend = ".local/share/";
     } else {
-        prepend = "/";
+        prepend = "";
     }
 
-    size_t len = SDL_strlen(envr);
-    if (envr[len - 1] == '/') {
-        prepend += 1;
+    char *retval = NULL;
+    if (SDL_asprintf(&retval, "%s%s%s%s%s%s/", envr, (envr[strlen(envr) - 1] != '/') ? "/" : "", prepend, org, *org ? "/" : "", app) < 0) {
+        retval = NULL;
+    } else if (!SDL_CreateDirectory(retval)) {
+        SDL_free(retval);
+        retval = NULL;
     }
 
-    len += SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    result = (char *)SDL_malloc(len);
-    if (!result) {
-        return NULL;
-    }
-
-    if (*org) {
-        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, prepend, org, app);
-    } else {
-        (void)SDL_snprintf(result, len, "%s%s%s/", envr, prepend, app);
-    }
-
-    for (ptr = result + 1; *ptr; ptr++) {
-        if (*ptr == '/') {
-            *ptr = '\0';
-            if (mkdir(result, 0700) != 0 && errno != EEXIST) {
-                goto error;
-            }
-            *ptr = '/';
-        }
-    }
-    if (mkdir(result, 0700) != 0 && errno != EEXIST) {
-    error:
-        SDL_SetError("Couldn't create directory '%s': '%s'", result, strerror(errno));
-        SDL_free(result);
-        return NULL;
-    }
-
-    return result;
+    return retval;
 }
 
 /*
