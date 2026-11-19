@@ -333,6 +333,28 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasLASX(void);
 extern SDL_DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
 
 /**
+ * Get the amount of free RAM configured in the system.
+ *
+ * \returns the amount of free RAM configured in the system in MiB.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetFreeRAM(void);
+
+/**
+ * Get the amount of used RAM configured in the system.
+ *
+ * \returns the amount of used RAM configured in the system in MiB.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetUsedRAM(void);
+
+/**
  * Report the alignment this system needs for SIMD allocations.
  *
  * This will return the minimum number of bytes to which a pointer must be
