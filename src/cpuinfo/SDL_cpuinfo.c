@@ -1303,7 +1303,7 @@ int SDL_GetUsedRAM(void)
 defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) || \
 defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
 defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
-        SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
+    SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
 #endif
     return SDL_UsedRAM;
 }
