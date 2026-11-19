@@ -500,6 +500,8 @@ _SDL_GetSurfaceImages
 _SDL_GetSurfacePalette
 _SDL_GetSurfaceProperties
 _SDL_GetSystemRAM
+_SDL_GetFreeRAM
+_SDL_GetUsedRAM
 _SDL_GetSystemTheme
 _SDL_GetTLS
 _SDL_GetTextInputArea
