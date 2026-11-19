@@ -1299,9 +1299,9 @@ int SDL_GetFreeRAM(void)
 int SDL_GetUsedRAM(void)
 {
     int SDL_UsedRAM = 0;
-#if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) &&
-defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) ||
-defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) ||
+#if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && \
+defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) || \
+defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
 defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
         SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
 #endif
