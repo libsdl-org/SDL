@@ -572,7 +572,7 @@ void OHAUDIO_PauseDevices(void)
 }
 
 // Resume (unblock) all non already paused audio devices by releasing their mixer lock
-static bool ResumeOneDevice(SDL_AudioDevice *device, void *userdata)
+static bool ResumeOneDevice(void *userdata, SDL_AudioDevice *device)
 {
     struct SDL_PrivateAudioData *hidden = device->hidden;
     if (hidden) {
