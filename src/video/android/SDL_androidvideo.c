@@ -244,15 +244,15 @@ static Uint32 format_to_pixelFormat(int format)
 {
     Uint32 pf;
     if (format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM) { // 1
-        pf = SDL_PIXELFORMAT_RGBA8888;
+        pf = SDL_PIXELFORMAT_RGBA32;
     } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) { // 2
-        pf = SDL_PIXELFORMAT_RGBX8888;
+        pf = SDL_PIXELFORMAT_RGBX32;
     } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM) { // 3
         pf = SDL_PIXELFORMAT_RGB24;
     } else if (format == AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM) { // 4
         pf = SDL_PIXELFORMAT_RGB565;
     } else if (format == 5) {
-        pf = SDL_PIXELFORMAT_BGRA8888;
+        pf = SDL_PIXELFORMAT_BGRA32;
     } else if (format == 6) {
         pf = SDL_PIXELFORMAT_RGBA5551;
     } else if (format == 7) {
