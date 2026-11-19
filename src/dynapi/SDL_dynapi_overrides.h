@@ -526,8 +526,6 @@
 #define SDL_GetSurfacePalette SDL_GetSurfacePalette_REAL
 #define SDL_GetSurfaceProperties SDL_GetSurfaceProperties_REAL
 #define SDL_GetSystemRAM SDL_GetSystemRAM_REAL
-#define SDL_GetFreeRAM SDL_GetFreeRAM_REAL
-#define SDL_GetUsedRAM SDL_GetUsedRAM_REAL
 #define SDL_GetSystemTheme SDL_GetSystemTheme_REAL
 #define SDL_GetTLS SDL_GetTLS_REAL
 #define SDL_GetTextInputArea SDL_GetTextInputArea_REAL
