@@ -170,8 +170,8 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *
  * (data downloaded or calculated and saved to local files to avoid the
  * expense of obtaining it again, but can be reproduced if lost).
  *
- * It's possible that the system will know not to back up these specific
- * files and/or it will know to clear these files out from time to time. If
+ * It's possible that the system will know not to back up these specific files
+ * and/or it will know to clear these files out from time to time. If
  * available, it might be useful to take advantage of this directory instead
  * of storing everything in one place.
  *
@@ -209,9 +209,9 @@ extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *
  *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
  *
  * Unlike SDL_GetPrefPath(), where historical mistakes were made, `org` is
- * _not_ allowed to be NULL or "". New apps should specify proper strings
- * here (even if they need to fall back to NULL or "" for SDL_GetPrefPath()
- * to keep existing app installations working without disruption).
+ * _not_ allowed to be NULL or "". New apps should specify proper strings here
+ * (even if they need to fall back to NULL or "" for SDL_GetPrefPath() to keep
+ * existing app installations working without disruption).
  *
  * The returned path is guaranteed to end with a path separator ('\\' on
  * Windows, '/' on most other platforms).
