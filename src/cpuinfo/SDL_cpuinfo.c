@@ -1300,7 +1300,7 @@ static int SDL_UsedRAM = 0;
 
 int SDL_GetUsedRAM(void)
 {
-    if (!SDL_UsedRAM) {
+    int SDL_UsedRAM = 0;
 #if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) &&
 defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) ||
 defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) ||
