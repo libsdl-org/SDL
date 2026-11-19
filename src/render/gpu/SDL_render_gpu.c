@@ -103,6 +103,8 @@ typedef struct GPU_RenderData
         Uint32 height;
     } backbuffer;
 
+    bool pixel_size_changed;
+
     struct
     {
         SDL_GPUSwapchainComposition composition;
@@ -170,6 +172,56 @@ static const SDL_PixelFormat supported_formats[] = {
     SDL_PIXELFORMAT_ARGB1555,
     SDL_PIXELFORMAT_ARGB4444
 };
+
+static bool CreateBackbuffer(SDL_Renderer *renderer, Uint32 w, Uint32 h)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    SDL_GPUTextureCreateInfo tci;
+    SDL_zero(tci);
+    tci.width = w;
+    tci.height = h;
+    tci.format = SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window);
+    tci.layer_count_or_depth = 1;
+    tci.num_levels = 1;
+    tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
+    tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
+
+    SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
+
+    SDL_zero(data->backbuffer);
+
+    data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
+    if (!data->backbuffer.texture) {
+        return false;
+    }
+
+    data->backbuffer.width = tci.width;
+    data->backbuffer.height = tci.height;
+    data->backbuffer.format = tci.format;
+
+    return true;
+}
+
+// This method is called when the window's size changes.
+static void GPU_UpdateForWindowSizeChange(SDL_Renderer *renderer)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+    int w, h;
+
+    if (SDL_GetWindowSizeInPixels(renderer->window, &w, &h) && w > 0 && h > 0 &&
+        ((Uint32)w != data->backbuffer.width || (Uint32)h != data->backbuffer.height)) {
+        CreateBackbuffer(renderer, w, h);
+    }
+}
+
+static void GPU_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
+{
+    GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
+
+    if (event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+        data->pixel_size_changed = true;
+    }
+}
 
 static bool GPU_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendMode)
 {
@@ -1273,6 +1325,11 @@ static bool GPU_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, 
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
 
+    if (data->pixel_size_changed) {
+        GPU_UpdateForWindowSizeChange(renderer);
+        data->pixel_size_changed = false;
+    }
+
     if (!UploadVertices(data, vertices, vertsize)) {
         return false;
     }
@@ -1564,32 +1621,6 @@ static SDL_Surface *GPU_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect 
     return surface;
 }
 
-static bool CreateBackbuffer(GPU_RenderData *data, Uint32 w, Uint32 h, SDL_GPUTextureFormat fmt)
-{
-    SDL_GPUTextureCreateInfo tci;
-    SDL_zero(tci);
-    tci.width = w;
-    tci.height = h;
-    tci.format = fmt;
-    tci.layer_count_or_depth = 1;
-    tci.num_levels = 1;
-    tci.sample_count = SDL_GPU_SAMPLECOUNT_1;
-    tci.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET | SDL_GPU_TEXTUREUSAGE_SAMPLER;
-
-    SDL_ReleaseGPUTexture(data->device, data->backbuffer.texture);
-
-    data->backbuffer.texture = SDL_CreateGPUTexture(data->device, &tci);
-    data->backbuffer.width = w;
-    data->backbuffer.height = h;
-    data->backbuffer.format = fmt;
-
-    if (!data->backbuffer.texture) {
-        return false;
-    }
-
-    return true;
-}
-
 static bool GPU_RenderPresent(SDL_Renderer *renderer)
 {
     GPU_RenderData *data = (GPU_RenderData *)renderer->internal;
@@ -1604,27 +1635,30 @@ static bool GPU_RenderPresent(SDL_Renderer *renderer)
         }
 
         if (swapchain != NULL) {
-            SDL_GPUBlitInfo blit_info;
-            SDL_zero(blit_info);
+            if (data->backbuffer.texture) {
+                SDL_GPUBlitInfo blit_info;
+                SDL_zero(blit_info);
 
-            blit_info.source.texture = data->backbuffer.texture;
-            blit_info.source.w = data->backbuffer.width;
-            blit_info.source.h = data->backbuffer.height;
-            blit_info.destination.texture = swapchain;
-            blit_info.destination.w = swapchain_texture_width;
-            blit_info.destination.h = swapchain_texture_height;
-            blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
-            blit_info.filter = SDL_GPU_FILTER_LINEAR;
+                blit_info.source.texture = data->backbuffer.texture;
+                blit_info.source.w = data->backbuffer.width;
+                blit_info.source.h = data->backbuffer.height;
+                blit_info.destination.texture = swapchain;
+                blit_info.destination.w = swapchain_texture_width;
+                blit_info.destination.h = swapchain_texture_height;
+                blit_info.load_op = SDL_GPU_LOADOP_DONT_CARE;
+                blit_info.filter = SDL_GPU_FILTER_LINEAR;
 
-            SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
+                SDL_BlitGPUTexture(data->state.command_buffer, &blit_info);
+            }
 
             SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
 
-            if (swapchain_texture_width != data->backbuffer.width || swapchain_texture_height != data->backbuffer.height) {
-                CreateBackbuffer(data, swapchain_texture_width, swapchain_texture_height, SDL_GetGPUSwapchainTextureFormat(data->device, renderer->window));
-
-                // Notify the application that it needs to redraw this frame
-                SDL_SendWindowEvent(renderer->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+            if (swapchain_texture_width != data->backbuffer.width ||
+                swapchain_texture_height != data->backbuffer.height) {
+                if (CreateBackbuffer(renderer, swapchain_texture_width, swapchain_texture_height)) {
+                    // Notify the application that it needs to redraw this frame
+                    SDL_SendWindowEvent(renderer->window, SDL_EVENT_WINDOW_EXPOSED, 0, 0);
+                }
             }
         } else {
             SDL_SubmitGPUCommandBuffer(data->state.command_buffer);
@@ -1809,6 +1843,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         return false;
     }
 
+    renderer->WindowEvent = GPU_WindowEvent;
     renderer->SupportsBlendMode = GPU_SupportsBlendMode;
     renderer->CreatePalette = GPU_CreatePalette;
     renderer->UpdatePalette = GPU_UpdatePalette;
@@ -1939,7 +1974,7 @@ static bool GPU_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         int w, h;
         SDL_GetWindowSizeInPixels(window, &w, &h);
 
-        if (!CreateBackbuffer(data, w, h, SDL_GetGPUSwapchainTextureFormat(data->device, window))) {
+        if (!CreateBackbuffer(renderer, w, h)) {
             return false;
         }
     }

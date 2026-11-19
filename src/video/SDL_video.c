@@ -4392,6 +4392,21 @@ void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
     window->surface_valid = false;
 }
 
+void SDL_StartWindowLiveResize(SDL_Window *window)
+{
+    window->is_live_resizing = true;
+}
+
+void SDL_StopWindowLiveResize(SDL_Window *window)
+{
+    window->is_live_resizing = false;
+}
+
+bool SDL_IsWindowLiveResizing(SDL_Window *window)
+{
+    return window && window->is_live_resizing;
+}
+
 void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
 {
     if (SDL_HasMainCallbacks()) {

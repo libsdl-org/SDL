@@ -825,13 +825,31 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     isDragAreaRunning = NO;
     pendingWindowWarpX = pendingWindowWarpY = FLT_MAX;
     liveResizeTimer = nil;
+    inLiveResizeUpdate = NO;
 
     const NSTimeInterval interval = 1.0 / 60.0;
     moveTimer = [NSTimer timerWithTimeInterval:interval
                                        repeats:TRUE
                                          block:^(NSTimer *unusedTimer)
     {
-        SDL_OnWindowLiveResizeUpdate(self->_data.window);
+        // AppKit runs window zoom animations in this mode, and doesn't tell us
+        // when they start and end, so treat each update as a live resize.
+        SDL_Window *sdlwindow = self->_data.window;
+        if (SDL_IsWindowLiveResizing(sdlwindow)) {
+            [self liveResizeUpdate];
+        } else {
+            SDL_WindowID windowID = SDL_GetWindowID(sdlwindow);
+
+            SDL_StartWindowLiveResize(sdlwindow);
+
+            [self liveResizeUpdate];
+
+            // Look up the window again in case it was destroyed
+            sdlwindow = SDL_GetWindowFromID(windowID);
+            if (sdlwindow) {
+                SDL_StopWindowLiveResize(sdlwindow);
+            }
+        }
     }];
     [[NSRunLoop currentRunLoop] addTimer:moveTimer forMode:@"_NSMoveTimerRunLoopMode"];
 
@@ -999,6 +1017,7 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 
     [liveResizeTimer invalidate];
     liveResizeTimer = nil;
+    SDL_StopWindowLiveResize(_data.window);
     [moveTimer invalidate];
     moveTimer = nil;
 
@@ -1156,20 +1175,39 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
 {
     // We'll try to maintain 60 FPS during live resizing
     const NSTimeInterval interval = 1.0 / 60.0;
+    SDL_StartWindowLiveResize(_data.window);
+    lastLiveResizeUpdate = 0;
     liveResizeTimer = [NSTimer scheduledTimerWithTimeInterval:interval
                                                       repeats:TRUE
                                                         block:^(NSTimer *unusedTimer)
     {
-        SDL_OnWindowLiveResizeUpdate(self->_data.window);
+        // Skip this update if windowDidResize: just drew a frame
+        if (SDL_GetTicksNS() - self->lastLiveResizeUpdate >= (SDL_NS_PER_SECOND / 60)) {
+            [self liveResizeUpdate];
+        }
     }];
 
     [[NSRunLoop currentRunLoop] addTimer:liveResizeTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)liveResizeUpdate
+{
+    if (inLiveResizeUpdate) {
+        return;
+    }
+
+    // Hold a strong reference in case the window is destroyed in the live resize update
+    SDL3Cocoa_WindowListener *selfRef = self;
+    selfRef->inLiveResizeUpdate = YES;
+    SDL_OnWindowLiveResizeUpdate(_data.window);
+    selfRef->inLiveResizeUpdate = NO;
 }
 
 - (void)windowDidEndLiveResize:(NSNotification *)aNotification
 {
     [liveResizeTimer invalidate];
     liveResizeTimer = nil;
+    SDL_StopWindowLiveResize(_data.window);
 }
 
 - (void)windowWillMove:(NSNotification *)aNotification
@@ -1294,6 +1332,13 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     SDL_GlobalToRelativeForWindow(window, x, y, &x, &y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_MOVED, x, y);
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
+
+    // Draw a frame at the new size right away, so it's presented along with
+    // the new window frame instead of waiting for the live resize timer.
+    if (SDL_IsWindowLiveResizing(window) && !inLiveResizeUpdate) {
+        lastLiveResizeUpdate = SDL_GetTicksNS();
+        [self liveResizeUpdate];
+    }
 }
 
 - (void)windowWillMiniaturize:(NSNotification *)aNotification

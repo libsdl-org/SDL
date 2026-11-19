@@ -116,6 +116,7 @@ struct SDL_Window
     bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
+    bool is_live_resizing;
 
     int safe_inset_left;
     int safe_inset_right;
@@ -610,6 +611,9 @@ extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
 extern void SDL_CheckWindowPixelSizeChanged(SDL_Window *window);
 extern void SDL_OnWindowPixelSizeChanged(SDL_Window *window);
+extern void SDL_StartWindowLiveResize(SDL_Window *window);
+extern void SDL_StopWindowLiveResize(SDL_Window *window);
+extern bool SDL_IsWindowLiveResizing(SDL_Window *window);
 extern void SDL_OnWindowLiveResizeUpdate(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
 extern void SDL_OnWindowMaximized(SDL_Window *window);

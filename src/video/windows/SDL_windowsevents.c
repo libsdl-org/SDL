@@ -1936,6 +1936,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->initial_size_rect.top = data->window->y;
             data->initial_size_rect.bottom = data->window->y + data->window->h;
 
+            SDL_StartWindowLiveResize(data->window);
             SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
 
             // Reset the keyboard, as we won't get any key up events during the modal loop
@@ -1966,6 +1967,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         --data->in_modal_loop;
         if (data->in_modal_loop == 0) {
             KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
+            SDL_StopWindowLiveResize(data->window);
         }
     } break;
 
