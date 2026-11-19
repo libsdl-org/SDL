@@ -399,13 +399,8 @@ static void CalculateXRandRRefreshRate(const XRRModeInfo *info, int *numerator, 
         vTotal /= 2;
     }
 
-    if (info->hTotal && vTotal) {
-        *numerator = info->dotClock;
-        *denominator = (info->hTotal * vTotal);
-    } else {
-        *numerator = 0;
-        *denominator = 0;
-    }
+    // The dot clock can exceed INT_MAX for high bandwidth modes (e.g. 4K at 240 Hz)
+    SDL_ReduceFraction(info->dotClock, (Uint64)info->hTotal * vTotal, numerator, denominator);
 }
 
 static bool SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,

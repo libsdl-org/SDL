@@ -593,7 +593,7 @@ void SDL_InitTicks(void)
 {
     Uint64 tick_freq;
 #ifndef USE_128BIT_MATH
-    Uint32 gcd;
+    Uint64 gcd;
 #endif
 
     if (tick_start) {
@@ -612,12 +612,12 @@ void SDL_InitTicks(void)
     tick_numerator_ns = ((Uint64)SDL_NS_PER_SECOND << 32) / tick_freq;
     tick_numerator_ms = ((Uint64)SDL_MS_PER_SECOND << 32) / tick_freq;
 #else
-    gcd = SDL_CalculateGCD(SDL_NS_PER_SECOND, (Uint32)tick_freq);
-    tick_numerator_ns = (SDL_NS_PER_SECOND / gcd);
+    gcd = SDL_CalculateGCD(SDL_NS_PER_SECOND, tick_freq);
+    tick_numerator_ns = (Uint32)(SDL_NS_PER_SECOND / gcd);
     tick_denominator_ns = (Uint32)(tick_freq / gcd);
 
-    gcd = SDL_CalculateGCD(SDL_MS_PER_SECOND, (Uint32)tick_freq);
-    tick_numerator_ms = (SDL_MS_PER_SECOND / gcd);
+    gcd = SDL_CalculateGCD(SDL_MS_PER_SECOND, tick_freq);
+    tick_numerator_ms = (Uint32)(SDL_MS_PER_SECOND / gcd);
     tick_denominator_ms = (Uint32)(tick_freq / gcd);
 #endif
 
