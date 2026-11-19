@@ -1274,7 +1274,7 @@ int SDL_GetFreeRAM(void)
             struct uvmexp_sysctl buf;
             int mib[2] = { CTL_VM, VM_UVMEXP2 };
             std::size_t len = sizeof(buf);
-            if (sysctl(mib, 2, &buf, &len, nullptr, 0) == 0) {
+            if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
                 SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
             }
         }
@@ -1284,7 +1284,7 @@ int SDL_GetFreeRAM(void)
             struct uvmexp buf;
             int mib[2] = { CTL_VM, VM_UVMEXP };
             std::size_t len = sizeof(buf);
-            if (sysctl(mib, 2, &buf, &len, nullptr, 0) == 0) {
+            if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
                 SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
             }
         }
