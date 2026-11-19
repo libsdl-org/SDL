@@ -1296,8 +1296,6 @@ int SDL_GetFreeRAM(void)
     return SDL_FreeRAM;
 }
 
-static int SDL_UsedRAM = 0;
-
 int SDL_GetUsedRAM(void)
 {
     int SDL_UsedRAM = 0;
