@@ -12533,6 +12533,10 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
             &renderer->physicalDeviceProperties.properties);
     }
 
+    if (renderer->physicalDeviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Selected Vulkan device is CPU-based, this is rarely intentional");
+    }
+
     renderer->vkGetPhysicalDeviceMemoryProperties(
         renderer->physicalDevice,
         &renderer->memoryProperties);
