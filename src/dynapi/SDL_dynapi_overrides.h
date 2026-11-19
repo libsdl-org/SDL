@@ -1350,3 +1350,5 @@
 #define SDL_GetCurrentThreadName SDL_GetCurrentThreadName_REAL
 #define SDL_LoadTexture_IO SDL_LoadTexture_IO_REAL
 #define SDL_LoadTexture SDL_LoadTexture_REAL
+#define SDL_GetFreeRAM SDL_GetFreeRAM_REAL
+#define SDL_GetUsedRAM SDL_GetUsedRAM_REAL

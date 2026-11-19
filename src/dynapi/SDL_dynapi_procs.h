@@ -1358,3 +1358,5 @@ SDL_DYNAPI_PROC(bool,SDL_GetRenderHDRHeadroom,(SDL_Renderer *a,float *b),(a,b),r
 SDL_DYNAPI_PROC(const char*,SDL_GetCurrentThreadName,(void),(),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_LoadTexture_IO,(SDL_Renderer *a,SDL_IOStream *b,bool c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_LoadTexture,(SDL_Renderer *a,const char *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetFreeRAM,(void),(),return)
+SDL_DYNAPI_PROC(int,SDL_GetUsedRAM,(void),(),return)
