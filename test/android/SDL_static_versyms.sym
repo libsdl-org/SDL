@@ -1,5 +1,5 @@
 {
-  # When linking ot a static SDL3 library, JNI_OnLoad **must** have public visibility.
+  # When linking to a static SDL3 library, JNI_OnLoad must have public visibility.
 global:
   JNI_OnLoad;
 local:
