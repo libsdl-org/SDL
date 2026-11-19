@@ -805,12 +805,13 @@ static bool HIDAPI_DriverWii_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
 
     // Initialize the joystick capabilities
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
-        joystick->nbuttons = 15;
+        joystick->nbuttons = 11;
     } else {
         // Maximum is Classic Controller + Wiimote
         joystick->nbuttons = k_eWiiButtons_Max;
     }
     joystick->naxes = SDL_GAMEPAD_AXIS_COUNT;
+    joystick->nhats = 1;
 
     ctx->m_ulLastInput = SDL_GetTicks();
 
@@ -895,13 +896,14 @@ static void PostStickCalibrated(Uint64 timestamp, SDL_Joystick *joystick, StickC
 }
 
 /* Send button data to SDL
+ *`hat` is a pointer where any dpad data will be written, rather than getting sent as joystick buttons
  *`defs` is a mapping for each bit to which button it represents.  0xFF indicates an unused bit
  *`data` is the button data from the controller
  *`size` is the number of bytes in `data` and the number of arrays of 8 mappings in `defs`
  *`on` is the joystick value to be sent if a bit is on
  *`off` is the joystick value to be sent if a bit is off
  */
-static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const Uint8 defs[][8], const Uint8 *data, int size, bool on, bool off)
+static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, Uint8 *hat, const Uint8 defs[][8], const Uint8 *data, int size, bool on, bool off)
 {
     int i, j;
 
@@ -910,7 +912,32 @@ static void PostPackedButtonData(Uint64 timestamp, SDL_Joystick *joystick, const
             Uint8 button = defs[i][j];
             if (button != 0xFF) {
                 bool down = (data[i] >> j) & 1 ? on : off;
-                SDL_SendJoystickButton(timestamp, joystick, button, down);
+                switch (button)
+                {
+                    case SDL_GAMEPAD_BUTTON_DPAD_UP:
+                        if (down) {
+                            *hat |= SDL_HAT_UP;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
+                        if (down) {
+                            *hat |= SDL_HAT_DOWN;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
+                        if (down) {
+                            *hat |= SDL_HAT_LEFT;
+                        }
+                        break;
+                    case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
+                        if (down) {
+                            *hat |= SDL_HAT_RIGHT;
+                        }
+                        break;
+                    default:
+                        SDL_SendJoystickButton(timestamp, joystick, button, down);
+                        break;
+                }
             }
         }
     }
@@ -1009,7 +1036,7 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
 {
     static const Uint8 axes[] = { SDL_GAMEPAD_AXIS_LEFTX, SDL_GAMEPAD_AXIS_RIGHTX, SDL_GAMEPAD_AXIS_LEFTY, SDL_GAMEPAD_AXIS_RIGHTY };
     const Uint8(*buttons)[8] = GAMEPAD_BUTTON_DEFS;
-    Uint8 zl, zr;
+    Uint8 zl, zr, hat = 0;
     int i;
 
     if (data->ucNExtensionBytes < 11) {
@@ -1017,7 +1044,8 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     }
 
     // Buttons
-    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 8, 3, false, true);
+    PostPackedButtonData(ctx->timestamp, joystick, &hat, buttons, data->rgucExtension + 8, 3, false, true);
+    SDL_SendJoystickHat(ctx->timestamp, joystick, 0, hat);
 
     // Triggers
     zl = data->rgucExtension[9] & 0x80;
@@ -1035,7 +1063,7 @@ static void HandleWiiUProButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *jo
     UpdatePowerLevelWiiU(joystick, data->rgucExtension[10]);
 }
 
-static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
+static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     const Uint8(*buttons)[8] = (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) ? MP_GAMEPAD_BUTTON_DEFS : GAMEPAD_BUTTON_DEFS;
     Uint8 lx, ly, rx, ry, zl, zr;
@@ -1045,9 +1073,9 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     }
 
     // Buttons
-    PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucExtension + 4, 2, false, true);
+    PostPackedButtonData(ctx->timestamp, joystick, hat, buttons, data->rgucExtension + 4, 2, false, true);
     if (ctx->m_ucMotionPlusMode == WII_MOTIONPLUS_MODE_GAMEPAD) {
-        PostPackedButtonData(ctx->timestamp, joystick, MP_FIXUP_DPAD_BUTTON_DEFS, data->rgucExtension, 2, false, true);
+        PostPackedButtonData(ctx->timestamp, joystick, hat, MP_FIXUP_DPAD_BUTTON_DEFS, data->rgucExtension, 2, false, true);
     }
 
     // Triggers
@@ -1072,7 +1100,7 @@ static void HandleGamepadControllerButtonData(SDL_DriverWii_Context *ctx, SDL_Jo
     PostStickCalibrated(ctx->timestamp, joystick, &ctx->m_StickCalibrationData[3], SDL_GAMEPAD_AXIS_RIGHTY, ry);
 }
 
-static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
+static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     static const Uint8 buttons[2][8] = {
         {
@@ -1097,11 +1125,11 @@ static void HandleWiiRemoteButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *
         }
     };
     if (data->hasBaseButtons) {
-        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, true, false);
+        PostPackedButtonData(ctx->timestamp, joystick, hat, buttons, data->rgucBaseButtons, 2, true, false);
     }
 }
 
-static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, const WiiButtonData *data)
+static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, Uint8 *hat, const WiiButtonData *data)
 {
     /* Wii remote maps really badly to a normal controller
      * Mapped 1 and 2 as X and Y
@@ -1130,7 +1158,7 @@ static void HandleWiiRemoteButtonDataAsMainController(SDL_DriverWii_Context *ctx
         }
     };
     if (data->hasBaseButtons) {
-        PostPackedButtonData(ctx->timestamp, joystick, buttons, data->rgucBaseButtons, 2, true, false);
+        PostPackedButtonData(ctx->timestamp, joystick, hat, buttons, data->rgucBaseButtons, 2, true, false);
     }
 }
 
@@ -1247,6 +1275,7 @@ static void HandleWiiRemoteAccelData(SDL_DriverWii_Context *ctx, SDL_Joystick *j
 
 static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick, WiiButtonData *data)
 {
+    Uint8 hat = 0;
     if (ctx->m_eExtensionControllerType == k_eWiiExtensionControllerType_WiiUPro) {
         HandleWiiUProButtonData(ctx, joystick, data);
         return;
@@ -1279,20 +1308,21 @@ static void HandleButtonData(SDL_DriverWii_Context *ctx, SDL_Joystick *joystick,
         }
     }
 
-    HandleWiiRemoteButtonData(ctx, joystick, data);
+    HandleWiiRemoteButtonData(ctx, joystick, &hat, data);
     switch (ctx->m_eExtensionControllerType) {
     case k_eWiiExtensionControllerType_Nunchuk:
         HandleNunchuckButtonData(ctx, joystick, data);
         SDL_FALLTHROUGH;
     case k_eWiiExtensionControllerType_None:
-        HandleWiiRemoteButtonDataAsMainController(ctx, joystick, data);
+        HandleWiiRemoteButtonDataAsMainController(ctx, joystick, &hat, data);
         break;
     case k_eWiiExtensionControllerType_Gamepad:
-        HandleGamepadControllerButtonData(ctx, joystick, data);
+        HandleGamepadControllerButtonData(ctx, joystick, &hat, data);
         break;
     default:
         break;
     }
+    SDL_SendJoystickHat(ctx->timestamp, joystick, 0, hat);
     HandleWiiRemoteAccelData(ctx, joystick, data);
 }
 
