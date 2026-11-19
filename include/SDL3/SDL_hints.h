@@ -3732,13 +3732,18 @@ extern "C" {
 #define SDL_HINT_STORAGE_USER_DRIVER "SDL_STORAGE_USER_DRIVER"
 
 /**
- * A variable controlling the spacing between the on-screen keyboard and text input areas.
+ * A variable controlling the spacing between the on-screen keyboard and text
+ * input areas.
  *
- * This is the space, in window coordinates, to keep between the bottom of the text input area and the top of the on-screen keyboard when the view is moved to keep the text input area visible. This defaults to 0.
+ * This is the space, in window coordinates, to keep between the bottom of the
+ * text input area and the top of the on-screen keyboard when the view is
+ * moved to keep the text input area visible. This defaults to 0.
  *
- * This hint sets the default value of SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER.
+ * This hint sets the default value of
+ * SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER.
  *
- * This hint should be set before calling SDL_StartTextInput() or SDL_StartTextInputWithProperties().
+ * This hint should be set before calling SDL_StartTextInput() or
+ * SDL_StartTextInputWithProperties().
  *
  * \since This hint is available since SDL 3.6.0.
  */

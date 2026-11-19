@@ -464,7 +464,12 @@ typedef enum SDL_Capitalization
  *   with.
  * - `SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER` - maximum length for the text
  *   field, in characters (not bytes).
- * - `SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER` - the space, in window coordinates, to keep between the bottom of the text input area and the top of the on-screen keyboard when the view is moved to keep the text input area visible, defaults to the value of SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN, which defaults to 0. This is currently supported on Android and iOS.
+ * - `SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER` - the space, in window
+ *   coordinates, to keep between the bottom of the text input area and the
+ *   top of the on-screen keyboard when the view is moved to keep the text
+ *   input area visible, defaults to the value of
+ *   SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN, which defaults to 0. This is
+ *   currently supported on Android and iOS.
  *
  * On Android you can directly specify the input type:
  *
