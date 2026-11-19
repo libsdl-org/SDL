@@ -1288,7 +1288,7 @@ int SDL_GetFreeRAM(void)
 #endif
 #if defined(SDL_PLATFORM_WINDOWS)
     MEMORYSTATUSEX buf;
-    stat.dwLength = sizeof(buf);
+    buf.dwLength = sizeof(buf);
     if (GlobalMemoryStatusEx(&buf)) {
         SDL_FreeRAM = (int)((Sint64)buf.ullAvailPhys / (1024 * 1024));
     }
