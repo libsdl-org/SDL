@@ -11084,6 +11084,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                     VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
                     newBuffer);
 
+                // Need to transition the old buffer in case it is read by a separate command buffer.
+                VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+                    renderer,
+                    commandBuffer,
+                    VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
+                    currentRegion->vulkanBuffer);
+
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, currentRegion->vulkanBuffer);
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, newBuffer);
             }
@@ -11174,6 +11181,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 commandBuffer,
                 VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
                 newTexture);
+
+            // Need to transition the old texture in case it is read by a separate command buffer.
+            VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+                currentRegion->vulkanTexture);
 
             // re-point original container to new texture
             newTexture->container = currentRegion->vulkanTexture->container;
