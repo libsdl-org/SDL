@@ -339,7 +339,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.4.0.
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetFreeRAM(void);
 
@@ -350,7 +350,7 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetFreeRAM(void);
  *
  * \threadsafety It is safe to call this function from any thread.
  *
- * \since This function is available since SDL 3.4.0.
+ * \since This function is available since SDL 3.6.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetUsedRAM(void);
 
