@@ -67,8 +67,6 @@
 #define SDL_ANDROID_NEED_CONTROLLER_MANAGER
 #endif
 
-static void checkJNIReady(void);
-
 /*******************************************************************************
  This file links the Java side of Android with libsdl
 *******************************************************************************/
@@ -597,28 +595,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     return JNI_VERSION_1_4;
 }
 
-void checkJNIReady(void)
-{
-    if (!mActivityClass) {
-        // We aren't fully initialized, let's just return.
-        return;
-    }
-
-#ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
-    if (!mControllerManagerClass) {
-        return;
-    }
-#endif
-
-#ifndef SDL_AUDIO_DISABLED
-    if (!mAudioManagerClass) {
-        return;
-    }
-#endif
-
-    SDL_SetMainReady();
-}
-
 // Get SDL version -- called before SDL_main() to verify JNI bindings
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jclass cls)
 {
@@ -754,8 +730,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some video Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 #endif // !SDL_VIDEO_DISABLED
-
-    checkJNIReady();
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeGetCompiledSubsystems)(JNIEnv *env, jclass jcls)
@@ -814,8 +788,6 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
         __android_log_print(ANDROID_LOG_WARN, "SDL",
                             "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
-
-    checkJNIReady();
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name, jint device_id)
@@ -882,8 +854,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
         ) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
-
-    checkJNIReady();
 }
 #endif // SDL_ANDROID_NEED_CONTROLLER_MANAGER
 
