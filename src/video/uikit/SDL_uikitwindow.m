@@ -333,7 +333,11 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         if (!uiwindow) {
             // ignore the size user requested, and make a fullscreen window
 #ifdef SDL_PLATFORM_VISIONOS
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // Deprecated in visionOS 26.0 in favor of -initWithWindowScene:, which is tried first; this is the fallback when there is no active window scene.
             uiwindow = [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, SDL_XR_SCREENWIDTH, SDL_XR_SCREENHEIGHT)];
+#pragma clang diagnostic pop
 #else
             uiwindow = [[UIWindow alloc] initWithFrame:data.uiscreen.bounds];
 #endif
