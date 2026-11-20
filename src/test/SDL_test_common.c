@@ -69,7 +69,7 @@ static const char *video_usage[] = {
     "[--icon icon.bmp]",
     "[--input-focus]",
     "[--keyboard-grab]",
-    "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
+    "[--logical-presentation disabled|stretch|letterbox|overscan|integer_scale]",
     "[--logical WxH]",
     "[--max-geometry WxH]",
     "[--maximize]",
@@ -1027,7 +1027,7 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
     }
 }
 
-static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_RendererLogicalPresentation logical_presentation)
+static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_RendererLogicalPresentation logical_presentation, const SDL_FRect *rect)
 {
     switch (logical_presentation) {
     case SDL_LOGICAL_PRESENTATION_DISABLED:
@@ -1045,10 +1045,14 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
     case SDL_LOGICAL_PRESENTATION_INTEGER_SCALE:
         SDL_snprintfcat(text, maxlen, "INTEGER_SCALE");
         break;
+    case SDL_LOGICAL_PRESENTATION_CUSTOM:
+        SDL_snprintfcat(text, maxlen, "CUSTOM");
+        break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", logical_presentation);
         break;
     }
+    SDL_snprintfcat(text, maxlen, " %g,%g, %gx%g", rect->x, rect->y, rect->w, rect->h);
 }
 
 static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
@@ -2757,6 +2761,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     int x, y, w, h;
     float fx, fy;
     SDL_Rect rect;
+    SDL_FRect frect;
     const SDL_DisplayMode *mode;
     float scaleX, scaleY;
     SDL_MouseButtonFlags flags;
@@ -2815,7 +2820,9 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation);
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %dx%d ", w, h);
-    SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation);
+    SDL_GetRenderLogicalPresentationRect(renderer, &frect);
+    SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation, &frect);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Window */

@@ -131,11 +131,12 @@ typedef enum SDL_TextureAddressMode
  */
 typedef enum SDL_RendererLogicalPresentation
 {
-    SDL_LOGICAL_PRESENTATION_DISABLED,  /**< There is no logical size in effect */
-    SDL_LOGICAL_PRESENTATION_STRETCH,   /**< The rendered content is stretched to the output resolution */
-    SDL_LOGICAL_PRESENTATION_LETTERBOX, /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with the clear color */
-    SDL_LOGICAL_PRESENTATION_OVERSCAN,  /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
-    SDL_LOGICAL_PRESENTATION_INTEGER_SCALE   /**< The rendered content is scaled up by integer multiples to fit the output resolution */
+    SDL_LOGICAL_PRESENTATION_DISABLED,      /**< There is no logical size in effect */
+    SDL_LOGICAL_PRESENTATION_STRETCH,       /**< The rendered content is stretched to the output resolution */
+    SDL_LOGICAL_PRESENTATION_LETTERBOX,     /**< The rendered content is fit to the largest dimension and the other dimension is letterboxed with the clear color */
+    SDL_LOGICAL_PRESENTATION_OVERSCAN,      /**< The rendered content is fit to the smallest dimension and the other dimension extends beyond the output bounds */
+    SDL_LOGICAL_PRESENTATION_INTEGER_SCALE, /**< The rendered content is scaled up by integer multiples to fit the output resolution */
+    SDL_LOGICAL_PRESENTATION_CUSTOM         /**< The rendered content is stretched to a rectangle set with SDL_SetRenderLogicalPresentationRect() */
 } SDL_RendererLogicalPresentation;
 
 /**
@@ -1694,6 +1695,8 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * specific dimensions but to make fonts look sharp, the app turns off logical
  * presentation while drawing text, for example.
  *
+ * If you set the mode to SDL_LOGICAL_PRESENTATION_CUSTOM, you should also set the rectangle with SDL_SetRenderLogicalPresentationRect(). Setting this mode without setting a rectangle is equivalent to SDL_LOGICAL_PRESENTATION_STRETCH.
+ *
  * You can convert coordinates in an event into rendering coordinates using
  * SDL_ConvertEventToRenderCoordinates().
  *
@@ -1711,6 +1714,7 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_GetRenderTarget(SDL_Renderer *rend
  * \sa SDL_ConvertEventToRenderCoordinates
  * \sa SDL_GetRenderLogicalPresentation
  * \sa SDL_GetRenderLogicalPresentationRect
+ * \sa SDL_SetRenderLogicalPresentationRect
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *renderer, int w, int h, SDL_RendererLogicalPresentation mode);
 
@@ -1740,12 +1744,34 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentation(SDL_Renderer *
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SDL_RendererLogicalPresentation *mode);
 
 /**
+ * Set the final presentation rectangle for rendering.
+ *
+ * This function sets the rectangle used when the logical presentation mode is SDL_LOGICAL_PRESENTATION_CUSTOM.
+ *
+ * The logical size is scaled to fit the rectangle, so if the rectangle has a different aspect ratio than the logical size, the output will be stretched. The rectangle is in pixels and may extend past the edges of the output.
+ *
+ * Each render target has its own logical presentation state. This function
+ * sets the rectangle for the current render target.
+ *
+ * \param renderer the rendering context.
+ * \param rect the presentation rectangle, in pixels, or NULL to stretch to the full output size.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetRenderLogicalPresentationRect
+ * \sa SDL_SetRenderLogicalPresentation
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetRenderLogicalPresentationRect(SDL_Renderer *renderer, const SDL_FRect *rect);
+
+/**
  * Get the final presentation rectangle for rendering.
  *
- * This function returns the calculated rectangle used for logical
- * presentation, based on the presentation mode and output size. If logical
- * presentation is disabled, it will fill the rectangle with the output size,
- * in pixels.
+ * This function returns the rectangle used for logical
+ * presentation. For custom presentation this will return the rectangle set with SDL_SetRenderLogicalPresentationRect(), otherwise it will return a rectangle based on the presentation mode and output size. If logical presentation is disabled, it will fill the rectangle with the output size, in pixels.
  *
  * Each render target has its own logical presentation state. This function
  * gets the rectangle for the current render target.
@@ -1761,6 +1787,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentation(SDL_Renderer *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetRenderLogicalPresentation
+ * \sa SDL_SetRenderLogicalPresentationRect
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetRenderLogicalPresentationRect(SDL_Renderer *renderer, SDL_FRect *rect);
 
