@@ -4708,13 +4708,29 @@ Uint16 SDL_GetJoystickProductForID(SDL_JoystickID instance_id)
     return product;
 }
 
-Uint16 SDL_GetJoystickProductVersionForID(SDL_JoystickID instance_id)
+static Uint16 SDL_GetJoystickGUIDProductVersion(SDL_GUID guid)
 {
     Uint16 version;
-    SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
+
+    if (SDL_IsJoystickMFI(guid)) {
+        // The version bits are used as a signature of the controller elements
+        return 0;
+    }
+
+#ifdef SDL_JOYSTICK_ANDROID
+    if (!SDL_IsJoystickHIDAPI(guid) && !SDL_IsJoystickVIRTUAL(guid)) {
+        // The version bits are used as button and axis capability masks
+        return 0;
+    }
+#endif
 
     SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
     return version;
+}
+
+Uint16 SDL_GetJoystickProductVersionForID(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickGUIDProductVersion(SDL_GetJoystickGUIDForID(instance_id));
 }
 
 SDL_JoystickType SDL_GetJoystickTypeForID(SDL_JoystickID instance_id)
@@ -4796,11 +4812,7 @@ Uint16 SDL_GetJoystickProduct(SDL_Joystick *joystick)
 
 Uint16 SDL_GetJoystickProductVersion(SDL_Joystick *joystick)
 {
-    Uint16 version;
-    SDL_GUID guid = SDL_GetJoystickGUID(joystick);
-
-    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
-    return version;
+    return SDL_GetJoystickGUIDProductVersion(SDL_GetJoystickGUID(joystick));
 }
 
 Uint16 SDL_GetJoystickFirmwareVersion(SDL_Joystick *joystick)
