@@ -1025,7 +1025,7 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
         }
         SDL_snprintfcat(text, maxlen, "%s", name);
     } else {
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", format);
+        SDL_snprintfcat(text, maxlen, "0x%8.8" SDL_PRIx32, format);
     }
 }
 
