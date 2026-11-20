@@ -1055,16 +1055,12 @@ void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     SDL_PrivateSendMouseButton(timestamp, window, mouseID, button, down, -1);
 }
 
-void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
+static void SDL_SendMouseWheelInternal(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (window) {
         SDL_SetMouseFocus(window);
-    }
-
-    if (x == 0.0f && y == 0.0f) {
-        return;
     }
 
     // Post the event, if desired
@@ -1103,6 +1099,21 @@ void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseI
 
         SDL_PushEvent(&event);
     }
+}
+
+void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
+{
+    if (x == 0.0f && y == 0.0f) {
+        return;
+    }
+
+    SDL_SendMouseWheelInternal(timestamp, window, mouseID, x, y, direction);
+}
+
+void SDL_SendMouseWheelStop(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, SDL_MouseWheelDirection direction)
+{
+    // Send a (0.0, 0.0) event to signal a stop or "lift-off" event.
+    SDL_SendMouseWheelInternal(timestamp, window, mouseID, 0.f, 0.f, direction);
 }
 
 void SDL_QuitMouse(void)

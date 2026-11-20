@@ -324,6 +324,7 @@ static void handle_pinch_begin(void *data, struct zwp_pointer_gesture_pinch_v1 *
     SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
     if (wind) {
         Wayland_Seat *seat = (Wayland_Seat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_PINCH;
         seat->pointer.gesture_focus = wind;
 
         const Uint64 timestamp = GetPointerTimestamp(seat, time);
@@ -351,6 +352,7 @@ static void handle_pinch_end(void *data, struct zwp_pointer_gesture_pinch_v1 *zw
         const Uint64 timestamp = GetPointerTimestamp(seat, time);
         SDL_SendPinch(SDL_EVENT_PINCH_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f);
 
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_NONE;
         seat->pointer.gesture_focus = NULL;
     }
 }
@@ -361,12 +363,51 @@ static const struct zwp_pointer_gesture_pinch_v1_listener gesture_pinch_listener
     handle_pinch_end
 };
 
+static void handle_hold_begin(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, struct wl_surface *surface, uint32_t fingers)
+{
+    if (!surface) {
+        return;
+    }
+
+    SDL_WindowData *wind = Wayland_GetWindowDataForOwnedSurface(surface);
+    if (wind) {
+        Wayland_Seat *seat = (Wayland_Seat *)data;
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_HOLD;
+        seat->pointer.gesture_focus = wind;
+
+        const Uint64 timestamp = GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_BEGIN, timestamp, wind->sdlwindow, fingers);
+    }
+}
+
+static void handle_hold_end(void *data, struct zwp_pointer_gesture_hold_v1 *zwp_pointer_gesture_hold_v1, uint32_t serial, uint32_t time, int32_t cancelled)
+{
+    Wayland_Seat *seat = (Wayland_Seat *)data;
+
+    if (seat->pointer.gesture_focus) {
+        const Uint64 timestamp = GetPointerTimestamp(seat, time);
+        SDL_SendHold(SDL_EVENT_HOLD_END, timestamp, seat->pointer.gesture_focus->sdlwindow, 0);
+
+        seat->pointer.gesture_type = WAYLAND_GESTURE_TYPE_NONE;
+        seat->pointer.gesture_focus = NULL;
+    }
+}
+
+static const struct zwp_pointer_gesture_hold_v1_listener gesture_hold_listener = {
+    handle_hold_begin,
+    handle_hold_end
+};
+
 static void CreatePointerGestures(Wayland_Seat *seat)
 {
-    if (seat->display->zwp_pointer_gestures) {
-        if (seat->pointer.wl_pointer && !seat->pointer.gesture_pinch) {
+    if (seat->display->zwp_pointer_gestures && seat->pointer.wl_pointer) {
+        if (!seat->pointer.gesture_pinch) {
             seat->pointer.gesture_pinch = zwp_pointer_gestures_v1_get_pinch_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
             zwp_pointer_gesture_pinch_v1_add_listener(seat->pointer.gesture_pinch, &gesture_pinch_listener, seat);
+        }
+        if (!seat->pointer.gesture_hold) {
+            seat->pointer.gesture_hold = zwp_pointer_gestures_v1_get_hold_gesture(seat->display->zwp_pointer_gestures, seat->pointer.wl_pointer);
+            zwp_pointer_gesture_hold_v1_add_listener(seat->pointer.gesture_hold, &gesture_hold_listener, seat);
         }
     }
 }
@@ -1252,6 +1293,11 @@ static void pointer_dispatch_axis(Wayland_Seat *seat)
 
     SDL_SendMouseWheel(seat->pointer.pending_frame.timestamp_ns,
                        seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, x, y, direction);
+
+    // Only send a stop if both axes have stopped.
+    if (x == 0.f && y == 0.f && seat->pointer.pending_frame.axis.have_stop) {
+        SDL_SendMouseWheelStop(seat->pointer.pending_frame.timestamp_ns, seat->pointer.focus->sdlwindow, seat->pointer.sdl_id, direction);
+    }
 }
 
 static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
@@ -1311,27 +1357,26 @@ static void pointer_handle_frame(void *data, struct wl_pointer *pointer)
     SDL_zero(seat->pointer.pending_frame);
 }
 
-static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
-                                       uint32_t axis_source)
+static void pointer_handle_axis_source(void *data, struct wl_pointer *pointer, uint32_t axis_source)
 {
     // unimplemented
 }
 
-static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
-                                     uint32_t time, uint32_t axis)
+static void pointer_handle_axis_stop(void *data, struct wl_pointer *pointer, uint32_t time, uint32_t axis)
 {
-    // unimplemented
+    Wayland_Seat *seat = (Wayland_Seat *)data;
+    seat->pointer.pending_frame.timestamp_ns = GetPointerTimestamp(seat, time);
+    seat->pointer.pending_frame.have_axis = true;
+    seat->pointer.pending_frame.axis.have_stop = true;
 }
 
-static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
-                                         uint32_t axis, int32_t discrete)
+static void pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer, uint32_t axis, int32_t discrete)
 {
     Wayland_Seat *seat = data;
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_DISCRETE, axis, wl_fixed_from_int(discrete));
 }
 
-static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer,
-                                         uint32_t axis, int32_t value120)
+static void pointer_handle_axis_value120(void *data, struct wl_pointer *pointer, uint32_t axis, int32_t value120)
 {
     Wayland_Seat *seat = data;
     pointer_handle_axis_common(seat, SDL_WAYLAND_AXIS_EVENT_VALUE120, axis, wl_fixed_from_int(value120));
@@ -2425,7 +2470,11 @@ static void ReleasePointer(Wayland_Seat *seat)
 
     // End any active gestures.
     if (seat->pointer.gesture_focus) {
-        SDL_SendPinch(SDL_EVENT_PINCH_END, 0, seat->pointer.gesture_focus->sdlwindow, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+        if (seat->pointer.gesture_type == WAYLAND_GESTURE_TYPE_PINCH) {
+            SDL_SendPinch(SDL_EVENT_PINCH_END, 0, seat->pointer.gesture_focus->sdlwindow, 0.0f, -1.0f, -1.0f, -1.0f, -1.0f);
+        } else if (seat->pointer.gesture_type == WAYLAND_GESTURE_TYPE_HOLD) {
+            SDL_SendHold(SDL_EVENT_HOLD_END, 0, seat->pointer.gesture_focus->sdlwindow, 0);
+        }
     }
 
     // Make sure focus is removed from a surface before the pointer is destroyed.
