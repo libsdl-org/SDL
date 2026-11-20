@@ -112,6 +112,8 @@ static Uint32 SDLCALL quit_after_ms_cb(void *userdata, SDL_TimerID timerID, Uint
     return 0;
 }
 
+static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
+
 static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     size_t length = SDL_strlen(text);
@@ -1021,7 +1023,7 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
         if (SDL_strncmp(name, "SDL_PIXELFORMAT_", 16) == 0) {
             name += 16;
         }
-        SDL_snprintfcat(text, maxlen, name);
+        SDL_snprintfcat(text, maxlen, "%s", name);
     } else {
         SDL_snprintfcat(text, maxlen, "0x%8.8x", format);
     }
