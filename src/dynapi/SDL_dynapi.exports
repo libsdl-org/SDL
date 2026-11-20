@@ -1324,3 +1324,10 @@ _SDL_GetCurrentThreadName
 _SDL_LoadTexture_IO
 _SDL_LoadTexture
 _SDL_GetCachePath
+_SDL_SetTrayMenuShownCallback
+_SDL_SetTrayStatus
+_SDL_GetTrayStatus
+_SDL_SetTrayMiscProperty
+_SDL_GetTrayMiscProperty
+_SDL_SetTrayMiscPropertyV
+_SDL_GetTrayMiscPropertyV

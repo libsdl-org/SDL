@@ -1351,3 +1351,10 @@
 #define SDL_LoadTexture_IO SDL_LoadTexture_IO_REAL
 #define SDL_LoadTexture SDL_LoadTexture_REAL
 #define SDL_GetCachePath SDL_GetCachePath_REAL
+#define SDL_SetTrayMenuShownCallback SDL_SetTrayMenuShownCallback_REAL
+#define SDL_SetTrayStatus SDL_SetTrayStatus_REAL
+#define SDL_GetTrayStatus SDL_GetTrayStatus_REAL
+#define SDL_SetTrayMiscProperty SDL_SetTrayMiscProperty_REAL
+#define SDL_GetTrayMiscProperty SDL_GetTrayMiscProperty_REAL
+#define SDL_SetTrayMiscPropertyV SDL_SetTrayMiscPropertyV_REAL
+#define SDL_GetTrayMiscPropertyV SDL_GetTrayMiscPropertyV_REAL

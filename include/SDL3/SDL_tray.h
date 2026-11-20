@@ -66,6 +66,25 @@ typedef struct SDL_TrayMenu SDL_TrayMenu;
 typedef struct SDL_TrayEntry SDL_TrayEntry;
 
 /**
+ * Enumeration of tray icon visibility states
+ *
+ * Not all platforms support some of these like SDL_TRAYSTATUS_IMPORTANT.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayStatus
+ * \sa SDL_GetTrayStatus
+ */
+typedef enum SDL_TrayStatus
+{
+    SDL_TRAYSTATUS_INVALID = -1, /**< Error state or invalid tray icon. */
+    SDL_TRAYSTATUS_UNKNOWN,      /**< Unable to determine state. */
+    SDL_TRAYSTATUS_HIDDEN,       /**< Hidden state. */
+    SDL_TRAYSTATUS_VISIBLE,      /**< Visible state. */
+    SDL_TRAYSTATUS_IMPORTANT     /**< Visible state where the system should attract attention to the tray icon, not supported by all platforms, might fallback to SDL_TRAYSTATUS_VISIBLE. */
+} SDL_TrayStatus;
+
+/**
  * Flags that control the creation of system tray entries.
  *
  * Some of these flags are required; exactly one of them must be specified at
@@ -85,6 +104,42 @@ typedef Uint32 SDL_TrayEntryFlags;
 #define SDL_TRAYENTRY_CHECKED     0x40000000u /**< Make the entry checked. This is valid only for checkboxes. Optional. */
 
 /**
+ * Flags for tray scroll events.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayWithProperties
+ */
+typedef Uint32 SDL_TrayScrollFlags;
+
+#define SDL_TRAYSCROLL_VERTICAL   0x00000001u /**< Vertical scroll event. */
+#define SDL_TRAYSCROLL_HORIZONTAL 0x00000002u /**< Horizontal scroll event. */
+
+/**
+ * Flags for custom popup windows, reserved for future use.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTrayMiscProperty
+ */
+typedef Uint32 SDL_TrayPopupWindowFlags;
+
+#define SDL_TRAYPOPUPWINDOW_PARENT  0x00000001u /**< Window handle should be used as a parent. */
+#define SDL_TRAYPOPUPWINDOW_PREMADE 0x00000002u /**< Window handle should be used as is. */
+
+/**
+ * Flags that indicate the capabilities of tray callbacks.
+ *
+ * \since This datatype is available since SDL 3.6.0
+ */
+typedef Uint32 SDL_TrayCallbackCapabilities;
+
+#define SDL_TRAYCALLBACKCAPABILITIES_NONE                 0x00000000u /**< Tray callbacks have no capabilities */
+#define SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU        0x00000001u /**< Tray callbacks can suppress context menu */
+#define SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU         0x00000002u /**< Tray callbacks can request context menu open */
+#define SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES    0x00000004u /**< Tray callbacks include screen-space coordinates */
+
+/**
  * A callback that is invoked when a tray entry is selected.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
@@ -98,11 +153,28 @@ typedef Uint32 SDL_TrayEntryFlags;
 typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
 
 /**
+ * A callback that is invoked when a tray menu is shown or hidden.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ * \param menu the tray menu that was shown or hidden.
+ * \param shown true if the menu is shown, false if it is hidden.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayMenuShownCallback
+ */
+typedef void (SDLCALL *SDL_TrayMenuShownCallback)(void *userdata, SDL_TrayMenu *menu, bool shown);
+
+/**
  * A callback that is invoked when the tray icon is clicked.
  *
  * \param userdata an optional pointer to pass extra data to the callback when
  *                 it will be invoked. May be NULL.
  * \param tray the tray that was clicked.
+ * \param x the screen-space x coordinate of the tray click
+ * \param y the screen-space y coordinate of the tray click
+ * \param capabilities the capabilities of the tray callbacks
  * \returns true to show the tray menu after the callback returns, false to
  *          skip showing the menu. This return value is only used for left and
  *          right click callbacks; other mouse events ignore the return value.
@@ -111,7 +183,23 @@ typedef void (SDLCALL *SDL_TrayCallback)(void *userdata, SDL_TrayEntry *entry);
  *
  * \sa SDL_CreateTrayWithProperties
  */
-typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray);
+typedef bool (SDLCALL *SDL_TrayClickCallback)(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities);
+
+/**
+ * A callback that is invoked when the mouse wheel is scrolled while
+ * the cursor is over the tray icon.
+ *
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked. May be NULL.
+ * \param tray the tray icon on which the scrolling took place.
+ * \param delta the scrolled distance (negative for down/right, positive for up/left).
+ * \param flags flags indicating event details, including the scroll orientation (axis).
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateTrayWithProperties
+ */
+typedef void (SDLCALL *SDL_TrayScrollCallback)(void *userdata, SDL_Tray *tray, Sint32 delta, SDL_TrayScrollFlags flags);
 
 /**
  * Create an icon to be placed in the operating system's tray, or equivalent.
@@ -166,14 +254,25 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTray(SDL_Surface *icon, const c
  *   SDL_TrayClickCallback to be invoked when the tray icon is left-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the "Activate" signal is sent from
+ *   the SNI host to the client. This does not occur when a tray menu is
+ *   registered.
  * - `SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is right-clicked.
  *   Not supported on all platforms. The callback should return true to show
  *   the default menu, or false to skip showing it. May be NULL.
+ *   On Linux, this will only run when the menu is shown or the
+ *   "ContextMenu" signal is sent from the SNI host to the client.
  * - `SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER`: an
  *   SDL_TrayClickCallback to be invoked when the tray icon is middle-clicked.
  *   Not supported on all platforms. May be NULL.
- *
+ *   On Linux, this is only sent when the "SecondaryActivate" signal is sent
+ *   from the SNI host to the client.
+ * - `SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER`: an
+ *   SDL_TrayScrollCallback to be invoked when mouse scrollling occurs while
+ *   the mouse is hovering over the tray icon.
+ *   Not supported on all platforms. May be NULL.
+ * 
  * \param props the properties to use.
  * \returns The newly created system tray icon.
  *
@@ -194,6 +293,7 @@ extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_CreateTrayWithProperties(SDL_Properti
 #define SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER   "SDL.tray.create.leftclick_callback"
 #define SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER  "SDL.tray.create.rightclick_callback"
 #define SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER "SDL.tray.create.middleclick_callback"
+#define SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER      "SDL.tray.create.scroll_callback"
 
 /**
  * Updates the system tray icon's icon.
@@ -516,6 +616,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayEntryEnabled(SDL_TrayEntry *entry);
 extern SDL_DECLSPEC void SDLCALL SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, void *userdata);
 
 /**
+ * Sets a callback to be invoked when the menu is shown or hidden.
+ *
+ * \param menu the menu to be updated.
+ * \param callback a callback to be invoked when the menu is shown or hidden.
+ * \param userdata an optional pointer to pass extra data to the callback when
+ *                 it will be invoked.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTraySubmenu
+ * \sa SDL_TrayMenuShownCallback
+ */
+extern SDL_DECLSPEC void SDLCALL SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata);
+
+/**
  * Simulate a click on a tray entry.
  *
  * \param entry The entry to activate.
@@ -597,6 +715,147 @@ extern SDL_DECLSPEC SDL_TrayEntry * SDLCALL SDL_GetTrayMenuParentEntry(SDL_TrayM
  * \sa SDL_GetTrayMenuParentEntry
  */
 extern SDL_DECLSPEC SDL_Tray * SDLCALL SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu);
+
+/**
+ * Set the visibility state for a tray icon.
+ *
+ * This function handles fallbacks of rarely supported states like SDL_TRAYSTATUS_IMPORTANT.
+ * For example, SDL_TRAYSTATUS_VISIBLE is what gets used when the platform does not support SDL_TRAYSTATUS_IMPORTANT.
+ * If you want to know what state was actually used in the case of a fallbak, check the return value.
+ * Passing SDL_TRAYSTATUS_UNKNOWN or SDL_TRAYSTATUS_INVALID will just return the current visiblity state with no modification.
+ *
+ * \param tray the tray icon whose visibility state needs to be adjusted.
+ * \param status the new visibility state for the tray.
+ * \returns the visibility state which was actually applied, use this for error and fallback checking.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTrayStatus
+ */
+extern SDL_DECLSPEC SDL_TrayStatus SDLCALL SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status);
+
+/**
+ * Gets the visibility state for a tray icon.
+ *
+ * \param tray the tray icon whose visibility state needs to be queried.
+ * \returns the visibility state of the tray.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayStatus
+ */
+extern SDL_DECLSPEC SDL_TrayStatus SDLCALL SDL_GetTrayStatus(SDL_Tray *tray);
+
+#define SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION SDL_FOURCC('T', 'D', 'S', 'C')
+#define SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION SDL_FOURCC('A', '1', '1', 'Y')
+#define SDL_TRAY_MISC_PROPERTY_POPUP_WINDOW_FLAGS SDL_FOURCC('W', 'N', 'D', 'F')
+#define SDL_TRAY_MISC_PROPERTY_POPUP_WINDOW SDL_FOURCC('W', 'N', 'D', 'P')
+
+/**
+ * Setter for miscellaneous tray icon properties.
+ *
+ * This is an interface for setting various tray icon properties that are
+ * unevenly supported or platform-exclusive.
+ *
+ * These are the supported properties:
+ *
+ * - `SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION`: a string to be used as an
+ *   description for the tooltip, expects a `const char *` string.
+ *   Currently only supported on Linux SNI trays.
+ * - `SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION`: a textual description of the
+ *   icon used for the tray for accessibility, expects a `const char *` string.
+ *   Currently only supported on Linux SNI trays.
+ *
+ * \param tray the tray icon whose miscellaneous tray property needs to be adjusted.
+ * \param property the property key, encoded as a four character code.
+ * \param ... the value(s) to take, see the descriptions of individual properties for details.
+ * \returns true upon success, false when an error has occured or the property is unsupported.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTrayMiscProperty
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...);
+
+/**
+ * Getter for miscellaneous tray icon properties.
+ *
+ * This is a va_list version ıf SDL_SetTrayMiscProperty, refer to the documentation about 
+ * SDL_SetTrayMiscProperty for more details.
+ * 
+ * \param tray the tray icon whose miscellaneous tray property needs to be queried.
+ * \param property the property key, encoded as a four character code.
+ * \param ap a variable argument list.
+ * \returns true upon success, false when an error has occured or the property is unsupported.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayMiscProperty
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap);
+
+/**
+ * Getter for miscellaneous tray icon properties.
+ *
+ * This is an interface for getting various tray icon properties that are
+ * unevenly supported or platform-exclusive.
+ *
+ * These are the supported properties:
+ *
+ * - `SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION`: a string to be used as an
+ *   description for the tooltip, expects a `const char **`, meaning a pointer to a 'const char *' string.
+ *   Currently only supported on Linux SNI trays.
+ * - `SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION`: a textual description of the
+ *   icon used for the tray for accessibility, expects a `const char **`, meaning a
+ *   pointer to a 'const char *' string. Currently only supported on Linux SNI trays.
+ * - `SDL_TRAY_MISC_PROPERTY_POPUP_WINDOW_FLAGS`: reserved for future use.
+ * - `SDL_TRAY_MISC_PROPERTY_POPUP_WINDOW`: reserved for future use.
+ * 
+ * \param tray the tray icon whose miscellaneous tray property needs to be queried.
+ * \param property the property key, encoded as a four character code.
+ * \param ... pointer(s) refering to variable(s) to be filled, see the descriptions of individual properties for details.
+ * \returns true upon success, false when an error has occured or the property is unsupported.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_SetTrayMiscProperty
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...);
+
+/**
+ * Getter for miscellaneous tray icon properties.
+ *
+ * This is a va_list version ıf SDL_GetTrayMiscProperty, refer to the documentation about 
+ * SDL_GetTrayMiscProperty for more details.
+ * 
+ * \param tray the tray icon whose miscellaneous tray property needs to be queried.
+ * \param property the property key, encoded as a four character code.
+ * \param ap a variable argument list.
+ * \returns true upon success, false when an error has occured or the property is unsupported.
+ *
+ * \threadsafety This function should be called on the thread that created the
+ *               tray.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetTrayMiscProperty
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap);
 
 /**
  * Update the trays.
