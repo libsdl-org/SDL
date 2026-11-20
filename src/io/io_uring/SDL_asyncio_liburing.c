@@ -58,19 +58,17 @@ static bool (*CreateAsyncIOQueue)(SDL_AsyncIOQueue *queue);
 static void (*QuitAsyncIO)(void);
 static bool (*AsyncIOFromFile)(const char *file, const char *mode, SDL_AsyncIO *asyncio);
 
-// we never link directly to liburing.
-// (this says "-ffi" which sounds like a scripting language binding thing, but the non-ffi version
-// is static-inline code we can't lookup with dlsym. This is by design.)
-#define SDL_DRIVER_LIBURING_DYNAMIC "liburing-ffi.so.2"
-static const char *liburing_library = SDL_DRIVER_LIBURING_DYNAMIC;
+#ifdef SDL_LIBURING_DYNAMIC
+static const char liburing_library[] = SDL_LIBURING_DYNAMIC;
 static void *liburing_handle = NULL;
 
 SDL_ELF_NOTE_DLOPEN(
     "io-io_uring",
     "Support for async IO through liburing",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
-    SDL_DRIVER_LIBURING_DYNAMIC
+    SDL_LIBURING_DYNAMIC
 )
+#endif
 
 #define SDL_LIBURING_FUNCS \
     SDL_LIBURING_FUNC(int, io_uring_queue_init, (unsigned entries, struct io_uring *ring, unsigned flags)) \
@@ -82,8 +80,8 @@ SDL_ELF_NOTE_DLOPEN(
     SDL_LIBURING_FUNC(void, io_uring_prep_write,(struct io_uring_sqe *sqe, int fd, const void *buf, unsigned nbytes, __u64 offset)) \
     SDL_LIBURING_FUNC(void, io_uring_prep_close, (struct io_uring_sqe *sqe, int fd)) \
     SDL_LIBURING_FUNC(void, io_uring_prep_fsync, (struct io_uring_sqe *sqe, int fd, unsigned fsync_flags)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_cancel, (struct io_uring_sqe *sqe, void *user_data, int flags)) \
-    SDL_LIBURING_FUNC(void, io_uring_prep_timeout, (struct io_uring_sqe *sqe, struct __kernel_timespec *ts, unsigned count, unsigned flags)) \
+    SDL_LIBURING_FUNC(void, io_uring_prep_cancel, (struct io_uring_sqe *sqe, const void *user_data, int flags)) \
+    SDL_LIBURING_FUNC(void, io_uring_prep_timeout, (struct io_uring_sqe *sqe, const struct __kernel_timespec *ts, unsigned count, unsigned flags)) \
     SDL_LIBURING_FUNC(void, io_uring_prep_nop, (struct io_uring_sqe *sqe)) \
     SDL_LIBURING_FUNC(void, io_uring_sqe_set_data, (struct io_uring_sqe *sqe, void *data)) \
     SDL_LIBURING_FUNC(void, io_uring_sqe_set_flags, (struct io_uring_sqe *sqe, unsigned flags)) \
@@ -120,21 +118,28 @@ typedef struct LibUringAsyncIOQueueData
 
 static void UnloadLibUringLibrary(void)
 {
-    if (liburing_library) {
+#ifdef SDL_LIBURING_DYNAMIC
+    if (liburing_handle) {
         SDL_UnloadObject(liburing_handle);
-        liburing_library = NULL;
+        liburing_handle = NULL;
     }
+#endif
     SDL_zero(liburing);
 }
 
 static bool LoadLibUringSyms(void)
 {
+#ifdef SDL_LIBURING_DYNAMIC
     #define SDL_LIBURING_FUNC(ret, fn, args) { \
         liburing.fn = (SDL_fntype_##fn) SDL_LoadFunction(liburing_handle, #fn); \
         if (!liburing.fn) { \
             return false; \
         } \
     }
+#else
+    #define SDL_LIBURING_FUNC(ret, fn, args) \
+        liburing.fn = fn;
+#endif
     SDL_LIBURING_FUNCS
     #undef SDL_LIBURING_FUNC
     return true;
@@ -147,43 +152,46 @@ static bool LoadLibUring(void)
 {
     bool result = true;
 
+#ifdef SDL_LIBURING_DYNAMIC
     if (!liburing_handle) {
         liburing_handle = SDL_LoadObject(liburing_library);
         if (!liburing_handle) {
-            result = false;
             // Don't call SDL_SetError(): SDL_LoadObject already did.
-        } else {
-            result = LoadLibUringSyms();
-            if (result) {
-                static const int needed_ops[] = {
-                    IORING_OP_NOP,
-                    IORING_OP_FSYNC,
-                    IORING_OP_TIMEOUT,
-                    IORING_OP_CLOSE,
-                    IORING_OP_READ,
-                    IORING_OP_WRITE,
-                    IORING_OP_ASYNC_CANCEL
-                };
-
-                struct io_uring_probe *probe = liburing.io_uring_get_probe();
-                if (!probe) {
-                    result = false;
-                } else {
-                    for (int i = 0; i < SDL_arraysize(needed_ops); i++) {
-                        if (!io_uring_opcode_supported(probe, needed_ops[i])) {
-                            result = false;
-                            break;
-                        }
-                    }
-                    liburing.io_uring_free_probe(probe);
-                }
-            }
-
-            if (!result) {
-                UnloadLibUringLibrary();
-            }
+            return false;
         }
     }
+#endif
+    result = LoadLibUringSyms();
+    if (result) {
+        static const int needed_ops[] = {
+            IORING_OP_NOP,
+            IORING_OP_FSYNC,
+            IORING_OP_TIMEOUT,
+            IORING_OP_CLOSE,
+            IORING_OP_READ,
+            IORING_OP_WRITE,
+            IORING_OP_ASYNC_CANCEL
+        };
+
+        struct io_uring_probe *probe = liburing.io_uring_get_probe();
+        if (!probe) {
+            result = false;
+        } else {
+            for (int i = 0; i < SDL_arraysize(needed_ops); i++) {
+                if (!io_uring_opcode_supported(probe, needed_ops[i])) {
+                    result = false;
+                    break;
+                }
+            }
+            liburing.io_uring_free_probe(probe);
+        }
+    }
+
+#ifdef SDL_LIBURING_DYNAMIC
+    if (!result) {
+        UnloadLibUringLibrary();
+    }
+#endif
     return result;
 }
 
