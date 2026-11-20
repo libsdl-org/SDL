@@ -138,6 +138,25 @@ static void SDL_QueueSensorEvent(SDL_SensorEventEntry *entry)
     SDL_queued_sensor_events_tail = entry;
 }
 
+static void SDL_FreeSensorEvents(SDL_SensorEventEntry *entries)
+{
+    SDL_SensorEventEntry *entry = entries;
+    while (entry) {
+        SDL_SensorEventEntry *next = entry->next;
+        SDL_free(entry);
+        entry = next;
+    }
+}
+
+static void SDL_PushSensorEvents(SDL_SensorEventEntry *entries)
+{
+    SDL_LockMutex(SDL_event_lock);
+    for (SDL_SensorEventEntry *entry = entries; entry; entry = entry->next) {
+        SDL_PushEvent(&entry->event);
+    }
+    SDL_UnlockMutex(SDL_event_lock);
+}
+
 void SDL_DispatchSensorEvents(void)
 {
     SDL_SensorEventEntry *entries, *tail;
@@ -152,11 +171,7 @@ void SDL_DispatchSensorEvents(void)
     SDL_queued_sensor_events_tail = NULL;
     SDL_UnlockSensors();
 
-    SDL_LockMutex(SDL_event_lock);
-    for (SDL_SensorEventEntry *entry = entries; entry; entry = entry->next) {
-        SDL_PushEvent(&entry->event);
-    }
-    SDL_UnlockMutex(SDL_event_lock);
+    SDL_PushSensorEvents(entries);
 
     SDL_LockSensors();
     tail->next = SDL_free_sensor_events;
@@ -164,13 +179,33 @@ void SDL_DispatchSensorEvents(void)
     SDL_UnlockSensors();
 }
 
-static void SDL_FreeSensorEvents(SDL_SensorEventEntry *entries)
+void SDL_TryDispatchSensorEvents(void)
 {
-    SDL_SensorEventEntry *entry = entries;
-    while (entry) {
-        SDL_SensorEventEntry *next = entry->next;
-        SDL_free(entry);
-        entry = next;
+    SDL_SensorEventEntry *entries, *tail;
+
+    // Don't block on the sensor lock, it may be held by a thread waiting for us to quit.
+    // Any queued events will be dispatched the next time the sensors are updated.
+    if (!SDL_TryLockSensors()) {
+        return;
+    }
+    if (!SDL_queued_sensor_events_head) {
+        SDL_UnlockSensors();
+        return;
+    }
+    entries = SDL_queued_sensor_events_head;
+    tail = SDL_queued_sensor_events_tail;
+    SDL_queued_sensor_events_head = NULL;
+    SDL_queued_sensor_events_tail = NULL;
+    SDL_UnlockSensors();
+
+    SDL_PushSensorEvents(entries);
+
+    if (SDL_TryLockSensors()) {
+        tail->next = SDL_free_sensor_events;
+        SDL_free_sensor_events = entries;
+        SDL_UnlockSensors();
+    } else {
+        SDL_FreeSensorEvents(entries);
     }
 }
 
