@@ -47,6 +47,9 @@ extern void SDL_UnlockSensors(void) SDL_RELEASE(SDL_joystick_lock);
 // Function to dispatch any queued sensor events
 void SDL_DispatchSensorEvents(void);
 
+// Function to dispatch any queued sensor events, without blocking on the sensor lock
+void SDL_TryDispatchSensorEvents(void);
+
 // Function to return whether there are any sensors opened by the application
 extern bool SDL_SensorsOpened(void);
 

@@ -21,9 +21,7 @@ class SDLAudioManager {
     private static AudioManager mAudioDeviceCallbackManager;
 
     static void initialize() {
-        mAudioDeviceCallback = null;
-
-        if(Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */)
+        if (mAudioDeviceCallback == null && Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */)
         {
             mAudioDeviceCallback = new AudioDeviceCallback() {
                 @Override

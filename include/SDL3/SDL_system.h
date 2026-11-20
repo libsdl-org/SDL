@@ -830,6 +830,9 @@ typedef enum SDL_Sandbox
 /**
  * Get the application sandbox environment, if any.
  *
+ * Note that a sandbox type of `SDL_SANDBOX_UNKNOWN_CONTAINER` does not
+ * necessarily imply that the container acts a security boundry.
+ *
  * \returns the application sandbox environment or SDL_SANDBOX_NONE if the
  *          application is not running in a sandbox environment.
  *

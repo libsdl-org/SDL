@@ -3058,6 +3058,15 @@ static void UpdateLogicalPresentation(SDL_Renderer *renderer)
             view->logical_dst_rect.y = 0.0f;
             view->logical_dst_rect.w = output_w;
             view->logical_dst_rect.h = output_h;
+        } else if (view->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_CUSTOM) {
+            if (view->custom_dst_rect.w > 0.0f && view->custom_dst_rect.h > 0.0f) {
+                SDL_copyp(&view->logical_dst_rect, &view->custom_dst_rect);
+            } else {
+                view->logical_dst_rect.x = 0.0f;
+                view->logical_dst_rect.y = 0.0f;
+                view->logical_dst_rect.w = output_w;
+                view->logical_dst_rect.h = output_h;
+            }
         } else if (view->logical_presentation_mode == SDL_LOGICAL_PRESENTATION_INTEGER_SCALE) {
             float scale;
             if (want_aspect > real_aspect) {
@@ -3177,6 +3186,25 @@ bool SDL_GetRenderLogicalPresentation(SDL_Renderer *renderer, int *w, int *h, SD
     SETVAL(mode, view->logical_presentation_mode);
 
     #undef SETVAL
+
+    return true;
+}
+
+bool SDL_SetRenderLogicalPresentationRect(SDL_Renderer *renderer, const SDL_FRect *rect)
+{
+    CHECK_RENDERER_MAGIC(renderer, false);
+
+    SDL_RenderViewState *view = renderer->view;
+    if (rect) {
+        CHECK_PARAM(rect->w <= 0.0f || rect->h <= 0.0f) {
+            return SDL_InvalidParamError("rect");
+        }
+        SDL_copyp(&view->custom_dst_rect, rect);
+    } else {
+        SDL_zero(view->custom_dst_rect);
+    }
+
+    UpdateLogicalPresentation(renderer);
 
     return true;
 }
