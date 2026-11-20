@@ -17,6 +17,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Handler;
@@ -41,7 +43,8 @@ public class SDLControllerManager
                                                 int vendor_id, int product_id,
                                                 int button_mask,
                                                 int naxes, int axis_mask, int nhats, boolean can_rumble, boolean has_rgb_led,
-                                                boolean has_accelerometer, boolean has_gyroscope);
+                                                boolean has_accelerometer, boolean has_gyroscope,
+                                                boolean is_usb);
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
@@ -428,7 +431,7 @@ class SDLJoystickHandler {
         SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc,
                 getVendorId(joystickDevice), getProductId(joystickDevice),
                 getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led,
-                has_accelerometer, has_gyroscope);
+                has_accelerometer, has_gyroscope, isUSBDevice(joystickDevice));
     }
 
     void deviceRemoved(int device_id) {
@@ -536,6 +539,36 @@ class SDLJoystickHandler {
 
     int getVendorId(InputDevice joystickDevice) {
         return joystickDevice.getVendorId();
+    }
+
+    boolean isUSBDevice(InputDevice joystickDevice) {
+        if (joystickDevice.isVirtual()) {
+            return false;
+        }
+
+        if (Build.VERSION.SDK_INT >= 29 /* Android 10.0 (Q) */ && !joystickDevice.isExternal()) {
+            return true;
+        }
+
+        int vendor_id = joystickDevice.getVendorId();
+        int product_id = joystickDevice.getProductId();
+        if (vendor_id == 0 && product_id == 0) {
+            return false;
+        }
+
+        try {
+            UsbManager usbManager = (UsbManager) SDL.getContext().getSystemService(Context.USB_SERVICE);
+            if (usbManager != null) {
+                for (UsbDevice usbDevice : usbManager.getDeviceList().values()) {
+                    if (usbDevice.getVendorId() == vendor_id && usbDevice.getProductId() == product_id) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // We can't see USB devices
+        }
+        return false;
     }
 
     static boolean isGenericAxis(int axis) {

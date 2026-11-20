@@ -339,6 +339,9 @@ static bool XINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *devi
     joystick->nbuttons = 11;
     joystick->nhats = 1;
 
+    // We don't know whether this controller is wired or wireless
+    joystick->connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+
     SDL_SetBooleanProperty(SDL_GetJoystickProperties(joystick), SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, true);
 
     return true;
