@@ -121,6 +121,19 @@ include $(BUILD_SHARED_LIBRARY)
 
 ###########################
 #
+# SDL static library
+#
+###########################
+
+LOCAL_MODULE := SDL3_static
+
+LOCAL_MODULE_FILENAME := libSDL3
+
+include $(BUILD_STATIC_LIBRARY)
+
+
+###########################
+#
 # SDL_test static library
 #
 ###########################

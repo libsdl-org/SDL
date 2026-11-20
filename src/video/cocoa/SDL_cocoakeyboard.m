@@ -55,6 +55,16 @@
 
 @implementation SDL3TranslatorResponder
 
+- (instancetype)initWithFrame:(NSRect)frameRect
+{
+    self = [super initWithFrame:frameRect];
+    if (self) {
+        _markedRange = NSMakeRange(NSNotFound, 0);
+        _pendingRawCode = -1;
+    }
+    return self;
+}
+
 - (void)setInputRect:(const SDL_Rect *)rect
 {
     SDL_copyp(&_inputRect, rect);
@@ -107,6 +117,10 @@
 
 - (NSRange)markedRange
 {
+    // NSTextInputClient requires {NSNotFound, 0} when there is no marked text
+    if (!_markedText) {
+        return NSMakeRange(NSNotFound, 0);
+    }
     return _markedRange;
 }
 
@@ -151,6 +165,8 @@
 - (void)unmarkText
 {
     _markedText = nil;
+    _markedRange = NSMakeRange(NSNotFound, 0);
+    _selectedRange = NSMakeRange(0, 0);
 
     // This key event was consumed by the IME
     [self clearPendingKey];

@@ -26,6 +26,8 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
 
+#include "../../video/SDL_sysvideo.h" // For SDL_IsWindowLiveResizing()
+
 #ifdef HAVE_GPU_OPENXR
 #define XR_USE_GRAPHICS_API_METAL 1
 #include "../xr/SDL_openxr_internal.h"
@@ -3908,12 +3910,6 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
         drawableSize = windowData->layer.drawableSize;
         windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
         windowData->textureContainer.header.info.height = (Uint32)drawableSize.height;
-        if (swapchainTextureWidth) {
-            *swapchainTextureWidth = (Uint32)drawableSize.width;
-        }
-        if (swapchainTextureHeight) {
-            *swapchainTextureHeight = (Uint32)drawableSize.height;
-        }
 
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
             if (block) {
@@ -3944,6 +3940,11 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
 
         // Get the drawable and its underlying texture
         windowData->drawable = [windowData->layer nextDrawable];
+        if (windowData->drawable == nil) {
+            // This can time out, e.g. when the window is hidden or occluded.
+            // Return true to indicate that there is no error but rendering should be skipped.
+            return true;
+        }
         windowData->texture.handle = [windowData->drawable texture];
 
         // Set up presentation
@@ -3958,6 +3959,12 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
 
         // Return the swapchain texture
         *texture = (SDL_GPUTexture *)&windowData->textureContainer;
+        if (swapchainTextureWidth) {
+            *swapchainTextureWidth = (Uint32)drawableSize.width;
+        }
+        if (swapchainTextureHeight) {
+            *swapchainTextureHeight = (Uint32)drawableSize.height;
+        }
         return true;
     }
 }
@@ -4083,6 +4090,8 @@ static bool METAL_INTERNAL_Submit(
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
         MetalRenderer *renderer = metalCommandBuffer->renderer;
+        id<MTLCommandBuffer> handle = metalCommandBuffer->handle;
+        NSMutableArray<id<CAMetalDrawable>> *transactionDrawables = nil;
 
         SDL_LockMutex(renderer->submitLock);
 
@@ -4101,7 +4110,25 @@ static bool METAL_INTERNAL_Submit(
         // Enqueue present requests, if applicable
         for (Uint32 i = 0; i < metalCommandBuffer->windowDataCount; i += 1) {
             MetalWindowData *windowData = metalCommandBuffer->windowDatas[i];
-            [metalCommandBuffer->handle presentDrawable:windowData->drawable];
+            BOOL presentWithTransaction = NO;
+            if (SDL_IsWindowLiveResizing(windowData->window) && SDL_IsMainThread()) {
+                // During a live resize we render synchronously from the window
+                // resize, so present with the Core Animation transaction to have
+                // the new frame show up in the same update as the new window size.
+                presentWithTransaction = YES;
+            }
+            if (windowData->layer.presentsWithTransaction != presentWithTransaction) {
+                windowData->layer.presentsWithTransaction = presentWithTransaction;
+            }
+            if (presentWithTransaction) {
+                // Presented after commit, below
+                if (!transactionDrawables) {
+                    transactionDrawables = [NSMutableArray array];
+                }
+                [transactionDrawables addObject:windowData->drawable];
+            } else {
+                [handle presentDrawable:windowData->drawable];
+            }
             windowData->drawable = nil;
 
             windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)metalCommandBuffer->fence;
@@ -4112,7 +4139,7 @@ static bool METAL_INTERNAL_Submit(
         }
 
         // Submit the command buffer
-        [metalCommandBuffer->handle commit];
+        [handle commit];
         metalCommandBuffer->handle = nil;
 
         // Mark the command buffer as submitted
@@ -4139,6 +4166,15 @@ static bool METAL_INTERNAL_Submit(
         METAL_INTERNAL_PerformPendingDestroys(renderer);
 
         SDL_UnlockMutex(renderer->submitLock);
+
+        if (transactionDrawables) {
+            // The drawable has to be presented after the work is scheduled,
+            // so it's part of the current Core Animation transaction.
+            [handle waitUntilScheduled];
+            for (id<CAMetalDrawable> drawable in transactionDrawables) {
+                [drawable present];
+            }
+        }
 
         return true;
     }

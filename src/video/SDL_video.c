@@ -4392,6 +4392,21 @@ void SDL_OnWindowPixelSizeChanged(SDL_Window *window)
     window->surface_valid = false;
 }
 
+void SDL_StartWindowLiveResize(SDL_Window *window)
+{
+    window->is_live_resizing = true;
+}
+
+void SDL_StopWindowLiveResize(SDL_Window *window)
+{
+    window->is_live_resizing = false;
+}
+
+bool SDL_IsWindowLiveResizing(SDL_Window *window)
+{
+    return window && window->is_live_resizing;
+}
+
 void SDL_OnWindowLiveResizeUpdate(SDL_Window *window)
 {
     if (SDL_HasMainCallbacks()) {
@@ -5861,6 +5876,19 @@ bool SDL_GetTextInputMultiline(SDL_PropertiesID props)
     } else {
         return true;
     }
+}
+
+int SDL_GetTextInputKeyboardMargin(SDL_PropertiesID props)
+{
+    if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER)) {
+        return (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER, 0);
+    }
+
+    const char *hint = SDL_GetHint(SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN);
+    if (hint && *hint) {
+        return SDL_atoi(hint);
+    }
+    return 0;
 }
 
 static bool AutoShowingScreenKeyboard(void)

@@ -52,6 +52,8 @@ bool SDL_OpenHarmonyRawFileClose(void *userdata);
 bool SDL_OpenHarmonyEnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
 bool SDL_OpenHarmonyGetAssetPathInfo(const char *path, SDL_PathInfo *info);
 
+const char *SDL_GetOpenHarmonyInternalCachePath(void);
+
 #define SDL_PlatformEnumerateAssetDirectory SDL_OpenHarmonyEnumerateAssetDirectory
 #define SDL_GetPlatformInternalStoragePath SDL_GetOpenHarmonyInternalStoragePath
 #define SDL_PlatformGetAssetPathInfo SDL_OpenHarmonyGetAssetPathInfo

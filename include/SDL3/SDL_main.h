@@ -181,11 +181,15 @@
            main activity entry point.
 
            See docs/README-android.md for more details on extending that class.
+
+           SDL can also be used without SDLActivity, e.g. by an app with its own
+           activity that uses the SDL audio and controller Java classes, so
+           SDL_main() is available rather than required.
          */
-        #define SDL_MAIN_NEEDED
+        #define SDL_MAIN_AVAILABLE
 
         /* As this is launched from Java, the real entry point (main() function)
-           is outside of the the binary built from this code.
+           is outside of the binary built from this code.
            This define makes sure that, unlike on other platforms, SDL_main.h
            and SDL_main_impl.h export an `SDL_main()` function (to be called
            from Java), but don't implement a native `int main(int argc, char* argv[])`
@@ -198,7 +202,7 @@
         #define SDL_MAIN_NEEDED
 
         /* As this is launched from ArkTS, the real entry point (main() function)
-           is outside of the the binary built from this code.
+           is outside of the binary built from this code.
            This define makes sure that, unlike on other platforms, SDL_main.h
            and SDL_main_impl.h export an `SDL_main()` function (to be called
            from ArkTS, sort of), but don't implement a native

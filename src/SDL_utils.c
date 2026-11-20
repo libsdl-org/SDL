@@ -62,12 +62,40 @@ int SDL_powerof2(int x)
     return value;
 }
 
-Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b)
+Uint64 SDL_CalculateGCD(Uint64 a, Uint64 b)
 {
     if (b == 0) {
         return a;
     }
     return SDL_CalculateGCD(b, (a % b));
+}
+
+void SDL_ReduceFraction(Uint64 numerator, Uint64 denominator, int *out_numerator, int *out_denominator)
+{
+    Uint64 gcd;
+
+    if (numerator == 0 || denominator == 0) {
+        *out_numerator = 0;
+        *out_denominator = 0;
+        return;
+    }
+
+    // Reduce to lowest terms, keeping the value exact if possible
+    gcd = SDL_CalculateGCD(numerator, denominator);
+    numerator /= gcd;
+    denominator /= gcd;
+
+    // If it still doesn't fit, drop low bits from both while preserving the ratio
+    while (numerator > SDL_MAX_SINT32 || denominator > SDL_MAX_SINT32) {
+        numerator >>= 1;
+        denominator >>= 1;
+    }
+    if (denominator == 0) {
+        // The ratio is too large to represent
+        numerator = 0;
+    }
+    *out_numerator = (int)numerator;
+    *out_denominator = (int)denominator;
 }
 
 // Algorithm adapted with thanks from John Cook's blog post:

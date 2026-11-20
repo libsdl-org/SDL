@@ -179,20 +179,23 @@ static int get_driindex(void)
 
 static void CalculateRefreshRate(drmModeModeInfo *mode, int *numerator, int *denominator)
 {
-    *numerator = mode->clock * 1000;
-    *denominator = mode->htotal * mode->vtotal;
+    // The clock is in kHz, so the pixel clock in Hz can exceed INT_MAX for high bandwidth modes (e.g. 4K at 240 Hz)
+    Uint64 num = (Uint64)mode->clock * 1000;
+    Uint64 den = (Uint64)mode->htotal * mode->vtotal;
 
     if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
-        *numerator *= 2;
+        num *= 2;
     }
 
     if (mode->flags & DRM_MODE_FLAG_DBLSCAN) {
-        *denominator *= 2;
+        den *= 2;
     }
 
     if (mode->vscan > 1) {
-        *denominator *= mode->vscan;
+        den *= mode->vscan;
     }
+
+    SDL_ReduceFraction(num, den, numerator, denominator);
 }
 
 

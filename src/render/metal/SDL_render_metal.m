@@ -23,6 +23,7 @@
 #ifdef SDL_VIDEO_RENDER_METAL
 
 #include "../SDL_sysrender.h"
+#include "../../video/SDL_sysvideo.h" // For SDL_IsWindowLiveResizing()
 #include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_yuv_c.h"
 
@@ -2262,6 +2263,8 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 
         [data.mtlcmdencoder endEncoding];
 
+        id<CAMetalDrawable> transactionDrawable = nil;
+
         // If we don't have a drawable to present, don't try to present it.
         //  But we'll still try to commit the command buffer in case it was already enqueued.
         if (ready) {
@@ -2279,11 +2282,32 @@ static bool METAL_RenderPresent(SDL_Renderer *renderer)
 #endif
             {
                 SDL_assert(data.mtlbackbuffer != nil);
-                [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+                BOOL presentWithTransaction = NO;
+                if (SDL_IsWindowLiveResizing(renderer->window) && SDL_IsMainThread()) {
+                    // During a live resize we render synchronously from the window
+                    // resize, so present with the Core Animation transaction to have
+                    // the new frame show up in the same update as the new window size.
+                    presentWithTransaction = YES;
+                }
+                if (data.mtllayer.presentsWithTransaction != presentWithTransaction) {
+                    data.mtllayer.presentsWithTransaction = presentWithTransaction;
+                }
+                if (presentWithTransaction) {
+                    transactionDrawable = data.mtlbackbuffer;
+                } else {
+                    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+                }
             }
         }
 
         [data.mtlcmdbuffer commit];
+
+        if (transactionDrawable) {
+            // The drawable has to be presented after the work is scheduled,
+            // so it's part of the current Core Animation transaction.
+            [data.mtlcmdbuffer waitUntilScheduled];
+            [transactionDrawable present];
+        }
 
         data.mtlcmdencoder = nil;
         data.mtlcmdbuffer = nil;

@@ -387,6 +387,7 @@ bool Android_HasScreenKeyboardSupport(SDL_VideoDevice *_this)
 
 void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID props)
 {
+    SDL_Rect text_input_rect;
     int input_type = 0;
     if (SDL_HasProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER)) {
         input_type = (int)SDL_GetNumberProperty(props, SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER, 0);
@@ -445,7 +446,11 @@ void Android_ShowScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window, SDL_
             input_type |= TYPE_TEXT_FLAG_MULTI_LINE;
         }
     }
-    Android_JNI_ShowScreenKeyboard(input_type, &window->text_input_rect);
+
+    SDL_copyp(&text_input_rect, &window->text_input_rect);
+    text_input_rect.h += SDL_GetTextInputKeyboardMargin(props);
+
+    Android_JNI_ShowScreenKeyboard(input_type, &text_input_rect);
 }
 
 void Android_HideScreenKeyboard(SDL_VideoDevice *_this, SDL_Window *window)
