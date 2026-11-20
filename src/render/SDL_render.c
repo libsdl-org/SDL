@@ -1638,6 +1638,7 @@ static SDL_PixelFormat GetClosestSupportedFormat(SDL_Renderer *renderer, SDL_Pix
 
     if (format == SDL_PIXELFORMAT_MJPG) {
         // We'll decode to SDL_PIXELFORMAT_NV12 or SDL_PIXELFORMAT_RGBA32
+        // TODO: RGBA32 is potentially slower when using the software renderer
         for (i = 0; i < renderer->num_texture_formats; ++i) {
             if (renderer->texture_formats[i] == SDL_PIXELFORMAT_NV12) {
                 return renderer->texture_formats[i];

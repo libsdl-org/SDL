@@ -26,6 +26,7 @@
 
 #include "SDL_triangle.h"
 
+#include "../../video/SDL_pixels_c.h"
 #include "../../video/SDL_surface_c.h"
 
 /* fixed points bits precision
@@ -291,11 +292,12 @@ bool SDL_SW_FillTriangle(SDL_Surface *dst, SDL_Point *d0, SDL_Point *d1, SDL_Poi
     }
 
     if (blend != SDL_BLENDMODE_NONE) {
-        SDL_PixelFormat format = dst->format;
-
         // need an alpha format
-        if (!SDL_ISPIXELFORMAT_ALPHA(format)) {
-            format = SDL_PIXELFORMAT_ARGB8888;
+        SDL_PixelFormat format = SDL_PromotePixelFormatToAlpha(dst->format);
+
+        if (format == SDL_PIXELFORMAT_UNKNOWN) {
+            format = SDL_PromotePixelFormatTo8888(dst->format);
+            format = SDL_PromotePixelFormatToAlpha(format);
         }
 
         // Use an intermediate surface
