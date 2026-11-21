@@ -1360,3 +1360,4 @@ SDL_DYNAPI_PROC(SDL_Texture*,SDL_LoadTexture_IO,(SDL_Renderer *a,SDL_IOStream *b
 SDL_DYNAPI_PROC(SDL_Texture*,SDL_LoadTexture,(SDL_Renderer *a,const char *b),(a,b),return)
 SDL_DYNAPI_PROC(char*,SDL_GetCachePath,(const char *a,const char *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderLogicalPresentationRect,(SDL_Renderer *a,const SDL_FRect *b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_IsGooglePlayOnPC,(void),(),return)

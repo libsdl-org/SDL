@@ -411,6 +411,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
 
 /**
+ * Query if the application is running on Google Play Games on PC
+ *
+ * \returns true if this is Google Play Games on PC, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGooglePlayOnPC(void);
+
+/**
  * Trigger the Android system back button behavior.
  *
  * \threadsafety It is safe to call this function from any thread.

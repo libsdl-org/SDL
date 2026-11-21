@@ -188,6 +188,12 @@ bool SDL_IsDeXMode(void)
     return false;
 }
 
+bool SDL_IsGooglePlayOnPC(void)
+{
+    SDL_Unsupported();
+    return false;
+}
+
 Sint32 JNI_OnLoad(JavaVM *vm, void *reserved)
 {
     (void)vm;

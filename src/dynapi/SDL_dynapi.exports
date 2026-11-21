@@ -1325,3 +1325,4 @@ _SDL_LoadTexture_IO
 _SDL_LoadTexture
 _SDL_GetCachePath
 _SDL_SetRenderLogicalPresentationRect
+_SDL_IsGooglePlayOnPC
