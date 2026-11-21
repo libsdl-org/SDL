@@ -1343,7 +1343,8 @@ defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
 defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
     return SDL_GetSystemRAM() - SDL_GetFreeRAM();
 #else
-    return (int)SDL_SetError("Not implemented");
+    SDL_SetError("Not implemented");
+    return 0;
 #endif
 }
 
