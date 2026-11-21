@@ -3155,7 +3155,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_LoadLibrary(const char *path);
  * \returns a pointer to the named OpenGL function. The returned pointer
  *          should be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3176,7 +3177,8 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3212,7 +3214,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  * \param extension the name of the extension to check.
  * \returns true if the extension is supported, false otherwise.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3221,7 +3224,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 /**
  * Reset all previously set OpenGL context attributes to their default values.
  *
- * \threadsafety This function should only be called on the main thread.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3231,19 +3238,23 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
 
 /**
- * Set an OpenGL window attribute before window creation.
+ * Set an OpenGL window attribute before context creation.
  *
  * This function sets the OpenGL attribute `attr` to `value`. The requested
- * attributes should be set before creating an OpenGL window. You should use
+ * attributes should be set before creating an OpenGL context. You should use
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
+ *
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
  *
  * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3256,13 +3267,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
 /**
  * Get the actual value for an attribute from the current context.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             get.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \param attr the OpenGL attribute to query.
  * \param value a pointer filled in with the current value of `attr`.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3302,7 +3316,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
 
 /**
- * Set up an OpenGL context for rendering into an OpenGL window.
+ * Set the currently-active OpenGL context.
+ *
+ * This function makes a GL context "current," in all the ways that term
+ * implies in OpenGL.
+ *
+ * This is a per-thread state that specifies what context future calls into
+ * OpenGL will operate on. Beyond context creation work, you must have a
+ * current context for the thread before attempting to use OpenGL in any way.
  *
  * The context must have been created with a compatible window.
  *
@@ -3311,7 +3332,8 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *windo
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was created for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3325,7 +3347,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLCo
  * \returns the currently active OpenGL window on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3337,7 +3359,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GL_GetCurrentWindow(void);
  * \returns the currently active OpenGL context or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3351,7 +3373,7 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
  * \returns the currently active EGL display or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3363,7 +3385,7 @@ extern SDL_DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentDisplay(void);
  * \returns the currently active EGL config or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3372,11 +3394,13 @@ extern SDL_DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentConfig(void);
 /**
  * Get the EGL surface associated with the window.
  *
+ * This operates on the current GL context for the calling thread.
+ *
  * \param window the window to query.
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3390,6 +3414,10 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
+ * Note that this is global state, and while you can use related functions
+ * from any thread, you should only use them to prepare a single GL context at
+ * a time.
+ *
  * \param platformAttribCallback callback for attributes to pass to
  *                               eglGetPlatformDisplay. May be NULL.
  * \param surfaceAttribCallback callback for attributes to pass to
@@ -3398,7 +3426,7 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *                              eglCreateContext. May be NULL.
  * \param userdata a pointer that is passed to the callbacks.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3429,7 +3457,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArra
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3450,7 +3479,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetSwapInterval(int interval);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3485,7 +3515,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
