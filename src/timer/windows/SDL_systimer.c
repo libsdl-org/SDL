@@ -30,7 +30,6 @@
 
 
 /* The first (low-resolution) ticks value of the application */
-static DWORD start = 0;
 static BOOL ticks_started = FALSE;
 
 /* The first high-resolution ticks value of the application */
@@ -102,7 +101,6 @@ void SDL_TicksQuit(void)
 
     SDL_SetSystemTimerResolution(0); /* always release our timer resolution request. */
 
-    start = 0;
     ticks_started = SDL_FALSE;
 }
 
