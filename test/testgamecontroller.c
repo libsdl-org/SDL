@@ -93,7 +93,6 @@ SDL_COMPILE_TIME_ASSERT(power_level_strings, SDL_arraysize(power_level_strings) 
 
 static SDL_Window *window = NULL;
 static SDL_Renderer *screen = NULL;
-static SDL_bool retval = SDL_FALSE;
 static SDL_bool done = SDL_FALSE;
 static SDL_bool set_LED = SDL_FALSE;
 static int trigger_effect = 0;
@@ -120,7 +119,6 @@ static void UpdateWindowTitle(void)
         const size_t titlelen = SDL_strlen(basetitle) + (name ? SDL_strlen(name) : 0) + (serial ? 3 + SDL_strlen(serial) : 0) + 1;
         char *title = (char *)SDL_malloc(titlelen);
 
-        retval = SDL_FALSE;
         done = SDL_FALSE;
 
         if (title) {
