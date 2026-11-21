@@ -80,13 +80,6 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 include(${SDL2_SOURCE_DIR}/cmake/sdlplatform.cmake)
 include(${SDL2_SOURCE_DIR}/cmake/CheckCPUArchitecture.cmake)
 
-# Enable large file support on 32-bit glibc, so that we can access files
-# with large inode numbers
-check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
-if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
-    add_definitions(-D_FILE_OFFSET_BITS=64)
-endif()
-
 # See docs/release_checklist.md
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 33)
@@ -3773,6 +3766,18 @@ if(NOT SDL2_DISABLE_INSTALL)
     install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION "${CMAKE_INSTALL_BINDIR}")
     # TODO: what about the .spec file? Is it only needed for RPM creation?
     install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/aclocal")
+  endif()
+endif()
+
+# Enable large file support on 32-bit glibc, so that we can access files
+# with large inode numbers
+check_symbol_exists("__GLIBC__" "stdlib.h" LIBC_IS_GLIBC)
+if (LIBC_IS_GLIBC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+  if(SDL_SHARED)
+    target_compile_definitions(SDL2 PRIVATE _FILE_OFFSET_BITS=64)
+  endif()
+  if(SDL_STATIC)
+    target_compile_definitions(SDL2-static PRIVATE _FILE_OFFSET_BITS=64)
   endif()
 endif()
 

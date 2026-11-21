@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.0...4.3)
 project(SDL2_test C)
 
+# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
+if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
+    # Prefer GLVND, if present
+    set(OpenGL_GL_PREFERENCE GLVND)
+    find_package(OpenGL)
+endif()
+
 include(CheckCCompilerFlag)
 include(CMakeParseArguments)
 include(CMakePushCheckState)
@@ -85,6 +92,10 @@ macro(add_sdl_test_executable TARGET)
             target_compile_options(${TARGET} PRIVATE -fno-fast-math)
         endif()
     endif()
+
+    if (OPENGL_FOUND)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
+    endif()
 endmacro()
 
 if(NOT TARGET SDL2::SDL2-static)
@@ -95,17 +106,6 @@ enable_testing()
 
 if(SDL_INSTALL_TESTS)
     include(GNUInstallDirs)
-endif()
-
-# CMake incorrectly detects opengl32.lib being present on MSVC ARM64
-if(NOT MSVC OR NOT CMAKE_GENERATOR_PLATFORM STREQUAL "ARM64")
-    # Prefer GLVND, if present
-    set(OpenGL_GL_PREFERENCE GLVND)
-    find_package(OpenGL)
-endif()
-
-if (OPENGL_FOUND)
-    add_definitions(-DHAVE_OPENGL)
 endif()
 
 add_sdl_test_executable(checkkeys checkkeys.c)
