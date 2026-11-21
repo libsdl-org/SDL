@@ -735,7 +735,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
             job.binutils_strings = "/opt/devkitpro/devkitARM/bin/arm-none-eabi-strings"
             job.static_lib = StaticLibType.A
         case SdlPlatform.Msys2:
-            job.ccache = True
             job.shell = "msys2 {0}"
             assert spec.msys2_platform
             job.msys2_msystem = spec.msys2_platform.value
@@ -754,6 +753,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool) -> JobDeta
                 f"{msys2_env}-pkg-config",
             ])
             if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
+                job.ccache = True
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
                 job.msys2_packages.append(f"{msys2_env}-perl")
                 job.msys2_packages.append(f"{msys2_env}-ffmpeg")
