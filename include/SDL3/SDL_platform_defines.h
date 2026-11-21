@@ -496,6 +496,20 @@
 #define SDL_PLATFORM_NGAGE 1
 #endif
 
+#ifdef __PUMPKINOS__
+
+/**
+ * A preprocessor macro that is only defined if compiling for PumpkinOS.
+ *
+ * PumpkinOS applications run inside the PumpkinOS process on a host system,
+ * so the macro of the host platform (SDL_PLATFORM_LINUX, SDL_PLATFORM_MACOS,
+ * ...) is defined as well.
+ *
+ * \since This macro is available since SDL 3.5.0.
+ */
+#define SDL_PLATFORM_PUMPKINOS 1
+#endif
+
 #ifdef __MSDOS__
 
 /**

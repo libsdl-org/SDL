@@ -77,6 +77,43 @@
             /* Private platforms may have their own ideas about entry points. */
             #include "SDL_main_impl_private.h"
 
+        #elif defined(SDL_PLATFORM_PUMPKINOS)
+            /* PumpkinOS loads the application as a shared library and calls
+               PilotMain(), the PalmOS entry point, from the task thread. Only a
+               normal launch (sysAppLaunchCmdNormalLaunch, 0) runs the program;
+               other launch codes return without doing anything. The parameter
+               types match UInt16/MemPtr/UInt32 of the PalmOS headers.
+               SDL_RunApp() (src/main/pumpkin) builds the argument vector:
+               argv[0] is the application name. */
+            #include <stdint.h>
+
+            #ifdef __cplusplus
+            extern "C" {
+            #endif
+
+            #if defined(_MSC_VER)
+            __declspec(dllexport)
+            #elif defined(__GNUC__) || defined(__clang__)
+            __attribute__((visibility("default")))
+            #endif
+            uint32_t PilotMain(uint16_t cmd, void *cmdPBP, uint16_t launchFlags);
+
+            uint32_t PilotMain(uint16_t cmd, void *cmdPBP, uint16_t launchFlags)
+            {
+                (void)cmdPBP;
+                (void)launchFlags;
+                if (cmd != 0) {
+                    return 0;
+                }
+                return (uint32_t)SDL_RunApp(0, NULL, SDL_main, NULL);
+            }
+
+            #ifdef __cplusplus
+            }
+            #endif
+
+            /* end of SDL_PLATFORM_PUMPKINOS impl */
+
         #elif defined(SDL_PLATFORM_WINDOWS)
 
             /* these defines/typedefs are needed for the WinMain() definition */

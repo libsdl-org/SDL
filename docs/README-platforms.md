@@ -23,6 +23,7 @@ SDL3 has been known to work on the following platforms at some point:
 - [PlayStation 5](README-ps5.md) (Separate NDA-only fork)
 - [PlayStation Portable](README-psp.md) (Homebrew)
 - [PlayStation Vita](README-vita.md) (Homebrew)
+- [PumpkinOS](README-pumpkinos.md)
 - [QNX](README-qnx.md)
 - [RISC OS](README-riscos.md)
 - [SteamOS](README-steamos.md)
