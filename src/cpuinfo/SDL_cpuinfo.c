@@ -1170,15 +1170,13 @@ static int SDL_SystemRAM = 0;
 
 int SDL_GetSystemRAM(void)
 {
-#if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
     if (!SDL_SystemRAM) {
+#if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
         if (SDL_SystemRAM <= 0) {
             SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(HAVE_SYSCTLBYNAME)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef HAVE_SYSCTLBYNAME
         if (SDL_SystemRAM <= 0) {
 #ifdef HW_PHYSMEM64
             // (64-bit): NetBSD since 2003, OpenBSD
@@ -1200,10 +1198,8 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(memsize / (1024 * 1024));
             }
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_WINDOWS)
-    if (!SDL_SystemRAM) {
+#endif
+#if defined(SDL_PLATFORM_WINDOWS)
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);
@@ -1211,10 +1207,8 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_RISCOS)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef SDL_PLATFORM_RISCOS
         if (SDL_SystemRAM <= 0) {
             _kernel_swi_regs regs;
             regs.r[0] = 0x108;
@@ -1222,35 +1216,27 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
             }
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_3DS)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef SDL_PLATFORM_3DS
         if (SDL_SystemRAM <= 0) {
             // The New3DS has 255MiB, the Old3DS 127MiB
             SDL_SystemRAM = (int)(osGetMemRegionSize(MEMREGION_ALL) / (1024 * 1024));
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_VITA)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef SDL_PLATFORM_VITA
         if (SDL_SystemRAM <= 0) {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
             SDL_SystemRAM = 536870912;
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_PS2)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef SDL_PLATFORM_PS2
         if (SDL_SystemRAM <= 0) {
             // PlayStation 2 has 32MiB however there are some special models with 64 and 128
             SDL_SystemRAM = GetMemorySize();
         }
-    }
-    return SDL_SystemRAM;
-#elif defined(SDL_PLATFORM_HAIKU)
-    if (!SDL_SystemRAM) {
+#endif
+#ifdef SDL_PLATFORM_HAIKU
         if (SDL_SystemRAM <= 0) {
             system_info info;
             if (get_system_info(&info) == B_OK) {
@@ -1259,11 +1245,9 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)SDL_round((info.max_pages + info.ignored_pages > 0 ? info.ignored_pages : 0) * B_PAGE_SIZE / 1048576.0);
             }
         }
+#endif
     }
     return SDL_SystemRAM;
-#else
-    return (int)SDL_SetError("Not implemented");
-#endif
 }
 
 int SDL_GetFreeRAM(void)
