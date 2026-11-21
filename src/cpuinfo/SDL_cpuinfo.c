@@ -1269,8 +1269,23 @@ int SDL_GetSystemRAM(void)
 int SDL_GetFreeRAM(void)
 {
 #if defined(SDL_PLATFORM_LINUX)
-    // TODO: Read from "/proc/meminfo" for implementation in upcoming commit.
-    return (int)SDL_SetError("Not implemented (yet)");
+    long free_ram = 0;
+    int fd = open("/proc/meminfo", O_RDONLY);
+    if (fd != -1) {
+        char buf[BUFSIZ];
+        ssize_t len = read(fd, buf, sizeof(buf) - 1);
+        close(fd);
+        if (len > 0) {
+            buf[len] = '\0';
+            char *pos = strstr(buf, "MemFree:");
+            if (pos) {
+                if (sscanf(pos, "MemFree: %ld kB", &free_ram) == 1) {
+                    free_ram /= 1024;
+                }
+            }
+        }
+    }
+    return (int)free_ram;
 #elif defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
     return (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
 #elif defined(SDL_PLATFORM_FREEBSD)
