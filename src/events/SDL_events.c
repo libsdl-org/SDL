@@ -116,7 +116,6 @@ typedef struct SDL2_SysWMmsg
 
 static SDL_EventWatchList SDL_event_watchers;
 static SDL_AtomicInt SDL_sentinel_pending;
-static Uint32 SDL_last_event_id = 0;
 
 typedef struct
 {
@@ -1141,8 +1140,6 @@ static int SDL_AddEvent(SDL_Event *event)
     if (final_count > SDL_EventQ.max_events_seen) {
         SDL_EventQ.max_events_seen = final_count;
     }
-
-    ++SDL_last_event_id;
 
     return 1;
 }
