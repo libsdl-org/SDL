@@ -1544,6 +1544,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static boolean isGooglePlayOnPC() {
+        if (getContext() != null) {
+            if (getContext().getPackageManager().hasSystemFeature("com.google.android.play.feature.HPE_EXPERIENCE")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean getManifestEnvironmentVariables() {
         try {
             if (getContext() == null) {

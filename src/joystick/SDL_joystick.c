@@ -2285,6 +2285,19 @@ SDL_Joystick *SDL_OpenJoystick(SDL_JoystickID instance_id)
     joystick->is_virtual = (driver == &SDL_VIRTUAL_JoystickDriver);
 #endif
 
+    // Set the default connection state from the bus, drivers can override this in Open()
+    Uint16 bus = SDL_GetJoystickGUIDBus(device->guid);
+    if (device->steam_virtual_gamepad_slot >= 0) {
+        // Steam virtual gamepads look like USB devices, regardless of how the real controller is connected
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+    } else if (bus == SDL_HARDWARE_BUS_USB) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRED;
+    } else if (bus == SDL_HARDWARE_BUS_BLUETOOTH) {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
+    } else {
+        joystick->connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+    }
+
     if (!driver->Open(joystick, device)) {
         SDL_SetObjectValid(joystick, SDL_OBJECT_TYPE_JOYSTICK, false);
         SDL_free(joystick);
@@ -3909,14 +3922,19 @@ bool SDL_JoystickEventsEnabled(void)
 Uint16 SDL_GetJoystickGUIDBus(SDL_GUID guid)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
+    Uint16 bus = SDL_Swap16LE(guid16[0]);
 
-    return SDL_Swap16LE(guid16[0]);
+    if ((bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) && guid16[3] == 0x0000 && guid16[5] == 0x0000) {
+        // This GUID fits the standard form
+        return bus;
+    }
+    return SDL_HARDWARE_BUS_UNKNOWN;
 }
 
 void SDL_GetJoystickGUIDInfo(SDL_GUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version, Uint16 *crc16)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
-    Uint16 bus = SDL_GetJoystickGUIDBus(guid);
+    Uint16 bus = SDL_Swap16LE(guid16[0]);
 
     if ((bus < ' ' || bus == SDL_HARDWARE_BUS_VIRTUAL) && guid16[3] == 0x0000 && guid16[5] == 0x0000) {
         /* This GUID fits the standard form:
@@ -4690,13 +4708,29 @@ Uint16 SDL_GetJoystickProductForID(SDL_JoystickID instance_id)
     return product;
 }
 
-Uint16 SDL_GetJoystickProductVersionForID(SDL_JoystickID instance_id)
+static Uint16 SDL_GetJoystickGUIDProductVersion(SDL_GUID guid)
 {
     Uint16 version;
-    SDL_GUID guid = SDL_GetJoystickGUIDForID(instance_id);
+
+    if (SDL_IsJoystickMFI(guid)) {
+        // The version bits are used as a signature of the controller elements
+        return 0;
+    }
+
+#ifdef SDL_JOYSTICK_ANDROID
+    if (!SDL_IsJoystickHIDAPI(guid) && !SDL_IsJoystickVIRTUAL(guid)) {
+        // The version bits are used as button and axis capability masks
+        return 0;
+    }
+#endif
 
     SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
     return version;
+}
+
+Uint16 SDL_GetJoystickProductVersionForID(SDL_JoystickID instance_id)
+{
+    return SDL_GetJoystickGUIDProductVersion(SDL_GetJoystickGUIDForID(instance_id));
 }
 
 SDL_JoystickType SDL_GetJoystickTypeForID(SDL_JoystickID instance_id)
@@ -4778,11 +4812,7 @@ Uint16 SDL_GetJoystickProduct(SDL_Joystick *joystick)
 
 Uint16 SDL_GetJoystickProductVersion(SDL_Joystick *joystick)
 {
-    Uint16 version;
-    SDL_GUID guid = SDL_GetJoystickGUID(joystick);
-
-    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version, NULL);
-    return version;
+    return SDL_GetJoystickGUIDProductVersion(SDL_GetJoystickGUID(joystick));
 }
 
 Uint16 SDL_GetJoystickFirmwareVersion(SDL_Joystick *joystick)

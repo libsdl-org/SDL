@@ -780,6 +780,9 @@ static bool GAMEINPUT_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *d
 #endif // GAMEINPUT_API_VERSION >= 4
     }
 
+    // We don't know whether this controller is wired or wireless
+    joystick->connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+
 #if GAMEINPUT_API_VERSION >= 4
     supportedRumbleMotors = pDevice->GetSupportedRumbleMotors();
 #else

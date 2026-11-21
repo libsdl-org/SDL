@@ -143,7 +143,7 @@ SDL_FullscreenResult Android_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Win
          * Samsung DeX or Chromebooks or other windowed Android environments, our window may
          * still not be the full display size.
          */
-        if (!SDL_IsDeXMode() && !SDL_IsChromebook()) {
+        if (!SDL_IsDeXMode() && !SDL_IsChromebook() && !SDL_IsGooglePlayOnPC()) {
             goto endfunction;
         }
 

@@ -1449,13 +1449,27 @@ static GamepadMapping_t *SDL_PrivateGetGamepadMappingForGUID(SDL_GUID guid, bool
         return mapping;
     }
 
-#ifdef SDL_JOYSTICK_IOKIT
-    // IOKit used to report Bluetooth gamepads on the USB bus, so fall back to existing mappings for those
+#if defined(SDL_JOYSTICK_IOKIT) || defined(SDL_JOYSTICK_DINPUT)
+    // IOKit and DirectInput used to report Bluetooth gamepads on the USB bus, so fall back to existing mappings for those
     if (SDL_GetJoystickGUIDBus(guid) == SDL_HARDWARE_BUS_BLUETOOTH && guid.data[14] == 0) {
         SDL_GUID usb_guid = guid;
 
         SDL_SetJoystickGUIDBus(&usb_guid, SDL_HARDWARE_BUS_USB);
         mapping = SDL_PrivateFindGamepadMappingForGUID(usb_guid);
+        if (mapping) {
+            return mapping;
+        }
+    }
+#endif
+
+#ifdef SDL_JOYSTICK_ANDROID
+    // Android used to report all gamepads on the Bluetooth bus, so fall back to existing mappings for those
+    if (SDL_GetJoystickGUIDBus(guid) == SDL_HARDWARE_BUS_USB &&
+        !SDL_IsJoystickHIDAPI(guid) && !SDL_IsJoystickVIRTUAL(guid)) {
+        SDL_GUID bluetooth_guid = guid;
+
+        SDL_SetJoystickGUIDBus(&bluetooth_guid, SDL_HARDWARE_BUS_BLUETOOTH);
+        mapping = SDL_PrivateFindGamepadMappingForGUID(bluetooth_guid);
         if (mapping) {
             return mapping;
         }

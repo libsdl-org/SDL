@@ -66,6 +66,7 @@ typedef struct SDL_RenderViewState
     int logical_w, logical_h;
     SDL_FRect logical_src_rect;
     SDL_FRect logical_dst_rect;
+    SDL_FRect custom_dst_rect;
     SDL_FPoint logical_scale;
     SDL_FPoint logical_offset;
 

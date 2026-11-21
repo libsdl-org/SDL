@@ -90,7 +90,7 @@ static int SDLCALL SDL_ANDROID_SensorThread(void *data)
             }
             SDL_UnlockSensors();
 
-            SDL_DispatchSensorEvents();
+            SDL_TryDispatchSensorEvents();
         }
     }
 

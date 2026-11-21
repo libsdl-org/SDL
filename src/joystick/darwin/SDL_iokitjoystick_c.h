@@ -39,6 +39,9 @@ struct recElement
     SInt32 minReport; // min returned value
     SInt32 maxReport; // max returned value
 
+    // mask applied to values when the logical range is unsigned but declared as negative
+    Uint32 unsignedMask;
+
     struct recElement *pNext; // next element in list
 };
 typedef struct recElement recElement;
@@ -74,7 +77,6 @@ struct joystick_hwdata
     Uint16 product_id;
     SDL_GUID guid;
     int steam_virtual_gamepad_slot;
-    bool nacon_revolution_x_unlimited;
 
     struct joystick_hwdata *pNext; // next device
 };
