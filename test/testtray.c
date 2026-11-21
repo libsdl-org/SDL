@@ -52,21 +52,39 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
+static void print_click_info(Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities) 
+{
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU) {
+    	SDL_Log("-Menu can be supressed");
+	}
+	
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU) {
+    	SDL_Log("-Menu can be requested to open");
+	}
+
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES) {
+    	SDL_Log("-Click coordinates: (%d %d)", x, y);
+	}
+}
+
 static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
 {
-    SDL_Log("Left click on example tray - menu shown");
+    SDL_Log("Left click on example tray (attempting to show menu):");
+    print_click_info(x, y, capabilities);
     return true;
 }
 
 static bool SDLCALL tray2_rightclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
 {
-    SDL_Log("Right click on example tray - menu suppressed");
+    SDL_Log("Right click on example tray (attempting to suppress menu):");
+    print_click_info(x, y, capabilities);
     return false;
 }
 
 static bool SDLCALL tray2_middleclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
 {
-    SDL_Log("Middle click on example tray - menu doesn't show for middle click");
+    SDL_Log("Middle click on example tray (menu doesn't show for middle click):");
+    print_click_info(x, y, capabilities);
     return false;
 }
 
