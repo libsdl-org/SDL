@@ -1331,7 +1331,8 @@ int SDL_GetFreeRAM(void)
     }
     return free_ram;
 #else
-    return (int)SDL_SetError("Not implemented");
+    SDL_SetError("Not implemented");
+    return 0;
 #endif
 }
 
