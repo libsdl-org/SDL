@@ -1171,7 +1171,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             }
 
-            if (bShouldWait && (getContext() != null)) {
+            Activity activity = getContext();
+            if (bShouldWait && activity != null) {
                 // We'll wait for the surfaceChanged() method, which will notify us
                 // when called.  That way, we know our current size is really the
                 // size we need, instead of grabbing a size that's still got
@@ -1181,9 +1182,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // take a surprisingly long time for the surface resize, but
                 // then we'll just give up and return.
                 //
-                synchronized (getContext()) {
+                synchronized (activity) {
                     try {
-                        getContext().wait(500);
+                        activity.wait(500);
                     } catch (InterruptedException ie) {
                         ie.printStackTrace();
                     }
@@ -1439,9 +1440,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean isAndroidTV() {
-        UiModeManager uiModeManager = (UiModeManager) getContext().getSystemService(UI_MODE_SERVICE);
-        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
-            return true;
+        Activity activity = getContext();
+        if (activity != null) {
+            UiModeManager uiModeManager = (UiModeManager) activity.getSystemService(UI_MODE_SERVICE);
+            if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+                return true;
+            }
         }
         if (Build.MANUFACTURER.equals("MINIX") && Build.MODEL.equals("NEO-U1")) {
             return true;
@@ -1471,7 +1475,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     static String getDeviceFormFactor()
     {
         // TODO: WearOS
-        if (isAndroidTV()) {
+        if (isGooglePlayOnPC()) {
+            return "desktop";
+        } else if (isAndroidTV()) {
             return "tv";
         } else if (isVRHeadset()) {
             return "headset";
@@ -1512,9 +1518,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean isChromebook() {
         // https://stackoverflow.com/questions/39784415/how-to-detect-programmatically-if-android-app-is-running-in-chrome-book-or-in
-        if (getContext() != null) {
-            if (getContext().getPackageManager().hasSystemFeature("org.chromium.arc")
-                || getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management")) {
+        Activity activity = getContext();
+        if (activity != null) {
+            if (activity.getPackageManager().hasSystemFeature("org.chromium.arc") ||
+                activity.getPackageManager().hasSystemFeature("org.chromium.arc.device_management")) {
                 return true;
             }
         }
@@ -1545,8 +1552,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean isGooglePlayOnPC() {
-        if (getContext() != null) {
-            if (getContext().getPackageManager().hasSystemFeature("com.google.android.play.feature.HPE_EXPERIENCE")) {
+        Activity activity = getContext();
+        if (activity != null) {
+            if (activity.getPackageManager().hasSystemFeature("com.google.android.play.feature.HPE_EXPERIENCE")) {
                 return true;
             }
         }
@@ -1558,11 +1566,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean getManifestEnvironmentVariables() {
         try {
-            if (getContext() == null) {
+            Activity activity = getContext();
+            if (activity == null) {
                 return false;
             }
 
-            ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo applicationInfo = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
             if (bundle == null) {
                 return false;
