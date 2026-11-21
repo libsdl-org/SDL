@@ -1471,7 +1471,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     static String getDeviceFormFactor()
     {
         // TODO: WearOS
-        if (isAndroidTV()) {
+        if (isGooglePlayOnPC()) {
+            return "desktop";
+        } else if (isAndroidTV()) {
             return "tv";
         } else if (isVRHeadset()) {
             return "headset";

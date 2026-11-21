@@ -3627,7 +3627,9 @@ SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void)
     if (string) {
         const char *utf = (*env)->GetStringUTFChars(env, string, 0);
         if (utf) {
-            if (SDL_strcmp(utf, "tv") == 0) {
+            if (SDL_strcmp(utf, "desktop") == 0) {
+                form_factor = SDL_FORMFACTOR_DESKTOP;
+            } else if (SDL_strcmp(utf, "tv") == 0) {
                 form_factor = SDL_FORMFACTOR_TV;
             } else if (SDL_strcmp(utf, "tablet") == 0) {
                 form_factor = SDL_FORMFACTOR_TABLET;
