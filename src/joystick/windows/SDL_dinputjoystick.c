@@ -987,6 +987,15 @@ static SDL_JoystickDevice *DINPUT_JoystickQueryDevices(void)
     return devices;
 }
 
+static bool IsBluetoothDevicePath(const char *path)
+{
+    if (SDL_strstr(path, "{00001124-0000-1000-8000-00805F9B34FB}") ||  // Bluetooth Classic HID service
+        SDL_strstr(path, "{00001812-0000-1000-8000-00805F9B34FB}")) {  // Bluetooth LE HID service
+        return true;
+    }
+    return false;
+}
+
 static bool DINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
 {
     const SDL_JoystickDeviceData *data = device->internal;
@@ -1008,7 +1017,13 @@ static bool DINPUT_JoystickPrepareDevice(SDL_JoystickDevice *device)
 
     device->name = SDL_CreateJoystickName(data->vendor, data->product, manufacturer_string, product_string);
     if (data->vendor && data->product) {
-        device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_USB, data->vendor, data->product, version, manufacturer_string, product_string, 0, 0);
+        Uint16 bus;
+        if (IsBluetoothDevicePath(device->path)) {
+            bus = SDL_HARDWARE_BUS_BLUETOOTH;
+        } else {
+            bus = SDL_HARDWARE_BUS_USB;
+        }
+        device->guid = SDL_CreateJoystickGUID(bus, data->vendor, data->product, version, manufacturer_string, product_string, 0, 0);
     } else {
         device->guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, data->vendor, data->product, version, manufacturer_string, product_string, 0, 0);
     }

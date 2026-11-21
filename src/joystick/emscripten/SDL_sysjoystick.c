@@ -604,6 +604,9 @@ static bool EMSCRIPTEN_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *
     joystick->nbuttons = item->nbuttons;
     joystick->naxes = item->naxes;
 
+    // The bus is a guess based on the OS, we don't know whether this controller is wired or wireless
+    joystick->connection_state = SDL_JOYSTICK_CONNECTION_UNKNOWN;
+
     item->rumble_available = MAIN_THREAD_EM_ASM_INT({
         let gamepad = navigator['getGamepads']()[$0];
         // Don't check the vibrationActuator.effects array here, because it's not defined in Safari

@@ -379,6 +379,7 @@ static SDL_JoystickDevice *IOS_CreateJoystickDevice(GCController *controller)
 {
     SDL_JoystickDevice *device;
     SDL_JoystickDeviceItem *data;
+    // The bus is a guess, but almost always wireless on Apple devices
     Uint16 bus = SDL_HARDWARE_BUS_BLUETOOTH;
     Uint16 vendor = 0;
     Uint16 product = 0;

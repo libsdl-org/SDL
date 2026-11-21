@@ -425,9 +425,10 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
 }
 
 void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
-    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope)
+    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope, bool is_usb)
 {
     SDL_joylist_item *item;
+    Uint16 bus;
     SDL_GUID guid;
     int i;
 
@@ -471,7 +472,12 @@ void Android_AddJoystick(int device_id, const char *name, const char *desc, int 
         nhats = 0;
     }
 
-    guid = SDL_CreateJoystickGUID(SDL_HARDWARE_BUS_BLUETOOTH, vendor_id, product_id, 0, NULL, desc, 0, 0);
+    if (is_usb) {
+        bus = SDL_HARDWARE_BUS_USB;
+    } else {
+        bus = SDL_HARDWARE_BUS_BLUETOOTH;
+    }
+    guid = SDL_CreateJoystickGUID(bus, vendor_id, product_id, 0, NULL, desc, 0, 0);
 
     // Update the GUID with capability bits
     {

@@ -63,6 +63,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int d
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGooglePlayOnPC(void);
 extern SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(JavaVM *vm, void *reserved);
 #endif /* !SDL_PLATFORM_ANDROID */
 

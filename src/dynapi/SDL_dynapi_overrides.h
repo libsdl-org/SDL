@@ -1352,6 +1352,7 @@
 #define SDL_LoadTexture SDL_LoadTexture_REAL
 #define SDL_GetCachePath SDL_GetCachePath_REAL
 #define SDL_SetRenderLogicalPresentationRect SDL_SetRenderLogicalPresentationRect_REAL
+#define SDL_IsGooglePlayOnPC SDL_IsGooglePlayOnPC_REAL
 #define SDL_SetTrayMenuShownCallback SDL_SetTrayMenuShownCallback_REAL
 #define SDL_SetTrayStatus SDL_SetTrayStatus_REAL
 #define SDL_GetTrayStatus SDL_GetTrayStatus_REAL
