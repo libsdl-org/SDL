@@ -40,6 +40,8 @@
 #include <sys/types.h>
 #include <sys/sysctl.h>
 #endif
+#if defined(SDL_PLATFORM_LINUX)
+#include <fcntl.h>
 #if defined(SDL_PLATFORM_MACOS)
 #include <mach/mach.h>
 #elif defined(SDL_PLATFORM_NETBSD)
