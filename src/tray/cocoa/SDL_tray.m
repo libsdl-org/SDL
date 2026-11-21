@@ -143,20 +143,26 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
 - (void)openMenuIfNeeded:(BOOL)showMenu
 {
     NSStatusItem *statusItem;
+    NSStatusBarButton *button;
+    NSMenu *nsmenu;
     NSMenu *savedMenu;
+    NSPoint location;
 
     if (!showMenu || !self.tray || !self.tray->statusItem || !self.tray->menu || !self.tray->menu->nsmenu) {
         return;
     }
 
     statusItem = self.tray->statusItem;
+    button = statusItem.button;
+    nsmenu = self.tray->menu->nsmenu;
     savedMenu = statusItem.menu;
 
     if (savedMenu) {
         statusItem.menu = nil;
     }
 
-    [statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+    location = [button isFlipped] ? NSMakePoint(0.0, NSHeight(button.bounds) + 4.0) : NSMakePoint(0.0, -4.0);
+    [nsmenu popUpMenuPositioningItem:nil atLocation:location inView:button];
 
     if (savedMenu && self.tray && self.tray->statusItem) {
         statusItem.menu = savedMenu;
@@ -180,7 +186,7 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
         NSStatusItem *statusItem;
         NSStatusBarButton *button;
         NSWindow *statusItemWindow;
-        NSPoint localPoint;
+        NSRect buttonScreenRect;
         NSEventType type;
 
         strongSelf = weakSelf;
@@ -192,18 +198,18 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
         button = statusItem.button;
         statusItemWindow = button.window;
 
-        if (!statusItemWindow || event.window != statusItemWindow) {
+        if (!statusItemWindow) {
             return event;
         }
 
-        localPoint = [button convertPoint:[event locationInWindow] fromView:nil];
-        if (!NSPointInRect(localPoint, button.bounds)) {
+        buttonScreenRect = [statusItemWindow convertRectToScreen:[button convertRect:button.bounds toView:nil]];
+        if (!NSPointInRect([NSEvent mouseLocation], buttonScreenRect)) {
             return event;
         }
 
         type = event.type;
 
-        if (type == NSEventTypeLeftMouseDown || type == NSEventTypeRightMouseDown) {
+        if (type == NSEventTypeLeftMouseDown) {
             Sint32 x, y;
             bool show_menu;
 
@@ -211,30 +217,28 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
             show_menu = true;
             GetPointerScreenCoords(&x, &y);
 
-            if (type == NSEventTypeLeftMouseDown) {
-                if (strongSelf.tray->left_click_callback) {
-                    show_menu = strongSelf.tray->left_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-                }
-            } else {
-                if (strongSelf.tray->right_click_callback) {
-                    show_menu = strongSelf.tray->right_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-                }
+            if (strongSelf.tray->left_click_callback) {
+                show_menu = strongSelf.tray->left_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
             }
 
-            if (strongSelf.tray && strongSelf.tray->menu && strongSelf.tray->menu->nsmenu) {
-                if (show_menu) {
-                    statusItem.menu = strongSelf.tray->menu->nsmenu;
-                } else {
-                    statusItem.menu = nil;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        if (strongSelf.tray && strongSelf.tray->statusItem && strongSelf.tray->menu) {
-                            strongSelf.tray->statusItem.menu = strongSelf.tray->menu->nsmenu;
-                        }
-                    });
-                }
+            [strongSelf openMenuIfNeeded:show_menu];
+
+            return nil;
+        } else if (type == NSEventTypeRightMouseDown) {
+            Sint32 x, y;
+            bool show_menu;
+
+            x = y = 0;
+            show_menu = true;
+            GetPointerScreenCoords(&x, &y);
+
+            if (strongSelf.tray->right_click_callback) {
+                show_menu = strongSelf.tray->right_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
             }
 
-            return event;
+            [strongSelf openMenuIfNeeded:show_menu];
+
+            return nil;
         } else if (type == NSEventTypeOtherMouseDown && [event buttonNumber] == 2) {
             Sint32 x, y;
             bool show_menu;
