@@ -1170,13 +1170,15 @@ static int SDL_SystemRAM = 0;
 
 int SDL_GetSystemRAM(void)
 {
-    if (!SDL_SystemRAM) {
 #if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
         }
-#endif
-#ifdef HAVE_SYSCTLBYNAME
+    }
+    return SDL_SystemRAM;
+#elif defined(HAVE_SYSCTLBYNAME)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
 #ifdef HW_PHYSMEM64
             // (64-bit): NetBSD since 2003, OpenBSD
@@ -1198,8 +1200,10 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(memsize / (1024 * 1024));
             }
         }
-#endif
-#if defined(SDL_PLATFORM_WINDOWS)
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_WINDOWS)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
             stat.dwLength = sizeof(stat);
@@ -1207,8 +1211,10 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
         }
-#endif
-#ifdef SDL_PLATFORM_RISCOS
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_RISCOS)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             _kernel_swi_regs regs;
             regs.r[0] = 0x108;
@@ -1216,27 +1222,35 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(regs.r[1] * regs.r[2] / (1024 * 1024));
             }
         }
-#endif
-#ifdef SDL_PLATFORM_3DS
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_3DS)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             // The New3DS has 255MiB, the Old3DS 127MiB
             SDL_SystemRAM = (int)(osGetMemRegionSize(MEMREGION_ALL) / (1024 * 1024));
         }
-#endif
-#ifdef SDL_PLATFORM_VITA
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_VITA)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             /* Vita has 512MiB on SoC, that's split into 256MiB(+109MiB in extended memory mode) for app
                +26MiB of physically continuous memory, +112MiB of CDRAM(VRAM) + system reserved memory. */
             SDL_SystemRAM = 536870912;
         }
-#endif
-#ifdef SDL_PLATFORM_PS2
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_PS2)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             // PlayStation 2 has 32MiB however there are some special models with 64 and 128
             SDL_SystemRAM = GetMemorySize();
         }
-#endif
-#ifdef SDL_PLATFORM_HAIKU
+    }
+    return SDL_SystemRAM;
+#elif defined(SDL_PLATFORM_HAIKU)
+    if (!SDL_SystemRAM) {
         if (SDL_SystemRAM <= 0) {
             system_info info;
             if (get_system_info(&info) == B_OK) {
@@ -1245,67 +1259,77 @@ int SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)SDL_round((info.max_pages + info.ignored_pages > 0 ? info.ignored_pages : 0) * B_PAGE_SIZE / 1048576.0);
             }
         }
-#endif
     }
     return SDL_SystemRAM;
+#else
+    return (int)SDL_SetError("Not implemented");
+#endif
 }
 
 int SDL_GetFreeRAM(void)
 {
-    int SDL_FreeRAM = 0;
-#if defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
-    SDL_FreeRAM = (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
-#endif
-#if defined(SDL_PLATFORM_FREEBSD)
+#if defined(SDL_PLATFORM_LINUX)
+    // TODO: Read from "/proc/meminfo" for implementation in upcoming commit.
+    return (int)SDL_SetError("Not implemented (yet)");
+#elif defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && defined(_SC_PAGESIZE)
+    return (int)((Sint64)sysconf(_SC_AVPHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+#elif defined(SDL_PLATFORM_FREEBSD)
+    int free_ram = 0;
     Uint64 buf = 0;
     size_t len = sizeof(buf);
     if (sysctlbyname("vm.stats.vm.v_free_count", &buf, &len, NULL, 0) == 0) {
-        SDL_FreeRAM = (int)((Sint64)buf * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+        free_ram = (int)((Sint64)buf * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
-#endif
-#if defined(SDL_PLATFORM_NETBSD)
+    return free_ram;
+#elif defined(SDL_PLATFORM_NETBSD)
+    int free_ram = 0;
     struct uvmexp_sysctl buf;
+    size_t len = sizeof(buf);
     int mib[2] = { CTL_VM, VM_UVMEXP2 };
-    size_t len = sizeof(buf);
     if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
-        SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+        free_ram = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
-#endif
-#if defined(SDL_PLATFORM_OPENBSD)
+    return free_ram;
+#elif defined(SDL_PLATFORM_OPENBSD)
+    int free_ram = 0;
     struct uvmexp buf;
-    int mib[2] = { CTL_VM, VM_UVMEXP };
     size_t len = sizeof(buf);
+    int mib[2] = { CTL_VM, VM_UVMEXP };
     if (sysctl(mib, 2, &buf, &len, NULL, 0) == 0) {
-        SDL_FreeRAM = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
+        free_ram = (int)((Sint64)buf.free * sysconf(_SC_PAGESIZE) / (1024 * 1024));
     }
-#endif
-#if defined(SDL_PLATFORM_MACOS)
+    return free_ram;
+#elif defined(SDL_PLATFORM_MACOS)
+    int free_ram = 0;
     vm_statistics64_data_t buf;
     mach_msg_type_number_t len = HOST_VM_INFO64_COUNT;
     if (host_statistics64(mach_host_self(), HOST_VM_INFO64, (host_info64_t)&buf, &len) == KERN_SUCCESS) {
-        SDL_FreeRAM = (int)((Sint64)(((buf.free_count - buf.speculative_count) + buf.external_page_count) * sysconf(_SC_PAGESIZE) / (1024 * 1024)));
+        free_ram = (int)((Sint64)(((buf.free_count - buf.speculative_count) + buf.external_page_count) * sysconf(_SC_PAGESIZE) / (1024 * 1024)));
     }
-#endif
-#if defined(SDL_PLATFORM_WINDOWS)
+    return free_ram;
+#elif defined(SDL_PLATFORM_WINDOWS)
+    int free_ram = 0;
     MEMORYSTATUSEX buf;
     buf.dwLength = sizeof(buf);
     if (GlobalMemoryStatusEx(&buf)) {
-        SDL_FreeRAM = (int)((Sint64)buf.ullAvailPhys / (1024 * 1024));
+        free_ram = (int)((Sint64)buf.ullAvailPhys / (1024 * 1024));
     }
+    return free_ram;
+#else
+    return (int)SDL_SetError("Not implemented");
 #endif
-    return SDL_FreeRAM;
 }
 
 int SDL_GetUsedRAM(void)
 {
-    int SDL_UsedRAM = 0;
 #if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && \
 defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) || \
 defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
 defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
-    SDL_UsedRAM = SDL_GetSystemRAM() - SDL_GetFreeRAM();
+    return SDL_GetSystemRAM() - SDL_GetFreeRAM();
+#else
+    return (int)SDL_SetError("Not implemented");
 #endif
-    return SDL_UsedRAM;
 }
 
 static int SDL_SystemPageSize = -1;
