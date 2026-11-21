@@ -1338,9 +1338,9 @@ int SDL_GetFreeRAM(void)
 int SDL_GetUsedRAM(void)
 {
 #if ((defined(HAVE_SYSCONF) && defined(_SC_AVPHYS_PAGES) && \
-defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) || \
-defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
-defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
+        defined(_SC_PAGESIZE)) || defined(SDL_PLATFORM_FREEBSD) || \
+        defined(SDL_PLATFORM_NETBSD) || defined(SDL_PLATFORM_OPENBSD) || \
+        defined(SDL_PLATFORM_MACOS) || defined(SDL_PLATFORM_WINDOWS))
     return SDL_GetSystemRAM() - SDL_GetFreeRAM();
 #else
     SDL_SetError("Not implemented");
