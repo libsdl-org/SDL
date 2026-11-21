@@ -208,6 +208,8 @@
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLE                   0x0b20
 #define USB_PRODUCT_XBOX_SERIES_X                         0x0b12
 #define USB_PRODUCT_XBOX_SERIES_X_BLE                     0x0b13
+#define USB_PRODUCT_XBOX_ONE_NANO                         0x0b4e
+#define USB_PRODUCT_XBOX_ONE_NANO_BLE                     0x0b4f
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 #define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6

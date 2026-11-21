@@ -132,6 +132,7 @@ typedef struct
     Uint8 sequence;
     Uint64 send_time;
     bool wired_iokit;
+    bool xbox_nano;
     bool has_guide_packet;
     bool has_color_led;
     bool has_paddles;
@@ -438,6 +439,11 @@ static bool HIDAPI_DriverXboxOne_IsSupportedDevice(SDL_HIDAPI_Device *device, co
         return false;
     }
 #endif
+    if (vendor_id == USB_VENDOR_MICROSOFT &&
+        (product_id == USB_PRODUCT_XBOX_ONE_NANO ||
+         product_id == USB_PRODUCT_XBOX_ONE_NANO_BLE)) {
+        return true;
+    }
     if (interface_class &&
         (interface_class != LIBUSB_CLASS_VENDOR_SPEC ||
          interface_subclass != XBONE_IFACE_SUBCLASS ||
@@ -529,6 +535,12 @@ static bool HIDAPI_DriverXboxOne_InitDevice(SDL_HIDAPI_Device *device)
         ctx->driver_active = true;
     }
 #endif
+
+    if (device->vendor_id == USB_VENDOR_MICROSOFT &&
+        (device->product_id == USB_PRODUCT_XBOX_ONE_NANO ||
+         device->product_id == USB_PRODUCT_XBOX_ONE_NANO_BLE)) {
+        ctx->xbox_nano = true;
+    }
 
     // Assume that the controller is correctly initialized when we start
     if (!ControllerSendsAnnouncement(device->vendor_id, device->product_id)) {
@@ -677,15 +689,15 @@ static Uint32 HIDAPI_DriverXboxOne_GetJoystickCapabilities(SDL_HIDAPI_Device *de
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)device->context;
     Uint32 result = 0;
 
-    result |= SDL_JOYSTICK_CAP_RUMBLE;
+    if (!ctx->xbox_nano) {
+        result |= SDL_JOYSTICK_CAP_RUMBLE;
+    }
     if (ctx->has_trigger_rumble) {
         result |= SDL_JOYSTICK_CAP_TRIGGER_RUMBLE;
     }
-
     if (ctx->has_color_led) {
         result |= SDL_JOYSTICK_CAP_RGB_LED;
     }
-
     return result;
 }
 
@@ -1297,6 +1309,26 @@ static void HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, SDL_Dr
     SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[0] & 0x01) != 0));
 }
 
+static void HIDAPI_DriverXboxOneBluetooth_HandleNanoButtons(Uint64 timestamp, SDL_Joystick *joystick, SDL_DriverXboxOne_Context *ctx, const Uint8 *data, int size)
+{
+    if (ctx->last_state[14] != data[14]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_SOUTH, ((data[14] & 0x01) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_EAST, ((data[14] & 0x02) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_WEST, ((data[14] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_NORTH, ((data[14] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER, ((data[14] & 0x40) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER, ((data[14] & 0x80) != 0));
+    }
+
+    if (ctx->last_state[15] != data[15]) {
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_BACK, ((data[15] & 0x04) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_START, ((data[15] & 0x08) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_GUIDE, ((data[15] & 0x10) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_LEFT_STICK, ((data[15] & 0x20) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_RIGHT_STICK, ((data[15] & 0x40) != 0));
+    }
+}
+
 /*
  * Xbox One S with firmware 3.1.1221 uses a 16 byte packet and the GUIDE button in a separate packet
  */
@@ -1424,8 +1456,12 @@ static void HIDAPI_DriverXboxOneBluetooth_HandleStatePacket(SDL_Joystick *joysti
     Uint64 timestamp = SDL_GetTicksNS();
 
     if (size == 16) {
-        // Original Xbox One S, with separate report for guide button
-        HIDAPI_DriverXboxOneBluetooth_HandleButtons16(timestamp, joystick, ctx, data, size);
+        if (ctx->xbox_nano) {
+            HIDAPI_DriverXboxOneBluetooth_HandleNanoButtons(timestamp, joystick, ctx, data, size);
+        } else {
+            // Original Xbox One S, with separate report for guide button
+            HIDAPI_DriverXboxOneBluetooth_HandleButtons16(timestamp, joystick, ctx, data, size);
+        }
     } else if (size > 16) {
         HIDAPI_DriverXboxOneBluetooth_HandleButtons(timestamp, joystick, ctx, data, size);
     } else {
@@ -2001,11 +2037,10 @@ static bool HIDAPI_DriverXboxOne_UpdateDevice(SDL_HIDAPI_Device *device)
         HIDAPI_DumpPacket("Xbox One packet: size = %d", data, size);
 #endif
         if (ctx->descriptor) {
-            if (!joystick) {
-                break;
+            if (joystick) {
+                HIDAPI_DriverXboxOne_HandleDescriptorReport(joystick, ctx, data, size);
             }
-            HIDAPI_DriverXboxOne_HandleDescriptorReport(joystick, ctx, data, size);
-        } else if (device->is_bluetooth) {
+        } else if (device->is_bluetooth || ctx->xbox_nano) {
             switch (data[0]) {
             case 0x01:
                 if (!joystick) {
