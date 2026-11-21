@@ -40,6 +40,7 @@ struct SDL_Tray;
 - (void)stopMonitoringEvents;
 @end
 
+
 @interface SDLMenuDelegate : NSObject<NSMenuDelegate>
 @property (nonatomic, assign) SDL_TrayMenuShownCallback callback;
 @property (nonatomic, assign) void *userdata;
@@ -113,18 +114,22 @@ struct SDL_Tray {
 
 @end
 
-
 @implementation SDLTrayCallbackHandler
 
 static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
 {
-    NSPoint screenPos = [NSEvent mouseLocation];
-    NSArray<NSScreen *> *screens = [NSScreen screens];
-    CGFloat primaryHeight = (screens.count > 0) ? [screens firstObject].frame.size.height : 0.0;
+    NSPoint screenPos;
+    NSArray<NSScreen *> *screens;
+    CGFloat primaryHeight;
+    
+    screenPos = [NSEvent mouseLocation];
+    screens = [NSScreen screens];
+    primaryHeight = (screens.count > 0) ? [screens firstObject].frame.size.height : 0.0;
 
     if (x) {
         *x = (Sint32)SDL_lround(screenPos.x);
     }
+    
     if (y) {
         *y = (Sint32)SDL_lround(primaryHeight - screenPos.y);
     }
@@ -132,86 +137,126 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
 
 - (void)handleClick:(id)sender
 {
-    if (!self.tray) {
+	(void)sender;
+}
+
+- (void)openMenuIfNeeded:(BOOL)showMenu
+{
+	NSStatusItem *statusItem;
+	NSMenu *savedMenu;
+	
+    if (!showMenu || !self.tray || !self.tray->statusItem || !self.tray->menu || !self.tray->menu->nsmenu) {
         return;
     }
 
-    NSEvent *event = [NSApp currentEvent];
-    NSUInteger buttonNumber = [event buttonNumber];
+    statusItem = self.tray->statusItem;
+    savedMenu = statusItem.menu;
 
-    Sint32 x = 0, y = 0;
-    GetPointerScreenCoords(&x, &y);
-
-    bool show_menu = false;
-
-    if (buttonNumber == 0) {
-        /* Left click */
-        if (self.tray->left_click_callback) {
-            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-        } else {
-            show_menu = true;
-        }
-    } else if (buttonNumber == 1) {
-        /* Right click */
-        if (self.tray->right_click_callback) {
-            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-        } else {
-            show_menu = true;
-        }
-    } else if (buttonNumber == 2) {
-        /* Middle click */
-        if (self.tray->middle_click_callback) {
-            show_menu = self.tray->middle_click_callback(self.tray->userdata, self.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-        }
+    if (savedMenu) {
+        statusItem.menu = nil;
     }
 
-    if (show_menu && self.tray && self.tray->menu) {
-        [self.tray->statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+    [statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+
+    if (savedMenu && self.tray && self.tray->statusItem) {
+        statusItem.menu = savedMenu;
     }
 }
 
 - (void)startMonitoringEvents
 {
+	__weak SDLTrayCallbackHandler *weakSelf;
+	NSEventMask mask;
+	
     if (self.eventMonitor) {
         return;
     }
 
-    __weak SDLTrayCallbackHandler *weakSelf = self;
-    NSEventMask mask = NSEventMaskOtherMouseUp | NSEventMaskScrollWheel;
-
+    weakSelf = self;
+    mask = NSEventMaskLeftMouseDown | NSEventMaskLeftMouseUp | NSEventMaskRightMouseDown | NSEventMaskRightMouseUp | NSEventMaskOtherMouseDown | NSEventMaskOtherMouseUp | NSEventMaskScrollWheel;
+	
     self.eventMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:mask handler:^NSEvent *(NSEvent *event) {
-        SDLTrayCallbackHandler *strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf.tray) {
+        SDLTrayCallbackHandler *strongSelf;
+        NSStatusBarButton *button;
+        NSWindow *statusItemWindow;
+        NSPoint localPoint;
+        NSEventType type;
+        
+        strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.tray || !strongSelf.tray->statusItem) {
             return event;
         }
 
-        NSStatusBarButton *button = strongSelf.tray->statusItem.button;
-        NSWindow *statusItemWindow = button.window;
+        button = strongSelf.tray->statusItem.button;
+        statusItemWindow = button.window;
 
         if (!statusItemWindow || event.window != statusItemWindow) {
             return event;
         }
 
-        NSPoint localPoint = [button convertPoint:[event locationInWindow] fromView:nil];
+        localPoint = [button convertPoint:[event locationInWindow] fromView:nil];
         if (!NSPointInRect(localPoint, button.bounds)) {
             return event;
         }
 
-        if (event.type == NSEventTypeOtherMouseUp && [event buttonNumber] == 2) {
-            if (strongSelf.tray->middle_click_callback) {
-                Sint32 x = 0, y = 0;
-                GetPointerScreenCoords(&x, &y);
-                bool show_menu = strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
-                if (show_menu && strongSelf.tray && strongSelf.tray->menu) {
-                    [strongSelf.tray->statusItem popUpStatusItemMenu:strongSelf.tray->menu->nsmenu];
-                    return nil;
-                }
-            }
-        } else if (event.type == NSEventTypeScrollWheel) {
-            if (strongSelf.tray->scroll_callback) {
-                float deltaX = (float)[event scrollingDeltaX];
-                float deltaY = (float)[event scrollingDeltaY];
+        type = event.type;
 
+        if (type == NSEventTypeLeftMouseDown || type == NSEventTypeRightMouseDown || (type == NSEventTypeOtherMouseDown && [event buttonNumber] == 2)) {
+            return nil;
+        }
+
+        if (type == NSEventTypeLeftMouseUp) {
+            Sint32 x, y;
+            bool show_menu;
+            
+            x = y = 0;
+            show_menu = true;
+            GetPointerScreenCoords(&x, &y);
+
+            if (strongSelf.tray->left_click_callback) {
+                show_menu = strongSelf.tray->left_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            }
+            
+            [strongSelf openMenuIfNeeded:show_menu];
+            
+            return nil;
+        } else if (type == NSEventTypeRightMouseUp) {
+            Sint32 x, y;
+            bool show_menu;
+            
+            x = y = 0;
+            show_menu = true;
+            GetPointerScreenCoords(&x, &y);
+
+            if (strongSelf.tray->right_click_callback) {
+                show_menu = strongSelf.tray->right_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            }
+            
+            [strongSelf openMenuIfNeeded:show_menu];
+            
+            return nil;
+        } else if (type == NSEventTypeOtherMouseUp && [event buttonNumber] == 2) {
+            Sint32 x, y;
+            bool show_menu;
+            
+            x = y = 0;
+            show_menu = false;
+            GetPointerScreenCoords(&x, &y);
+            
+            if (strongSelf.tray->middle_click_callback) {
+                show_menu = strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray, x, y, SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU | SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            }
+            
+            [strongSelf openMenuIfNeeded:show_menu];
+            
+            return nil;
+        } else if (type == NSEventTypeScrollWheel) {
+            if (strongSelf.tray->scroll_callback) {
+                float deltaX, deltaY;
+				Sint32 scrollX, scrollY;
+				
+				deltaX = (float)[event scrollingDeltaX];
+				deltaY = (float)[event scrollingDeltaY];
                 if ([event hasPreciseScrollingDeltas]) {
                     deltaX /= 10.0f;
                     deltaY /= 10.0f;
@@ -220,18 +265,19 @@ static void GetPointerScreenCoords(Sint32 *x, Sint32 *y)
                     deltaY *= 10.0f;
                 }
 
-                Sint32 scrollY = (Sint32)SDL_lroundf(deltaY);
-                Sint32 scrollX = (Sint32)SDL_lroundf(-deltaX);
+                scrollY = (Sint32)SDL_lroundf(deltaY);
+                scrollX = (Sint32)SDL_lroundf(-deltaX);
 
-                if (scrollY != 0 && strongSelf.tray && strongSelf.tray->scroll_callback) {
+                if (scrollY && strongSelf.tray && strongSelf.tray->scroll_callback) {
                     strongSelf.tray->scroll_callback(strongSelf.tray->userdata, strongSelf.tray, scrollY, SDL_TRAYSCROLL_VERTICAL);
                 }
 
-                if (scrollX != 0 && strongSelf.tray && strongSelf.tray->scroll_callback) {
+                if (scrollX && strongSelf.tray && strongSelf.tray->scroll_callback) {
                     strongSelf.tray->scroll_callback(strongSelf.tray->userdata, strongSelf.tray, scrollX, SDL_TRAYSCROLL_HORIZONTAL);
                 }
             }
         }
+
         return event;
     }];
 }
