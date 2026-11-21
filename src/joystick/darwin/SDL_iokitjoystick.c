@@ -323,6 +323,9 @@ static bool GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 
         IOHIDValueRef valueRef;
         if (IOHIDDeviceGetValue(pDevice->deviceRef, pElement->elementRef, &valueRef) == kIOReturnSuccess) {
             value = (SInt32)IOHIDValueGetIntegerValue(valueRef);
+            if (pElement->unsignedMask) {
+                value = (SInt32)((Uint32)value & pElement->unsignedMask);
+            }
 
             // record min and max for auto calibration
             if (value < pElement->minReport) {
@@ -353,29 +356,6 @@ static bool GetHIDScaledCalibratedState(recDevice *pDevice, recElement *pElement
         }
     }
     return result;
-}
-
-static bool GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(recDevice *pDevice, recElement *pElement, SInt32 min, SInt32 max, SInt32 *pValue)
-{
-    if (pElement->minReport == 0 && pElement->maxReport == 255) {
-        return GetHIDScaledCalibratedState(pDevice, pElement, min, max, pValue);
-    }
-
-    // This device thumbstick axes have an unusual axis range that
-    // doesn't work with GetHIDScaledCalibratedState() above.
-    //
-    // See https://github.com/libsdl-org/SDL/issues/13143 for details
-    if (GetHIDElementState(pDevice, pElement, pValue)) {
-        if (*pValue >= 0) {
-            // Negative axis values range from 32767 (at rest) to 0 (minimum)
-            *pValue = -32767 + *pValue;
-        } else if (*pValue < 0) {
-            // Positive axis values range from -32768 (at rest) to 0 (maximum)
-            *pValue = 32768 + *pValue;
-        }
-        return true;
-    }
-    return false;
 }
 
 static Uint64 GetServiceEntryID(io_service_t service)
@@ -593,6 +573,20 @@ static void AddHIDElement(const void *value, void *parameter)
 
             element->minReport = element->min = (SInt32)IOHIDElementGetLogicalMin(refElement);
             element->maxReport = element->max = (SInt32)IOHIDElementGetLogicalMax(refElement);
+            if ((element->max < element->min && element->min >= 0) ||
+                (element->min == -1 && element->max == 0)) {
+                // Some controllers declare an unsigned range with a logical maximum
+                // that is negative when read as signed, e.g. 0..0xFFFF in a 2-byte item.
+                // IOKit sorts the range, reporting it as -1..0, and sign extends the
+                // values, so treat them as unsigned instead.
+                const uint32_t size = IOHIDElementGetReportSize(refElement);
+                if (size > 1 && size < 32) {
+                    const SInt32 declaredMax = (element->max < element->min) ? element->max : element->min;
+                    element->unsignedMask = (1u << size) - 1;
+                    element->minReport = element->min = 0;
+                    element->maxReport = element->max = (SInt32)((Uint32)declaredMax & element->unsignedMask);
+                }
+            }
             element->cookie = IOHIDElementGetCookie(refElement);
 
             pDevice->elements++;
@@ -696,11 +690,6 @@ static bool GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     pDevice->product_id = (Uint16)product;
     pDevice->guid = SDL_CreateJoystickGUID(bus, (Uint16)vendor, (Uint16)product, (Uint16)version, manufacturer_string, product_string, 0, 0);
     pDevice->steam_virtual_gamepad_slot = GetSteamVirtualGamepadSlot((Uint16)vendor, (Uint16)product, product_string);
-
-    if (vendor == USB_VENDOR_NACON_ALT &&
-        product == USB_PRODUCT_NACON_REVOLUTION_X_UNLIMITED_BT) {
-        pDevice->nacon_revolution_x_unlimited = true;
-    }
 
     array = IOHIDDeviceCopyMatchingElements(hidDevice, NULL, kIOHIDOptionsTypeNone);
     if (array) {
@@ -1159,11 +1148,7 @@ static void DARWIN_JoystickUpdate(SDL_Joystick *joystick)
     i = 0;
 
     while (element) {
-        if (device->nacon_revolution_x_unlimited) {
-            goodRead = GetHIDScaledCalibratedState_NACON_Revolution_X_Unlimited(device, element, -32768, 32767, &value);
-        } else {
-            goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
-        }
+        goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
         if (goodRead) {
             SDL_SendJoystickAxis(timestamp, joystick, i, value);
         }
