@@ -15,8 +15,6 @@
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 static SDL_Texture *texture = NULL;
-static int texture_width = 0;
-static int texture_height = 0;
 
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
@@ -54,9 +52,6 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     }
 
     SDL_free(png_path);  /* done with this, the file is loaded. */
-
-    texture_width = surface->w;
-    texture_height = surface->h;
 
     texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) {
