@@ -364,7 +364,6 @@ static Controller *controllers;
 static Controller *controller;
 static SDL_JoystickID mapping_controller = 0;
 static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static bool binding_flow = false;
 static int binding_flow_direction = 0;
 static Uint64 binding_advance_time = 0;
@@ -657,9 +656,6 @@ static void SetCurrentBindingElement(int element, bool flow)
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
         binding_flow_direction = 0;
-        last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-    } else {
-        last_binding_element = binding_element;
     }
     binding_element = element;
     binding_flow = flow || (element == SDL_GAMEPAD_BUTTON_SOUTH);
