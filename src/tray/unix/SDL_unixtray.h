@@ -52,7 +52,11 @@ typedef struct SDL_TrayDriver
     void (*SetTrayEntryEnabled)(SDL_TrayEntry *, bool);
     bool (*GetTrayEntryEnabled)(SDL_TrayEntry *);
     void (*SetTrayEntryCallback)(SDL_TrayEntry *, SDL_TrayCallback, void *);
-
+    void (*SetTrayMenuShownCallback)(SDL_TrayMenu *, SDL_TrayMenuShownCallback, void *);
+    SDL_TrayStatus (*SetTrayStatus)(SDL_Tray *, SDL_TrayStatus);
+    SDL_TrayStatus (*GetTrayStatus)(SDL_Tray *);
+    bool (*SetMiscProp)(SDL_Tray *, Uint32, va_list);
+    bool (*GetMiscProp)(SDL_Tray *, Uint32, va_list);
     void (*DestroyDriver)(struct SDL_TrayDriver *);
 
     void *internal;

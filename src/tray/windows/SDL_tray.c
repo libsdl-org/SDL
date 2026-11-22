@@ -36,6 +36,8 @@
 
 #define WM_TRAYICON (WM_USER + 1)
 
+typedef HRESULT(WINAPI* PFN_SHELL_NOTIFYICONGETRECT)(const NOTIFYICONIDENTIFIER*, RECT*);
+
 struct SDL_TrayMenu {
     HMENU hMenu;
 
@@ -44,6 +46,9 @@ struct SDL_TrayMenu {
 
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
+   
+    void *userdata;
+    SDL_TrayMenuShownCallback callback;
 };
 
 struct SDL_TrayEntry {
@@ -67,7 +72,16 @@ struct SDL_Tray {
     SDL_TrayClickCallback left_click_callback;
     SDL_TrayClickCallback right_click_callback;
     SDL_TrayClickCallback middle_click_callback;
+    SDL_TrayScrollCallback scroll_callback;
+
+    HMODULE shell32h;
+    PFN_SHELL_NOTIFYICONGETRECT NotifyIconGetRect;
+    bool shell32h_unload;
+    HHOOK scroll_hook;
 };
+
+static DWORD hook_tls_index = TLS_OUT_OF_INDEXES;
+static int hook_tls_refs = 0;
 
 static UINT_PTR get_next_id(void)
 {
@@ -105,8 +119,80 @@ static SDL_TrayEntry *find_entry_with_id(SDL_Tray *tray, UINT_PTR id)
     return find_entry_in_menu(tray->menu, id);
 }
 
+static SDL_TrayMenu *find_menu_from_hmenu(SDL_TrayMenu *menu, HMENU hMenu)
+{
+    if (menu->hMenu == hMenu) {
+        return menu;
+    }
+
+    for (int i = 0; i < menu->nEntries; i++) {
+        SDL_TrayEntry *entry = menu->entries[i];
+
+        if (entry->submenu) {
+            SDL_TrayMenu *m = find_menu_from_hmenu(entry->submenu, hMenu);
+
+            if (m) {
+                return m;
+            }
+        }
+    }
+
+    return NULL;
+}
+
+LRESULT CALLBACK scroll_callback_hook(int nCode, WPARAM wParam, LPARAM lParam) {
+    if (nCode >= 0 && hook_tls_index != TLS_OUT_OF_INDEXES) {
+        SDL_Tray *tray;
+
+        tray = (SDL_Tray *)TlsGetValue(hook_tls_index);
+
+        if (tray && tray->scroll_hook && tray->NotifyIconGetRect) {
+            MSLLHOOKSTRUCT *mouse_hook_struct;
+            NOTIFYICONIDENTIFIER nid;
+            RECT icon_rect;
+
+            SDL_zero(nid);
+            SDL_zero(icon_rect);
+            nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+            nid.hWnd = tray->nid.hWnd;
+            nid.uID = tray->nid.uID;
+            mouse_hook_struct = (MSLLHOOKSTRUCT *)lParam;
+
+            if (SUCCEEDED(tray->NotifyIconGetRect(&nid, &icon_rect))) {
+                if (!PtInRect(&icon_rect, mouse_hook_struct->pt)) {
+                    HHOOK unhook;
+
+                    unhook = tray->scroll_hook;
+                    tray->scroll_hook = NULL;
+                    TlsSetValue(hook_tls_index, NULL);
+                    UnhookWindowsHookEx(unhook);
+                    return CallNextHookEx(NULL, nCode, wParam, lParam);
+                }
+
+                if (wParam == WM_MOUSEWHEEL || wParam == WM_MOUSEHWHEEL) {
+                    SDL_TrayScrollFlags scroll_flags;
+
+                    if (wParam == WM_MOUSEHWHEEL) {
+                        scroll_flags = SDL_TRAYSCROLL_HORIZONTAL;
+                    } else {
+                        scroll_flags = SDL_TRAYSCROLL_VERTICAL;
+                    }
+
+                    if (tray->scroll_callback) {
+                        tray->scroll_callback(tray->userdata, tray, ((short)HIWORD(mouse_hook_struct->mouseData)) / WHEEL_DELTA, scroll_flags);
+                    }
+                    return 1;
+                }
+            }
+        }
+    }
+
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
+}
+
 LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
     SDL_Tray *tray = (SDL_Tray *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    SDL_TrayMenu *menu = NULL;
     SDL_TrayEntry *entry = NULL;
 
     if (!tray) {
@@ -125,12 +211,23 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch (uMsg) {
         case WM_TRAYICON:
             {
-                bool show_menu = false;
+				POINT cursor_pos;
+                bool show_menu;
+
+				show_menu = false;
+				GetCursorPos(&cursor_pos);
 
                 switch (LOWORD(lParam)) {
                     case WM_LBUTTONUP:
                         if (tray->left_click_callback) {
-                            show_menu = tray->left_click_callback(tray->userdata, tray);
+                            show_menu = tray->left_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES |
+                                SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU |
+                                SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU
+                            );
                         } else {
                             show_menu = true;
                         }
@@ -138,7 +235,14 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
                     case WM_CONTEXTMENU:
                         if (tray->right_click_callback) {
-                            show_menu = tray->right_click_callback(tray->userdata, tray);
+                            show_menu = tray->right_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES |
+                                SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU |
+                                SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU
+                            );
                         } else {
                             show_menu = true;
                         }
@@ -146,9 +250,48 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
                     case WM_MBUTTONUP:
                         if (tray->middle_click_callback) {
-                            tray->middle_click_callback(tray->userdata, tray);
+                            tray->middle_click_callback(
+                                tray->userdata, tray,
+                                (Sint32)cursor_pos.x,
+                                (Sint32)cursor_pos.y,
+                                SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES
+                            );
                         }
                         break;
+                        
+                    case WM_MOUSEMOVE:
+                        {
+                            NOTIFYICONIDENTIFIER nid;
+                            RECT icon_rect;
+                            POINT mouse_coords;
+
+                            if (!tray->scroll_callback || !tray->NotifyIconGetRect) {
+                                break;
+                            }
+
+                            SDL_zero(nid);
+                            SDL_zero(icon_rect);
+                            nid.cbSize = sizeof(NOTIFYICONIDENTIFIER);
+                            nid.hWnd = tray->nid.hWnd;
+                            nid.uID = tray->nid.uID;
+                            if (!SUCCEEDED(tray->NotifyIconGetRect(&nid, &icon_rect))) {
+                                break;
+                            }
+
+                            /* Sanity check */
+                            mouse_coords.x = GET_X_LPARAM(wParam);
+                            mouse_coords.y = GET_Y_LPARAM(wParam);
+                            if (!PtInRect(&icon_rect, mouse_coords)) {
+                                break;
+                            }
+
+                            if (!tray->scroll_hook && hook_tls_index != TLS_OUT_OF_INDEXES) {
+                                TlsSetValue(hook_tls_index, tray);
+                                tray->scroll_hook = SetWindowsHookEx(WH_MOUSE_LL, scroll_callback_hook, GetModuleHandle(NULL), 0);
+                            }
+
+                            break;
+                        }
                 }
 
                 if (show_menu && tray->menu) {
@@ -176,6 +319,31 @@ LRESULT CALLBACK TrayWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             }
             break;
 
+
+        case WM_INITMENUPOPUP:
+            if (!tray->menu) {
+                break;
+            }
+
+            menu = find_menu_from_hmenu(tray->menu, (HMENU) wParam);
+
+            if (menu && menu->callback) {
+                menu->callback(menu->userdata, menu, true);
+            }
+            break;
+
+        case WM_UNINITMENUPOPUP:
+            if (!tray->menu) {
+                break;
+            }
+
+            menu = find_menu_from_hmenu(tray->menu, (HMENU) wParam);
+
+            if (menu && menu->callback) {
+                menu->callback(menu->userdata, menu, false);
+            }
+            break;
+            
         default:
             return DefWindowProc(hwnd, uMsg, wParam, lParam);
     }
@@ -317,7 +485,34 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray->scroll_callback = (SDL_TrayScrollCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, NULL);
 
+    if (tray->scroll_callback) {
+        tray->shell32h = GetModuleHandleA("shell32.dll");
+        if (!tray->shell32h) {
+            tray->shell32h = LoadLibraryA("shell32.dll");
+            tray->shell32h_unload = true;
+        } else {
+            tray->shell32h_unload = false;
+        }
+
+        if (tray->shell32h) {
+            tray->NotifyIconGetRect	= (PFN_SHELL_NOTIFYICONGETRECT)GetProcAddress(tray->shell32h, "Shell_NotifyIconGetRect");
+        } else {
+            tray->NotifyIconGetRect = NULL;
+        }
+
+        if (hook_tls_refs == 0) {
+            hook_tls_index = TlsAlloc();
+        }
+
+        if (hook_tls_index != TLS_OUT_OF_INDEXES) {
+            hook_tls_refs++;
+        }
+    }
+
+    tray->scroll_hook = NULL;
+    
     tray->menu = NULL;
     if (!SDL_RegisterTrayClass(TEXT("SDL_TRAY"))) {
         SDL_SetError("Failed to register SDL_TRAY window class");
@@ -333,7 +528,9 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->nid.cbSize = sizeof(NOTIFYICONDATAW);
     tray->nid.hWnd = tray->hwnd;
     tray->nid.uID = (UINT) get_next_id();
-    tray->nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP;
+    tray->nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP | NIF_SHOWTIP | NIF_STATE;
+    tray->nid.dwStateMask = NIS_HIDDEN;
+    tray->nid.dwState = 0;
     tray->nid.uCallbackMessage = WM_TRAYICON;
     tray->nid.uVersion = NOTIFYICON_VERSION_4;
     if (tooltip) {
@@ -686,6 +883,65 @@ void SDL_SetTrayEntryChecked(SDL_TrayEntry *entry, bool checked)
     CheckMenuItem(entry->parent->hMenu, (UINT) entry->id, checked ? MF_CHECKED : MF_UNCHECKED);
 }
 
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    switch (status) {
+        case SDL_TRAYSTATUS_VISIBLE:
+            tray->nid.dwState = 0;
+            Shell_NotifyIconW(NIM_MODIFY, &tray->nid);
+            return SDL_TRAYSTATUS_VISIBLE;
+            break;
+        case SDL_TRAYSTATUS_HIDDEN:
+            tray->nid.dwState = NIS_HIDDEN;
+            Shell_NotifyIconW(NIM_MODIFY, &tray->nid);
+            return SDL_TRAYSTATUS_HIDDEN;
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            tray->nid.dwState = 0;
+            Shell_NotifyIconW(NIM_MODIFY, &tray->nid);
+            return SDL_TRAYSTATUS_VISIBLE;
+            break;
+        default:
+            return (!tray->nid.dwState) ? SDL_TRAYSTATUS_VISIBLE : SDL_TRAYSTATUS_HIDDEN;
+            break;
+    }
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    return (!tray->nid.dwState) ? SDL_TRAYSTATUS_VISIBLE : SDL_TRAYSTATUS_HIDDEN;
+}
+
+bool SDL_SetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
 bool SDL_GetTrayEntryChecked(SDL_TrayEntry *entry)
 {
     if (!entry || !(entry->flags & SDL_TRAYENTRY_CHECKBOX)) {
@@ -733,6 +989,16 @@ void SDL_SetTrayEntryCallback(SDL_TrayEntry *entry, SDL_TrayCallback callback, v
 
     entry->callback = callback;
     entry->userdata = userdata;
+}
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    if (!menu) {
+        return;
+    }
+
+    menu->callback = callback;
+    menu->userdata = userdata;
 }
 
 void SDL_ClickTrayEntry(SDL_TrayEntry *entry)
@@ -789,6 +1055,22 @@ void SDL_DestroyTray(SDL_Tray *tray)
     SDL_UnregisterTray(tray);
 
     Shell_NotifyIconW(NIM_DELETE, &tray->nid);
+
+    if (tray->shell32h && tray->shell32h_unload) {
+        FreeLibrary(tray->shell32h);
+    }
+
+    if (tray->scroll_hook) {
+        UnhookWindowsHookEx(tray->scroll_hook);
+    }
+
+    if (hook_tls_index != TLS_OUT_OF_INDEXES) {
+        hook_tls_refs--;
+        if (!hook_tls_refs) {
+            TlsFree(hook_tls_index);
+            hook_tls_index = TLS_OUT_OF_INDEXES;
+        }
+    }
 
     if (tray->menu) {
         DestroySDLMenu(tray->menu);
