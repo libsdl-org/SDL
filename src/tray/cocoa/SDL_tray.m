@@ -36,10 +36,10 @@ struct SDL_Tray;
 @property (nonatomic, assign) struct SDL_Tray *tray;
 @property (nonatomic, strong) id eventMonitor;
 - (void)handleClick:(id)sender;
+- (void)menu:(id)sender;
 - (void)startMonitoringEvents;
 - (void)stopMonitoringEvents;
 @end
-
 
 @interface SDLMenuDelegate : NSObject<NSMenuDelegate>
 @property (nonatomic, assign) SDL_TrayMenuShownCallback callback;
@@ -56,6 +56,7 @@ struct SDL_TrayMenu {
     int nEntries;
     SDL_TrayEntry **entries;
 
+    SDL_Tray *tray;
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
 
@@ -149,6 +150,17 @@ static void ConvertScreenCoords(NSPoint p, Sint32 *x, Sint32 *y)
 
     if (show_menu && self.tray->menu) {
         [self.tray->statusItem popUpStatusItemMenu:self.tray->menu->nsmenu];
+    }
+}
+
+- (void)menu:(id)sender
+{
+    if ([sender isKindOfClass:[NSMenuItem class]]) {
+        NSValue *val = [(NSMenuItem *)sender representedObject];
+        if (val) {
+            SDL_TrayEntry *entry = (SDL_TrayEntry *)[val pointerValue];
+            SDL_ClickTrayEntry(entry);
+        }
     }
 }
 
@@ -462,6 +474,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
     menu->entries = NULL;
     menu->parent_tray = tray;
     menu->parent_entry = NULL;
+    menu->tray = tray;
 
     return menu;
 }
@@ -507,6 +520,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
     menu->entries = NULL;
     menu->parent_tray = NULL;
     menu->parent_entry = entry;
+    menu->tray = entry->parent->tray;
 
     [entry->parent->nsmenu setSubmenu:nsmenu forItem:entry->nsitem];
 
@@ -630,10 +644,13 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     new_entries[menu->nEntries] = NULL;
 
     NSMenuItem *nsitem;
-    if (label == NULL) {
+    if (!label) {
         nsitem = [NSMenuItem separatorItem];
     } else {
-        nsitem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:label] action:@selector(menu) keyEquivalent:@""];
+        nsitem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:label] action:@selector(menu:) keyEquivalent:@""];
+        if (menu->tray && menu->tray->cbHandler) {
+            [nsitem setTarget:menu->tray->cbHandler];
+        }
         [nsitem setEnabled:((flags & SDL_TRAYENTRY_DISABLED) ? FALSE : TRUE)];
         [nsitem setState:((flags & SDL_TRAYENTRY_CHECKED) ? NSControlStateValueOn : NSControlStateValueOff)];
         [nsitem setRepresentedObject:[NSValue valueWithPointer:entry]];
