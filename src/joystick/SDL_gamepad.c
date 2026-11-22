@@ -122,9 +122,11 @@ typedef struct
 
 static GamepadMapping_t *s_pSupportedGamepads SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static GamepadMapping_t *s_pDefaultMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
-static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static MappingChangeTracker *s_mappingChangeTracker SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
 static SDL_HashTable *s_gamepadInstanceIDs SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+#ifdef SDL_JOYSTICK_XINPUT
+static GamepadMapping_t *s_pXInputMapping SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+#endif
 
 #define _guarded SDL_GUARDED_BY(SDL_joystick_lock)
 
@@ -2585,7 +2587,9 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     SDL_GUID guid;
     Uint16 vendor, product;
     bool is_default_mapping = false;
+#ifdef SDL_JOYSTICK_XINPUT
     bool is_xinput_mapping = false;
+#endif
     bool existing = false;
     GamepadMapping_t *pGamepadMapping;
     int result = -1;
@@ -2604,9 +2608,12 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     }
     if (!SDL_strcasecmp(pchGUID, "default")) {
         is_default_mapping = true;
-    } else if (!SDL_strcasecmp(pchGUID, "xinput")) {
+    }
+#ifdef SDL_JOYSTICK_XINPUT
+    else if (!SDL_strcasecmp(pchGUID, "xinput")) {
         is_xinput_mapping = true;
     }
+#endif
     guid = SDL_StringToGUID(pchGUID);
     SDL_free(pchGUID);
 
@@ -2725,9 +2732,12 @@ static int SDL_PrivateAddGamepadMapping(const char *mappingString, SDL_GamepadMa
     } else {
         if (is_default_mapping) {
             s_pDefaultMapping = pGamepadMapping;
-        } else if (is_xinput_mapping) {
+        }
+#ifdef SDL_JOYSTICK_XINPUT
+        else if (is_xinput_mapping) {
             s_pXInputMapping = pGamepadMapping;
         }
+#endif
         result = 1;
     }
 done:
