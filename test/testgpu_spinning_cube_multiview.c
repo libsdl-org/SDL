@@ -29,11 +29,17 @@
 #include "testgpu/cube.frag.dxil.h"
 #include "testgpu/cube.frag.msl.h"
 #include "testgpu/cube.frag.spv.h"
-#include "testgpu/cube_multiview.vert.dxil.h"
-#include "testgpu/cube_multiview.vert.msl.h"
+// FIXME
+//#include "testgpu/cube_multiview.vert.dxil.h"
+//#include "testgpu/cube_multiview.vert.msl.h"
 #include "testgpu/cube_multiview.vert.spv.h"
 
-#define TESTGPU_SUPPORTED_FORMATS (SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXBC | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB)
+// TODO
+#include "vulkan/vulkan_core.h"
+
+// FIXME
+//#define TESTGPU_SUPPORTED_FORMATS (SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_DXBC | SDL_GPU_SHADERFORMAT_DXIL | SDL_GPU_SHADERFORMAT_METALLIB)
+#define TESTGPU_SUPPORTED_FORMATS SDL_GPU_SHADERFORMAT_SPIRV
 
 #define CHECK_CREATE(var, thing) { if (!(var)) { SDL_Log("Failed to create %s: %s", thing, SDL_GetError()); quit(2); } }
 
@@ -256,7 +262,7 @@ static SDL_GPUTexture *CreateDepthTexture(Uint32 drawablew, Uint32 drawableh)
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
 
-    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     createinfo.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
     createinfo.width = drawablew / 2;
     createinfo.height = drawableh;
@@ -281,7 +287,7 @@ static SDL_GPUTexture *CreateMSAATexture(Uint32 drawablew, Uint32 drawableh)
         return NULL;
     }
 
-    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
     createinfo.width = drawablew / 2;
     createinfo.height = drawableh;
@@ -302,7 +308,7 @@ static SDL_GPUTexture *CreateResolveTexture(Uint32 drawablew, Uint32 drawableh)
     SDL_GPUTextureCreateInfo createinfo;
     SDL_GPUTexture *result;
 
-    createinfo.type = SDL_GPU_TEXTURETYPE_2D;
+    createinfo.type = SDL_GPU_TEXTURETYPE_2D_ARRAY;
     createinfo.format = SDL_GetGPUSwapchainTextureFormat(gpu_device, state->windows[0]);
     createinfo.width = drawablew / 2;
     createinfo.height = drawableh;
@@ -478,6 +484,8 @@ static SDL_GPUShader *load_shader(bool is_vertex)
     SDL_zero(createinfo);
     createinfo.num_uniform_buffers = is_vertex ? 1 : 0;
 
+    // FIXME
+#if 0
     SDL_GPUShaderFormat format = SDL_GetGPUShaderFormats(gpu_device);
     if (format & SDL_GPU_SHADERFORMAT_DXIL) {
         createinfo.format = SDL_GPU_SHADERFORMAT_DXIL;
@@ -487,7 +495,9 @@ static SDL_GPUShader *load_shader(bool is_vertex)
         createinfo.format = SDL_GPU_SHADERFORMAT_MSL;
         createinfo.code = is_vertex ? cube_multiview_vert_msl : cube_frag_msl;
         createinfo.code_size = is_vertex ? cube_multiview_vert_msl_len : cube_frag_msl_len;
-    } else {
+    } else
+#endif
+    {
         createinfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
         createinfo.code = is_vertex ? cube_multiview_vert_spv : cube_frag_spv;
         createinfo.code_size = is_vertex ? cube_multiview_vert_spv_len : cube_frag_spv_len;
@@ -515,13 +525,22 @@ static void init_render_state(int msaa)
     SDL_GPUShader *vertex_shader;
     SDL_GPUShader *fragment_shader;
     int i;
+    SDL_PropertiesID device_props;
 
-    gpu_device = SDL_CreateGPUDevice(
-        TESTGPU_SUPPORTED_FORMATS,
-        true,
-        state->gpudriver
+    device_props = SDL_CreateProperties();
+    SDL_SetBooleanProperty(device_props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, true);
+    SDL_SetBooleanProperty(device_props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, true);
+    SDL_SetPointerProperty(
+        device_props,
+        SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER,
+        &(SDL_GPUVulkanOptions) {
+            .vulkan_api_version = VK_MAKE_API_VERSION(0, 1, 3, 0),
+        }
     );
+
+    gpu_device = SDL_CreateGPUDeviceWithProperties(device_props);
     CHECK_CREATE(gpu_device, "GPU device");
+    SDL_DestroyProperties(device_props);
 
     if (
         SDL_GetNumberProperty(

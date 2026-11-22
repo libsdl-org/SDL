@@ -1190,7 +1190,6 @@ struct VulkanRenderer
     bool supportsPortabilityEnumeration;
     bool supportsFillModeNonSolid;
     bool supportsMultiDrawIndirect;
-    bool supportsMultiview;
 
     VulkanMemoryAllocator *memoryAllocator;
     VkPhysicalDeviceMemoryProperties memoryProperties;
@@ -4464,6 +4463,7 @@ static bool VULKAN_INTERNAL_CreateRenderTargetView(
     imageViewCreateInfo.subresourceRange.baseMipLevel = level;
     imageViewCreateInfo.subresourceRange.levelCount = 1;
     imageViewCreateInfo.subresourceRange.baseArrayLayer = layerOrDepth;
+    // TODO: it looks like these need to be set up for multiview too
     imageViewCreateInfo.subresourceRange.layerCount = 1;
     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
@@ -6182,7 +6182,8 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     VulkanRenderer *renderer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VkResult vulkanResult;
     VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
@@ -6190,6 +6191,7 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS];
     VkAttachmentReference depthStencilAttachmentReference;
     VkRenderPassCreateInfo renderPassCreateInfo;
+    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
     VkSubpassDescription subpass;
     VkRenderPass renderPass;
     Uint32 i;
@@ -6197,6 +6199,7 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     Uint32 attachmentDescriptionCount = 0;
     Uint32 colorAttachmentReferenceCount = 0;
     Uint32 resolveReferenceCount = 0;
+    Uint32 viewMask = 0;
 
     for (i = 0; i < numColorTargets; i += 1) {
         VulkanTextureContainer *container = (VulkanTextureContainer *)colorTargetInfos[i].texture;
@@ -6289,6 +6292,21 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = NULL;
 
+    if (viewCount != 0) {
+        viewMask = (1u << viewCount) - 1;
+
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
+        multiViewInfo.pNext = NULL;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = &viewMask;
+        multiViewInfo.dependencyCount = 0;
+        multiViewInfo.pViewOffsets = NULL;
+        multiViewInfo.correlationMaskCount = 0;
+        multiViewInfo.pCorrelationMasks = NULL;
+
+        renderPassCreateInfo.pNext = &multiViewInfo;
+    }
+
     vulkanResult = renderer->vkCreateRenderPass(
         renderer->logicalDevice,
         &renderPassCreateInfo,
@@ -6303,7 +6321,8 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VulkanRenderer *renderer,
     SDL_GPUGraphicsPipelineTargetInfo targetInfo,
-    VkSampleCountFlagBits sampleCount)
+    VkSampleCountFlagBits sampleCount,
+    Uint32 viewCount)
 {
     VkAttachmentDescription attachmentDescriptions[MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
     VkAttachmentReference colorAttachmentReferences[MAX_COLOR_TARGET_BINDINGS];
@@ -6311,9 +6330,11 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     SDL_GPUColorTargetDescription attachmentDescription;
     VkSubpassDescription subpass;
     VkRenderPassCreateInfo renderPassCreateInfo;
+    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
     VkRenderPass renderPass;
     VkResult result;
 
+    Uint32 viewMask = 0;
     Uint32 attachmentDescriptionCount = 0;
     Uint32 colorAttachmentReferenceCount = 0;
     Uint32 i;
@@ -6381,6 +6402,21 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = NULL;
 
+    if (viewCount != 0) {
+        viewMask = (1u << viewCount) - 1;
+
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
+        multiViewInfo.pNext = NULL;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = &viewMask;
+        multiViewInfo.dependencyCount = 0;
+        multiViewInfo.pViewOffsets = NULL;
+        multiViewInfo.correlationMaskCount = 0;
+        multiViewInfo.pCorrelationMasks = NULL;
+
+        renderPassCreateInfo.pNext = &multiViewInfo;
+    }
+
     result = renderer->vkCreateRenderPass(
         renderer->logicalDevice,
         &renderPassCreateInfo,
@@ -6440,7 +6476,9 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     VkRenderPass transientRenderPass = VULKAN_INTERNAL_CreateTransientRenderPass(
         renderer,
         createinfo->target_info,
-        SDLToVK_SampleCount[createinfo->multisample_state.sample_count]);
+        SDLToVK_SampleCount[createinfo->multisample_state.sample_count],
+        // TODO: where do we put this? a property?
+        2);
 
     // Dynamic state
 
@@ -7310,7 +7348,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     VulkanRenderer *renderer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VulkanRenderPassHashTableValue *renderPassWrapper = NULL;
     VkRenderPass renderPassHandle;
@@ -7369,7 +7408,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
         renderer,
         colorTargetInfos,
         numColorTargets,
-        depthStencilTargetInfo);
+        depthStencilTargetInfo,
+        viewCount);
 
     if (renderPassHandle == VK_NULL_HANDLE) {
         SDL_UnlockMutex(renderer->renderPassFetchLock);
@@ -7960,7 +8000,6 @@ static void VULKAN_BeginRenderPass(
     SDL_FColor defaultBlendConstants;
     Uint32 framebufferWidth = SDL_MAX_UINT32;
     Uint32 framebufferHeight = SDL_MAX_UINT32;
-    Uint32 viewMask = 0;
 
     for (i = 0; i < numColorTargets; i += 1) {
         VulkanTextureContainer *textureContainer = (VulkanTextureContainer *)colorTargetInfos[i].texture;
@@ -8054,7 +8093,8 @@ static void VULKAN_BeginRenderPass(
         renderer,
         colorTargetInfos,
         numColorTargets,
-        depthStencilTargetInfo);
+        depthStencilTargetInfo,
+        viewCount);
 
     if (renderPass == VK_NULL_HANDLE) {
         return;
@@ -8111,24 +8151,6 @@ static void VULKAN_BeginRenderPass(
     renderPassBeginInfo.renderArea.extent.height = framebufferHeight;
     renderPassBeginInfo.renderArea.offset.x = 0;
     renderPassBeginInfo.renderArea.offset.y = 0;
-
-    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
-
-    if (viewCount != 0) {
-        viewMask = (1u << viewCount) - 1;
-
-        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
-        multiViewInfo.pNext = NULL;
-        // TODO
-        multiViewInfo.subpassCount = 0;
-        multiViewInfo.pViewMasks = &viewMask;
-        multiViewInfo.dependencyCount = 0;
-        multiViewInfo.pViewOffsets = NULL;
-        multiViewInfo.correlationMaskCount = 0;
-        multiViewInfo.pCorrelationMasks = NULL;
-
-        renderPassBeginInfo.pNext = &multiViewInfo;
-    }
 
     renderer->vkCmdBeginRenderPass(
         vulkanCommandBuffer->commandBuffer,
@@ -11411,7 +11433,6 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     bool *supportsColorspace,
     bool *supportsPhysicalDeviceProperties2,
     bool *supportsPortabilityEnumeration,
-    bool *supportsMultiview,
     int *firstUnsupportedExtensionIndex)
 {
     Uint32 extensionCount, i;
@@ -11461,12 +11482,6 @@ static Uint8 VULKAN_INTERNAL_CheckInstanceExtensions(
     // Only needed for MoltenVK!
     *supportsPortabilityEnumeration = SupportsInstanceExtension(
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
-        availableExtensions,
-        extensionCount);
-
-    // Optional, if not available then max view count will be 1
-    *supportsMultiview = SupportsInstanceExtension(
-        VK_KHR_MULTIVIEW_EXTENSION_NAME,
         availableExtensions,
         extensionCount);
 
@@ -12103,7 +12118,6 @@ static Uint8 VULKAN_INTERNAL_CreateInstance(VulkanRenderer *renderer, VulkanFeat
             &renderer->supportsColorspace,
             &renderer->supportsPhysicalDeviceProperties2,
             &renderer->supportsPortabilityEnumeration,
-            &renderer->supportsMultiview,
             &firstUnsupportedExtensionIndex)) {
         if (renderer->debugMode) {
             SDL_LogError(SDL_LOG_CATEGORY_GPU,
@@ -12627,7 +12641,7 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->physicalDeviceProperties.pNext =
             &renderer->physicalDeviceDriverProperties;
 
-        if (renderer->supportsMultiview) {
+        if (renderer->supports.KHR_multiview) {
             renderer->physicalDeviceProperties.pNext = &renderer->multiviewProperties;
             renderer->multiviewProperties.sType =
                 VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
@@ -12688,6 +12702,10 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     if (haveDeviceFeatures.multiDrawIndirect) {
         features->desiredVulkan10DeviceFeatures.multiDrawIndirect = VK_TRUE;
         renderer->supportsMultiDrawIndirect = true;
+    }
+
+    if (renderer->supports.KHR_multiview) {
+        features->desiredVulkan11DeviceFeatures.multiview = true;
     }
 
     // creating the logical device
@@ -13609,7 +13627,7 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
         }
     }
 
-    if (!renderer->supportsMultiview) {
+    if (!renderer->supports.KHR_multiview) {
         renderer->multiviewProperties.maxMultiviewViewCount = 1;
     }
 

@@ -19,6 +19,7 @@ _SDL_AudioDevicePaused
 _SDL_BeginGPUComputePass
 _SDL_BeginGPUCopyPass
 _SDL_BeginGPURenderPass
+_SDL_BeginMultiViewGPURenderPass
 _SDL_BindAudioStream
 _SDL_BindAudioStreams
 _SDL_BindGPUComputePipeline
