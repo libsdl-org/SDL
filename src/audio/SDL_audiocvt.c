@@ -1533,7 +1533,7 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
 
     SDL_aligned_free(stream->work_buffer);
     SDL_free(stream->src_chmap);
-+   SDL_free(stream->dst_chmap);
+    SDL_free(stream->dst_chmap);
     SDL_DestroyAudioQueue(stream->queue);
     SDL_DestroyMutex(stream->lock);
 
