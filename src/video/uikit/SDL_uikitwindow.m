@@ -481,6 +481,19 @@ void UIKit_SetWindowResizable(SDL_VideoDevice *_this,
             return;
         }
 
+        if (!resizable) {
+            const NSUInteger orientations =
+                UIKit_GetSupportedOrientations(window);
+            const bool supportsPortrait =
+                (orientations & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
+            const bool supportsLandscape =
+                (orientations & UIInterfaceOrientationMaskLandscape) != 0;
+
+            if (supportsPortrait && supportsLandscape) {
+                resizable = true;
+            }
+        }
+
         if (@available(iOS 13.0, *)) {
             UISceneSizeRestrictions *restrictions =
                 data.uiwindow.windowScene.sizeRestrictions;
