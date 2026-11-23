@@ -2152,6 +2152,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
     Uint32 readWriteEntryCapacity = 0;
 
     Uint32 offset = 0;
+    Uint32 offsetRW = 0;
     Uint32 hash = 0xAAAA1BEE;
 
     // Excellent naming by yours truly.
@@ -2200,57 +2201,16 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
     }
 
     for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-        WebGPUTextureView *textureView = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i];
+        WebGPUTextureView *textureViewRO = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i];
+        WebGPUTextureView *textureViewRW = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i];
 
-        if (textureView) {
+        if (textureViewRW) {
             WGPUBindGroupLayoutEntry storageTextureEntry = {
-                .binding = offset++,
-                .storageTexture = {
-                    .access = WGPUStorageTextureAccess_ReadOnly,
-                    .format = SDLToWebGPU_TextureFormat[textureView->parent->format],
-                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureView->parent->type],
-                },
-                .visibility = WGPUShaderStage_Compute,
-            };
-
-            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
-            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE;
-        }
-    }
-
-    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-        WebGPUBuffer *storageBuffer = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i];
-
-        if (storageBuffer) {
-            WGPUBindGroupLayoutEntry storageBufferEntry = {
-                .binding = offset++,
-                .buffer = {
-                    .hasDynamicOffset = false,
-                    .minBindingSize = 0,
-                    .nextInChain = 0,
-                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                },
-                .visibility = WGPUShaderStage_Compute,
-            };
-
-            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageBufferEntry);
-            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
-        }
-    }
-
-    // NOTE: Yes, I know that it's stupid to have the same for loop run twice. I just don't really care.
-
-    offset = 0;
-    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
-        WebGPUTextureView *textureView = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i];
-
-        if (textureView) {
-            WGPUBindGroupLayoutEntry storageTextureEntry = {
-                .binding = offset++,
+                .binding = offsetRW++,
                 .storageTexture = {
                     .access = WGPUStorageTextureAccess_Undefined,
-                    .format = SDLToWebGPU_TextureFormat[textureView->parent->format],
-                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureView->parent->type],
+                    .format = SDLToWebGPU_TextureFormat[textureViewRW->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewRW->parent->type],
                 },
                 .visibility = WGPUShaderStage_Compute,
             };
@@ -2265,14 +2225,30 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
             WEBGPU_INTERNAL_InsertElementIntoArray(readWriteEntries, readWriteEntryCapacity, readWriteEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
             entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE_READWRITE;
         }
+
+        if (textureViewRO) {
+            WGPUBindGroupLayoutEntry storageTextureEntry = {
+                .binding = offset++,
+                .storageTexture = {
+                    .access = WGPUStorageTextureAccess_ReadOnly,
+                    .format = SDLToWebGPU_TextureFormat[textureViewRO->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewRO->parent->type],
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE;
+        }
     }
 
     for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
-        WebGPUBuffer *storageBuffer = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i];
+        WebGPUBuffer *storageBufferRO = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i];
+        WebGPUBuffer *storageBufferRW = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i];
 
-        if (storageBuffer) {
+        if (storageBufferRW) {
             WGPUBindGroupLayoutEntry storageBufferEntry = {
-                .binding = offset++,
+                .binding = offsetRW++,
                 .buffer = {
                     .hasDynamicOffset = false,
                     .minBindingSize = 0,
@@ -2283,6 +2259,22 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
             };
 
             WEBGPU_INTERNAL_InsertElementIntoArray(readWriteEntries, readWriteEntryCapacity, readWriteEntryCount, WGPUBindGroupLayoutEntry, storageBufferEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
+        }
+
+        if (storageBufferRO) {
+            WGPUBindGroupLayoutEntry storageBufferEntry = {
+                .binding = offset++,
+                .buffer = {
+                    .hasDynamicOffset = false,
+                    .minBindingSize = 0,
+                    .nextInChain = 0,
+                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageBufferEntry);
             entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
         }
     }
