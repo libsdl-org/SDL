@@ -3413,11 +3413,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
  *
  * SDL_GLContext is opaque to the application.
  *
+ * Generally it _should_ be safe to create a context from a background thread,
+ * to be used on that thread, but in case there are platforms that have trouble
+ * with that, the absolute best practice would be:
+ *
+ * - Create the context on the main thread.
+ * - Make the current context NULL on the main thread (or set it back to a
+ *   different context).
+ * - Make the new context current from the thread that will be using the new
+ *   context.
+ *
+ * This function is, for now, marked as safe to call from any thread; please
+ * send feedback if this turns out to not be true on a given platform.
+ *
  * \param window the window to associate with the context.
  * \returns the OpenGL context associated with `window` or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
