@@ -1068,7 +1068,12 @@ static void IOS_MFIJoystickUpdate(SDL_Joystick *joystick)
 
             int button = 0;
             for (id key in device->buttons) {
-                SDL_SendJoystickButton(timestamp, joystick, button++, buttons[key].isPressed);
+                bool down = buttons[key].isPressed;
+                if (button == device->pause_button_index && device->pause_button_pressed > 0) {
+                    // On tvOS the menu button is a brief pulse, so catch it here
+                    down = true;
+                }
+                SDL_SendJoystickButton(timestamp, joystick, button++, down);
             }
         } else if (controller.extendedGamepad) {
             bool isstack;
