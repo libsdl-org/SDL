@@ -1100,6 +1100,7 @@ typedef struct WebGPUShader
 
 typedef struct WebGPUGraphicsPipeline
 {
+    // FIXME: This is never filled in.
     GraphicsPipelineCommonHeader header;
 
     WGPURenderPipeline pipeline;
@@ -1108,13 +1109,16 @@ typedef struct WebGPUGraphicsPipeline
 
     SDL_GPUGraphicsPipelineCreateInfo createInfo;
 
-    // Jank, kinda shit way of detecting if a pipeline needs to be recreated.
+    // FIXME: This is never even used. It was intended to be used for the edge-case where pipelines
+    // have been given entirely different binds than it was created with but I never bothered adding this
+    // We'll do it later™
     Uint32 currentPipelineHash;
     bool hasBeenCreated;
 } WebGPUGraphicsPipeline;
 
 typedef struct WebGPUComputePipeline
 {
+    // FIXME: This is also never filled in.
     ComputePipelineCommonHeader header;
 
     WGPUComputePipeline pipeline;
@@ -1122,6 +1126,7 @@ typedef struct WebGPUComputePipeline
 
     SDL_GPUComputePipelineCreateInfo createInfo;
 
+    // FIXME: Same thing here, this is never used.
     Uint32 currentPipelineHash;
     bool hasBeenCreated;
 } WebGPUComputePipeline;
