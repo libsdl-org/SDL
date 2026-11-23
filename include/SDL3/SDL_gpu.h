@@ -2294,11 +2294,6 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsShaderFormats(
 extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
     SDL_PropertiesID props);
 
-// FIXME: I don't know how to make a CategoryGPU#webgpu so I didn't link
-// WebGPU to anything
-// I actually made it link to the wikipedia page for Hell but I don't
-// think that's very professional (It is funny though.)
-
 /**
  * Creates a GPU context.
  *
@@ -2307,7 +2302,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  * - "vulkan": [Vulkan](CategoryGPU#vulkan)
  * - "direct3d12": [D3D12](CategoryGPU#d3d12)
  * - "metal": [Metal](CategoryGPU#metal)
- * - "webgpu": WebGPU
+ * - "webgpu": [WebGPU](CategoryGPU#webgpu)
  * - NULL: let SDL pick the optimal driver
  *
  * \param format_flags a bitflag indicating which shader formats the app is
