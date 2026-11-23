@@ -61,6 +61,9 @@
 #ifdef SDL_PLATFORM_ANDROID
 #include "core/android/SDL_android.h"
 #endif
+#ifdef SDL_PLATFORM_OPENHARMONY
+#include "core/openharmony/SDL_openharmony.h"
+#endif
 
 #define SDL_ALL_SUBSYSTEM_FLAGS ~0U
 
@@ -356,7 +359,7 @@ bool SDL_InitSubSystem(SDL_InitFlags flags)
         if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return ptr >>> 2; }; }
         #elif defined(__wasm64__)
         if (typeof(SDL3.JSVarToCPtr) === 'undefined') { SDL3.JSVarToCPtr = function(v) { return BigInt(v); }; }
-        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Number(ptr / 4n); }; }
+        if (typeof(SDL3.CPtrToHeap32Index) === 'undefined') { SDL3.CPtrToHeap32Index = function(ptr) { return Math.floor(Number(ptr) / 4); }; } // This should NOT be SDL_floor()
         #else
         #error Please define your platform.
         #endif
@@ -678,6 +681,12 @@ void SDL_QuitSubSystem(SDL_InitFlags flags)
 #endif
 
     if (flags & SDL_INIT_EVENTS) {
+        if (SDL_bInMainQuit) {
+            if (flags == SDL_INIT_EVENTS) {
+                // We're quitting an individual subsystem, wait for the final quit to shut down events
+                return;
+            }
+        }
         if (SDL_ShouldQuitSubsystem(SDL_INIT_EVENTS)) {
             SDL_QuitEvents();
             SDL_EventsThreadID = 0;
@@ -803,6 +812,8 @@ const char *SDL_GetPlatform(void)
     return "Nokia N-Gage";
 #elif defined(SDL_PLATFORM_OPENBSD)
     return "OpenBSD";
+#elif defined(SDL_PLATFORM_OPENHARMONY)
+    return "OpenHarmony";
 #elif defined(SDL_PLATFORM_OS2)
     return "OS/2";
 #elif defined(SDL_PLATFORM_OSF)
@@ -867,6 +878,8 @@ SDL_FormFactor SDL_GetDeviceFormFactor(void)
     return SDL_FORMFACTOR_PRIVATE;
 #elif defined(SDL_PLATFORM_ANDROID)
     return SDL_GetAndroidDeviceFormFactor();
+#elif defined(SDL_PLATFORM_OPENHARMONY)
+    return SDL_GetOpenHarmonyDeviceFormFactor();
 #elif defined(SDL_PLATFORM_IOS)
     extern SDL_FormFactor SDL_GetUIKitDeviceFormFactor(void);
     return SDL_GetUIKitDeviceFormFactor();

@@ -110,6 +110,14 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
 
     const unsigned int res = sceRtcGetTickResolution();
     const unsigned int div = (SDL_NS_PER_SECOND / res);
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        if (-rem_ns < (int)div) {
+            ticks -= (int)div;
+        }
+        rem_ns += SDL_NS_PER_SECOND;
+    }
     sceTicks.tick = (Uint64)((ticks / div) + (DELTA_EPOCH_0001_OFFSET * div));
 
     if (localTime) {
@@ -127,7 +135,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
             dt->hour = t.hour;
             dt->minute = t.minute;
             dt->second = t.second;
-            dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+            dt->nanosecond = rem_ns;
             dt->utc_offset = (int)(((Sint64)sceLocalTicks.tick - (Sint64)sceTicks.tick) / (Sint64)res);
 
             SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);

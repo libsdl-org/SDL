@@ -27,6 +27,7 @@
 #include "SDL_dbus.h"
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #ifdef SDL_USE_LIBDBUS
@@ -256,6 +257,18 @@ void SDL_DBus_Quit(void)
     }
 
     SDL_SetInitialized(&dbus_init, false);
+}
+
+bool SDL_DBus_PortalsPreferred(void)
+{
+    static int portals_preferred = -1;
+
+    if (portals_preferred >= 0) {
+        return portals_preferred != 0;
+    }
+
+    portals_preferred = SDL_GetHintBoolean(SDL_HINT_DBUS_PREFER_PORTALS, false);
+    return portals_preferred != 0;
 }
 
 SDL_DBusContext *SDL_DBus_GetContext(void)
@@ -543,7 +556,19 @@ bool SDL_DBus_OpenURI(const char *uri, const char *window_id, const char *activa
             }
             uri = decoded_path;
         }
-        fd = open(uri, O_RDWR | O_CLOEXEC);
+
+        struct stat st;
+        if (stat(uri, &st) == 0) {
+            /* Open files and directories as read-only, as the fd is only used as proof
+             * of access by the portal, and a mismatch between fd write permissions and
+             * the portal write parameter will cause the fd to be rejected.
+             */
+            int oflags = O_RDONLY | O_CLOEXEC;
+            if (S_ISDIR(st.st_mode)) {
+                oflags |= O_DIRECTORY;
+            }
+            fd = open(uri, oflags);
+        }
         SDL_free(decoded_path);
         if (fd >= 0) {
             msg = dbus.message_new_method_call(bus_name, path, interface, "OpenFile");
@@ -610,8 +635,85 @@ done:
     return ret;
 }
 
+static bool SDL_DBus_ScreensaverPortalInhibit(bool inhibit, const char *app_name, const char *reason)
+{
+    const char *bus_name = "org.freedesktop.portal.Desktop";
+    const char *path = "/org/freedesktop/portal/desktop";
+    const char *interface = "org.freedesktop.portal.Inhibit";
+    const char *window = "";                    // As a future improvement we could gather the X11 XID or Wayland surface identifier
+    static const unsigned int INHIBIT_IDLE = 8; // Taken from the portal API reference
+    DBusMessageIter iterInit;
+    bool ret = true;
+
+    if (inhibit) {
+        DBusMessage *msg;
+        const char *key = "reason";
+        const char *reply_path = NULL;
+
+        msg = dbus.message_new_method_call(bus_name, path, interface, "Inhibit");
+        if (!msg) {
+            return false;
+        }
+
+        if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &window, DBUS_TYPE_UINT32, &INHIBIT_IDLE, DBUS_TYPE_INVALID)) {
+            dbus.message_unref(msg);
+            return false;
+        }
+
+        dbus.message_iter_init_append(msg, &iterInit);
+
+        // a{sv}
+        if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
+            dbus.message_unref(msg);
+            return false;
+        }
+
+        DBusMessage *reply = NULL;
+        if (SDL_DBus_CallWithBasicReply(dbus.session_conn, &reply, msg, DBUS_TYPE_OBJECT_PATH, &reply_path)) {
+            inhibit_handle = SDL_strdup(reply_path);
+        } else {
+            ret = false;
+        }
+        SDL_DBus_FreeReply(&reply);
+        dbus.message_unref(msg);
+    } else {
+        if (!SDL_DBus_CallVoidMethod(bus_name, inhibit_handle, "org.freedesktop.portal.Request", "Close", DBUS_TYPE_INVALID)) {
+            ret = false;
+        }
+        SDL_free(inhibit_handle);
+        inhibit_handle = NULL;
+    }
+
+    return ret;
+}
+
+static bool SDL_DBus_ScreensaverCoreInhibit(bool inhibit, const char *app_name, const char *reason)
+{
+    const char *bus_name = "org.freedesktop.ScreenSaver";
+    const char *path = "/org/freedesktop/ScreenSaver";
+    const char *interface = "org.freedesktop.ScreenSaver";
+
+    if (inhibit) {
+        if (!SDL_DBus_CallMethod(NULL, bus_name, path, interface, "Inhibit",
+                                 DBUS_TYPE_STRING, &app_name, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
+                                 DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
+            return false;
+        }
+        return (screensaver_cookie != 0);
+    } else {
+        if (!SDL_DBus_CallVoidMethod(bus_name, path, interface, "UnInhibit", DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
+            return false;
+        }
+        screensaver_cookie = 0;
+    }
+
+    return true;
+}
+
 bool SDL_DBus_ScreensaverInhibit(bool inhibit)
 {
+    static bool use_core = false;
+    static bool use_portal = false;
     static bool interface_unavailable = false;
     const char *default_inhibit_reason = "Playing a game";
 
@@ -630,87 +732,39 @@ bool SDL_DBus_ScreensaverInhibit(bool inhibit)
         return false;
     }
 
-    if (SDL_GetSandbox() != SDL_SANDBOX_NONE) {
-        const char *bus_name = "org.freedesktop.portal.Desktop";
-        const char *path = "/org/freedesktop/portal/desktop";
-        const char *interface = "org.freedesktop.portal.Inhibit";
-        const char *window = "";                    // As a future improvement we could gather the X11 XID or Wayland surface identifier
-        static const unsigned int INHIBIT_IDLE = 8; // Taken from the portal API reference
-        DBusMessageIter iterInit;
-
-        if (inhibit) {
-            DBusMessage *msg;
-            bool result = false;
-            const char *key = "reason";
-            const char *reply_path = NULL;
-            const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
-            if (!reason || !reason[0]) {
-                reason = default_inhibit_reason;
-            }
-
-            msg = dbus.message_new_method_call(bus_name, path, interface, "Inhibit");
-            if (!msg) {
-                return false;
-            }
-
-            if (!dbus.message_append_args(msg, DBUS_TYPE_STRING, &window, DBUS_TYPE_UINT32, &INHIBIT_IDLE, DBUS_TYPE_INVALID)) {
-                dbus.message_unref(msg);
-                return false;
-            }
-
-            dbus.message_iter_init_append(msg, &iterInit);
-
-            // a{sv}
-            if (!SDL_DBus_AppendDictWithKeyValue(&iterInit, key, reason)) {
-                dbus.message_unref(msg);
-                return false;
-            }
-
-            DBusMessage *reply = NULL;
-            if (SDL_DBus_CallWithBasicReply(dbus.session_conn, &reply, msg, DBUS_TYPE_OBJECT_PATH, &reply_path)) {
-                inhibit_handle = SDL_strdup(reply_path);
-                result = true;
-            } else {
-                interface_unavailable = true;
-            }
-            SDL_DBus_FreeReply(&reply);
-            dbus.message_unref(msg);
-            return result;
-        } else {
-            if (!SDL_DBus_CallVoidMethod(bus_name, inhibit_handle, "org.freedesktop.portal.Request", "Close", DBUS_TYPE_INVALID)) {
-                return false;
-            }
-            SDL_free(inhibit_handle);
-            inhibit_handle = NULL;
-        }
-    } else {
-        const char *bus_name = "org.freedesktop.ScreenSaver";
-        const char *path = "/org/freedesktop/ScreenSaver";
-        const char *interface = "org.freedesktop.ScreenSaver";
-
-        if (inhibit) {
-            const char *app = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
-            const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
-            if (!reason || !reason[0]) {
-                reason = default_inhibit_reason;
-            }
-
-            if (!SDL_DBus_CallMethod(NULL, bus_name, path, interface, "Inhibit",
-                                     DBUS_TYPE_STRING, &app, DBUS_TYPE_STRING, &reason, DBUS_TYPE_INVALID,
-                                     DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
-                interface_unavailable = true;
-                return false;
-            }
-            return (screensaver_cookie != 0);
-        } else {
-            if (!SDL_DBus_CallVoidMethod(bus_name, path, interface, "UnInhibit", DBUS_TYPE_UINT32, &screensaver_cookie, DBUS_TYPE_INVALID)) {
-                return false;
-            }
-            screensaver_cookie = 0;
-        }
+    const char *app = SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING);
+    const char *reason = SDL_GetHint(SDL_HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME);
+    if (!reason || !reason[0]) {
+        reason = default_inhibit_reason;
     }
 
-    return true;
+    bool ret;
+    if (use_core) {
+        ret = SDL_DBus_ScreensaverCoreInhibit(inhibit, app, reason);
+    } else if (use_portal) {
+        ret = SDL_DBus_ScreensaverPortalInhibit(inhibit, app, reason);
+    } else { // Auto-detect the interface to use
+        const SDL_Sandbox sandbox = SDL_GetSandbox();
+
+        // If portals are not preferred, and there's no sandbox, or the container type is unknown, first try the core interface.
+        if (!SDL_DBus_PortalsPreferred() && (sandbox == SDL_SANDBOX_NONE || sandbox == SDL_SANDBOX_UNKNOWN_CONTAINER)) {
+            use_core = SDL_DBus_ScreensaverCoreInhibit(inhibit, app, reason);
+            if (!use_core) {
+                use_portal = SDL_DBus_ScreensaverPortalInhibit(inhibit, app, reason);
+            }
+        } else { // Portals preferred or definitely in a sandbox.
+            use_portal = SDL_DBus_ScreensaverPortalInhibit(inhibit, app, reason);
+            if (!use_portal) {
+                use_core = SDL_DBus_ScreensaverCoreInhibit(inhibit, app, reason);
+            }
+        }
+
+        // If one of the interfaces worked, use it going forward. If both failed, set the early-out flag.
+        ret = use_core || use_portal;
+        interface_unavailable = !use_core && !use_portal;
+    }
+
+    return ret;
 }
 
 void SDL_DBus_PumpEvents(void)

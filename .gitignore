@@ -99,6 +99,16 @@ out/
 android-project/local.properties
 android-project/.gradle/
 
+# for OpenHarmony/HarmonyOS
+openharmony-project/entry/src/main/cpp/CMakeLists.txt
+openharmony-project/entry/src/main/cpp/*.c
+openharmony-project/entry/src/main/cpp/*.h
+openharmony-project/entry/src/main/cpp/SDL
+openharmony-project/entry/src/main/resources/rawfile
+openharmony-project/AppScope/app.json5
+openharmony-project/AppScope/resources/base/element/string.json
+openharmony-project/build-profile.json5
+
 test/checkkeys
 test/checkkeysthreads
 test/gamepadmap

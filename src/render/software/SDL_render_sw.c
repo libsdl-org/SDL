@@ -1159,17 +1159,46 @@ static void SW_SelectBestFormats(SDL_Renderer *renderer, SDL_PixelFormat format)
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_INDEX8);
 }
 
+bool SW_UpdateRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface)
+{
+    SW_RenderData *data = (SW_RenderData *)renderer->internal;
+
+    if (surface) {
+        CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+            return SDL_InvalidParamError("surface");
+        }
+
+        CHECK_PARAM(SDL_BITSPERPIXEL(surface->format) < 8 ||
+                    SDL_BITSPERPIXEL(surface->format) > 32) {
+            return SDL_SetError("Unsupported surface format");
+        }
+    }
+
+    if (data->surface != surface) {
+        data->surface = surface;
+        data->window = surface;
+
+        if (surface) {
+            renderer->num_texture_formats = 0;
+            SW_SelectBestFormats(renderer, surface->format);
+        }
+    }
+    return true;
+}
+
 bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props)
 {
     SW_RenderData *data;
 
-    CHECK_PARAM(!SDL_SurfaceValid(surface)) {
-        return SDL_InvalidParamError("surface");
-    }
+    if (surface) {
+        CHECK_PARAM(!SDL_SurfaceValid(surface)) {
+            return SDL_InvalidParamError("surface");
+        }
 
-    CHECK_PARAM(SDL_BITSPERPIXEL(surface->format) < 8 ||
-                SDL_BITSPERPIXEL(surface->format) > 32) {
-        return SDL_SetError("Unsupported surface format");
+        CHECK_PARAM(SDL_BITSPERPIXEL(surface->format) < 8 ||
+                    SDL_BITSPERPIXEL(surface->format) > 32) {
+            return SDL_SetError("Unsupported surface format");
+        }
     }
 
     SDL_SetupRendererColorspace(renderer, create_props);
@@ -1217,7 +1246,9 @@ bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, S
 
     renderer->name = SW_RenderDriver.name;
 
-    SW_SelectBestFormats(renderer, surface->format);
+    if (surface) {
+        SW_SelectBestFormats(renderer, surface->format);
+    }
 
     return true;
 }
@@ -1236,19 +1267,24 @@ static bool SW_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
         }
     }
 
-    SDL_Surface *surface = SDL_GetWindowSurface(window);
+    SDL_Surface *surface = NULL;
+    if (window) {
+        surface = SDL_GetWindowSurface(window);
+    }
 
     // Reset the vsync hint if we set it above
     if (no_hint_set) {
         SDL_SetHint(SDL_HINT_RENDER_VSYNC, "");
     }
 
-    if (!SDL_SurfaceValid(surface)) {
+    if (window && !SDL_SurfaceValid(surface)) {
         return false;
     }
 
     if (!SW_CreateRendererForSurface(renderer, surface, create_props)) {
-        SDL_DestroyWindowSurface(window);
+        if (window) {
+            SDL_DestroyWindowSurface(window);
+        }
         return false;
     }
     return true;

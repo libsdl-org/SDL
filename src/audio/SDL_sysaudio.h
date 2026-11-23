@@ -40,7 +40,11 @@
 // these are used when no better specifics are known. We default to CD audio quality.
 #define DEFAULT_AUDIO_PLAYBACK_FORMAT SDL_AUDIO_S16
 #define DEFAULT_AUDIO_PLAYBACK_CHANNELS 2
+#ifdef SDL_PLATFORM_QNXNTO
+#define DEFAULT_AUDIO_PLAYBACK_FREQUENCY 48000
+#else
 #define DEFAULT_AUDIO_PLAYBACK_FREQUENCY 44100
+#endif
 
 #define DEFAULT_AUDIO_RECORDING_FORMAT SDL_AUDIO_S16
 #define DEFAULT_AUDIO_RECORDING_CHANNELS 1
@@ -67,7 +71,7 @@ extern void SDL_SetupAudioResampler(void);
 /* Backends should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
-extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const SDL_AudioSpec *spec, void *handle);
+extern SDL_AudioDevice *SDL_AddAudioDevice(bool recording, const char *name, const char *container_id, const char *unique_id, const SDL_AudioSpec *spec, void *handle);
 
 /* Backends should call this if an opened audio device is lost.
    This can happen due to i/o errors, or a device being unplugged, etc. */
@@ -86,7 +90,7 @@ extern bool SDL_AudioDeviceFormatChangedAlreadyLocked(SDL_AudioDevice *device, c
 extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByHandle(void *handle);
 
 // Find an SDL_AudioDevice, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(SDL_AudioDevice *device, void *userdata), void *userdata);
+extern SDL_AudioDevice *SDL_FindPhysicalAudioDeviceByCallback(bool (*callback)(void *userdata, SDL_AudioDevice *device), void *userdata);
 
 // Backends should call this if they change the device format, channels, freq, or sample_frames to keep other state correct.
 extern void SDL_UpdatedAudioDeviceFormat(SDL_AudioDevice *device);
@@ -150,9 +154,11 @@ typedef struct SDL_AudioDriverImpl
 {
     void (*DetectDevices)(SDL_AudioDevice **default_playback, SDL_AudioDevice **default_recording);
     bool (*OpenDevice)(SDL_AudioDevice *device);
+    bool (*PostOpenDevice)(SDL_AudioDevice *device);  // runs after OpenDevice _without the device lock held_.
     void (*ThreadInit)(SDL_AudioDevice *device);   // Called by audio thread at start
     void (*ThreadDeinit)(SDL_AudioDevice *device); // Called by audio thread at end
     bool (*WaitDevice)(SDL_AudioDevice *device);
+    void (*UnblockWaitDevice)(SDL_AudioDevice *device);
     bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen); // buffer and buflen are always from GetDeviceBuf, passed here for convenience.
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
@@ -271,6 +277,9 @@ struct SDL_LogicalAudioDevice
     // App-supplied pointer for postmix callback.
     void *postmix_userdata;
 
+    // Properties, maybe copied from physical device.
+    SDL_PropertiesID props;
+
     // double-linked list of opened devices on the same physical device.
     SDL_LogicalAudioDevice *next;
     SDL_LogicalAudioDevice *prev;
@@ -289,6 +298,7 @@ struct SDL_AudioDevice
 
     // These are, initially, set from current_audio, but we might swap them out with Zombie versions on disconnect/failure.
     bool (*WaitDevice)(SDL_AudioDevice *device);
+    void (*UnblockWaitDevice)(SDL_AudioDevice *device);
     bool (*PlayDevice)(SDL_AudioDevice *device, const Uint8 *buffer, int buflen);
     Uint8 *(*GetDeviceBuf)(SDL_AudioDevice *device, int *buffer_size);
     bool (*WaitRecordingDevice)(SDL_AudioDevice *device);
@@ -297,6 +307,14 @@ struct SDL_AudioDevice
 
     // human-readable name of the device. ("SoundBlaster Pro 16")
     char *name;
+
+    // the container ID of this device, used to match associated controllers or other devices, optional.
+    char *container_id;
+
+    // unique, platform-specific, backend-specific string to identify this specific device.
+    // It needs to survive between runs of the program, but ideally it survives reboots and
+    // device disconnect/reconnect, if possible. If it can't be provided, leave this NULL.
+    char *unique_id;
 
     // the unique instance ID of this device.
     SDL_AudioDeviceID instance_id;
@@ -348,6 +366,9 @@ struct SDL_AudioDevice
     // true if this physical device is currently opened by the backend.
     bool currently_opened;
 
+    // Properties!
+    SDL_PropertiesID props;
+
     // Data private to this driver
     struct SDL_PrivateAudioData *hidden;
 
@@ -391,5 +412,6 @@ extern AudioBootStrap NGAGEAUDIO_bootstrap;
 extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap DOSSOUNDBLASTER_bootstrap;
+extern AudioBootStrap OHAUDIO_bootstrap;
 
 #endif // SDL_sysaudio_h_

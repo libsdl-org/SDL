@@ -41,6 +41,8 @@ Many functions and symbols have been renamed. We have provided a handy Python sc
 rename_symbols.py --all-symbols source_code_path
 ```
 
+**Note** that `rename_symbols.py` can't completely handle `SDL_ThreadID`, see the [SDL_Thread.h section](#sdl_threadh) below.
+
 It's also possible to apply a semantic patch to migrate more easily to SDL3: [SDL_migration.cocci](https://github.com/libsdl-org/SDL/blob/main/build-scripts/SDL_migration.cocci)
 
 SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only SDL header you'll need in your application unless you are using OpenGL or Vulkan functionality. SDL_image, SDL_mixer, SDL_net, SDL_ttf and SDL_rtf have also their preferred include path changed: for SDL_image, it becomes `#include <SDL3_image/SDL_image.h>`. We have provided a handy Python script [rename_headers.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_headers.py) to rename SDL2 headers to their SDL3 counterparts:
@@ -1117,6 +1119,10 @@ Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
+## SDL_locale.h
+
+SDL_GetPreferredLocales() now returns a NULL-terminated array of pointers, instead of an array of structs where the last struct has its fields set to NULL, and also can optionally report the count of the array. The returned pointer is still disposed of by the caller with a single SDL_free() call, that will take care of all the strings and structs in one block.
+
 ## SDL_log.h
 
 SDL_Log() no longer prints a log prefix by default for SDL_LOG_PRIORITY_INFO and below. The log prefixes can be customized with SDL_SetLogPriorityPrefix().
@@ -1307,7 +1313,7 @@ The following platform preprocessor macros have been renamed:
 | `__RISCOS__`      | `SDL_PLATFORM_RISCOS`     |
 | `__SOLARIS__`     | `SDL_PLATFORM_SOLARIS`    |
 | `__TVOS__`        | `SDL_PLATFORM_TVOS`       |
-| `__unix__`        | `SDL_PLATFORM_UNI`        |
+| `__unix__`        | `SDL_PLATFORM_UNIX`       |
 | `__VITA__`        | `SDL_PLATFORM_VITA`       |
 | `__WIN32__`       | `SDL_PLATFORM_WIN32`      |
 | `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
@@ -1593,6 +1599,7 @@ static bool SDLCALL stdio_close(void *userdata)
             status = false;
         }
     }
+    SDL_free(rwopsdata);
     return status;
 }
 
@@ -1854,6 +1861,8 @@ SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE accel
 
 SDL_SetSurfaceRLE() takes an bool to enable and disable RLE acceleration.
 
+SDL_PremultiplyAlpha() takes an extra bool parameter ("linear"). For SDL2 compatibility, pass false for this parameter.
+
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns bool
 * SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
@@ -2045,6 +2054,15 @@ The following functions have been removed:
 
 The following symbols have been renamed:
 * SDL_threadID => SDL_ThreadID
+
+### Attention: Potential problems with `SDL_ThreadID`
+
+**_`SDL_ThreadID`_** is a case that needs **special attention**, because if you forget to rename a call to `SDL_ThreadID()` to `SDL_GetCurrentThreadID()` in **C++** code, it will *still compile fine*, calling the default constructor of the `SDL_ThreadID` type, initializing it to `0` - but if `SDL_GetCurrentThreadID()` was intended, that of course leads to **wrong behavior** that can be hard to catch.
+
+Furthermore **`rename_symbols.py` does not handle it** (because it would be hard to do in a way that doesn't break anything when running that script twice), which makes it even more error-prone.
+
+SDL_oldnames.h now has a `#define` that should catch these cases, but it's not available in SDL 3.4.10 and older. So if you're using 3.4.10 or older, check your code carefully for occurences of `SDL_ThreadID()` and make sure it wasn't supposed to be `SDL_GetCurrentThreadID()`.
+In some edge cases this `#define` can cause false positives (compile errors even though `SDL_ThreadID` was used correctly); right above that definition in the header is a long comment explaining possible problems and solutions.
 
 ## SDL_timer.h
 

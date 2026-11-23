@@ -325,7 +325,7 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
 
     WIN_AdjustWindowRect(window, &x, &y, &w, &h, rect_type);
 
-    data->expected_resize = true;
+    data->expected_resize = !(flags & SWP_NOSIZE);
     if (SetWindowPos(hwnd, top, x, y, w, h, flags) == 0) {
         result = WIN_SetError("SetWindowPos()");
     }
@@ -605,6 +605,11 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
                 DestroyWindow(data->parent);
             }
         } else {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+            // Restore the default IME context
+            ImmAssociateContextEx(data->hwnd, NULL, IACE_DEFAULT);
+#endif
+
             // Restore any original event handler...
             if (data->wndproc) {
 #ifdef GWLP_WNDPROC
@@ -648,15 +653,16 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 
             // Constrain the popup window to the display of the toplevel parent
             displayID = SDL_GetDisplayForWindow(w);
-            SDL_GetDisplayBounds(displayID, &rect);
-            if (abs_x + width > rect.x + rect.w) {
-                abs_x -= (abs_x + width) - (rect.x + rect.w);
+            if (SDL_GetDisplayBounds(displayID, &rect)) {
+                if (abs_x + width > rect.x + rect.w) {
+                    abs_x -= (abs_x + width) - (rect.x + rect.w);
+                }
+                if (abs_y + height > rect.y + rect.h) {
+                    abs_y -= (abs_y + height) - (rect.y + rect.h);
+                }
+                abs_x = SDL_max(abs_x, rect.x);
+                abs_y = SDL_max(abs_y, rect.y);
             }
-            if (abs_y + height > rect.y + rect.h) {
-                abs_y -= (abs_y + height) - (rect.y + rect.h);
-            }
-            abs_x = SDL_max(abs_x, rect.x);
-            abs_y = SDL_max(abs_y, rect.y);
         }
 
         if (output_to_pending) {
@@ -713,7 +719,7 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         }
 
         style |= GetWindowStyle(window);
-        styleEx |= GetWindowStyleEx(window);
+        styleEx |= (DWORD)SDL_GetNumberProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER, GetWindowStyleEx(window));
 
         // Figure out what the window area will be
         WIN_ConstrainPopup(window, false);
@@ -1540,6 +1546,7 @@ void WIN_UnclipCursorForWindow(SDL_Window *window) {
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
+    SDL_VideoData *videodata = data->videodata;
     if (data->in_title_click || data->focus_click_pending || data->postpone_clipcursor) {
         return;
     }
@@ -1623,6 +1630,42 @@ void WIN_UpdateClipCursor(SDL_Window *window)
         } else if (!win_is_grabbed) {
             WIN_UnclipCursorForWindow(window);
             return;
+        }
+    } else if (videodata->dpi_unaware_context_declared) {
+        /* Windows has a rounding bug when a DPI unaware context and fractional scale value
+         * are used that will cause the cursor coordinates to jitter across a confining edge
+         * while dragging along it, which can cause spurious pointer enter/leave events when the
+         * clip rect matches the window bounds. Move the sides of the clip rect in by 1 in each
+         * dimension to prevent rapid focus switching when the cursor is at the window edge.
+         *
+         * NOTE: Remove or bypass this if Microsoft ever fixes the issue.
+         */
+
+        // Temporarily set the thread to per-monitor awareness v2 to get the display DPI.
+        DPI_AWARENESS_CONTEXT prev_ctx = videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        if (prev_ctx) {
+            HMONITOR hmon = MonitorFromWindow(data->hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hmon) {
+                UINT hdpi_uint, vdpi_uint;
+                if (videodata->GetDpiForMonitor(hmon, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+                    const float scale = (float)hdpi_uint / (float)USER_DEFAULT_SCREEN_DPI;
+                    if (scale != SDL_floorf(scale)) {
+                        if (target.left < target.right) {
+                            target.left += 1;
+                        }
+                        if (target.right > target.left) {
+                            target.right -= 1;
+                        }
+                        if (target.top < target.bottom) {
+                            target.top += 1;
+                        }
+                        if (target.bottom > target.top) {
+                            target.bottom -= 1;
+                        }
+                    }
+                }
+            }
+            videodata->SetThreadDpiAwarenessContext(prev_ctx);
         }
     }
 

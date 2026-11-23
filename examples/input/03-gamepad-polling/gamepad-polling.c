@@ -37,7 +37,6 @@ static SDL_Gamepad *gamepad = NULL;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     char *png_path = NULL;
-    SDL_Surface *surface = NULL;
 
     SDL_SetAppMetadata("Example Input Gamepad Polling", "1.0", "com.example.input-gamepad-polling");
 
@@ -59,24 +58,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
        engines refer to these as "sprites." We'll do a static texture (upload once, draw many
        times) with data from a bitmap file. */
 
-    /* SDL_Surface is pixel data the CPU can access. SDL_Texture is pixel data the GPU can access.
-       Load a .png into a surface, move it to a texture from there. */
     SDL_asprintf(&png_path, "%sgamepad_front.png", SDL_GetBasePath());  /* allocate a string of the full file path */
-    surface = SDL_LoadPNG(png_path);
-    if (!surface) {
+    texture = SDL_LoadTexture(renderer, png_path);
+    if (!texture) {
         SDL_Log("Couldn't load bitmap: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
     SDL_free(png_path);  /* done with this, the file is loaded. */
-
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (!texture) {
-        SDL_Log("Couldn't create static texture: %s", SDL_GetError());
-        return SDL_APP_FAILURE;
-    }
-
-    SDL_DestroySurface(surface);  /* done with this, the texture has a copy of the pixels now. */
 
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }

@@ -19,8 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* WIKI CATEGORY: Main */
-
 #ifndef SDL_main_impl_h_
 #define SDL_main_impl_h_
 
@@ -48,6 +46,13 @@
         #if 0
             /* currently there are no platforms that _need_ a magic entry point here
                for callbacks, but if one shows up, implement it here. */
+
+        #elif defined(SDL_PLATFORM_OPENHARMONY)
+            /* HarmonyOS/OpenHarmony: we look up SDL_AppInit/SDL_AppIterate/etc in libmain.so and call them directly.
+               Since we don't need a `main` entry point, we don't generate an SDL_main implementation here _at all_. */
+            #ifndef SDL_MAIN_USE_CALLBACKS  /* !!! FIXME, remove this later? */
+            #error SDL3 on OpenHarmony currently requires the SDL Main Callbacks to operate.
+            #endif
 
         #else /* use a standard SDL_main, which the app SHOULD NOT ALSO SUPPLY. */
 

@@ -63,9 +63,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int d
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGooglePlayOnPC(void);
 extern SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(JavaVM *vm, void *reserved);
 #endif /* !SDL_PLATFORM_ANDROID */
 
 #if !defined(SDL_PLATFORM_LINUX)
 extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
 #endif /* !SDL_PLATFORM_LINUX */
+
+#if !defined(SDL_PLATFORM_OPENHARMONY)
+typedef void *SDL_RequestOpenHarmonyPermissionCallback;
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(const char *permission, SDL_RequestOpenHarmonyPermissionCallback cb, void *userdata);
+#endif
+

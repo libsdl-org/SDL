@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
     char *pref_path;
+    char *cache_path;
     char *curdir;
     const char *base_path;
 
@@ -138,6 +139,15 @@ int main(int argc, char *argv[])
         SDL_Log("pref path: '%s'", pref_path);
     }
     SDL_free(pref_path);
+
+    cache_path = SDL_GetCachePath("libsdl", "test_filesystem");
+    if (!cache_path) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find cache path: %s",
+                     SDL_GetError());
+    } else {
+        SDL_Log("cache path: '%s'", cache_path);
+    }
+    SDL_free(cache_path);
 
     curdir = SDL_GetCurrentDirectory();
     if (!curdir) {

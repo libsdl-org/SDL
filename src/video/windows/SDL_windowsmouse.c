@@ -206,59 +206,51 @@ static bool FillIconEntry(CURSORICONFILEDIRENTRY *entry, SDL_Surface *surface, i
     return true;
 }
 
-#ifdef SAVE_ICON_PNG
-
-static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
-{
-    if (!SDL_SavePNG_IO(surface, dst, false)) {
-        return false;
-    }
-
-    // Image data offsets must be WORD aligned
-    Sint64 offset = SDL_TellIO(dst);
-    if (offset & 1) {
-        if (!SDL_WriteU8(dst, 0)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-#else
-
 /* For info on the expected mask format see:
  * https://devblogs.microsoft.com/oldnewthing/20101018-00/?p=12513
  */
-static void *CreateIconMask(SDL_Surface *surface, size_t *mask_size)
+static void *CreateIconMask(SDL_Surface *surface, bool monochrome, size_t *mask_size)
 {
-    Uint8 *dst;
     const int w = (surface->w + 7) / 8;
     const int pad = (((w) % 4) ? (4 - ((w) % 4)) : 0);
     const int pitch = (w + pad);
     const size_t size = pitch * surface->h;
+    const size_t total_size = monochrome ? (size * 2) : size;
     static const unsigned char masks[] = { 0x80, 0x40, 0x20, 0x10, 0x8, 0x4, 0x2, 0x1 };
 
-    void *mask = SDL_malloc(size);
+    Uint8 *mask = (Uint8 *)SDL_malloc(total_size);
     if (!mask) {
         return NULL;
     }
 
-    dst = (Uint8 *)mask;
+    Uint8 *xor_dst = NULL;
+    Uint8 *and_dst = mask;
+    if (monochrome) {
+        xor_dst = mask;
+        and_dst = mask + size;
+        SDL_memset(xor_dst, 0x00, size);
+    }
 
     // Make the mask completely transparent.
-    SDL_memset(dst, 0xff, size);
-    for (int y = surface->h - 1; y >= 0; --y, dst += pitch) {
+    SDL_memset(and_dst, 0xff, size);
+    for (int y = surface->h - 1; y >= 0; --y) {
+        const Uint32 *pixels = (const Uint32 *)((const Uint8 *)surface->pixels + y * surface->pitch);
         for (int x = 0; x < surface->w; ++x) {
-            Uint8 r, g, b, a;
-            SDL_ReadSurfacePixel(surface, x, y, &r, &g, &b, &a);
-
-            if (a != 0) {
+            if (pixels[x] & 0xFF000000) {
                 // Reset bit of an opaque pixel.
-                dst[x >> 3] &= ~masks[x & 7];
+                and_dst[x >> 3] &= ~masks[x & 7];
+            }
+            if (xor_dst && (pixels[x] & 0x00FFFFFF)) {
+                // Set bit of a white or inverted pixel.
+                xor_dst[x >> 3] |= masks[x & 7];
             }
         }
+        and_dst += pitch;
+        if (xor_dst) {
+            xor_dst += pitch;
+        }
     }
-    *mask_size = size;
+    *mask_size = total_size;
     return mask;
 }
 
@@ -275,9 +267,10 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
     }
 
     // Cursor data is double height (DIB and mask), stored bottom-up
+    bool monochrome = SDL_GetBooleanProperty(surface->props, SDL_PROP_SURFACE_MONOCHROME_CURSOR_BOOLEAN, false);
     bool ok = true;
     size_t mask_size = 0;
-    void *mask = CreateIconMask(surface, &mask_size);
+    void *mask = CreateIconMask(surface, monochrome, &mask_size);
     if (!mask) {
         ok = false;
         goto done;
@@ -285,21 +278,36 @@ static bool WriteIconSurface(SDL_IOStream *dst, SDL_Surface *surface)
 
     BITMAPINFOHEADER bmih;
     SDL_zero(bmih);
-    DWORD row_size = surface->w * 4;
     bmih.biSize = sizeof(BITMAPINFOHEADER);
     bmih.biWidth = surface->w;
     bmih.biHeight = surface->h * 2;
     bmih.biPlanes = 1;
-    bmih.biBitCount = 32;
     bmih.biCompression = BI_RGB;
-    bmih.biSizeImage = (DWORD)(surface->h * row_size + mask_size);
-    ok &= (SDL_WriteIO(dst, &bmih, sizeof(bmih)) == sizeof(bmih));
 
-    const Uint8 *pix = surface->pixels;
-    pix += (surface->h - 1) * surface->pitch;
-    for (int i = 0; i < surface->h; ++i) {
-        ok &= (SDL_WriteIO(dst, pix, row_size) == row_size);
-        pix -= surface->pitch;
+    if (monochrome) {
+        const RGBQUAD colors[2] = {
+            { 0x00, 0x00, 0x00, 0x00 },
+            { 0xFF, 0xFF, 0xFF, 0x00 }
+        };
+
+        bmih.biBitCount = 1;
+        bmih.biClrUsed = SDL_arraysize(colors);
+        bmih.biSizeImage = (DWORD)mask_size;
+        ok &= (SDL_WriteIO(dst, &bmih, sizeof(bmih)) == sizeof(bmih));
+        ok &= (SDL_WriteIO(dst, colors, sizeof(colors)) == sizeof(colors));
+    } else {
+        DWORD row_size = surface->w * 4;
+
+        bmih.biBitCount = 32;
+        bmih.biSizeImage = (DWORD)(surface->h * row_size + mask_size);
+        ok &= (SDL_WriteIO(dst, &bmih, sizeof(bmih)) == sizeof(bmih));
+
+        const Uint8 *pix = surface->pixels;
+        pix += (surface->h - 1) * surface->pitch;
+        for (int i = 0; i < surface->h; ++i) {
+            ok &= (SDL_WriteIO(dst, pix, row_size) == row_size);
+            pix -= surface->pitch;
+        }
     }
     ok &= (SDL_WriteIO(dst, mask, mask_size) == mask_size);
 
@@ -308,8 +316,6 @@ done:
     SDL_DestroySurface(temp);
     return ok;
 }
-
-#endif // SAVE_ICON_PNG
 
 static bool WriteIconFrame(SDL_IOStream *dst, SDL_Surface *surface, int hot_x, int hot_y, float scale)
 {

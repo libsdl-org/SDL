@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
@@ -16,8 +17,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.os.VibratorManager;
@@ -37,7 +43,8 @@ public class SDLControllerManager
                                                 int vendor_id, int product_id,
                                                 int button_mask,
                                                 int naxes, int axis_mask, int nhats, boolean can_rumble, boolean has_rgb_led,
-                                                boolean has_accelerometer, boolean has_gyroscope);
+                                                boolean has_accelerometer, boolean has_gyroscope,
+                                                boolean is_usb);
     static native void nativeRemoveJoystick(int device_id);
     static native void nativeAddHaptic(int device_id, String name);
     static native void nativeRemoveHaptic(int device_id);
@@ -188,17 +195,13 @@ class SDLDeviceListener implements InputDeviceListener
 {
     @Override
     public void onInputDeviceAdded(int deviceId) {
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            SDLControllerManager.mJoystickHandler.deviceAdded(deviceId);
-        }
+        SDLControllerManager.mJoystickHandler.deviceChanged(deviceId);
     }
 
     @Override
     public void onInputDeviceChanged(int deviceId) {
         // The controller might not have had joystick sources previously
-        if (SDLControllerManager.isDeviceSDLJoystick(deviceId)) {
-            SDLControllerManager.mJoystickHandler.deviceAdded(deviceId);
-        }
+        SDLControllerManager.mJoystickHandler.deviceChanged(deviceId);
     }
 
     @Override
@@ -224,6 +227,8 @@ class SDLJoystickHandler {
         SDLJoySensorListener sensorListener;
         Sensor accelerometerSensor;
         Sensor gyroscopeSensor;
+        volatile boolean sensorsRequested;
+        boolean sensorsEnabled;
     }
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
@@ -274,9 +279,45 @@ class SDLJoystickHandler {
 
     private final ArrayList<SDLJoystick> mJoysticks;
 
+    // Android builds controllers from several kernel devices, e.g. adding the motion sensors after the
+    // gamepad, so we wait for input devices to settle before adding a joystick. Android can also
+    // deadlock if a sensor listener is registered while an input device change is being processed,
+    // so we wait for input devices to settle before changing sensor registration.
+    private static final long INPUT_DEVICE_SETTLE_TIME_MS = 200;
+    private volatile long mLastInputDeviceChangeTime;
+    private final Handler mHandler;
+
     SDLJoystickHandler() {
 
         mJoysticks = new ArrayList<SDLJoystick>();
+        mHandler = new Handler(Looper.getMainLooper());
+    }
+
+    private void postWhenInputDevicesSettle(final Runnable action) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                long delay = mLastInputDeviceChangeTime + INPUT_DEVICE_SETTLE_TIME_MS - SystemClock.uptimeMillis();
+                if (delay > 0) {
+                    // Input devices are still changing, try again once they settle
+                    mHandler.postDelayed(this, delay);
+                    return;
+                }
+                action.run();
+            }
+        });
+    }
+
+    void deviceChanged(final int device_id) {
+        mLastInputDeviceChangeTime = SystemClock.uptimeMillis();
+        postWhenInputDevicesSettle(new Runnable() {
+            @Override
+            public void run() {
+                if (SDLControllerManager.isDeviceSDLJoystick(device_id)) {
+                    deviceAdded(device_id);
+                }
+            }
+        });
     }
 
     /**
@@ -291,6 +332,12 @@ class SDLJoystickHandler {
         }
     }
 
+    boolean deviceIsUnnamedQuestController(InputDevice joystickDevice) {
+        return Build.VERSION.SDK_INT >= 29 && 
+            Build.MANUFACTURER.equals("Oculus") && Build.MODEL.startsWith("Quest") && 
+            joystickDevice.getName().startsWith("Device 0x");
+    }
+
     void deviceAdded(int device_id) {
         InputDevice joystickDevice = InputDevice.getDevice(device_id);
         if (joystickDevice == null ) {
@@ -299,9 +346,17 @@ class SDLJoystickHandler {
 
         SDLJoystick joystick = getJoystick(device_id);
         if (joystick == null) {
+
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
+                if (!joystickDevice.isExternal() && (joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == 0) {
+                    // This is the Quest's dummy controller, which we want to ignore.
+                    return;
+                }
+            }
+
             joystick = new SDLJoystick();
             joystick.device_id = device_id;
-            joystick.name = joystickDevice.getName();
+            joystick.name = getJoystickName(joystickDevice);
             joystick.desc = getJoystickDescriptor(joystickDevice);
             joystick.axes = new ArrayList<InputDevice.MotionRange>();
             joystick.hats = new ArrayList<InputDevice.MotionRange>();
@@ -310,7 +365,16 @@ class SDLJoystickHandler {
 
             List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
             Collections.sort(ranges, new RangeComparator());
+
+            // TV remotes can have generic axes for their extra buttons, which makes them look like
+            // joysticks. Leave those axes out so the remote is just a D-pad and buttons, which lets
+            // SDL_HINT_TV_REMOTE_AS_JOYSTICK recognize it.
+            boolean isTVRemote = deviceIsTVRemote(joystickDevice, ranges);
+
             for (InputDevice.MotionRange range : ranges) {
+                if (isTVRemote && isGenericAxis(range.getAxis())) {
+                    continue;
+                }
                 if (((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) && axisStrsSet.add(range.getAxis())) {
                     if (range.getAxis() == MotionEvent.AXIS_HAT_X || range.getAxis() == MotionEvent.AXIS_HAT_Y) {
                         joystick.hats.add(range);
@@ -367,10 +431,11 @@ class SDLJoystickHandler {
         SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc,
                 getVendorId(joystickDevice), getProductId(joystickDevice),
                 getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led,
-                has_accelerometer, has_gyroscope);
+                has_accelerometer, has_gyroscope, isUSBDevice(joystickDevice));
     }
 
     void deviceRemoved(int device_id) {
+        mLastInputDeviceChangeTime = SystemClock.uptimeMillis();
         for (int i = 0; i < mJoysticks.size(); i++) {
             if (mJoysticks.get(i).device_id == device_id) {
 
@@ -428,6 +493,36 @@ class SDLJoystickHandler {
         return true;
     }
 
+    // Linux splits HID devices with several top level collections into separate input devices, adding
+    // a suffix to the name of each extra one, e.g. "PG-9083S Consumer Control". Android merges them
+    // back into one input device, named after whichever was added first.
+    private static final String[] HID_COLLECTION_SUFFIXES = {
+        " Consumer Control",
+        " System Control",
+        " Keyboard",
+        " Mouse",
+    };
+
+    String getJoystickName(InputDevice joystickDevice) {
+        String name = joystickDevice.getName();
+
+        // Only rename gamepads, the suffixes identify devices that shouldn't be treated as gamepads
+        if ((joystickDevice.getSources() & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            for (String suffix : HID_COLLECTION_SUFFIXES) {
+                if (name.endsWith(suffix) && name.length() > suffix.length()) {
+                    return name.substring(0, name.length() - suffix.length());
+                }
+            }
+
+            if (deviceIsUnnamedQuestController(joystickDevice)) {
+                if (joystickDevice.isExternal()) {
+                    return "Touch Controller Gamepad Mode";
+                }
+            }
+        }
+        return name;
+    }
+
     String getJoystickDescriptor(InputDevice joystickDevice) {
         String desc = joystickDevice.getDescriptor();
 
@@ -444,6 +539,57 @@ class SDLJoystickHandler {
 
     int getVendorId(InputDevice joystickDevice) {
         return joystickDevice.getVendorId();
+    }
+
+    boolean isUSBDevice(InputDevice joystickDevice) {
+        if (joystickDevice.isVirtual()) {
+            return false;
+        }
+
+        if (Build.VERSION.SDK_INT >= 29 /* Android 10.0 (Q) */ && !joystickDevice.isExternal()) {
+            return true;
+        }
+
+        int vendor_id = joystickDevice.getVendorId();
+        int product_id = joystickDevice.getProductId();
+        if (vendor_id == 0 && product_id == 0) {
+            return false;
+        }
+
+        try {
+            UsbManager usbManager = (UsbManager) SDL.getContext().getSystemService(Context.USB_SERVICE);
+            if (usbManager != null) {
+                for (UsbDevice usbDevice : usbManager.getDeviceList().values()) {
+                    if (usbDevice.getVendorId() == vendor_id && usbDevice.getProductId() == product_id) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // We can't see USB devices
+        }
+        return false;
+    }
+
+    static boolean isGenericAxis(int axis) {
+        return (axis >= MotionEvent.AXIS_GENERIC_1 && axis <= MotionEvent.AXIS_GENERIC_16);
+    }
+
+    // A TV remote has a D-pad but isn't a gamepad, and has no real joystick axes
+    static boolean deviceIsTVRemote(InputDevice device, List<InputDevice.MotionRange> ranges) {
+        int sources = device.getSources();
+        if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+            return false;
+        }
+        if ((sources & InputDevice.SOURCE_DPAD) != InputDevice.SOURCE_DPAD) {
+            return false;
+        }
+        for (InputDevice.MotionRange range : ranges) {
+            if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 && !isGenericAxis(range.getAxis())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     int getAxisMask(List<InputDevice.MotionRange> ranges) {
@@ -602,21 +748,37 @@ class SDLJoystickHandler {
         if (joystick == null || joystick.sensorManager == null) {
             return;
         }
-        if (enabled) {
-            if (joystick.accelerometerSensor != null) {
-                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
+        joystick.sensorsRequested = enabled;
+        updateSensors(device_id);
+    }
+
+    private void updateSensors(final int device_id) {
+        postWhenInputDevicesSettle(new Runnable() {
+            @Override
+            public void run() {
+                SDLJoystick joystick = getJoystick(device_id);
+                if (joystick == null || joystick.sensorsEnabled == joystick.sensorsRequested) {
+                    return;
+                }
+                joystick.sensorsEnabled = joystick.sensorsRequested;
+
+                if (joystick.sensorsEnabled) {
+                    if (joystick.accelerometerSensor != null) {
+                        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
+                    }
+                    if (joystick.gyroscopeSensor != null) {
+                        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
+                    }
+                } else {
+                    if (joystick.accelerometerSensor != null) {
+                        SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
+                    }
+                    if (joystick.gyroscopeSensor != null) {
+                        SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
+                    }
+                }
             }
-            if (joystick.gyroscopeSensor != null) {
-                SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
-            }
-        } else {
-            if (joystick.accelerometerSensor != null) {
-                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
-            }
-            if (joystick.gyroscopeSensor != null) {
-                SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
-            }
-        }
+        });
     }
 }
 
@@ -830,19 +992,34 @@ class SDLGenericMotionListener_API14 implements View.OnGenericMotionListener {
             int toolType = event.getToolType(i);
 
             if (toolType == MotionEvent.TOOL_TYPE_MOUSE) {
+                int buttonState = event.getButtonState();
+                boolean isRelative = checkRelativeEvent(event);
+
+                if (Build.VERSION.SDK_INT >= 26 /* Android 8.0 (O) */ && isRelative) {
+                    // We'll be using the onCapturedPointer event handler instead, so
+                    // just bounce.
+                    return false;
+                }
+
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, i);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, i);
-                        SDLActivity.onNativeMouse(0, action, x, y, false);
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, false);
                         consumed = true;
                         break;
 
-                    case MotionEvent.ACTION_HOVER_MOVE:
+                    case MotionEvent.ACTION_HOVER_MOVE:     // Absolute mode mouse movement
+                    case MotionEvent.ACTION_MOVE:           // Relative mode mouse movement
+                    case MotionEvent.ACTION_BUTTON_PRESS:
+                    case MotionEvent.ACTION_BUTTON_RELEASE:
+                    case MotionEvent.ACTION_CANCEL:         // Mouse drag ended (e.g. button released)
+                    case MotionEvent.ACTION_HOVER_ENTER:
+                    case MotionEvent.ACTION_HOVER_EXIT:
                         x = getEventX(event, i);
                         y = getEventY(event, i);
 
-                        SDLActivity.onNativeMouse(0, action, x, y, checkRelativeEvent(event));
+                        SDLActivity.onNativeMouse(buttonState, action, x, y, isRelative);
                         consumed = true;
                         break;
 
@@ -962,7 +1139,8 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API14 {
     }
 }
 
-class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
+@SuppressLint("NewApi") // prevent lint Error: Class requires API level 26 (current min is 21): android.view.View.OnCapturedPointerListener [NewApi]
+class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 implements View.OnCapturedPointerListener {
     // Generic Motion (mouse hover, joystick...) events go here
     private boolean mRelativeModeEnabled;
 
@@ -974,6 +1152,26 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     @Override
     boolean inRelativeMode() {
         return mRelativeModeEnabled;
+    }
+
+    @Override
+    public boolean onCapturedPointer(View view, MotionEvent event) {
+
+        // Captured Pointer events are *always* relative
+        float x ,y;
+        int buttonState = event.getButtonState();
+        int action = event.getActionMasked();
+
+        if (action == MotionEvent.ACTION_SCROLL) {
+            x = event.getAxisValue(MotionEvent.AXIS_HSCROLL);
+            y = event.getAxisValue(MotionEvent.AXIS_VSCROLL);
+        } else {
+            x = event.getX();
+            y = event.getY();
+        }
+
+        SDLActivity.onNativeMouse(buttonState, action, x, y, true);
+        return true;
     }
 
     @Override
@@ -1038,6 +1236,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
     }
 }
 
+@SuppressLint("NewApi") // prevent lint Error: Call requires API level 29 (current min is 21): android.view.InputDevice#isExternal [NewApi]
 class SDLGenericMotionListener_API29 extends SDLGenericMotionListener_API26 {
     @Override
     int getPenDeviceType(InputDevice penDevice)

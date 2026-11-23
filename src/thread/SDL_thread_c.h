@@ -46,6 +46,9 @@
 #endif
 #include "../SDL_error_c.h"
 
+// Internal state while SDL_DetachThread() is detaching the system thread
+#define SDL_THREAD_DETACHING ((SDL_ThreadState)-1)
+
 // This is the system-independent thread info structure
 struct SDL_Thread
 {
@@ -97,5 +100,8 @@ extern void SDL_Generic_InitTLSData(void);
 extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 extern bool SDL_Generic_SetTLSData(SDL_TLSData *data);
 extern void SDL_Generic_QuitTLSData(void);
+
+// Obtain the current thread's `SDL_Thread *`. Thread must have been created with SDL_CreateThread. The main thread and other OS-level threads will return NULL!
+extern SDL_Thread *SDL_GetCurrentThread(void);
 
 #endif // SDL_thread_c_h_

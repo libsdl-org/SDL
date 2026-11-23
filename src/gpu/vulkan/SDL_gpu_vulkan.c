@@ -95,37 +95,6 @@ static VkPresentModeKHR SDLToVK_PresentMode[] = {
     VK_PRESENT_MODE_MAILBOX_KHR
 };
 
-// NOTE: this is behind an ifdef guard because without, it would trigger an "unused variable" error when OpenXR support is disabled
-#ifdef HAVE_GPU_OPENXR
-typedef struct TextureFormatPair {
-    VkFormat vk;
-    SDL_GPUTextureFormat sdl;
-} TextureFormatPair;
-
-static TextureFormatPair SDLToVK_TextureFormat_SrgbOnly[] = {
-    {VK_FORMAT_R8G8B8A8_SRGB, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB},
-    {VK_FORMAT_B8G8R8A8_SRGB, SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB},
-    {VK_FORMAT_BC1_RGBA_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB},
-    {VK_FORMAT_BC2_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB},
-    {VK_FORMAT_BC3_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB},
-    {VK_FORMAT_BC7_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB},
-    {VK_FORMAT_ASTC_4x4_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB},
-    {VK_FORMAT_ASTC_5x4_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB},
-    {VK_FORMAT_ASTC_5x5_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB},
-    {VK_FORMAT_ASTC_6x5_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB},
-    {VK_FORMAT_ASTC_6x6_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB},
-    {VK_FORMAT_ASTC_8x5_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB},
-    {VK_FORMAT_ASTC_8x6_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB},
-    {VK_FORMAT_ASTC_8x8_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB},
-    {VK_FORMAT_ASTC_10x5_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB},
-    {VK_FORMAT_ASTC_10x6_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB},
-    {VK_FORMAT_ASTC_10x8_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB},
-    {VK_FORMAT_ASTC_10x10_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB},
-    {VK_FORMAT_ASTC_12x10_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB},
-    {VK_FORMAT_ASTC_12x12_SRGB_BLOCK, SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB},
-};
-#endif // HAVE_GPU_OPENXR
-
 static VkFormat SDLToVK_TextureFormat[] = {
     VK_FORMAT_UNDEFINED,                   // INVALID
     VK_FORMAT_R8_UNORM,                    // A8_UNORM
@@ -314,37 +283,38 @@ static VkComponentMapping SwapchainCompositionSwizzle[] = {
 };
 
 static VkFormat SDLToVK_VertexFormat[] = {
-    VK_FORMAT_UNDEFINED,           // INVALID
-    VK_FORMAT_R32_SINT,            // INT
-    VK_FORMAT_R32G32_SINT,         // INT2
-    VK_FORMAT_R32G32B32_SINT,      // INT3
-    VK_FORMAT_R32G32B32A32_SINT,   // INT4
-    VK_FORMAT_R32_UINT,            // UINT
-    VK_FORMAT_R32G32_UINT,         // UINT2
-    VK_FORMAT_R32G32B32_UINT,      // UINT3
-    VK_FORMAT_R32G32B32A32_UINT,   // UINT4
-    VK_FORMAT_R32_SFLOAT,          // FLOAT
-    VK_FORMAT_R32G32_SFLOAT,       // FLOAT2
-    VK_FORMAT_R32G32B32_SFLOAT,    // FLOAT3
-    VK_FORMAT_R32G32B32A32_SFLOAT, // FLOAT4
-    VK_FORMAT_R8G8_SINT,           // BYTE2
-    VK_FORMAT_R8G8B8A8_SINT,       // BYTE4
-    VK_FORMAT_R8G8_UINT,           // UBYTE2
-    VK_FORMAT_R8G8B8A8_UINT,       // UBYTE4
-    VK_FORMAT_R8G8_SNORM,          // BYTE2_NORM
-    VK_FORMAT_R8G8B8A8_SNORM,      // BYTE4_NORM
-    VK_FORMAT_R8G8_UNORM,          // UBYTE2_NORM
-    VK_FORMAT_R8G8B8A8_UNORM,      // UBYTE4_NORM
-    VK_FORMAT_R16G16_SINT,         // SHORT2
-    VK_FORMAT_R16G16B16A16_SINT,   // SHORT4
-    VK_FORMAT_R16G16_UINT,         // USHORT2
-    VK_FORMAT_R16G16B16A16_UINT,   // USHORT4
-    VK_FORMAT_R16G16_SNORM,        // SHORT2_NORM
-    VK_FORMAT_R16G16B16A16_SNORM,  // SHORT4_NORM
-    VK_FORMAT_R16G16_UNORM,        // USHORT2_NORM
-    VK_FORMAT_R16G16B16A16_UNORM,  // USHORT4_NORM
-    VK_FORMAT_R16G16_SFLOAT,       // HALF2
-    VK_FORMAT_R16G16B16A16_SFLOAT  // HALF4
+    VK_FORMAT_UNDEFINED,               // INVALID
+    VK_FORMAT_R32_SINT,                // INT
+    VK_FORMAT_R32G32_SINT,             // INT2
+    VK_FORMAT_R32G32B32_SINT,          // INT3
+    VK_FORMAT_R32G32B32A32_SINT,       // INT4
+    VK_FORMAT_R32_UINT,                // UINT
+    VK_FORMAT_R32G32_UINT,             // UINT2
+    VK_FORMAT_R32G32B32_UINT,          // UINT3
+    VK_FORMAT_R32G32B32A32_UINT,       // UINT4
+    VK_FORMAT_R32_SFLOAT,              // FLOAT
+    VK_FORMAT_R32G32_SFLOAT,           // FLOAT2
+    VK_FORMAT_R32G32B32_SFLOAT,        // FLOAT3
+    VK_FORMAT_R32G32B32A32_SFLOAT,     // FLOAT4
+    VK_FORMAT_R8G8_SINT,               // BYTE2
+    VK_FORMAT_R8G8B8A8_SINT,           // BYTE4
+    VK_FORMAT_R8G8_UINT,               // UBYTE2
+    VK_FORMAT_R8G8B8A8_UINT,           // UBYTE4
+    VK_FORMAT_R8G8_SNORM,              // BYTE2_NORM
+    VK_FORMAT_R8G8B8A8_SNORM,          // BYTE4_NORM
+    VK_FORMAT_R8G8_UNORM,              // UBYTE2_NORM
+    VK_FORMAT_R8G8B8A8_UNORM,          // UBYTE4_NORM
+    VK_FORMAT_R16G16_SINT,             // SHORT2
+    VK_FORMAT_R16G16B16A16_SINT,       // SHORT4
+    VK_FORMAT_R16G16_UINT,             // USHORT2
+    VK_FORMAT_R16G16B16A16_UINT,       // USHORT4
+    VK_FORMAT_R16G16_SNORM,            // SHORT2_NORM
+    VK_FORMAT_R16G16B16A16_SNORM,      // SHORT4_NORM
+    VK_FORMAT_R16G16_UNORM,            // USHORT2_NORM
+    VK_FORMAT_R16G16B16A16_UNORM,      // USHORT4_NORM
+    VK_FORMAT_R16G16_SFLOAT,           // HALF2
+    VK_FORMAT_R16G16B16A16_SFLOAT,     // HALF4
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32 // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToVK_VertexFormat, SDL_arraysize(SDLToVK_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -1265,10 +1235,6 @@ struct VulkanRenderer
     SDL_Mutex *computePipelineLayoutFetchLock;
     SDL_Mutex *descriptorSetLayoutFetchLock;
     SDL_Mutex *windowLock;
-
-    // We don't want transfer commands to block each other,
-    // but we want all transfers to block during defrag.
-    SDL_RWLock *defragLock;
 
     Uint8 defragInProgress;
 
@@ -4828,7 +4794,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.queueFamilyIndexCount = 0;
     swapchainCreateInfo.pQueueFamilyIndices = NULL;
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     swapchainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 #else
     swapchainCreateInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;
@@ -5874,11 +5840,6 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
         &texture->usedRegion);
 
     if (bindResult != 1) {
-        renderer->vkDestroyImage(
-            renderer->logicalDevice,
-            texture->image,
-            NULL);
-
         VULKAN_INTERNAL_DestroyTexture(renderer, texture);
         SET_STRING_ERROR_AND_RETURN("Unable to bind memory for texture!", NULL);
     }
@@ -6209,6 +6170,8 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
         colorAttachmentReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
         colorAttachmentReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+        resolveReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
         attachmentDescriptionCount += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
@@ -6225,7 +6188,6 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
             attachmentDescriptions[attachmentDescriptionCount].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             resolveReferences[colorAttachmentReferenceCount].attachment = attachmentDescriptionCount;
-            resolveReferences[colorAttachmentReferenceCount].layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
             attachmentDescriptionCount += 1;
             resolveReferenceCount += 1;
@@ -8927,8 +8889,6 @@ static void VULKAN_UploadToTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VkBufferImageCopy imageCopy;
 
-    SDL_LockRWLockForReading(renderer->defragLock);
-
     // Note that the transfer buffer does not need a barrier, as it is synced by the client
     vulkanTextureSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
         renderer,
@@ -8970,8 +8930,6 @@ static void VULKAN_UploadToTexture(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_UploadToBuffer(
@@ -8985,8 +8943,6 @@ static void VULKAN_UploadToBuffer(
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transfer_buffer;
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Note that the transfer buffer does not need a barrier, as it is synced by the client
     VulkanBuffer *vulkanBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -9017,8 +8973,6 @@ static void VULKAN_UploadToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, vulkanBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 // Readback
@@ -9034,8 +8988,6 @@ static void VULKAN_DownloadFromTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferImageCopy imageCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     vulkanTextureSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         textureContainer,
@@ -9081,8 +9033,6 @@ static void VULKAN_DownloadFromTexture(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_DownloadFromBuffer(
@@ -9095,8 +9045,6 @@ static void VULKAN_DownloadFromBuffer(
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Note that transfer buffer does not need a barrier, as it is synced by the client
     VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
@@ -9125,8 +9073,6 @@ static void VULKAN_DownloadFromBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, bufferContainer->activeBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyTextureToTexture(
@@ -9143,8 +9089,6 @@ static void VULKAN_CopyTextureToTexture(
     VulkanTextureSubresource *srcSubresource;
     VulkanTextureSubresource *dstSubresource;
     VkImageCopy imageCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         (VulkanTextureContainer *)source->texture,
@@ -9209,8 +9153,6 @@ static void VULKAN_CopyTextureToTexture(
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, dstSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyBufferToBuffer(
@@ -9225,8 +9167,6 @@ static void VULKAN_CopyBufferToBuffer(
     VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
@@ -9268,8 +9208,6 @@ static void VULKAN_CopyBufferToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_GenerateMipmaps(
@@ -9282,8 +9220,6 @@ static void VULKAN_GenerateMipmaps(
     VulkanTextureSubresource *srcTextureSubresource;
     VulkanTextureSubresource *dstTextureSubresource;
     VkImageBlit blit;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Blit each slice sequentially. Barriers, barriers everywhere!
     for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
@@ -9370,8 +9306,6 @@ static void VULKAN_GenerateMipmaps(
 
         }
     }
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_EndCopyPass(
@@ -10036,7 +9970,8 @@ static bool VULKAN_ClaimWindow(
         }
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
-        if (createSwapchainResult == 1) {
+        if (createSwapchainResult == 1 ||
+            createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
@@ -10053,9 +9988,10 @@ static bool VULKAN_ClaimWindow(
 
             SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, VULKAN_INTERNAL_OnWindowResize, window);
 
-            return true;
-        } else if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
-            windowData->needsSwapchainRecreate = true;
+            if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+                // We successfully claimed the window, but we'll need to recreate the swap chain
+                windowData->needsSwapchainRecreate = true;
+            }
             return true;
         } else {
             // Failed to create swapchain, destroy surface and free data
@@ -11069,7 +11005,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
-    SDL_LockRWLockForWriting(renderer->defragLock);
 
     // Find an allocation that doesn't have any pending transfer operations
     Sint32 indexToDefrag = -1;
@@ -11082,7 +11017,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
     if (indexToDefrag == -1) {
         // Nothing is available to defrag, but it's not an error
-        SDL_UnlockRWLock(renderer->defragLock);
         SDL_UnlockMutex(renderer->allocatorLock);
         return true;
     }
@@ -11112,7 +11046,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
-                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11151,6 +11084,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                     VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
                     newBuffer);
 
+                // Need to transition the old buffer in case it is read by a separate command buffer.
+                VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+                    renderer,
+                    commandBuffer,
+                    VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
+                    currentRegion->vulkanBuffer);
+
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, currentRegion->vulkanBuffer);
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, newBuffer);
             }
@@ -11178,7 +11118,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 &currentRegion->vulkanTexture->container->header.info);
 
             if (newTexture == NULL) {
-                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11243,6 +11182,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
                 newTexture);
 
+            // Need to transition the old texture in case it is read by a separate command buffer.
+            VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+                currentRegion->vulkanTexture);
+
             // re-point original container to new texture
             newTexture->container = currentRegion->vulkanTexture->container;
             newTexture->containerIndex = currentRegion->vulkanTexture->containerIndex;
@@ -11255,7 +11201,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         }
     }
 
-    SDL_UnlockRWLock(renderer->defragLock);
     SDL_UnlockMutex(renderer->allocatorLock);
 
     return true;
@@ -12190,8 +12135,8 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
     bool isConformant;
 
     VkPhysicalDeviceType deviceType;
+    VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     if (physicalDeviceExtensions->KHR_driver_properties || physicalDeviceExtensions->MSFT_layered_driver) {
-        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
         VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = { 0 };
         VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties = { 0 };
         void** ppNext = &physicalDeviceProperties.pNext;
@@ -12241,11 +12186,10 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
             deviceType = physicalDeviceProperties.properties.deviceType;
         }
     } else {
-        VkPhysicalDeviceProperties physicalDeviceProperties;
         renderer->vkGetPhysicalDeviceProperties(
             physicalDevice,
-            &physicalDeviceProperties);
-        deviceType = physicalDeviceProperties.deviceType;
+            &physicalDeviceProperties.properties);
+        deviceType = physicalDeviceProperties.properties.deviceType;
         isConformant = true; // We can't check this, so just assume it's conformant
     }
 
@@ -12264,6 +12208,7 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
      * -flibit
      */
     if (!isConformant) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Device %s is not Vulkan-conformant, skipping", physicalDeviceProperties.properties.deviceName);
         return 0;
     }
 
@@ -12602,6 +12547,10 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
             &renderer->physicalDeviceProperties.properties);
     }
 
+    if (renderer->physicalDeviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Selected Vulkan device is CPU-based, this is rarely intentional");
+    }
+
     renderer->vkGetPhysicalDeviceMemoryProperties(
         renderer->physicalDevice,
         &renderer->memoryProperties);
@@ -12618,6 +12567,7 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     VkPhysicalDeviceFeatures haveDeviceFeatures;
     VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures;
     const char **deviceExtensions;
+    Uint32 extensionCount, i;
 
     VkDeviceQueueCreateInfo queueCreateInfo;
     float queuePriority = 1.0f;
@@ -12678,12 +12628,21 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
     deviceCreateInfo.enabledLayerCount = 0;
     deviceCreateInfo.ppEnabledLayerNames = NULL;
-    deviceCreateInfo.enabledExtensionCount = GetDeviceExtensionCount(
+
+    // Create the list of device extensions to enable (internal extension + opt-in extensions)
+    extensionCount = GetDeviceExtensionCount(
         &renderer->supports);
+
     deviceExtensions = SDL_stack_alloc(
         const char *,
-        deviceCreateInfo.enabledExtensionCount);
+        extensionCount + features->additionalDeviceExtensionCount);
+
     CreateDeviceExtensionArray(&renderer->supports, deviceExtensions);
+    for (i = 0; i < features->additionalDeviceExtensionCount; ++i) {
+        deviceExtensions[extensionCount++] = features->additionalDeviceExtensionNames[i];
+    }
+
+    deviceCreateInfo.enabledExtensionCount = extensionCount;
     deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions;
 
     VkPhysicalDeviceFeatures2 featureList;
@@ -13125,23 +13084,6 @@ static XrResult VULKAN_DestroyXRSwapchain(
 #endif
 }
 
-#ifdef HAVE_GPU_OPENXR
-static bool VULKAN_INTERNAL_FindXRSrgbSwapchain(int64_t *supportedFormats, Uint32 numFormats, SDL_GPUTextureFormat *sdlFormat, int64_t *vkFormat)
-{
-    for (Uint32 i = 0; i < SDL_arraysize(SDLToVK_TextureFormat_SrgbOnly); i++) {
-        for (Uint32 j = 0; j < numFormats; j++) {
-            if (SDLToVK_TextureFormat_SrgbOnly[i].vk == supportedFormats[j]) {
-                *sdlFormat = SDLToVK_TextureFormat_SrgbOnly[i].sdl;
-                *vkFormat = SDLToVK_TextureFormat_SrgbOnly[i].vk;
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-#endif // HAVE_GPU_OPENXR
-
 static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
     SDL_GPURenderer *driverData,
     XrSession session,
@@ -13162,38 +13104,37 @@ static SDL_GPUTextureFormat* VULKAN_GetXRSwapchainFormats(
         return NULL;
     }
 
-    // FIXME: For now we're just searching for the optimal format, not all supported formats.
-    // FIXME: Expand this search for all SDL_GPU formats!
+    SDL_GPUTextureFormat *sdl_formats = SDL_stack_alloc(SDL_GPUTextureFormat, num_supported_formats);
+    uint32_t num_found_formats = 0;
 
-    SDL_GPUTextureFormat sdlFormat = SDL_GPU_TEXTUREFORMAT_INVALID;
-    int64_t vkFormat = VK_FORMAT_UNDEFINED;
-    // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
-    if (!VULKAN_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &vkFormat)) {
-        // Iterate over all formats the runtime supports
-        for (i = 0; i < num_supported_formats && vkFormat == VK_FORMAT_UNDEFINED; i++) {
-            // Iterate over all formats we support
-            for (j = 0; j < SDL_arraysize(SDLToVK_TextureFormat); j++) {
-                // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
-                if (SDLToVK_TextureFormat[j] == supported_formats[i]) {
-                    vkFormat = supported_formats[i];
-                    sdlFormat = j;
-                    break;
-                }
+    // Iterate over all formats the runtime supports
+    for (i = 0; i < num_supported_formats; i++) {
+        // Iterate over all formats we support
+        for (j = 0; j < SDL_arraysize(SDLToVK_TextureFormat); j++) {
+            if (SDLToVK_TextureFormat[j] == supported_formats[i]) {
+                // Add the format match we found, linearly. The output order should match the order of the runtime.
+                sdl_formats[num_found_formats++] = j;
+                break;
             }
         }
     }
 
     SDL_stack_free(supported_formats);
 
-    if (vkFormat == VK_FORMAT_UNDEFINED) {
+    if (num_found_formats == 0) {
         SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
+        SDL_stack_free(sdl_formats);
         return NULL;
     }
 
-    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
-    retval[0] = sdlFormat;
-    retval[1] = SDL_GPU_TEXTUREFORMAT_INVALID;
-    *num_formats = 1;
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat *)SDL_calloc((size_t)num_found_formats + 1, sizeof(SDL_GPUTextureFormat));
+    SDL_memcpy(retval, sdl_formats, sizeof(SDL_GPUTextureFormat) * num_found_formats); // Copy the translated formats
+    retval[num_found_formats] = SDL_GPU_TEXTUREFORMAT_INVALID; // Add a termination for good measure
+
+    *num_formats = num_found_formats;
+
+    SDL_stack_free(supported_formats);
+
     return retval;
 #else
     SDL_SetError("SDL not built with OpenXR support");

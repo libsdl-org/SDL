@@ -1,8 +1,10 @@
 
 layout (set = 0, binding = 1) Texture2D texture0 : register(t0);
 layout (set = 0, binding = 2) Texture2D texture1 : register(t1);
+layout (set = 0, binding = 3) Texture2D texture2 : register(t2);
 SamplerState sampler0 : register(s0);
 SamplerState sampler1 : register(s1);
+SamplerState sampler2 : register(s2);
 
 struct PixelShaderInput
 {
@@ -22,15 +24,22 @@ static const float TEXTURETYPE_RGB_PIXELART = 2;
 static const float TEXTURETYPE_PALETTE_NEAREST = 3;
 static const float TEXTURETYPE_PALETTE_LINEAR = 4;
 static const float TEXTURETYPE_PALETTE_PIXELART = 5;
+static const float TEXTURETYPE_NV12 = 6;
+static const float TEXTURETYPE_NV21 = 7;
+static const float TEXTURETYPE_YUV = 8;
 
 static const float INPUTTYPE_UNSPECIFIED = 0;
 static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
 
+static const float OUTPUTTYPE_SRGB = 1;
+static const float OUTPUTTYPE_SCRGB = 2;
+static const float OUTPUTTYPE_HDR10 = 3;
+
 layout (set = 0, binding = 0) cbuffer Constants : register(b1)
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -40,6 +49,11 @@ layout (set = 0, binding = 0) cbuffer Constants : register(b1)
     float tonemap_factor1;
     float tonemap_factor2;
     float sdr_white_point;
+
+    float4 Yoffset;
+    float4 Rcoeff;
+    float4 Gcoeff;
+    float4 Bcoeff;
 };
 
 static const float3x3 mat709to2020 = {
@@ -137,30 +151,6 @@ float3 ApplyTonemap(float3 v)
     if (tonemap_method == TONEMAP_LINEAR) {
         v *= tonemap_factor1;
     } else if (tonemap_method == TONEMAP_CHROME) {
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.2020 colorspace for tone mapping
-            v = mul(mat709to2020, v);
-        }
-
-        float vmax = max(v.r, max(v.g, v.b));
-        if (vmax > 0.0) {
-            float scale = (1.0 + tonemap_factor1 * vmax) / (1.0 + tonemap_factor2 * vmax);
-            v *= scale;
-        }
-
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.709 colorspace after tone mapping
-            v = mul(mat2020to709, v);
-        }
-    }
-    return v;
-}
-
-float3 ApplyTonemap2020(float3 v)
-{
-    if (tonemap_method == TONEMAP_LINEAR) {
-        v *= tonemap_factor1;
-    } else if (tonemap_method == TONEMAP_CHROME) {
         float vmax = max(v.r, max(v.g, v.b));
         if (vmax > 0.0) {
             float scale = (1.0 + tonemap_factor1 * vmax) / (1.0 + tonemap_factor2 * vmax);
@@ -218,14 +208,13 @@ float4 GetInputColor(PixelShaderInput input)
 {
     float4 rgba;
 
-    if (texture_type == TEXTURETYPE_RGB) {
+    if (texture_type == TEXTURETYPE_NONE) {
+        rgba = 1.0;
+    } else if (texture_type == TEXTURETYPE_RGB) {
         rgba = texture0.Sample(sampler0, input.tex);
-// NVIDIA drivers crash when trying to use SampleGrad() on a texture with YCbCr conversion
-#ifndef BROKEN_YCbCr_NVIDIA
     } else if (texture_type == TEXTURETYPE_RGB_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = texture0.SampleGrad(sampler0, uv, ddx(input.tex), ddy(input.tex));
-#endif
     } else if (texture_type == TEXTURETYPE_PALETTE_NEAREST) {
         rgba = SamplePaletteNearest(input.tex);
     } else if (texture_type == TEXTURETYPE_PALETTE_LINEAR) {
@@ -233,6 +222,37 @@ float4 GetInputColor(PixelShaderInput input)
     } else if (texture_type == TEXTURETYPE_PALETTE_PIXELART) {
         float2 uv = GetPixelArtUV(input.tex);
         rgba = SamplePaletteLinear(uv);
+    } else if (texture_type == TEXTURETYPE_NV12) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.yz = texture1.Sample(sampler1, input.tex).rg;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
+    } else if (texture_type == TEXTURETYPE_NV21) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.yz = texture1.Sample(sampler1, input.tex).gr;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
+    } else if (texture_type == TEXTURETYPE_YUV) {
+        float3 yuv;
+        yuv.x = texture0.Sample(sampler0, input.tex).r;
+        yuv.y = texture1.Sample(sampler1, input.tex).r;
+        yuv.z = texture2.Sample(sampler2, input.tex).r;
+
+        yuv += Yoffset.xyz;
+        rgba.r = dot(yuv, Rcoeff.xyz);
+        rgba.g = dot(yuv, Gcoeff.xyz);
+        rgba.b = dot(yuv, Bcoeff.xyz);
+        rgba.a = 1.0;
     } else {
         // Error!
         rgba.r = 1.0;
@@ -249,32 +269,6 @@ float4 GetOutputColor(float4 rgba)
 
     output.rgb = rgba.rgb * color_scale;
     output.a = rgba.a;
-
-    return output;
-}
-
-float3 GetOutputColorFromSRGB(float3 rgb)
-{
-    float3 output;
-
-    if (scRGB_output) {
-        rgb = sRGBtoLinear(rgb);
-    }
-
-    output.rgb = rgb * color_scale;
-
-    return output;
-}
-
-float3 GetOutputColorFromLinear(float3 rgb)
-{
-    float3 output;
-
-    output.rgb = rgb * color_scale;
-
-    if (!scRGB_output) {
-        output.rgb = saturate(sRGBfromLinear(output.rgb));
-    }
 
     return output;
 }
@@ -296,62 +290,50 @@ float4 PQColorPixelShader(PixelShaderInput input)
     return output;
 }
 
-float4 PQTexturePixelShader(PixelShaderInput input)
-{
-    float4 rgba = GetInputColor(input);
-    float4 output;
-
-    if (input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = PQtoLinear(rgba.rgb);
-    } else {
-        if (input_type == INPUTTYPE_SRGB) {
-            rgba.rgb = sRGBtoLinear(rgba.rgb);
-        }
-        rgba.rgb = mul(mat709to2020, rgba.rgb);
-    }
-
-    if (tonemap_method != TONEMAP_NONE) {
-        rgba.rgb = ApplyTonemap2020(rgba.rgb);
-    }
-
-    // Apply color scaling, which will include display SDR white level
-    rgba.rgb = rgba.rgb * input.color.rgb * color_scale;
-
-    // Convert to nits
-    rgba.rgb = scRGBtoNits(rgba.rgb);
-
-    output.rgb = PQFromNits(rgba.rgb);
-    output.a = rgba.a * input.color.a;
-
-    return output;
-}
-
 float4 AdvancedPixelShader(PixelShaderInput input)
 {
     float4 rgba = GetInputColor(input);
-    float4 output;
+    float3 rgb = rgba.rgb;
+    bool rgb2020 = false;
 
+    // Convert the input to linear values, unless we're staying in sRGB space
     if (input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = PQtoLinear(rgba.rgb);
+        rgb = PQtoLinear(rgb);
+        rgb2020 = true;
+    } else if (input_type == INPUTTYPE_SRGB) {
+        if (output_type != OUTPUTTYPE_SRGB) {
+            rgb = sRGBtoLinear(rgb);
+        }
     }
 
+    // Tone mapping is done in the BT.2020 colorspace
     if (tonemap_method != TONEMAP_NONE) {
-        rgba.rgb = ApplyTonemap(rgba.rgb);
+        if (!rgb2020) {
+            rgb = mul(mat709to2020, rgb);
+            rgb2020 = true;
+        }
+        rgb = ApplyTonemap(rgb);
     }
 
-    if (input_type == INPUTTYPE_SRGB) {
-        output.rgb = GetOutputColorFromSRGB(rgba.rgb);
-        output.a = rgba.a;
-    } else if (input_type == INPUTTYPE_SCRGB) {
-        output.rgb = GetOutputColorFromLinear(rgba.rgb);
-        output.a = rgba.a;
-    } else if (input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = mul(mat2020to709, rgba.rgb);
-        output.rgb = GetOutputColorFromLinear(rgba.rgb);
-        output.a = rgba.a;
-    } else {
-        output = GetOutputColor(rgba);
+    // Convert to the output color primaries
+    if (output_type == OUTPUTTYPE_HDR10) {
+        if (!rgb2020) {
+            rgb = mul(mat709to2020, rgb);
+        }
+    } else if (rgb2020) {
+        rgb = mul(mat2020to709, rgb);
     }
 
-    return output * input.color;
+    rgb *= color_scale;
+
+    if (output_type == OUTPUTTYPE_SRGB &&
+        (input_type == INPUTTYPE_SCRGB || input_type == INPUTTYPE_HDR10)) {
+        rgb = saturate(sRGBfromLinear(rgb));
+    }
+
+    float4 output = float4(rgb, rgba.a) * input.color;
+    if (output_type == OUTPUTTYPE_HDR10) {
+        output.rgb = PQFromNits(scRGBtoNits(output.rgb));
+    }
+    return output;
 }

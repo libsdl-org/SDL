@@ -69,7 +69,7 @@ static const char *video_usage[] = {
     "[--icon icon.bmp]",
     "[--input-focus]",
     "[--keyboard-grab]",
-    "[--logical-presentation disabled|match|stretch|letterbox|overscan|integer_scale]",
+    "[--logical-presentation disabled|stretch|letterbox|overscan|integer_scale]",
     "[--logical WxH]",
     "[--max-geometry WxH]",
     "[--maximize]",
@@ -111,6 +111,8 @@ static Uint32 SDLCALL quit_after_ms_cb(void *userdata, SDL_TimerID timerID, Uint
     SDL_PushEvent(&event);
     return 0;
 }
+
+static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
 
 static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
@@ -1021,13 +1023,13 @@ static void SDLTest_PrintPixelFormat(char *text, size_t maxlen, Uint32 format)
         if (SDL_strncmp(name, "SDL_PIXELFORMAT_", 16) == 0) {
             name += 16;
         }
-        SDL_snprintfcat(text, maxlen, name);
+        SDL_snprintfcat(text, maxlen, "%s", name);
     } else {
-        SDL_snprintfcat(text, maxlen, "0x%8.8x", format);
+        SDL_snprintfcat(text, maxlen, "0x%8.8" SDL_PRIx32, format);
     }
 }
 
-static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_RendererLogicalPresentation logical_presentation)
+static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_RendererLogicalPresentation logical_presentation, const SDL_FRect *rect)
 {
     switch (logical_presentation) {
     case SDL_LOGICAL_PRESENTATION_DISABLED:
@@ -1045,10 +1047,14 @@ static void SDLTest_PrintLogicalPresentation(char *text, size_t maxlen, SDL_Rend
     case SDL_LOGICAL_PRESENTATION_INTEGER_SCALE:
         SDL_snprintfcat(text, maxlen, "INTEGER_SCALE");
         break;
+    case SDL_LOGICAL_PRESENTATION_CUSTOM:
+        SDL_snprintfcat(text, maxlen, "CUSTOM");
+        break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", logical_presentation);
         break;
     }
+    SDL_snprintfcat(text, maxlen, " %g,%g, %gx%g", rect->x, rect->y, rect->w, rect->h);
 }
 
 static void SDLTest_PrintRenderer(SDL_Renderer *renderer)
@@ -2757,6 +2763,7 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
     int x, y, w, h;
     float fx, fy;
     SDL_Rect rect;
+    SDL_FRect frect;
     const SDL_DisplayMode *mode;
     float scaleX, scaleY;
     SDL_MouseButtonFlags flags;
@@ -2815,7 +2822,9 @@ void SDLTest_CommonDrawWindowInfo(SDL_Renderer *renderer, SDL_Window *window, fl
 
     SDL_GetRenderLogicalPresentation(renderer, &w, &h, &logical_presentation);
     (void)SDL_snprintf(text, sizeof(text), "SDL_GetRenderLogicalPresentation: %dx%d ", w, h);
-    SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation);
+    SDL_GetRenderLogicalPresentationRect(renderer, &frect);
+    SDLTest_PrintLogicalPresentation(text, sizeof(text), logical_presentation, &frect);
+    SDLTest_DrawString(renderer, 0.0f, textY, text);
     textY += lineHeight;
 
     /* Window */

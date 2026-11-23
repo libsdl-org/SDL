@@ -34,7 +34,7 @@ extern bool WIN_StopTextInput(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool WIN_UpdateTextInputArea(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool WIN_ClearComposition(SDL_VideoDevice *_this, SDL_Window *window);
 
-extern bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_VideoData *videodata);
+extern bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, struct SDL_WindowData *data);
 extern void WIN_UpdateIMECandidates(SDL_VideoDevice *_this);
 
 #endif // SDL_windowskeyboard_h_

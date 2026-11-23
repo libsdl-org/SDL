@@ -24,7 +24,7 @@
 
 #include "../SDL_syshaptic.h"
 #include "../../joystick/SDL_sysjoystick.h"               // For the real SDL_Joystick
-#include "../../joystick/windows/SDL_windowsjoystick_c.h" // For joystick hwdata
+#include "../../joystick/windows/SDL_dinputjoystick_c.h" // For joystick hwdata
 #include "../../joystick/windows/SDL_xinputjoystick_c.h"  // For xinput rumble
 
 #include "SDL_windowshaptic_c.h"
@@ -47,7 +47,7 @@ static int numhaptics = 0;
  */
 bool SDL_SYS_HapticInit(void)
 {
-    JoyStick_DeviceData *device;
+    SDL_JoystickDevice *device;
 
     if (!SDL_DINPUT_HapticInit()) {
         return false;
@@ -58,9 +58,13 @@ bool SDL_SYS_HapticInit(void)
      * subsystem will arrive too early to create haptic devices. We will
      * invoke those callbacks again here to pick up any joysticks that
      * were added prior to haptics initialization. */
-    for (device = SYS_Joystick; device; device = device->pNext) {
-        SDL_DINPUT_HapticMaybeAddDevice(&device->dxdevice);
+    SDL_LockJoysticks();
+    for (device = SDL_GetJoystickDevices(); device; device = device->next) {
+        if (device->driver == &SDL_DINPUT_JoystickDriver && device->published) {
+            SDL_DINPUT_HapticMaybeAddDevice(&device->internal->dxdevice);
+        }
     }
+    SDL_UnlockJoysticks();
 
     return true;
 }
@@ -182,7 +186,7 @@ int SDL_SYS_HapticMouse(void)
  */
 bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
-    if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
+    if (joystick->driver != &SDL_DINPUT_JoystickDriver) {
         return false;
     }
     if (joystick->hwdata->Capabilities.dwFlags & DIDC_FORCEFEEDBACK) {
@@ -196,7 +200,7 @@ bool SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
  */
 bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
-    if (joystick->driver != &SDL_WINDOWS_JoystickDriver) {
+    if (joystick->driver != &SDL_DINPUT_JoystickDriver) {
         return false;
     }
     return SDL_DINPUT_JoystickSameHaptic(haptic, joystick);
@@ -207,7 +211,7 @@ bool SDL_SYS_JoystickSameHaptic(SDL_Haptic *haptic, SDL_Joystick *joystick)
  */
 bool SDL_SYS_HapticOpenFromJoystick(SDL_Haptic *haptic, SDL_Joystick *joystick)
 {
-    SDL_assert(joystick->driver == &SDL_WINDOWS_JoystickDriver);
+    SDL_assert(joystick->driver == &SDL_DINPUT_JoystickDriver);
 
     return SDL_DINPUT_HapticOpenFromJoystick(haptic, joystick);
 }

@@ -21,12 +21,14 @@ extern "C" {
 
 // vulkan_video_codec_av1std_encode is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_av1std_encode 1
+
 #include "vulkan_video_codec_av1std.h"
 
 #define VK_STD_VULKAN_VIDEO_CODEC_AV1_ENCODE_API_VERSION_1_0_0 VK_MAKE_VIDEO_STD_VERSION(1, 0, 0)
 
 #define VK_STD_VULKAN_VIDEO_CODEC_AV1_ENCODE_SPEC_VERSION VK_STD_VULKAN_VIDEO_CODEC_AV1_ENCODE_API_VERSION_1_0_0
 #define VK_STD_VULKAN_VIDEO_CODEC_AV1_ENCODE_EXTENSION_NAME "VK_STD_vulkan_video_codec_av1_encode"
+
 typedef struct StdVideoEncodeAV1DecoderModelInfo {
     uint8_t     buffer_delay_length_minus_1;
     uint8_t     buffer_removal_time_length_minus_1;

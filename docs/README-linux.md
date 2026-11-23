@@ -101,3 +101,37 @@ to set up a rule such as:
 
     SUBSYSTEM=="input", ENV{ID_CLASS}=="joystick", ENV{ID_INPUT_JOYSTICK}="1"
 
+
+Building for x86-32 on an x86-64 system
+--------------------------------------------------------------------------------
+
+It's rare to need a 32-bit x86 binary in modern times, but there are occasions where one is useful: some sort of specialty hardware, or trying to get an old game running through sdl2-compat, etc.
+
+The easiest way to build a 32-bit SDL, that is widely binary compatible and doesn't drop functionality, is to use the Steam Runtime SDK.
+
+Simon McVittie explained the technical details well in [this GitHub comment](https://github.com/libsdl-org/SDL/issues/14774#issuecomment-3723816286).
+
+Steam Runtime 3 (Codename "Sniper," and not the latest version, to be clear) still has excellent 32-bit support, and can produce a binary that supports X11, Wayland, KMSDRM, PulseAudio, PipeWire, ALSA, and JACK.
+
+If you have [podman](https://podman.io/) installed (available on most popular distros), here's an example of how to build a 32-bit SDL with the Steam Runtime SDK.
+
+This will need to download about 1.5 gigabytes of data, and use about 4 gigabytes of disk space (which can be recovered as soon as the process completes).
+
+```bash
+podman pull registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
+podman run --name build-sdl-on-steam-runtime -it registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest
+# You are now inside the podman container.
+mkdir /src /build
+cd /src
+git clone https://github.com/libsdl-org/SDL
+cmake -G Ninja -S /src/SDL -B /build/SDL --toolchain /usr/share/steamrt/cmake/i686-linux-gnu-gcc.cmake
+cmake --build /build/SDL
+exit
+# You are now back in your normal system. Copy the library from the container to your system.
+podman cp build-sdl-on-steam-runtime:/build/SDL/libSDL3.so .
+# Destroy the container.
+podman rm build-sdl-on-steam-runtime
+# Destroy the container image (the big download...don't do it if you might have to download it again!)
+podman rmi registry.gitlab.steamos.cloud/steamrt/sniper/sdk
+```
+

@@ -20,6 +20,7 @@
 */
 #include "SDL_internal.h"
 
+#include "../../process/SDL_sysprocess.h"
 #include "../SDL_dialog_utils.h"
 #include "SDL_zenitydialog.h"
 #include "SDL_zenitymessagebox.h"
@@ -37,6 +38,7 @@ typedef struct
     int nfilters;
     char **filters_slice;
     char *filename;
+    char *app_id;
     char *title;
     char *accept;
     char *cancel;
@@ -83,6 +85,7 @@ static bool get_x11_window_handle(SDL_PropertiesID props, char *out)
  *     zenity --file-selection --separator=\n [--multiple]
  *                         [--directory] [--save --confirm-overwrite]
  *                         [--filename FILENAME] [--modal --attach 0x11w1nd0w]
+ *                         [--app-id APP_ID]
  *                         [--title TITLE] [--ok-label ACCEPT]
  *                         [--cancel-label CANCEL]
  *                         [--file-filter=Filter Name | *.filt *.fn ...]...
@@ -104,6 +107,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
                          + 2 /* --directory | --save --confirm-overwrite */
                          + 2 /* --filename [file] */
                          + 3 /* --modal --attach [handle] */
+                         + 2 /* --app-id [id] */
                          + 2 /* --title [title] */
                          + 2 /* --ok-label [label] */
                          + 2 /* --cancel-label [label] */
@@ -133,6 +137,17 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
     COPY_STRING_PROPERTY(args->cancel, SDL_PROP_FILE_DIALOG_CANCEL_STRING);
 #undef COPY_STRING_PROPERTY
 
+    if (zenity_major > 4 ||
+        (zenity_major == 4 && zenity_minor >= 4)) {
+        const char *app_id = SDL_GetZenityAppID();
+        if (app_id) {
+            args->app_id = SDL_strdup(app_id);
+            if (!args->app_id) {
+                goto cleanup;
+            }
+        }
+    }
+
     // ARGV PASS
     int argc = 0;
     argv[argc++] = "zenity";
@@ -155,10 +170,25 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
     case SDL_FILEDIALOG_OPENFOLDER:
         argv[argc++] = "--directory";
+
+        // A folder dialog always treats the location as a folder
+        if (args->filename) {
+            size_t filename_length = SDL_strlen(args->filename);
+            if (filename_length > 0 && args->filename[filename_length - 1] != '/') {
+                char *filename = SDL_realloc(args->filename, filename_length + 2);
+                if (!filename) {
+                    goto cleanup;
+                }
+                filename[filename_length++] = '/';
+                filename[filename_length] = '\0';
+
+                args->filename = filename;
+            }
+        }
         break;
     }
 
-    if (args->filename) {
+    if (args->filename && *args->filename) {
         argv[argc++] = "--filename";
         argv[argc++] = args->filename;
     }
@@ -168,6 +198,11 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
         argv[argc++] = "--modal";
         argv[argc++] = "--attach";
         argv[argc++] = args->x11_window_handle;
+    }
+
+    if (args->app_id) {
+        argv[argc++] = "--app-id";
+        argv[argc++] = args->app_id;
     }
 
     if (args->title) {
@@ -211,6 +246,7 @@ static zenityArgs *create_zenity_args(SDL_FileDialogType type, SDL_DialogFileCal
 
 cleanup:
     SDL_free(args->filename);
+    SDL_free(args->app_id);
     SDL_free(args->title);
     SDL_free(args->accept);
     SDL_free(args->cancel);
@@ -263,32 +299,36 @@ static void run_zenity(SDL_DialogFileCallback callback, void *userdata, void *ar
         goto done;
     }
 
-    array = (char **)SDL_malloc((narray + 1) * sizeof(char *));
-    if (!array) {
-        goto done;
-    }
-    array[0] = container;
-    array[1] = NULL;
-
-    for (int i = 0; i < bytes_read; i++) {
-        if (container[i] == '\n') {
-            container[i] = '\0';
-            // Reading from a process often leaves a trailing \n, so ignore the last one
-            if (i < bytes_read - 1) {
-                array[narray] = container + i + 1;
-                narray++;
-                char **new_array = (char **)SDL_realloc(array, (narray + 1) * sizeof(char *));
-                if (!new_array) {
-                    goto done;
-                }
-                array = new_array;
-                array[narray] = NULL;
-            }
+    // status 1 = the user canceled the dialog
+    if (bytes_read > 0 || status == 1 || status == SDL_PROCESS_EXITCODE_UNKNOWN) {
+        array = (char **)SDL_malloc((narray + 1) * sizeof(char *));
+        if (!array) {
+            goto done;
         }
-    }
+        if (bytes_read > 0) {
+            array[0] = container;
+            array[1] = NULL;
 
-    // 0 = the user chose one or more files, 1 = the user canceled the dialog
-    if (status == 0 || status == 1) {
+            for (int i = 0; i < bytes_read; i++) {
+                if (container[i] == '\n') {
+                    container[i] = '\0';
+                    // Reading from a process often leaves a trailing \n, so ignore the last one
+                    if (i < bytes_read - 1) {
+                        array[narray] = container + i + 1;
+                        narray++;
+                        char **new_array = (char **)SDL_realloc(array, (narray + 1) * sizeof(char *));
+                        if (!new_array) {
+                            goto done;
+                        }
+                        array = new_array;
+                        array[narray] = NULL;
+                    }
+                }
+            }
+        } else {
+            array[0] = NULL;
+        }
+
         callback(userdata, (const char *const *)array, -1);
     } else {
         SDL_SetError("Could not run zenity: exit code %d", status);
@@ -316,6 +356,7 @@ static void free_zenity_args(zenityArgs *args)
         }
     }
     SDL_free(args->filename);
+    SDL_free(args->app_id);
     SDL_free(args->title);
     SDL_free(args->accept);
     SDL_free(args->cancel);
@@ -352,21 +393,7 @@ void SDL_Zenity_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_Dialog
 
 bool SDL_Zenity_detect(void)
 {
-    const char *args[] = {
-        "zenity", "--version", NULL
-    };
-    int status = -1;
+    int major, minor;
 
-    SDL_PropertiesID props = SDL_CreateProperties();
-    SDL_SetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, args);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDIN_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDOUT_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_SetNumberProperty(props, SDL_PROP_PROCESS_CREATE_STDERR_NUMBER, SDL_PROCESS_STDIO_NULL);
-    SDL_Process *process = SDL_CreateProcessWithProperties(props);
-    SDL_DestroyProperties(props);
-    if (process) {
-        SDL_WaitProcess(process, true, &status);
-        SDL_DestroyProcess(process);
-    }
-    return (status == 0);
+    return SDL_get_zenity_version(&major, &minor);
 }

@@ -21,7 +21,9 @@ extern "C" {
 
 // vulkan_video_codec_vp9std is a preprocessor guard. Do not pass it to API calls.
 #define vulkan_video_codec_vp9std 1
+
 #include "vulkan_video_codecs_common.h"
+
 #define STD_VIDEO_VP9_NUM_REF_FRAMES      8U
 #define STD_VIDEO_VP9_REFS_PER_FRAME      3U
 #define STD_VIDEO_VP9_MAX_REF_FRAMES      4U
@@ -97,6 +99,7 @@ typedef enum StdVideoVP9ColorSpace {
     STD_VIDEO_VP9_COLOR_SPACE_INVALID = 0x7FFFFFFF,
     STD_VIDEO_VP9_COLOR_SPACE_MAX_ENUM = 0x7FFFFFFF
 } StdVideoVP9ColorSpace;
+
 typedef struct StdVideoVP9ColorConfigFlags {
     uint32_t    color_range : 1;
     uint32_t    reserved : 31;

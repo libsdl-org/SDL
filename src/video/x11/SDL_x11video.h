@@ -70,7 +70,6 @@ struct SDL_VideoData
     struct {
         Atom WM_PROTOCOLS;
         Atom WM_DELETE_WINDOW;
-        Atom WM_TAKE_FOCUS;
         Atom WM_NAME;
         Atom WM_TRANSIENT_FOR;
         Atom WM_STATE;
@@ -138,7 +137,6 @@ struct SDL_VideoData
     SDL_Point global_mouse_position;
     Uint32 global_mouse_buttons;
 
-    SDL_XInput2DeviceInfo *mouse_device_info;
     unsigned long xinput_last_button_serial;
     unsigned long xinput_last_key_serial;
     int xinput_last_keyboard_device;

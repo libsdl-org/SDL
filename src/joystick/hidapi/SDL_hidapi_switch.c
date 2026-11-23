@@ -324,6 +324,7 @@ typedef struct
     bool m_bReportSensors;
     bool m_bHasSensorData;
     Uint64 m_ulLastInput;
+    bool m_bTimedOut;
     Uint64 m_ulLastIMUReset;
     Uint64 m_ulIMUSampleTimestampNS;
     Uint32 m_unIMUSamples;
@@ -425,8 +426,10 @@ static SwitchSubcommandInputPacket_t *ReadSubcommandReply(SDL_DriverSwitch_Conte
                     continue;
                 }
                 if (reply->ucSubcommandID == k_eSwitchSubcommandIDs_SPIFlashRead) {
-                    SDL_assert(ucLen == sizeof(reply->spiReadData.opData));
-                    if (SDL_memcmp(&reply->spiReadData.opData, pBuf, ucLen) != 0) {
+                    SDL_assert(ucLen == sizeof(SwitchSPIOpData_t));
+                    const SwitchSPIOpData_t *request = (const SwitchSPIOpData_t *)pBuf;
+                    if (reply->spiReadData.opData.unAddress != request->unAddress ||
+                        reply->spiReadData.opData.ucLength < request->ucLength) {
                         // This was a reply for another SPI read command
                         continue;
                     }
@@ -525,6 +528,17 @@ static bool WriteSubcommand(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs 
         *ppReply = reply;
     }
     return reply != NULL;
+}
+
+static bool WriteSubcommandAsync(SDL_DriverSwitch_Context *ctx, ESwitchSubcommandIDs ucCommandID, const Uint8 *pBuf, Uint8 ucLen)
+{
+    if (ctx->m_bSyncWrite) {
+        return WriteSubcommand(ctx, ucCommandID, pBuf, ucLen, NULL);
+    }
+
+    SwitchSubcommandOutputPacket_t commandPacket;
+    ConstructSubcommand(ctx, ucCommandID, pBuf, ucLen, &commandPacket);
+    return WritePacket(ctx, &commandPacket, sizeof(commandPacket));
 }
 
 static bool WriteProprietary(SDL_DriverSwitch_Context *ctx, ESwitchProprietaryCommandIDs ucCommand, Uint8 *pBuf, Uint8 ucLen, bool waitForReply)
@@ -768,7 +782,7 @@ static bool SetHomeLED(SDL_DriverSwitch_Context *ctx, Uint8 brightness)
     rgucBuffer[2] = ((ucLedIntensity & 0xF) << 4) | 0x0; // First cycle LED intensity, 0x0 intensity for second cycle
     rgucBuffer[3] = (0x0 << 4) | 0x0;                    // 8ms fade transition to first cycle, 8ms first cycle LED duration
 
-    return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer), NULL);
+    return WriteSubcommandAsync(ctx, k_eSwitchSubcommandIDs_SetHomeLight, rgucBuffer, sizeof(rgucBuffer));
 }
 
 static void SDLCALL SDL_HomeLEDHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -801,7 +815,7 @@ static void UpdateSlotLED(SDL_DriverSwitch_Context *ctx)
         if (ctx->m_bPlayerLights && ctx->m_nPlayerIndex >= 0) {
             led_data = player_pattern[ctx->m_nPlayerIndex % 8];
         }
-        WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data), NULL);
+        WriteSubcommandAsync(ctx, k_eSwitchSubcommandIDs_SetPlayerLights, &led_data, sizeof(led_data));
     }
 }
 
@@ -976,16 +990,16 @@ static bool SetIMUEnabled(SDL_DriverSwitch_Context *ctx, bool enabled)
     return WriteSubcommand(ctx, k_eSwitchSubcommandIDs_EnableIMU, &imu_data, sizeof(imu_data), NULL);
 }
 
-static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
+static void LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 {
-    Uint8 *pLeftStickCal = NULL;
-    Uint8 *pRightStickCal = NULL;
+    Uint8 pLeftStickCal[9]  = {0,0,0,0,0,0,0,0,0};
+    Uint8 pRightStickCal[9] = {0,0,0,0,0,0,0,0,0};
+    bool have_left_stick_cal = false, have_right_stick_cal = false;
     size_t stick, axis;
     SwitchSubcommandInputPacket_t *user_reply = NULL;
     SwitchSubcommandInputPacket_t *factory_reply = NULL;
     SwitchSPIOpData_t readUserParams;
     SwitchSPIOpData_t readFactoryParams;
-    Uint8 userParamsReadSuccessCount = 0;
 
     // Read User Calibration Info
     readUserParams.unAddress = k_unSPIStickUserCalibrationStartOffset;
@@ -1000,44 +1014,41 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
 
     // Automatically select the user calibration if magic bytes are set
     if (user_reply && user_reply->stickUserCalibration.rgucLeftMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucLeftMagic[1] == 0xA1) {
-        userParamsReadSuccessCount += 1;
-        pLeftStickCal = user_reply->stickUserCalibration.rgucLeftCalibration;
+        have_left_stick_cal = true;
+        SDL_memcpy(pLeftStickCal, user_reply->stickUserCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
     }
 
     if (user_reply && user_reply->stickUserCalibration.rgucRightMagic[0] == 0xB2 && user_reply->stickUserCalibration.rgucRightMagic[1] == 0xA1) {
-        userParamsReadSuccessCount += 1;
-        pRightStickCal = user_reply->stickUserCalibration.rgucRightCalibration;
+        have_right_stick_cal = true;
+        SDL_memcpy(pRightStickCal, user_reply->stickUserCalibration.rgucRightCalibration, sizeof(pRightStickCal));
     }
 
     // Only read the factory calibration info if we failed to receive the correct magic bytes
-    if (userParamsReadSuccessCount < 2) {
+    if (!have_left_stick_cal || !have_right_stick_cal) {
         // Read Factory Calibration Info
         readFactoryParams.unAddress = k_unSPIStickFactoryCalibrationStartOffset;
         readFactoryParams.ucLength = k_unSPIStickFactoryCalibrationLength;
 
-        const int MAX_ATTEMPTS = 3;
-        for (int attempt = 0;; ++attempt) {
-            if (!WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
-                return false;
+        if (WriteSubcommand(ctx, k_eSwitchSubcommandIDs_SPIFlashRead, (uint8_t *)&readFactoryParams, sizeof(readFactoryParams), &factory_reply)) {
+            // We successfully read the calibration data
+            // Avoid overriding user calibration if it's present for only one stick (known to happen on JoyCons)
+            if (!have_left_stick_cal) {
+                have_left_stick_cal = true;
+                SDL_memcpy(pLeftStickCal, factory_reply->stickFactoryCalibration.rgucLeftCalibration, sizeof(pLeftStickCal));
             }
-
-            if (factory_reply->stickFactoryCalibration.opData.unAddress == k_unSPIStickFactoryCalibrationStartOffset) {
-                // We successfully read the calibration data
-                pLeftStickCal = factory_reply->stickFactoryCalibration.rgucLeftCalibration;
-                pRightStickCal = factory_reply->stickFactoryCalibration.rgucRightCalibration;
-                break;
-            }
-
-            if (attempt == MAX_ATTEMPTS) {
-                return false;
+            if (!have_right_stick_cal) {
+                have_right_stick_cal = true;
+                SDL_memcpy(pRightStickCal, factory_reply->stickFactoryCalibration.rgucRightCalibration, sizeof(pRightStickCal));
             }
         }
     }
 
-    // If we still don't have calibration data, return false
-    if (pLeftStickCal == NULL || pRightStickCal == NULL)
-    {
-        return false;
+    // If we still don't have calibration data, use default values
+    if (!have_left_stick_cal) {
+        SDL_memset(pLeftStickCal, 0xFF, sizeof(pLeftStickCal));
+    }
+    if (!have_right_stick_cal) {
+        SDL_memset(pRightStickCal, 0xFF, sizeof(pRightStickCal));
     }
 
     /* Stick calibration values are 12-bits each and are packed by bit
@@ -1090,12 +1101,11 @@ static bool LoadStickCalibration(SDL_DriverSwitch_Context *ctx)
             ctx->m_SimpleStickExtents[stick].axis[axis].sMax = (Sint16)(SDL_MAX_SINT16 * 0.5f);
         }
     }
-
-    return true;
 }
 
 static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
 {
+    bool have_imu_cal = false;
     SwitchSubcommandInputPacket_t *reply = NULL;
 
     // Read Calibration Info
@@ -1147,22 +1157,32 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
             }
         }
 
-        // Gyro zero-rate offset
-        ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
-        ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
-        ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
+        if (sAccelSensCoeffX != sAccelRawX &&
+            sAccelSensCoeffY != sAccelRawY &&
+            sAccelSensCoeffZ != sAccelRawZ &&
+            sGyroSensCoeffX != sGyroRawX &&
+            sGyroSensCoeffY != sGyroRawY &&
+            sGyroSensCoeffZ != sGyroRawZ) {
+            // Gyro zero-rate offset
+            ctx->m_IMUScaleData.sGyroOffsetX = sGyroRawX;
+            ctx->m_IMUScaleData.sGyroOffsetY = sGyroRawY;
+            ctx->m_IMUScaleData.sGyroOffsetZ = sGyroRawZ;
 
-        // Accelerometer scale
-        ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
-        ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
+            // Accelerometer scale
+            ctx->m_IMUScaleData.fAccelScaleX = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffX - (float)sAccelRawX) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleY = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffY - (float)sAccelRawY) * SDL_STANDARD_GRAVITY;
+            ctx->m_IMUScaleData.fAccelScaleZ = SWITCH_ACCEL_SCALE_MULT / ((float)sAccelSensCoeffZ - (float)sAccelRawZ) * SDL_STANDARD_GRAVITY;
 
-        // Gyro scale
-        ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
-        ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
+            // Gyro scale
+            ctx->m_IMUScaleData.fGyroScaleX = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffX - (float)sGyroRawX) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleY = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffY - (float)sGyroRawY) * SDL_PI_F / 180.0f;
+            ctx->m_IMUScaleData.fGyroScaleZ = SWITCH_GYRO_SCALE_MULT / ((float)sGyroSensCoeffZ - (float)sGyroRawZ) * SDL_PI_F / 180.0f;
 
-    } else {
+            have_imu_cal = true;
+        }
+    }
+
+    if (!have_imu_cal) {
         // Use default values
         const float accelScale = SDL_STANDARD_GRAVITY / SWITCH_ACCEL_SCALE;
         const float gyroScale = SDL_PI_F / 180.0f / SWITCH_GYRO_SCALE;
@@ -1179,6 +1199,8 @@ static bool LoadIMUCalibration(SDL_DriverSwitch_Context *ctx)
         ctx->m_IMUScaleData.sGyroOffsetY = 0;
         ctx->m_IMUScaleData.sGyroOffsetZ = 0;
     }
+
+    // FIXME: Should we read two reports and verify that gyro values are coming through?
     return true;
 }
 
@@ -1358,8 +1380,9 @@ static bool HIDAPI_DriverNintendoClassic_IsSupportedDevice(SDL_HIDAPI_Device *de
 {
     if (vendor_id == USB_VENDOR_NINTENDO) {
         if (product_id == USB_PRODUCT_NINTENDO_SWITCH_JOYCON_RIGHT) {
-            if (SDL_strncmp(name, "NES Controller", 14) == 0 ||
-                SDL_strncmp(name, "HVC Controller", 14) == 0) {
+            if (name &&
+                (SDL_strncmp(name, "NES Controller", 14) == 0 ||
+                 SDL_strncmp(name, "HVC Controller", 14) == 0)) {
                 return true;
             }
         }
@@ -1602,11 +1625,6 @@ static bool HIDAPI_DriverSwitch_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverSwitch_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverSwitch_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
@@ -1649,10 +1667,7 @@ static bool HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
             }
         }
 
-        if (!LoadStickCalibration(ctx)) {
-            SDL_SetError("Couldn't load stick calibration");
-            return false;
-        }
+        LoadStickCalibration(ctx);
 
         if (ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCLeft &&
             ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_HVCRight &&
@@ -1838,11 +1853,6 @@ static bool HIDAPI_DriverSwitch_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Jo
     return HIDAPI_DriverSwitch_ActuallyRumbleJoystick(ctx, low_frequency_rumble, high_frequency_rumble);
 }
 
-static bool HIDAPI_DriverSwitch_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)device->context;
@@ -1855,8 +1865,10 @@ static Uint32 HIDAPI_DriverSwitch_GetJoystickCapabilities(SDL_HIDAPI_Device *dev
     if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) {
         // Doesn't have an RGB LED, so don't return SDL_JOYSTICK_CAP_RGB_LED here
         result |= SDL_JOYSTICK_CAP_RUMBLE;
-        // But has the HOME LED, so treat it like a mono LED
-        result |= SDL_JOYSTICK_CAP_MONO_LED;
+        if (HasHomeLED(ctx)) {
+            // But has the HOME LED, so treat it like a mono LED
+            result |= SDL_JOYSTICK_CAP_MONO_LED;
+        }
     } else if (ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConLeft ||
                ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_JoyConRight) {
         result |= SDL_JOYSTICK_CAP_RUMBLE;
@@ -1873,6 +1885,9 @@ static bool HIDAPI_DriverSwitch_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Jo
 
     if (!(ctx->m_eControllerType == k_eSwitchDeviceInfoControllerType_ProController && !ctx->m_bInputOnly) &&
         ctx->m_eControllerType != k_eSwitchDeviceInfoControllerType_JoyConRight) {
+        return SDL_Unsupported();
+    }
+    if (!HasHomeLED(ctx)) {
         return SDL_Unsupported();
     }
 
@@ -2589,7 +2604,7 @@ static void HandleMiniControllerStateR(Uint64 timestamp, SDL_Joystick *joystick,
     SDL_SendJoystickAxis(timestamp, joystick, SDL_GAMEPAD_AXIS_LEFTX, axis);
 }
 
-static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet) SDL_NO_THREAD_SAFETY_ANALYSIS // We unlock and lock the device lock to be able to change IMU state
+static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_Context *ctx, SwitchStatePacket_t *packet)
 {
     Uint64 timestamp = SDL_GetTicksNS();
 
@@ -2859,6 +2874,11 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
                 const int INPUT_WAIT_TIMEOUT_MS = 3000;
                 if (now >= (ctx->m_ulLastInput + INPUT_WAIT_TIMEOUT_MS)) {
                     // Bluetooth may have disconnected, try reopening the controller
+                    if (device->parent) {
+                        // Don't combine this device again until we get input from it
+                        device->broken = true;
+                        ctx->m_bTimedOut = true;
+                    }
                     size = -1;
                 }
             }
@@ -2879,6 +2899,10 @@ static bool HIDAPI_DriverSwitch_UpdateDevice(SDL_HIDAPI_Device *device)
     if (device->num_joysticks == 0 && device->is_bluetooth && packet_count > 0 &&
         !device->parent &&
         !HIDAPI_HasConnectedUSBDevice(device->serial)) {
+        if (ctx->m_bTimedOut) {
+            ctx->m_bTimedOut = false;
+            device->broken = false;
+        }
         HIDAPI_JoystickConnected(device, NULL);
     }
 
@@ -2923,74 +2947,61 @@ static void HIDAPI_DriverSwitch_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joy
     ctx->m_bEnhancedModeAvailable = false;
 }
 
-static void HIDAPI_DriverSwitch_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverNintendoClassic = {
-    SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
-    true,
-    HIDAPI_DriverNintendoClassic_RegisterHints,
-    HIDAPI_DriverNintendoClassic_UnregisterHints,
-    HIDAPI_DriverNintendoClassic_IsEnabled,
-    HIDAPI_DriverNintendoClassic_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverNintendoClassic_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverNintendoClassic_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverNintendoClassic_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverNintendoClassic_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverJoyCons = {
-    SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
-    true,
-    HIDAPI_DriverJoyCons_RegisterHints,
-    HIDAPI_DriverJoyCons_UnregisterHints,
-    HIDAPI_DriverJoyCons_IsEnabled,
-    HIDAPI_DriverJoyCons_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_JOY_CONS,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverJoyCons_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverJoyCons_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverJoyCons_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverJoyCons_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch = {
-    SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
-    true,
-    HIDAPI_DriverSwitch_RegisterHints,
-    HIDAPI_DriverSwitch_UnregisterHints,
-    HIDAPI_DriverSwitch_IsEnabled,
-    HIDAPI_DriverSwitch_IsSupportedDevice,
-    HIDAPI_DriverSwitch_InitDevice,
-    HIDAPI_DriverSwitch_GetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_SetDevicePlayerIndex,
-    HIDAPI_DriverSwitch_UpdateDevice,
-    HIDAPI_DriverSwitch_OpenJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystick,
-    HIDAPI_DriverSwitch_RumbleJoystickTriggers,
-    HIDAPI_DriverSwitch_GetJoystickCapabilities,
-    HIDAPI_DriverSwitch_SetJoystickLED,
-    HIDAPI_DriverSwitch_SendJoystickEffect,
-    HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
-    HIDAPI_DriverSwitch_CloseJoystick,
-    HIDAPI_DriverSwitch_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_SWITCH,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSwitch_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSwitch_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSwitch_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSwitch_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSwitch_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverSwitch_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverSwitch_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSwitch_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSwitch_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSwitch_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverSwitch_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverSwitch_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSwitch_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSwitch_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_SWITCH

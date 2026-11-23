@@ -15,7 +15,6 @@
  * no branching!
  */
 
-#include "math.h"
 #include "math_private.h"
 
 int __isnan(double x)

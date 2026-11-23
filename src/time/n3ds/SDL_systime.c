@@ -127,6 +127,13 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        ticks -= SDL_NS_PER_SECOND;
+        rem_ns += SDL_NS_PER_SECOND;
+    }
+
     const int days = (int)(SDL_NS_TO_SECONDS(ticks) / SDL_SECONDS_PER_DAY);
     civil_from_days(days, &dt->year, &dt->month, &dt->day);
 
@@ -136,7 +143,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     dt->minute = rem / 60;
     rem -= dt->minute * 60;
     dt->second = rem;
-    dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+    dt->nanosecond = rem_ns;
     dt->utc_offset = 0; // Unknown
 
     SDL_CivilToDays(dt->year, dt->month, dt->day, &dt->day_of_week, NULL);

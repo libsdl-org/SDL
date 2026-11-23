@@ -286,11 +286,13 @@ void CalibrationPhase_DriftProfiling(IMUState *imustate)
 /* Sample gyro packet in order to calculate drift*/
 void SampleGyroPacketForDrift(IMUState *imustate)
 {
-    /* Get the length squared difference of the last accelerometer data vs. the new one */
+    /* Get the length squared difference of the last accelerometer data vs. the new one.
+     * The accelerometer data is in meters per second squared, but the noise thresholds are in G.
+     */
     float accelerometer_difference[3];
-    accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
-    accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
-    accelerometer_difference[2] = imustate->accel_data[2] - imustate->last_accel_data[2];
+    accelerometer_difference[0] = (imustate->accel_data[0] - imustate->last_accel_data[0]) / SDL_STANDARD_GRAVITY;
+    accelerometer_difference[1] = (imustate->accel_data[1] - imustate->last_accel_data[1]) / SDL_STANDARD_GRAVITY;
+    accelerometer_difference[2] = (imustate->accel_data[2] - imustate->last_accel_data[2]) / SDL_STANDARD_GRAVITY;
     SDL_memcpy(imustate->last_accel_data, imustate->accel_data, sizeof(imustate->last_accel_data));
     imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
 
@@ -362,7 +364,6 @@ static Controller *controllers;
 static Controller *controller;
 static SDL_JoystickID mapping_controller = 0;
 static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static bool binding_flow = false;
 static int binding_flow_direction = 0;
 static Uint64 binding_advance_time = 0;
@@ -662,9 +663,6 @@ static void SetCurrentBindingElement(int element, bool flow)
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
         binding_flow_direction = 0;
-        last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-    } else {
-        last_binding_element = binding_element;
     }
     binding_element = element;
     binding_flow = flow || (element == SDL_GAMEPAD_BUTTON_SOUTH);
@@ -1318,6 +1316,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
+            const char *container_id = SDL_GetStringProperty(props, SDL_PROP_GAMEPAD_CONTAINER_ID_STRING, NULL);
             SDL_GUID guid = SDL_GetGamepadGUIDForID(id);
             char guid_string[33];
             SDL_GUIDToString(guid, guid_string, sizeof(guid_string));
@@ -1342,6 +1341,26 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
 
             if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
                 SDL_Log("Player index: %d", SDL_GetGamepadPlayerIndex(gamepad));
+            }
+
+            if (container_id) {
+                SDL_Log("Container ID: %s", container_id);
+
+                // Look for associated audio devices
+                for (int recording = 0; recording <= 1; ++recording) {
+                    int num_devices = 0;
+                    SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&num_devices) : SDL_GetAudioPlaybackDevices(&num_devices);
+                    if (devices) {
+                        for (int j = 0; j < num_devices; ++j) {
+                            SDL_PropertiesID audio_props = SDL_GetAudioDeviceProperties(devices[j]);
+                            const char *audio_container_id = SDL_GetStringProperty(audio_props, SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING, NULL);
+                            if (audio_container_id && SDL_strcmp(audio_container_id, container_id) == 0) {
+                                SDL_Log("Audio %s device: %s", recording ? "recording" : "playback", SDL_GetAudioDeviceName(devices[j]));
+                            }
+                        }
+                        SDL_free(devices);
+                    }
+                }
             }
 
             switch (SDL_GetJoystickTypeForID(id)) {
@@ -2520,6 +2539,9 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    /* Initialize audio so we can look up audio devices associated with controllers */
+    SDL_Init(SDL_INIT_AUDIO);
 
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 

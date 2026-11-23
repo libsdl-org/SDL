@@ -95,6 +95,7 @@ extern SDL_Surface *SDL_CreateSurfaceZeroed(int width, int height, SDL_PixelForm
 extern SDL_Surface *SDL_CreateSurfaceUninitialized(int width, int height, SDL_PixelFormat format);
 extern SDL_Surface *SDL_GetSurfaceImage(SDL_Surface *surface, float display_scale);
 extern SDL_Surface *SDL_ConvertSurfaceRect(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format);
+extern SDL_Surface *SDL_ConvertSurfaceRectAndColorspace(SDL_Surface *surface, const SDL_Rect *rect, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);
 extern bool SDL_IsBMP(SDL_IOStream *src);
 extern bool SDL_IsJPG(SDL_IOStream *src);
 extern bool SDL_IsPNG(SDL_IOStream *src);

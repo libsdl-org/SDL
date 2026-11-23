@@ -362,7 +362,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 
     if (!wm_window) {
 #ifdef DEBUG_WINDOW_MANAGER
-        printf("Couldn't get _NET_SUPPORTING_WM_CHECK property\n");
+        SDL_Log("Couldn't get _NET_SUPPORTING_WM_CHECK property");
 #endif
         return;
     }
@@ -370,7 +370,7 @@ static void X11_CheckWindowManager(SDL_VideoDevice *_this)
 
 #ifdef DEBUG_WINDOW_MANAGER
     wm_name = X11_GetWindowTitle(_this, wm_window);
-    printf("Window manager: %s\n", wm_name);
+    SDL_Log("Window manager: %s", wm_name);
     SDL_free(wm_name);
 #endif
 }
@@ -389,7 +389,6 @@ static bool X11_VideoInit(SDL_VideoDevice *_this)
 #define GET_ATOM(X) data->atoms.X = X11_XInternAtom(data->display, #X, False)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
-    GET_ATOM(WM_TAKE_FOCUS);
     GET_ATOM(WM_NAME);
     GET_ATOM(WM_TRANSIENT_FOR);
     GET_ATOM(WM_STATE);
@@ -495,12 +494,6 @@ void X11_VideoQuit(SDL_VideoDevice *_this)
     if (data->xsettings_window) {
         X11_XDestroyWindow(data->display, data->xsettings_window);
     }
-
-#ifdef X_HAVE_UTF8_STRING
-    if (data->im) {
-        X11_XCloseIM(data->im);
-    }
-#endif
 
     X11_QuitXinput2(_this);
     X11_QuitModes(_this);

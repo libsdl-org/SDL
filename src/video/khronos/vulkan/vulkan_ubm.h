@@ -21,9 +21,12 @@ extern "C" {
 
 // VK_SEC_ubm_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_SEC_ubm_surface 1
+
 #define VK_SEC_UBM_SURFACE_SPEC_VERSION   1
 #define VK_SEC_UBM_SURFACE_EXTENSION_NAME "VK_SEC_ubm_surface"
+
 typedef VkFlags VkUbmSurfaceCreateFlagsSEC;
+
 typedef struct VkUbmSurfaceCreateInfoSEC {
     VkStructureType               sType;
     const void*                   pNext;
@@ -32,10 +35,12 @@ typedef struct VkUbmSurfaceCreateInfoSEC {
     struct ubm_surface*           surface;
 } VkUbmSurfaceCreateInfoSEC;
 
+
 typedef VkResult (VKAPI_PTR *PFN_vkCreateUbmSurfaceSEC)(VkInstance instance, const VkUbmSurfaceCreateInfoSEC* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
 typedef VkBool32 (VKAPI_PTR *PFN_vkGetPhysicalDeviceUbmPresentationSupportSEC)(VkPhysicalDevice physicalDevice, uint32_t queueFamilyIndex, struct ubm_device* device);
 
 #ifndef VK_NO_PROTOTYPES
+
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateUbmSurfaceSEC(
     VkInstance                                  instance,
@@ -43,7 +48,6 @@ VKAPI_ATTR VkResult VKAPI_CALL vkCreateUbmSurfaceSEC(
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
 #endif
-
 #ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkBool32 VKAPI_CALL vkGetPhysicalDeviceUbmPresentationSupportSEC(
     VkPhysicalDevice                            physicalDevice,

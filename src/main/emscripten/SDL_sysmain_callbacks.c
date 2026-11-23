@@ -24,6 +24,14 @@
 
 #include <emscripten.h>
 
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc)
+{
+    // We leave `result` alone, so if SDL_AppEvent didn't set something else, SDL_APP_CONTINUE will signify the app is terminating in an unexpected way during SDL_AppQuit.
+    const SDL_AppResult result = (SDL_AppResult) SDL_GetAtomicInt(apprc);
+    SDL_QuitMainCallbacks(result);  // we need to call this directly because we won't be returning to where this would be called later.
+}
+
+
 // For Emscripten, we let you use SDL_HINT_MAIN_CALLBACK_RATE, because it might be useful to drop it super-low for
 //  things like loopwave that don't really do much but wait on the audio device, but be warned that browser timers
 //  are super-unreliable in modern times, so you likely won't hit your desired callback rate with good precision.

@@ -138,7 +138,7 @@ void Blit2to2KeySVE2(SDL_BlitInfo *info)
     int dststride = dstskip + dstbpp * width;
 
     uint32_t ckey = info->colorkey;
-    uint32_t rgbmask = ~srcfmt->Amask;
+    uint32_t rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
     ckey &= rgbmask;
 
     sdl_sve_rgb16_key(src,
@@ -303,7 +303,7 @@ void Blit4to4KeySVE2(SDL_BlitInfo *info)
     int dststride = dstskip + dstbpp * width;
 
     uint32_t ckey = info->colorkey;
-    uint32_t rgbmask = ~srcfmt->Amask;
+    uint32_t rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
     ckey &= rgbmask;
 
     if (dstfmt->Amask) {

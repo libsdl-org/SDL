@@ -6,11 +6,11 @@ def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
 
 android {
     namespace = "org.libsdl.app"
-    compileSdkVersion 35
+    compileSdkVersion 36
     ndkVersion = "28.2.13676358"
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
         externalNativeBuild {

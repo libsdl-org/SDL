@@ -42,6 +42,13 @@ typedef struct
     float HDR_headroom;
 } SDL_HDROutputProperties;
 
+typedef enum
+{
+    SDL_WINDOW_FRAMEBUFFER_NONE,
+    SDL_WINDOW_FRAMEBUFFER_NATIVE,
+    SDL_WINDOW_FRAMEBUFFER_TEXTURE
+} SDL_WindowFramebufferType;
+
 // Define the SDL window structure, corresponding to toplevel windows
 struct SDL_Window
 {
@@ -98,6 +105,7 @@ struct SDL_Window
 
     float opacity;
 
+    SDL_WindowFramebufferType framebuffer_type;
     SDL_Surface *surface;
     bool surface_valid;
 
@@ -109,6 +117,7 @@ struct SDL_Window
     bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
+    bool is_live_resizing;
 
     int safe_inset_left;
     int safe_inset_right;
@@ -225,6 +234,15 @@ struct SDL_VideoDevice
      * displays for this driver, returning true (success) or false (error).
      */
     bool (*VideoInit)(SDL_VideoDevice *_this);
+
+    /*
+     * Called when Video subsystem is beginning to terminate. This allows for
+     * special case code that need to happen before internal SDL bits
+     * clean up that must happen before VideoQuit(). An example is stopping
+     * a hotplug thread that might add mice/keyboards after SDL has cleaned
+     * up its internal list. Most work is meant to happen in VideoQuit, though.
+     */
+    void (*VideoPreQuit)(SDL_VideoDevice *_this);
 
     /*
      * Reverse the effects VideoInit() -- called if VideoInit() fails or
@@ -412,7 +430,6 @@ struct SDL_VideoDevice
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
-    bool checked_texture_framebuffer;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;
@@ -420,6 +437,7 @@ struct SDL_VideoDevice
     SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
+    SDL_WindowID background_focus_windowID;
     Uint32 clipboard_sequence;
     SDL_ClipboardDataCallback clipboard_callback;
     SDL_ClipboardCleanupCallback clipboard_cleanup;
@@ -537,6 +555,7 @@ extern VideoBootStrap WINDOWS_bootstrap;
 extern VideoBootStrap HAIKU_bootstrap;
 extern VideoBootStrap UIKIT_bootstrap;
 extern VideoBootStrap Android_bootstrap;
+extern VideoBootStrap OPENHARMONY_bootstrap;
 extern VideoBootStrap PS2_bootstrap;
 extern VideoBootStrap PSP_bootstrap;
 extern VideoBootStrap VITA_bootstrap;
@@ -600,6 +619,9 @@ extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
 extern void SDL_CheckWindowPixelSizeChanged(SDL_Window *window);
 extern void SDL_OnWindowPixelSizeChanged(SDL_Window *window);
+extern void SDL_StartWindowLiveResize(SDL_Window *window);
+extern void SDL_StopWindowLiveResize(SDL_Window *window);
+extern bool SDL_IsWindowLiveResizing(SDL_Window *window);
 extern void SDL_OnWindowLiveResizeUpdate(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
 extern void SDL_OnWindowMaximized(SDL_Window *window);
@@ -609,6 +631,7 @@ extern void SDL_OnWindowLeave(SDL_Window *window);
 extern void SDL_OnWindowFocusGained(SDL_Window *window);
 extern void SDL_OnWindowFocusLost(SDL_Window *window);
 extern void SDL_OnWindowDisplayChanged(SDL_Window *window);
+extern void SDL_OnWindowFullscreenChanged(SDL_Window *window);
 extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, bool commit);
 extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
@@ -623,6 +646,7 @@ extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
 extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
+extern int SDL_GetTextInputKeyboardMargin(SDL_PropertiesID props);
 
 extern void SDL_SendScreenKeyboardShown(void);
 extern void SDL_SendScreenKeyboardHidden(void);

@@ -170,6 +170,10 @@ static bool DOSSOUNDBLASTER_WaitDevice(SDL_AudioDevice *device)
     struct SDL_PrivateAudioData *hidden = device->hidden;
     const int size = hidden->ring_size;
 
+    // Slow mixing can keep the ring below capacity indefinitely. Yield even
+    // when there is room so the cooperative main thread can process events.
+    DOS_Yield();
+
     for (;;) {
         // Available space = ring_size - (write - read).
         // ring_write is ours (audio thread only), ring_read is advanced by

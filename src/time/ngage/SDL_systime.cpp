@@ -179,6 +179,15 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        if (-rem_ns < 1000) {
+            ticks -= 1000;
+        }
+        rem_ns += SDL_NS_PER_SECOND;
+    }
+
     long long unixMicros = ticks / 1000LL;
 
     unixMicros += SYMBIAN_UNIX_EPOCH_OFFSET_US;
@@ -201,7 +210,7 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
     dt->hour = dtSym.Hour();
     dt->minute = dtSym.Minute();
     dt->second = dtSym.Second();
-    dt->nanosecond = (int)(ticks % 1000000000LL);
+    dt->nanosecond = rem_ns;
     dt->day_of_week = s60Time.DayNoInWeek();
     dt->utc_offset = 0;
 

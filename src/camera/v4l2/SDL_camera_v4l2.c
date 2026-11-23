@@ -422,6 +422,7 @@ static void format_v4l2_to_sdl(Uint32 fmt, SDL_PixelFormat *format, SDL_Colorspa
     CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2, SDL_COLORSPACE_BT709_LIMITED);
     CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG, SDL_COLORSPACE_SRGB);
     CASE(V4L2_PIX_FMT_RGBX32, SDL_PIXELFORMAT_RGBX32, SDL_COLORSPACE_SRGB);
+    CASE(V4L2_PIX_FMT_YUV420, SDL_PIXELFORMAT_IYUV, SDL_COLORSPACE_BT601_LIMITED);
     #undef CASE
     default:
         #if DEBUG_CAMERA
@@ -444,6 +445,7 @@ static Uint32 format_sdl_to_v4l2(SDL_PixelFormat fmt)
         CASE(V4L2_PIX_FMT_YUYV, SDL_PIXELFORMAT_YUY2);
         CASE(V4L2_PIX_FMT_MJPEG, SDL_PIXELFORMAT_MJPG);
         CASE(V4L2_PIX_FMT_RGBX32, SDL_PIXELFORMAT_RGBX32);
+        CASE(V4L2_PIX_FMT_YUV420, SDL_PIXELFORMAT_IYUV);
         #undef CASE
         default:
             return 0;
@@ -672,7 +674,7 @@ static bool V4L2_OpenDevice(SDL_Camera *device, const SDL_CameraSpec *spec)
     return true;
 }
 
-static bool FindV4L2CameraByBusInfoCallback(SDL_Camera *device, void *userdata)
+static bool FindV4L2CameraByBusInfoCallback(void *userdata, SDL_Camera *device)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->bus_info, (const char *) userdata) == 0);
@@ -897,7 +899,9 @@ static void V4L2_FreeDeviceHandle(SDL_Camera *device)
 }
 
 #ifdef SDL_USE_LIBUDEV
-static bool FindV4L2CameraByPathCallback(SDL_Camera *device, void *userdata)
+static bool V4L2_udev_initialized;
+
+static bool FindV4L2CameraByPathCallback(void *userdata, SDL_Camera *device)
 {
     const V4L2DeviceHandle *handle = (const V4L2DeviceHandle *) device->handle;
     return (SDL_strcmp(handle->path, (const char *) userdata) == 0);
@@ -925,8 +929,11 @@ static void CameraUdevCallback(SDL_UDEV_deviceevent udev_type, int udev_class, c
 static void V4L2_Deinitialize(void)
 {
 #ifdef SDL_USE_LIBUDEV
-    SDL_UDEV_DelCallback(CameraUdevCallback);
-    SDL_UDEV_Quit();
+    if (V4L2_udev_initialized) {
+        SDL_UDEV_DelCallback(CameraUdevCallback);
+        SDL_UDEV_Quit();
+        V4L2_udev_initialized = false;
+    }
 #endif // SDL_USE_LIBUDEV
 }
 
@@ -934,6 +941,7 @@ static void V4L2_DetectDevices(void)
 {
 #ifdef SDL_USE_LIBUDEV
     if (SDL_UDEV_Init()) {
+        V4L2_udev_initialized = true;
         if (SDL_UDEV_AddCallback(CameraUdevCallback)) {
             SDL_UDEV_Scan();  // Force a scan to build the initial device list
         }

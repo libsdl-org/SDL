@@ -54,7 +54,7 @@ SDL_PixelFormat screenToPixelFormat(int screen_format)
     return _format_map[screen_format];
 }
 
-bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
+bool QNX_GetDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 {
     SDL_DisplayData     *display_data = display->internal;
     SDL_DisplayMode     display_mode;
@@ -132,7 +132,7 @@ bool getDisplayModes(SDL_VideoDevice *_this, SDL_VideoDisplay *display)
 // FIXME: This seems to invalidate the screen_display_t, causing issues with the
 // (get|set)_display_property_*() apis. For now, mode switching is emulated
 // instead.
-bool setDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
+bool QNX_SetDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
     SDL_DisplayData     *display_data = display->internal;
     SDL_DisplayModeData *display_mode_data = mode->internal;
@@ -150,7 +150,7 @@ bool setDisplayMode(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Displ
     return true;
 }
 
-bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool QNX_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     SDL_DisplayData *data = display->internal;
     int             size[2] = { 0, 0 };
@@ -170,7 +170,7 @@ bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rec
     return true;
 }
 #else
-bool getDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
+bool QNX_GetDisplayBounds(SDL_VideoDevice *_this, SDL_VideoDisplay *display, SDL_Rect *rect)
 {
     if (display->current_mode == NULL) {
         return false;

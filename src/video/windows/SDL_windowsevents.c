@@ -385,6 +385,9 @@ static void WIN_UpdateFocus(SDL_Window *window, bool expect_focus, LPPOINT pos)
         SDL_ToggleModState(SDL_KMOD_SCROLL, (GetKeyState(VK_SCROLL) & 0x0001) ? true : false);
 
         WIN_UpdateWindowICCProfile(data->window, true);
+
+        // There's no notification when the SDR content brightness changes, so check it here
+        WIN_UpdateDisplaySDRWhiteLevels(SDL_GetVideoDevice());
     } else {
         data->in_window_deactivation = true;
 
@@ -716,14 +719,19 @@ static void WIN_HandleRawMouseInput(Uint64 timestamp, SDL_VideoData *data, HANDL
             }
         }
 
-        if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
-            SHORT amount = (SHORT)rawmouse->usButtonData;
-            float fAmount = (float)amount / WHEEL_DELTA;
-            SDL_SendMouseWheel(timestamp, window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
-        } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
-            SHORT amount = (SHORT)rawmouse->usButtonData;
-            float fAmount = (float)amount / WHEEL_DELTA;
-            SDL_SendMouseWheel(timestamp, window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+        /* We prefer the legacy WM_MOUSEWHEEL/WM_MOUSEHWHEEL messages because some
+           input devices have inverted wheel direction in raw mode. This avoids scroll
+           direction changing unexpectedly when entering/exiting relative mouse mode. */
+        if (data->raw_mouse_flag_nolegacy) {
+            if (rawmouse->usButtonFlags & RI_MOUSE_WHEEL) {
+                SHORT amount = (SHORT)rawmouse->usButtonData;
+                float fAmount = (float)amount / WHEEL_DELTA;
+                SDL_SendMouseWheel(timestamp, window, mouseID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+            } else if (rawmouse->usButtonFlags & RI_MOUSE_HWHEEL) {
+                SHORT amount = (SHORT)rawmouse->usButtonData;
+                float fAmount = (float)amount / WHEEL_DELTA;
+                SDL_SendMouseWheel(timestamp, window, mouseID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
+            }
         }
 
         /* Invalidate the mouse button flags. If we don't do this then disabling raw input
@@ -760,7 +768,21 @@ static void WIN_HandleRawKeyboardInput(Uint64 timestamp, SDL_VideoData *data, HA
         return;
     }
 
-    bool down = !(rawkeyboard->Flags & RI_KEY_BREAK);
+    bool down;
+    switch (rawkeyboard->Message) {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
+        down = true;
+        break;
+    case WM_KEYUP:
+    case WM_SYSKEYUP:
+        down = false;
+        break;
+    default:
+        down = !(rawkeyboard->Flags & RI_KEY_BREAK);
+        break;
+    }
+
     SDL_Scancode code;
     USHORT rawcode = rawkeyboard->MakeCode;
     if (data->pending_E1_key_sequence) {
@@ -1196,7 +1218,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-    if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data->videodata)) {
+    if (WIN_HandleIMEMessage(hwnd, msg, wParam, &lParam, data)) {
         return 0;
     }
 #endif
@@ -1525,14 +1547,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     case WM_MOUSEWHEEL:
     case WM_MOUSEHWHEEL:
     {
-        if (!data->videodata->raw_mouse_enabled) {
-            short amount = GET_WHEEL_DELTA_WPARAM(wParam);
-            float fAmount = (float)amount / WHEEL_DELTA;
-            if (msg == WM_MOUSEWHEEL) {
-                SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
-            } else {
-                SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
-            }
+        short amount = GET_WHEEL_DELTA_WPARAM(wParam);
+        float fAmount = (float)amount / WHEEL_DELTA;
+        if (msg == WM_MOUSEWHEEL) {
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+        } else {
+            SDL_SendMouseWheel(WIN_GetEventTimestamp(), data->window, SDL_GLOBAL_MOUSE_ID, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
     } break;
 
@@ -1916,6 +1936,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             data->initial_size_rect.top = data->window->y;
             data->initial_size_rect.bottom = data->window->y + data->window->h;
 
+            SDL_StartWindowLiveResize(data->window);
             SetTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks, USER_TIMER_MINIMUM, NULL);
 
             // Reset the keyboard, as we won't get any key up events during the modal loop
@@ -1946,6 +1967,7 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         --data->in_modal_loop;
         if (data->in_modal_loop == 0) {
             KillTimer(hwnd, (UINT_PTR)SDL_IterateMainCallbacks);
+            SDL_StopWindowLiveResize(data->window);
         }
     } break;
 
@@ -2454,9 +2476,12 @@ LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             }
 
             // Interactive user-initiated resizing/movement
-            {
-                /* Calculate the new frame w/h such that
-                   the client area size is maintained. */
+            if (data->window->flags & SDL_WINDOW_RESIZABLE) {
+                // The desktop dictates the size, particularly to maintain a maximized or arranged layout.
+                w = suggestedRect->right - suggestedRect->left;
+                h = suggestedRect->bottom - suggestedRect->top;
+            } else {
+                // Calculate the new frame w/h such that the fixed client area size is maintained.
                 RECT rect = { 0 };
                 rect.right = data->window->w;
                 rect.bottom = data->window->h;

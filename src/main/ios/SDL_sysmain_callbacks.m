@@ -28,6 +28,7 @@
 
 #include "../../video/uikit/SDL_uikitevents.h"  // For SDL_UpdateLifecycleObserver()
 
+static void CleanupApp(SDL_AppResult result);
 
 @interface SDLIosMainCallbacksDisplayLink : NSObject
 @property(nonatomic, retain) CADisplayLink *displayLink;
@@ -36,6 +37,19 @@
 @end
 
 static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
+
+static void SDLCALL MainCallbackRateHintChanged(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    CADisplayLink *displayLink = (__bridge CADisplayLink *)userdata;
+    const float rate = newValue ? (float)SDL_atof(newValue) : 0.0f;
+    if (rate > 0.0f) {
+        if (@available(iOS 15.0, tvOS 15.0, *)) {
+            displayLink.preferredFrameRateRange = CAFrameRateRangeMake((rate * 2) / 3, rate, rate);
+        } else {
+            displayLink.preferredFramesPerSecond = (NSInteger)rate;
+        }
+    }
+}
 
 @implementation SDLIosMainCallbacksDisplayLink
 
@@ -61,17 +75,31 @@ static SDLIosMainCallbacksDisplayLink *globalDisplayLink;
 
 - (void)appIteration:(CADisplayLink *)sender
 {
-    const SDL_AppResult rc = SDL_IterateMainCallbacks(true);
-    if (rc != SDL_APP_CONTINUE) {
-        [self.displayLink invalidate];
-        self.displayLink = nil;
-        globalDisplayLink = nil;
-        SDL_QuitMainCallbacks(rc);
+    const SDL_AppResult result = SDL_IterateMainCallbacks(true);
+    if (result != SDL_APP_CONTINUE) {
+        CleanupApp(result);
         SDL_UpdateLifecycleObserver();
-        exit((rc == SDL_APP_FAILURE) ? 1 : 0);
+        exit((result == SDL_APP_FAILURE) ? 1 : 0);
     }
 }
 @end
+
+static void CleanupApp(SDL_AppResult result)
+{
+    if (globalDisplayLink != nil) {
+        [globalDisplayLink.displayLink invalidate];
+        globalDisplayLink.displayLink = nil;
+        globalDisplayLink = nil;
+    }
+    SDL_QuitMainCallbacks(result);  // we need to call this directly because we won't be returning from here.
+}
+
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc)
+{
+    // We leave `result` alone, so if SDL_AppEvent didn't set something else, SDL_APP_CONTINUE will signify the app is terminating in an unexpected way during SDL_AppQuit.
+    const SDL_AppResult result = (SDL_AppResult) SDL_GetAtomicInt(apprc);
+    CleanupApp(result);
+}
 
 // SDL_RunApp will land in UIApplicationMain, which calls SDL_main from postFinishLaunch, which calls this.
 // When we return from here, we're living in the RunLoop, and a CADisplayLink is firing regularly for us.
@@ -83,6 +111,7 @@ int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, 
         if (globalDisplayLink == nil) {
             rc = SDL_APP_FAILURE;
         } else {
+            SDL_AddHintCallback(SDL_HINT_MAIN_CALLBACK_RATE, MainCallbackRateHintChanged, (__bridge void *)globalDisplayLink.displayLink);
             return 0;  // this will fall all the way out of SDL_main, where UIApplicationMain will keep running the RunLoop.
         }
     }

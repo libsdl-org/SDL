@@ -325,6 +325,17 @@ static bool ThreadValid(SDL_Thread *thread)
     return SDL_ObjectValid(thread, SDL_OBJECT_TYPE_THREAD);
 }
 
+static SDL_TLSID SDL_thread_ptr_tls;
+
+SDL_Thread *SDL_GetCurrentThread(void)
+{
+    SDL_Thread *retval = (SDL_Thread *) SDL_GetTLS(&SDL_thread_ptr_tls);
+    if (!retval) {
+        SDL_SetError("Thread was not created by SDL");
+    }
+    return retval;
+}
+
 void SDL_RunThread(SDL_Thread *thread)
 {
     void *userdata = thread->userdata;
@@ -335,6 +346,8 @@ void SDL_RunThread(SDL_Thread *thread)
     // Perform any system-dependent setup - this function may not fail
     SDL_SYS_SetupThread(thread->name);
 
+    SDL_SetTLS(&SDL_thread_ptr_tls, thread, NULL);  // so we can always find the `SDL_Thread *` for the current thread.
+
     // Run the function
     *statusloc = userfunc(userdata);
 
@@ -343,8 +356,9 @@ void SDL_RunThread(SDL_Thread *thread)
 
     // Mark us as ready to be joined (or detached)
     if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_COMPLETE)) {
-        // Clean up if something already detached us.
-        if (SDL_GetAtomicInt(&thread->state) == SDL_THREAD_DETACHED) {
+        // Another thread started detaching us...
+        if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_DETACHING, SDL_THREAD_COMPLETE)) {
+            // Another thread finished detaching us, we're responsible for cleaning up
             SDL_free(thread->name); // Can't free later, we've already cleaned up TLS
             SDL_free(thread);
         }
@@ -453,11 +467,28 @@ SDL_ThreadID SDL_GetThreadID(SDL_Thread *thread)
 
 const char *SDL_GetThreadName(SDL_Thread *thread)
 {
-    if (ThreadValid(thread)) {
-        return SDL_GetPersistentString(thread->name);
+    const char *name = NULL;
+
+    if (thread) {
+        if (ThreadValid(thread)) {
+            name = SDL_GetPersistentString(thread->name);
+        }
     } else {
-        return NULL;
+        name = SDL_GetCurrentThreadName();
     }
+    return name;
+}
+
+const char *SDL_GetCurrentThreadName(void)
+{
+    SDL_Thread *thread = SDL_GetCurrentThread();
+    if (thread) {
+        return SDL_GetPersistentString(thread->name);
+    }
+
+    // This wasn't an SDL-created thread, let's try for the OS level answer. Not all platforms support this!
+    char buf[128];
+    return SDL_SYS_GetCurrentThreadName(buf, sizeof (buf)) ? SDL_GetPersistentString(buf) : NULL;
 }
 
 bool SDL_SetCurrentThreadPriority(SDL_ThreadPriority priority)
@@ -489,7 +520,11 @@ SDL_ThreadState SDL_GetThreadState(SDL_Thread *thread)
         return SDL_THREAD_UNKNOWN;
     }
 
-    return (SDL_ThreadState)SDL_GetAtomicInt(&thread->state);
+    SDL_ThreadState state = (SDL_ThreadState)SDL_GetAtomicInt(&thread->state);
+    if (state == SDL_THREAD_DETACHING) {
+        state = SDL_THREAD_DETACHED;
+    }
+    return state;
 }
 
 void SDL_DetachThread(SDL_Thread *thread)
@@ -499,10 +534,16 @@ void SDL_DetachThread(SDL_Thread *thread)
     }
 
     // Grab dibs if the state is alive+joinable.
-    if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_DETACHED)) {
-        // The thread may vanish at any time, it's no longer valid
+    if (SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_ALIVE, SDL_THREAD_DETACHING)) {
+        // The thread may vanish once it's detached, it's no longer valid
         SDL_SetObjectValid(thread, SDL_OBJECT_TYPE_THREAD, false);
         SDL_SYS_DetachThread(thread);
+
+        if (!SDL_CompareAndSwapAtomicInt(&thread->state, SDL_THREAD_DETACHING, SDL_THREAD_DETACHED)) {
+            // The other thread completed while we were detaching it, we're responsible for cleaning up
+            SDL_free(thread->name);
+            SDL_free(thread);
+        }
     } else {
         // all other states are pretty final, see where we landed.
         SDL_ThreadState thread_state = SDL_GetThreadState(thread);

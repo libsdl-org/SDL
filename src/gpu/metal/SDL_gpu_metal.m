@@ -26,6 +26,8 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CoreAnimation.h>
 
+#include "../../video/SDL_sysvideo.h" // For SDL_IsWindowLiveResizing()
+
 #ifdef HAVE_GPU_OPENXR
 #define XR_USE_GRAPHICS_API_METAL 1
 #include "../xr/SDL_openxr_internal.h"
@@ -213,37 +215,38 @@ static MTLPixelFormat SDLToMetal_TextureFormat(SDL_GPUTextureFormat format)
 #undef RETURN_FORMAT
 
 static MTLVertexFormat SDLToMetal_VertexFormat[] = {
-    MTLVertexFormatInvalid,           // INVALID
-    MTLVertexFormatInt,               // INT
-    MTLVertexFormatInt2,              // INT2
-    MTLVertexFormatInt3,              // INT3
-    MTLVertexFormatInt4,              // INT4
-    MTLVertexFormatUInt,              // UINT
-    MTLVertexFormatUInt2,             // UINT2
-    MTLVertexFormatUInt3,             // UINT3
-    MTLVertexFormatUInt4,             // UINT4
-    MTLVertexFormatFloat,             // FLOAT
-    MTLVertexFormatFloat2,            // FLOAT2
-    MTLVertexFormatFloat3,            // FLOAT3
-    MTLVertexFormatFloat4,            // FLOAT4
-    MTLVertexFormatChar2,             // BYTE2
-    MTLVertexFormatChar4,             // BYTE4
-    MTLVertexFormatUChar2,            // UBYTE2
-    MTLVertexFormatUChar4,            // UBYTE4
-    MTLVertexFormatChar2Normalized,   // BYTE2_NORM
-    MTLVertexFormatChar4Normalized,   // BYTE4_NORM
-    MTLVertexFormatUChar2Normalized,  // UBYTE2_NORM
-    MTLVertexFormatUChar4Normalized,  // UBYTE4_NORM
-    MTLVertexFormatShort2,            // SHORT2
-    MTLVertexFormatShort4,            // SHORT4
-    MTLVertexFormatUShort2,           // USHORT2
-    MTLVertexFormatUShort4,           // USHORT4
-    MTLVertexFormatShort2Normalized,  // SHORT2_NORM
-    MTLVertexFormatShort4Normalized,  // SHORT4_NORM
-    MTLVertexFormatUShort2Normalized, // USHORT2_NORM
-    MTLVertexFormatUShort4Normalized, // USHORT4_NORM
-    MTLVertexFormatHalf2,             // HALF2
-    MTLVertexFormatHalf4              // HALF4
+    MTLVertexFormatInvalid,              // INVALID
+    MTLVertexFormatInt,                  // INT
+    MTLVertexFormatInt2,                 // INT2
+    MTLVertexFormatInt3,                 // INT3
+    MTLVertexFormatInt4,                 // INT4
+    MTLVertexFormatUInt,                 // UINT
+    MTLVertexFormatUInt2,                // UINT2
+    MTLVertexFormatUInt3,                // UINT3
+    MTLVertexFormatUInt4,                // UINT4
+    MTLVertexFormatFloat,                // FLOAT
+    MTLVertexFormatFloat2,               // FLOAT2
+    MTLVertexFormatFloat3,               // FLOAT3
+    MTLVertexFormatFloat4,               // FLOAT4
+    MTLVertexFormatChar2,                // BYTE2
+    MTLVertexFormatChar4,                // BYTE4
+    MTLVertexFormatUChar2,               // UBYTE2
+    MTLVertexFormatUChar4,               // UBYTE4
+    MTLVertexFormatChar2Normalized,      // BYTE2_NORM
+    MTLVertexFormatChar4Normalized,      // BYTE4_NORM
+    MTLVertexFormatUChar2Normalized,     // UBYTE2_NORM
+    MTLVertexFormatUChar4Normalized,     // UBYTE4_NORM
+    MTLVertexFormatShort2,               // SHORT2
+    MTLVertexFormatShort4,               // SHORT4
+    MTLVertexFormatUShort2,              // USHORT2
+    MTLVertexFormatUShort4,              // USHORT4
+    MTLVertexFormatShort2Normalized,     // SHORT2_NORM
+    MTLVertexFormatShort4Normalized,     // SHORT4_NORM
+    MTLVertexFormatUShort2Normalized,    // USHORT2_NORM
+    MTLVertexFormatUShort4Normalized,    // USHORT4_NORM
+    MTLVertexFormatHalf2,                // HALF2
+    MTLVertexFormatHalf4,                // HALF4
+    MTLVertexFormatUInt1010102Normalized // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToMetal_VertexFormat, SDL_arraysize(SDLToMetal_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -608,7 +611,6 @@ typedef struct MetalCommandBuffer
 
     // Fences
     MetalFence *fence;
-    bool autoReleaseFence;
 
     // Reference Counting
     MetalBuffer **usedBuffers;
@@ -1817,12 +1819,15 @@ static void METAL_UploadToTexture(
 
         MetalTexture *metalTexture = METAL_INTERNAL_PrepareTextureForWrite(renderer, textureContainer, cycle);
 
+        Uint32 pixelsPerRow = source->pixels_per_row == 0 ? destination->w : source->pixels_per_row;
+        Uint32 rowsPerLayer = source->rows_per_layer == 0 ? destination->h : source->rows_per_layer;
+
         [metalCommandBuffer->blitEncoder
                  copyFromBuffer:bufferContainer->activeBuffer->handle
                    sourceOffset:source->offset
-              sourceBytesPerRow:BytesPerRow(destination->w, textureContainer->header.info.format)
+              sourceBytesPerRow:BytesPerRow(pixelsPerRow, textureContainer->header.info.format)
             // sourceBytesPerImage expects the stride between 2D images (slices) of a 3D texture, not the size of the entire region
-            sourceBytesPerImage:SDL_CalculateGPUTextureFormatSize(textureContainer->header.info.format, destination->w, destination->h, 1)
+            sourceBytesPerImage:SDL_CalculateGPUTextureFormatSize(textureContainer->header.info.format, pixelsPerRow, rowsPerLayer, 1)
                      sourceSize:MTLSizeMake(destination->w, destination->h, destination->d)
                       toTexture:metalTexture->handle
                destinationSlice:destination->layer
@@ -2161,8 +2166,6 @@ static SDL_GPUCommandBuffer *METAL_AcquireCommandBuffer(
             commandBuffer->fragmentUniformBuffers[i] = NULL;
             commandBuffer->computeUniformBuffers[i] = NULL;
         }
-
-        commandBuffer->autoReleaseFence = true;
 
         SDL_UnlockMutex(renderer->acquireCommandBufferLock);
 
@@ -3406,8 +3409,9 @@ static void METAL_ReleaseFence(
     SDL_GPUFence *fence)
 {
     MetalFence *metalFence = (MetalFence *)fence;
-    metalFence->commandBuffer = nil;
     if (SDL_AtomicDecRef(&metalFence->referenceCount)) {
+        // Nothing references the fence anymore, so the command buffer can go too.
+        metalFence->commandBuffer = nil;
         METAL_INTERNAL_ReleaseFenceToPool(
             (MetalRenderer *)driverData,
             (MetalFence *)fence);
@@ -3513,8 +3517,9 @@ static void METAL_INTERNAL_CleanCommandBuffer(
     commandBuffer->needComputeReadOnlyStorageTextureBind = false;
     SDL_zeroa(commandBuffer->needComputeUniformBufferBind);
 
-    // The fence is now available (unless SubmitAndAcquireFence was called)
-    if (commandBuffer->autoReleaseFence) {
+    // Drop the command buffer's reference to the fence. A cancelled
+    // command buffer never acquired one.
+    if (!cancel) {
         METAL_ReleaseFence(
             (SDL_GPURenderer *)renderer,
             (SDL_GPUFence *)commandBuffer->fence);
@@ -3838,6 +3843,10 @@ static void METAL_ReleaseWindow(
         }
         SDL_UnlockMutex(renderer->windowLock);
 
+        windowData->layer = nil;
+        windowData->drawable = nil;
+        windowData->texture.handle = nil;
+
         SDL_free(windowData);
 
         SDL_ClearProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA);
@@ -3901,12 +3910,6 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
         drawableSize = windowData->layer.drawableSize;
         windowData->textureContainer.header.info.width = (Uint32)drawableSize.width;
         windowData->textureContainer.header.info.height = (Uint32)drawableSize.height;
-        if (swapchainTextureWidth) {
-            *swapchainTextureWidth = (Uint32)drawableSize.width;
-        }
-        if (swapchainTextureHeight) {
-            *swapchainTextureHeight = (Uint32)drawableSize.height;
-        }
 
         if (windowData->inFlightFences[windowData->frameCounter] != NULL) {
             if (block) {
@@ -3937,6 +3940,11 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
 
         // Get the drawable and its underlying texture
         windowData->drawable = [windowData->layer nextDrawable];
+        if (windowData->drawable == nil) {
+            // This can time out, e.g. when the window is hidden or occluded.
+            // Return true to indicate that there is no error but rendering should be skipped.
+            return true;
+        }
         windowData->texture.handle = [windowData->drawable texture];
 
         // Set up presentation
@@ -3951,6 +3959,12 @@ static bool METAL_INTERNAL_AcquireSwapchainTexture(
 
         // Return the swapchain texture
         *texture = (SDL_GPUTexture *)&windowData->textureContainer;
+        if (swapchainTextureWidth) {
+            *swapchainTextureWidth = (Uint32)drawableSize.width;
+        }
+        if (swapchainTextureHeight) {
+            *swapchainTextureHeight = (Uint32)drawableSize.height;
+        }
         return true;
     }
 }
@@ -4069,12 +4083,15 @@ static bool METAL_SetAllowedFramesInFlight(
 
 // Submission
 
-static bool METAL_Submit(
-    SDL_GPUCommandBuffer *commandBuffer)
+static bool METAL_INTERNAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUFence **fence)
 {
     @autoreleasepool {
         MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
         MetalRenderer *renderer = metalCommandBuffer->renderer;
+        id<MTLCommandBuffer> handle = metalCommandBuffer->handle;
+        NSMutableArray<id<CAMetalDrawable>> *transactionDrawables = nil;
 
         SDL_LockMutex(renderer->submitLock);
 
@@ -4083,10 +4100,35 @@ static bool METAL_Submit(
             return false;
         }
 
+        // Give the caller its own reference while submitLock is held, another
+        // thread could recycle this command buffer as soon as the lock is released.
+        if (fence) {
+            (void)SDL_AtomicIncRef(&metalCommandBuffer->fence->referenceCount);
+            *fence = (SDL_GPUFence *)metalCommandBuffer->fence;
+        }
+
         // Enqueue present requests, if applicable
         for (Uint32 i = 0; i < metalCommandBuffer->windowDataCount; i += 1) {
             MetalWindowData *windowData = metalCommandBuffer->windowDatas[i];
-            [metalCommandBuffer->handle presentDrawable:windowData->drawable];
+            BOOL presentWithTransaction = NO;
+            if (SDL_IsWindowLiveResizing(windowData->window) && SDL_IsMainThread()) {
+                // During a live resize we render synchronously from the window
+                // resize, so present with the Core Animation transaction to have
+                // the new frame show up in the same update as the new window size.
+                presentWithTransaction = YES;
+            }
+            if (windowData->layer.presentsWithTransaction != presentWithTransaction) {
+                windowData->layer.presentsWithTransaction = presentWithTransaction;
+            }
+            if (presentWithTransaction) {
+                // Presented after commit, below
+                if (!transactionDrawables) {
+                    transactionDrawables = [NSMutableArray array];
+                }
+                [transactionDrawables addObject:windowData->drawable];
+            } else {
+                [handle presentDrawable:windowData->drawable];
+            }
             windowData->drawable = nil;
 
             windowData->inFlightFences[windowData->frameCounter] = (SDL_GPUFence *)metalCommandBuffer->fence;
@@ -4097,7 +4139,7 @@ static bool METAL_Submit(
         }
 
         // Submit the command buffer
-        [metalCommandBuffer->handle commit];
+        [handle commit];
         metalCommandBuffer->handle = nil;
 
         // Mark the command buffer as submitted
@@ -4125,19 +4167,33 @@ static bool METAL_Submit(
 
         SDL_UnlockMutex(renderer->submitLock);
 
+        if (transactionDrawables) {
+            // The drawable has to be presented after the work is scheduled,
+            // so it's part of the current Core Animation transaction.
+            [handle waitUntilScheduled];
+            for (id<CAMetalDrawable> drawable in transactionDrawables) {
+                [drawable present];
+            }
+        }
+
         return true;
     }
+}
+
+static bool METAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    return METAL_INTERNAL_Submit(commandBuffer, NULL);
 }
 
 static SDL_GPUFence *METAL_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
-    MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
-    metalCommandBuffer->autoReleaseFence = false;
-    if (!METAL_Submit(commandBuffer)) {
+    SDL_GPUFence *fence = NULL;
+    if (!METAL_INTERNAL_Submit(commandBuffer, &fence)) {
         return NULL;
     }
-    return (SDL_GPUFence *)metalCommandBuffer->fence;
+    return fence;
 }
 
 static bool METAL_Cancel(
@@ -4146,7 +4202,6 @@ static bool METAL_Cancel(
     MetalCommandBuffer *metalCommandBuffer = (MetalCommandBuffer *)commandBuffer;
     MetalRenderer *renderer = metalCommandBuffer->renderer;
 
-    metalCommandBuffer->autoReleaseFence = false;
     SDL_LockMutex(renderer->submitLock);
     METAL_INTERNAL_CleanCommandBuffer(renderer, metalCommandBuffer, true);
     SDL_UnlockMutex(renderer->submitLock);
@@ -4459,11 +4514,10 @@ static void METAL_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(createinfo);
     createinfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     createinfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    createinfo.enable_anisotropy = 0;
-    createinfo.enable_compare = 0;
     createinfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.min_filter = SDL_GPU_FILTER_NEAREST;
     createinfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;

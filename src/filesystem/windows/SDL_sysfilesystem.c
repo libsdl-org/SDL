@@ -73,7 +73,7 @@ char *SDL_SYS_GetExeName(void)
     return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetWindowsUserPath(int folderid, const char *org, const char *app)
 {
     /*
      * Vista and later has a new API for this, but SHGetFolderPath works there,
@@ -83,72 +83,39 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *                          NULL, &wszPath);
      */
 
-    HRESULT hr = E_FAIL;
-    WCHAR path[MAX_PATH];
-    char *result = NULL;
-    WCHAR *worg = NULL;
-    WCHAR *wapp = NULL;
-    size_t new_wpath_len = 0;
-    BOOL api_result = FALSE;
-
-    hr = SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path);
+    WCHAR wpath[MAX_PATH];
+    HRESULT hr = SHGetFolderPathW(NULL, folderid | CSIDL_FLAG_CREATE, NULL, 0, wpath);
     if (!SUCCEEDED(hr)) {
-        WIN_SetErrorFromHRESULT("Couldn't locate our prefpath", hr);
+        WIN_SetErrorFromHRESULT("Couldn't locate user's folder path", hr);
         return NULL;
     }
 
-    worg = WIN_UTF8ToStringW(org);
-    if (!worg) {
+    char *utf8path = WIN_StringToUTF8W(wpath);
+    if (!utf8path) {
         return NULL;
     }
 
-    wapp = WIN_UTF8ToStringW(app);
-    if (!wapp) {
-        SDL_free(worg);
-        return NULL;
+    char *retval = NULL;
+    if (SDL_asprintf(&retval, "%s\\%s%s%s\\", utf8path, org, *org ? "\\" : "", app) < 0) {
+        retval = NULL;
+    } else if (!SDL_CreateDirectory(retval)) {
+        SDL_free(retval);
+        retval = NULL;
     }
 
-    new_wpath_len = SDL_wcslen(worg) + SDL_wcslen(wapp) + SDL_wcslen(path) + 3;
+    SDL_free(utf8path);
 
-    if ((new_wpath_len + 1) > MAX_PATH) {
-        SDL_free(worg);
-        SDL_free(wapp);
-        WIN_SetError("Path too long.");
-        return NULL;
-    }
+    return retval;
+}
 
-    if (*worg) {
-        SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-        SDL_wcslcat(path, worg, SDL_arraysize(path));
-    }
-    SDL_free(worg);
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_APPDATA, org, app);
+}
 
-    api_result = CreateDirectoryW(path, NULL);
-    if (api_result == FALSE) {
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            SDL_free(wapp);
-            WIN_SetError("Couldn't create a prefpath.");
-            return NULL;
-        }
-    }
-
-    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-    SDL_wcslcat(path, wapp, SDL_arraysize(path));
-    SDL_free(wapp);
-
-    api_result = CreateDirectoryW(path, NULL);
-    if (api_result == FALSE) {
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            WIN_SetError("Couldn't create a prefpath.");
-            return NULL;
-        }
-    }
-
-    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-
-    result = WIN_StringToUTF8W(path);
-
-    return result;
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_LOCAL_APPDATA, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

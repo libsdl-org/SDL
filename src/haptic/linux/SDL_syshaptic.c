@@ -260,7 +260,7 @@ static bool MaybeAddDevice(const char *path)
     }
 
 #ifdef DEBUG_INPUT_EVENTS
-    printf("Checking %s\n", path);
+    SDL_Log("Checking %s", path);
 #endif
 
     // see if it works

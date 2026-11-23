@@ -60,6 +60,9 @@ typedef enum
     float pendingWindowWarpX, pendingWindowWarpY;
     BOOL isDragAreaRunning;
     NSTimer *liveResizeTimer;
+    Uint64 lastLiveResizeUpdate;
+    BOOL inLiveResizeUpdate;
+    NSTimer *moveTimer;
 }
 
 - (BOOL)isTouchFromTrackpad:(NSEvent *)theEvent;

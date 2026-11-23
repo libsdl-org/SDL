@@ -152,6 +152,9 @@ if(HAVE_WAYLAND)
     endif()
 endif()
 
+check_include_file(signal.h LIBC_HAS_SIGNAL_H)
+check_include_file(libudev.h HAVE_LIBUDEV_H)
+
 function(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;MAIN_CALLBACKS;NOTRACKMEM" "NAME83" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
@@ -167,10 +170,15 @@ function(add_sdl_test_executable TARGET)
     if(AST_NEEDS_RESOURCES)
         list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
-    if(ANDROID)
+    if(ANDROID OR OHOS)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
+    endif()
+    if(ANDROID)
+        if(NOT SDL_TESTS_LINK_SHARED)
+            target_link_options(${TARGET} PRIVATE "LINKER:SHELL:--version-script \"${CMAKE_CURRENT_SOURCE_DIR}/android/SDL_static_versyms.sym")
+        endif()
     endif()
     target_compile_definitions(${TARGET} PRIVATE HAVE_BUILD_CONFIG)
     SDL_AddCommonCompilerFlags(${TARGET})
@@ -262,19 +270,17 @@ function(add_sdl_test_executable TARGET)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
 
+    if(LIBC_HAS_SIGNAL_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_SIGNAL_H)
+    endif()
+
+    if(HAVE_LIBUDEV_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_LIBUDEV_H)
+    endif()
+
     # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endfunction()
-
-check_include_file(signal.h LIBC_HAS_SIGNAL_H)
-if(LIBC_HAS_SIGNAL_H)
-    add_definitions(-DHAVE_SIGNAL_H)
-endif()
-
-check_include_file(libudev.h HAVE_LIBUDEV_H)
-if(HAVE_LIBUDEV_H)
-    add_definitions(-DHAVE_LIBUDEV_H)
-endif()
 
 function(files2headers OUTPUT)
     set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
@@ -323,8 +329,7 @@ files2headers(gamepad_image_headers
 files2headers(icon_png_header icon.png)
 files2headers(glass_png_header glass.png)
 
-set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
-include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FindFFmpeg.cmake")
+find_package(FFmpeg COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 if(FFmpeg_FOUND)
     cmake_push_check_state()
     list(APPEND CMAKE_REQUIRED_INCLUDES "${FFmpeg_AVUTIL_INCLUDE_DIRS}")
@@ -354,6 +359,7 @@ endif()
 
 add_sdl_test_executable(checkkeys SOURCES checkkeys.c NAME83 chkkeys)
 add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
+add_sdl_test_executable(testdynaudioreopen NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES testdynaudioreopen.c)
 add_sdl_test_executable(testsurround SOURCES testsurround.c NAME83 surround)
 add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c NAME83 resample)
 add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c NAME83 audioinf)
@@ -490,7 +496,7 @@ if(EMSCRIPTEN)
 endif()
 add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c NAME83 bounds)
 add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c NAME83 custcurs)
-add_sdl_test_executable(testvulkan SOURCES testvulkan.c NAME83 vulkan)
+add_sdl_test_executable(testvulkan MAIN_CALLBACKS SOURCES testvulkan.c NAME83 vulkan)
 add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c NAME83 offscrn)
 add_sdl_test_executable(testpopup SOURCES testpopup.c NAME83 popup)
 add_sdl_test_executable(testdialog SOURCES testdialog.c NAME83 dialog)
@@ -864,7 +870,7 @@ if(ANDROID AND TARGET SDL3::Jar)
                     -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     -d "${classes_path}"
                 COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
-                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                DEPENDS SDL3-jar $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
             )
             add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
             set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
@@ -889,11 +895,16 @@ if(ANDROID AND TARGET SDL3::Jar)
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
 
+            set(native_libs ${TEST})
+            if(SDL_TESTS_LINK_SHARED)
+                list(APPEND native_libs SDL3::SDL3-shared)
+            endif()
+
             sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
                 APK_IN ${TEST}-apk-linked
                 OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
                 ASSETS ${RESOURCE_FILES}
-                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                NATIVE_LIBS ${native_libs}
                 DEX ${TEST}-dex
             )
 

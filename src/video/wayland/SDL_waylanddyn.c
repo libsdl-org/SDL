@@ -134,7 +134,7 @@ static void *WAYLAND_GetSym(const char *fnname, int *pHasModule, bool required)
 
 static int wayland_load_refcount = 0;
 
-void SDL_WAYLAND_UnloadSymbols(void)
+void Wayland_UnloadSymbols(void)
 {
     // Don't actually unload if more than one module is using the libs...
     if (wayland_load_refcount > 0) {
@@ -162,7 +162,7 @@ void SDL_WAYLAND_UnloadSymbols(void)
 }
 
 // returns non-zero if all needed symbols were loaded.
-bool SDL_WAYLAND_LoadSymbols(void)
+bool Wayland_LoadSymbols(void)
 {
     bool result = true; // always succeed if not using Dynamic WAYLAND stuff.
 
@@ -197,7 +197,7 @@ bool SDL_WAYLAND_LoadSymbols(void)
             SDL_ClearError();
         } else {
             // in case something got loaded...
-            SDL_WAYLAND_UnloadSymbols();
+            Wayland_UnloadSymbols();
             result = false;
         }
 

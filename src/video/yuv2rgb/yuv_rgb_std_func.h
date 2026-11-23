@@ -103,6 +103,9 @@
 #undef UV_OFFSET
 #define UV_OFFSET	(1 << ((YUV_BITS)-1))
 
+#undef Y_SHIFT
+#define Y_SHIFT	(param->y_shift << ((YUV_BITS)-8))
+
 #undef GET
 #if YUV_BITS == 10
 #define GET(X)	((X) >> 6)
@@ -172,19 +175,19 @@ void STD_FUNCTION_NAME(
 
 			// Compute the Y contribution for each pixel
 
-			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
+			int32_t y_tmp = ((GET(y_ptr1[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 
 			#if uv_x_sample_interval > 1
-			y_tmp = (GET(y_ptr1[y_pixel_stride]-param->y_shift)*param->y_factor);
+			y_tmp = ((GET(y_ptr1[y_pixel_stride])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 			#endif
 
 			#if uv_y_sample_interval > 1
-			y_tmp = (GET(y_ptr2[0]-param->y_shift)*param->y_factor);
+			y_tmp = ((GET(y_ptr2[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr2);
 
-			y_tmp = (GET(y_ptr2[y_pixel_stride]-param->y_shift)*param->y_factor);
+			y_tmp = ((GET(y_ptr2[y_pixel_stride])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr2);
 			#endif
 
@@ -220,11 +223,11 @@ void STD_FUNCTION_NAME(
 
 			// Compute the Y contribution for each pixel
 
-			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
+			int32_t y_tmp = ((GET(y_ptr1[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 
 			#if uv_y_sample_interval > 1
-			y_tmp = (GET(y_ptr2[0]-param->y_shift)*param->y_factor);
+			y_tmp = ((GET(y_ptr2[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr2);
 			#endif
 		}
@@ -254,10 +257,10 @@ void STD_FUNCTION_NAME(
 
 			// Compute the Y contribution for each pixel
 
-			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
+			int32_t y_tmp = ((GET(y_ptr1[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 
-			y_tmp = (GET(y_ptr1[y_pixel_stride]-param->y_shift)*param->y_factor);
+			y_tmp = ((GET(y_ptr1[y_pixel_stride])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 
 			y_ptr1+=2*y_pixel_stride;
@@ -280,7 +283,7 @@ void STD_FUNCTION_NAME(
 
 			// Compute the Y contribution for each pixel
 
-			int32_t y_tmp = (GET(y_ptr1[0]-param->y_shift)*param->y_factor);
+			int32_t y_tmp = ((GET(y_ptr1[0])-Y_SHIFT)*param->y_factor);
 			PACK_PIXEL(rgb_ptr1);
 		}
 #endif

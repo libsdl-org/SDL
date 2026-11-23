@@ -349,6 +349,9 @@ void X11_InitPen(SDL_VideoDevice *_this)
     data->atoms.pen_atom_abs_tilt_y = LOOKUP_PEN_ATOM("Abs Tilt Y");
     #undef LOOKUP_PEN_ATOM
 
+    // X11 requires the Unix-style mouse emulation mappings for pens.
+    SDL_SetPenUnixMouseButtonMapping(true);
+
     // Do an initial check on devices. After this, we'll add/remove individual pens when XI_HierarchyChanged events alert us.
     int num_device_info = 0;
     XIDeviceInfo *device_info = X11_XIQueryDevice(data->display, XIAllDevices, &num_device_info);

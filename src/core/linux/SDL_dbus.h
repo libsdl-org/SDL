@@ -47,6 +47,13 @@
 #define DBUS_ERROR_UNKNOWN_PROPERTY "org.freedesktop.DBus.Error.UnknownProperty"
 #endif
 
+typedef enum SDL_DBusPortalPreference
+{
+    SDL_DBUS_PORTAL_PREFERENCE_AUTO = 0,
+    SDL_DBUS_PORTAL_PREFERENCE_PREFERRED,
+    SDL_DBUS_PORTAL_PREFERENCE_DISABLED
+} SDL_DBusPortalPreference;
+
 typedef struct SDL_DBusContext
 {
     DBusConnection *session_conn;
@@ -145,6 +152,8 @@ extern char *SDL_DBus_GetLocalMachineId(void);
 extern char **SDL_DBus_DocumentsPortalRetrieveFiles(const char *key, int *files_count);
 
 extern int SDL_DBus_CameraPortalRequestAccess(void);
+
+extern bool SDL_DBus_PortalsPreferred(void);
 
 // Menu export functions
 #define SDL_DBUS_UPDATE_MENU_FLAGS_NONE 0

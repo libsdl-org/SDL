@@ -126,7 +126,6 @@ if(TEST_FULL)
     set(SDL_TESTS_TIMEOUT_MULTIPLIER "1" CACHE STRING "Test timeout multiplier")
     set(SDL_TESTS_LINK_SHARED ${TEST_SHARED})
 
-    add_definitions(-DNO_BUILD_CONFIG)
     add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/../../test" SDL_test)
 endif()
 

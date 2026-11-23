@@ -40,6 +40,10 @@ static int g_nGameInputRefCount;
 bool SDL_InitGameInput(IGameInput **ppGameInput)
 {
     if (g_nGameInputRefCount == 0) {
+        if (WIN_HasBrokenEZFRD64DLL()) {
+            return SDL_SetError("GameInput disabled to prevent application crashing");
+        }
+
         // This is recommended, as Microsoft's GameInputCreate() is robust
         // and better handles various GameInput installations
         HRESULT hr = GameInputCreate(&g_pGameInput);

@@ -116,7 +116,6 @@ typedef struct SDL2_SysWMmsg
 
 static SDL_EventWatchList SDL_event_watchers;
 static SDL_AtomicInt SDL_sentinel_pending;
-static Uint32 SDL_last_event_id = 0;
 
 typedef struct
 {
@@ -162,11 +161,15 @@ static struct
 
 
 SDL_Mutex *SDL_event_lock = NULL; // This needs to support recursive locks
+SDL_Mutex *SDL_joystick_lock = NULL; // This needs to support recursive locks
 
 void SDL_CreateEventLock(void)
 {
     if (!SDL_event_lock) {
         SDL_event_lock = SDL_CreateMutex();
+    }
+    if (!SDL_joystick_lock) {
+        SDL_joystick_lock = SDL_CreateMutex();
     }
 }
 
@@ -175,6 +178,10 @@ void SDL_DestroyEventLock(void)
     if (SDL_event_lock) {
         SDL_DestroyMutex(SDL_event_lock);
         SDL_event_lock = NULL;
+    }
+    if (SDL_joystick_lock) {
+        SDL_DestroyMutex(SDL_joystick_lock);
+        SDL_joystick_lock = NULL;
     }
 }
 
@@ -421,13 +428,28 @@ void SDL_FreeTemporaryMemory(void)
     }
 }
 
-#ifndef SDL_JOYSTICK_DISABLED
+#ifdef SDL_JOYSTICK_DISABLED
+
+void SDL_OnUpdateJoysticksChanged(void)
+{
+}
+
+#else
 
 static bool SDL_update_joysticks = true;
 
+void SDL_OnUpdateJoysticksChanged(void)
+{
+    if (SDL_JoystickUpdateThreadRunning() && SDL_GetJoystickAsyncUpdateInterval() >= 0) {
+        SDL_update_joysticks = false;
+    } else {
+        SDL_update_joysticks = SDL_GetHintBoolean(SDL_HINT_AUTO_UPDATE_JOYSTICKS, true);
+    }
+}
+
 static void SDLCALL SDL_AutoUpdateJoysticksChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
-    SDL_update_joysticks = SDL_GetStringBoolean(hint, true);
+    SDL_OnUpdateJoysticksChanged();
 }
 
 #endif // !SDL_JOYSTICK_DISABLED
@@ -1119,8 +1141,6 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_EventQ.max_events_seen = final_count;
     }
 
-    ++SDL_last_event_id;
-
     return 1;
 }
 
@@ -1178,6 +1198,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                                   Uint32 minType, Uint32 maxType, bool include_sentinel)
 {
     int i, used, sentinels_expected = 0;
+    bool wakeup = false;
 
     // Lock the event queue
     used = 0;
@@ -1200,7 +1221,12 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
                 return -1;
             }
             for (i = 0; i < numevents; ++i) {
-                used += SDL_AddEvent(&events[i]);
+                if (SDL_AddEvent(&events[i])) {
+                    if (events[i].type != SDL_EVENT_POLL_SENTINEL) {
+                        wakeup = true;
+                    }
+                    ++used;
+                }
             }
         } else {
             SDL_EventEntry *entry, *next;
@@ -1238,7 +1264,7 @@ static int SDL_PeepEventsInternal(SDL_Event *events, int numevents, SDL_EventAct
     }
     SDL_UnlockMutex(SDL_EventQ.lock);
 
-    if (used > 0 && action == SDL_ADDEVENT) {
+    if (wakeup) {
         SDL_SendWakeupEvent();
     }
 
@@ -1620,6 +1646,19 @@ static Sint64 SDL_events_get_polling_interval(void)
     return poll_intervalNS;
 }
 
+static bool SDL_HasMainThreadCallbacks(void)
+{
+    bool result = false;
+
+    SDL_LockMutex(SDL_main_callbacks_lock);
+    if (SDL_main_callbacks_head) {
+        result = true;
+    }
+    SDL_UnlockMutex(SDL_main_callbacks_lock);
+
+    return result;
+}
+
 static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeup_window, SDL_Event *event, Uint64 start, Sint64 timeoutNS)
 {
     Sint64 loop_timeoutNS = timeoutNS;
@@ -1661,6 +1700,13 @@ static int SDL_WaitEventTimeout_Device(SDL_VideoDevice *_this, SDL_Window *wakeu
             }
         }
         SDL_SetAtomicPointer(&_this->wakeup_window, wakeup_window);
+        // Check again before waiting: another thread might have added an event
+        // or a main thread callback before wakeup_window was set
+        if (SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) > 0 ||
+            SDL_HasMainThreadCallbacks()) {
+            SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
+            continue;
+        }
         status = _this->WaitEventTimeout(_this, loop_timeoutNS);
         SDL_SetAtomicPointer(&_this->wakeup_window, NULL);
         if (status == 0 && poll_intervalNS != SDL_MAX_SINT64 && loop_timeoutNS == poll_intervalNS) {
@@ -1755,6 +1801,10 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
         }
     } else {
         // Has existing events
+        if (!event) {
+            // The application expects callbacks to run even if events are pending
+            SDL_RunMainThreadCallbacks();
+        }
         return true;
     }
     // We should have completely handled timeoutNS == 0 above

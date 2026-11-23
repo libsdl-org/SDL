@@ -208,10 +208,8 @@ static bool VITA_GXM_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, 
     renderer->SupportsBlendMode = VITA_GXM_SupportsBlendMode;
     renderer->CreateTexture = VITA_GXM_CreateTexture;
     renderer->UpdateTexture = VITA_GXM_UpdateTexture;
-#ifdef SDL_HAVE_YUV
     renderer->UpdateTextureYUV = VITA_GXM_UpdateTextureYUV;
     renderer->UpdateTextureNV = VITA_GXM_UpdateTextureNV;
-#endif
     renderer->LockTexture = VITA_GXM_LockTexture;
     renderer->UnlockTexture = VITA_GXM_UnlockTexture;
     renderer->SetRenderTarget = VITA_GXM_SetRenderTarget;
@@ -271,8 +269,15 @@ static bool VITA_GXM_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode ble
 static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_PropertiesID create_props)
 {
     VITA_GXM_RenderData *data = (VITA_GXM_RenderData *)renderer->internal;
-    VITA_GXM_TextureData *vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
+    VITA_GXM_TextureData *vita_texture;
 
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        ((!SDL_ISCOLORSPACE_MATRIX_BT601(texture->colorspace) && !SDL_ISCOLORSPACE_MATRIX_BT709(texture->colorspace)) ||
+         SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ)) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
+
+    vita_texture = (VITA_GXM_TextureData *)SDL_calloc(1, sizeof(VITA_GXM_TextureData));
     if (!vita_texture) {
         return false;
     }
@@ -299,10 +304,8 @@ static bool VITA_GXM_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
 
     texture->internal = vita_texture;
 
-#ifdef SDL_HAVE_YUV
     vita_texture->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
     vita_texture->nv12 = ((texture->format == SDL_PIXELFORMAT_NV12) || (texture->format == SDL_PIXELFORMAT_NV21));
-#endif
 
     return true;
 }
@@ -323,8 +326,6 @@ static void VITA_GXM_SetYUVProfile(SDL_Renderer *renderer, SDL_Texture *texture)
         } else {
             ret = sceGxmSetYuvProfile(data->gxm_context, 0, SCE_GXM_YUV_PROFILE_BT709_FULL_RANGE);
         }
-    } else {
-        SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Unsupported YUV colorspace");
     }
 
     if (ret < 0) {
@@ -340,11 +341,9 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
     Uint8 *dst;
     int row, length, dpitch;
 
-#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv || vita_texture->nv12) {
         VITA_GXM_SetYUVProfile(renderer, texture);
     }
-#endif
 
     VITA_GXM_LockTexture(renderer, texture, rect, (void **)&dst, &dpitch);
     length = rect->w * SDL_BYTESPERPIXEL(texture->format);
@@ -359,7 +358,6 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
         }
     }
 
-#ifdef SDL_HAVE_YUV
     if (vita_texture->yuv) {
         Uint8 *Udst;
         Uint8 *Vdst;
@@ -421,13 +419,11 @@ static bool VITA_GXM_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture,
             }
         }
     }
-#endif
 
     data->drawstate.texture = NULL;
     return true;
 }
 
-#ifdef SDL_HAVE_YUV
 static bool VITA_GXM_UpdateTextureYUV(SDL_Renderer *renderer, SDL_Texture *texture,
                                      const SDL_Rect *rect,
                                      const Uint8 *Yplane, int Ypitch,
@@ -561,7 +557,6 @@ static bool VITA_GXM_UpdateTextureNV(SDL_Renderer *renderer, SDL_Texture *textur
     return true;
 }
 
-#endif
 
 static bool VITA_GXM_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture,
                                 const SDL_Rect *rect, void **pixels, int *pitch)

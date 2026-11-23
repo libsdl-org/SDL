@@ -147,10 +147,11 @@ static void *X11_GetSym(const char *fnname, int *pHasModule)
     }
 
 #if DEBUG_DYNAMIC_X11
-    if (fn)
-        printf("X11: Found '%s' in %s (%p)\n", fnname, x11libs[i].libname, fn);
-    else
-        printf("X11: Symbol '%s' NOT FOUND!\n", fnname);
+    if (fn) {
+        SDL_Log("X11: Found '%s' in %s (%p)", fnname, x11libs[i].libname, fn);
+    } else {
+        SDL_Log("X11: Symbol '%s' NOT FOUND!", fnname);
+    }
 #endif
 
     if (!fn) {

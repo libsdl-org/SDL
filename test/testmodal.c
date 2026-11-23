@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
                 quit = 1;
                 break;
             } else if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                if (e.window.windowID == SDL_GetWindowID(w2)) {
+                if (w2 && e.window.windowID == SDL_GetWindowID(w2)) {
                     SDL_DestroyRenderer(r2);
                     SDL_DestroyWindow(w2);
                     r2 = NULL;

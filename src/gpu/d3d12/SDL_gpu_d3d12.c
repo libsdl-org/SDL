@@ -601,27 +601,10 @@ static DXGI_FORMAT SDLToD3D12_TypelessFormat[] = {
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_TypelessFormat, SDL_arraysize(SDLToD3D12_TypelessFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
 
 #ifdef HAVE_GPU_OPENXR
-// For XR sRGB format selection - maps DXGI sRGB formats to SDL formats
-typedef struct TextureFormatPair
-{
-    DXGI_FORMAT dxgi;
-    SDL_GPUTextureFormat sdl;
-} TextureFormatPair;
-
-static TextureFormatPair SDLToD3D12_TextureFormat_SrgbOnly[] = {
-    { DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB },
-    { DXGI_FORMAT_B8G8R8A8_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB },
-    { DXGI_FORMAT_BC1_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB },
-    { DXGI_FORMAT_BC2_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB },
-    { DXGI_FORMAT_BC3_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB },
-    { DXGI_FORMAT_BC7_UNORM_SRGB, SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB },
-};
-
 // Forward declarations for XR helper functions
 static bool D3D12_INTERNAL_SearchForOpenXrGpuExtension(XrExtensionProperties *found_extension);
 static XrResult D3D12_INTERNAL_GetXrGraphicsRequirements(XrInstance instance, XrSystemId systemId, D3D_FEATURE_LEVEL *minimumFeatureLevel, LUID *adapter);
 static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, IDXGIAdapter1 **outAdapter);
-static bool D3D12_INTERNAL_FindXRSrgbSwapchain(int64_t *supportedFormats, Uint32 supportedFormatsCount, SDL_GPUTextureFormat *sdlFormat, DXGI_FORMAT *dxgiFormat);
 #endif /* HAVE_GPU_OPENXR */
 
 static D3D12_COMPARISON_FUNC SDLToD3D12_CompareOp[] = {
@@ -697,7 +680,8 @@ static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
     DXGI_FORMAT_R16G16_UNORM,       // USHORT2_NORM
     DXGI_FORMAT_R16G16B16A16_UNORM, // USHORT4_NORM
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
-    DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
+    DXGI_FORMAT_R16G16B16A16_FLOAT, // HALF4
+    DXGI_FORMAT_R10G10B10A2_UNORM   // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -931,6 +915,10 @@ struct D3D12Renderer
     WinPixEventRuntimeFns winpixeventruntimeFns;
 #endif
     ID3D12Debug *d3d12Debug;
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    ID3D12InfoQueue *debugInfoQueue;
+    BOOL InfoQueueMessageCallbackSupported;
+#endif
     BOOL supportsTearing;
     SDL_SharedObject *d3d12_dll;
     ID3D12Device *device;
@@ -1267,6 +1255,7 @@ static void D3D12_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window)
 static bool D3D12_Wait(SDL_GPURenderer *driverData);
 static bool D3D12_WaitForFences(SDL_GPURenderer *driverData, bool waitAll, SDL_GPUFence *const *fences, Uint32 numFences);
 static void D3D12_INTERNAL_ReleaseBlitPipelines(SDL_GPURenderer *driverData);
+static void D3D12_INTERNAL_DrainInfoQueueMessages(D3D12Renderer *renderer);
 
 // Helpers
 
@@ -1737,6 +1726,10 @@ static void D3D12_INTERNAL_DestroyRenderer(D3D12Renderer *renderer)
         ID3D12CommandQueue_Release(renderer->commandQueue);
         renderer->commandQueue = NULL;
     }
+    if (renderer->debugInfoQueue) {
+        ID3D12InfoQueue_Release(renderer->debugInfoQueue);
+        renderer->debugInfoQueue = NULL;
+    }
     if (renderer->device) {
         ID3D12Device_Release(renderer->device);
         renderer->device = NULL;
@@ -1996,29 +1989,29 @@ static void D3D12_INTERNAL_TextureTransitionToDefaultUsage(
 static D3D12_RESOURCE_STATES D3D12_INTERNAL_DefaultBufferResourceState(
     D3D12Buffer *buffer)
 {
-    D3D12_RESOURCE_STATES states = (D3D12_RESOURCE_STATES)0;
+    D3D12_RESOURCE_STATES states = D3D12_RESOURCE_STATE_COMMON;
 
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         states |= D3D12_RESOURCE_STATE_INDEX_BUFFER;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         states |= D3D12_RESOURCE_STATE_INDIRECT_ARGUMENT;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         states |= D3D12_RESOURCE_STATE_ALL_SHADER_RESOURCE;
-    } 
+    }
     if (buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ) {
         states |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
     }
-    
+
     // If no read flags are set, read-write can be the default.
     if (!states && buffer->container->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         return D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    } 
-    
+    }
+
     if (!states) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
         return D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
@@ -3226,6 +3219,9 @@ static SDL_GPUGraphicsPipeline *D3D12_CreateGraphicsPipeline(
     psoDesc.SampleMask = 0xFFFFFFFF;
     psoDesc.SampleDesc.Count = SDLToD3D12_SampleCount[createinfo->multisample_state.sample_count];
     psoDesc.SampleDesc.Quality = (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) ? D3D12_STANDARD_MULTISAMPLE_PATTERN : 0;
+    if (createinfo->multisample_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
+        psoDesc.RasterizerState.MultisampleEnable = TRUE;
+    }
 
     if (createinfo->target_info.has_depth_stencil_target) {
         psoDesc.DSVFormat = SDLToD3D12_DepthFormat[createinfo->target_info.depth_stencil_format];
@@ -3532,6 +3528,9 @@ static D3D12Texture *D3D12_INTERNAL_CreateTexture(
             srvDesc.Texture3D.MipLevels = createinfo->num_levels;
             srvDesc.Texture3D.MostDetailedMip = 0;
             srvDesc.Texture3D.ResourceMinLODClamp = 0; // default behavior
+        } else if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
+            srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DMS;
+            srvDesc.Texture2DMS.UnusedField_NothingToDefine = 0;
         } else {
             srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
             srvDesc.Texture2D.MipLevels = createinfo->num_levels;
@@ -6001,7 +6000,11 @@ static void D3D12_UploadToTexture(
         needsPlacementCopy = source->offset % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0;
     }
 
-    alignedBytesPerSlice = alignedRowPitch * destination->h;
+    alignedBytesPerSlice = alignedRowPitch * blockHeight;
+    if (!renderer->UnrestrictedBufferTextureCopyPitchSupported && destination->d > 1 && alignedBytesPerSlice % D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT != 0) {
+        needsRealignment = true;
+        alignedBytesPerSlice = D3D12_INTERNAL_Align(alignedBytesPerSlice, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+    }
 
     sourceLocation.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
     sourceLocation.PlacedFootprint.Footprint.Format = SDLToD3D12_TextureFormat[textureContainer->header.info.format];
@@ -6015,7 +6018,7 @@ static void D3D12_UploadToTexture(
         temporaryBuffer = D3D12_INTERNAL_CreateBuffer(
             d3d12CommandBuffer->renderer,
             0,
-            alignedRowPitch * blockHeight * destination->d,
+            alignedBytesPerSlice * destination->d,
             D3D12_BUFFER_TYPE_UPLOAD,
             NULL);
 
@@ -6607,8 +6610,8 @@ static bool D3D12_SupportsSwapchainComposition(
         SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", false);
     }
 
-    // Check the color space support if necessary
-    if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
+    // Assume that SDR and scRGB will be supported by the compositor
+    if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084) {
         IDXGISwapChain3_CheckColorSpaceSupport(
             windowData->swapchain,
             SwapchainCompositionToColorSpace[swapchainComposition],
@@ -6886,11 +6889,13 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     }
 
     // Resize the swapchain
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        0, // use client window width
-        0, // use client window height
+        (UINT)width,
+        (UINT)height,
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
@@ -6965,9 +6970,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     // Min swapchain image count is 2
     windowData->swapchainTextureCount = SDL_clamp(renderer->allowedFramesInFlight, 2, 3);
 
+    // Use the window size rather than the client area, which is empty while minimized
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
+
     // Initialize the swapchain buffer descriptor
-    swapchainDesc.Width = 0;  // use client window width
-    swapchainDesc.Height = 0; // use client window height
+    swapchainDesc.Width = (UINT)width;
+    swapchainDesc.Height = (UINT)height;
     swapchainDesc.Format = swapchainFormat;
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
@@ -7015,10 +7024,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     CHECK_D3D12_ERROR_AND_RETURN("Could not create IDXGISwapChain3", false);
 
     if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
-        // Support already verified if we hit this block
-        IDXGISwapChain3_SetColorSpace1(
+        res = IDXGISwapChain3_SetColorSpace1(
             swapchain3,
             SwapchainCompositionToColorSpace[swapchainComposition]);
+        if (FAILED(res)) {
+            IDXGISwapChain3_Release(swapchain3);
+        }
+        CHECK_D3D12_ERROR_AND_RETURN("Could not set swapchain color space", false);
     }
 
     /*
@@ -7267,6 +7279,20 @@ static bool D3D12_SetAllowedFramesInFlight(
             return false;
         }
     }
+
+#if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // Update the frame interval
+    HRESULT res;
+    res = renderer->device->SetFrameIntervalX(
+        NULL,
+        D3D12XBOX_FRAME_INTERVAL_60_HZ,
+        allowedFramesInFlight,
+        D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    if (FAILED(res)) {
+        SDL_SetError("Could not set frame interval: %X", res);
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -7917,8 +7943,9 @@ static bool D3D12_INTERNAL_CleanCommandBuffer(
     return true;
 }
 
-static bool D3D12_Submit(
-    SDL_GPUCommandBuffer *commandBuffer)
+static bool D3D12_INTERNAL_Submit(
+    SDL_GPUCommandBuffer *commandBuffer,
+    SDL_GPUFence **fence)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
     D3D12Renderer *renderer = d3d12CommandBuffer->renderer;
@@ -7970,6 +7997,9 @@ static bool D3D12_Submit(
 
     // Notify the command buffer that we have completed recording
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    D3D12_INTERNAL_DrainInfoQueueMessages(renderer);
+#endif
     CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
 
     res = ID3D12GraphicsCommandList_QueryInterface(
@@ -7994,6 +8024,12 @@ static bool D3D12_Submit(
     if (!d3d12CommandBuffer->inFlightFence) {
         SDL_UnlockMutex(renderer->submitLock);
         return false;
+    }
+
+    // Return the fence while submitLock is held, another thread could
+    // recycle this command buffer as soon as the lock is released.
+    if (fence) {
+        *fence = (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
     }
 
     // Mark that a fence should be signaled after command list execution
@@ -8094,15 +8130,22 @@ static bool D3D12_Submit(
     return result;
 }
 
+static bool D3D12_Submit(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    return D3D12_INTERNAL_Submit(commandBuffer, NULL);
+}
+
 static SDL_GPUFence *D3D12_SubmitAndAcquireFence(
     SDL_GPUCommandBuffer *commandBuffer)
 {
     D3D12CommandBuffer *d3d12CommandBuffer = (D3D12CommandBuffer *)commandBuffer;
+    SDL_GPUFence *fence = NULL;
     d3d12CommandBuffer->autoReleaseFence = false;
-    if (!D3D12_Submit(commandBuffer)) {
+    if (!D3D12_INTERNAL_Submit(commandBuffer, &fence)) {
         return NULL;
     }
-    return (SDL_GPUFence *)d3d12CommandBuffer->inFlightFence;
+    return fence;
 }
 
 static bool D3D12_Cancel(
@@ -8115,6 +8158,9 @@ static bool D3D12_Cancel(
 
     // Notify the command buffer that we have completed recording
     res = ID3D12GraphicsCommandList_Close(d3d12CommandBuffer->graphicsCommandList);
+#if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    D3D12_INTERNAL_DrainInfoQueueMessages(renderer);
+#endif
     CHECK_D3D12_ERROR_AND_RETURN("Failed to close command list!", false);
 
     d3d12CommandBuffer->autoReleaseFence = false;
@@ -8332,6 +8378,13 @@ static bool D3D12_SupportsSampleCount(
     featureData.Flags = (D3D12_MULTISAMPLE_QUALITY_LEVEL_FLAGS)0;
 #endif
     featureData.Format = SDLToD3D12_TextureFormat[format];
+
+    if (IsDepthFormat(format)) {
+        featureData.Format = SDLToD3D12_DepthFormat[format];
+    } else {
+        featureData.Format = SDLToD3D12_TextureFormat[format];
+    }
+
     featureData.SampleCount = SDLToD3D12_SampleCount[sampleCount];
     res = ID3D12Device_CheckFeatureSupport(
         renderer->device,
@@ -8436,11 +8489,10 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(samplerCreateInfo);
     samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.enable_anisotropy = 0;
-    samplerCreateInfo.enable_compare = 0;
     samplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
@@ -8782,7 +8834,7 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoQueue(D3D12Renderer *rende
         D3D12_MESSAGE_SEVERITY_CORRUPTION,
         true);
 
-    ID3D12InfoQueue_Release(infoQueue);
+    renderer->debugInfoQueue = infoQueue;
 }
 
 static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
@@ -8877,6 +8929,7 @@ static void WINAPI D3D12_INTERNAL_OnD3D12DebugInfoMsg(
 static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *renderer)
 {
     ID3D12InfoQueue1 *infoQueue = NULL;
+    DWORD callbackCookie = 0;
     HRESULT res;
 
     res = ID3D12Device_QueryInterface(
@@ -8887,14 +8940,49 @@ static void D3D12_INTERNAL_TryInitializeD3D12DebugInfoLogger(D3D12Renderer *rend
         return;
     }
 
-    ID3D12InfoQueue1_RegisterMessageCallback(
+    res = ID3D12InfoQueue1_RegisterMessageCallback(
         infoQueue,
         D3D12_INTERNAL_OnD3D12DebugInfoMsg,
         D3D12_MESSAGE_CALLBACK_FLAG_NONE,
         NULL,
-        NULL);
+        &callbackCookie);
+    if (SUCCEEDED(res)) {
+        renderer->InfoQueueMessageCallbackSupported = true;
+    }
 
     ID3D12InfoQueue1_Release(infoQueue);
+}
+
+static void D3D12_INTERNAL_DrainInfoQueueMessages(D3D12Renderer *renderer)
+{
+    ID3D12InfoQueue *infoQueue = renderer->debugInfoQueue;
+    UINT64 count, i;
+
+    if (renderer->InfoQueueMessageCallbackSupported || infoQueue == NULL) {
+        return;
+    }
+
+    count = ID3D12InfoQueue_GetNumStoredMessages(infoQueue);
+    if (count == 0) {
+        return;
+    }
+
+    for (i = 0; i < count; i += 1) {
+        SIZE_T size = 0;
+        ID3D12InfoQueue_GetMessage(infoQueue, i, NULL, &size);
+        D3D12_MESSAGE *message = (D3D12_MESSAGE *)SDL_malloc(size);
+        if (message && SUCCEEDED(ID3D12InfoQueue_GetMessage(infoQueue, i, message, &size))) {
+            D3D12_INTERNAL_OnD3D12DebugInfoMsg(
+                message->Category,
+                message->Severity,
+                message->ID,
+                message->pDescription,
+                NULL);
+        }
+        SDL_free(message);
+    }
+
+    ID3D12InfoQueue_ClearStoredMessages(infoQueue);
 }
 #endif
 
@@ -8988,24 +9076,6 @@ static bool D3D12_INTERNAL_GetAdapterByLuid(LUID luid, IDXGIFactory1 *factory, I
         IDXGIAdapter1_Release(adapter);
     }
 }
-
-static bool D3D12_INTERNAL_FindXRSrgbSwapchain(
-    int64_t *supportedFormats,
-    Uint32 supportedFormatsCount,
-    SDL_GPUTextureFormat *sdlFormat,
-    DXGI_FORMAT *dxgiFormat)
-{
-    for (Uint32 i = 0; i < SDL_arraysize(SDLToD3D12_TextureFormat_SrgbOnly); i++) {
-        for (Uint32 j = 0; j < supportedFormatsCount; j++) {
-            if (SDLToD3D12_TextureFormat_SrgbOnly[i].dxgi == supportedFormats[j]) {
-                *sdlFormat = SDLToD3D12_TextureFormat_SrgbOnly[i].sdl;
-                *dxgiFormat = SDLToD3D12_TextureFormat_SrgbOnly[i].dxgi;
-                return true;
-            }
-        }
-    }
-    return false;
-}
 #endif /* HAVE_GPU_OPENXR */
 
 static XrResult D3D12_DestroyXRSwapchain(
@@ -9075,38 +9145,37 @@ static SDL_GPUTextureFormat* D3D12_GetXRSwapchainFormats(
         return NULL;
     }
 
-    // FIXME: For now we're just searching for the optimal format, not all supported formats.
-    // FIXME: Expand this search for all SDL_GPU formats!
+    SDL_GPUTextureFormat *sdl_formats = SDL_stack_alloc(SDL_GPUTextureFormat, num_supported_formats);
+    uint32_t num_found_formats = 0;
 
-    SDL_GPUTextureFormat sdlFormat = SDL_GPU_TEXTUREFORMAT_INVALID;
-    DXGI_FORMAT dxgiFormat = DXGI_FORMAT_UNKNOWN;
-    // The OpenXR spec recommends applications not submit linear data, so let's try to explicitly find an sRGB swapchain before we search the whole list
-    if (!D3D12_INTERNAL_FindXRSrgbSwapchain(supported_formats, num_supported_formats, &sdlFormat, &dxgiFormat)) {
-        // Iterate over all formats the runtime supports
-        for (i = 0; i < num_supported_formats && dxgiFormat == DXGI_FORMAT_UNKNOWN; i++) {
-            // Iterate over all formats we support
-            for (j = 0; j < SDL_arraysize(SDLToD3D12_TextureFormat); j++) {
-                // Pick the first format the runtime wants that we also support, the runtime should return these in order of preference
-                if (SDLToD3D12_TextureFormat[j] == supported_formats[i]) {
-                    dxgiFormat = (DXGI_FORMAT)supported_formats[i];
-                    sdlFormat = j;
-                    break;
-                }
+    // Iterate over all formats the runtime supports
+    for (i = 0; i < num_supported_formats; i++) {
+        // Iterate over all formats we support
+        for (j = 0; j < SDL_arraysize(SDLToD3D12_TextureFormat); j++) {
+            if (SDLToD3D12_TextureFormat[j] == supported_formats[i]) {
+                // Add the format match we found, linearly. The output order should match the order of the runtime.
+                sdl_formats[num_found_formats++] = j;
+                break;
             }
         }
     }
 
     SDL_stack_free(supported_formats);
 
-    if (dxgiFormat == DXGI_FORMAT_UNKNOWN) {
+    if (num_found_formats == 0) {
         SDL_SetError("Failed to find a swapchain format supported by both OpenXR and SDL");
+        SDL_stack_free(sdl_formats);
         return NULL;
     }
 
-    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat*) SDL_malloc(sizeof(SDL_GPUTextureFormat) * 2);
-    retval[0] = sdlFormat;
-    retval[1] = SDL_GPU_TEXTUREFORMAT_INVALID;
-    *num_formats = 1;
+    SDL_GPUTextureFormat *retval = (SDL_GPUTextureFormat *)SDL_calloc((size_t)num_found_formats + 1, sizeof(SDL_GPUTextureFormat));
+    SDL_memcpy(retval, sdl_formats, sizeof(SDL_GPUTextureFormat) * num_found_formats); // Copy the translated formats
+    retval[num_found_formats] = SDL_GPU_TEXTUREFORMAT_INVALID; // Add a termination for good measure
+
+    *num_formats = num_found_formats;
+
+    SDL_stack_free(supported_formats);
+
     return retval;
 #else
     SDL_SetError("SDL not built with OpenXR support");
@@ -9970,7 +10039,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -10068,7 +10137,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not set frame interval: %X", res);

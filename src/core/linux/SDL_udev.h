@@ -91,23 +91,8 @@ typedef struct SDL_UDEV_Symbols
 
 } SDL_UDEV_Symbols;
 
-typedef struct SDL_UDEV_PrivateData
-{
-    const char *udev_library;
-    SDL_SharedObject *udev_handle;
-    struct udev *udev;
-    struct udev_monitor *udev_mon;
-    int ref_count;
-    SDL_UDEV_CallbackList *first, *last;
-
-    // Function pointers
-    SDL_UDEV_Symbols syms;
-} SDL_UDEV_PrivateData;
-
 extern bool SDL_UDEV_Init(void);
 extern void SDL_UDEV_Quit(void);
-extern void SDL_UDEV_UnloadLibrary(void);
-extern bool SDL_UDEV_LoadLibrary(void);
 extern void SDL_UDEV_Poll(void);
 extern bool SDL_UDEV_Scan(void);
 extern bool SDL_UDEV_GetProductInfo(const char *device_path, struct input_id *inpid, int *class, char **driver);

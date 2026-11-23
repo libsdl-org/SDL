@@ -96,10 +96,11 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
             if (!SDL_ReadU8(src, &pixelvalue)) {
                 return false;
             }
-            ch /= pixels_per_byte;
+            int ich = (int) ch;
             do {
                 COPY_PIXEL(pixelvalue);
-            } while (--ch);
+                ich -= pixels_per_byte;
+            } while (ich > 0);
         } else {
             /*
             | A leading zero is an escape; it may signal the end of the bitmap,
@@ -121,22 +122,31 @@ static bool readRlePixels(SDL_Surface *surface, SDL_IOStream *src, int isRle8)
                     return false;
                 }
                 ofs += ch / pixels_per_byte;
-
+                if (ch & pixels_per_byte) {
+                    ofs++;
+                }
                 if (!SDL_ReadU8(src, &ch)) {
                     return false;
                 }
-                bits -= ((ch / pixels_per_byte) * pitch);
+                bits -= (ch * pitch);
                 break;
             default: // no compression
-                ch /= pixels_per_byte;
-                needsPad = (ch & 1);
+                // !!! FIXME: this needsPad calculation can probably be simpler than this.
+                if (pixels_per_byte == 1) {
+                    needsPad = (ch & 1) != 0;
+                } else {
+                    needsPad = (((ch + (pixels_per_byte-1)) / pixels_per_byte) & (pixels_per_byte-1)) != 0;
+                }
+
+                int ich = (int) ch;
                 do {
                     Uint8 pixelvalue;
                     if (!SDL_ReadU8(src, &pixelvalue)) {
                         return false;
                     }
                     COPY_PIXEL(pixelvalue);
-                } while (--ch);
+                    ich -= pixels_per_byte;
+                } while (ich > 0);
 
                 // pad at even boundary
                 if (needsPad && !SDL_ReadU8(src, &ch)) {
@@ -628,11 +638,17 @@ static bool InitBMPSaveState(BMPSaveState *state, SDL_Surface *surface)
     if (surface->palette && !state->save32bit) {
         if (SDL_BITSPERPIXEL(surface->format) == 8) {
             state->intermediate_surface = surface;
+        } else if (surface->format == SDL_PIXELFORMAT_INDEX1MSB || surface->format == SDL_PIXELFORMAT_INDEX4MSB) {
+            state->intermediate_surface = surface;
         } else {
             SDL_SetError("%u bpp BMP files not supported",
                          SDL_BITSPERPIXEL(surface->format));
             goto error;
         }
+    } else if (surface->format == SDL_PIXELFORMAT_INDEX1MSB || surface->format == SDL_PIXELFORMAT_INDEX4MSB) {
+        SDL_SetError("%u bpp BMP files require a palette",
+                     SDL_BITSPERPIXEL(surface->format));
+        goto error;
     } else if ((surface->format == SDL_PIXELFORMAT_BGR24 && !state->save32bit) ||
                (surface->format == SDL_PIXELFORMAT_BGRA32 && state->save32bit)) {
         state->intermediate_surface = surface;
@@ -716,7 +732,7 @@ static bool SDL_SaveBMP_IO_Internal(BMPSaveState *state, SDL_IOStream *dst, bool
     Uint32 bV5Reserved = 0;
 
     if (SDL_LockSurface(state->intermediate_surface)) {
-        const size_t bw = state->intermediate_surface->w * state->intermediate_surface->fmt->bytes_per_pixel;
+        const size_t bw = (state->intermediate_surface->w * SDL_BITSPERPIXEL(state->intermediate_surface->format) + 7) / 8;
 
         // Set the BMP file header values
         bfSize = 0; // We'll write this when we're done

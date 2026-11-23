@@ -231,15 +231,12 @@ static bool CreateWindowAndRenderer(SDL_WindowFlags window_flags, const char *dr
 static SDL_Texture *CreateTexture(SDL_Renderer *r, unsigned char *data, unsigned int len, int *w, int *h)
 {
     SDL_Texture *texture = NULL;
-    SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadPNG_IO(src, true);
-        if (surface) {
-            texture = SDL_CreateTextureFromSurface(r, surface);
-            *w = surface->w;
-            *h = surface->h;
-            SDL_DestroySurface(surface);
+        texture = SDL_LoadTexture_IO(r, src, true);
+        if (texture) {
+            *w = texture->w;
+            *h = texture->h;
         }
     }
     return texture;
@@ -1589,7 +1586,7 @@ int main(int argc, char *argv[])
         }
 
         if (flushing && !decoded) {
-            if (SDL_GetAudioStreamQueued(audio) > 0 && !nodelay) {
+            if (audio && SDL_GetAudioStreamQueued(audio) > 0 && !nodelay) {
                 /* Wait a little bit for the audio to finish */
                 SDL_Delay(10);
             } else {
@@ -1616,11 +1613,15 @@ quit:
     avcodec_free_context(&audio_context);
     avcodec_free_context(&video_context);
     avformat_close_input(&ic);
-    SDL_DestroyRenderer(renderer);
+    if (renderer) {
+        SDL_DestroyRenderer(renderer);
+    }
     if (vulkan_context) {
         DestroyVulkanVideoContext(vulkan_context);
     }
-    SDL_DestroyWindow(window);
+    if (window) {
+        SDL_DestroyWindow(window);
+    }
     SDL_Quit();
     SDLTest_CommonDestroyState(state);
     return return_code;

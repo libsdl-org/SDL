@@ -542,21 +542,26 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
             goto quit;
         }
 
-        for (wchar_t *chrptr = default_folder_w; *chrptr; chrptr++) {
-            if (*chrptr == L'/' || *chrptr == L'\\') {
-                default_file_w = chrptr;
-            }
-        }
-
-        if (!default_file_w) {
-            default_file_w = default_folder_w;
-            default_folder_w = NULL;
+        if (is_folder) {
+            // A folder dialog always treats the location as a folder
         } else {
-            *default_file_w = L'\0';
-            default_file_w++;
+            // Split the location into a file and folder
+            for (wchar_t *chrptr = default_folder_w; *chrptr; chrptr++) {
+                if (*chrptr == L'/' || *chrptr == L'\\') {
+                    default_file_w = chrptr;
+                }
+            }
 
-            if (SDL_wcslen(default_file_w) == 0) {
-                default_file_w = NULL;
+            if (!default_file_w) {
+                default_file_w = default_folder_w;
+                default_folder_w = NULL;
+            } else {
+                *default_file_w = L'\0';
+                default_file_w++;
+
+                if (SDL_wcslen(default_file_w) == 0) {
+                    default_file_w = NULL;
+                }
             }
         }
     }
@@ -600,8 +605,9 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
     }
 
     if (default_folder_w) {
-        CHECK(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem));
-        CHECK(pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem));
+        if (SUCCEEDED(pSHCreateItemFromParsingName(default_folder_w, NULL, &IID_IShellItem, (void**)&pFolderItem))) {
+            pFileDialog->lpVtbl->SetFolder(pFileDialog, pFolderItem);
+        }
     }
 
     if (default_file_w) {
@@ -619,11 +625,8 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
 
         if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
             const char * const results[] = { NULL };
-            UINT selected_filter;
 
-            // This is a one-based index, not zero-based. Doc link in similar comment below
-            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
-            callback(userdata, results, selected_filter - 1);
+            callback(userdata, results, -1);
             callback_called = true;
             goto quit;
         } else if (!SUCCEEDED(hr)) {
@@ -634,11 +637,8 @@ bool windows_ShowModernFileFolderDialog(SDL_FileDialogType dialog_type, const ch
 
         if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
             const char * const results[] = { NULL };
-            UINT selected_filter;
 
-            // This is a one-based index, not zero-based. Doc link in similar comment below
-            CHECK(pFileDialog->lpVtbl->GetFileTypeIndex(pFileDialog, &selected_filter));
-            callback(userdata, results, selected_filter - 1);
+            callback(userdata, results, -1);
             callback_called = true;
             goto quit;
         } else if (!SUCCEEDED(hr)) {
@@ -1028,12 +1028,9 @@ void windows_ShowFileDialog(void *ptr)
         DWORD error = pCommDlgExtendedError();
         // Error code 0 means the user clicked the cancel button.
         if (error == 0) {
-            /* Unlike SDL's handling of errors, Windows does reset the error
-               code to 0 after calling GetOpenFileName if another Windows
-               function before set a different error code, so it's safe to
-               check for success. */
-            const char *opts[1] = { NULL };
-            callback(userdata, opts, getFilterIndex(dialog.nFilterIndex));
+            const char * const results[] = { NULL };
+
+            callback(userdata, results, -1);
         } else {
             SDL_SetError("Windows error, CommDlgExtendedError: %" SDL_PRIuULONG, pCommDlgExtendedError());
             callback(userdata, NULL, -1);

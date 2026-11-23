@@ -28,10 +28,17 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetAndroidJNIEnv(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetAndroidSDKVersion(void);
 extern SDL_DECLSPEC void SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC void SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC void SDLCALL SDL_IsGooglePlayOnPC(void);
 extern SDL_DECLSPEC void SDLCALL SDL_RequestAndroidPermission(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidMessage(void);
 extern SDL_DECLSPEC void SDLCALL SDL_ShowAndroidToast(void);
+#endif
+
+#if !defined(SDL_PLATFORM_OPENHARMONY)
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+extern SDL_DECLSPEC void SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(void);
 #endif
 
 #if !defined(SDL_PLATFORM_GDK)

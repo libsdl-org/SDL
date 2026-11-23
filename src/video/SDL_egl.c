@@ -29,6 +29,10 @@
 #include <android/native_window.h>
 #include "../video/android/SDL_androidvideo.h"
 #endif
+#ifdef SDL_VIDEO_DRIVER_QNX
+#include <screen/screen.h>
+#include "../video/qnx/SDL_qnx.h"
+#endif
 #ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
@@ -64,6 +68,14 @@
 #define EGL_PRESENT_OPAQUE_EXT 0x31DF
 #endif // EGL_EXT_present_opaque
 
+#ifndef EGL_EXT_swap_tearing_hint
+#define EGL_EXT_swap_tearing_hint 1
+#define EGL_SWAP_TEARING_HINT_VSYNC_EXT 0x35A1
+#define EGL_SWAP_TEARING_HINT_ASYNC_EXT 0x35A2
+#define EGL_SWAP_TEARING_HINT_DEFAULT_EXT 0x35A3
+#define EGL_SWAP_TEARING_HINT_EXT 0x35A0
+#endif // EGL_EXT_swap_tearing_hint
+
 #ifdef SDL_VIDEO_DRIVER_RPI
 // Raspbian places the OpenGL ES/EGL binaries in a non standard path
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
@@ -81,6 +93,10 @@
 #define DEFAULT_OGL_ES2    "libGLESv2.so"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
+
+#elif defined(SDL_VIDEO_DRIVER_OPENHARMONY)
+#define DEFAULT_EGL        "libEGL.so"
+#define DEFAULT_OGL_ES2    "libGLESv3.so"
 
 #elif defined(SDL_VIDEO_DRIVER_WINDOWS)
 // EGL AND OpenGL ES support via ANGLE
@@ -496,6 +512,8 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
     LOAD_FUNC(PFNEGLWAITGLPROC, eglWaitGL);
     LOAD_FUNC(PFNEGLBINDAPIPROC, eglBindAPI);
     LOAD_FUNC(PFNEGLGETERRORPROC, eglGetError);
+    LOAD_FUNC(PFNEGLGETCURRENTSURFACEPROC, eglGetCurrentSurface);
+    LOAD_FUNC(PFNEGLSURFACEATTRIBPROC, eglSurfaceAttrib);
     LOAD_FUNC_EGLEXT(PFNEGLQUERYDEVICESEXTPROC, eglQueryDevicesEXT);
     LOAD_FUNC_EGLEXT(PFNEGLGETPLATFORMDISPLAYEXTPROC, eglGetPlatformDisplayEXT);
     // Atomic functions
@@ -1210,20 +1228,48 @@ bool SDL_EGL_MakeCurrent(SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLC
 
 bool SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
-    EGLBoolean status;
-
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
 
-    /* FIXME: Revisit this check when EGL_EXT_swap_control_tear is published:
-     * https://github.com/KhronosGroup/EGL-Registry/pull/113
-     */
-    if (interval < 0) {
-        return SDL_SetError("Late swap tearing currently unsupported");
+    const bool has_swap_tearing_hint = SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_swap_tearing_hint");
+    if ((interval < 0) && !has_swap_tearing_hint) {
+        return SDL_SetError("Late swap tearing unsupported");
     }
 
-    status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, interval);
+    EGLBoolean status;
+    int egl_interval = interval;
+    if (has_swap_tearing_hint) {  // (quotes in this block's comments are from the EGL_EXT_swap_tearing_hint spec.)
+        EGLSurface surface = _this->egl_data->eglGetCurrentSurface(EGL_DRAW);
+        if (surface != EGL_NO_SURFACE) {
+            const char *sdlhint = SDL_GetHint(SDL_HINT_VIDEO_EGL_SWAP_TEARING_HINT);
+            EGLint hint_value;
+            if (sdlhint) {
+                if (SDL_strcmp(sdlhint, "async") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+                } else if (SDL_strcmp(sdlhint, "vsync") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_VSYNC_EXT;
+                } else if (SDL_strcmp(sdlhint, "default") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_DEFAULT_EXT;
+                } else {
+                    hint_value = EGL_SWAP_TEARING_HINT_DEFAULT_EXT;  // oh well.
+                }
+            } else if (interval < 0) {
+                // "EGL_SWAP_TEARING_HINT_ASYNC_EXT, swap_interval > 0: This is equivalent to a negative swap interval with GLX_EXT_swap_control_tear, and to Vulkan's VK_PRESENT_MODE_FIFO_RELAXED_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+                egl_interval = -interval;  // make it positive for eglSwapInterval.
+            } else if (interval == 0) {
+                // "EGL_SWAP_TEARING_HINT_ASYNC_EXT, swap_interval = 0: This is the normal behavior in GLX and core EGL for a swap interval of zero. The Vulkan equivalent is VK_PRESENT_MODE_IMMEDIATE_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+            } else /*if (interval > 0)*/ {
+                // "EGL_SWAP_TEARING_HINT_VSYNC_EXT, swap_interval > 0: This is the normal behavior in GLX and core EGL for a non-zero swap interval. The Vulkan equivalent is VK_PRESENT_MODE_FIFO_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_VSYNC_EXT;
+            }
+            status = _this->egl_data->eglSurfaceAttrib(_this->egl_data->egl_display, surface, EGL_SWAP_TEARING_HINT_EXT, hint_value);
+        }
+    }
+
+    status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, egl_interval);
     if (status == EGL_TRUE) {
         _this->egl_data->egl_swapinterval = interval;
         return true;
@@ -1290,6 +1336,17 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 
     // Format based on selected egl config.
     ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
+#endif
+
+#ifdef SDL_VIDEO_DRIVER_QNX
+    // Wayland is also a supported platform on QNX, so we need to be specific.
+    if (SDL_strcmp(_this->name, "qnx") == 0) {
+        int format = QNX_ChooseFormat(_this, _this->egl_data->egl_config);
+
+        if (screen_set_window_property_iv(nw, SCREEN_PROPERTY_FORMAT, &format) < 0) {
+            return EGL_NO_SURFACE;
+        }
+    }
 #endif
 
 #ifdef EGL_KHR_gl_colorspace

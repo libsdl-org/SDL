@@ -50,9 +50,13 @@ static BOOL WIN_OpenClipboard(SDL_VideoDevice *_this)
     int attempt;
     HWND hwnd = NULL;
 
-    if (_this->windows) {
-        hwnd = _this->windows->internal->hwnd;
+    for (SDL_Window *window = _this->windows; window; window = window->next) {
+        if (window->internal) {
+            hwnd = window->internal->hwnd;
+            break;
+        }
     }
+
     for (attempt = 0; attempt < MAX_ATTEMPTS; ++attempt) {
         if (OpenClipboard(hwnd)) {
             return TRUE;
@@ -179,35 +183,37 @@ static bool WIN_SetClipboardImage(SDL_VideoDevice *_this, const char *mime_type)
     bool result = true;
 
     clipboard_data = _this->clipboard_callback(_this->clipboard_userdata, mime_type, &clipboard_data_size);
-    if (SDL_strcmp(mime_type, "image/bmp") == 0) {
-        hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size, &format);
-    } else if (SDL_strcmp(mime_type, "image/png") == 0) {
-        format = GetClipboardFormatPNG();
-        hMem = GlobalAlloc(GMEM_MOVEABLE, clipboard_data_size);
-        if (hMem) {
-            LPVOID dst = GlobalLock(hMem);
-            if (dst) {
-                SDL_memcpy(dst, clipboard_data, clipboard_data_size);
-                GlobalUnlock(hMem);
+    if (clipboard_data && clipboard_data_size > 0) {
+        if (SDL_strcmp(mime_type, "image/bmp") == 0) {
+            hMem = WIN_ConvertBMPtoDIB(clipboard_data, clipboard_data_size, &format);
+        } else if (SDL_strcmp(mime_type, "image/png") == 0) {
+            format = GetClipboardFormatPNG();
+            hMem = GlobalAlloc(GMEM_MOVEABLE, clipboard_data_size);
+            if (hMem) {
+                LPVOID dst = GlobalLock(hMem);
+                if (dst) {
+                    SDL_memcpy(dst, clipboard_data, clipboard_data_size);
+                    GlobalUnlock(hMem);
+                } else {
+                    result = WIN_SetError("GlobalLock()");
+                    GlobalFree(hMem);
+                    hMem = NULL;
+                }
             } else {
-                result = WIN_SetError("GlobalLock()");
-                GlobalFree(hMem);
-                hMem = NULL;
+                result = SDL_OutOfMemory();
             }
         } else {
-            result = SDL_OutOfMemory();
+            result = SDL_SetError("Unknown image format");
         }
-    } else {
-        result = SDL_SetError("Unknown image format");
-    }
-    if (hMem) {
-        // Save the image to the clipboard
-        if (!SetClipboardData(format, hMem)) {
-            result = WIN_SetError("Couldn't set clipboard data");
+        if (hMem) {
+            // Save the image to the clipboard
+            if (!SetClipboardData(format, hMem)) {
+                result = WIN_SetError("Couldn't set clipboard data");
+            }
+        } else {
+            // WIN_ConvertBMPtoDIB() set the error
+            result = false;
         }
-    } else {
-        // WIN_ConvertBMPtoDIB() set the error
-        result = false;
     }
     return result;
 }

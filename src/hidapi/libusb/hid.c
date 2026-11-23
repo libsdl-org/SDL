@@ -657,10 +657,10 @@ static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libus
 {
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	default:
 		break;
@@ -943,6 +943,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	static const int xb360_iface_subclass = 93;
 	static const int xb360_iface_protocol = 1; /* Wired */
 	static const int xb360w_iface_protocol = 129; /* Wireless */
+	static const int xb360bb_iface_protocol = 4; /* Wireless */
 	static const int supported_vendors[] = {
 		0x0079, /* GPD Win 2 */
 		0x0351, /* CRKD */
@@ -956,6 +957,7 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 		0x0e6f, /* PDP */
 		0x0f0d, /* Hori */
 		0x1038, /* SteelSeries */
+		0x10f5, /* Turtle Beach */
 		0x11c9, /* Nacon */
 		0x1209, /* Generic */
 		0x12ab, /* Unknown */
@@ -981,7 +983,8 @@ static int is_xbox360(unsigned short vendor_id, const struct libusb_interface_de
 	if (intf_desc->bInterfaceClass == LIBUSB_CLASS_VENDOR_SPEC &&
 	    intf_desc->bInterfaceSubClass == xb360_iface_subclass &&
 	    (intf_desc->bInterfaceProtocol == xb360_iface_protocol ||
-	     intf_desc->bInterfaceProtocol == xb360w_iface_protocol)) {
+	     intf_desc->bInterfaceProtocol == xb360w_iface_protocol ||
+	     intf_desc->bInterfaceProtocol == xb360bb_iface_protocol)) {
 		size_t i;
 		for (i = 0; i < sizeof(supported_vendors)/sizeof(supported_vendors[0]); ++i) {
 			if (vendor_id == supported_vendors[i]) {
@@ -1044,7 +1047,7 @@ static int should_enumerate_interface(unsigned short vendor_id, unsigned short p
 	printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 #endif
 
-#ifdef HIDAPI_IGNORE_DEVICE
+#if defined(HIDAPI_IGNORE_DEVICE) && defined(SDL_PLATFORM_MACOS)
 	/* See if there are any devices we should skip in enumeration */
 	if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, vendor_id, product_id, 0, 0, true, is_xbox)) {
 		return 0;
@@ -1111,6 +1114,13 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		    libusb_blacklist(dev_vid, dev_pid)) {
 			continue;
 		}
+
+#if defined(HIDAPI_IGNORE_DEVICE) && !defined(SDL_PLATFORM_MACOS)
+		/* See if there are any devices we should skip in enumeration */
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true, false)) {
+			continue;
+		}
+#endif
 
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)

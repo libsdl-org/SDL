@@ -78,7 +78,7 @@ static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *even
 
         // Make sure that we quit if we get a terminating event
         if (event->type == SDL_EVENT_TERMINATING) {
-            SDL_CompareAndSwapAtomicInt(&apprc, SDL_APP_CONTINUE, SDL_APP_SUCCESS);
+            SDL_MainCallbacksSawEventTerminating(&apprc);
         }
     } else {
         // We'll process this event later from the main event queue
@@ -88,10 +88,7 @@ static bool SDLCALL SDL_MainCallbackEventWatcher(void *userdata, SDL_Event *even
 
 bool SDL_HasMainCallbacks(void)
 {
-    if (SDL_main_iteration_callback) {
-        return true;
-    }
-    return false;
+    return (SDL_main_iteration_callback != NULL);
 }
 
 SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
@@ -107,9 +104,7 @@ SDL_AppResult SDL_InitMainCallbacks(int argc, char *argv[], SDL_AppInit_func app
         if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
             SDL_SetAtomicInt(&apprc, SDL_APP_FAILURE);
             return SDL_APP_FAILURE;
-        }
-
-        if (!SDL_AddEventWatch(SDL_MainCallbackEventWatcher, NULL)) {
+        } else if (!SDL_AddEventWatch(SDL_MainCallbackEventWatcher, NULL)) {
             SDL_SetAtomicInt(&apprc, SDL_APP_FAILURE);
             return SDL_APP_FAILURE;
         }

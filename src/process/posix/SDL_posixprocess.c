@@ -355,10 +355,8 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
         case 0:
             // Detach from the terminal and launch the process
             setsid();
-            if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp) != 0) {
-                _exit(errno);
-            }
-            _exit(0);
+            int result = posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp);
+            _exit(result);
 
         default:
             if (waitpid(pid, &status, 0) < 0) {
@@ -366,14 +364,15 @@ bool SDL_SYS_CreateProcessWithProperties(SDL_Process *process, SDL_PropertiesID 
                 goto posix_spawn_fail_all;
             }
             if (status != 0) {
-                SDL_SetError("posix_spawn() failed: %s", strerror(status));
+                SDL_SetError("posix_spawn() failed: %d", status);
                 goto posix_spawn_fail_all;
             }
             break;
         }
     } else {
-        if (posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp) != 0) {
-            SDL_SetError("posix_spawn() failed: %s", strerror(errno));
+        int result = posix_spawnp(&data->pid, args[0], &fa, &attr, args, envp);
+        if (result != 0) {
+            SDL_SetError("posix_spawn() failed: %s", strerror(result));
             goto posix_spawn_fail_all;
         }
     }
@@ -469,7 +468,14 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
     } else {
         ret = waitpid(pid, &wstatus, block ? 0 : WNOHANG);
         if (ret < 0) {
-            return SDL_SetError("Could not waitpid(): %s", strerror(errno));
+            if (errno == ECHILD) {
+                // We can't get the status because something else waited or
+                // set the SIGCHLD signal to SIG_IGN.
+                *exitcode = SDL_PROCESS_EXITCODE_UNKNOWN;
+                return true;
+            } else {
+                return SDL_SetError("Could not waitpid(): %s", strerror(errno));
+            }
         }
 
         if (ret == 0) {
@@ -482,7 +488,7 @@ bool SDL_SYS_WaitProcess(SDL_Process *process, bool block, int *exitcode)
         } else if (WIFSIGNALED(wstatus)) {
             *exitcode = -WTERMSIG(wstatus);
         } else {
-            *exitcode = -255;
+            *exitcode = SDL_PROCESS_EXITCODE_UNKNOWN;
         }
 
         return true;
