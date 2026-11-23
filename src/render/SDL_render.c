@@ -5994,7 +5994,7 @@ static bool DrawDebugCharacter(SDL_Renderer *renderer, float x, float y, Uint32 
     Uint32 ci = c;
     if ((ci <= 32) || ((ci >= 127) && (ci <= 160))) {
         return true;  // these are just completely blank chars, don't bother doing anything.
-    } else if (ci >= SDL_DEBUG_FONT_NUM_GLYPHS) {
+    } else if (ci > 255) {
         ci = SDL_DEBUG_FONT_NUM_GLYPHS - 1;  // use our "not a valid/supported character" glyph.
     } else if (ci < 127) {
         ci -= 33;     // adjust for the 33 blank glyphs at the start
