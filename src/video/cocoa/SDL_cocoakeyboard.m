@@ -264,43 +264,56 @@ static bool IsModifierKeyPressed(unsigned int flags,
     return target_pressed;
 }
 
-static void HandleModifiers(SDL_VideoDevice *_this, SDL_Scancode code, unsigned int modifierFlags)
+static void SyncModifierKey(SDL_Scancode code, const bool *keys, bool pressed)
 {
-    bool pressed = false;
-
-    if (code == SDL_SCANCODE_LSHIFT) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELSHIFTKEYMASK,
-                                       NX_DEVICERSHIFTKEYMASK, NX_SHIFTMASK);
-    } else if (code == SDL_SCANCODE_LCTRL) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELCTLKEYMASK,
-                                       NX_DEVICERCTLKEYMASK, NX_CONTROLMASK);
-    } else if (code == SDL_SCANCODE_LALT) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELALTKEYMASK,
-                                       NX_DEVICERALTKEYMASK, NX_ALTERNATEMASK);
-    } else if (code == SDL_SCANCODE_LGUI) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELCMDKEYMASK,
-                                       NX_DEVICERCMDKEYMASK, NX_COMMANDMASK);
-    } else if (code == SDL_SCANCODE_RSHIFT) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERSHIFTKEYMASK,
-                                       NX_DEVICELSHIFTKEYMASK, NX_SHIFTMASK);
-    } else if (code == SDL_SCANCODE_RCTRL) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERCTLKEYMASK,
-                                       NX_DEVICELCTLKEYMASK, NX_CONTROLMASK);
-    } else if (code == SDL_SCANCODE_RALT) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERALTKEYMASK,
-                                       NX_DEVICELALTKEYMASK, NX_ALTERNATEMASK);
-    } else if (code == SDL_SCANCODE_RGUI) {
-        pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERCMDKEYMASK,
-                                       NX_DEVICELCMDKEYMASK, NX_COMMANDMASK);
-    } else {
-        return;
+    if (pressed != keys[code]) {
+        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, pressed);
     }
+}
 
-    if (pressed) {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, true);
-    } else {
-        SDL_SendKeyboardKey(0, SDL_DEFAULT_KEYBOARD_ID, 0, code, false);
-    }
+static void SyncModifierKeys(unsigned int modifierFlags)
+{
+    bool pressed;
+    const bool *keys = SDL_GetKeyboardState(NULL);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELSHIFTKEYMASK,
+                                   NX_DEVICERSHIFTKEYMASK, NX_SHIFTMASK);
+    SyncModifierKey(SDL_SCANCODE_LSHIFT, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELCTLKEYMASK,
+                                   NX_DEVICERCTLKEYMASK, NX_CONTROLMASK);
+    SyncModifierKey(SDL_SCANCODE_LCTRL, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELALTKEYMASK,
+                                   NX_DEVICERALTKEYMASK, NX_ALTERNATEMASK);
+    SyncModifierKey(SDL_SCANCODE_LALT, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICELCMDKEYMASK,
+                                   NX_DEVICERCMDKEYMASK, NX_COMMANDMASK);
+    SyncModifierKey(SDL_SCANCODE_LGUI, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERSHIFTKEYMASK,
+                                   NX_DEVICELSHIFTKEYMASK, NX_SHIFTMASK);
+    SyncModifierKey(SDL_SCANCODE_RSHIFT, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERCTLKEYMASK,
+                                   NX_DEVICELCTLKEYMASK, NX_CONTROLMASK);
+    SyncModifierKey(SDL_SCANCODE_RCTRL, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERALTKEYMASK,
+                                   NX_DEVICELALTKEYMASK, NX_ALTERNATEMASK);
+    SyncModifierKey(SDL_SCANCODE_RALT, keys, pressed);
+
+    pressed = IsModifierKeyPressed(modifierFlags, NX_DEVICERCMDKEYMASK,
+                                   NX_DEVICELCMDKEYMASK, NX_COMMANDMASK);
+    SyncModifierKey(SDL_SCANCODE_RGUI, keys, pressed);
+}
+
+void Cocoa_SyncModifierKeysWithSystem(void)
+{
+    // CGEventSourceFlagsState() provides the correct left/right modifier state
+    unsigned int modifierFlags = (unsigned int)CGEventSourceFlagsState(kCGEventSourceStateCombinedSessionState);
+    SyncModifierKeys(modifierFlags);
 }
 
 static void UpdateKeymap(SDL_CocoaVideoData *data, bool send_event)
@@ -577,19 +590,10 @@ void Cocoa_HandleKeyEvent(SDL_VideoDevice *_this, NSEvent *event)
     case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(Cocoa_GetEventTimestamp([event timestamp]), SDL_DEFAULT_KEYBOARD_ID, scancode, code, false);
         break;
-    case NSEventTypeFlagsChanged: {
+    case NSEventTypeFlagsChanged:
         // see if the new modifierFlags mean any existing keys should be pressed/released...
-        const unsigned int modflags = (unsigned int)[event modifierFlags];
-        HandleModifiers(_this, SDL_SCANCODE_LSHIFT, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_LCTRL, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_LALT, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_LGUI, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_RSHIFT, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_RCTRL, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_RALT, modflags);
-        HandleModifiers(_this, SDL_SCANCODE_RGUI, modflags);
+        SyncModifierKeys((unsigned int)[event modifierFlags]);
         break;
-    }
     default: // just to avoid compiler warnings
         break;
     }
