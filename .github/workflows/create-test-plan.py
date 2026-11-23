@@ -134,12 +134,6 @@ class JobSpec:
     vita_gles: Optional[VitaGLES] = None
     more_hard_deps: bool = False
     dawn_webgpu: bool = False
-
-JOB_SPECS = {
-    "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
-    "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64,  dawn_webgpu=True,),
-    "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
-    "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
     allow_failure: bool = False
 
 
