@@ -1364,6 +1364,9 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
         SDL_ToggleModState(SDL_KMOD_CAPS, newflags ? true : false);
     }
 
+    // Pick up any modifiers that were pressed while we didn't have focus
+    Cocoa_SyncModifierKeysWithSystem();
+
     /* Restore fullscreen mode unless the window is deminiaturizing.
      * If it is, fullscreen will be restored when deminiaturization is complete.
      */
