@@ -414,6 +414,7 @@ static WGPUVertexFormat SDLToWebGPU_VertexFormat[] = {
     [SDL_GPU_VERTEXELEMENTFORMAT_USHORT4_NORM] = WGPUVertexFormat_Unorm16x4,
     [SDL_GPU_VERTEXELEMENTFORMAT_HALF2] = WGPUVertexFormat_Float16x2,
     [SDL_GPU_VERTEXELEMENTFORMAT_HALF4] = WGPUVertexFormat_Float16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_R10G10B10A2_UNORM] = WGPUVertexFormat_Unorm10_10_10_2,
 };
 SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_VertexFormat, SDL_arraysize(SDLToWebGPU_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -5883,12 +5884,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 {
     WebGPURenderer *renderer;
     SDL_GPUDevice *result;
-
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "NOTE: This backend is EXPERIMENTAL. \e[4mDon't be surprised if it breaks, be surprised if it doesn't.\e[0m");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "An Emscripten web demo is available at https://thestickmahn.gitlab.io/ihatenamingthings/");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Please report any issues to the Github repo.");
-    SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
 
     Sint64 bindGroupsExpireAfter = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS, DEFAULT_BINDGROUP_EXPIRY);
     Sint64 pseudoMapThreshold = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB, DEFAULT_PSEUDOMAP_SIZE_THRESHOLD);
