@@ -1,5 +1,7 @@
 #include "SDL_internal.h"
 
+// TODO: Does this even need to be a C++ file?
+
 #if defined(SDL_VIDEO_WEBGPU) && defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)
 
 #include "../SDL_sysvideo.h"
@@ -7,8 +9,7 @@
 
 #include "SDL_emscriptenwgpu.h"
 
-bool
-Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface)
+bool Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface)
 {
     if (!surface) {
         SDL_SetError("Surface pointer is NULL!");
@@ -30,7 +31,7 @@ Emscripten_WGPU_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, WGPUIn
     desc.nextInChain = &source.chain;
 
     *surface = wgpuInstanceCreateSurface(instance, &desc);
-    
+
     if (!surface) {
         SDL_SetError("Failed to create WebGPU surface!");
         return false;

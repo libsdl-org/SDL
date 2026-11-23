@@ -5655,7 +5655,7 @@ static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer)
 // -- UNIMPLEMENTED FUNCTIONS --
 static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window)
 {
-    SDL_assert_release(!"WEBGPU_WaitForSwapchain is unimplemented! Reason: WebGPU abstracts away the swapchain from the user.");
+    // WEBGPU_WaitForSwapchain is unimplemented since WebGPU abstracts away the swapchain from the user.
     return true;
 }
 
