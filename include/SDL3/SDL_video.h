@@ -3414,8 +3414,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
  * SDL_GLContext is opaque to the application.
  *
  * Generally it _should_ be safe to create a context from a background thread,
- * to be used on that thread, but in case there are platforms that have trouble
- * with that, the absolute best practice would be:
+ * to be used on that thread, but in case there are platforms that have
+ * trouble with that, the absolute best practice would be:
  *
  * - Create the context on the main thread.
  * - Make the current context NULL on the main thread (or set it back to a
