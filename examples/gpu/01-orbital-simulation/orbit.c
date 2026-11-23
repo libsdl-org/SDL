@@ -1,57 +1,13 @@
+// TODO: More documentation here!
+// I got lazy and didn't bother finishing it
+
 #include <SDL3/SDL.h>
-#include <SDL3/SDL_gpu.h>
 
 #define SDL_MAIN_USE_CALLBACKS
 #include <SDL3/SDL_main.h>
 
 #include "math.h"
-
-const char *vtxShader = "\n\
-struct Asteroid {\n\
-  pos: vec3<f32>,\n\
-  vel: vec3<f32>,\n\
-};\n\
-@group(0u) @binding(0u) var<storage, read> posBuf: array<Asteroid>;\n\
-@group(1u) @binding(0u) var<uniform> camMatrix: mat4x4<f32>;\n\
-\n\
-@vertex\n\
-fn main(@location(0u) pos: vec3<f32>, @builtin(instance_index) index: u32) -> @builtin(position) vec4<f32> {\n\
-  return vec4<f32>(pos + posBuf[index].pos, 1.0f) * camMatrix;\n\
-}";
-
-const char *frgShader = "\n\
-@fragment\n\
-fn main() -> @location(0) vec4<f32> {\n\
-  return vec4<f32>(0.9f, 0.9f, 0.9f, 1.0f);\n\
-}";
-
-const char *cmpShader = "\n\
-struct Asteroid {\n\
-  pos: vec3<f32>,\n\
-  vel: vec3<f32>,\n\
-};\n\
-struct UniformData {\n\
-  timescale: f32,\n\
-  numAsteroids: f32,\n\
-  deltaTime: f32,\n\
-};\n\
-const GM = 3.98589196e+14;\n\
-\n\
-@group(1u) @binding(0u) var<storage, read_write> buf: array<Asteroid>;\n\
-@group(2u) @binding(0u) var<uniform> uniformData: UniformData;\n\
-\n\
-fn accel(pos: vec3<f32>) -> vec3<f32>{\n\
-  let r2 = dot(pos, pos);\n\
-  let r = sqrt(r2);\n\
-  return pos * (-GM / (r2 * r));\n\
-}\n\
-@compute @workgroup_size(64, 1, 1)\n\
-fn main(@builtin(global_invocation_id) id: vec3<u32>){\n\
-  var ast: Asteroid = buf[id.x];\n\
-  ast.vel += (accel(ast.pos) * (uniformData.deltaTime)) * uniformData.timescale;\n\
-  ast.pos += (ast.vel * uniformData.deltaTime) * uniformData.timescale;\n\
-  buf[id.x] = ast;\n\
-}";
+#include "shaders.h"
 
 typedef struct Asteroid
 {
@@ -105,6 +61,8 @@ static AppState app = { 0 };
 #define ASTEROID_SIZE 15000.0f
 #define MAX_ASTEROIDS 4000000.0f
 #define EARTH_RADIUS  6371000.0f
+#define RESOLUTION_X  800.0f
+#define RESOLUTION_Y  600.0f
 
 const float timescales[6] = { 1.0f, 10.0f, 100.0f, 1000.0f, 2500.0f, 5000.0f };
 
@@ -139,29 +97,44 @@ void InitPipelines(void)
     app.graphicsPipeline = SDL_CreateGPUGraphicsPipeline(
         app.device,
         &(SDL_GPUGraphicsPipelineCreateInfo){
-            .target_info = { .num_color_targets = 1,
-                             .color_target_descriptions =
-                                 (SDL_GPUColorTargetDescription[]){ {
-                                     .format = SDL_GetGPUSwapchainTextureFormat(
-                                         app.device, app.window),
-                                 } } },
-            .vertex_input_state =
-                (SDL_GPUVertexInputState){
-                    .num_vertex_buffers = 1,
-                    .vertex_buffer_descriptions =
-                        (SDL_GPUVertexBufferDescription[]){ {
-                            .slot = 0,
-                            .input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
-                            .instance_step_rate = 0,
-                            .pitch = sizeof(Vertex),
-                        } },
-                    .num_vertex_attributes = 1,
-                    .vertex_attributes = (SDL_GPUVertexAttribute[]){ {
+            .target_info = {
+                .num_color_targets = 1,
+                .color_target_descriptions =
+                    (SDL_GPUColorTargetDescription[]){
+                        {
+                            .format = SDL_GetGPUSwapchainTextureFormat(
+                                app.device, app.window),
+                        },
+                    },
+            },
+            .vertex_input_state = (SDL_GPUVertexInputState){
+                .num_vertex_buffers = 1,
+                .vertex_buffer_descriptions = (SDL_GPUVertexBufferDescription[]){
+                    {
+                        .slot = 0,
+                        .input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+                        .instance_step_rate = 0,
+                        .pitch = sizeof(Vertex),
+                    },
+                },
+                .num_vertex_attributes = 1,
+                .vertex_attributes = (SDL_GPUVertexAttribute[]){
+                    {
                         .buffer_slot = 0,
                         .format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3,
                         .location = 0,
                         .offset = 0,
-                    } } },
+                    },
+                },
+            },
+            .rasterizer_state = {
+                // We'll enable backface culling here.
+                // I'm not nearly good enough of a graphics programmer
+                // to explain what backface culling in a simple manner,
+                // but TLDR it's pretty much a free performance boost.
+                .cull_mode = SDL_GPU_CULLMODE_BACK,
+                .front_face = SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE,
+            },
             .primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
             .vertex_shader = app.vs,
             .fragment_shader = app.fs,
@@ -187,9 +160,13 @@ void InitPipelines(void)
 void CreateAsteroids(SDL_GPUCopyPass *copyPass)
 {
     if (app.asteroidBuf != NULL) {
+        // If we're recreating the asteroids, we'll have to release the previous asteroid buffer
+        // since otherwise we'd waste a TON of GPU memory and eventually crash.
         SDL_ReleaseGPUBuffer(app.device, app.asteroidBuf);
     }
 
+    // We'll create a storage buffer which'll store each asteroid's position and velocity.
+    // This will be written to in the compute shader, and then read from in the vertex shader.
     app.asteroidBuf = SDL_CreateGPUBuffer(app.device, &(SDL_GPUBufferCreateInfo){
                                                           .size = sizeof(Asteroid) * app.numAsteroids,
                                                           .usage = SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
@@ -204,6 +181,7 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
 
     Asteroid *asteroidData = SDL_MapGPUTransferBuffer(app.device, asteroidTransferBuffer, false);
 
+    // This loop will create all the asteroids and randomly spread them out in Earth's orbit.
     for (int i = 0; i < app.numAsteroids; i++) {
         Uint32 distance = SDL_max(SDL_rand(app.maxDistance), (Sint32)app.minDistance);
 
@@ -215,6 +193,7 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
 
         asteroidData[i].vel.x = (7700 * SDL_cosf(theta)) * (1 + SDL_randf() / 5);
         asteroidData[i].vel.z = (7700 * -SDL_sinf(theta)) * (1 + SDL_randf() / 5);
+        // We give some initial random velocity to the Y axis to spread the asteroids out a little.
         asteroidData[i].vel.y = 1500 * SDL_randf();
     }
 
@@ -236,6 +215,8 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
 
 void InitBuffers(void)
 {
+    // We'll create our vertex & index buffers here.
+    // Since we're using instancing, we only need one cube mesh for all asteroids.
     app.vtxBuffer =
         SDL_CreateGPUBuffer(app.device, &(SDL_GPUBufferCreateInfo){
                                             .size = sizeof(Vertex) * 24,
@@ -247,13 +228,18 @@ void InitBuffers(void)
                                             .usage = SDL_GPU_BUFFERUSAGE_INDEX,
                                         });
 
+    // We'll have to create a transfer buffer to upload our mesh data.
+    // We'll be smart here and use the same buffer for both uploads, so we'll make it large enough to fit both the vertex & index data.
     SDL_GPUTransferBuffer *meshTransferBuffer = SDL_CreateGPUTransferBuffer(app.device, &(SDL_GPUTransferBufferCreateInfo){
                                                                                             .size = (sizeof(Uint16) * 36) + (sizeof(Vertex) * 24),
                                                                                             .usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
                                                                                         });
-    Vertex *transferData =
-        SDL_MapGPUTransferBuffer(app.device, meshTransferBuffer, false);
 
+    // We'll map the transfer buffer so we can upload our cube mesh to the GPU.
+    Vertex *transferData = SDL_MapGPUTransferBuffer(app.device, meshTransferBuffer, false);
+    Uint16 *indexData = (Uint16 *)&transferData[24];
+
+    // This is just a cube's raw data.
     transferData[0] = (Vertex){ -ASTEROID_SIZE, -ASTEROID_SIZE, -ASTEROID_SIZE };
     transferData[1] = (Vertex){ ASTEROID_SIZE, -ASTEROID_SIZE, -ASTEROID_SIZE };
     transferData[2] = (Vertex){ ASTEROID_SIZE, ASTEROID_SIZE, -ASTEROID_SIZE };
@@ -278,34 +264,50 @@ void InitBuffers(void)
     transferData[21] = (Vertex){ -ASTEROID_SIZE, ASTEROID_SIZE, ASTEROID_SIZE };
     transferData[22] = (Vertex){ ASTEROID_SIZE, ASTEROID_SIZE, ASTEROID_SIZE };
     transferData[23] = (Vertex){ ASTEROID_SIZE, ASTEROID_SIZE, -ASTEROID_SIZE };
-
-    Uint16 *indexData = (Uint16 *)&transferData[24];
     Uint16 indices[] = { 0, 1, 2, 0, 2, 3, 6, 5, 4, 7, 6, 4,
                          8, 9, 10, 8, 10, 11, 14, 13, 12, 15, 14, 12,
                          16, 17, 18, 16, 18, 19, 22, 21, 20, 23, 22, 20 };
     SDL_memcpy(indexData, indices, sizeof(indices));
 
+    // Now that we're done copying the cube mesh data to the transfer buffer,
+    // we'll unmap the transfer buffer so we can upload to the vertex & index buffers from it.
     SDL_UnmapGPUTransferBuffer(app.device, meshTransferBuffer);
 
+    // We'll acquire a command buffer and begin a copy pass.
+    // In order to upload anything to the GPU in SDLGPU, you must first begin a "copy pass".
+    // Within this copy pass, you can... copy data. Once you're finished with the copy pass,
+    // you call SDL_EndGPUCopyPass and then continue on with whatever else you need to do.
     SDL_GPUCommandBuffer *cmdBuf = SDL_AcquireGPUCommandBuffer(app.device);
     SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(cmdBuf);
 
+    // While we're here, we'll also upload our initial asteroid data.
     CreateAsteroids(copyPass);
 
     SDL_UploadToGPUBuffer(copyPass,
                           &(SDL_GPUTransferBufferLocation){
-                              .transfer_buffer = meshTransferBuffer, .offset = 0 },
-                          &(SDL_GPUBufferRegion){ .buffer = app.vtxBuffer,
-                                                  .offset = 0,
-                                                  .size = sizeof(Vertex) * 24 },
+                              .transfer_buffer = meshTransferBuffer,
+                              .offset = 0,
+                          },
+                          &(SDL_GPUBufferRegion){
+                              .buffer = app.vtxBuffer,
+                              .offset = 0,
+                              .size = sizeof(Vertex) * 24,
+                          },
                           false);
 
     SDL_UploadToGPUBuffer(
         copyPass,
-        &(SDL_GPUTransferBufferLocation){ .transfer_buffer = meshTransferBuffer,
-                                          .offset = sizeof(Vertex) * 24 },
+        &(SDL_GPUTransferBufferLocation){
+            .transfer_buffer = meshTransferBuffer,
+            // Remember that we're using the same transfer buffer here,
+            // so we'll add the vertex data size to the offset.
+            .offset = sizeof(Vertex) * 24,
+        },
         &(SDL_GPUBufferRegion){
-            .buffer = app.idxBuffer, .offset = 0, .size = sizeof(Uint16) * 36 },
+            .buffer = app.idxBuffer,
+            .offset = 0,
+            .size = sizeof(Uint16) * 36,
+        },
         false);
 
     SDL_EndGPUCopyPass(copyPass);
@@ -314,12 +316,23 @@ void InitBuffers(void)
     SDL_ReleaseGPUTransferBuffer(app.device, meshTransferBuffer);
 }
 
+// We're using the SDL callbacks here, since they generally play nicer with Emscripten.
+// You can also run a traditional main loop if you want to, but you'll have to do a bit of screwing around to get it working with Emscripten.
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
     SDL_Init(SDL_INIT_VIDEO);
 
     app.window =
-        SDL_CreateWindow("Orbit Simulation", 800, 600, 0);
+        SDL_CreateWindow("Orbit Simulation", RESOLUTION_X, RESOLUTION_Y, 0);
+
+    // We'll create the SDL_GPUDevice here. This device will be used to interface with the GPU.
+    // This function takes in three arguments: The shader format(s) you support, whether or not debug mode is enabled, and additional properties.
+    //
+    // The shader format(s) argument allows you to say "Hey, I can give shaders in these formats!".
+    // This lets you support Vulkan, DX12, Metal, and WebGPU while still using the same SDLGPU code.
+    //
+    // However, in this example we are only supporting WGSL, which is WebGPU's shading language.
+    // (Quite frankly, I just didn't wanna rewrite the shader code in HLSL.)
     app.device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_WGSL, true, NULL);
 
     app.numAsteroids = 100000;
@@ -329,29 +342,43 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     app.timescale = timescales[3];
     app.timescaleIndex = 3;
 
+    // In order to render an image to the SDL window with SDLGPU, you must call SDL_ClaimWindowForGPUDevice.
+    // This creates the "swapchain", allowing you to later call SDL_(WaitAnd)AcquireGPUSwapchainTexture.
     SDL_ClaimWindowForGPUDevice(app.device, app.window);
 
     InitPipelines();
     InitBuffers();
+
+    // We have to set this here, since this is part of the delta time calculations and dividing by 0 is not good.
     app.timeLastIter = SDL_GetTicksNS();
 
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Press left or right to change timescale.");
     SDL_LogInfo(SDL_LOG_CATEGORY_APPLICATION, "Press up or down to increase/decrease asteroid count.");
 
+    // We'll return SDL_APP_CONTINUE, which tells SDL that the app initialization succeeded, and that the app should continue running.
     return SDL_APP_CONTINUE;
 }
 
+// This function runs once per frame, and therefore we'll put our GPU rendering code here.
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     Uint64 timeLastIter = app.timeLastIter;
+
     app.timeLastIter = SDL_GetTicksNS();
     app.deltaTime = (app.timeLastIter - timeLastIter) / (float)1e9;
 
+    // This code changes the camera rotation by cameraRotationVelocity. It then also divides the velocity by 1.15f to apply some drag.
     app.cameraRotation += app.cameraRotationVelocity;
     app.cameraRotationVelocity /= 1.15f;
 
+    // We'll acquire a command buffer here.
+    // In order to run anything on the GPU, you must first acquire a GPU command buffer.
+    // After you've acquired the buffer, you proceed to fill it with GPU commands. (e.g: draw this, upload that, clear this, etc...)
+    // Once you've filled the command buffer with all your GPU commands, you "submit" it.
+    // This sends the commands to the GPU where they'll be run.
     SDL_GPUCommandBuffer *cmdBuf = SDL_AcquireGPUCommandBuffer(app.device);
 
+    // If the asteroid count's changed we'll have to upload the new asteroids.
     if (app.shouldRecreateAsteroids) {
         SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(cmdBuf);
 
@@ -361,8 +388,17 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         app.shouldRecreateAsteroids = false;
     }
 
-    SDL_GPUComputePass *computePass = SDL_BeginGPUComputePass(cmdBuf, NULL,
-                                                              0, &(SDL_GPUStorageBufferReadWriteBinding){ .buffer = app.asteroidBuf, .cycle = false }, 1);
+    // This code starts a "compute pass". A compute pass is a pass in which you execute compute shaders.
+    // This is unlike a copy pass, which copies data, and a render pass, which renders triangles.
+    //
+    // A compute shader is a special kind of shader which allows you to run non-graphics related code on a GPU.
+    // This example makes use of compute shaders to simulate each asteroid's orbit direcly on the GPU, without any input from the CPU.
+    // This not only simplifies the code, but this also runs much better than if we were to run the simulation on the CPU.
+    // Using this compute shader, I can simulate 4 million asteroids in less than a millisecond on my 6700XT, without ever uploading any data from the CPU.
+    //
+    // (Note that we're binding the asteroid buffer here, since SDLGPU requires R/W compute storage buffers to be bound in SDL_BeginGPUComputePass.)
+    SDL_GPUComputePass *computePass = SDL_BeginGPUComputePass(cmdBuf, NULL, 0, &(SDL_GPUStorageBufferReadWriteBinding){ .buffer = app.asteroidBuf, .cycle = false }, 1);
+
     SDL_BindGPUComputePipeline(computePass, app.computePipeline);
     SDL_PushGPUComputeUniformData(cmdBuf, 0, &(UniformDataCompute){
                                                  .deltaTime = app.deltaTime,
@@ -375,12 +411,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     SDL_EndGPUComputePass(computePass);
 
     SDL_GPUTexture *swapchainTexture = NULL;
-    SDL_WaitAndAcquireGPUSwapchainTexture(cmdBuf, app.window, &swapchainTexture,
-                                          NULL, NULL);
+    SDL_WaitAndAcquireGPUSwapchainTexture(cmdBuf, app.window, &swapchainTexture, NULL, NULL);
 
-    Matrix4x4 proj = Matrix4x4_CreatePerspectiveFieldOfView(
-        75.0f * SDL_PI_F / 180.0f,
-        800.0f / 600.0f, 0.001f, 200.0f);
+    Matrix4x4 proj = Matrix4x4_CreatePerspectiveFieldOfView(75.0f * SDL_PI_F / 180.0f, RESOLUTION_X / RESOLUTION_Y, 0.001f, 200.0f);
     Matrix4x4 view = Matrix4x4_CreateLookAt(
         (Vector3){
             ((float)app.cameraDistance * 1000) * SDL_sinf(app.cameraRotation),
@@ -402,13 +435,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
             SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, NULL);
 
         SDL_BindGPUGraphicsPipeline(renderPass, app.graphicsPipeline);
-        SDL_BindGPUVertexBuffers(
-            renderPass, 0,
-            &(SDL_GPUBufferBinding){ .buffer = app.vtxBuffer, .offset = 0 }, 1);
-        SDL_BindGPUIndexBuffer(
-            renderPass,
-            &(SDL_GPUBufferBinding){ .buffer = app.idxBuffer, .offset = 0 },
-            SDL_GPU_INDEXELEMENTSIZE_16BIT);
+        SDL_BindGPUVertexBuffers(renderPass, 0, &(SDL_GPUBufferBinding){ .buffer = app.vtxBuffer, .offset = 0 }, 1);
+        SDL_BindGPUIndexBuffer(renderPass, &(SDL_GPUBufferBinding){ .buffer = app.idxBuffer, .offset = 0 }, SDL_GPU_INDEXELEMENTSIZE_16BIT);
+
         SDL_BindGPUVertexStorageBuffers(renderPass, 0, &app.asteroidBuf, 1);
         SDL_PushGPUVertexUniformData(cmdBuf, 0, &viewproj, sizeof(Matrix4x4));
         SDL_DrawGPUIndexedPrimitives(renderPass, 36, app.numAsteroids, 0, 0, 0);
@@ -458,6 +487,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         app.cameraDistance -= event->wheel.integer_y * 500;
     }
 
+    // If left click is pressed down on the mouse, we'll hide it and allow the user to rotate the camera view.
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP) {
         if (event->button.button == 1) {
             app.leftClickDown = event->button.down;
