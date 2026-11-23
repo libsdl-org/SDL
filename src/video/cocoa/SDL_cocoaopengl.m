@@ -386,10 +386,12 @@ SDL_GLContext Cocoa_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         opaque = (window->flags & SDL_WINDOW_TRANSPARENT) ? 0 : 1;
         [context setValues:&opaque forParameter:NSOpenGLCPSurfaceOpacity];
 
-        if (!Cocoa_GL_MakeCurrent(_this, window, sdlcontext)) {
-            SDL_GL_DestroyContext(sdlcontext);
-            SDL_SetError("Failed making OpenGL context current");
-            return NULL;
+        if (_this->gl_config.make_context_current_on_creation) {
+            if (!Cocoa_GL_MakeCurrent(_this, window, sdlcontext)) {
+                SDL_GL_DestroyContext(sdlcontext);
+                SDL_SetError("Failed making OpenGL context current");
+                return NULL;
+            }
         }
 
         if (_this->gl_config.major_version < 3 &&

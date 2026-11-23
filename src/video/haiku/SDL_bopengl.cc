@@ -143,7 +143,11 @@ SDL_GLContext HAIKU_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window * window
     }
 #endif
     bwin->CreateGLView(gl_flags);
-    _GetBeLooper()->SetCurrentContext(bwin->GetGLView());
+
+    if (_this->gl_config.make_context_current_on_creation) {
+        _GetBeLooper()->SetCurrentContext(bwin->GetGLView());
+    }
+
     return (SDL_GLContext)(bwin->GetGLView());
 }
 

@@ -660,7 +660,7 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, SDL_InitFlags flags)
     state->window_w = DEFAULT_WINDOW_WIDTH;
     state->window_h = DEFAULT_WINDOW_HEIGHT;
     state->logical_presentation = SDL_LOGICAL_PRESENTATION_DISABLED;
-    state->num_windows = 1;
+    state->num_windows = 3;
     state->audio_freq = 22050;
     state->audio_format = SDL_AUDIO_S16;
     state->audio_channels = 2;

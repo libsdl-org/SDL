@@ -531,7 +531,8 @@ typedef enum SDL_GLAttr
     SDL_GL_CONTEXT_RESET_NOTIFICATION,  /**< set context reset notification. See SDL_GLContextResetNotification; defaults to NO_NOTIFICATION. */
     SDL_GL_CONTEXT_NO_ERROR,
     SDL_GL_FLOATBUFFERS,
-    SDL_GL_EGL_PLATFORM
+    SDL_GL_EGL_PLATFORM,
+    SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION /* ignored when using SDL_Renderer. defaults to 1. */
 } SDL_GLAttr;
 
 /**

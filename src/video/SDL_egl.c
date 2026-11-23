@@ -1150,10 +1150,12 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
     // The default swap interval is 1, according to the spec, but SDL3's policy is to default vsync to off by default.
     _this->egl_data->egl_swapinterval = 0;
 
-    if (!SDL_EGL_MakeCurrent(_this, egl_surface, (SDL_GLContext)egl_context)) {
-        // Delete the context
-        SDL_EGL_DestroyContext(_this, (SDL_GLContext)egl_context);
-        return NULL;
+    if (_this->gl_config.make_context_current_on_creation) {
+        if (!SDL_EGL_MakeCurrent(_this, egl_surface, (SDL_GLContext)egl_context)) {
+            // Delete the context
+            SDL_EGL_DestroyContext(_this, (SDL_GLContext)egl_context);
+            return NULL;
+        }
     }
 
     /* Check whether making contexts current without a surface is supported.

@@ -756,10 +756,32 @@ int main(int argc, char *argv[])
 
     /* Create OpenGL ES contexts */
     for (i = 0; i < state->num_windows; i++) {
+        bool should_be_current;
+
+        if (i % 2 == 0) {
+            SDL_GL_SetAttribute(SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION, 1);
+            should_be_current = true;
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION, 0);
+            should_be_current = false;
+        }
+
         context[i] = SDL_GL_CreateContext(state->windows[i]);
         if (!context[i]) {
-            SDL_Log("SDL_GL_CreateContext(): %s", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext(): %s", SDL_GetError());
             quit(2);
+        }
+
+        if (SDL_GL_GetCurrentContext() != context[i]) {
+            if (should_be_current) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext() did not make a context current when it should have: %s", SDL_GetError());
+                quit(2);
+            }
+        } else /* SDL_GL_GetCurrentContext() == context[i] */ {
+            if (!should_be_current) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext() made a context current when it shouldn't have: %s", SDL_GetError());
+                quit(2);
+            }
         }
     }
 

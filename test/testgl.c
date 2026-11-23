@@ -29,7 +29,7 @@ typedef struct GL_Context
 #define SHADED_CUBE
 
 static SDLTest_CommonState *state;
-static SDL_GLContext context;
+static SDL_GLContext *context;
 static GL_Context ctx;
 static bool suspend_when_occluded;
 
@@ -61,10 +61,18 @@ static bool LoadContext(GL_Context *data)
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void quit(int rc)
 {
+    int i;
+
     if (context) {
-        /* SDL_GL_MakeCurrent(0, NULL); */ /* doesn't do anything */
-        SDL_GL_DestroyContext(context);
+        for (i = 0; i < state->num_windows; i++) {
+            if (context[i]) {
+                SDL_GL_DestroyContext(context[i]);
+            }
+        }
+
+        SDL_free(context);
     }
+
     SDLTest_CommonQuit(state);
     /* Let 'main()' return normally */
     if (rc != 0) {
@@ -279,11 +287,41 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
-    /* Create OpenGL context */
-    context = SDL_GL_CreateContext(state->windows[0]);
+    context = (SDL_GLContext *)SDL_calloc(state->num_windows, sizeof(*context));
     if (!context) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext(): %s", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!");
         quit(2);
+    }
+
+    /* Create OpenGL contexts */
+    for (i = 0; i < state->num_windows; i++) {
+        bool should_be_current;
+
+        if (i % 2 == 0) {
+            SDL_GL_SetAttribute(SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION, 1);
+            should_be_current = true;
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION, 0);
+            should_be_current = false;
+        }
+
+        context[i] = SDL_GL_CreateContext(state->windows[i]);
+        if (!context[i]) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext(): %s", SDL_GetError());
+            quit(2);
+        }
+
+        if (SDL_GL_GetCurrentContext() != context[i]) {
+            if (should_be_current) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext() did not make a context current when it should have: %s", SDL_GetError());
+                quit(2);
+            }
+        } else /* SDL_GL_GetCurrentContext() == context[i] */ {
+            if (!should_be_current) {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext() made a context current when it shouldn't have: %s", SDL_GetError());
+                quit(2);
+            }
+        }
     }
 
     /* Important: call this *after* creating the context */
@@ -408,7 +446,7 @@ int main(int argc, char *argv[])
                 continue;
             }
             ++active_windows;
-            SDL_GL_MakeCurrent(state->windows[i], context);
+            SDL_GL_MakeCurrent(state->windows[i], context[i]);
             if (update_swap_interval) {
                 SDL_GL_SetSwapInterval(swap_interval);
                 LogSwapInterval();

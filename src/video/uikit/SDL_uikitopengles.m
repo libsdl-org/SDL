@@ -186,9 +186,11 @@ SDL_GLContext UIKit_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         // The context owns the view / drawable.
         context.sdlView = view;
 
-        if (!UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context)) {
-            UIKit_GL_DestroyContext(_this, (SDL_GLContext)CFBridgingRetain(context));
-            return NULL;
+        if (_this->gl_config.make_context_current_on_creation) {
+            if (!UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext)context)) {
+                UIKit_GL_DestroyContext(_this, (SDL_GLContext)CFBridgingRetain(context));
+                return NULL;
+            }
         }
 
         /* We return a +1'd context. The window's internal owns the view (via

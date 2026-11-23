@@ -475,6 +475,7 @@ struct SDL_VideoDevice
         int no_error;
         int retained_backing;
         int egl_platform;
+        int make_context_current_on_creation;
         int driver_loaded;
         int HAS_GL_ARB_color_buffer_float;
         char driver_path[256];

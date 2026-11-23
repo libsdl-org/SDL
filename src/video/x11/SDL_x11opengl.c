@@ -923,9 +923,11 @@ SDL_GLContext X11_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
         return NULL;
     }
 
-    if (!X11_GL_MakeCurrent(_this, window, context)) {
-        X11_GL_DestroyContext(_this, context);
-        return NULL;
+    if (_this->gl_config.make_context_current_on_creation) {
+        if (!X11_GL_MakeCurrent(_this, window, context)) {
+            X11_GL_DestroyContext(_this, context);
+            return NULL;
+        }
     }
 
     return context;

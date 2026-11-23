@@ -120,7 +120,9 @@ SDL_GLContext PSP_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
 
     EGLCHK(context = eglCreateContext(display, config, NULL, NULL));
     EGLCHK(surface = eglCreateWindowSurface(display, config, 0, NULL));
-    EGLCHK(eglMakeCurrent(display, surface, surface, context));
+    if (make_context_current_on_creation) {
+        EGLCHK(eglMakeCurrent(display, surface, surface, context));
+    }
 
     _this->gl_data->display = display;
     _this->gl_data->context = context;

@@ -5109,6 +5109,7 @@ void SDL_GL_ResetAttributes(void)
     _this->gl_config.share_with_current_context = 0;
 
     _this->gl_config.egl_platform = 0;
+    _this->gl_config.make_context_current_on_creation = 1;
 
     if (_this->GL_SetDefaultProfileConfig) {
         _this->GL_SetDefaultProfileConfig(_this);
@@ -5222,6 +5223,9 @@ bool SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
         break;
     case SDL_GL_EGL_PLATFORM:
         _this->gl_config.egl_platform = value;
+        break;
+    case SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION:
+        _this->gl_config.make_context_current_on_creation = value;
         break;
     default:
         result = SDL_SetError("Unknown OpenGL attribute");
@@ -5430,6 +5434,11 @@ bool SDL_GL_GetAttribute(SDL_GLAttr attr, int *value)
             return 0;
         }
     }
+    case SDL_GL_MAKE_CONTEXT_CURRENT_ON_CREATION:
+    {
+        *value = _this->gl_config.make_context_current_on_creation;
+        return true;
+    }
     default:
         return SDL_SetError("Unknown OpenGL attribute");
     }
@@ -5535,8 +5544,9 @@ SDL_GLContext SDL_GL_CreateContext(SDL_Window *window)
 
     ctx = _this->GL_CreateContext(_this, window);
 
-    // Creating a context is assumed to make it current in the SDL driver.
-    if (ctx) {
+    // Creating a context is assumed to make it current in the SDL driver,
+    // unless told not to otherwise.
+    if (_this->gl_config.make_context_current_on_creation && ctx) {
         _this->current_glwin = window;
         _this->current_glctx = ctx;
         SDL_SetTLS(&_this->current_glwin_tls, window, NULL);
