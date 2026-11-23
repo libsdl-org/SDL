@@ -1290,7 +1290,6 @@ _SDL_LoadJPG
 _SDL_HasSVE2
 _SDL_GamepadHasCapSense
 _SDL_GetGamepadCapSense
-_SDL_WGPU_CreateSurface
 _SDL_aligned_alloc_zero
 _SDL_wcstoul
 _SDL_wcstoll
@@ -1303,4 +1302,5 @@ _SDL_GetDeviceFormFactor
 _SDL_GetDeviceFormFactorName
 _SDL_IsUbuntuTouch
 _SDL_GetNumProperties
+_SDL_WGPU_CreateSurface
 _SDL_WGPU_DestroySurface

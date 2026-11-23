@@ -1317,7 +1317,6 @@
 #define SDL_HasSVE2 SDL_HasSVE2_REAL
 #define SDL_GamepadHasCapSense SDL_GamepadHasCapSense_REAL
 #define SDL_GetGamepadCapSense SDL_GetGamepadCapSense_REAL
-#define SDL_WGPU_CreateSurface SDL_WGPU_CreateSurface_REAL
 #define SDL_aligned_alloc_zero SDL_aligned_alloc_zero_REAL
 #define SDL_wcstoul SDL_wcstoul_REAL
 #define SDL_wcstoll SDL_wcstoll_REAL
@@ -1330,4 +1329,5 @@
 #define SDL_GetDeviceFormFactorName SDL_GetDeviceFormFactorName_REAL
 #define SDL_IsUbuntuTouch SDL_IsUbuntuTouch_REAL
 #define SDL_GetNumProperties SDL_GetNumProperties_REAL
+#define SDL_WGPU_CreateSurface SDL_WGPU_CreateSurface_REAL
 #define SDL_WGPU_DestroySurface SDL_WGPU_DestroySurface_REAL
