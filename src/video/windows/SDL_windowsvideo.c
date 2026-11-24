@@ -352,6 +352,7 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->GetWindowBordersSize = WIN_GetWindowBordersSize;
     device->GetWindowSizeInPixels = WIN_GetWindowSizeInPixels;
     device->SetWindowOpacity = WIN_SetWindowOpacity;
+    device->SetWindowMousePassthrough = WIN_SetWindowMousePassthrough;
     device->ShowWindow = WIN_ShowWindow;
     device->HideWindow = WIN_HideWindow;
     device->RaiseWindow = WIN_RaiseWindow;
