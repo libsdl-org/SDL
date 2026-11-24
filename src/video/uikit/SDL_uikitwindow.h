@@ -35,6 +35,7 @@ extern void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
+extern void UIKit_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);
 extern SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen);
 extern void UIKit_UpdatePointerLock(SDL_VideoDevice *_this, SDL_Window *window);
 extern void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window);
@@ -59,6 +60,12 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @property(nonatomic, strong) id curvedContentHosting;
 @property(nonatomic, strong) NSString *settings;
 #endif
+
+// Scene's original size restrictions for resizing
+@property(nonatomic, strong) UISceneSizeRestrictions *savedSizeRestrictions
+    API_AVAILABLE(ios(13.0));
+@property(nonatomic) CGSize savedMinimumSize;
+@property(nonatomic) CGSize savedMaximumSize;
 
 @end
 
