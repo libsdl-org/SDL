@@ -1343,7 +1343,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   its parent
  * - `SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN`: true if the window starts
  *   with grabbed mouse focus
- * - `SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN`: true if the window should be transparent to mouse input
+ * - `SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN`: true if the window
+ *   should be transparent to mouse input
  * - `SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`: true if the window will be used
  *   with OpenGL rendering
  * - `SDL_PROP_WINDOW_CREATE_PARENT_POINTER`: an SDL_Window that will be the
@@ -2850,7 +2851,9 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  *
  * This will add or remove the window's `SDL_WINDOW_MOUSE_PASSTHROUGH` flag.
  *
- * When enabled, the window will lose mouse focus and will not get any further mouse events (except button up events for buttons held down at the time) and clicks in the window will go through and hit windows behind it.
+ * When enabled, the window will lose mouse focus and will not get any further
+ * mouse events (except button up events for buttons held down at the time)
+ * and clicks in the window will go through and hit windows behind it.
  *
  * \param window the window to set mouse passthrough for.
  * \param passthrough true to make the window transparent to mouse input,
