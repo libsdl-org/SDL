@@ -19,7 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI
 
@@ -28,6 +27,7 @@
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 #include "SDL_hidapi_rumble.h"
+#include "SDL_hidapi_xbox360.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
@@ -483,34 +483,3 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 = {
 #endif // SDL_JOYSTICK_HIDAPI_XBOX360
 
 #endif // SDL_JOYSTICK_HIDAPI
-
-SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
-    switch (subtype) {
-    case SDL_XINPUT_SUBTYPE_GAMEPAD:
-    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
-        return SDL_JOYSTICK_TYPE_GAMEPAD;
-    case SDL_XINPUT_SUBTYPE_WHEEL:
-        return SDL_JOYSTICK_TYPE_WHEEL;
-    case SDL_XINPUT_SUBTYPE_ARCADE_STICK:
-        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
-    case SDL_XINPUT_SUBTYPE_FLIGHT_STICK:
-        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-    case SDL_XINPUT_SUBTYPE_DANCE_PAD:
-        return SDL_JOYSTICK_TYPE_DANCE_PAD;
-    case SDL_XINPUT_SUBTYPE_GUITAR:
-    case SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE:
-    case SDL_XINPUT_SUBTYPE_GUITAR_BASS:
-    case SDL_XINPUT_SUBTYPE_PRO_GUITAR:
-        return SDL_JOYSTICK_TYPE_GUITAR;
-    case SDL_XINPUT_SUBTYPE_DRUMS:
-        return SDL_JOYSTICK_TYPE_DRUM_KIT;
-    case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
-        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
-    case SDL_XINPUT_SUBTYPE_PRO_KEYS:
-        return SDL_JOYSTICK_TYPE_GAMEPAD;
-    case SDL_XINPUT_SUBTYPE_TURNTABLE:
-        return SDL_JOYSTICK_TYPE_GAMEPAD;
-    default:
-        return SDL_JOYSTICK_TYPE_UNKNOWN;
-    }
-}

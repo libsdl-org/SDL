@@ -33,7 +33,6 @@
 #include "../sensor/SDL_sensor_c.h"
 #include "../hidapi/SDL_hidapi_c.h"
 #include "hidapi/SDL_hidapijoystick_c.h"
-#include "hidapi/SDL_hidapi_xbox360.h"
 
 // This is included in only one place because it has a large static list of controllers
 #include "controller_type.h"
@@ -4515,6 +4514,37 @@ static bool SDL_IsJoystickGuitar(Uint16 vendor_id, Uint16 product_id)
 static bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
 {
     return SDL_VIDPIDInList(vendor_id, product_id, &drum_devices);
+}
+
+SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
+    switch (subtype) {
+    case SDL_XINPUT_SUBTYPE_GAMEPAD:
+    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_WHEEL:
+        return SDL_JOYSTICK_TYPE_WHEEL;
+    case SDL_XINPUT_SUBTYPE_ARCADE_STICK:
+        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
+    case SDL_XINPUT_SUBTYPE_FLIGHT_STICK:
+        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    case SDL_XINPUT_SUBTYPE_DANCE_PAD:
+        return SDL_JOYSTICK_TYPE_DANCE_PAD;
+    case SDL_XINPUT_SUBTYPE_GUITAR:
+    case SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE:
+    case SDL_XINPUT_SUBTYPE_GUITAR_BASS:
+    case SDL_XINPUT_SUBTYPE_PRO_GUITAR:
+        return SDL_JOYSTICK_TYPE_GUITAR;
+    case SDL_XINPUT_SUBTYPE_DRUMS:
+        return SDL_JOYSTICK_TYPE_DRUM_KIT;
+    case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
+        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
+    case SDL_XINPUT_SUBTYPE_PRO_KEYS:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_TURNTABLE:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    default:
+        return SDL_JOYSTICK_TYPE_UNKNOWN;
+    }
 }
 
 static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
