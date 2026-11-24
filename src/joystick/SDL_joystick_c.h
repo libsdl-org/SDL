@@ -354,7 +354,7 @@ typedef enum
 } SDL_XInputSubType;
 
 // Function to return the joystick type for an XInput device based on its subtype
-extern SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype);
+extern SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype);
 
 extern void SDL_LoadVIDPIDList(SDL_vidpid_list *list);
 extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list);
