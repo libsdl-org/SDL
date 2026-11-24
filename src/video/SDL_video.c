@@ -6573,12 +6573,20 @@ void *SDL_Metal_GetLayer(SDL_MetalView view)
 
 bool SDL_WGPU_CreateSurface(SDL_Window *window, WGPUInstance instance, WGPUSurface *surface)
 {
-    return _this->WGPU_CreateSurface(_this, window, instance, surface);
+    if (_this && _this->WGPU_CreateSurface) {
+        return _this->WGPU_CreateSurface(_this, window, instance, surface);
+    } else {
+        return SDL_SetError("WebGPU is not supported.");
+    }
 }
 
 void SDL_WGPU_DestroySurface(WGPUSurface surface)
 {
-    return _this->WGPU_DestroySurface(surface);
+    if (_this && _this->WGPU_DestroySurface) {
+        _this->WGPU_DestroySurface(surface);
+    } else {
+        SDL_SetError("WebGPU is not supported.");
+    }
 }
 
 #if defined(SDL_VIDEO_DRIVER_X11) || defined(SDL_VIDEO_DRIVER_WAYLAND) || defined(SDL_VIDEO_DRIVER_EMSCRIPTEN)
