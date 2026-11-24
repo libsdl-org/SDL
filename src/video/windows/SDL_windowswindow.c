@@ -165,6 +165,47 @@ static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 }
 #endif
 
+static bool WIN_UpdateLayeredStyle(SDL_Window *window, float opacity)
+{
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    return SDL_Unsupported();
+#else
+    const SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
+    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool passthrough = ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) != 0);
+    const bool transparent = ((window->flags & SDL_WINDOW_TRANSPARENT) != 0);
+
+    // WS_EX_TRANSPARENT only passes clicks through to other windows on a layered window
+    const bool layered = (passthrough || transparent || opacity < 1.0f);
+
+    if (passthrough) {
+        style |= WS_EX_TRANSPARENT;
+    } else {
+        style &= ~WS_EX_TRANSPARENT;
+    }
+    if (layered) {
+        style |= WS_EX_LAYERED;
+    } else {
+        style &= ~WS_EX_LAYERED;
+    }
+
+    // SetWindowLong() returns the previous style, which can legitimately be 0
+    SetLastError(0);
+    if (SetWindowLong(hwnd, GWL_EXSTYLE, style) == 0 && GetLastError() != 0) {
+        return WIN_SetError("SetWindowLong()");
+    }
+
+    if (layered) {
+        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
+        if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
+            return WIN_SetError("SetLayeredWindowAttributes()");
+        }
+    }
+    return true;
+#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+}
+
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
@@ -779,6 +820,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             videodata->DwmEnableBlurBehindWindow(hwnd, &bb);
             DeleteObject(rgn);
         }
+
+        // Some drivers need a layered window for per-pixel alpha, e.g. NVIDIA with OpenGL/Vulkan layered on DXGI
+        WIN_UpdateLayeredStyle(window, window->internal->opacity);
     }
 
     HWND share_hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, NULL);
@@ -1682,46 +1726,6 @@ bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled)
     return true; // just succeed, the real work is done elsewhere.
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-
-static bool WIN_UpdateLayeredStyle(SDL_Window *window, float opacity)
-{
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return SDL_Unsupported();
-#else
-    const SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
-    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
-    const bool passthrough = ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) != 0);
-
-    // WS_EX_TRANSPARENT only passes clicks through to other windows on a layered window
-    const bool layered = (passthrough || opacity < 1.0f);
-
-    if (passthrough) {
-        style |= WS_EX_TRANSPARENT;
-    } else {
-        style &= ~WS_EX_TRANSPARENT;
-    }
-    if (layered) {
-        style |= WS_EX_LAYERED;
-    } else {
-        style &= ~WS_EX_LAYERED;
-    }
-
-    // SetWindowLong() returns the previous style, which can legitimately be 0
-    SetLastError(0);
-    if (SetWindowLong(hwnd, GWL_EXSTYLE, style) == 0 && GetLastError() != 0) {
-        return WIN_SetError("SetWindowLong()");
-    }
-
-    if (layered) {
-        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
-        if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
-            return WIN_SetError("SetLayeredWindowAttributes()");
-        }
-    }
-    return true;
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
-}
 
 bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
