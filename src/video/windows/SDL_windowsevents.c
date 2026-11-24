@@ -480,6 +480,7 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     KBDLLHOOKSTRUCT *hookData = (KBDLLHOOKSTRUCT *)lParam;
     SDL_VideoData *data = SDL_GetVideoDevice()->internal;
     SDL_Scancode scanCode;
+    int rawcode;
 
     if (nCode < 0 || nCode != HC_ACTION) {
         return CallNextHookEx(NULL, nCode, wParam, lParam);
@@ -524,13 +525,20 @@ WIN_KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
         return CallNextHookEx(NULL, nCode, wParam, lParam);
     }
 
+    // Add 0xE0 to the high byte for extended keys
+    if (hookData->flags & LLKHF_EXTENDED) {
+        rawcode = (hookData->scanCode | 0xE000);
+    } else {
+        rawcode = hookData->scanCode;
+    }
+
     if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
         if (!data->raw_keyboard_enabled) {
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, hookData->scanCode, scanCode, true);
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, rawcode, scanCode, true);
         }
     } else {
         if (!data->raw_keyboard_enabled) {
-            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, hookData->scanCode, scanCode, false);
+            SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, rawcode, scanCode, false);
         }
 
         /* If the key was down prior to our hook being installed, allow the
