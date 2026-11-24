@@ -74,6 +74,7 @@ struct SDL_WindowData
     unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
+    bool dnd_seq_active;
     bool flashing_window;
     Uint64 flash_cancel_time;
 #ifdef SDL_VIDEO_OPENGL_EGL

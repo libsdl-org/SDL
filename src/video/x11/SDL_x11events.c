@@ -1767,6 +1767,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             bool use_list = xevent->xclient.data.l[1] & 1;
             data->xdnd_source = xevent->xclient.data.l[0];
             xdnd_version = (xevent->xclient.data.l[1] >> 24);
+            data->dnd_seq_active = true;
 #ifdef DEBUG_XEVENTS
             SDL_Log("XID of source window : 0x%lx", data->xdnd_source);
             SDL_Log("Protocol version to use : %d", xdnd_version);
@@ -1788,7 +1789,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             SDL_Log("XID of source window : 0x%lx", xevent->xclient.data.l[0]);
 #endif
-            SDL_SendDropComplete(data->window);
+            // GNOME can send a spurious XdndLeave after XdndDrop when dragging from a Wayland to XWayland window.
+            if (data->dnd_seq_active) {
+                SDL_SendDropComplete(data->window);
+            }
+            data->dnd_seq_active = false;
         } else if (xevent->xclient.message_type == videodata->atoms.XdndPosition) {
 
 #ifdef DEBUG_XEVENTS
@@ -1827,6 +1832,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_XSendEvent(display, xevent->xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
             X11_XFlush(display);
         } else if (xevent->xclient.message_type == videodata->atoms.XdndDrop) {
+            data->dnd_seq_active = false;
             if (data->xdnd_req == None) {
                 // say again - not interested!
                 SDL_zero(m);
