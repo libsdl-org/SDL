@@ -820,7 +820,7 @@ static int process_testNonExistingExecutable(void *arg)
 
 static int process_testBatBadButVulnerability(void *arg)
 {
-#ifndef SDL_PLATFORM_WINDOWS
+#if !(defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN))
     SDLTest_AssertPass("The BatBadBut vulnerability only applied to Windows");
     return TEST_SKIPPED;
 #else
@@ -983,7 +983,7 @@ cleanup:
 
 static int process_testWindowsCmdline(void *arg)
 {
-#ifndef SDL_PLATFORM_WINDOWS
+#ifndef SDL_PROCESS_WINDOWS
     SDLTest_AssertPass("SDL_PROP_PROCESS_CREATE_CMDLINE_STRING only works on Windows");
     return TEST_SKIPPED;
 #else
@@ -1080,7 +1080,7 @@ failed:
 
 static int process_testWindowsCmdlinePrecedence(void *arg)
 {
-#ifndef SDL_PLATFORM_WINDOWS
+#ifndef SDL_PROCESS_WINDOWS
     SDLTest_AssertPass("SDL_PROP_PROCESS_CREATE_CMDLINE_STRING only works on Windows");
     return TEST_SKIPPED;
 #else
