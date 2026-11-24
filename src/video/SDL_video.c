@@ -2347,6 +2347,13 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
         window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
     }
 
+    // Restore the window opacity if the window is being recreated.
+    if (window->opacity < 1.0f) {
+        if (!_this->SetWindowOpacity(_this, window, window->opacity)) {
+            window->opacity = 1.0f;
+        }
+    }
+
     if (window->flags & SDL_WINDOW_EXTERNAL) {
         // Whoever has created the window has already applied whatever flags are needed
     } else {
