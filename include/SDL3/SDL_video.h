@@ -2852,8 +2852,9 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
  * This will add or remove the window's `SDL_WINDOW_MOUSE_PASSTHROUGH` flag.
  *
  * When enabled, the window will lose mouse focus and will not get any further
- * mouse, pen, or touch events (except release events for buttons held down at the time)
- * and clicks in the window will go through and hit windows behind it.
+ * mouse, pen, or touch events (except release events for buttons held down at
+ * the time) and clicks in the window will go through and hit windows behind
+ * it.
  *
  * \param window the window to set mouse passthrough for.
  * \param passthrough true to make the window transparent to mouse input,
