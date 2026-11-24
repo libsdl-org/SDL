@@ -312,27 +312,6 @@ typedef struct SDL_GamepadMapping
 extern bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
                                                          SDL_GamepadMapping *out);
 
-
-typedef struct
-{
-    const char *included_hint_name;
-    int num_included_entries;
-    int max_included_entries;
-    Uint32 *included_entries;
-
-    const char *excluded_hint_name;
-    int num_excluded_entries;
-    int max_excluded_entries;
-    Uint32 *excluded_entries;
-
-    int num_initial_entries;
-    Uint32 *initial_entries;
-
-    bool affects_ignored_joysticks;
-
-    bool initialized;
-} SDL_vidpid_list;
-
 typedef enum
 {
     SDL_XINPUT_SUBTYPE_GAMEPAD = 1,
@@ -355,6 +334,26 @@ typedef enum
 
 // Function to return the joystick type for an XInput device based on its subtype
 extern SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype);
+
+typedef struct
+{
+    const char *included_hint_name;
+    int num_included_entries;
+    int max_included_entries;
+    Uint32 *included_entries;
+
+    const char *excluded_hint_name;
+    int num_excluded_entries;
+    int max_excluded_entries;
+    Uint32 *excluded_entries;
+
+    int num_initial_entries;
+    Uint32 *initial_entries;
+
+    bool affects_ignored_joysticks;
+
+    bool initialized;
+} SDL_vidpid_list;
 
 extern void SDL_LoadVIDPIDList(SDL_vidpid_list *list);
 extern void SDL_LoadVIDPIDListFromHints(SDL_vidpid_list *list, const char *included_list, const char *excluded_list);
