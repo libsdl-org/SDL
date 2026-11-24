@@ -4535,6 +4535,37 @@ static bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
     return SDL_VIDPIDInList(vendor_id, product_id, &drum_devices);
 }
 
+SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype) {
+    switch (subtype) {
+    case SDL_XINPUT_SUBTYPE_GAMEPAD:
+    case SDL_XINPUT_SUBTYPE_STAGE_KIT:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_WHEEL:
+        return SDL_JOYSTICK_TYPE_WHEEL;
+    case SDL_XINPUT_SUBTYPE_ARCADE_STICK:
+        return SDL_JOYSTICK_TYPE_ARCADE_STICK;
+    case SDL_XINPUT_SUBTYPE_FLIGHT_STICK:
+        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    case SDL_XINPUT_SUBTYPE_DANCE_PAD:
+        return SDL_JOYSTICK_TYPE_DANCE_PAD;
+    case SDL_XINPUT_SUBTYPE_GUITAR:
+    case SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE:
+    case SDL_XINPUT_SUBTYPE_GUITAR_BASS:
+    case SDL_XINPUT_SUBTYPE_PRO_GUITAR:
+        return SDL_JOYSTICK_TYPE_GUITAR;
+    case SDL_XINPUT_SUBTYPE_DRUMS:
+        return SDL_JOYSTICK_TYPE_DRUM_KIT;
+    case SDL_XINPUT_SUBTYPE_ARCADE_PAD:
+        return SDL_JOYSTICK_TYPE_ARCADE_PAD;
+    case SDL_XINPUT_SUBTYPE_PRO_KEYS:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    case SDL_XINPUT_SUBTYPE_TURNTABLE:
+        return SDL_JOYSTICK_TYPE_GAMEPAD;
+    default:
+        return SDL_JOYSTICK_TYPE_UNKNOWN;
+    }
+}
+
 static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
 {
     Uint16 vendor;
@@ -4568,29 +4599,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     }
 
     if (SDL_IsJoystickXInput(guid)) {
-        // XInput GUID, get the type based on the XInput device subtype
-        switch (guid.data[15]) {
-        case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
-            return SDL_JOYSTICK_TYPE_GAMEPAD;
-        case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
-            return SDL_JOYSTICK_TYPE_WHEEL;
-        case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
-            return SDL_JOYSTICK_TYPE_ARCADE_STICK;
-        case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
-            return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-        case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
-            return SDL_JOYSTICK_TYPE_DANCE_PAD;
-        case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
-        case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
-        case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
-            return SDL_JOYSTICK_TYPE_GUITAR;
-        case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
-            return SDL_JOYSTICK_TYPE_DRUM_KIT;
-        case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
-            return SDL_JOYSTICK_TYPE_ARCADE_PAD;
-        default:
-            return SDL_JOYSTICK_TYPE_UNKNOWN;
-        }
+        return SDL_GetJoystickTypeForXInputSubType(guid.data[15]);
     }
 
     if (SDL_IsJoystickGameInput(guid)) {
