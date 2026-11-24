@@ -242,7 +242,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
      * hierarchy. */
     [view setSDLWindow:window];
 
-    /* Apply the initial resizable flag to the window scene's size restrictions. */
+    // Apply the initial resizable flag to the window scene's size restrictions
     UIKit_SetWindowResizable(_this, window, (window->flags & SDL_WINDOW_RESIZABLE) != 0);
 
     return true;
@@ -468,69 +468,77 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bo
     }
 }
 
-void UIKit_SetWindowResizable(SDL_VideoDevice *_this,
-                              SDL_Window *window,
-                              bool resizable)
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+static void UIKit_LockWindowSize(SDL_UIKitWindowData *data) API_AVAILABLE(ios(13.0))
+{
+    UISceneSizeRestrictions *restrictions = data.uiwindow.windowScene.sizeRestrictions;
+    CGSize size = data.uiwindow.bounds.size;
+
+    if (data.sizeLocked || !restrictions || size.width <= 0.0 || size.height <= 0.0) {
+        return;
+    }
+
+    data.savedMinimumSize = restrictions.minimumSize;
+    data.savedMaximumSize = restrictions.maximumSize;
+    data.sizeLocked = YES;
+
+    // Set the size restrictions based on the window size, clearing the minimum first
+    restrictions.minimumSize = CGSizeZero;
+    restrictions.maximumSize = size;
+    restrictions.minimumSize = size;
+}
+
+static void UIKit_UnlockWindowSize(SDL_UIKitWindowData *data) API_AVAILABLE(ios(13.0))
+{
+    if (!data.sizeLocked) {
+        return;
+    }
+
+    UISceneSizeRestrictions *restrictions = data.uiwindow.windowScene.sizeRestrictions;
+    if (restrictions) {
+        // Restore the size restrictions, clearing the minimum first
+        restrictions.minimumSize = CGSizeZero;
+        restrictions.maximumSize = data.savedMaximumSize;
+        restrictions.minimumSize = data.savedMinimumSize;
+    }
+    data.sizeLocked = NO;
+}
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+
+void UIKit_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable)
 {
 #if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
     @autoreleasepool {
-        SDL_UIKitWindowData *data =
-            (__bridge SDL_UIKitWindowData *)window->internal;
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
 
         if (!data) {
             return;
         }
 
-        if (!resizable) {
-            const NSUInteger orientations =
-                UIKit_GetSupportedOrientations(window);
-            const bool supportsPortrait =
-                (orientations & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
-            const bool supportsLandscape =
-                (orientations & UIInterfaceOrientationMaskLandscape) != 0;
-
-            if (supportsPortrait && supportsLandscape) {
-                resizable = true;
-            }
-        }
-
         if (@available(iOS 13.0, *)) {
-            UISceneSizeRestrictions *restrictions =
-                data.uiwindow.windowScene.sizeRestrictions;
-
-            // Restore constraints if the window moved to another scene,
-            // or if resizing has been re-enabled.
-            if (data.savedSizeRestrictions &&
-                (resizable ||
-                 data.savedSizeRestrictions != restrictions)) {
-                UISceneSizeRestrictions *saved =
-                    data.savedSizeRestrictions;
-
-                // Relax the range before restoring it, avoiding a
-                // temporarily inconsistent minimum/maximum pair.
-                saved.minimumSize = CGSizeZero;
-                saved.maximumSize = data.savedMaximumSize;
-                saved.minimumSize = data.savedMinimumSize;
-                data.savedSizeRestrictions = nil;
-            }
-
-            if (!resizable && restrictions &&
-                !data.savedSizeRestrictions) {
-                CGSize size = data.uiwindow.bounds.size;
-
-                if (size.width > 0 && size.height > 0) {
-                    data.savedMinimumSize = restrictions.minimumSize;
-                    data.savedMaximumSize = restrictions.maximumSize;
-                    data.savedSizeRestrictions = restrictions;
-
-                    restrictions.minimumSize = CGSizeZero;
-                    restrictions.maximumSize = size;
-                    restrictions.minimumSize = size;
+            if (!resizable) {
+                // A window that can rotate between portrait and landscape can't have a fixed size
+                NSUInteger orientations = UIKit_GetSupportedOrientations(window);
+                bool supportsLandscape = (orientations & UIInterfaceOrientationMaskLandscape) != 0;
+                bool supportsPortrait = (orientations & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
+                if (supportsLandscape && supportsPortrait) {
+                    resizable = true;
                 }
             }
+
+            if (resizable) {
+                UIKit_UnlockWindowSize(data);
+            } else {
+                UIKit_LockWindowSize(data);
+            }
+        }
+
+        // The supported orientations depend on whether the window is resizable
+        if (@available(iOS 16.0, *)) {
+            [data.viewcontroller setNeedsUpdateOfSupportedInterfaceOrientations];
         }
     }
-#endif
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
 }
 
 SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
@@ -568,9 +576,12 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
             SDL_UIKit_HideCurvedWindow(window);
 #endif
 
-            /* Restore the scene's original size restrictions, in case the scene
-             * may outlive this window and be reused by another window. */
-            UIKit_SetWindowResizable(_this, window, true);
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+            // Restore the scene's original size restrictions
+            if (@available(iOS 13.0, *)) {
+                UIKit_UnlockWindowSize(data);
+            }
+#endif
 
             /* Detach all views from this window. We use a copy of the array
              * because setSDLWindow will remove the object from the original

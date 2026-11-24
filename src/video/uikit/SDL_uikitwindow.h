@@ -61,11 +61,10 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window *window);
 @property(nonatomic, strong) NSString *settings;
 #endif
 
-// Scene's original size restrictions for resizing
-@property(nonatomic, strong) UISceneSizeRestrictions *savedSizeRestrictions
-    API_AVAILABLE(ios(13.0));
-@property(nonatomic) CGSize savedMinimumSize;
-@property(nonatomic) CGSize savedMaximumSize;
+// The scene's original size restrictions
+@property(nonatomic, assign) BOOL sizeLocked;
+@property(nonatomic, assign) CGSize savedMinimumSize;
+@property(nonatomic, assign) CGSize savedMaximumSize;
 
 @end
 
