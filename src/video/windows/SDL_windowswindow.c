@@ -388,6 +388,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
 #endif
     data->hinstance = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->mouse_button_flags = (WPARAM)-1;
+    data->opacity = 1.0f;
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = true;
@@ -1556,7 +1557,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
     bool win_have_focus = (window->flags & SDL_WINDOW_INPUT_FOCUS);
     bool win_is_grabbed = (window->flags & SDL_WINDOW_MOUSE_GRABBED);
     bool win_in_relmode = (window->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE);
-    bool cursor_confine = win_in_relmode || win_is_grabbed || win_mouse_rect;
+    bool cursor_confine = !SDL_IsMousePassthroughWindow(window) && (win_in_relmode || win_is_grabbed || win_mouse_rect);
 
     // This is verbatim translation of the old logic,
     // but I don't quite get what it's trying to do.
@@ -1682,67 +1683,63 @@ bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled)
 }
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
-bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
+static bool WIN_UpdateLayeredStyle(SDL_Window *window, float opacity)
 {
 #if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return false;
+    return SDL_Unsupported();
 #else
     const SDL_WindowData *data = window->internal;
     HWND hwnd = data->hwnd;
-    const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool passthrough = ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) != 0);
 
-    if (opacity == 1.0f) {
-        // want it fully opaque, just mark it unlayered if necessary.
-        if (style & WS_EX_LAYERED) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_LAYERED) == 0) {
-                return WIN_SetError("SetWindowLong()");
-            }
-        }
+    // WS_EX_TRANSPARENT only passes clicks through to other windows on a layered window
+    const bool layered = (passthrough || opacity < 1.0f);
+
+    if (passthrough) {
+        style |= WS_EX_TRANSPARENT;
     } else {
-        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
-        // want it transparent, mark it layered if necessary.
-        if (!(style & WS_EX_LAYERED)) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED) == 0) {
-                return WIN_SetError("SetWindowLong()");
-            }
-        }
+        style &= ~WS_EX_TRANSPARENT;
+    }
+    if (layered) {
+        style |= WS_EX_LAYERED;
+    } else {
+        style &= ~WS_EX_LAYERED;
+    }
 
+    // SetWindowLong() returns the previous style, which can legitimately be 0
+    SetLastError(0);
+    if (SetWindowLong(hwnd, GWL_EXSTYLE, style) == 0 && GetLastError() != 0) {
+        return WIN_SetError("SetWindowLong()");
+    }
+
+    if (layered) {
+        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
         if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
             return WIN_SetError("SetLayeredWindowAttributes()");
         }
     }
-
     return true;
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 }
 
-void WIN_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-#else
     SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
-    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-    if (passthrough) {
-        COLORREF key = 0;
-        BYTE alpha = 0;
-        DWORD flags = 0;
-        if (style & WS_EX_LAYERED) {
-            GetLayeredWindowAttributes(hwnd, &key, &alpha, &flags);
-        }
-        style |= (WS_EX_TRANSPARENT | WS_EX_LAYERED);
-        SetWindowLong(hwnd, GWL_EXSTYLE, style);
-        SetLayeredWindowAttributes(hwnd, key, alpha, flags);
-    } else {
-        style &= ~WS_EX_TRANSPARENT;
-
-        if ((style & (WS_EX_LAYERED | LWA_ALPHA)) == WS_EX_LAYERED) {
-            style &= ~WS_EX_LAYERED;
-        }
-        SetWindowLong(hwnd, GWL_EXSTYLE, style);
+    if (!WIN_UpdateLayeredStyle(window, opacity)) {
+        return false;
     }
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+
+    data->opacity = opacity;
+    return true;
+}
+
+bool WIN_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+    SDL_WindowData *data = window->internal;
+
+    return WIN_UpdateLayeredStyle(window, data->opacity);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

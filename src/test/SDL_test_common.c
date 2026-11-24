@@ -2582,6 +2582,14 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                     SDL_Log("%sapturing mouse %s!", shouldCapture ? "C" : "Unc", rc ? "succeeded" : "failed");
                 }
             }
+            if (withAlt) {
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    const bool shouldEnable = !(SDL_GetWindowFlags(window) & SDL_WINDOW_MOUSE_PASSTHROUGH);
+                    const bool rc = SDL_SetWindowMousePassthrough(window, shouldEnable);
+                    SDL_Log("%s mouse passthrough %s!", shouldEnable ? "Enable" : "Disable", rc ? "succeeded" : "failed");
+                }
+            }
             break;
         case SDLK_R:
             if (withControl) {

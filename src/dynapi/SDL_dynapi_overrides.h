@@ -1353,3 +1353,4 @@
 #define SDL_GetCachePath SDL_GetCachePath_REAL
 #define SDL_SetRenderLogicalPresentationRect SDL_SetRenderLogicalPresentationRect_REAL
 #define SDL_IsGooglePlayOnPC SDL_IsGooglePlayOnPC_REAL
+#define SDL_SetWindowMousePassthrough SDL_SetWindowMousePassthrough_REAL

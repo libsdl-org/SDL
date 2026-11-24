@@ -251,6 +251,7 @@ typedef Uint64 SDL_WindowFlags;
 #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
 #define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
+#define SDL_WINDOW_MOUSE_PASSTHROUGH    SDL_UINT64_C(0x0000000000400000)    /**< window is transparent to mouse input, since SDL 3.6.0 */
 #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
@@ -1154,6 +1155,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *   buffer if possible
  * - `SDL_WINDOW_MOUSE_CAPTURE`: window has mouse captured (unrelated to
  *   MOUSE_GRABBED)
+ * - `SDL_WINDOW_MOUSE_PASSTHROUGH`: window is transparent to mouse input
  * - `SDL_WINDOW_ALWAYS_ON_TOP`: window should always be above others
  * - `SDL_WINDOW_UTILITY`: window should be treated as a utility window, not
  *   showing in the task bar and window list
@@ -1341,6 +1343,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   its parent
  * - `SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN`: true if the window starts
  *   with grabbed mouse focus
+ * - `SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN`: true if the window should be transparent to mouse input
  * - `SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`: true if the window will be used
  *   with OpenGL rendering
  * - `SDL_PROP_WINDOW_CREATE_PARENT_POINTER`: an SDL_Window that will be the
@@ -1487,6 +1490,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN                   "SDL.window.create.minimized"
 #define SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN                       "SDL.window.create.modal"
 #define SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN               "SDL.window.create.mouse_grabbed"
+#define SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN           "SDL.window.create.mouse_passthrough"
 #define SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN                      "SDL.window.create.opengl"
 #define SDL_PROP_WINDOW_CREATE_PARENT_POINTER                      "SDL.window.create.parent"
 #define SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN                   "SDL.window.create.resizable"
@@ -2844,9 +2848,13 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 /**
  * Enable or disable mouse passthrough for a window.
  *
+ * This will add or remove the window's `SDL_WINDOW_MOUSE_PASSTHROUGH` flag.
+ *
+ * When enabled, the window will lose mouse focus and will not get any further mouse events (except button up events for buttons held down at the time) and clicks in the window will go through and hit windows behind it.
+ *
  * \param window the window to set mouse passthrough for.
  * \param passthrough true to make the window transparent to mouse input,
- *                    false to capture mouse input.
+ *                    false to accept mouse input.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *

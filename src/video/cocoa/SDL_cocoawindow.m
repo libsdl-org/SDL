@@ -34,6 +34,7 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoaopengles.h"
+#include "SDL_cocoashape.h"
 #include "SDL_cocoavideo.h"
 
 #if 0
@@ -616,7 +617,7 @@ static bool ShouldAdjustCoordinatesForGrab(SDL_Window *window)
         return false;
     }
 
-    if (!(window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+    if (!(window->flags & SDL_WINDOW_INPUT_FOCUS) || SDL_IsMousePassthroughWindow(window)) {
         return false;
     }
 
@@ -1090,7 +1091,10 @@ static NSCursor *Cocoa_GetDesiredCursor(void)
     SDL_Surface *shape = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
     BOOL ignoresMouseEvents = NO;
 
-    if (shape) {
+    // Tooltips and mouse passthrough windows never receive mouse input
+    if (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_MOUSE_PASSTHROUGH)) {
+        ignoresMouseEvents = YES;
+    } else if (shape) {
         NSPoint point = [theEvent locationInWindow];
         NSRect windowRect = [[_data.nswindow contentView] frame];
         if (NSMouseInRect(point, windowRect, NO)) {
@@ -3532,10 +3536,12 @@ bool Cocoa_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float op
     }
 }
 
-void Cocoa_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough) {
+bool Cocoa_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
     @autoreleasepool {
-        SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
-        [data.nswindow setIgnoresMouseEvents:passthrough];
+        // Update the shape to take mouse passthrough and the window shape into account
+        SDL_Surface *shape = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+        return Cocoa_UpdateWindowShape(_this, window, shape);
     }
 }
 

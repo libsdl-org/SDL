@@ -2239,7 +2239,7 @@ SDL_PixelFormat SDL_GetWindowPixelFormat(SDL_Window *window)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE | SDL_WINDOW_FILL_DOCUMENT)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED | SDL_WINDOW_METAL | SDL_WINDOW_TRANSPARENT | SDL_WINDOW_NOT_FOCUSABLE | SDL_WINDOW_FILL_DOCUMENT | SDL_WINDOW_MOUSE_PASSTHROUGH)
 
 static SDL_INLINE bool IsAcceptingDragAndDrop(void)
 {
@@ -2344,6 +2344,13 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
         // Whoever has created the window has already applied whatever flags are needed
     } else {
         ApplyWindowFlags(window, flags);
+
+        if ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) &&
+            (!_this->SetWindowMousePassthrough ||
+             !_this->SetWindowMousePassthrough(_this, window, true))) {
+            window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
+        }
+
         if (!(flags & SDL_WINDOW_HIDDEN)) {
             SDL_ShowWindow(window);
         }
@@ -2389,6 +2396,7 @@ static struct {
     { SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN,          SDL_WINDOW_MINIMIZED,           false },
     { SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN,              SDL_WINDOW_MODAL,               false },
     { SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN,      SDL_WINDOW_MOUSE_GRABBED,       false },
+    { SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN,  SDL_WINDOW_MOUSE_PASSTHROUGH,   false },
     { SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN,             SDL_WINDOW_OPENGL,              false },
     { SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN,          SDL_WINDOW_RESIZABLE,           false },
     { SDL_PROP_WINDOW_CREATE_TRANSPARENT_BOOLEAN,        SDL_WINDOW_TRANSPARENT,         false },
@@ -2603,6 +2611,9 @@ SDL_Window *SDL_CreateWindowWithProperties(SDL_PropertiesID props)
 
     if (!_this->SetWindowFillDocument) {
         window->flags &= ~SDL_WINDOW_FILL_DOCUMENT;  // not an error, just unsupported here, so remove the flag.
+    }
+    if (!_this->SetWindowMousePassthrough) {
+        window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;  // not an error, just unsupported here, so remove the flag.
     }
 
     if (_this->windows) {
@@ -3870,16 +3881,57 @@ float SDL_GetWindowOpacity(SDL_Window *window)
     return window->opacity;
 }
 
+bool SDL_IsMousePassthroughWindow(SDL_Window *window)
+{
+    if (window && (window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH)) {
+        return true;
+    }
+    return false;
+}
+
 bool SDL_SetWindowMousePassthrough(SDL_Window *window, bool passthrough)
 {
     CHECK_WINDOW_MAGIC(window, false);
+
+    const bool want = (passthrough != false); // normalize the flag.
+    const bool have = ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) != 0);
+    if (want == have) {
+        return true;
+    }
 
     if (!_this->SetWindowMousePassthrough) {
         return SDL_Unsupported();
     }
 
-    _this->SetWindowMousePassthrough(_this, window, passthrough);
+    // Set the window flag so the backends can update appropriately
+    if (want) {
+        window->flags |= SDL_WINDOW_MOUSE_PASSTHROUGH;
+    } else {
+        window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
+    }
+    if (!_this->SetWindowMousePassthrough(_this, window, want)) {
+        // Undo the flags we set above
+        if (want) {
+            window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
+        } else {
+            window->flags |= SDL_WINDOW_MOUSE_PASSTHROUGH;
+        }
+        return false;
+    }
 
+    // The window doesn't get mouse events anymore, so send the mouse leave event now.
+    // Automatic mouse capture stays until any held buttons are released.
+    if (want && SDL_GetMouseFocus() == window) {
+        SDL_SetMouseFocus(NULL);
+    }
+
+    // The mouse isn't grabbed or confined while mouse passthrough is enabled
+    if (window->flags & SDL_WINDOW_MOUSE_GRABBED) {
+        SDL_UpdateWindowGrab(window);
+    }
+    if (_this->SetWindowMouseRect && !SDL_RectEmpty(&window->mouse_rect)) {
+        _this->SetWindowMouseRect(_this, window);
+    }
     return true;
 }
 
@@ -4028,7 +4080,9 @@ void SDL_UpdateWindowGrab(SDL_Window *window)
     bool keyboard_grabbed, mouse_grabbed;
 
     if (window->flags & SDL_WINDOW_INPUT_FOCUS) {
-        if (SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
+        if (SDL_IsMousePassthroughWindow(window)) {
+            mouse_grabbed = false;
+        } else if (SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_MOUSE_GRABBED)) {
             mouse_grabbed = true;
         } else {
             mouse_grabbed = false;

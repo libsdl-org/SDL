@@ -1326,3 +1326,4 @@ _SDL_LoadTexture
 _SDL_GetCachePath
 _SDL_SetRenderLogicalPresentationRect
 _SDL_IsGooglePlayOnPC
+_SDL_SetWindowMousePassthrough
