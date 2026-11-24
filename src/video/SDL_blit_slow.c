@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -74,7 +74,7 @@ void SDL_Blit_Slow(SDL_BlitInfo *info)
     int dstbpp = dst_fmt->bytes_per_pixel;
     SlowBlitPixelAccess src_access;
     SlowBlitPixelAccess dst_access;
-    Uint32 rgbmask = ~src_fmt->Amask;
+    Uint32 rgbmask = src_fmt->Rmask | src_fmt->Gmask | src_fmt->Bmask;
     Uint32 ckey = info->colorkey & rgbmask;
     Uint32 last_pixel = 0;
     Uint8 last_index = 0;

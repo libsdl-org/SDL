@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -222,9 +222,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     };
 
     if (!SDL_InitBeApp()) {
-        char *err = SDL_strdup(SDL_GetError());
-        SDL_SetError("Couldn't init Be app: %s", err);
-        SDL_free(err);
+        SDL_SetError("Couldn't init Be app: %s", SDL_GetError());
         callback(userdata, NULL, -1);
         return;
     }

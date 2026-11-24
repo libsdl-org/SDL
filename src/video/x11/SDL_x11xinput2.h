@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,5 +41,6 @@ extern void X11_Xinput2UngrabTouch(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_Xinput2SelectMouseAndKeyboard(SDL_VideoDevice *_this, SDL_Window *window);
 extern void X11_Xinput2UpdateDevices(SDL_VideoDevice *_this);
 extern void X11_Xinput2UpdatePointerMapping(SDL_VideoDevice *_this);
+extern bool X11_Xinput2HandlesMotionForWindow(SDL_WindowData *window_data);
 
 #endif // SDL_x11xinput2_h_

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,6 +34,8 @@
 #include "SDL_cocoavulkan.h"
 
 #include <dlfcn.h>
+// for _NSGetExecutablePath
+#include <mach-o/dyld.h>
 
 const char *defaultPaths[] = {
     "@executable_path/../Frameworks/libMoltenVK.dylib",
@@ -41,11 +43,59 @@ const char *defaultPaths[] = {
     "libvulkan.1.dylib",
     "libvulkan.dylib",
     "MoltenVK.framework/MoltenVK",
-    "libMoltenVK.dylib"
+    "libMoltenVK.dylib",
+    "/usr/local/lib/libvulkan.dylib"
 };
 
 // Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF.
 #define DEFAULT_HANDLE RTLD_DEFAULT
+
+// This function filters the library search paths to only consider absolute paths if they exist.
+//
+// dlopen will look for a library by filename. It will only use the provided path if the filename is not found in any
+// DYLD_LIBRARY_PATH.
+//
+// With "@executable_path/../Frameworks/libMoltenVK.dylib" being first, this means that it will always circumvent the
+// vulkan loader whenever any libMoltenVK.dylib is found in any discoverable location (which it always will if the
+// vulkan sdk is installed via setup-env.sh for example).
+//
+// We don't want to change the priority of the default paths as loading a bundled MoltenVK is genuinely correct. Instead,
+// we expand the requirements for an absolute (and thus @executable_path) path to have to exist in order to be considered
+// for SDL_LoadObject (dlopen).
+//
+// This gives us best of both worlds:
+// - if MoltenVK is bundled, it will be used
+// - otherwise it will use the regular vulkan loader path
+static bool Cocoa_Vulkan_LibraryPathIsUsable(const char *path)
+{
+    static const char prefix[] = "@executable_path/";
+    char expanded[PATH_MAX];
+    SDL_PathInfo info;
+
+    if (path[0] == '/') {
+        SDL_strlcpy(expanded, path, sizeof(expanded));
+    } else if (SDL_strncmp(path, prefix, sizeof(prefix) - 1) == 0) {
+        uint32_t size = sizeof(expanded);
+        char *slash;
+
+        // if the executable path fails to resolve...
+        if (_NSGetExecutablePath(expanded, &size) != 0) {
+            return true;
+        }
+        slash = SDL_strrchr(expanded, '/');
+        // ... or is invalid, we still pass it to SDL_LoadObject for the old behavior
+        if (!slash) {
+            return true;
+        }
+        slash[1] = '\0';
+        SDL_strlcat(expanded, path + sizeof(prefix) - 1, sizeof(expanded));
+    } else {
+        // library or framework name, let SDL_LoadObject handle it
+        return true;
+    }
+
+    return SDL_GetPathInfo(expanded, &info) && info.type == SDL_PATHTYPE_FILE;
+}
 
 bool Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
@@ -92,6 +142,9 @@ bool Cocoa_Vulkan_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 
         for (i = 0; i < numPaths && _this->vulkan_config.loader_handle == NULL; i++) {
             foundPath = paths[i];
+            if (!Cocoa_Vulkan_LibraryPathIsUsable(foundPath)) {
+                continue;
+            }
             _this->vulkan_config.loader_handle = SDL_LoadObject(foundPath);
         }
 
@@ -165,11 +218,9 @@ void Cocoa_Vulkan_UnloadLibrary(SDL_VideoDevice *_this)
 char const * const *Cocoa_Vulkan_GetInstanceExtensions(SDL_VideoDevice *_this, Uint32 *count)
 {
     static const char *const extensionsForCocoa[] = {
-        VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME, VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+        VK_KHR_SURFACE_EXTENSION_NAME, VK_EXT_METAL_SURFACE_EXTENSION_NAME
     };
-    if(count) {
-        *count = SDL_arraysize(extensionsForCocoa);
-    }
+    *count = SDL_arraysize(extensionsForCocoa);
     return extensionsForCocoa;
 }
 

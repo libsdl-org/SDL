@@ -327,10 +327,10 @@ static int SDLCALL stdlib_snprintf(void *arg)
 
     result = SDL_snprintf(text, sizeof(text), "%p", (void *)0x1234abcd);
     expected = "0x1234abcd";
-    expected2 = "1234ABCD";
-    expected3 = "000000001234ABCD";
-    expected4 = "1234abcd";
-    expected5 = "000000001234abcd";
+    expected2 = "1234abcd";
+    expected3 = "000000001234abcd";
+    expected4 = "1234ABCD";
+    expected5 = "000000001234ABCD";
     SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%p\", 0x1234abcd)");
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                         SDL_strcmp(text, expected2) == 0 ||
@@ -347,10 +347,10 @@ static int SDLCALL stdlib_snprintf(void *arg)
 
     result = SDL_snprintf(text, sizeof(text), "A %p B", (void *)0x1234abcd);
     expected = "A 0x1234abcd B";
-    expected2 = "A 1234ABCD B";
-    expected3 = "A 000000001234ABCD B";
-    expected4 = "A 1234abcd B";
-    expected5 = "A 000000001234abcd B";
+    expected2 = "A 1234abcd B";
+    expected3 = "A 000000001234abcd B";
+    expected4 = "A 1234ABCD B";
+    expected5 = "A 000000001234ABCD B";
     SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"A %%p B\", 0x1234abcd)");
     SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                         SDL_strcmp(text, expected2) == 0 ||
@@ -365,19 +365,26 @@ static int SDLCALL stdlib_snprintf(void *arg)
                         result == SDL_strlen(expected5),
         "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
 
-    if (sizeof(void *) >= 8) {
+    const bool is_at_least_64bit_system = sizeof(void *) >= 8;
+    if (is_at_least_64bit_system) {
         result = SDL_snprintf(text, sizeof(text), "%p", (void *)SDL_SINT64_C(0x1ba07bddf60));
         expected = "0x1ba07bddf60";
-        expected2 = "000001BA07BDDF60";
+        expected2 = "1ba07bddf60";
         expected3 = "000001ba07bddf60";
+        expected4 = "1BA07BDDF60";
+        expected5 = "000001BA07BDDF60";
         SDLTest_AssertPass("Call to SDL_snprintf(text, sizeof(text), \"%%p\", 0x1ba07bddf60)");
         SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0 ||
                             SDL_strcmp(text, expected2) == 0 ||
-                            SDL_strcmp(text, expected3) == 0,
+                            SDL_strcmp(text, expected3) == 0 ||
+                            SDL_strcmp(text, expected4) == 0 ||
+                            SDL_strcmp(text, expected5) == 0,
             "Check text, expected: '%s', got: '%s'", expected, text);
         SDLTest_AssertCheck(result == SDL_strlen(expected) ||
                             result == SDL_strlen(expected2) ||
-                            result == SDL_strlen(expected3),
+                            result == SDL_strlen(expected3) ||
+                            result == SDL_strlen(expected4) ||
+                            result == SDL_strlen(expected5),
             "Check result value, expected: %d, got: %d", (int)SDL_strlen(expected), result);
     }
     return TEST_COMPLETED;
@@ -933,14 +940,6 @@ static int SDLCALL stdlib_sscanf(void *arg)
 #pragma GCC diagnostic pop
 #endif
 
-#ifdef _WIN64
-#define SIZE_FORMAT "I64u"
-#elif defined(SDL_PLATFORM_WIN32)
-#define SIZE_FORMAT "I32u"
-#else
-#define SIZE_FORMAT "zu"
-#endif
-
 /**
  * Call to SDL_aligned_alloc
  */
@@ -950,7 +949,7 @@ static int SDLCALL stdlib_aligned_alloc(void *arg)
     void *ptr;
 
     for (i = 0; i < 2*sizeof(void *); ++i) {
-        SDLTest_AssertPass("Call to SDL_aligned_alloc(%"SIZE_FORMAT")", i);
+        SDLTest_AssertPass("Call to SDL_aligned_alloc(%" SDL_PRISZu ")", i);
         ptr = SDL_aligned_alloc(i, 1);
         if (i < sizeof(void *)) {
             alignment = sizeof(void *);
@@ -958,7 +957,7 @@ static int SDLCALL stdlib_aligned_alloc(void *arg)
             alignment = i;
         }
         SDLTest_AssertCheck(ptr != NULL, "Check output, expected non-NULL, got: %p", ptr);
-        SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %"SIZE_FORMAT, (((size_t)ptr) % alignment));
+        SDLTest_AssertCheck((((size_t)ptr) % alignment) == 0, "Check output, expected aligned pointer, actual offset: %" SDL_PRISZu, (((size_t)ptr) % alignment));
         if (ptr != NULL) {
             SDLTest_AssertPass("Filling memory to alignment value");
             SDL_memset(ptr, 0xAA, alignment);
@@ -1030,14 +1029,14 @@ stdlib_overflow(void *arg)
 
             if (t->status) {
                 SDLTest_AssertCheck(status,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu ") should succeed",
                                     t->a, t->b);
                 SDLTest_AssertCheck(result == t->result,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu "): expected %" SDL_PRISZu ", got %" SDL_PRISZu,
                                     t->a, t->b, t->result, result);
             } else {
                 SDLTest_AssertCheck(!status,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu ") should fail",
                                     t->a, t->b);
             }
 
@@ -1055,14 +1054,14 @@ stdlib_overflow(void *arg)
 
             if (t->status) {
                 SDLTest_AssertCheck(status,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should succeed",
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu ") should succeed",
                                     t->b, t->a);
                 SDLTest_AssertCheck(result == t->result,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu "): expected %" SDL_PRISZu ", got %" SDL_PRISZu,
                                     t->b, t->a, t->result, result);
             } else {
                 SDLTest_AssertCheck(!status,
-                                    "(%" SIZE_FORMAT " * %" SIZE_FORMAT ") should fail",
+                                    "(%" SDL_PRISZu " * %" SDL_PRISZu ") should fail",
                                     t->b, t->a);
             }
         }
@@ -1080,14 +1079,14 @@ stdlib_overflow(void *arg)
 
             if (t->status) {
                 SDLTest_AssertCheck(status,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu ") should succeed",
                                     t->a, t->b);
                 SDLTest_AssertCheck(result == t->result,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu "): expected %" SDL_PRISZu ", got %" SDL_PRISZu,
                                     t->a, t->b, t->result, result);
             } else {
                 SDLTest_AssertCheck(!status,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu ") should fail",
                                     t->a, t->b);
             }
 
@@ -1105,14 +1104,14 @@ stdlib_overflow(void *arg)
 
             if (t->status) {
                 SDLTest_AssertCheck(status,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should succeed",
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu ") should succeed",
                                     t->b, t->a);
                 SDLTest_AssertCheck(result == t->result,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT "): expected %" SIZE_FORMAT ", got %" SIZE_FORMAT,
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu "): expected %" SDL_PRISZu ", got %" SDL_PRISZu,
                                     t->b, t->a, t->result, result);
             } else {
                 SDLTest_AssertCheck(!status,
-                                    "(%" SIZE_FORMAT " + %" SIZE_FORMAT ") should fail",
+                                    "(%" SDL_PRISZu " + %" SDL_PRISZu ") should fail",
                                     t->b, t->a);
             }
         }
@@ -1286,53 +1285,88 @@ stdlib_strpbrk(void *arg)
     return TEST_COMPLETED;
 }
 
-static int SDLCALL stdlib_wcstol(void *arg)
+static int SDLCALL stdlib_wcstox(void *arg)
 {
-    const long long_max = (~0UL) >> 1;
-    const long long_min = ((~0UL) >> 1) + 1UL;
+    const unsigned long long ullong_max = ~0ULL;
 
-#define WCSTOL_TEST_CASE(str, base, expected_result, expected_endp_offset) do {                             \
-        const wchar_t *s = str;                                                                             \
-        long r, expected_r = expected_result;                                                               \
-        wchar_t *ep, *expected_ep = (wchar_t *)s + expected_endp_offset;                                    \
-        r = SDL_wcstol(s, &ep, base);                                                                       \
-        SDLTest_AssertPass("Call to SDL_wcstol(" #str ", &endp, " #base ")");                               \
-        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: %ld, got: %ld", expected_r, r); \
-        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep); \
+#define WCSTOX_TEST_CASE(func_name, type, format_spec, str, base, expected_result, expected_endp_offset)                         \
+    do {                                                                                                                         \
+        const wchar_t *s = str;                                                                                                  \
+        type r, expected_r = expected_result;                                                                                    \
+        wchar_t *ep, *expected_ep = (wchar_t *)s + expected_endp_offset;                                                         \
+        r = func_name(s, &ep, base);                                                                                             \
+        SDLTest_AssertPass("Call to " #func_name "(" #str ", &endp, " #base ")");                                                \
+        SDLTest_AssertCheck(r == expected_r, "Check result value, expected: " format_spec ", got: " format_spec, expected_r, r); \
+        SDLTest_AssertCheck(ep == expected_ep, "Check endp value, expected: %p, got: %p", expected_ep, ep);                      \
     } while (0)
 
     // infer decimal
-    WCSTOL_TEST_CASE(L"\t  123abcxyz", 0, 123, 6); // skip leading space
-    WCSTOL_TEST_CASE(L"+123abcxyz", 0, 123, 4);
-    WCSTOL_TEST_CASE(L"-123abcxyz", 0, -123, 4);
-    WCSTOL_TEST_CASE(L"99999999999999999999abcxyz", 0, long_max, 20);
-    WCSTOL_TEST_CASE(L"-99999999999999999999abcxyz", 0, long_min, 21);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"\t  123abcxyz", 0, 123, 6); // skip leading space
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"+123abcxyz", 0, 123, 4);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"+123abcxyz", 0, 123, 4);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"-123abcxyz", 0, -123, 4);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"9999999999999999999999999999999999999999abcxyz", 0, ullong_max, 40);
 
     // infer hexadecimal
-    WCSTOL_TEST_CASE(L"0x123abcxyz", 0, 0x123abc, 8);
-    WCSTOL_TEST_CASE(L"0X123ABCXYZ", 0, 0x123abc, 8); // uppercase X
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"0x123abcxyz", 0, 0x123abc, 8);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"0X123ABCXYZ", 0, 0x123abc, 8); // uppercase X
 
     // infer octal
-    WCSTOL_TEST_CASE(L"0123abcxyz", 0, 0123, 4);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"0123abcxyz", 0, 0123, 4);
 
     // arbitrary bases
-    WCSTOL_TEST_CASE(L"00110011", 2, 51, 8);
-    WCSTOL_TEST_CASE(L"-uvwxyz", 32, -991, 3);
-    WCSTOL_TEST_CASE(L"ZzZzZzZzZzZzZ", 36, long_max, 13);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"00110011", 2, 51, 8);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"-uvwxyz", 32, -991, 3);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"ZzZzZzZzZzZzZzZzZzZzZzZzZ", 36, ullong_max, 25);
 
-    WCSTOL_TEST_CASE(L"-0", 10, 0, 2);
-    WCSTOL_TEST_CASE(L" - 1", 0, 0, 0); // invalid input
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"0", 0, 0, 1);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"0", 10, 0, 1);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"-0", 0, 0, 2);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L"-0", 10, 0, 2);
+    WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLu, L" - 1", 0, 0, 0); // invalid input
 
-    // values near the bounds of the type
-    if (sizeof(long) == 4) {
-        WCSTOL_TEST_CASE(L"2147483647", 10, 2147483647, 10);
-        WCSTOL_TEST_CASE(L"2147483648", 10, 2147483647, 10);
-        WCSTOL_TEST_CASE(L"-2147483648", 10, -2147483647L - 1, 11);
-        WCSTOL_TEST_CASE(L"-2147483649", 10, -2147483647L - 1, 11);
-        WCSTOL_TEST_CASE(L"-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+    // We know that SDL_wcstol, SDL_wcstoul and SDL_wcstoll share the same code path as SDL_wcstoull under the hood,
+    // so the most interesting test cases are those close to the bounds of the integer type.
+
+    // For simplicity, we only run long/long long tests when they are 32-bit/64-bit, respectively.
+    // Suppressing warnings would be difficult otherwise.
+    // Since the CI runs the tests against a variety of targets, this should be fine in practice.
+
+    const bool long_is_32bit = sizeof(long) == 4;
+    if (long_is_32bit) {
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"0", 0, 0, 1);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"0", 10, 0, 1);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"-0", 0, 0, 2);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"-0", 10, 0, 2);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"2147483647", 10, 2147483647, 10);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"2147483648", 10, 2147483647, 10);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"-2147483648", 10, -2147483647L - 1, 11);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"-2147483649", 10, -2147483647L - 1, 11);
+        WCSTOX_TEST_CASE(SDL_wcstol, long, "%ld", L"-9999999999999999999999999999999999999999", 10, -2147483647L - 1, 41);
+
+        WCSTOX_TEST_CASE(SDL_wcstoul, unsigned long, "%lu", L"4294967295", 10, 4294967295UL, 10);
+        WCSTOX_TEST_CASE(SDL_wcstoul, unsigned long, "%lu", L"4294967296", 10, 4294967295UL, 10);
+        WCSTOX_TEST_CASE(SDL_wcstoul, unsigned long, "%lu", L"-4294967295", 10, 1, 11);
     }
 
-#undef WCSTOL_TEST_CASE
+    const bool long_long_is_64bit = sizeof(long long) == 8;
+    if (long_long_is_64bit) {
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"0", 0, 0LL, 1);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"0", 10, 0LL, 1);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"-0", 0, 0LL, 2);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"-0", 10, 0LL, 2);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"9223372036854775807", 10, 9223372036854775807LL, 19);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"9223372036854775808", 10, 9223372036854775807LL, 19);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"-9223372036854775808", 10, -9223372036854775807LL - 1, 20);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"-9223372036854775809", 10, -9223372036854775807LL - 1, 20);
+        WCSTOX_TEST_CASE(SDL_wcstoll, long long, FMT_PRILLd, L"-9999999999999999999999999999999999999999", 10, -9223372036854775807LL - 1, 41);
+
+        WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLd, L"18446744073709551615", 10, 18446744073709551615ULL, 20);
+        WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLd, L"18446744073709551616", 10, 18446744073709551615ULL, 20);
+        WCSTOX_TEST_CASE(SDL_wcstoull, unsigned long long, FMT_PRILLd, L"-18446744073709551615", 10, 1, 21);
+    }
+
+#undef WCSTOX_TEST_CASE
 
     return TEST_COMPLETED;
 }
@@ -1383,7 +1417,8 @@ static int SDLCALL stdlib_strtox(void *arg)
     // Suppressing warnings would be difficult otherwise.
     // Since the CI runs the tests against a variety of targets, this should be fine in practice.
 
-    if (sizeof(long) == 4) {
+    const bool long_is_32bit = sizeof(long) == 4;
+    if (long_is_32bit) {
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 0, 0, 1);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "0", 10, 0, 1);
         STRTOX_TEST_CASE(SDL_strtol, long, "%ld", "-0", 0, 0, 2);
@@ -1399,7 +1434,8 @@ static int SDLCALL stdlib_strtox(void *arg)
         STRTOX_TEST_CASE(SDL_strtoul, unsigned long, "%lu", "-4294967295", 10, 1, 11);
     }
 
-    if (sizeof(long long) == 8) {
+    const bool long_long_is_64bit = sizeof(long long) == 8;
+    if (long_long_is_64bit) {
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 0, 0LL, 1);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "0", 10, 0LL, 1);
         STRTOX_TEST_CASE(SDL_strtoll, long long, FMT_PRILLd, "-0", 0, 0LL, 2);
@@ -1488,8 +1524,8 @@ static const SDLTest_TestCaseReference stdlibTest_strpbrk = {
     stdlib_strpbrk, "stdlib_strpbrk", "Calls to SDL_strpbrk", TEST_ENABLED
 };
 
-static const SDLTest_TestCaseReference stdlibTest_wcstol = {
-    stdlib_wcstol, "stdlib_wcstol", "Calls to SDL_wcstol", TEST_ENABLED
+static const SDLTest_TestCaseReference stdlibTest_wcstox = {
+    stdlib_wcstox, "stdlib_wcstox", "Calls to SDL_wcstol, SDL_wcstoul, SDL_wcstoll, and SDL_wcstoull", TEST_ENABLED
 };
 
 static const SDLTest_TestCaseReference stdlibTest_strtox = {
@@ -1513,7 +1549,7 @@ static const SDLTest_TestCaseReference *stdlibTests[] = {
     &stdlibTestOverflow,
     &stdlibTest_iconv,
     &stdlibTest_strpbrk,
-    &stdlibTest_wcstol,
+    &stdlibTest_wcstox,
     &stdlibTest_strtox,
     &stdlibTest_strtod,
     NULL

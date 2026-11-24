@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -116,6 +116,7 @@ static bool NGAGE_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL
     renderer->npot_texture_wrap_unsupported = true;
 
     SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_XRGB4444);
+    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_ARGB4444);
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, 1024);
     SDL_SetHintWithPriority(SDL_HINT_RENDER_LINE_METHOD, "2", SDL_HINT_OVERRIDE);
 
@@ -134,6 +135,12 @@ static void NGAGE_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *eve
 
 static bool NGAGE_GetOutputSize(SDL_Renderer *renderer, int *w, int *h)
 {
+    if (w) {
+        *w = NGAGE_SCREEN_WIDTH;
+    }
+    if (h) {
+        *h = NGAGE_SCREEN_HEIGHT;
+    }
     return true;
 }
 
@@ -141,6 +148,7 @@ static bool NGAGE_SupportsBlendMode(SDL_Renderer *renderer, SDL_BlendMode blendM
 {
     switch (blendMode) {
     case SDL_BLENDMODE_NONE:
+    case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_MOD:
         return true;
     default:
@@ -155,30 +163,24 @@ static bool NGAGE_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SD
         return false;
     }
 
-    if (!NGAGE_CreateTextureData(data, texture->w, texture->h)) {
+    if (!NGAGE_CreateTextureData(data, texture->w, texture->h, texture->access)) {
         SDL_free(data);
         return false;
     }
 
-    SDL_Surface *surface = SDL_CreateSurface(texture->w, texture->h, texture->format);
-    if (!surface) {
-        SDL_free(data);
-        return false;
-    }
-
-    data->surface = surface;
     texture->internal = data;
+
+    // ARGB4444 textures are color-keyed: alpha=0 pixels are transparent.
+    if (texture->format == SDL_PIXELFORMAT_ARGB4444) {
+        data->has_color_key = true;
+        data->mask_dirty = true;
+    }
 
     return true;
 }
 
 static bool NGAGE_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 {
-    if (!cmd->data.viewport.rect.w && !cmd->data.viewport.rect.h) {
-        SDL_Rect viewport = { 0, 0, NGAGE_SCREEN_WIDTH, NGAGE_SCREEN_HEIGHT };
-        SDL_SetRenderViewport(renderer, &viewport);
-    }
-
     return true;
 }
 
@@ -240,6 +242,10 @@ static bool NGAGE_QueueFillRects(SDL_Renderer *renderer, SDL_RenderCommand *cmd,
         verts[i * 2].color.b = (Uint8)(color >> 16);
         verts[i * 2].color.g = (Uint8)(color >> 8);
         verts[i * 2].color.r = (Uint8)color;
+        verts[i * 2 + 1].color.a = verts[i * 2].color.a;
+        verts[i * 2 + 1].color.b = verts[i * 2].color.b;
+        verts[i * 2 + 1].color.g = verts[i * 2].color.g;
+        verts[i * 2 + 1].color.r = verts[i * 2].color.r;
     }
 
     return true;
@@ -290,8 +296,12 @@ static bool NGAGE_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
     verts->dstrect.h = (int)dstrect->h;
 
     verts->angle = Real2Fix(angle);
-    verts->center.x = Real2Fix(center->x);
-    verts->center.y = Real2Fix(center->y);
+    // Convert center from destination-space to source-space.
+    // Center is relative to dstrect, but rotation is applied in source texture space.
+    float center_x_src = (center->x / dstrect->w) * srcquad->w;
+    float center_y_src = (center->y / dstrect->h) * srcquad->h;
+    verts->center.x = Real2Fix(center_x_src);
+    verts->center.y = Real2Fix(center_y_src);
     verts->scale_x = Real2Fix(scale_x);
     verts->scale_y = Real2Fix(scale_y);
 
@@ -302,6 +312,35 @@ static bool NGAGE_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SD
 
 static bool NGAGE_QueueGeometry(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture, const float *xy, int xy_stride, const SDL_FColor *color, int color_stride, const float *uv, int uv_stride, int num_vertices, const void *indices, int num_indices, int size_indices, float scale_x, float scale_y)
 {
+    int count = indices ? num_indices : num_vertices;
+    NGAGE_Vertex *verts = (NGAGE_Vertex *)SDL_AllocateRenderVertices(renderer, count * sizeof(NGAGE_Vertex), 0, &cmd->data.draw.first);
+    if (!verts) {
+        return false;
+    }
+    cmd->data.draw.count = count;
+
+    for (int i = 0; i < count; i++) {
+        int src_idx = i;
+        if (indices) {
+            if (size_indices == 4) {
+                src_idx = ((const Uint32 *)indices)[i];
+            } else if (size_indices == 2) {
+                src_idx = ((const Uint16 *)indices)[i];
+            } else {
+                src_idx = ((const Uint8 *)indices)[i];
+            }
+        }
+        const float *pos = (const float *)(((const Uint8 *)xy) + src_idx * xy_stride);
+        const SDL_FColor *c = (const SDL_FColor *)(((const Uint8 *)color) + src_idx * color_stride);
+
+        verts[i].x = (int)(pos[0] * scale_x);
+        verts[i].y = (int)(pos[1] * scale_y);
+        verts[i].color.r = (Uint8)(c->r * 255.0f);
+        verts[i].color.g = (Uint8)(c->g * 255.0f);
+        verts[i].color.b = (Uint8)(c->b * 255.0f);
+        verts[i].color.a = (Uint8)(c->a * 255.0f);
+    }
+
     return true;
 }
 
@@ -328,10 +367,11 @@ static bool NGAGE_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
         case SDL_RENDERCMD_SETCLIPRECT:
         {
-            const SDL_Rect *rect = &cmd->data.cliprect.rect;
-
             if (cmd->data.cliprect.enabled) {
-                NGAGE_SetClipRect(rect);
+                NGAGE_SetClipRect(&cmd->data.cliprect.rect);
+            } else {
+                SDL_Rect full = { 0, 0, NGAGE_SCREEN_WIDTH, NGAGE_SCREEN_HEIGHT };
+                NGAGE_SetClipRect(&full);
             }
 
             break;
@@ -434,6 +474,17 @@ static bool NGAGE_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd
 
         case SDL_RENDERCMD_GEOMETRY:
         {
+            NGAGE_Vertex *verts = (NGAGE_Vertex *)(((Uint8 *)vertices) + cmd->data.draw.first);
+            const int count = cmd->data.draw.count;
+
+            if (phdata->viewport && (phdata->viewport->x || phdata->viewport->y)) {
+                for (int i = 0; i < count; i++) {
+                    verts[i].x += phdata->viewport->x;
+                    verts[i].y += phdata->viewport->y;
+                }
+            }
+
+            NGAGE_DrawGeometry(verts, count);
             break;
         }
         }
@@ -447,30 +498,29 @@ static bool NGAGE_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 {
     NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
 
-    SDL_Surface *surface = phdata->surface;
-    Uint8 *src, *dst;
-    int row;
-    size_t length;
-
-    if (SDL_MUSTLOCK(surface)) {
-        if (!SDL_LockSurface(surface)) {
-            return false;
-        }
+    if (!phdata) {
+        return false;
     }
-    src = (Uint8 *)pixels;
-    dst = (Uint8 *)surface->pixels +
-          rect->y * surface->pitch +
-          rect->x * surface->fmt->bytes_per_pixel;
 
-    length = (size_t)rect->w * surface->fmt->bytes_per_pixel;
-    for (row = 0; row < rect->h; ++row) {
+    Uint8 *dst = (Uint8 *)NGAGE_GetBitmapDataAddress(phdata);
+    if (!dst) {
+        return false;
+    }
+
+    const int bytes_per_pixel = 2;
+    const int bitmap_pitch = NGAGE_GetBitmapScanLineLength(phdata);
+
+    const Uint8 *src = (const Uint8 *)pixels;
+    dst += rect->y * bitmap_pitch + rect->x * bytes_per_pixel;
+
+    const size_t length = (size_t)rect->w * bytes_per_pixel;
+    for (int row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
         src += pitch;
-        dst += surface->pitch;
+        dst += bitmap_pitch;
     }
-    if (SDL_MUSTLOCK(surface)) {
-        SDL_UnlockSurface(surface);
-    }
+
+    phdata->mask_dirty = true;
 
     return true;
 }
@@ -478,27 +528,76 @@ static bool NGAGE_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, co
 static bool NGAGE_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect, void **pixels, int *pitch)
 {
     NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
-    SDL_Surface *surface = phdata->surface;
 
-    *pixels =
-        (void *)((Uint8 *)surface->pixels + rect->y * surface->pitch +
-                 rect->x * surface->fmt->bytes_per_pixel);
-    *pitch = surface->pitch;
+    if (!phdata) {
+        return false;
+    }
+
+    Uint8 *data = (Uint8 *)NGAGE_GetBitmapDataAddress(phdata);
+    if (!data) {
+        return false;
+    }
+
+    const int bytes_per_pixel = 2;
+    const int bitmap_pitch = NGAGE_GetBitmapScanLineLength(phdata);
+
+    *pixels = (void *)(data + rect->y * bitmap_pitch + rect->x * bytes_per_pixel);
+    *pitch = bitmap_pitch;
     return true;
 }
 
 static void NGAGE_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+    NGAGE_TextureData *phdata = (NGAGE_TextureData *)texture->internal;
+    if (phdata) {
+        phdata->mask_dirty = true;
+    }
 }
 
 static bool NGAGE_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+    NGAGE_RendererData *data = (NGAGE_RendererData *)renderer->internal;
+
+    if (texture) {
+        NGAGE_TextureData *texturedata = (NGAGE_TextureData *)texture->internal;
+        if (!texturedata || !texturedata->gc) {
+            return SDL_SetError("Texture is not a render target");
+        }
+        data->current_target = texture;
+        NGAGE_SetRenderTargetInternal(texturedata);
+    } else {
+        data->current_target = NULL;
+        NGAGE_SetRenderTargetInternal(NULL);
+    }
+
     return true;
 }
 
 static SDL_Surface *NGAGE_RenderReadPixels(SDL_Renderer *renderer, const SDL_Rect *rect)
 {
-    return (SDL_Surface *)0;
+    const int bytes_per_pixel = 2;
+    const int pitch = NGAGE_GetBackbufferPitch();
+    const Uint8 *src = (const Uint8 *)NGAGE_GetBackbufferAddress();
+
+    if (!src) {
+        return NULL;
+    }
+
+    SDL_Surface *surface = SDL_CreateSurface(rect->w, rect->h, SDL_PIXELFORMAT_XRGB4444);
+    if (!surface) {
+        return NULL;
+    }
+
+    const Uint8 *row = src + rect->y * pitch + rect->x * bytes_per_pixel;
+    Uint8 *dst = (Uint8 *)surface->pixels;
+    const size_t length = (size_t)rect->w * bytes_per_pixel;
+    for (int i = 0; i < rect->h; ++i) {
+        SDL_memcpy(dst, row, length);
+        row += pitch;
+        dst += surface->pitch;
+    }
+
+    return surface;
 }
 
 static bool NGAGE_RenderPresent(SDL_Renderer *renderer)
@@ -512,7 +611,6 @@ static void NGAGE_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     NGAGE_TextureData *data = (NGAGE_TextureData *)texture->internal;
     if (data) {
-        SDL_DestroySurface(data->surface);
         NGAGE_DestroyTextureData(data);
         SDL_free(data);
         texture->internal = 0;

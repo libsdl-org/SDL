@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,9 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I0FL:
+    case SDL_PIXELFORMAT_I4FL:
     case SDL_PIXELFORMAT_YUY2:
     case SDL_PIXELFORMAT_UYVY:
     case SDL_PIXELFORMAT_YVYU:
@@ -70,15 +73,26 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
     }
 
     // Find the pitch and offset values for the texture
+    const int bpp = SDL_BYTESPERPIXEL(format);
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
-        swdata->pitches[0] = w;
-        swdata->pitches[1] = (swdata->pitches[0] + 1) / 2;
-        swdata->pitches[2] = (swdata->pitches[0] + 1) / 2;
+    case SDL_PIXELFORMAT_I0FL:
+        swdata->pitches[0] = w * bpp;
+        swdata->pitches[1] = (((swdata->pitches[0] / bpp) + 1) / 2) * bpp;
+        swdata->pitches[2] = swdata->pitches[1];
         swdata->planes[0] = swdata->pixels;
         swdata->planes[1] = swdata->planes[0] + swdata->pitches[0] * h;
         swdata->planes[2] = swdata->planes[1] + swdata->pitches[1] * ((h + 1) / 2);
+        break;
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
+        swdata->pitches[0] = w * bpp;
+        swdata->pitches[1] = swdata->pitches[0];
+        swdata->pitches[2] = swdata->pitches[1];
+        swdata->planes[0] = swdata->pixels;
+        swdata->planes[1] = swdata->planes[0] + swdata->pitches[0] * h;
+        swdata->planes[2] = swdata->planes[1] + swdata->pitches[1] * h;
         break;
     case SDL_PIXELFORMAT_YUY2:
     case SDL_PIXELFORMAT_UYVY:
@@ -86,7 +100,6 @@ SDL_SW_YUVTexture *SDL_SW_CreateYUVTexture(SDL_PixelFormat format, SDL_Colorspac
         swdata->pitches[0] = ((w + 1) / 2) * 4;
         swdata->planes[0] = swdata->pixels;
         break;
-
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         swdata->pitches[0] = w;
@@ -115,13 +128,60 @@ bool SDL_SW_QueryYUVTexturePixels(SDL_SW_YUVTexture *swdata, void **pixels,
 bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
                             const void *pixels, int pitch)
 {
+    const int bpp = SDL_BYTESPERPIXEL(swdata->format);
+
     switch (swdata->format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_I0FL:
         if (rect->x == 0 && rect->y == 0 &&
-            rect->w == swdata->w && rect->h == swdata->h) {
+            rect->w == swdata->w && rect->h == swdata->h && pitch == swdata->pitches[0]) {
             SDL_memcpy(swdata->pixels, pixels,
-                       (size_t)(swdata->h * swdata->w) + 2 * ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2));
+                       (size_t)(swdata->h * swdata->w * bpp) + 2 * ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2) * bpp);
+        } else {
+            Uint8 *src, *dst;
+            int row;
+            size_t length;
+            const int UVpitch = ((pitch / bpp + 1) / 2) * bpp;
+
+            // Copy the Y plane
+            src = (Uint8 *)pixels;
+            dst = swdata->pixels + rect->y * swdata->w * bpp + rect->x * bpp;
+            length = rect->w * bpp;
+            for (row = 0; row < rect->h; ++row) {
+                SDL_memcpy(dst, src, length);
+                src += pitch;
+                dst += swdata->pitches[0];
+            }
+
+            // Copy the next plane
+            src = (Uint8 *)pixels + rect->h * pitch;
+            dst = swdata->pixels + swdata->h * swdata->pitches[0];
+            dst += (rect->y / 2) * swdata->pitches[1] + (rect->x / 2) * bpp;
+            length = ((rect->w + 1) / 2) * bpp;
+            for (row = 0; row < (rect->h + 1) / 2; ++row) {
+                SDL_memcpy(dst, src, length);
+                src += UVpitch;
+                dst += swdata->pitches[1];
+            }
+
+            // Copy the next plane
+            src = (Uint8 *)pixels + rect->h * pitch + ((rect->h + 1) / 2) * UVpitch;
+            dst = swdata->pixels + swdata->h * swdata->pitches[0] + ((rect->h + 1) / 2) * swdata->pitches[1];
+            dst += (rect->y / 2) * swdata->pitches[2] + (rect->x / 2) * bpp;
+            length = ((rect->w + 1) / 2) * bpp;
+            for (row = 0; row < (rect->h + 1) / 2; ++row) {
+                SDL_memcpy(dst, src, length);
+                src += UVpitch;
+                dst += swdata->pitches[2];
+            }
+        }
+        break;
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
+        if (rect->x == 0 && rect->y == 0 &&
+            rect->w == swdata->w && rect->h == swdata->h && pitch == swdata->pitches[0]) {
+            SDL_memcpy(swdata->pixels, pixels, (size_t)(swdata->h * pitch * 3));
         } else {
             Uint8 *src, *dst;
             int row;
@@ -129,35 +189,31 @@ bool SDL_SW_UpdateYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
 
             // Copy the Y plane
             src = (Uint8 *)pixels;
-            dst = swdata->pixels + rect->y * swdata->w + rect->x;
-            length = rect->w;
+            dst = swdata->pixels;
+            dst += rect->y * swdata->pitches[0] + rect->x * bpp;
+            length = rect->w * bpp;
             for (row = 0; row < rect->h; ++row) {
                 SDL_memcpy(dst, src, length);
                 src += pitch;
-                dst += swdata->w;
+                dst += swdata->pitches[0];
             }
 
             // Copy the next plane
-            src = (Uint8 *)pixels + rect->h * pitch;
-            dst = swdata->pixels + swdata->h * swdata->w;
-            dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
-            length = (rect->w + 1) / 2;
-            for (row = 0; row < (rect->h + 1) / 2; ++row) {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0];
+            dst += rect->y * swdata->pitches[1] + rect->x * bpp;
+            for (row = 0; row < rect->h; ++row) {
                 SDL_memcpy(dst, src, length);
-                src += (pitch + 1) / 2;
-                dst += (swdata->w + 1) / 2;
+                src += pitch;
+                dst += swdata->pitches[1];
             }
 
             // Copy the next plane
-            src = (Uint8 *)pixels + rect->h * pitch + ((rect->h + 1) / 2) * ((pitch + 1) / 2);
-            dst = swdata->pixels + swdata->h * swdata->w +
-                  ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2);
-            dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
-            length = (rect->w + 1) / 2;
-            for (row = 0; row < (rect->h + 1) / 2; ++row) {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0] + swdata->h * swdata->pitches[1];
+            dst += rect->y * swdata->pitches[2] + rect->x * bpp;
+            for (row = 0; row < rect->h; ++row) {
                 SDL_memcpy(dst, src, length);
-                src += (pitch + 1) / 2;
-                dst += (swdata->w + 1) / 2;
+                src += pitch;
+                dst += swdata->pitches[2];
             }
         }
         break;
@@ -229,47 +285,71 @@ bool SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture *swdata, const SDL_Rect *re
     Uint8 *dst;
     int row;
     size_t length;
+    const int bpp = SDL_BYTESPERPIXEL(swdata->format);
 
     // Copy the Y plane
     src = Yplane;
-    dst = swdata->pixels + rect->y * swdata->w + rect->x;
-    length = rect->w;
+    dst = swdata->pixels + rect->y * swdata->pitches[0] + rect->x * bpp;
+    length = rect->w * bpp;
     for (row = 0; row < rect->h; ++row) {
         SDL_memcpy(dst, src, length);
         src += Ypitch;
-        dst += swdata->w;
+        dst += swdata->pitches[0];
     }
 
     // Copy the U plane
     src = Uplane;
-    if (swdata->format == SDL_PIXELFORMAT_IYUV) {
-        dst = swdata->pixels + swdata->h * swdata->w;
+    if (swdata->format == SDL_PIXELFORMAT_I444 ||
+        swdata->format == SDL_PIXELFORMAT_I4FL) {
+        dst = swdata->pixels + swdata->h * swdata->pitches[0];
+        dst += rect->y * swdata->pitches[1] + rect->x * bpp;
+        length = rect->w * bpp;
+        for (row = 0; row < rect->h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += Upitch;
+            dst += swdata->pitches[1];
+        }
     } else {
-        dst = swdata->pixels + swdata->h * swdata->w +
-              ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2);
-    }
-    dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
-    length = (rect->w + 1) / 2;
-    for (row = 0; row < (rect->h + 1) / 2; ++row) {
-        SDL_memcpy(dst, src, length);
-        src += Upitch;
-        dst += (swdata->w + 1) / 2;
+        if (swdata->format == SDL_PIXELFORMAT_IYUV ||
+            swdata->format == SDL_PIXELFORMAT_I0FL) {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0];
+        } else {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0] + ((swdata->h + 1) / 2) * swdata->pitches[1];
+        }
+        dst += rect->y / 2 * ((swdata->w + 1) / 2) * bpp + (rect->x / 2) * bpp;
+        length = ((rect->w + 1) / 2) * bpp;
+        for (row = 0; row < (rect->h + 1) / 2; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += Upitch;
+            dst += swdata->pitches[1];
+        }
     }
 
     // Copy the V plane
     src = Vplane;
-    if (swdata->format == SDL_PIXELFORMAT_YV12) {
-        dst = swdata->pixels + swdata->h * swdata->w;
+    if (swdata->format == SDL_PIXELFORMAT_I444 ||
+        swdata->format == SDL_PIXELFORMAT_I4FL) {
+        dst = swdata->pixels + swdata->h * swdata->pitches[0] + swdata->h * swdata->pitches[1];
+        dst += rect->y * swdata->pitches[2] + rect->x * bpp;
+        length = rect->w * bpp;
+        for (row = 0; row < rect->h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += Vpitch;
+            dst += swdata->pitches[2];
+        }
     } else {
-        dst = swdata->pixels + swdata->h * swdata->w +
-              ((swdata->h + 1) / 2) * ((swdata->w + 1) / 2);
-    }
-    dst += rect->y / 2 * ((swdata->w + 1) / 2) + rect->x / 2;
-    length = (rect->w + 1) / 2;
-    for (row = 0; row < (rect->h + 1) / 2; ++row) {
-        SDL_memcpy(dst, src, length);
-        src += Vpitch;
-        dst += (swdata->w + 1) / 2;
+        if (swdata->format == SDL_PIXELFORMAT_YV12) {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0];
+        } else {
+            dst = swdata->pixels + swdata->h * swdata->pitches[0] + ((swdata->h + 1) / 2) * swdata->pitches[1];
+        }
+        dst += rect->y / 2 * ((swdata->w + 1) / 2) * bpp + (rect->x / 2) * bpp;
+        length = ((rect->w + 1) / 2) * bpp;
+        for (row = 0; row < (rect->h + 1) / 2; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += Vpitch;
+            dst += swdata->pitches[2];
+        }
     }
     return true;
 }
@@ -314,18 +394,20 @@ bool SDL_SW_LockYUVTexture(SDL_SW_YUVTexture *swdata, const SDL_Rect *rect,
     switch (swdata->format) {
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_I444:
+    case SDL_PIXELFORMAT_I4FL:
     case SDL_PIXELFORMAT_NV12:
     case SDL_PIXELFORMAT_NV21:
         if (rect && (rect->x != 0 || rect->y != 0 || rect->w != swdata->w || rect->h != swdata->h)) {
-            return SDL_SetError("YV12, IYUV, NV12, NV21 textures only support full surface locks");
+            return SDL_SetError("YV12, IYUV, I444, I4FL, NV12, NV21 textures only support full surface locks");
         }
         break;
     default:
-        return SDL_SetError("Unsupported YUV format");
+        break;
     }
 
     if (rect) {
-        *pixels = swdata->planes[0] + rect->y * swdata->pitches[0] + rect->x * 2;
+        *pixels = swdata->planes[0] + rect->y * swdata->pitches[0] + rect->x * SDL_BYTESPERPIXEL(swdata->format);
     } else {
         *pixels = swdata->planes[0];
     }
@@ -372,7 +454,7 @@ bool SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture *swdata, const SDL_Rect *srcrect, SDL
             swdata->target_format = target_format;
         }
         if (!swdata->stretch) {
-            swdata->stretch = SDL_CreateSurface(swdata->w, swdata->h, target_format);
+            swdata->stretch = SDL_CreateSurfaceUninitialized(swdata->w, swdata->h, target_format);
             if (!swdata->stretch) {
                 return false;
             }

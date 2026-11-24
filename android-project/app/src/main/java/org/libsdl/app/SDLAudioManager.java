@@ -17,10 +17,11 @@ class SDLAudioManager {
 
     private static AudioDeviceCallback mAudioDeviceCallback;
 
-    static void initialize() {
-        mAudioDeviceCallback = null;
+    // The audio manager the device callback is registered with, since the context may be cleared before it's unregistered
+    private static AudioManager mAudioDeviceCallbackManager;
 
-        if(Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */)
+    static void initialize() {
+        if (mAudioDeviceCallback == null && Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */)
         {
             mAudioDeviceCallback = new AudioDeviceCallback() {
                 @Override
@@ -51,7 +52,7 @@ class SDLAudioManager {
     // Audio
 
     private static AudioDeviceInfo getInputAudioDeviceInfo(int deviceId) {
-        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
+        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && mContext != null) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_INPUTS)) {
                 if (deviceInfo.getId() == deviceId) {
@@ -63,7 +64,7 @@ class SDLAudioManager {
     }
 
     private static AudioDeviceInfo getPlaybackAudioDeviceInfo(int deviceId) {
-        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
+        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && mContext != null) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             for (AudioDeviceInfo deviceInfo : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
                 if (deviceInfo.getId() == deviceId) {
@@ -75,7 +76,7 @@ class SDLAudioManager {
     }
 
     static void registerAudioDeviceCallback() {
-        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
+        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && mContext != null) {
             AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
             // get an initial list now, before hotplug callbacks fire.
             for (AudioDeviceInfo dev : audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)) {
@@ -88,13 +89,14 @@ class SDLAudioManager {
                 nativeAddAudioDevice(dev.isSink(), dev.getProductName().toString(), dev.getId());
             }
             audioManager.registerAudioDeviceCallback(mAudioDeviceCallback, null);
+            mAudioDeviceCallbackManager = audioManager;
         }
     }
 
     static void unregisterAudioDeviceCallback() {
-        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */) {
-            AudioManager audioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-            audioManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
+        if (Build.VERSION.SDK_INT >= 24 /* Android 7.0 (N) */ && mAudioDeviceCallbackManager != null) {
+            mAudioDeviceCallbackManager.unregisterAudioDeviceCallback(mAudioDeviceCallback);
+            mAudioDeviceCallbackManager = null;
         }
     }
 

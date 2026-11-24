@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -9,18 +9,25 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-#include <stdlib.h>
 
-#include <SDL3/SDL_test_common.h>
+#define SDL_MAIN_USE_CALLBACKS 1
+#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
+#include <SDL3/SDL_test_common.h>
+
+#include <stdlib.h>
 
 #if defined(SDL_PLATFORM_ANDROID) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
 
-int main(int argc, char *argv[])
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Vulkan support on this system");
-    return 1;
+    return SDL_APP_FAILURE;
 }
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event) { return SDL_APP_FAILURE; }
+SDL_AppResult SDL_AppIterate(void *appstate) { return SDL_APP_FAILURE; }
+void SDL_AppQuit(void *appstate, SDL_AppResult result) {}
 
 #else
 
@@ -218,22 +225,74 @@ static void loadGlobalFunctions(void)
 #undef VULKAN_INSTANCE_FUNCTION
 }
 
+static bool checkVulkanPortability(void)
+{
+    Uint32 extensionCount, i;
+    VkExtensionProperties *availableExtensions;
+    bool supported = false;
+
+    vkEnumerateInstanceExtensionProperties(
+        NULL,
+        &extensionCount,
+        NULL);
+    availableExtensions = SDL_malloc(
+        extensionCount * sizeof(VkExtensionProperties));
+    vkEnumerateInstanceExtensionProperties(
+        NULL,
+        &extensionCount,
+        availableExtensions);
+
+    for (i = 0; i < extensionCount; i += 1) {
+        if (SDL_strcmp(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME, availableExtensions[i].extensionName) == 0) {
+            supported = true;
+            break;
+        }
+    }
+
+    SDL_free(availableExtensions);
+    return supported;
+}
+
 static void createInstance(void)
 {
     VkApplicationInfo appInfo = { 0 };
     VkInstanceCreateInfo instanceCreateInfo = { 0 };
+    bool supportsPortabilityEnumeration;
+    const char **instanceExtensions;
     VkResult result;
 
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-#ifdef __APPLE__
-    instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-#endif
 
-    instanceCreateInfo.ppEnabledExtensionNames = SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    supportsPortabilityEnumeration = checkVulkanPortability();
+    if (supportsPortabilityEnumeration) {
+        // Allocate our own extension array so that we can add the KHR_portability extensions for MoltenVK
+        Uint32 count_instance_extensions;
+        const char * const *instance_extensions = SDL_Vulkan_GetInstanceExtensions(&count_instance_extensions);
+
+        int count_extensions = count_instance_extensions + 1;
+        instanceExtensions = SDL_malloc(count_extensions * sizeof(const char *));
+        instanceExtensions[0] = VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME;
+        SDL_memcpy((char **) &instanceExtensions[1], instance_extensions, count_instance_extensions * sizeof(const char*));
+
+        instanceCreateInfo.enabledExtensionCount = count_extensions;
+        instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions;
+        instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    } else {
+        // No need to allocate anything, just use SDL's array directly
+        instanceExtensions = NULL;
+        instanceCreateInfo.ppEnabledExtensionNames =
+            SDL_Vulkan_GetInstanceExtensions(&instanceCreateInfo.enabledExtensionCount);
+    }
+
     result = vkCreateInstance(&instanceCreateInfo, NULL, &vulkanContext->instance);
+
+    if (instanceExtensions != NULL) {
+        SDL_free((char **) instanceExtensions);
+    }
+
     if (result != VK_SUCCESS) {
         vulkanContext->instance = VK_NULL_HANDLE;
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
@@ -448,9 +507,9 @@ static void createDevice(void)
     VkDeviceCreateInfo deviceCreateInfo = { 0 };
     static const char *const deviceExtensionNames[] = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-#ifdef __APPLE__        
+#ifdef __APPLE__
         "VK_KHR_portability_subset"
-#endif        
+#endif
     };
     VkResult result;
 
@@ -1092,19 +1151,18 @@ static bool render(void)
     return true;
 }
 
-int main(int argc, char **argv)
+static Uint32 frames;
+static Uint64 then;
+
+SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
-    int done;
     const SDL_DisplayMode *mode;
-    SDL_Event event;
-    Uint64 then, now;
-    Uint32 frames;
     int dw, dh;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
-        return 1;
+        return SDL_APP_FAILURE;
     }
 
     /* Set Vulkan parameters */
@@ -1113,7 +1171,7 @@ int main(int argc, char **argv)
 
     if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
         SDLTest_CommonQuit(state);
-        return 1;
+        return SDL_APP_FAILURE;
     }
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
@@ -1131,40 +1189,52 @@ int main(int argc, char **argv)
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
-    done = 0;
-    while (!done) {
-        /* Check for events */
-        frames++;
-        while (SDL_PollEvent(&event)) {
-            /* Need to destroy the swapchain before the window created
-             * by SDL.
-             */
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                destroySwapchainAndSwapchainSpecificStuff(true);
-            }
-            SDLTest_CommonEvent(state, &event, &done);
-        }
 
-        if (!done) {
-            int i;
-            for (i = 0; i < state->num_windows; ++i) {
-                if (state->windows[i]) {
-                    vulkanContext = &vulkanContexts[i];
-                    render();
-                }
-            }
+    return SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
+{
+    int done = 0;
+
+    /* Need to destroy the swapchain before the window created
+     * by SDL.
+     */
+    if (event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
+        destroySwapchainAndSwapchainSpecificStuff(true);
+    }
+
+    SDLTest_CommonEvent(state, event, &done);
+    return done ? SDL_APP_SUCCESS : SDL_APP_CONTINUE;
+}
+
+SDL_AppResult SDL_AppIterate(void *appstate)
+{
+    int i;
+
+    frames++;
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i]) {
+            vulkanContext = &vulkanContexts[i];
+            render();
         }
     }
 
+    return SDL_APP_CONTINUE;
+}
+
+void SDL_AppQuit(void *appstate, SDL_AppResult result)
+{
     /* Print out some timing information */
-    now = SDL_GetTicks();
-    if (now > then) {
-        SDL_Log("%2.2f frames per second", ((double)frames * 1000) / (now - then));
+    if (result != SDL_APP_FAILURE) {
+        const Uint64 now = SDL_GetTicks();
+        if (now > then) {
+            SDL_Log("%2.2f frames per second", ((double)frames * 1000) / (now - then));
+        }
     }
 
     shutdownVulkan(true);
     SDLTest_CommonQuit(state);
-    return 0;
 }
 
 #endif

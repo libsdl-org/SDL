@@ -1,6 +1,6 @@
 function(SDL_DetectTargetCPUArchitectures DETECTED_ARCHS)
 
-  set(known_archs EMSCRIPTEN ARM32 ARM64 ARM64EC LOONGARCH64 POWERPC32 POWERPC64 RISCV32 RISCV64 X86 X64)
+  set(known_archs EMSCRIPTEN ARM32 ARM64 ARM64EC LOONGARCH64 MIPS32 MIPS64 POWERPC32 POWERPC64 RISCV32 RISCV64 X86 X64)
 
   if(APPLE AND CMAKE_OSX_ARCHITECTURES)
     foreach(known_arch IN LISTS known_archs)
@@ -37,6 +37,8 @@ function(SDL_DetectTargetCPUArchitectures DETECTED_ARCHS)
   set(arch_check_ARM64EC "defined(_M_ARM64EC)")
   set(arch_check_EMSCRIPTEN "defined(__EMSCRIPTEN__)")
   set(arch_check_LOONGARCH64 "defined(__loongarch64)")
+  set(arch_check_MIPS32 "(defined(__mips__) && !defined(__mips64))")
+  set(arch_check_MIPS64 "(defined(__mips__) && defined(__mips64))")
   set(arch_check_POWERPC32 "(defined(__PPC__) || defined(__powerpc__)) && !defined(__powerpc64__)")
   set(arch_check_POWERPC64 "defined(__PPC64__) || defined(__powerpc64__)")
   set(arch_check_RISCV32 "defined(__riscv) && defined(__riscv_xlen) && __riscv_xlen == 32")

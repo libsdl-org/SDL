@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,7 +48,7 @@
 /* Thread synchronization primitives */
 #include <SDL3/SDL_atomic.h>
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #include <process.h> /* _beginthreadex() and _endthreadex() */
 #endif
 
@@ -208,6 +208,8 @@ typedef int (SDLCALL *SDL_ThreadFunction) (void *data);
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateThreadWithProperties
@@ -274,6 +276,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThread(SDL_ThreadFunction fn,
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateThread
@@ -292,7 +296,7 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
 
 /* The real implementation, hidden from the wiki, so it can show this as real functions that don't have macro magic. */
 #ifndef SDL_WIKI_DOCUMENTATION_SECTION
-#  if defined(SDL_PLATFORM_WINDOWS)
+#  if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #    ifndef SDL_BeginThreadFunction
 #      define SDL_BeginThreadFunction _beginthreadex
 #    endif
@@ -329,6 +333,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithProperties(SDL_Prop
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunction fn, const char *name, void *data, SDL_FunctionPointer pfnBeginThread, SDL_FunctionPointer pfnEndThread);
@@ -342,6 +348,8 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadRuntime(SDL_ThreadFunct
  * \returns an opaque pointer to the new thread object on success, NULL if the
  *          new thread could not be created; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -363,9 +371,36 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
  * \returns a pointer to a UTF-8 string that names the specified thread, or
  *          NULL if it doesn't have a name.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
+
+/**
+ * Get the thread name for the current thread.
+ *
+ * Thread names are always available for threads started through
+ * SDL_CreateThread() or SDL_CreateThreadWithProperties(). For other threads,
+ * SDL will query the OS if possible. This is not possible on every platform,
+ * and will return NULL in these cases.
+ *
+ * On supported platforms, and for SDL-created threads, this might still
+ * return NULL if there was an error, or the system is out of memory, etc.
+ *
+ * The returned string is owned by SDL and guaranteed to live until the
+ * calling thread terminates. If it needs to be passed to another thread that
+ * might outlive the caller's thread, you should make a copy of the string.
+ *
+ * \returns the name of the current thread, or NULL if not available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetThreadName
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentThreadName(void);
 
 /**
  * Get the thread identifier for the current thread.
@@ -378,6 +413,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
  * thread.
  *
  * \returns the ID of the current thread.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -396,6 +433,8 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetCurrentThreadID(void);
  * \returns the ID of the specified thread, or the ID of the current thread if
  *          `thread` is NULL.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_GetCurrentThreadID
@@ -412,6 +451,8 @@ extern SDL_DECLSPEC SDL_ThreadID SDLCALL SDL_GetThreadID(SDL_Thread *thread);
  * \param priority the SDL_ThreadPriority to set.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -445,6 +486,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
  *               function by its 'return', or -1 if the thread has been
  *               detached or isn't valid, may be NULL.
  *
+ * \threadsafety It is safe to call this function from any thread, but only a
+ *               single thread can wait any specific thread to finish.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_CreateThread
@@ -458,6 +502,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread *thread, int *status)
  * \param thread the thread to query.
  * \returns the current state of a thread, or SDL_THREAD_UNKNOWN if the thread
  *          isn't valid.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -493,6 +539,8 @@ extern SDL_DECLSPEC SDL_ThreadState SDLCALL SDL_GetThreadState(SDL_Thread *threa
  *
  * \param thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

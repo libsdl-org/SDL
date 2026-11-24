@@ -3,8 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5EDA1ED3-8213-4C12-B0DF-B631EB611804}</ProjectGuid>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\pen\01-drawing-lines\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\pen\01-drawing-lines\drawing-lines.c" />

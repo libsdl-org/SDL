@@ -6,11 +6,11 @@ def buildWithCMake = project.hasProperty('BUILD_WITH_CMAKE');
 
 android {
     namespace = "org.libsdl.app"
-    compileSdkVersion 35
+    compileSdkVersion 36
     ndkVersion = "28.2.13676358"
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
@@ -29,12 +29,8 @@ android {
     buildTypes {
         release {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
-    applicationVariants.all { variant ->
-        tasks["merge${variant.name.capitalize()}Assets"]
-            .dependsOn("externalNativeBuild${variant.name.capitalize()}")
     }
     if (!project.hasProperty('EXCLUDE_NATIVE_LIBS')) {
         sourceSets.main {
@@ -55,6 +51,15 @@ android {
     }
     lint {
         abortOnError = false
+    }
+}
+
+// Build the native code before merging assets, so files it places in assets are packaged.
+// This uses task names rather than the variant API, which was removed in AGP 9.
+tasks.configureEach { task ->
+    def match = task.name =~ /^merge(\w+)Assets$/
+    if (match.matches()) {
+        task.dependsOn(tasks.matching { it.name == "externalNativeBuild${match.group(1)}" })
     }
 }
 

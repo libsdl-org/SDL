@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,6 +38,10 @@
 
 #ifdef SDL_PLATFORM_ANDROID
 #include <android/log.h>
+#endif
+
+#ifdef SDL_PLATFORM_OPENHARMONY
+#include <hilog/log.h>
 #endif
 
 #include "stdlib/SDL_vacopy.h"
@@ -122,7 +126,19 @@ static int SDL_android_priority[] = {
     ANDROID_LOG_FATAL
 };
 SDL_COMPILE_TIME_ASSERT(android_priority, SDL_arraysize(SDL_android_priority) == SDL_LOG_PRIORITY_COUNT);
-#endif // SDL_PLATFORM_ANDROID
+#elif defined(SDL_PLATFORM_OPENHARMONY)
+static int SDL_openharmony_priority[] = {
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_DEBUG,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR,
+    LOG_FATAL
+};
+SDL_COMPILE_TIME_ASSERT(openharmony_priority, SDL_arraysize(SDL_openharmony_priority) == SDL_LOG_PRIORITY_COUNT);
+#endif
 
 static void SDLCALL SDL_LoggingChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
@@ -180,11 +196,15 @@ static void SDL_CheckInitLog(void)
 
 static void CleanupLogPriorities(void)
 {
+    SDL_LockMutex(SDL_log_lock);
+
     while (SDL_loglevels) {
         SDL_LogLevel *entry = SDL_loglevels;
         SDL_loglevels = entry->next;
         SDL_free(entry);
     }
+
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
 void SDL_SetLogPriorities(SDL_LogPriority priority)
@@ -339,6 +359,8 @@ static void ParseLogPriorities(const char *hint)
         return;
     }
 
+    SDL_LockMutex(SDL_log_lock);
+
     for (name = hint; name; name = next) {
         const char *sep = SDL_strchr(name, '=');
         if (!sep) {
@@ -371,6 +393,8 @@ static void ParseLogPriorities(const char *hint)
             }
         }
     }
+
+    SDL_UnlockMutex(SDL_log_lock);
 }
 
 void SDL_ResetLogPriorities(void)
@@ -431,12 +455,16 @@ void SDL_ResetLogPriorities(void)
 
 static void CleanupLogPrefixes(void)
 {
+    SDL_LockMutex(SDL_log_function_lock);
+
     for (int i = 0; i < SDL_arraysize(SDL_priority_prefixes); ++i) {
         if (SDL_priority_prefixes[i]) {
             SDL_free(SDL_priority_prefixes[i]);
             SDL_priority_prefixes[i] = NULL;
         }
     }
+
+    SDL_UnlockMutex(SDL_log_function_lock);
 }
 
 static const char *GetLogPriorityPrefix(SDL_LogPriority priority)
@@ -571,7 +599,7 @@ void SDL_LogMessage(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_ST
     va_end(ap);
 }
 
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
 static const char *GetCategoryPrefix(int category)
 {
     if (category < SDL_LOG_CATEGORY_RESERVED2) {
@@ -582,7 +610,7 @@ static const char *GetCategoryPrefix(int category)
     }
     return "CUSTOM";
 }
-#endif // SDL_PLATFORM_ANDROID
+#endif // SDL_PLATFORM_ANDROID || SDL_PLATFORM_OPENHARMONY
 
 void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_STRING const char *fmt, va_list ap)
 {
@@ -612,15 +640,21 @@ void SDL_LogMessageV(int category, SDL_LogPriority priority, SDL_PRINTF_FORMAT_S
     }
 
     // If message truncated, allocate and re-render
-    if (len >= sizeof(stack_buf) && SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
-        // Allocate exactly what we need, including the zero-terminator
-        message = (char *)SDL_malloc(len_plus_term);
-        if (!message) {
-            return;
+    if (len >= sizeof(stack_buf)) {
+        if (SDL_size_add_check_overflow(len, 1, &len_plus_term)) {
+            // Allocate exactly what we need, including the zero-terminator
+            message = (char *)SDL_malloc(len_plus_term);
+            if (!message) {
+                return;
+            }
+            va_copy(aq, ap);
+            len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
+            va_end(aq);
+        } else {
+            // Allocation would overflow, use truncated message
+            message = stack_buf;
+            len = sizeof(stack_buf);
         }
-        va_copy(aq, ap);
-        len = SDL_vsnprintf(message, len_plus_term, fmt, aq);
-        va_end(aq);
     } else {
         message = stack_buf;
     }
@@ -740,12 +774,15 @@ static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority 
         SDL_free(tstr);
         SDL_small_free(output, isstack);
     }
-#elif defined(SDL_PLATFORM_ANDROID)
+#elif defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     {
         char tag[32];
-
         SDL_snprintf(tag, SDL_arraysize(tag), "SDL/%s", GetCategoryPrefix(category));
+        #if defined(SDL_PLATFORM_ANDROID)
         __android_log_write(SDL_android_priority[priority], tag, message);
+        #elif defined(SDL_PLATFORM_OPENHARMONY)
+        OH_LOG_Print(LOG_APP, SDL_openharmony_priority[priority], LOG_DOMAIN, tag, "%{public}s", message);
+        #endif
     }
 #elif defined(SDL_PLATFORM_APPLE) && (defined(SDL_VIDEO_DRIVER_COCOA) || defined(SDL_VIDEO_DRIVER_UIKIT))
     /* Technically we don't need Cocoa/UIKit, but that's where this function is defined for now.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -147,7 +147,7 @@ typedef enum SDL_CameraPermissionState
 {
     SDL_CAMERA_PERMISSION_STATE_DENIED = -1,
     SDL_CAMERA_PERMISSION_STATE_PENDING,
-    SDL_CAMERA_PERMISSION_STATE_APPROVED,
+    SDL_CAMERA_PERMISSION_STATE_APPROVED
 } SDL_CameraPermissionState;
 
 
@@ -486,7 +486,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_AcquireCameraFrame(SDL_Camera *cam
 /**
  * Release a frame of video acquired from a camera.
  *
- * Let the back-end re-use the internal buffer for camera.
+ * Let the back-end reuse the internal buffer for camera.
  *
  * This function _must_ be called only on surface objects returned by
  * SDL_AcquireCameraFrame(). This function should be called as quickly as

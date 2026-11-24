@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -796,6 +796,7 @@
 #define SDL_TEXTEDITING_EXT SDL_TEXTEDITING_EXT_renamed_SDL_EVENT_TEXT_EDITING_EXT
 #define SDL_TEXTINPUT SDL_TEXTINPUT_renamed_SDL_EVENT_TEXT_INPUT
 #define SDL_USEREVENT SDL_USEREVENT_renamed_SDL_EVENT_USER
+#define SDL_WINDOWEVENT SDL_WINDOWEVENT_deprecated_use_SDL_EVENT_WINDOW_NAME
 #define SDL_WINDOWEVENT_CLOSE SDL_WINDOWEVENT_CLOSE_renamed_SDL_EVENT_WINDOW_CLOSE_REQUESTED
 #define SDL_WINDOWEVENT_DISPLAY_CHANGED SDL_WINDOWEVENT_DISPLAY_CHANGED_renamed_SDL_EVENT_WINDOW_DISPLAY_CHANGED
 #define SDL_WINDOWEVENT_ENTER SDL_WINDOWEVENT_ENTER_renamed_SDL_EVENT_WINDOW_MOUSE_ENTER
@@ -870,6 +871,7 @@
 #define SDL_GameControllerBindType SDL_GameControllerBindType_renamed_SDL_GamepadBindingType
 #define SDL_GameControllerButton SDL_GameControllerButton_renamed_SDL_GamepadButton
 #define SDL_GameControllerClose SDL_GameControllerClose_renamed_SDL_CloseGamepad
+#define SDL_GameControllerEventState SDL_GameControllerEventState_deprecated_use_SDL_SetGamepadEventsEnabled_true_false
 #define SDL_GameControllerFromInstanceID SDL_GameControllerFromInstanceID_renamed_SDL_GetGamepadFromID
 #define SDL_GameControllerFromPlayerIndex SDL_GameControllerFromPlayerIndex_renamed_SDL_GetGamepadFromPlayerIndex
 #define SDL_GameControllerGetAppleSFSymbolsNameForAxis SDL_GameControllerGetAppleSFSymbolsNameForAxis_renamed_SDL_GetGamepadAppleSFSymbolsNameForAxis
@@ -947,6 +949,7 @@
 
 /* ##SDL_hints.h */
 #define SDL_DelHintCallback SDL_DelHintCallback_renamed_SDL_RemoveHintCallback
+#define SDL_HINT_ACCELEROMETER_AS_JOYSTICK SDL_HINT_ACCELEROMETER_AS_JOYSTICK_deprecated_use_SDL_GamepadHasSensor_and_SDL_SetGamepadSensorEnabled
 #define SDL_HINT_ALLOW_TOPMOST SDL_HINT_ALLOW_TOPMOST_renamed_SDL_HINT_WINDOW_ALLOW_TOPMOST
 #define SDL_HINT_DIRECTINPUT_ENABLED SDL_HINT_DIRECTINPUT_ENABLED_renamed_SDL_HINT_JOYSTICK_DIRECTINPUT
 #define SDL_HINT_GDK_TEXTINPUT_DEFAULT SDL_HINT_GDK_TEXTINPUT_DEFAULT_renamed_SDL_HINT_GDK_TEXTINPUT_DEFAULT_TEXT
@@ -957,6 +960,8 @@
 #define SDL_HINT_LINUX_HAT_DEADZONES SDL_HINT_LINUX_HAT_DEADZONES_renamed_SDL_HINT_JOYSTICK_LINUX_HAT_DEADZONES
 #define SDL_HINT_LINUX_JOYSTICK_CLASSIC SDL_HINT_LINUX_JOYSTICK_CLASSIC_renamed_SDL_HINT_JOYSTICK_LINUX_CLASSIC
 #define SDL_HINT_LINUX_JOYSTICK_DEADZONES SDL_HINT_LINUX_JOYSTICK_DEADZONES_renamed_SDL_HINT_JOYSTICK_LINUX_DEADZONES
+#define SDL_HINT_RENDER_SCALE_QUALITY SDL_HINT_RENDER_SCALE_QUALITY_deprecated_use_SDL_SetTextureScaleMode_with_SDL_SCALEMODE_NEAREST
+#define SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS SDL_HINT_WINDOWS_FORCE_MUTEX_CRITICAL_SECTIONS_deprecated_remove_this_line
 
 /* ##SDL_joystick.h */
 #define SDL_JOYSTICK_TYPE_GAMECONTROLLER SDL_JOYSTICK_TYPE_GAMECONTROLLER_renamed_SDL_JOYSTICK_TYPE_GAMEPAD
@@ -999,6 +1004,7 @@
 #define SDL_JoystickSetVirtualButton SDL_JoystickSetVirtualButton_renamed_SDL_SetJoystickVirtualButton
 #define SDL_JoystickSetVirtualHat SDL_JoystickSetVirtualHat_renamed_SDL_SetJoystickVirtualHat
 #define SDL_JoystickUpdate SDL_JoystickUpdate_renamed_SDL_UpdateJoysticks
+#define SDL_NumJoysticks SDL_NumJoysticks_deprecated_use_SDL_GetJoysticks
 
 /* ##SDL_keyboard.h */
 #define SDL_IsScreenKeyboardShown SDL_IsScreenKeyboardShown_renamed_SDL_ScreenKeyboardShown
@@ -1147,6 +1153,8 @@
 
 /* ##SDL_render.h */
 #define SDL_GetRendererOutputSize SDL_GetRendererOutputSize_renamed_SDL_GetCurrentRenderOutputSize
+#define SDL_RENDERER_ACCELERATED SDL_RENDERER_ACCELERATED_deprecated_remove_this_line
+#define SDL_RENDERER_PRESENTVSYNC SDL_RENDERER_PRESENTVSYNC_deprecated_use_SDL_SetRenderVSync
 #define SDL_RenderCopy SDL_RenderCopy_renamed_SDL_RenderTexture
 #define SDL_RenderCopyEx SDL_RenderCopyEx_renamed_SDL_RenderTextureRotated
 #define SDL_RenderCopyExF SDL_RenderCopyExF_renamed_SDL_RenderTextureRotated
@@ -1291,6 +1299,7 @@
 
 /* ##SDL_thread.h */
 #define SDL_SetThreadPriority SDL_SetThreadPriority_renamed_SDL_SetCurrentThreadPriority
+#define SDL_SetWindowInputFocus SDL_SetWindowInputFocus_deprecated_use_SDL_RaiseWindow
 #define SDL_TLSCleanup SDL_TLSCleanup_renamed_SDL_CleanupTLS
 #define SDL_TLSGet SDL_TLSGet_renamed_SDL_GetTLS
 #define SDL_TLSSet SDL_TLSSet_renamed_SDL_SetTLS
@@ -1316,12 +1325,75 @@
 #define SDL_GetWindowDisplayIndex SDL_GetWindowDisplayIndex_renamed_SDL_GetDisplayForWindow
 #define SDL_GetWindowDisplayMode SDL_GetWindowDisplayMode_renamed_SDL_GetWindowFullscreenMode
 #define SDL_HasWindowSurface SDL_HasWindowSurface_renamed_SDL_WindowHasSurface
+#define SDL_INIT_EVERYTHING SDL_INIT_EVERYTHING_deprecated_list_flags_explicitly
 #define SDL_IsScreenSaverEnabled SDL_IsScreenSaverEnabled_renamed_SDL_ScreenSaverEnabled
 #define SDL_SetWindowDisplayMode SDL_SetWindowDisplayMode_renamed_SDL_SetWindowFullscreenMode
 #define SDL_WINDOW_ALLOW_HIGHDPI SDL_WINDOW_ALLOW_HIGHDPI_renamed_SDL_WINDOW_HIGH_PIXEL_DENSITY
+#define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_WINDOW_FULLSCREEN_DESKTOP_deprecated_use_SDL_SetWindowFullscreen_with_bool
 #define SDL_WINDOW_INPUT_GRABBED SDL_WINDOW_INPUT_GRABBED_renamed_SDL_WINDOW_MOUSE_GRABBED
+#define SDL_WINDOW_SHOWN SDL_WINDOW_SHOWN_deprecated_windows_are_shown_by_default
 #define SDL_WINDOW_SKIP_TASKBAR SDL_WINDOW_SKIP_TASKBAR_renamed_SDL_WINDOW_UTILITY
 
 #endif /* SDL_ENABLE_OLD_NAMES */
+
+/* In SDL2, `SDL_ThreadID()` was a function that is now called `SDL_GetCurrentThreadID()`.
+ * In SDL3, the thread ID *type* is called `SDL_ThreadID` (in SDL2 it was
+ * `SDL_threadID` with lower 't').
+ *
+ * Unfortunately, at least in C++ writing SDL_ThreadID() compiles fine even for
+ * the type, it's the default constructor of the type, so e.g.
+ * `myID = SDL_ThreadID();` is equivalent to `myID = 0;`
+ *
+ * Of course if you've been porting SDL2 code and have missed renaming this case
+ * of `SDL_ThreadID()` to `SDL_GetCurrentThreadID()` this is quite a pitfall:
+ * The code compiles fine, but behaves wrong: it will set `myID` to `0` instead
+ * of the current thread's ID.
+ *
+ * This makes it impossible to provide a "proper" `SDL_ENABLE_OLD_NAMES` treatment
+ * of SDL_ThreadID() in this header, so the following `#define` sets `SDL_ThreadID()`
+ * to an invalid value, forcing you to consciously adjust it to your needs, i.e.
+ * replacing it with `SDL_GetCurrentThreadID()` or `0` depending on your intentions.
+ *
+ * Note that using `SDL_ThreadID x = ...;` is unaffected, only "SDL_ThreadID" followed
+ * by "(" will lead to a compile error.
+ *
+ * Unfortunately, there are some cases where this breaks legit SDL3 code that
+ * actually means to use `SDL_ThreadID(...`, like:
+ * - Definitions of function pointers with SDL_ThreadID as return type, like
+ *   `typedef SDL_ThreadID (SDLCALL *SDL_DYNAPIFN_SDL_GetCurrentThreadID) (void);`
+ * - C++ casts like `SDL_ThreadID tid = SDL_ThreadID(id);`
+ *
+ * For C++ casts, just replace `SDL_ThreadID(id)` with either a C-style cast
+ * ( `(SDL_ThreadID)id` ) or one of the other C++ cast types like
+ * `static_cast<SDL_ThreadID>(id)`.
+ *
+ * For the (hopefully rare) case of function pointers returning SDL_ThreadID,
+ * or any other legit case where `SDL_ThreadID` is followed by `(` that can't be
+ * easily avoided by using slightly different syntax, you can `#undef SDL_ThreadID`
+ * before your code using it to get rid of this define causing the compiler error.
+ *
+ * If you have your own `#define SDL_ThreadID what_ever` to hack around conflicts
+ * and make sure it's defined before including this header, SDL_ThreadID will
+ * *not* get defined here so it doesn't get in your way.
+ *
+ * If you're using `SDL_ENABLE_OLD_NAMES` to support both SDL2 and SDL3 with
+ * the same code, consider adding:
+ *
+ * ```c
+ * #if SDL_MAJOR_VERSION == 2
+ *   #define SDL_GetCurrentThreadID() SDL_ThreadID()
+ * #endif
+ * ```
+ *
+ * and using `SDL_GetCurrentThreadID()` in your code, even if you otherwise use
+ * the SDL2 names.
+ *
+ * The gain of catching the bugs caused by accidentally using `SDL_ThreadID()`
+ * when `SDL_GetCurrentThreadID()` was intended hopefully outweight the annoyances
+ * caused by this in some rare cases.
+ */
+#ifndef SDL_ThreadID
+#define SDL_ThreadID()  SDL_ThreadID_is_a_type_now_function_is_SDL_GetCurrentThreadID
+#endif
 
 #endif /* SDL_oldnames_h_ */

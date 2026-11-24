@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -91,37 +91,43 @@ static SDL_Cursor *X11_CreateCursorAndData(Cursor x11_cursor)
 }
 
 #ifdef SDL_VIDEO_DRIVER_X11_XCURSOR
-static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
+static XcursorImage *X11_CreateXCursorImage(SDL_Surface *surface, int hot_x, int hot_y, Uint32 delay)
 {
-    Display *display = GetDisplay();
-    Cursor cursor = None;
-    XcursorImage *image;
-
-    image = X11_XcursorImageCreate(surface->w, surface->h);
+    XcursorImage *image = X11_XcursorImageCreate(surface->w, surface->h);
     if (!image) {
         SDL_OutOfMemory();
-        return None;
+        return NULL;
     }
     image->xhot = hot_x;
     image->yhot = hot_y;
-    image->delay = 0;
+    image->delay = delay;
 
     SDL_assert(surface->format == SDL_PIXELFORMAT_ARGB8888);
     SDL_assert(surface->pitch == surface->w * 4);
-    SDL_memcpy(image->pixels, surface->pixels, (size_t)surface->h * surface->pitch);
+    SDL_PremultiplyAlpha(surface->w, surface->h,
+                         surface->format, surface->pixels, surface->pitch,
+                         SDL_PIXELFORMAT_ARGB8888, image->pixels,
+                         surface->w * 4, false);
 
-    cursor = X11_XcursorImageLoadCursor(display, image);
+    return image;
+}
 
-    X11_XcursorImageDestroy(image);
+static Cursor X11_CreateXCursorCursor(SDL_Surface *surface, int hot_x, int hot_y)
+{
+    Cursor cursor = None;
+    XcursorImage *image = X11_CreateXCursorImage(surface, hot_x, hot_y, 0);
+
+    if (image) {
+        cursor = X11_XcursorImageLoadCursor(GetDisplay(), image);
+        X11_XcursorImageDestroy(image);
+    }
 
     return cursor;
 }
 
 static Cursor X11_CreateAnimatedXCursorCursor(SDL_CursorFrameInfo *frames, int num_frames, int hot_x, int hot_y)
 {
-    Display *display = GetDisplay();
     Cursor cursor = None;
-    XcursorImage *image;
     XcursorImages *images;
 
     images = X11_XcursorImagesCreate(num_frames);
@@ -131,24 +137,16 @@ static Cursor X11_CreateAnimatedXCursorCursor(SDL_CursorFrameInfo *frames, int n
     }
 
     for (int i = 0; i < num_frames; ++i) {
-        image = X11_XcursorImageCreate(frames[i].surface->w, frames[i].surface->h);
+        XcursorImage *image = X11_CreateXCursorImage(frames[i].surface, hot_x, hot_y, frames[i].duration);
         if (!image) {
-            SDL_OutOfMemory();
             goto cleanup;
         }
-        image->xhot = hot_x;
-        image->yhot = hot_y;
-        image->delay = frames[i].duration;
-
-        SDL_assert(frames[i].surface->format == SDL_PIXELFORMAT_ARGB8888);
-        SDL_assert(frames[i].surface->pitch == frames[i].surface->w * 4);
-        SDL_memcpy(image->pixels, frames[i].surface->pixels, (size_t)frames[i].surface->h * frames[i].surface->pitch);
 
         images->images[i] = image;
         images->nimage++;
     }
 
-    cursor = X11_XcursorImagesLoadCursor(display, images);
+    cursor = X11_XcursorImagesLoadCursor(GetDisplay(), images);
 
 cleanup:
     X11_XcursorImagesDestroy(images);
@@ -298,6 +296,20 @@ static unsigned int GetLegacySystemCursorShape(SDL_SystemCursor id)
         case SDL_SYSTEM_CURSOR_S_RESIZE: return XC_bottom_side;
         case SDL_SYSTEM_CURSOR_SW_RESIZE: return XC_bottom_left_corner;
         case SDL_SYSTEM_CURSOR_W_RESIZE: return XC_left_side;
+        case SDL_SYSTEM_CURSOR_CONTEXT_MENU: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_HELP: return XC_question_arrow;
+        case SDL_SYSTEM_CURSOR_CELL: return XC_cross;
+        case SDL_SYSTEM_CURSOR_VERTICAL_TEXT: return XC_xterm;
+        case SDL_SYSTEM_CURSOR_ALIAS: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_COPY: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_NO_DROP: return XC_pirate;
+        case SDL_SYSTEM_CURSOR_GRAB: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_GRABBING: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_COL_RESIZE: return XC_sb_h_double_arrow;
+        case SDL_SYSTEM_CURSOR_ROW_RESIZE: return XC_sb_v_double_arrow;
+        case SDL_SYSTEM_CURSOR_ALL_SCROLL: return XC_fleur;
+        case SDL_SYSTEM_CURSOR_ZOOM_IN: return XC_hand2;
+        case SDL_SYSTEM_CURSOR_ZOOM_OUT: return XC_hand2;
         case SDL_SYSTEM_CURSOR_COUNT: break;  // so the compiler might notice if an enum value is missing here.
     }
 
@@ -585,23 +597,12 @@ void X11_InitMouse(SDL_VideoDevice *_this)
 
 void X11_QuitMouse(SDL_VideoDevice *_this)
 {
-    SDL_VideoData *data = _this->internal;
-    SDL_XInput2DeviceInfo *i;
-    SDL_XInput2DeviceInfo *next;
-    int j;
-
-    for (j = 0; j < SDL_arraysize(sys_cursors); j++) {
-        if (sys_cursors[j]) {
-            X11_FreeCursor(sys_cursors[j]);
-            sys_cursors[j] = NULL;
+    for (int i = 0; i < SDL_arraysize(sys_cursors); i++) {
+        if (sys_cursors[i]) {
+            X11_FreeCursor(sys_cursors[i]);
+            sys_cursors[i] = NULL;
         }
     }
-
-    for (i = data->mouse_device_info; i; i = next) {
-        next = i->next;
-        SDL_free(i);
-    }
-    data->mouse_device_info = NULL;
 
     X11_DestroyEmptyCursor();
 }

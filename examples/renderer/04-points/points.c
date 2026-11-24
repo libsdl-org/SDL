@@ -50,7 +50,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_SetRenderLogicalPresentation(renderer, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     /* set up the data for a bunch of points. */
-    for (i = 0; i < SDL_arraysize(points); i++) {
+    for (i = 0; i < SDL_arraysize(points); ++i) {
         points[i].x = SDL_randf() * ((float) WINDOW_WIDTH);
         points[i].y = SDL_randf() * ((float) WINDOW_HEIGHT);
         point_speeds[i] = MIN_PIXELS_PER_SECOND + (SDL_randf() * (MAX_PIXELS_PER_SECOND - MIN_PIXELS_PER_SECOND));
@@ -78,7 +78,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     int i;
 
     /* let's move all our points a little for a new frame. */
-    for (i = 0; i < SDL_arraysize(points); i++) {
+    for (i = 0; i < SDL_arraysize(points); ++i) {
         const float distance = elapsed * point_speeds[i];
         points[i].x += distance;
         points[i].y += distance;

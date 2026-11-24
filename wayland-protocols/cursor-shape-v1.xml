@@ -22,7 +22,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="wp_cursor_shape_manager_v1" version="1">
+  <interface name="wp_cursor_shape_manager_v1" version="2">
     <description summary="cursor shape manager">
       This global offers an alternative, optional way to set cursor images. This
       new way uses enumerated cursors instead of a wl_surface like
@@ -43,6 +43,9 @@
     <request name="get_pointer">
       <description summary="manage the cursor shape of a pointer device">
         Obtain a wp_cursor_shape_device_v1 for a wl_pointer object.
+
+        When the pointer capability is removed from the wl_seat, the
+        wp_cursor_shape_device_v1 object becomes inert.
       </description>
       <arg name="cursor_shape_device" type="new_id" interface="wp_cursor_shape_device_v1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
@@ -51,16 +54,18 @@
     <request name="get_tablet_tool_v2">
       <description summary="manage the cursor shape of a tablet tool device">
         Obtain a wp_cursor_shape_device_v1 for a zwp_tablet_tool_v2 object.
+
+        When the zwp_tablet_tool_v2 is removed, the wp_cursor_shape_device_v1
+        object becomes inert.
       </description>
       <arg name="cursor_shape_device" type="new_id" interface="wp_cursor_shape_device_v1"/>
       <arg name="tablet_tool" type="object" interface="zwp_tablet_tool_v2"/>
     </request>
   </interface>
 
-  <interface name="wp_cursor_shape_device_v1" version="1">
+  <interface name="wp_cursor_shape_device_v1" version="2">
     <description summary="cursor shape for a device">
-      This interface advertises the list of supported cursor shapes for a
-      device, and allows clients to set the cursor shape.
+      This interface allows clients to set the cursor shape.
     </description>
 
     <enum name="shape">
@@ -69,6 +74,14 @@
 
         The names are taken from the CSS W3C specification:
         https://w3c.github.io/csswg-drafts/css-ui/#cursor
+        with a few additions.
+
+        Note that there are some groups of cursor shapes that are related:
+        The first group is drag-and-drop cursors which are used to indicate
+        the selected action during dnd operations. The second group is resize
+        cursors which are used to indicate resizing and moving possibilities
+        on window borders. It is recommended that the shapes in these groups
+        should use visually compatible images and metaphors.
       </description>
       <entry name="default" value="1" summary="default cursor"/>
       <entry name="context_menu" value="2" summary="a context menu is available for the object under the cursor"/>
@@ -104,6 +117,8 @@
       <entry name="all_scroll" value="32" summary="something can be scrolled in any direction"/>
       <entry name="zoom_in" value="33" summary="something can be zoomed in"/>
       <entry name="zoom_out" value="34" summary="something can be zoomed out"/>
+      <entry name="dnd_ask" value="35" summary="drag-and-drop: the user will select which action will be carried out (non-css value)" since="2"/>
+      <entry name="all_resize" value="36" summary="resizing: something can be moved or resized in any direction (non-css value)" since="2"/>
     </enum>
 
     <enum name="error">

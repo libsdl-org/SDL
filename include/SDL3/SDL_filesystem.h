@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -164,6 +164,77 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetBasePath(void);
 extern SDL_DECLSPEC char * SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 
 /**
+ * Get the user-and-app-specific path where cache files can be written.
+ *
+ * Some platforms offer a designated space on the filesystem for cached data
+ * (data downloaded or calculated and saved to local files to avoid the
+ * expense of obtaining it again, but can be reproduced if lost).
+ *
+ * It's possible that the system will know not to back up these specific files
+ * and/or it will know to clear these files out from time to time. If
+ * available, it might be useful to take advantage of this directory instead
+ * of storing everything in one place.
+ *
+ * This function will decide the appropriate location in the native
+ * filesystem, create the directory if necessary, and return a string of the
+ * absolute path to the directory in UTF-8 encoding.
+ *
+ * On Windows, the string might look like:
+ *
+ * `C:\\Users\\bob\\AppData\\Local\\My Company\\My Program Name\\`
+ *
+ * On Linux, the string might look like:
+ *
+ * `/home/bob/.cache/My Program Name/`
+ *
+ * On macOS, the string might look like:
+ *
+ * `/Users/bob/Library/Cache/My Program Name/`
+ *
+ * This function may return NULL if there is no designated cache directory for
+ * a given platform. Best practices in this case is not to treat this as a
+ * fatal error, but instead fall back to SDL_GetPrefPath() as a safe place to
+ * write files generically, and write cache files somewhere under that path.
+ *
+ * Both the org and app strings may become part of a directory name, so please
+ * follow these rules:
+ *
+ * - Use the same strings you would pass to SDL_GetPrefPath!
+ * - Try to use the same org string (_including case-sensitivity_) for all
+ *   your applications that use this function.
+ * - Always use a unique app string for each one, and make sure it never
+ *   changes for an app once you've decided on it.
+ * - Unicode characters are legal, as long as they are UTF-8 encoded, but...
+ * - ...only use letters, numbers, and spaces. Avoid punctuation like "Game
+ *   Name 2: Bad Guy's Revenge!" ... "Game Name 2" is sufficient.
+ *
+ * Unlike SDL_GetPrefPath(), where historical mistakes were made, `org` is
+ * _not_ allowed to be NULL or "". New apps should specify proper strings here
+ * (even if they need to fall back to NULL or "" for SDL_GetPrefPath() to keep
+ * existing app installations working without disruption).
+ *
+ * The returned path is guaranteed to end with a path separator ('\\' on
+ * Windows, '/' on most other platforms).
+ *
+ * \param org the name of your organization.
+ * \param app the name of your application.
+ * \returns a UTF-8 string of the user's cache directory in platform-dependent
+ *          notation. NULL if there's a problem (creating directory failed,
+ *          etc.). This should be freed with SDL_free() when it is no longer
+ *          needed. Returns NULL if platform has no separate cache directory,
+ *          but this isn't strictly speaking an error.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetPrefPath
+ * \sa SDL_GetBasePath
+ */
+extern SDL_DECLSPEC char * SDLCALL SDL_GetCachePath(const char *org, const char *app);
+
+
+/**
  * The type of the OS-provided default folder for a specific purpose.
  *
  * Note that the Trash folder isn't included here, because trashing files
@@ -241,9 +312,8 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetUserFolder(SDL_Folder folder);
 /**
  * Types of filesystem entries.
  *
- * Note that there may be other sorts of items on a filesystem: devices,
- * symlinks, named pipes, etc. They are currently reported as
- * SDL_PATHTYPE_OTHER.
+ * Note that there may be other sorts of items on a filesystem: devices, named
+ * pipes, etc. They are currently reported as SDL_PATHTYPE_OTHER.
  *
  * \since This enum is available since SDL 3.2.0.
  *
@@ -262,6 +332,7 @@ typedef enum SDL_PathType
  *
  * \since This datatype is available since SDL 3.2.0.
  *
+ * \sa SDL_PathType
  * \sa SDL_GetPathInfo
  * \sa SDL_GetStoragePathInfo
  */
@@ -456,6 +527,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CopyFile(const char *oldpath, const char *n
 
 /**
  * Get information about a filesystem path.
+ *
+ * Symlinks, on filesystems that support them, are always followed, so you
+ * will always get information on what the symlink eventually points to, and
+ * not the symlink itself.
  *
  * \param path the path to query.
  * \param info a pointer filled in with information about the path, or NULL to

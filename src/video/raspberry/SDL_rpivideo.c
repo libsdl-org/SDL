@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -124,7 +124,7 @@ static SDL_VideoDevice *RPI_Create(void)
     device->GL_GetSwapInterval = RPI_GLES_GetSwapInterval;
     device->GL_SwapWindow = RPI_GLES_SwapWindow;
     device->GL_DestroyContext = RPI_GLES_DestroyContext;
-    device->GL_DefaultProfileConfig = RPI_GLES_DefaultProfileConfig;
+    device->GL_SetDefaultProfileConfig = RPI_GLES_SetDefaultProfileConfig;
 
     device->PumpEvents = RPI_PumpEvents;
 
@@ -194,6 +194,9 @@ bool RPI_VideoInit(SDL_VideoDevice *_this)
 
     AddDispManXDisplay(DISPMANX_ID_MAIN_LCD);    // your default display
     AddDispManXDisplay(DISPMANX_ID_FORCE_OTHER); // an "other" display...maybe DSI-connected screen while HDMI is your main
+    if (_this->num_displays == 0) {
+        return SDL_SetError("No displays available");
+    }
 
 #ifdef SDL_INPUT_LINUXEV
     if (!SDL_EVDEV_Init()) {

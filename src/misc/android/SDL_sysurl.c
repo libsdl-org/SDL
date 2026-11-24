@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,6 +20,8 @@
 */
 #include "SDL_internal.h"
 
+#if defined(SDL_PLATFORM_ANDROID)
+
 #include "../SDL_sysurl.h"
 #include "../../core/android/SDL_android.h"
 
@@ -27,3 +29,6 @@ bool SDL_SYS_OpenURL(const char *url)
 {
     return Android_JNI_OpenURL(url);
 }
+
+#endif
+

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,13 +53,11 @@ typedef enum
     GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_PIXELART,
     GLES2_SHADER_FRAGMENT_TEXTURE_ABGR,
     GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_PIXELART,
-#ifdef SDL_HAVE_YUV
     GLES2_SHADER_FRAGMENT_TEXTURE_YUV,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RA,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV12_RG,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RA,
     GLES2_SHADER_FRAGMENT_TEXTURE_NV21_RG,
-#endif
     // Shaders beyond this point are optional and not cached at render creation
     GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES,
     GLES2_SHADER_COUNT

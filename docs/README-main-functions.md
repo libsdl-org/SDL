@@ -206,6 +206,13 @@ The SDL_AppResult value that terminated the app is provided here, in case
 it's useful to know if this was a successful or failing run of the app.
 
 
+## Using main functions from other languages
+
+If you're not using C/C++, using SDL's entry points is still possible but is
+more complex. Please refer to https://wiki.libsdl.org/SDL3/NonstandardStartup
+for the technical details.
+
+
 ## Summary and Best Practices
 
 - **Always Include SDL_main.h in One Source File:** When working with SDL,

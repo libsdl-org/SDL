@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,4 +54,9 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
 void SDL_SYS_DetachThread(SDL_Thread *thread)
 {
     return;
+}
+
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    return false;  // there are no threads, so there are no thread names.
 }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -93,6 +93,11 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->HideWindow = UIKit_HideWindow;
         device->RaiseWindow = UIKit_RaiseWindow;
         device->SetWindowBordered = UIKit_SetWindowBordered;
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+        if (@available(iOS 13.0, *)) {
+            device->SetWindowResizable = UIKit_SetWindowResizable;
+        }
+#endif
         device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
@@ -163,11 +168,15 @@ static bool UIKit_VideoInit(SDL_VideoDevice *_this)
 
     UIKit_InitClipboard(_this);
 
+    UIKit_InitWindowFocus();
+
     return true;
 }
 
 static void UIKit_VideoQuit(SDL_VideoDevice *_this)
 {
+    UIKit_QuitWindowFocus();
+
     UIKit_QuitClipboard(_this);
 
     SDL_QuitGCKeyboard();
@@ -213,7 +222,9 @@ SDL_SystemTheme UIKit_GetSystemTheme(void)
 #ifdef SDL_PLATFORM_VISIONOS
 CGRect UIKit_ComputeViewFrame(SDL_Window *window)
 {
-    return CGRectMake(window->x, window->y, window->w, window->h);
+    // View origin is always (0,0) relative to the UIWindow.
+    // window->x/y are screen-level positions (often SDL_WINDOWPOS_UNDEFINED).
+    return CGRectMake(0, 0, window->w, window->h);
 }
 #else
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
@@ -236,18 +247,25 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
      * This is a workaround until a better solution can be found.
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
      * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
-     * https://forums.developer.apple.com/thread/65337 */
-    UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
-    BOOL landscape = UIInterfaceOrientationIsLandscape(orient) ||
-                    !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
-    BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
+     * https://forums.developer.apple.com/thread/65337
+     *
+     * On iOS 13 and newer the window bounds match the interface orientation,
+     * which may not be known yet at launch, and iPadOS 26 doesn't let resizable
+     * applications lock the orientation, so we use the window bounds as-is there.
+     */
+    if (!UIKit_IsSystemVersionAtLeast(13.0)) {
+        UIInterfaceOrientation orientation = UIKit_GetInterfaceOrientation();
+        BOOL landscape = UIInterfaceOrientationIsLandscape(orientation) ||
+                         !(UIKit_GetSupportedOrientations(window) & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown));
+        BOOL fullscreen = CGRectEqualToRect(screen.bounds, frame);
 
-    /* The orientation flip doesn't make sense when the window is smaller
-     * than the screen (iPad Split View, for example). */
-    if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
-        float height = frame.size.width;
-        frame.size.width = frame.size.height;
-        frame.size.height = height;
+        /* The orientation flip doesn't make sense when the window is smaller
+         * than the screen (iPad Split View, for example). */
+        if (fullscreen && (landscape != (frame.size.width > frame.size.height))) {
+            float height = frame.size.width;
+            frame.size.width = frame.size.height;
+            frame.size.height = height;
+        }
     }
 #endif
 
@@ -255,9 +273,78 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 }
 #endif // SDL_PLATFORM_VISIONOS
 
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+UIInterfaceOrientation UIKit_GetInterfaceOrientation(void)
+{
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 270000
+    if (@available(iOS 27.0, *)) {
+        UIWindowScene *windowScene = UIKit_GetActiveWindowScene();
+        if (windowScene != nil) {
+            return windowScene.effectiveGeometry.interfaceOrientation;
+        }
+        return UIInterfaceOrientationUnknown;
+    }
+#endif
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    return [UIApplication sharedApplication].statusBarOrientation;
+#pragma clang diagnostic pop
+}
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+
+#ifndef SDL_PLATFORM_VISIONOS
+// Find a foreground scene, optionally on a specific screen and a specific role, preferring an active one.
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role) API_AVAILABLE(ios(13.0), tvos(13.0));
+static UIWindowScene *UIKit_FindForegroundWindowScene(UIScreen *screen, NSString *role)
+{
+    NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
+    UIWindowScene *foregroundScene = nil;
+
+    for (UIScene *scene in connectedScenes) {
+        if (![scene isKindOfClass:[UIWindowScene class]]) {
+            continue;
+        }
+
+        UIWindowScene *windowScene = (UIWindowScene *)scene;
+        if (screen && windowScene.screen != screen) {
+            continue;
+        }
+        if (role && ![windowScene.session.role isEqualToString:role]) {
+            continue;
+        }
+
+        if (windowScene.activationState == UISceneActivationStateForegroundActive) {
+            foregroundScene = windowScene;
+            break;
+        }
+        if (windowScene.activationState == UISceneActivationStateForegroundInactive && !foregroundScene) {
+            foregroundScene = windowScene;
+        }
+    }
+    return foregroundScene;
+}
+
+UIWindowScene *UIKit_GetWindowSceneForScreen(UIScreen *screen)
+{
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        return UIKit_FindForegroundWindowScene(screen, nil);
+    }
+    return nil;
+}
+#endif // !SDL_PLATFORM_VISIONOS
+
 UIWindowScene *UIKit_GetActiveWindowScene(void)
 {
     if (@available(iOS 13.0, tvOS 13.0, *)) {
+#ifndef SDL_PLATFORM_VISIONOS
+        // Return the application scene, if possible
+        UIWindowScene *applicationScene = UIKit_FindForegroundWindowScene(nil, UIWindowSceneSessionRoleApplication);
+        if (applicationScene) {
+            return applicationScene;
+        }
+#endif
+
         NSSet<UIScene *> *connectedScenes = [UIApplication sharedApplication].connectedScenes;
 
         // First, try to find an active foreground scene
@@ -310,7 +397,8 @@ void UIKit_SetGameControllerInteraction(bool enabled)
 
 void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled)
 {
-#ifndef SDL_PLATFORM_TVOS
+#if defined(SDL_PLATFORM_VISIONOS) || \
+       (defined(SDL_PLATFORM_IOS) && __IPHONE_OS_VERSION_MAX_ALLOWED >= 180000)
     if (@available(iOS 18.0, visionOS 2.0, *)) {
         if (enabled) {
             GCEventInteraction *interaction = [[GCEventInteraction alloc] init];
@@ -378,14 +466,26 @@ void SDL_NSLog(const char *prefix, const char *text)
  * This doesn't really have anything to do with the interfaces of the SDL video
  * subsystem, but we need to stuff this into an Objective-C source code file.
  */
-bool SDL_IsIPad(void)
-{
-    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad);
-}
 
-bool SDL_IsAppleTV(void)
+SDL_FormFactor SDL_GetUIKitDeviceFormFactor(void)
 {
-    return ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomTV);
+    // TODO: Apple Watch
+    switch ([UIDevice currentDevice].userInterfaceIdiom) {
+    case UIUserInterfaceIdiomPhone:
+        return SDL_FORMFACTOR_PHONE;
+    case UIUserInterfaceIdiomPad:
+        return SDL_FORMFACTOR_TABLET;
+    case UIUserInterfaceIdiomTV:
+        return SDL_FORMFACTOR_TV;
+    case UIUserInterfaceIdiomCarPlay:
+        return SDL_FORMFACTOR_CAR;
+    case UIUserInterfaceIdiomMac:
+        return SDL_FORMFACTOR_DESKTOP;
+    case UIUserInterfaceIdiomVision:
+        return SDL_FORMFACTOR_HEADSET;
+    default:
+        return SDL_FORMFACTOR_UNKNOWN;
+    }
 }
 
 #endif // SDL_VIDEO_DRIVER_UIKIT

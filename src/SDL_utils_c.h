@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,11 +29,17 @@
 // Return the smallest power of 2 greater than or equal to 'x'
 extern int SDL_powerof2(int x);
 
-extern Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b);
+extern Uint64 SDL_CalculateGCD(Uint64 a, Uint64 b);
 extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
+
+// Reduce a 64-bit fraction so it fits in int, approximating if needed.
+// Returns 0/0 if either input is 0 or the ratio is too large to represent.
+extern void SDL_ReduceFraction(Uint64 numerator, Uint64 denominator, int *out_numerator, int *out_denominator);
 
 extern bool SDL_startswith(const char *string, const char *prefix);
 extern bool SDL_endswith(const char *string, const char *suffix);
+
+extern bool SDL_IsZeroGUID(const SDL_GUID *guid);
 
 /** Convert URI to a local filename, stripping the "file://"
  *  preamble and hostname if present, and writes the result
@@ -47,6 +53,9 @@ extern bool SDL_endswith(const char *string, const char *suffix);
  *  On error, -1 is returned.
  */
 extern int SDL_URIToLocal(const char *src, char *dst);
+
+/// Determine if a URI is valid by validating the scheme.
+extern bool SDL_IsURI(const char *uri);
 
 typedef enum
 {
@@ -92,5 +101,12 @@ extern char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *ven
 
 // Log what backend a subsystem chose, if a hint was set to do so. Useful for debugging.
 extern void SDL_DebugLogBackend(const char *subsystem, const char *backend);
+
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+// even though we reference the C runtime's free() in other places, it appears
+// to be inlined more aggressively in Emscripten 4, so we need a reference to
+// it here, too, so inlined Javascript doesn't fail to find it.
+extern void Emscripten_force_free(void *ptr);
+#endif
 
 #endif // SDL_utils_h_

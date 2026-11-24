@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,10 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
+
+#ifdef SDL_PLATFORM_VISIONOS
+#import "SDL3/SDL3-Swift.h"
+#endif
 
 #ifdef SDL_PLATFORM_TVOS
 static void SDLCALL SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
@@ -75,7 +79,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
     SDLUITextField *textField;
-    BOOL hidingKeyboard;
     BOOL rotatingOrientation;
     NSString *committedText;
     NSString *obligateForBackspace;
@@ -92,7 +95,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
 #ifdef SDL_IPHONE_KEYBOARD
         [self initKeyboard];
-        hidingKeyboard = NO;
         rotatingOrientation = NO;
 #endif
 
@@ -121,6 +123,15 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
             }
         }
     }
+
+#ifdef SDL_PLATFORM_VISIONOS
+    if (@available(visionOS 26.0, *)) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)self.window->internal;
+        if (data.settings != nil) {
+            [self initializeVisionOSCurvedUI];
+        }
+    }
+#endif
     return self;
 }
 
@@ -142,6 +153,19 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                         (__bridge void *)self);
 #endif
 }
+
+#ifdef SDL_PLATFORM_VISIONOS
+- (UIContainerBackgroundStyle)preferredContainerBackgroundStyle
+{
+    if (self.window) {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)self.window->internal;
+        if (data && data.curvedContentHosting) {
+            return UIContainerBackgroundStyleHidden;
+        }
+    }
+    return UIContainerBackgroundStyleAutomatic;
+}
+#endif
 
 - (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
 {
@@ -212,6 +236,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     int h = (int)size.height;
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
+
+    UIKit_UpdateWindowSizeLock(window);
 }
 
 #ifndef SDL_PLATFORM_TVOS
@@ -288,6 +314,10 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     [center addObserver:self
                selector:@selector(keyboardWillShow:)
                    name:UIKeyboardWillShowNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardDidShow:)
+                   name:UIKeyboardDidShowNotification
                  object:nil];
     [center addObserver:self
                selector:@selector(keyboardWillHide:)
@@ -372,6 +402,9 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #ifndef SDL_PLATFORM_TVOS
     [center removeObserver:self
                       name:UIKeyboardWillShowNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardDidShowNotification
                     object:nil];
     [center removeObserver:self
                       name:UIKeyboardWillHideNotification
@@ -543,49 +576,25 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 
     [self setKeyboardHeight:(int)kbrect.size.height];
 #endif
+}
 
-    /* A keyboard hide transition has been interrupted with a show (keyboardWillHide has been called but keyboardDidHide didn't).
-     * since text input was stopped by the hide, we have to start it again. */
-    if (hidingKeyboard) {
-        SDL_StartTextInput(window);
-        hidingKeyboard = NO;
-    }
+- (void)keyboardDidShow:(NSNotification *)notification
+{
+    SDL_SendScreenKeyboardShown();
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    hidingKeyboard = YES;
     [self setKeyboardHeight:0];
-
-    /* When the user dismisses the software keyboard by the "hide" button in the bottom right corner,
-     * we want to reflect that on SDL_TextInputActive by calling SDL_StopTextInput...on certain conditions */
-    if (SDL_TextInputActive(window)
-        /* keyboardWillHide gets called when a hardware keyboard is attached,
-         * keep text input state active if hiding while there is a hardware keyboard.
-         * if the hardware keyboard gets detached, the software keyboard will appear anyway. */
-        && !SDL_HasKeyboard()
-        /* When the device changes orientation, a sequence of hide and show transitions are triggered.
-         * keep text input state active in this case. */
-        && !rotatingOrientation) {
-        SDL_StopTextInput(window);
-    }
 }
 
 - (void)keyboardDidHide:(NSNotification *)notification
 {
-    hidingKeyboard = NO;
+    SDL_SendScreenKeyboardHidden();
 }
 
 - (void)textFieldTextDidChange:(NSNotification *)notification
 {
-    // When opening a password manager overlay to select a password and have it auto-filled,
-    // text input becomes stopped as a result of the keyboard being hidden or the text field losing focus.
-    // As a workaround, ensure text input is activated on any changes to the text field.
-    bool startTextInputMomentarily = !SDL_TextInputActive(window);
-
-    if (startTextInputMomentarily)
-        SDL_StartTextInput(window);
-
     if (textField.markedTextRange == nil) {
         if (isOTPMode && labs((NSInteger)textField.text.length - (NSInteger)committedText.length) != 1) {
             return;
@@ -600,7 +609,7 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
                 break;
             }
         }
-        if (matchLength < committedText.length) {
+        if (matchLength < committedText.length && !SDL_HasKeyboard()) {
             size_t deleteLength = SDL_utf8strlen([[committedText substringFromIndex:matchLength] UTF8String]);
             while (deleteLength > 0) {
                 // Send distinct down and up events for each backspace action
@@ -624,9 +633,6 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
         }
         committedText = textField.text;
     }
-
-    if (startTextInputMomentarily)
-        SDL_StopTextInput(window);
 }
 
 - (void)updateKeyboard
@@ -642,7 +648,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
 #endif
 
     if (self.keyboardHeight && self.textInputRect.h) {
-        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h);
+        int margin = SDL_GetTextInputKeyboardMargin(window->text_input_props);
+        int rectbottom = (int)(self.textInputRect.y + self.textInputRect.h + margin);
         int keybottom = (int)(self.view.bounds.size.height - self.keyboardHeight);
         if (keybottom < rectbottom) {
             offset.y = keybottom - rectbottom;
@@ -743,6 +750,11 @@ void UIKit_SetTextInputProperties(SDL_VideoDevice *_this, SDL_Window *window, SD
     @autoreleasepool {
         SDL_uikitviewcontroller *vc = GetWindowViewController(window);
         [vc setTextFieldProperties:props];
+
+        // The keyboard margin may have changed
+        if (vc.textFieldFocused) {
+            [vc updateKeyboard];
+        }
     }
 }
 

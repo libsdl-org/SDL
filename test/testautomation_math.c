@@ -1060,7 +1060,8 @@ exp_overflowCase(void *args)
 {
     double result;
 
-    if (sizeof(double) > 8) {
+    const bool double_is_larger_than_64bit = sizeof(double) > 8;
+    if (double_is_larger_than_64bit) {
         return TEST_SKIPPED;
     }
 

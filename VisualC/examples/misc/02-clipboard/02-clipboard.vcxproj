@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{40F19482-512F-4123-A57B-509679EC8F26}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\misc\02-clipboard\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\misc\02-clipboard\clipboard.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

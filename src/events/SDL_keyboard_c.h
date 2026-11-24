@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,6 +45,11 @@ extern void SDL_RemoveKeyboard(SDL_KeyboardID keyboardID);
 
 // Set the mapping of scancode to key codes
 extern void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event);
+
+/* This may return null even when a keymap is bound, depending on the current keyboard mapping options.
+ * Set 'ignore_options' to true to always return the keymap that is actually bound.
+ */
+extern SDL_Keymap *SDL_GetCurrentKeymap(bool ignore_options);
 
 // Set the keyboard focus window
 extern bool SDL_SetKeyboardFocus(SDL_Window *window);

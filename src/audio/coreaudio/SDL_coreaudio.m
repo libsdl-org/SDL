@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,7 +51,7 @@ typedef struct SDLCoreAudioHandle
     bool recording;
 } SDLCoreAudioHandle;
 
-static bool TestCoreAudioDeviceHandleCallback(SDL_AudioDevice *device, void *handle)
+static bool TestCoreAudioDeviceHandleCallback(void *handle, SDL_AudioDevice *device)
 {
     const SDLCoreAudioHandle *a = (const SDLCoreAudioHandle *) device->handle;
     const SDLCoreAudioHandle *b = (const SDLCoreAudioHandle *) handle;
@@ -122,6 +122,65 @@ static void COREAUDIO_FreeDeviceHandle(SDL_AudioDevice *device)
     SDL_free(handle);
 }
 
+static char *GetAudioDeviceStringProperty(AudioDeviceID dev, const AudioObjectPropertyAddress *addr)
+{
+    CFStringRef cfstr = NULL;
+    UInt32 size = sizeof(CFStringRef);
+    if (AudioObjectGetPropertyData(dev, addr, 0, NULL, &size, &cfstr) != kAudioHardwareNoError) {
+        return NULL;
+    }
+
+    CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
+    char *retval = (char *)SDL_malloc(len + 1);
+    if (!retval) {
+        return NULL;
+    }
+
+    const bool failed = !CFStringGetCString(cfstr, retval, len + 1, kCFStringEncodingUTF8);
+    CFRelease(cfstr);
+    if (failed) {
+        SDL_free(retval);
+        return NULL;
+    }
+
+    return retval;
+}
+
+// Apple's USB audio driver includes the USB location ID in the device UID, e.g.
+// "AppleUSBAudioEngine:Sony Interactive Entertainment:Wireless Controller:2120000:1"
+// We use that as the container ID, so audio devices can be matched with USB controllers.
+static char *GetContainerIDFromUID(const char *unique_id)
+{
+    char *result = NULL;
+
+    if (!unique_id || SDL_strncmp(unique_id, "AppleUSBAudioEngine:", 20) != 0) {
+        return NULL;
+    }
+
+    // The location ID is the second to last field
+    const char *end = SDL_strrchr(unique_id, ':');
+    if (!end) {
+        return NULL;
+    }
+    const char *start = end;
+    while (start > unique_id && start[-1] != ':') {
+        --start;
+    }
+    if (start == unique_id) {
+        return NULL;
+    }
+
+    Uint32 location_id = (Uint32)SDL_strtoul(start, NULL, 16);
+    if (location_id == 0) {
+        return NULL;
+    }
+
+    // This needs to match the format used by SDL_GetContainerIDFromRegistryEntryID()
+    SDL_asprintf(&result, "0x%08" SDL_PRIx32, location_id);
+    return result;
+}
+
+
 // This only _adds_ new devices. Removal is handled by devices triggering kAudioDevicePropertyDeviceIsAlive property changes.
 static void RefreshPhysicalDevices(void)
 {
@@ -147,18 +206,8 @@ static void RefreshPhysicalDevices(void)
 
     // any non-zero items remaining in `devs` are new devices to be added.
     for (int recording = 0; recording < 2; recording++) {
-        const AudioObjectPropertyAddress addr = {
-            kAudioDevicePropertyStreamConfiguration,
-            recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMain
-        };
-        const AudioObjectPropertyAddress nameaddr = {
-            kAudioObjectPropertyName,
-            recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
-            kAudioObjectPropertyElementMain
-        };
-        const AudioObjectPropertyAddress freqaddr = {
-            kAudioDevicePropertyNominalSampleRate,
+        AudioObjectPropertyAddress addr = {
+            0,
             recording ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
             kAudioObjectPropertyElementMain
         };
@@ -172,6 +221,7 @@ static void RefreshPhysicalDevices(void)
             AudioBufferList *buflist = NULL;
             double sampleRate = 0;
 
+            addr.mSelector = kAudioDevicePropertyStreamConfiguration;
             if (AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size) != noErr) {
                 continue;
             } else if ((buflist = (AudioBufferList *)SDL_malloc(size)) == NULL) {
@@ -195,50 +245,50 @@ static void RefreshPhysicalDevices(void)
             }
 
             size = sizeof(sampleRate);
-            if (AudioObjectGetPropertyData(dev, &freqaddr, 0, NULL, &size, &sampleRate) == noErr) {
+            addr.mSelector = kAudioDevicePropertyNominalSampleRate;
+            if (AudioObjectGetPropertyData(dev, &addr, 0, NULL, &size, &sampleRate) == noErr) {
                 spec.freq = (int)sampleRate;
             }
 
-            CFStringRef cfstr = NULL;
-            size = sizeof(CFStringRef);
-            if (AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr) != kAudioHardwareNoError) {
+            addr.mSelector = kAudioObjectPropertyName;
+            char *name = GetAudioDeviceStringProperty(dev, &addr);
+            if (!name) {
                 continue;
             }
 
-            CFIndex len = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8);
-            char *name = (char *)SDL_malloc(len + 1);
-            bool usable = ((name != NULL) && (CFStringGetCString(cfstr, name, len + 1, kCFStringEncodingUTF8)));
+            addr.mSelector = kAudioDevicePropertyDeviceUID;
+            char *unique_id = GetAudioDeviceStringProperty(dev, &addr);  // it's okay if this one fails.
 
-            CFRelease(cfstr);
+            // Some devices have whitespace at the end...trim it.
+            int len = SDL_strlen(name);
+            while ((len > 0) && (name[len - 1] == ' ')) {
+                len--;
+            }
+            name[len] = '\0';
 
-            if (usable) {
-                // Some devices have whitespace at the end...trim it.
-                len = (CFIndex) SDL_strlen(name);
-                while ((len > 0) && (name[len - 1] == ' ')) {
-                    len--;
-                }
-                usable = (len > 0);
+            if (len == 0) {  // name is blank?!
+                SDL_free(name);
+                name = (unique_id && *unique_id) ? SDL_strdup(unique_id) : NULL;
             }
 
-            if (usable) {
-                name[len] = '\0';
-
-                #if DEBUG_COREAUDIO
-                SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d)", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev);
-                #endif
-                SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
-                if (newhandle) {
-                    newhandle->devid = dev;
-                    newhandle->recording = recording ? true : false;
-                    SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name, &spec, newhandle);
-                    if (device) {
-                        AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
-                    } else {
-                        SDL_free(newhandle);
-                    }
+            #if DEBUG_COREAUDIO
+            SDL_Log("COREAUDIO: Found %s device #%d: '%s' (devid %d, unique_id='%s')", ((recording) ? "recording" : "playback"), (int)i, name, (int)dev, unique_id);
+            #endif
+            SDLCoreAudioHandle *newhandle = (SDLCoreAudioHandle *) SDL_calloc(1, sizeof (*newhandle));
+            if (newhandle) {
+                newhandle->devid = dev;
+                newhandle->recording = recording ? true : false;
+                char *container_id = GetContainerIDFromUID(unique_id);
+                SDL_AudioDevice *device = SDL_AddAudioDevice(newhandle->recording, name ? name : "Unnamed audio device", container_id, unique_id, &spec, newhandle);
+                SDL_free(container_id);
+                if (device) {
+                    AudioObjectAddPropertyListener(dev, &alive_address, DeviceAliveNotification, device);
+                } else {
+                    SDL_free(newhandle);
                 }
             }
             SDL_free(name); // SDL_AddAudioDevice() would have copied the string.
+            SDL_free(unique_id); // SDL_AddAudioDevice() would have copied the string.
         }
     }
 
@@ -313,7 +363,7 @@ static void COREAUDIO_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audi
 
 static bool session_active = false;
 
-static bool PauseOneAudioDevice(SDL_AudioDevice *device, void *userdata)
+static bool PauseOneAudioDevice(void *userdata, SDL_AudioDevice *device)
 {
     if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
         AudioQueuePause(device->hidden->audioQueue);
@@ -326,7 +376,7 @@ static void PauseAudioDevices(void)
     (void) SDL_FindPhysicalAudioDeviceByCallback(PauseOneAudioDevice, NULL);
 }
 
-static bool ResumeOneAudioDevice(SDL_AudioDevice *device, void *userdata)
+static bool ResumeOneAudioDevice(void *userdata, SDL_AudioDevice *device)
 {
     if (device->hidden && device->hidden->audioQueue && !device->hidden->interrupted) {
         AudioQueueStart(device->hidden->audioQueue, NULL);
@@ -389,7 +439,7 @@ typedef struct
     int recording;
 } CountOpenAudioDevicesData;
 
-static bool CountOpenAudioDevices(SDL_AudioDevice *device, void *userdata)
+static bool CountOpenAudioDevices(void *userdata, SDL_AudioDevice *device)
 {
     CountOpenAudioDevicesData *data = (CountOpenAudioDevicesData *) userdata;
     if (device->hidden != NULL) {  // assume it's open if hidden != NULL
@@ -406,7 +456,6 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
 {
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
-        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
         NSString *category = AVAudioSessionCategoryPlayback;
         NSString *mode = AVAudioSessionModeDefault;
@@ -465,7 +514,9 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
         }
         if (category == AVAudioSessionCategoryPlayback ||
             category == AVAudioSessionCategoryPlayAndRecord) {
-            options |= AVAudioSessionCategoryOptionDuckOthers;
+            if (SDL_GetHintBoolean(SDL_HINT_AUDIO_DUCK_OTHERS, false)) {
+                options |= AVAudioSessionCategoryOptionDuckOthers;
+            }
         }
 
         if (![session.category isEqualToString:category] || session.categoryOptions != options) {
@@ -501,39 +552,6 @@ static bool UpdateAudioSession(SDL_AudioDevice *device, bool open, bool allow_pl
             PauseAudioDevices();
             [session setActive:NO error:nil];
             session_active = false;
-        }
-
-        if (open) {
-            SDLInterruptionListener *listener = [SDLInterruptionListener new];
-            listener.device = device;
-
-            [center addObserver:listener
-                       selector:@selector(audioSessionInterruption:)
-                           name:AVAudioSessionInterruptionNotification
-                         object:session];
-
-            /* An interruption end notification is not guaranteed to be sent if
-             we were previously interrupted... resuming if needed when the app
-             becomes active seems to be the way to go. */
-            // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationDidBecomeActiveNotification
-                         object:nil];
-
-            [center addObserver:listener
-                       selector:@selector(applicationBecameActive:)
-                           name:UIApplicationWillEnterForegroundNotification
-                         object:nil];
-
-            device->hidden->interruption_listener = CFBridgingRetain(listener);
-        } else {
-            SDLInterruptionListener *listener = nil;
-            listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
-            [center removeObserver:listener];
-            @synchronized(listener) {
-                listener.device = NULL;
-            }
         }
     }
 
@@ -626,6 +644,17 @@ static void COREAUDIO_CloseDevice(SDL_AudioDevice *device)
     if (!device->hidden) {
         return;
     }
+
+    #ifndef MACOSX_COREAUDIO
+    if (device->hidden->interruption_listener) {
+        SDLInterruptionListener *listener = (SDLInterruptionListener *)CFBridgingRelease(device->hidden->interruption_listener);
+        device->hidden->interruption_listener = nil;
+        [[NSNotificationCenter defaultCenter] removeObserver:listener];
+        @synchronized(listener) {
+            listener.device = NULL;
+        }
+    }
+    #endif
 
     // dispose of the audio queue before waiting on the thread, or it might stall for a long time!
     if (device->hidden->audioQueue) {
@@ -997,6 +1026,33 @@ static bool COREAUDIO_OpenDevice(SDL_AudioDevice *device)
         device->hidden->thread = NULL;
         return SDL_SetError("%s", device->hidden->thread_error);
     }
+
+#ifndef MACOSX_COREAUDIO
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    SDLInterruptionListener *listener = [SDLInterruptionListener new];
+    listener.device = device;
+
+    [center addObserver:listener
+               selector:@selector(audioSessionInterruption:)
+                   name:AVAudioSessionInterruptionNotification
+                 object:[AVAudioSession sharedInstance]];
+
+    /* An interruption end notification is not guaranteed to be sent if
+       we were previously interrupted... resuming if needed when the app
+       becomes active seems to be the way to go. */
+    // Note: object: below needs to be nil, as otherwise it filters by the object, and session doesn't send foreground / active notifications.
+    [center addObserver:listener
+               selector:@selector(applicationBecameActive:)
+                   name:UIApplicationDidBecomeActiveNotification
+                 object:nil];
+
+    [center addObserver:listener
+               selector:@selector(applicationBecameActive:)
+                   name:UIApplicationWillEnterForegroundNotification
+                 object:nil];
+
+    device->hidden->interruption_listener = CFBridgingRetain(listener);
+#endif
 
     return (device->hidden->thread != NULL);
 }

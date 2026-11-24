@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,7 @@
 
 #include "SDL_getenv_c.h"
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #include "../core/windows/SDL_windows.h"
 #endif
 
@@ -30,7 +30,7 @@
 #include "../core/android/SDL_android.h"
 #endif
 
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 #define HAVE_WIN32_ENVIRONMENT
 #elif defined(HAVE_GETENV) && \
       (defined(HAVE_SETENV) || defined(HAVE_PUTENV)) && \
@@ -93,17 +93,21 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
         return NULL;
     }
 
-    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
-    if (!env->strings) {
+    env->lock = SDL_CreateMutex();
+    if (!env->lock) {
         SDL_free(env);
         return NULL;
     }
 
-    // Don't fail if we can't create a mutex (e.g. on a single-thread environment)  // !!! FIXME: single-threaded environments should still return a non-NULL, do-nothing object here. Check for failure!
-    env->lock = SDL_CreateMutex();
+    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
+    if (!env->strings) {
+        SDL_DestroyMutex(env->lock);
+        SDL_free(env);
+        return NULL;
+    }
 
     if (populated) {
-#ifdef SDL_PLATFORM_WINDOWS
+#if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
         LPWCH strings = GetEnvironmentStringsW();
         if (strings) {
             for (LPWCH string = strings; *string; string += SDL_wcslen(string) + 1) {
@@ -118,6 +122,11 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                     continue;
                 }
                 *value++ = '\0';
+
+                // uppercase ASCII chars in environment variable names on Windows, since the system environment table is case-insensitive.
+                for (char *ptr = variable; *ptr; ptr++) {
+                    *ptr = (char) SDL_toupper((int) *ptr);  // the only UTF-8 bytes that don't have the high-bit set are single-byte ASCII chars, so SDL_toupper will leave multichar stuff alone.
+                }
 
                 SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
@@ -143,10 +152,17 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
                 }
                 *value++ = '\0';
 
+#ifdef SDL_PLATFORM_CYGWIN
+                // uppercase ASCII chars in environment variable names on Windows, since the system environment table is case-insensitive.
+                for (char *ptr = variable; *ptr; ptr++) {
+                    *ptr = (char) SDL_toupper((int) *ptr);  // the only UTF-8 bytes that don't have the high-bit set are single-byte ASCII chars, so SDL_toupper will leave multichar stuff alone.
+                }
+#endif
+
                 SDL_InsertIntoHashTable(env->strings, variable, value, true);
             }
         }
-#endif // SDL_PLATFORM_WINDOWS
+#endif // SDL_PLATFORM_WINDOWS && !SDL_PLATFORM_CYGWIN
     }
 
     return env;
@@ -337,7 +353,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     return setenv(name, value, overwrite);
 }
@@ -352,7 +370,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     if (getenv(name) != NULL) {
         if (!overwrite) {
@@ -376,7 +396,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return -1;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     if (!overwrite) {
         if (GetEnvironmentVariableA(name, NULL, 0) > 0) {
@@ -407,7 +429,9 @@ int SDL_setenv_unsafe(const char *name, const char *value, int overwrite)
         return 0;
     }
 
-    SDL_SetEnvironmentVariable(SDL_GetEnvironment(), name, value, (overwrite != 0));
+    if (SDL_environment) {
+        SDL_SetEnvironmentVariable(SDL_environment, name, value, (overwrite != 0));
+    }
 
     // Allocate memory for the variable
     len = SDL_strlen(name) + SDL_strlen(value) + 2;
@@ -462,7 +486,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     return unsetenv(name);
 }
@@ -475,7 +501,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     // Hope this environment uses the non-standard extension of removing the environment variable if it has no '='
     return putenv(name);
@@ -489,7 +517,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     if (!SetEnvironmentVariableA(name, NULL)) {
         return -1;
@@ -506,7 +536,9 @@ int SDL_unsetenv_unsafe(const char *name)
         return -1;
     }
 
-    SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), name);
+    if (SDL_environment) {
+        SDL_UnsetEnvironmentVariable(SDL_environment, name);
+    }
 
     if (environ) {
         len = SDL_strlen(name);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -179,7 +179,7 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
     int i;
     SDL_KeyboardID *keyboards;
 
-    keyboards = (SDL_JoystickID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
+    keyboards = (SDL_KeyboardID *)SDL_malloc((SDL_keyboard_count + 1) * sizeof(*keyboards));
     if (keyboards) {
         if (count) {
             *count = SDL_keyboard_count;
@@ -201,14 +201,22 @@ SDL_KeyboardID *SDL_GetKeyboards(int *count)
 const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 {
     const char *name = NULL;
-    if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
-        SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
-        return NULL;
-    }
-    if (!name) {
-        // SDL_strdup() failed during insert
-        SDL_OutOfMemory();
-        return NULL;
+
+    switch (instance_id) {
+    case SDL_GLOBAL_KEYBOARD_ID:
+        name = "Keyboard";
+        break;
+    default:
+        if (!SDL_FindInHashTable(SDL_keyboard_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+            SDL_SetError("Keyboard %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        break;
     }
     return name;
 }
@@ -216,12 +224,11 @@ const char *SDL_GetKeyboardNameForID(SDL_KeyboardID instance_id)
 void SDL_ResetKeyboard(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
-    int scancode;
 
 #ifdef DEBUG_KEYBOARD
     SDL_Log("Resetting keyboard");
 #endif
-    for (scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
+    for (int scancode = SDL_SCANCODE_UNKNOWN; scancode < SDL_SCANCODE_COUNT; ++scancode) {
         if (keyboard->keystate[scancode]) {
             SDL_SendKeyboardKey(0, SDL_GLOBAL_KEYBOARD_ID, 0, (SDL_Scancode)scancode, false);
         }
@@ -233,61 +240,34 @@ SDL_Keymap *SDL_GetCurrentKeymap(bool ignore_options)
     SDL_Keyboard *keyboard = &SDL_keyboard;
     SDL_Keymap *keymap = SDL_keyboard.keymap;
 
-    if (!ignore_options) {
-        if (keymap && keymap->thai_keyboard) {
+    if (keymap && !ignore_options) {
+        const Uint32 keymap_flags = SDL_GetKeymapFlags(keymap);
+        if (keymap_flags & SDL_KEYMAP_THAI_KEYBOARD) {
             // Thai keyboards are QWERTY plus Thai characters, use the default QWERTY keymap
             return NULL;
         }
 
         if ((keyboard->keycode_options & KEYCODE_OPTION_LATIN_LETTERS) &&
-            keymap && !keymap->latin_letters) {
+            !(keymap_flags & SDL_KEYMAP_LATIN_LETTERS)) {
             // We'll use the default QWERTY keymap
             return NULL;
         }
     }
 
-    return keyboard->keymap;
+    return keymap;
 }
 
 void SDL_SetKeymap(SDL_Keymap *keymap, bool send_event)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (keyboard->keymap && keyboard->keymap->auto_release) {
+    const Uint32 keymap_flags = SDL_GetKeymapFlags(keymap);
+    if (keymap_flags & SDL_KEYMAP_AUTO_RELEASE) {
         SDL_DestroyKeymap(keyboard->keymap);
     }
 
     keyboard->keymap = keymap;
-
-    if (keymap && !keymap->layout_determined) {
-        keymap->layout_determined = true;
-
-        // Detect French number row (all symbols)
-        keymap->french_numbers = true;
-        for (int i = SDL_SCANCODE_1; i <= SDL_SCANCODE_0; ++i) {
-            if (SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE)) ||
-                !SDL_isdigit(SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_SHIFT))) {
-                keymap->french_numbers = false;
-                break;
-            }
-        }
-
-        // Detect non-Latin keymap
-        keymap->thai_keyboard = false;
-        keymap->latin_letters = false;
-        for (int i = SDL_SCANCODE_A; i <= SDL_SCANCODE_D; ++i) {
-            SDL_Keycode key = SDL_GetKeymapKeycode(keymap, (SDL_Scancode)i, SDL_KMOD_NONE);
-            if (key <= 0xFF) {
-                keymap->latin_letters = true;
-                break;
-            }
-
-            if (key >= 0x0E00 && key <= 0x0E7F) {
-                keymap->thai_keyboard = true;
-                break;
-            }
-        }
-    }
+    SDL_DetermineKeymapLayout(keymap);
 
     if (send_event) {
         SDL_SendKeymapChangedEvent();
@@ -325,7 +305,7 @@ SDL_Window *SDL_GetKeyboardFocus(void)
 
 bool SDL_SetKeyboardFocus(SDL_Window *window)
 {
-#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_OPENHARMONY)
     SDL_VideoDevice *video = SDL_GetVideoDevice();
 #endif
     SDL_Keyboard *keyboard = &SDL_keyboard;
@@ -337,11 +317,16 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
         }
     }
 
+    if (keyboard->focus && !window) {
+        // We won't get anymore keyboard messages, so reset keyboard state
+        SDL_ResetKeyboard();
+    }
+
     // See if the current window has lost focus
     if (keyboard->focus && keyboard->focus != window) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_LOST, 0, 0);
 
-#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_OPENHARMONY)
         // Ensures IME compositions are committed
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StopTextInput) {
@@ -352,9 +337,6 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     }
 
     if (keyboard->focus && !window) {
-        // We won't get anymore keyboard messages, so reset keyboard state
-        SDL_ResetKeyboard();
-
         // Also leave mouse relative mode
         if (mouse->relative_mode) {
             SDL_SetRelativeMouseMode(false);
@@ -374,7 +356,7 @@ bool SDL_SetKeyboardFocus(SDL_Window *window)
     if (keyboard->focus) {
         SDL_SendWindowEvent(keyboard->focus, SDL_EVENT_WINDOW_FOCUS_GAINED, 0, 0);
 
-#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID)
+#if !defined(SDL_PLATFORM_IOS) && !defined(SDL_PLATFORM_ANDROID) && !defined(SDL_PLATFORM_OPENHARMONY)
         if (SDL_TextInputActive(keyboard->focus)) {
             if (video && video->StartTextInput) {
                 video->StartTextInput(video, keyboard->focus, keyboard->focus->text_input_props);
@@ -484,20 +466,20 @@ SDL_Keycode SDL_GetKeyFromScancode(SDL_Scancode scancode, SDL_Keymod modstate, b
 
     if (key_event) {
         SDL_Keymap *keymap = SDL_GetCurrentKeymap(false);
-        bool numlock = (modstate & SDL_KMOD_NUM) != 0;
-        SDL_Keycode keycode;
+        const Uint32 keymap_flags = SDL_GetKeymapFlags(keymap);
+        const bool numlock = (modstate & SDL_KMOD_NUM) != 0;
 
         // We won't be applying any modifiers by default
         modstate = SDL_KMOD_NONE;
 
         if ((keyboard->keycode_options & KEYCODE_OPTION_FRENCH_NUMBERS) &&
-            keymap && keymap->french_numbers &&
+            (keymap_flags & SDL_KEYMAP_FRENCH_NUMBERS) &&
             (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0)) {
             // Add the shift state to generate a numeric keycode
             modstate |= SDL_KMOD_SHIFT;
         }
 
-        keycode = SDL_GetKeymapKeycode(keymap, scancode, modstate);
+        SDL_Keycode keycode = SDL_GetKeymapKeycode(keymap, scancode, modstate);
 
         if (keyboard->keycode_options & KEYCODE_OPTION_HIDE_NUMPAD) {
             keycode = SDL_ConvertNumpadKeycode(keycode, numlock);
@@ -774,11 +756,33 @@ void SDL_SendKeyboardText(const char *text)
         event.type = SDL_EVENT_TEXT_INPUT;
         event.common.timestamp = 0;
         event.text.windowID = keyboard->focus ? keyboard->focus->id : 0;
-        event.text.text = SDL_CreateTemporaryString(text);
-        if (!event.text.text) {
-            return;
+
+        if (SDL_GetHintBoolean("SDL2_COMPAT", false)) {
+            size_t pos = 0, advance, length = SDL_strlen(text);
+
+            // Limit SDL_EVENT_TEXT_INPUT events to 32 bytes for SDL2 compatibility
+            while (pos < length) {
+                char trimmed_text[32];
+
+                advance = SDL_utf8strlcpy(trimmed_text, text + pos, SDL_arraysize(trimmed_text));
+                if (!advance) {
+                    break;
+                }
+                pos += advance;
+
+                event.text.text = SDL_CreateTemporaryString(trimmed_text);
+                if (!event.text.text) {
+                    return;
+                }
+                SDL_PushEvent(&event);
+            }
+        } else {
+            event.text.text = SDL_CreateTemporaryString(text);
+            if (!event.text.text) {
+                return;
+            }
+            SDL_PushEvent(&event);
         }
-        SDL_PushEvent(&event);
     }
 }
 
@@ -889,7 +893,8 @@ void SDL_QuitKeyboard(void)
     SDL_DestroyHashTable(SDL_keyboard_names);
     SDL_keyboard_names = NULL;
 
-    if (SDL_keyboard.keymap && SDL_keyboard.keymap->auto_release) {
+    const Uint32 keymap_flags = SDL_GetKeymapFlags(SDL_keyboard.keymap);
+    if (keymap_flags & SDL_KEYMAP_AUTO_RELEASE) {
         SDL_DestroyKeymap(SDL_keyboard.keymap);
         SDL_keyboard.keymap = NULL;
     }

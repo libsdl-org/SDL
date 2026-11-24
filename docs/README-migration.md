@@ -41,6 +41,8 @@ Many functions and symbols have been renamed. We have provided a handy Python sc
 rename_symbols.py --all-symbols source_code_path
 ```
 
+**Note** that `rename_symbols.py` can't completely handle `SDL_ThreadID`, see the [SDL_Thread.h section](#sdl_threadh) below.
+
 It's also possible to apply a semantic patch to migrate more easily to SDL3: [SDL_migration.cocci](https://github.com/libsdl-org/SDL/blob/main/build-scripts/SDL_migration.cocci)
 
 SDL headers should now be included as `#include <SDL3/SDL.h>`. Typically that's the only SDL header you'll need in your application unless you are using OpenGL or Vulkan functionality. SDL_image, SDL_mixer, SDL_net, SDL_ttf and SDL_rtf have also their preferred include path changed: for SDL_image, it becomes `#include <SDL3_image/SDL_image.h>`. We have provided a handy Python script [rename_headers.py](https://github.com/libsdl-org/SDL/blob/main/build-scripts/rename_headers.py) to rename SDL2 headers to their SDL3 counterparts:
@@ -173,7 +175,7 @@ If you used SDL_QueueAudio instead of a callback in SDL2, this is also straightf
 
 SDL_AudioInit() and SDL_AudioQuit() have been removed. Instead you can call SDL_InitSubSystem() and SDL_QuitSubSystem() with SDL_INIT_AUDIO, which will properly refcount the subsystems. You can choose a specific audio driver using SDL_AUDIO_DRIVER hint.
 
-The `SDL_AUDIO_ALLOW_*` symbols have been removed; now one may request the format they desire from the audio device, but ultimately SDL_AudioStream will manage the difference. One can use SDL_GetAudioDeviceFormat() to see what the final format is, if any "allowed" changes should be accomodated by the app.
+The `SDL_AUDIO_ALLOW_*` symbols have been removed; now one may request the format they desire from the audio device, but ultimately SDL_AudioStream will manage the difference. One can use SDL_GetAudioDeviceFormat() to see what the final format is, if any "allowed" changes should be accommodated by the app.
 
 SDL_AudioDeviceID now represents both an open audio device's handle (a "logical" device) and the instance ID that the hardware owns as long as it exists on the system (a "physical" device). The separation between device instances and device indexes is gone, and logical and physical devices are almost entirely interchangeable at the API level.
 
@@ -273,7 +275,7 @@ If you need to convert U16 audio data to a still-supported format at runtime, th
     }
 ```
 
-All remaining `AUDIO_*` symbols have been renamed to `SDL_AUDIO_*` for API consistency, but othewise are identical in value and usage.
+All remaining `AUDIO_*` symbols have been renamed to `SDL_AUDIO_*` for API consistency, but otherwise are identical in value and usage.
 
 In SDL2, SDL_AudioStream would convert/resample audio data during input (via SDL_AudioStreamPut). In SDL3, it does this work when requesting audio (via SDL_GetAudioStreamData, which would have been SDL_AudioStreamGet in SDL2). The way you use an AudioStream is roughly the same, just be aware that the workload moved to a different phase.
 
@@ -1117,6 +1119,10 @@ Shared object handles are now `SDL_SharedObject *`, an opaque type, instead of `
 
 SDL_LoadFunction() now returns `SDL_FunctionPointer` instead of `void *`, and should be cast to the appropriate function type. You can define SDL_FUNCTION_POINTER_IS_VOID_POINTER in your project to restore the previous behavior.
 
+## SDL_locale.h
+
+SDL_GetPreferredLocales() now returns a NULL-terminated array of pointers, instead of an array of structs where the last struct has its fields set to NULL, and also can optionally report the count of the array. The returned pointer is still disposed of by the caller with a single SDL_free() call, that will take care of all the strings and structs in one block.
+
 ## SDL_log.h
 
 SDL_Log() no longer prints a log prefix by default for SDL_LOG_PRIORITY_INFO and below. The log prefixes can be customized with SDL_SetLogPriorityPrefix().
@@ -1307,7 +1313,7 @@ The following platform preprocessor macros have been renamed:
 | `__RISCOS__`      | `SDL_PLATFORM_RISCOS`     |
 | `__SOLARIS__`     | `SDL_PLATFORM_SOLARIS`    |
 | `__TVOS__`        | `SDL_PLATFORM_TVOS`       |
-| `__unix__`        | `SDL_PLATFORM_UNI`        |
+| `__unix__`        | `SDL_PLATFORM_UNIX`       |
 | `__VITA__`        | `SDL_PLATFORM_VITA`       |
 | `__WIN32__`       | `SDL_PLATFORM_WIN32`      |
 | `__WINGDK__`      | `SDL_PLATFORM_WINGDK`     |
@@ -1447,7 +1453,7 @@ The following functions have been removed:
 * SDL_GetTextureUserData() - use SDL_GetTextureProperties() instead
 * SDL_RenderGetIntegerScale()
 * SDL_RenderSetIntegerScale() - this is now explicit with SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
-* SDL_RenderTargetSupported() - render targets are always supported
+* SDL_RenderTargetSupported() - render targets are usually supported; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_SetTextureUserData() - use SDL_GetTextureProperties() instead
 
 The following enums have been renamed:
@@ -1461,7 +1467,7 @@ The following symbols have been removed:
 * SDL_RENDERER_ACCELERATED - all renderers except `SDL_SOFTWARE_RENDERER` are accelerated
 * SDL_RENDERER_PRESENTVSYNC - replaced with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER during renderer creation and SDL_PROP_RENDERER_VSYNC_NUMBER after renderer creation
 * SDL_RENDERER_SOFTWARE - you can check whether the name of the renderer is `SDL_SOFTWARE_RENDERER`
-* SDL_RENDERER_TARGETTEXTURE - all renderers support target texture functionality
+* SDL_RENDERER_TARGETTEXTURE - most renderers support target texture functionality; just create a texture with SDL_TEXTUREACCESS_TARGET and see if it fails.
 * SDL_ScaleModeBest - use SDL_SCALEMODE_LINEAR instead
 
 ## SDL_rwops.h
@@ -1531,7 +1537,7 @@ typedef struct IOStreamStdioFPData
     bool autoclose;
 } IOStreamStdioFPData;
 
-static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
+static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, SDL_IOWhence whence)
 {
     FILE *fp = ((IOStreamStdioFPData *) userdata)->fp;
     int stdiowhence;
@@ -1551,7 +1557,7 @@ static Sint64 SDLCALL stdio_seek(void *userdata, Sint64 offset, int whence)
         return -1;
     }
 
-    if (fseek(fp, (fseek_off_t)offset, stdiowhence) == 0) {
+    if (fseek(fp, (long)offset, stdiowhence) == 0) {
         const Sint64 pos = ftell(fp);
         if (pos < 0) {
             SDL_SetError("Couldn't get stream offset");
@@ -1585,7 +1591,7 @@ static size_t SDLCALL stdio_write(void *userdata, const void *ptr, size_t size, 
 
 static bool SDLCALL stdio_close(void *userdata)
 {
-    IOStreamStdioData *rwopsdata = (IOStreamStdioData *) userdata;
+    IOStreamStdioFPData *rwopsdata = (IOStreamStdioFPData *) userdata;
     bool status = true;
     if (rwopsdata->autoclose) {
         if (fclose(rwopsdata->fp) != 0) {
@@ -1593,6 +1599,7 @@ static bool SDLCALL stdio_close(void *userdata)
             status = false;
         }
     }
+    SDL_free(rwopsdata);
     return status;
 }
 
@@ -1854,6 +1861,8 @@ SDL_SetSurfaceColorKey() takes an bool to enable and disable colorkey. RLE accel
 
 SDL_SetSurfaceRLE() takes an bool to enable and disable RLE acceleration.
 
+SDL_PremultiplyAlpha() takes an extra bool parameter ("linear"). For SDL2 compatibility, pass false for this parameter.
+
 The following functions have been renamed:
 * SDL_BlitScaled() => SDL_BlitSurfaceScaled(), returns bool
 * SDL_ConvertSurfaceFormat() => SDL_ConvertSurface()
@@ -2045,6 +2054,15 @@ The following functions have been removed:
 
 The following symbols have been renamed:
 * SDL_threadID => SDL_ThreadID
+
+### Attention: Potential problems with `SDL_ThreadID`
+
+**_`SDL_ThreadID`_** is a case that needs **special attention**, because if you forget to rename a call to `SDL_ThreadID()` to `SDL_GetCurrentThreadID()` in **C++** code, it will *still compile fine*, calling the default constructor of the `SDL_ThreadID` type, initializing it to `0` - but if `SDL_GetCurrentThreadID()` was intended, that of course leads to **wrong behavior** that can be hard to catch.
+
+Furthermore **`rename_symbols.py` does not handle it** (because it would be hard to do in a way that doesn't break anything when running that script twice), which makes it even more error-prone.
+
+SDL_oldnames.h now has a `#define` that should catch these cases, but it's not available in SDL 3.4.10 and older. So if you're using 3.4.10 or older, check your code carefully for occurences of `SDL_ThreadID()` and make sure it wasn't supposed to be `SDL_GetCurrentThreadID()`.
+In some edge cases this `#define` can cause false positives (compile errors even though `SDL_ThreadID` was used correctly); right above that definition in the header is a long comment explaining possible problems and solutions.
 
 ## SDL_timer.h
 

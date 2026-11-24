@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,8 +27,19 @@
 
 #include "SDL_blit.h"
 
+// The value, in nits, of scRGB 1.0
+#define SCRGB_NITS  80.0f
+
+// The automatic SD/HD threshold for YUV colorspace
+#define YUV_SD_THRESHOLD 576
+
+#define SDL_ISPIXELFORMAT_PACKED_8888(format) \
+    (SDL_ISPIXELFORMAT_PACKED(format) && SDL_PIXELLAYOUT(format) == SDL_PACKEDLAYOUT_8888)
+
 
 // Pixel format functions
+extern SDL_PixelFormat SDL_PromotePixelFormatToAlpha(SDL_PixelFormat format);
+extern SDL_PixelFormat SDL_PromotePixelFormatTo8888(SDL_PixelFormat format);
 extern void SDL_Get8888AlphaMaskAndShift(const SDL_PixelFormatDetails *fmt, Uint32 *mask, Uint32 *shift);
 extern SDL_Colorspace SDL_GetDefaultColorspaceForFormat(SDL_PixelFormat pixel_format);
 extern void SDL_QuitPixelFormatDetails(void);
@@ -41,6 +52,7 @@ extern float SDL_PQfromNits(float v);
 extern const float *SDL_GetYCbCRtoRGBConversionMatrix(SDL_Colorspace colorspace, int w, int h, int bits_per_pixel);
 extern const float *SDL_GetColorPrimariesConversionMatrix(SDL_ColorPrimaries src, SDL_ColorPrimaries dst);
 extern void SDL_ConvertColorPrimaries(float *fR, float *fG, float *fB, const float *matrix);
+extern void SDL_ConvertColor709to2020(float *fR, float *fG, float *fB);
 
 // Blit mapping functions
 extern bool SDL_ValidateMap(SDL_Surface *src, SDL_Surface *dst);

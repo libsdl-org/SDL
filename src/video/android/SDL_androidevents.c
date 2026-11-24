@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,7 +35,7 @@
 #ifdef SDL_VIDEO_OPENGL_EGL
 static void android_egl_context_restore(SDL_Window *window)
 {
-    if (window) {
+    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
         SDL_WindowData *data = window->internal;
         SDL_GL_MakeCurrent(window, NULL);
         if (!SDL_GL_MakeCurrent(window, (SDL_GLContext)data->egl_context)) {
@@ -50,16 +50,13 @@ static void android_egl_context_restore(SDL_Window *window)
         }
         data->backup_done = false;
 
-        if (data->has_swap_interval) {
-            SDL_GL_SetSwapInterval(data->swap_interval);
-        }
-
+        SDL_GL_SetSwapInterval(data->swap_interval);
     }
 }
 
 static void android_egl_context_backup(SDL_Window *window)
 {
-    if (window) {
+    if (window && (window->flags & SDL_WINDOW_OPENGL)) {
         int interval = 0;
         // Keep a copy of the EGL Context so we can try to restore it when we resume
         SDL_WindowData *data = window->internal;
@@ -174,7 +171,7 @@ static void Android_OnDestroy(void)
      * events other than SDL_EVENT_QUIT and SDL_EVENT_TERMINATING should fire */
     SDL_FlushEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
     SDL_SendQuit();
-    SDL_SendAppEvent(SDL_EVENT_TERMINATING);
+    SDL_OnApplicationWillTerminate();
 
     Android_Destroyed = true;
 }
@@ -204,7 +201,7 @@ static void Android_HandleLifecycleEvent(SDL_AndroidLifecycleEvent event)
 
 static Sint64 GetLifecycleEventTimeout(bool paused, Sint64 timeoutNS)
 {
-    if (Android_Paused) {
+    if (paused) {
         if (Android_BlockOnPause) {
             timeoutNS = -1;
         } else if (timeoutNS == 0) {
@@ -227,6 +224,10 @@ void Android_PumpEvents(Sint64 timeoutNS)
         case SDL_ANDROID_LIFECYCLE_WAKE:
             // Finish handling events quickly if we're not paused
             timeoutNS = 0;
+            if (!Android_BlockOnPause) {
+                // There are new events for the application, return to process them
+                paused = false;
+            }
             break;
         case SDL_ANDROID_LIFECYCLE_PAUSE:
             // Finish handling events at the current timeout and return to process events one more time before blocking.
@@ -265,6 +266,29 @@ bool Android_WaitActiveAndLockActivity(void)
 void Android_QuitEvents(void)
 {
     Android_EventsInitialized = false;
+}
+
+#else
+
+#include "../../core/android/SDL_android.h"
+
+void Android_InitEvents(void)
+{
+}
+
+void Android_PumpEvents(Sint64 timeoutNS)
+{
+    (void)timeoutNS;
+}
+
+bool Android_WaitActiveAndLockActivity(void)
+{
+    Android_LockActivityMutex();
+    return true;
+}
+
+void Android_QuitEvents(void)
+{
 }
 
 #endif // SDL_VIDEO_DRIVER_ANDROID

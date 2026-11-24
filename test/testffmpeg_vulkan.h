@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -11,6 +11,7 @@
 */
 
 #include <libavutil/hwcontext.h>
+#include <libavutil/hwcontext_drm.h>
 #include <libavutil/hwcontext_vulkan.h>
 
 

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -63,7 +63,7 @@ static void test_device(const bool recording, const char *fname, int flags, bool
                  * information,  making this information inaccessible at
                  * enumeration time
                  */
-                SDL_AddAudioDevice(recording, fname, NULL, (void *)(uintptr_t)dummyhandle);
+                SDL_AddAudioDevice(recording, fname, NULL, NULL, NULL, (void *)(uintptr_t)dummyhandle);
             }
         } else {
             close(audio_fd);

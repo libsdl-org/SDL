@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
                 quit = 1;
                 break;
             } else if (e.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED) {
-                if (e.window.windowID == SDL_GetWindowID(w2)) {
+                if (w2 && e.window.windowID == SDL_GetWindowID(w2)) {
                     SDL_DestroyRenderer(r2);
                     SDL_DestroyWindow(w2);
                     r2 = NULL;

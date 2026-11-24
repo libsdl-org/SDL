@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,6 +47,9 @@
  * In order to use these functions, SDL_Init() must have been called with the
  * SDL_INIT_GAMEPAD flag. This causes SDL to scan the system for gamepads, and
  * load appropriate drivers.
+ *
+ * If you're using SDL gamepad support in a Steam game, you must call
+ * SteamAPI_InitEx() before calling SDL_Init().
  *
  * If you would like to receive gamepad updates while the application is in
  * the background, you should set the following hint before calling
@@ -119,6 +122,7 @@ typedef enum SDL_GamepadType
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT,
     SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR,
     SDL_GAMEPAD_TYPE_GAMECUBE,
+    SDL_GAMEPAD_TYPE_STEAM,
     SDL_GAMEPAD_TYPE_COUNT
 } SDL_GamepadType;
 
@@ -164,11 +168,11 @@ typedef enum SDL_GamepadButton
     SDL_GAMEPAD_BUTTON_DPAD_DOWN,
     SDL_GAMEPAD_BUTTON_DPAD_LEFT,
     SDL_GAMEPAD_BUTTON_DPAD_RIGHT,
-    SDL_GAMEPAD_BUTTON_MISC1,           /**< Additional button (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Amazon Luna microphone button, Google Stadia capture button) */
-    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,   /**< Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1, DualSense Edge RB button, Right Joy-Con SR button) */
-    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,    /**< Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3, DualSense Edge LB button, Left Joy-Con SL button) */
-    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,   /**< Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2, DualSense Edge right Fn button, Right Joy-Con SL button) */
-    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,    /**< Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4, DualSense Edge left Fn button, Left Joy-Con SR button) */
+    SDL_GAMEPAD_BUTTON_MISC1,           /**< Additional button (e.g. Xbox Series X share button, PS5 microphone button, Nintendo Switch Pro capture button, Steam Controller QAM button, Amazon Luna microphone button, Google Stadia capture button) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE1,   /**< Upper or primary paddle, under your right hand (e.g. Xbox Elite paddle P1, DualSense Edge RB button, Right Joy-Con SR button, Steam Controller R4 button) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE1,    /**< Upper or primary paddle, under your left hand (e.g. Xbox Elite paddle P3, DualSense Edge LB button, Left Joy-Con SL button, Steam Controller L4 button) */
+    SDL_GAMEPAD_BUTTON_RIGHT_PADDLE2,   /**< Lower or secondary paddle, under your right hand (e.g. Xbox Elite paddle P2, DualSense Edge right Fn button, Right Joy-Con SL button, Steam Controller R5 button) */
+    SDL_GAMEPAD_BUTTON_LEFT_PADDLE2,    /**< Lower or secondary paddle, under your left hand (e.g. Xbox Elite paddle P4, DualSense Edge left Fn button, Left Joy-Con SR button, Steam Controller L5 button) */
     SDL_GAMEPAD_BUTTON_TOUCHPAD,        /**< PS4/PS5 touchpad button */
     SDL_GAMEPAD_BUTTON_MISC2,           /**< Additional button */
     SDL_GAMEPAD_BUTTON_MISC3,           /**< Additional button (e.g. Nintendo GameCube left trigger click) */
@@ -227,6 +231,24 @@ typedef enum SDL_GamepadAxis
     SDL_GAMEPAD_AXIS_RIGHT_TRIGGER,
     SDL_GAMEPAD_AXIS_COUNT
 } SDL_GamepadAxis;
+
+/**
+ * The list of capsense types on a gamepad
+ *
+ * \since This enum is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasCapSense
+ * \sa SDL_GetGamepadCapSense
+ */
+typedef enum SDL_GamepadCapSenseType
+{
+    SDL_GAMEPAD_CAPSENSE_INVALID = -1,
+    SDL_GAMEPAD_CAPSENSE_LEFT_STICK,    /**< Activated by touching the top of the left thumbstick */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,   /**< Activated by touching the top of the right thumbstick */
+    SDL_GAMEPAD_CAPSENSE_LEFT_GRIP,     /**< Activated by gripping the left handle of the controller */
+    SDL_GAMEPAD_CAPSENSE_RIGHT_GRIP,    /**< Activated by gripping the right handle of the controller */
+    SDL_GAMEPAD_CAPSENSE_COUNT
+} SDL_GamepadCapSenseType;
 
 /**
  * Types of gamepad control bindings.
@@ -785,6 +807,10 @@ extern SDL_DECLSPEC SDL_Gamepad * SDLCALL SDL_GetGamepadFromPlayerIndex(int play
  *
  * The following read-only properties are provided by SDL:
  *
+ * - `SDL_PROP_GAMEPAD_CONTAINER_ID_STRING`: a string identifying the
+ *   container for this gamepad, if available. This can be compared with
+ *   SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING to find associated audio
+ *   devices.
  * - `SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN`: true if this gamepad has an LED
  *   that has adjustable brightness
  * - `SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN`: true if this gamepad has an LED
@@ -807,6 +833,7 @@ extern SDL_DECLSPEC SDL_Gamepad * SDLCALL SDL_GetGamepadFromPlayerIndex(int play
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGamepadProperties(SDL_Gamepad *gamepad);
 
+#define SDL_PROP_GAMEPAD_CONTAINER_ID_STRING        SDL_PROP_JOYSTICK_CONTAINER_ID_STRING
 #define SDL_PROP_GAMEPAD_CAP_MONO_LED_BOOLEAN       SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN
 #define SDL_PROP_GAMEPAD_CAP_RGB_LED_BOOLEAN        SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN
 #define SDL_PROP_GAMEPAD_CAP_PLAYER_LED_BOOLEAN     SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN
@@ -1278,7 +1305,7 @@ extern SDL_DECLSPEC Sint16 SDLCALL SDL_GetGamepadAxis(SDL_Gamepad *gamepad, SDL_
  * You do not normally need to call this function unless you are parsing
  * SDL_Gamepad mappings in your own code.
  *
- * \param str string representing a SDL_Gamepad axis.
+ * \param str string representing a SDL_Gamepad button.
  * \returns the SDL_GamepadButton enum corresponding to the input string, or
  *          `SDL_GAMEPAD_BUTTON_INVALID` if no match was found.
  *
@@ -1428,6 +1455,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadTouchpadFinger(SDL_Gamepad *gamep
 /**
  * Return whether a gamepad has a particular sensor.
  *
+ * Sensors are disabled by default and SDL_SetGamepadSensorEnabled() is used
+ * to enable them.
+ *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
  * \returns true if the sensor exists, false otherwise.
@@ -1444,6 +1474,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasSensor(SDL_Gamepad *gamepad, SDL_
 
 /**
  * Set whether data reporting for a gamepad sensor is enabled.
+ *
+ * Sensors are disabled by default and this function is used to enable them.
  *
  * \param gamepad the gamepad to update.
  * \param type the type of sensor to enable/disable.
@@ -1492,7 +1524,7 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *game
  * Get the current state of a gamepad sensor.
  *
  * The number of values and interpretation of the data is sensor dependent.
- * See SDL_sensor.h for the details for each type of sensor.
+ * See the remarks in SDL_SensorType for details for each type of sensor.
  *
  * \param gamepad the gamepad to query.
  * \param type the type of sensor to query.
@@ -1506,6 +1538,36 @@ extern SDL_DECLSPEC float SDLCALL SDL_GetGamepadSensorDataRate(SDL_Gamepad *game
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadSensorData(SDL_Gamepad *gamepad, SDL_SensorType type, float *data, int num_values);
+
+/**
+ * Return whether a gamepad has a particular capsense.
+ *
+ * \param gamepad the gamepad to query.
+ * \param type the type of capsense to query.
+ * \returns true if the capsense exists, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetGamepadCapSense
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GamepadHasCapSense(SDL_Gamepad *gamepad, SDL_GamepadCapSenseType type);
+
+/**
+ * Get the current state of a capsense on a gamepad.
+ *
+ * \param gamepad a gamepad.
+ * \param type the type of capsense to query.
+ * \returns true if the capsense is touched, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GamepadHasCapSense
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_GetGamepadCapSense(SDL_Gamepad *gamepad, SDL_GamepadCapSenseType type);
 
 /**
  * Start a rumble effect on a gamepad.

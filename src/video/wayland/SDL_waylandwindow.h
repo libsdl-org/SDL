@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,9 +35,6 @@ struct SDL_WindowData
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
-    struct wl_callback *gles_swap_frame_callback;
-    struct wl_event_queue *gles_swap_frame_event_queue;
-    struct wl_surface *gles_swap_frame_surface_wrapper;
     struct wl_callback *surface_frame_callback;
 
     union
@@ -63,10 +60,9 @@ struct SDL_WindowData
                     struct xdg_positioner *xdg_positioner;
                 } popup;
             };
-
-            Uint32 serial;
         } xdg;
     } shell_surface;
+
     enum
     {
         WAYLAND_SHELL_SURFACE_TYPE_UNKNOWN = 0,
@@ -75,6 +71,7 @@ struct SDL_WindowData
         WAYLAND_SHELL_SURFACE_TYPE_LIBDECOR,
         WAYLAND_SHELL_SURFACE_TYPE_CUSTOM
     } shell_surface_type;
+
     enum
     {
         WAYLAND_SHELL_SURFACE_STATUS_HIDDEN = 0,
@@ -83,6 +80,7 @@ struct SDL_WindowData
         WAYLAND_SHELL_SURFACE_STATUS_SHOW_PENDING,
         WAYLAND_SHELL_SURFACE_STATUS_SHOWN
     } shell_surface_status;
+
     enum
     {
         WAYLAND_WM_CAPS_WINDOW_MENU = 0x01,
@@ -95,6 +93,7 @@ struct SDL_WindowData
                               WAYLAND_WM_CAPS_FULLSCREEN |
                               WAYLAND_WM_CAPS_MINIMIZE
     } wm_caps;
+
     enum
     {
         WAYLAND_TOPLEVEL_CONSTRAINED_LEFT = 0x01,
@@ -102,6 +101,13 @@ struct SDL_WindowData
         WAYLAND_TOPLEVEL_CONSTRAINED_TOP = 0x04,
         WAYLAND_TOPLEVEL_CONSTRAINED_BOTTOM = 0x08
     } toplevel_constraints;
+
+    enum
+    {
+        WAYLAND_RESIZE_EDGE_LR = 0x01,
+        WAYLAND_RESIZE_EDGE_TB = 0x02,
+        WAYLAND_RESIZE_EDGE_CORNER = WAYLAND_RESIZE_EDGE_LR | WAYLAND_RESIZE_EDGE_TB,
+    } resize_edge;
 
     struct wl_egl_window *egl_window;
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -118,15 +124,27 @@ struct SDL_WindowData
     struct xdg_toplevel_icon_v1 *xdg_toplevel_icon_v1;
     struct frog_color_managed_surface *frog_color_managed_surface;
     struct wp_color_management_surface_feedback_v1 *wp_color_management_surface_feedback;
+    struct xdg_toplevel_session_v1 *xdg_toplevel_session;
 
     struct Wayland_ColorInfoState *color_info_state;
+    struct Wayland_Framebuffer *framebuffer;
 
-    SDL_AtomicInt swap_interval_ready;
+    struct
+    {
+        struct wl_event_queue *queue;
+        struct wl_surface *surface_wrapper;
+        struct wl_callback *frame_callback;
+        struct wp_commit_timer_v1 *commit_timer;
+        struct wp_fifo_v1 *fifo;
+        SDL_AtomicInt swap_interval_ready;
+        int vsync;
+    } presentation;
 
     SDL_DisplayData **outputs;
     int num_outputs;
 
     char *app_id;
+    char *session_id;
     double scale_factor;
 
     struct wl_buffer **icon_buffers;
@@ -165,6 +183,10 @@ struct SDL_WindowData
         // The size of the window backbuffer in pixels.
         int pixel_width;
         int pixel_height;
+
+        // The dimensions of the active viewport, in logical units.
+        int viewport_width;
+        int viewport_height;
     } current;
 
     // The last compositor requested parameters; used for deduplication of window geometry configuration.
@@ -172,6 +194,7 @@ struct SDL_WindowData
     {
         int width;
         int height;
+        bool insets_apply;
     } last_configure;
 
     // System enforced window size limits.
@@ -190,31 +213,50 @@ struct SDL_WindowData
 
     struct
     {
+        struct wl_surface *surface;
+        struct wl_subsurface *subsurface;
+        struct wl_buffer *buffer;
+        struct wp_viewport *viewport;
+
+        int offset_x;
+        int offset_y;
+
+        bool mapped;
+        bool opaque;
+    } mask;
+
+    struct
+    {
         int hint;
         int purpose;
         bool active;
     } text_input_props;
 
+    SDL_Rect explicit_geometry;
     SDL_DisplayID last_displayID;
-    int fullscreen_deadline_count;
-    int maximized_restored_deadline_count;
+    int pending_state_deadline_count;
     Uint64 last_focus_event_time_ns;
+    Uint64 last_resize_event_time_ns;
     int icc_fd;
     Uint32 icc_size;
     bool floating;
     bool suspended;
     bool resizing;
     bool active;
-    bool pending_config_ack;
+    bool pending_state_commit;
+    bool limits_changed;
     bool is_fullscreen;
     bool fullscreen_exclusive;
     bool drop_fullscreen_requests;
     bool showing_window;
     bool fullscreen_was_positioned;
     bool show_hide_sync_required;
+    bool updating_size;
     bool scale_to_display;
     bool reparenting_required;
     bool double_buffer;
+    bool accepts_drag_and_drop;
+    bool enable_insets;
 
     SDL_HitTestResult hit_test_result;
 
@@ -236,6 +278,7 @@ extern void Wayland_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *windo
 extern bool Wayland_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_PropertiesID create_props);
 extern bool Wayland_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
+extern void Wayland_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowMinimumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
@@ -252,6 +295,7 @@ extern bool Wayland_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window, SD
 extern bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool focusable);
 extern float Wayland_GetWindowContentScale(SDL_VideoDevice *_this, SDL_Window *window);
 extern void *Wayland_GetWindowICCProfile(SDL_VideoDevice *_this, SDL_Window *window, size_t *size);
+extern void Wayland_AcceptDragAndDrop(SDL_Window *window, bool accept);
 
 extern bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled);
 extern bool Wayland_FlashWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_FlashOperation operation);
@@ -259,5 +303,6 @@ extern bool Wayland_SyncWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_ReconfigureWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_WindowFlags flags);
 
 extern void Wayland_RemoveOutputFromWindow(SDL_WindowData *window, SDL_DisplayData *display_data);
+extern void Wayland_UpdateWindowPosition(SDL_Window *window);
 
 #endif // SDL_waylandwindow_h_

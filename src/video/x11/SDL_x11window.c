@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -323,13 +323,10 @@ SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Wi
         }
 
         if (fullscreen == 1) {
-            if (window->flags & SDL_WINDOW_FULLSCREEN) {
-                // Pick whatever state the window expects
-                flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
-            } else {
-                // Assume we're fullscreen desktop
-                flags |= SDL_WINDOW_FULLSCREEN;
-            }
+            flags |= SDL_WINDOW_FULLSCREEN;
+        } else if (!videodata->net_wm) {
+            // If there's no window manager, use whatever the window reports.
+            flags |= (window->flags & SDL_WINDOW_FULLSCREEN);
         }
 
         if (maximized == 3) {
@@ -354,7 +351,7 @@ SDL_WindowFlags X11_GetNetWMState(SDL_VideoDevice *_this, SDL_Window *window, Wi
          */
         {
             XWindowAttributes attr;
-            SDL_memset(&attr, 0, sizeof(attr));
+            SDL_zero(attr);
             X11_XGetWindowAttributes(videodata->display, xwindow, &attr);
             if (attr.map_state == IsUnmapped) {
                 flags |= SDL_WINDOW_HIDDEN;
@@ -374,9 +371,6 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
     SDL_VideoData *videodata = _this->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     SDL_WindowData *data;
-    int numwindows = videodata->numwindows;
-    int windowlistlength = videodata->windowlistlength;
-    SDL_WindowData **windowlist = videodata->windowlist;
 
     // Allocate the window data
     data = (SDL_WindowData *)SDL_calloc(1, sizeof(*data));
@@ -392,19 +386,13 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
     // Associate the data with the window
 
-    if (numwindows < windowlistlength) {
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
-    } else {
-        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(windowlist, (numwindows + 1) * sizeof(*windowlist));
+    if (videodata->numwindows >= videodata->windowlistlength) {
+        SDL_WindowData ** new_windowlist = (SDL_WindowData **)SDL_realloc(videodata->windowlist, (videodata->numwindows + 1) * sizeof(*videodata->windowlist));
         if (!new_windowlist) {
             goto error_cleanup;
         }
-        windowlist = new_windowlist;
-        windowlist[numwindows] = data;
-        videodata->numwindows++;
         videodata->windowlistlength++;
-        videodata->windowlist = windowlist;
+        videodata->windowlist = new_windowlist;
     }
 
     // Fill in the SDL window with the window data
@@ -487,6 +475,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, Window w
 
     // All done!
     window->internal = data;
+    videodata->windowlist[videodata->numwindows++] = data;
     return true;
 
 error_cleanup:
@@ -585,7 +574,8 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     }
 
     const bool force_override_redirect = SDL_GetHintBoolean(SDL_HINT_X11_FORCE_OVERRIDE_REDIRECT, false);
-    const bool use_resize_sync = !!(window->flags & SDL_WINDOW_OPENGL); // Doesn't work well with Vulkan
+    const bool use_resize_sync = SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_ENABLE_XSYNC_EXT, false) &&
+                                 (window->flags & SDL_WINDOW_OPENGL) != 0; // Doesn't work well with Vulkan
     SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
@@ -663,13 +653,6 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
     xattr.border_pixel = 0;
 
     if (visual->class == DirectColor) {
-        XColor *colorcells;
-        int i;
-        int ncolors;
-        int rmax, gmax, bmax;
-        int rmask, gmask, bmask;
-        int rshift, gshift, bshift;
-
         xattr.colormap =
             X11_XCreateColormap(display, RootWindow(display, screen),
                                 visual, AllocAll);
@@ -680,38 +663,30 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         }
 
         // OK, we got a colormap, now fill it in as best as we can
-        colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
+        XColor *colorcells = SDL_malloc(visual->map_entries * sizeof(XColor));
         if (!colorcells) {
             return false;
         }
-        ncolors = visual->map_entries;
-        rmax = 0xffff;
-        gmax = 0xffff;
-        bmax = 0xffff;
 
-        rshift = 0;
-        rmask = visual->red_mask;
-        while (0 == (rmask & 1)) {
-            rshift++;
-            rmask >>= 1;
-        }
+        int ncolors = visual->map_entries;
+        int rmax = 0xffff;
+        int gmax = 0xffff;
+        int bmax = 0xffff;
 
-        gshift = 0;
-        gmask = visual->green_mask;
-        while (0 == (gmask & 1)) {
-            gshift++;
-            gmask >>= 1;
+#define CALC_MASK_AND_SHIFT(shiftvar, maskvar, origmask) \
+        int shiftvar = 0; \
+        Uint32 maskvar = (Uint32) origmask; \
+        while (0 == (maskvar & 1)) { \
+            shiftvar++; \
+            maskvar >>= 1; \
         }
-
-        bshift = 0;
-        bmask = visual->blue_mask;
-        while (0 == (bmask & 1)) {
-            bshift++;
-            bmask >>= 1;
-        }
+        CALC_MASK_AND_SHIFT(rshift, rmask, visual->red_mask);
+        CALC_MASK_AND_SHIFT(gshift, gmask, visual->green_mask);
+        CALC_MASK_AND_SHIFT(bshift, bmask, visual->blue_mask);
+#undef CALC_MASK_AND_SHIFT
 
         // build the color table pixel values
-        for (i = 0; i < ncolors; i++) {
+        for (int i = 0; i < ncolors; i++) {
             Uint32 red = (rmax * i) / (ncolors - 1);
             Uint32 green = (gmax * i) / (ncolors - 1);
             Uint32 blue = (bmax * i) / (ncolors - 1);
@@ -851,7 +826,6 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         int proto_count = 0;
 
         protocols[proto_count++] = data->atoms.WM_DELETE_WINDOW; // Allow window to be deleted by the WM
-        protocols[proto_count++] = data->atoms.WM_TAKE_FOCUS;    // Since we will want to set input focus explicitly
 
         // Default to using ping if there is no hint
         if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NET_WM_PING, true)) {
@@ -864,7 +838,7 @@ bool X11_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
         }
 #endif /* SDL_VIDEO_DRIVER_X11_XSYNC */
 
-        SDL_assert(proto_count <= sizeof(protocols) / sizeof(protocols[0]));
+        SDL_assert(proto_count <= SDL_arraysize(protocols));
 
         X11_XSetWMProtocols(display, w, protocols, proto_count);
     }
@@ -1199,6 +1173,7 @@ bool X11_SetWindowPosition(SDL_VideoDevice *_this, SDL_Window *window)
         }
         X11_UpdateWindowPosition(window, false);
     } else {
+        window->internal->fs_repositioned = true;
         SDL_UpdateFullscreenMode(window, SDL_FULLSCREEN_OP_UPDATE, true);
     }
     return true;
@@ -1467,8 +1442,8 @@ bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal)
 
 void X11_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered)
 {
-    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) ? true : false;
-    const bool visible = (!(window->flags & SDL_WINDOW_HIDDEN)) ? true : false;
+    const bool focused = (window->flags & SDL_WINDOW_INPUT_FOCUS) != 0;
+    const bool visible = !(window->flags & SDL_WINDOW_HIDDEN) && !window->is_hiding;
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = SDL_GetDisplayDriverDataForWindow(window);
     Display *display = data->videodata->display;
@@ -1662,14 +1637,16 @@ void X11_HideWindow(SDL_VideoDevice *_this, SDL_Window *window)
     Display *display = data->videodata->display;
     XEvent event;
 
-    if (X11_IsWindowMapped(_this, window)) {
-        X11_XWithdrawWindow(display, data->xwindow, screen);
-        // Blocking wait for "UnmapNotify" event
-        if (!(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
-            X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
-        }
-        X11_XFlush(display);
+    /* Some window managers will mark minimized or offscreen windows as unmapped, so we
+     * must not block while waiting for an UnmapNotify event that will never arrive.
+     */
+    const bool is_mapped = X11_IsWindowMapped(_this, window);
+    X11_XWithdrawWindow(display, data->xwindow, screen);
+    if (is_mapped && !(window->flags & SDL_WINDOW_EXTERNAL) && X11_IsDisplayOk(display)) {
+        // Blocking wait for "UnmapNotify" event.
+        X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
     }
+    X11_XFlush(display);
 
     // Transfer keyboard focus back to the parent
     if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
@@ -1855,9 +1832,6 @@ void X11_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window)
 // This asks the Window Manager to handle fullscreen for us. This is the modern way.
 static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
-    CHECK_WINDOW_DATA(window);
-    CHECK_DISPLAY_DATA(_display);
-
     SDL_WindowData *data = window->internal;
     SDL_DisplayData *displaydata = _display->internal;
     Display *display = data->videodata->display;
@@ -1911,7 +1885,8 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
                        SubstructureNotifyMask | SubstructureRedirectMask, &e);
 
-        if (!!(window->flags & SDL_WINDOW_FULLSCREEN) != fullscreen) {
+        // Only set the pending flag if the fullscreen state actually changed.
+        if (((window->flags & SDL_WINDOW_FULLSCREEN) != 0) != (fullscreen != 0)) {
             data->pending_operation |= X11_PENDING_OP_FULLSCREEN;
         }
 
@@ -1927,13 +1902,15 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
             data->expected.w = _display->current_mode->w;
             data->expected.h = _display->current_mode->h;
 
-            // Only move the window if it isn't fullscreen or already on the target display.
-            if (!(window->flags & SDL_WINDOW_FULLSCREEN) || (!current || current != _display->id)) {
+            // Only move the window if it isn't already on the target display.
+            if (!current || current != _display->id) {
                 X11_XMoveWindow(display, data->xwindow, displaydata->x, displaydata->y);
                 data->pending_operation |= X11_PENDING_OP_MOVE;
             }
         } else {
             SDL_zero(data->requested_fullscreen_mode);
+            data->pending_position = data->fs_repositioned;
+            data->fs_repositioned = false;
 
             /* Fullscreen windows sometimes end up being marked maximized by
              * window managers. Force it back to how we expect it to be.
@@ -1977,9 +1954,80 @@ static SDL_FullscreenResult X11_SetWindowFullscreenViaWM(SDL_VideoDevice *_this,
     return SDL_FULLSCREEN_PENDING;
 }
 
+static SDL_FullscreenResult X11_SetWindowFullscreenLegacy(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, bool fullscreen)
+{
+    SDL_WindowData *data = window->internal;
+    SDL_DisplayData *displaydata = _display->internal;
+    Display *display = data->videodata->display;
+    const int screen = displaydata->screen;
+
+    if (!data->was_shown && fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+        return SDL_FULLSCREEN_SUCCEEDED;
+    }
+
+    // Flush any pending fullscreen events.
+    if (data->pending_operation & (X11_PENDING_OP_RESIZE | X11_PENDING_OP_MOVE)) {
+        X11_SyncWindow(_this, window);
+    }
+
+    // No window manager? Just make the window the size of the display.
+    SDL_SendWindowEvent(window, fullscreen ? SDL_EVENT_WINDOW_ENTER_FULLSCREEN : SDL_EVENT_WINDOW_LEAVE_FULLSCREEN, 0, 0);
+    if (fullscreen) {
+        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+            /* Compiz refuses fullscreen toggle if we're not resizable, so update the hints so we
+             * can be resized to the fullscreen resolution (or reset so we're not resizable again).
+             */
+            XSizeHints *sizehints = X11_XAllocSizeHints();
+            long flags = 0;
+            X11_XGetWMNormalHints(display, data->xwindow, sizehints, &flags);
+            // we are going fullscreen so turn the flags off
+            sizehints->flags &= ~(PMinSize | PMaxSize | PAspect);
+            X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+            X11_XFree(sizehints);
+        }
+
+        SetWindowBordered(display, screen, data->xwindow, false);
+
+        SDL_Rect rect;
+        X11_GetDisplayBounds(_this, _display, &rect);
+
+        data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+        data->expected.x = rect.x;
+        data->expected.y = rect.y;
+        data->expected.w = rect.w;
+        data->expected.h = rect.h;
+        X11_XMoveWindow(display, data->xwindow, rect.x, rect.y);
+        X11_XResizeWindow(display, data->xwindow, rect.w, rect.h);
+        X11_XRaiseWindow(display, data->xwindow);
+    } else {
+        data->pending_operation |= X11_PENDING_OP_MOVE | X11_PENDING_OP_RESIZE;
+        data->expected.x = window->windowed.x;
+        data->expected.y = window->windowed.y;
+        data->expected.w = window->windowed.w;
+        data->expected.h = window->windowed.h;
+        X11_XResizeWindow(display, data->xwindow, window->windowed.w, window->windowed.h);
+        X11_XMoveWindow(display, data->xwindow, window->windowed.x, window->windowed.y);
+
+        SetWindowBordered(display, screen, data->xwindow, (window->flags & SDL_WINDOW_BORDERLESS) == 0);
+        X11_SetWindowMinMax(data->window, false);
+    }
+
+    X11_XFlush(display);
+
+    return SDL_FULLSCREEN_PENDING;
+}
+
 SDL_FullscreenResult X11_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *_display, SDL_FullscreenOp fullscreen)
 {
-    return X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
+    CHECK_WINDOW_DATA(window);
+    CHECK_DISPLAY_DATA(_display);
+
+    SDL_VideoData *data = _this->internal;
+    if (data->net_wm) {
+        return X11_SetWindowFullscreenViaWM(_this, window, _display, fullscreen);
+    }
+
+    return X11_SetWindowFullscreenLegacy(_this, window, _display, fullscreen != SDL_FULLSCREEN_OP_LEAVE);
 }
 
 typedef struct

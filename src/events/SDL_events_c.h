@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,6 +36,18 @@
 #include "SDL_pen_c.h"
 #include "SDL_windowevents_c.h"
 
+// The event mutex
+//
+// This mutex prevents multiple threads from watching multiple events
+// simultaneously and also protects resources that may be accessed from
+// multiple threads and also generate events.
+extern SDL_Mutex *SDL_event_lock;
+extern void SDL_CreateEventLock(void);
+extern void SDL_DestroyEventLock(void);
+
+// This mutex prevents multiple threads from simultaneously accessing joysticks
+extern SDL_Mutex *SDL_joystick_lock;
+
 // Start and stop the event processing loop
 extern bool SDL_StartEventLoop(void);
 extern void SDL_StopEventLoop(void);
@@ -50,6 +62,8 @@ extern void *SDL_AllocateTemporaryMemory(size_t size);
 extern const char *SDL_CreateTemporaryString(const char *string);
 extern void *SDL_ClaimTemporaryMemory(const void *mem);
 extern void SDL_FreeTemporaryMemory(void);
+
+extern void SDL_OnUpdateJoysticksChanged(void);
 
 extern void SDL_PumpEventMaintenance(void);
 

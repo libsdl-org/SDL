@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -48,10 +48,10 @@ static const struct
     SDL_PixelFormat pixel_format;
     int modeflags, ncolour, log2bpp;
 } mode_to_pixelformat[] = {
-    // { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 },
-    // { SDL_PIXELFORMAT_INDEX2LSB, 0, 3, 1 },
-    // { SDL_PIXELFORMAT_INDEX4LSB, 0, 15, 2 },
-    // { SDL_PIXELFORMAT_INDEX8,    MODE_FLAG_565, 255, 3 },
+    { SDL_PIXELFORMAT_INDEX1LSB, 0, 1, 0 },
+    { SDL_PIXELFORMAT_INDEX2LSB, 0, 3, 1 },
+    { SDL_PIXELFORMAT_INDEX4LSB, 0, 15, 2 },
+    { SDL_PIXELFORMAT_INDEX8, MODE_FLAG_565, 255, 3 },
     { SDL_PIXELFORMAT_XBGR1555, MODE_FLAG_TBGR, 65535, 4 },
     { SDL_PIXELFORMAT_XRGB1555, MODE_FLAG_TRGB, 65535, 4 },
     { SDL_PIXELFORMAT_ABGR1555, MODE_FLAG_ABGR, 65535, 4 },
@@ -96,7 +96,7 @@ static size_t measure_mode_block(const int *block)
     return blockSize * 4;
 }
 
-static bool read_mode_variable(int *block, int var)
+static int read_mode_variable(int *block, int var)
 {
     _kernel_swi_regs regs;
     regs.r[0] = (int)block;

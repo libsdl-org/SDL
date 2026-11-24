@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6381F9D3-BA5F-4E5C-80FF-9013964777EE}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
+  <ItemGroup>
+    <None Include="$(SolutionDir)\..\examples\misc\03-locale\README.txt" />
+    <ClCompile Include="$(SolutionDir)\..\examples\misc\03-locale\locale.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>

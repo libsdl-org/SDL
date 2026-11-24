@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -178,6 +178,7 @@
 #define SDL_TIMER_UNIX 1
 
 /* Enable various video drivers */
+#ifndef SDL_VIDEO_DISABLED
 #define SDL_VIDEO_DRIVER_ANDROID 1
 
 /* Enable OpenGL ES */
@@ -193,8 +194,10 @@
 #define SDL_VIDEO_VULKAN 1
 #define SDL_VIDEO_RENDER_VULKAN 1
 #define SDL_GPU_VULKAN 1
+#define HAVE_GPU_OPENXR 1
 #define SDL_VIDEO_RENDER_GPU 1
 #endif
+#endif /* SDL_VIDEO_DISABLED */
 
 /* Enable system power support */
 #define SDL_POWER_ANDROID 1

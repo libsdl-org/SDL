@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,6 +27,7 @@
 
 // Called by the JNI layer when the screen changes size or format
 extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
+extern void Android_SetScreenHDRHeadroom(float headroom);
 extern void Android_SetFormat(int format_wanted, int format_got);
 extern void Android_SetOrientation(SDL_DisplayOrientation orientation);
 extern void Android_SendResize(SDL_Window *window);

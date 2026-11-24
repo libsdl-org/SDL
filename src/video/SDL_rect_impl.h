@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -422,6 +422,13 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
                 x = rectx2;
                 y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
+
+            // The new point lies between the current endpoints. Clamp it there so
+            // rounding near a corner can't push it back outside an edge it was
+            // already clipped to, which would make this loop cycle forever.
+            x = SDL_clamp(x, SDL_min(x1, x2), SDL_max(x1, x2));
+            y = SDL_clamp(y, SDL_min(y1, y2), SDL_max(y1, y2));
+
             x1 = x;
             y1 = y;
             outcode1 = COMPUTEOUTCODE(rect, x, y);
@@ -447,6 +454,13 @@ bool SDL_INTERSECTRECTANDLINE(const RECTTYPE *rect, SCALARTYPE *X1, SCALARTYPE *
                 x = rectx2;
                 y = (SCALARTYPE) (y1 + ((BIGSCALARTYPE)(y2 - y1) * (x - x1)) / (x2 - x1));
             }
+
+            // The new point lies between the current endpoints. Clamp it there so
+            // rounding near a corner can't push it back outside an edge it was
+            // already clipped to, which would make this loop cycle forever.
+            x = SDL_clamp(x, SDL_min(x1, x2), SDL_max(x1, x2));
+            y = SDL_clamp(y, SDL_min(y1, y2), SDL_max(y1, y2));
+
             x2 = x;
             y2 = y;
             outcode2 = COMPUTEOUTCODE(rect, x, y);

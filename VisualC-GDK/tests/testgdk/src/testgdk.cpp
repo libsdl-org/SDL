@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,7 +30,7 @@ extern "C" {
 #include <XGameRuntime.h>
 
 #define NUM_SPRITES    100
-#define MAX_SPEED     1
+#define MAX_SPEED      1
 
 static SDLTest_CommonState *state;
 static int num_sprites;
@@ -42,6 +42,8 @@ static int current_alpha = 0;
 static int current_color = 0;
 static int sprite_w, sprite_h;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
+static SDL_AtomicInt suspend_requested;
+static bool suspended;
 
 int done;
 
@@ -185,8 +187,8 @@ static bool LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadBMP step repeatedly, but that's OK for test code. */
-        sprites[i] = LoadTexture(state->renderers[i], file, true);
+        /* This does the SDL_LoadSurface step repeatedly, but that's OK for test code. */
+        sprites[i] = LoadTexture(state->renderers[i], file);
         if (!sprites[i]) {
             return false;
         }
@@ -291,9 +293,8 @@ static void DrawSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
-static void loop()
+static void update()
 {
-    int i;
     SDL_Event event;
 
     /* Check for events */
@@ -310,19 +311,62 @@ static void loop()
         SDLTest_CommonEvent(state, &event, &done);
 #endif
     }
-    for (i = 0; i < state->num_windows; ++i) {
-        if (state->windows[i] == NULL) {
-            continue;
+
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    /* Handle suspend and resume events */
+    if (SDL_GetAtomicInt(&suspend_requested)) {
+        if (!suspended) {
+            for (int i = 0; i < state->num_windows; ++i) {
+                if (state->windows[i] != NULL) {
+                    SDL_GDKSuspendRenderer(state->renderers[i]);
+                }
+            }
+            suspended = true;
+            SDL_GDKSuspendComplete();
         }
-        DrawSprites(state->renderers[i], sprites[i]);
+    } else if (suspended) {
+        for (int i = 0; i < state->num_windows; ++i) {
+            if (state->windows[i] != NULL) {
+                SDL_GDKResumeRenderer(state->renderers[i]);
+            }
+        }
+        suspended = false;
     }
+#endif
+
     fillerup();
+}
+
+static void draw()
+{
+    int i;
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] != NULL) {
+            DrawSprites(state->renderers[i], sprites[i]);
+        }
+    }
+}
+
+static bool SDLCALL GDKEventWatch(void* userdata, SDL_Event* event)
+{
+    /* This callback may be on a different thread, so we'll
+     * set an atomic flag that can be read in our main loop.
+     *
+     * That allows us to cancel drawing before/after we finish
+     * drawing a frame, rather than mid-draw (which can crash).
+     */
+    if (event->type == SDL_EVENT_DID_ENTER_BACKGROUND) {
+        SDL_SetAtomicInt(&suspend_requested, 1);
+    } else if (event->type == SDL_EVENT_WILL_ENTER_FOREGROUND) {
+        SDL_SetAtomicInt(&suspend_requested, 0);
+    }
+    return false;
 }
 
 int main(int argc, char *argv[])
 {
     int i;
-    const char *icon = "icon.bmp";
+    const char *icon = "icon.png";
     char *soundname = NULL;
 
     /* Initialize parameters */
@@ -390,6 +434,9 @@ int main(int argc, char *argv[])
         quit(2);
     }
 
+    /* Set up the lifecycle event watcher */
+    SDL_AddEventWatch(GDKEventWatch, NULL);
+
     /* Create the windows, initialize the renderers, and load the textures */
     sprites =
         (SDL_Texture **) SDL_malloc(state->num_windows * sizeof(*sprites));
@@ -441,7 +488,10 @@ int main(int argc, char *argv[])
     AddUserSilent();
 
     while (!done) {
-        loop();
+        update();
+        if (!suspended) {
+            draw();
+        }
     }
 
     quit(0);

@@ -1,0 +1,33 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "SDL Application"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "SDL Application"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "SDL App"
+    },
+    {
+      "name": "perm_reason_MICROPHONE",
+      "value": "Used to record audio"
+    },
+    {
+      "name": "perm_reason_CAMERA",
+      "value": "Used to record video"
+    },
+    {
+      "name": "perm_reason_INTERNET",
+      "value": "Used to download additional content"
+    },
+    {
+      "name": "perm_reason_READ_PASTEBOARD",
+      "value": "Used to read from the pasteboard"
+    }
+  ]
+}
+

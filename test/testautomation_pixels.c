@@ -51,7 +51,8 @@ static const SDL_PixelFormat g_AllFormats[] = {
     SDL_PIXELFORMAT_UYVY,
     SDL_PIXELFORMAT_YVYU,
     SDL_PIXELFORMAT_NV12,
-    SDL_PIXELFORMAT_NV21
+    SDL_PIXELFORMAT_NV21,
+    SDL_PIXELFORMAT_I444
 };
 static const int g_numAllFormats = SDL_arraysize(g_AllFormats);
 
@@ -98,7 +99,8 @@ static const char *g_AllFormatsVerbose[] = {
     "SDL_PIXELFORMAT_UYVY",
     "SDL_PIXELFORMAT_YVYU",
     "SDL_PIXELFORMAT_NV12",
-    "SDL_PIXELFORMAT_NV21"
+    "SDL_PIXELFORMAT_NV21",
+    "SDL_PIXELFORMAT_I444"
 };
 
 static const SDL_PixelFormat g_AllLargeFormats[] = {
@@ -630,6 +632,30 @@ SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_P010_ARRAY, !SDL_ISPIXELFORMAT_ARRAY(SDL
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_P010_10BIT, !SDL_ISPIXELFORMAT_10BIT(SDL_PIXELFORMAT_P010));
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_P010_FLOAT, !SDL_ISPIXELFORMAT_FLOAT(SDL_PIXELFORMAT_P010));
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_P010_ALPHA, !SDL_ISPIXELFORMAT_ALPHA(SDL_PIXELFORMAT_P010));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_FORMAT, SDL_PIXELFORMAT_I444 == SDL_DEFINE_PIXELFOURCC('I', '4', '4', '4'));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_FOURCC, SDL_ISPIXELFORMAT_FOURCC(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_INDEXED, !SDL_ISPIXELFORMAT_INDEXED(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_PACKED, !SDL_ISPIXELFORMAT_PACKED(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_ARRAY, !SDL_ISPIXELFORMAT_ARRAY(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_10BIT, !SDL_ISPIXELFORMAT_10BIT(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_FLOAT, !SDL_ISPIXELFORMAT_FLOAT(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I444_ALPHA, !SDL_ISPIXELFORMAT_ALPHA(SDL_PIXELFORMAT_I444));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_FORMAT, SDL_PIXELFORMAT_I0FL == SDL_DEFINE_PIXELFOURCC('I', '0', 'F', 'L'));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_FOURCC, SDL_ISPIXELFORMAT_FOURCC(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_INDEXED, !SDL_ISPIXELFORMAT_INDEXED(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_PACKED, !SDL_ISPIXELFORMAT_PACKED(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_ARRAY, !SDL_ISPIXELFORMAT_ARRAY(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_10BIT, !SDL_ISPIXELFORMAT_10BIT(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_FLOAT, !SDL_ISPIXELFORMAT_FLOAT(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I0FL_ALPHA, !SDL_ISPIXELFORMAT_ALPHA(SDL_PIXELFORMAT_I0FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_FORMAT, SDL_PIXELFORMAT_I4FL == SDL_DEFINE_PIXELFOURCC('I', '4', 'F', 'L'));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_FOURCC, SDL_ISPIXELFORMAT_FOURCC(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_INDEXED, !SDL_ISPIXELFORMAT_INDEXED(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_PACKED, !SDL_ISPIXELFORMAT_PACKED(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_ARRAY, !SDL_ISPIXELFORMAT_ARRAY(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_10BIT, !SDL_ISPIXELFORMAT_10BIT(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_FLOAT, !SDL_ISPIXELFORMAT_FLOAT(SDL_PIXELFORMAT_I4FL));
+SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_I4FL_ALPHA, !SDL_ISPIXELFORMAT_ALPHA(SDL_PIXELFORMAT_I4FL));
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_EXTERNAL_OES_FORMAT, SDL_PIXELFORMAT_EXTERNAL_OES == SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' '));
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_EXTERNAL_OES_FOURCC, SDL_ISPIXELFORMAT_FOURCC(SDL_PIXELFORMAT_EXTERNAL_OES));
 SDL_COMPILE_TIME_ASSERT(SDL_PIXELFORMAT_EXTERNAL_OES_INDEXED, !SDL_ISPIXELFORMAT_INDEXED(SDL_PIXELFORMAT_EXTERNAL_OES));
@@ -1126,12 +1152,20 @@ static int SDLCALL pixels_saveLoadPNG(void *arg)
         /* Verify the PNG contents */
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
-            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
-            SDLTest_AssertCheck(pixels[0] == 255 &&
-                                pixels[1] == 255 &&
-                                pixels[2] == 255 &&
-                                pixels[3] == 255,
-                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            if (!SDL_ISPIXELFORMAT_ALPHA(format)) {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGB24, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGB24), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255,
+                                    "Verify PNG colors, expected 255/255/255 got %d/%d/%d", pixels[0], pixels[1], pixels[2]);
+            } else {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255 &&
+                                    pixels[3] == 255,
+                                    "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            }
             SDL_DestroySurface(surface);
         }
     }
@@ -1166,12 +1200,20 @@ static int SDLCALL pixels_saveLoadPNG(void *arg)
         /* Verify the PNG contents */
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
-            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
-            SDLTest_AssertCheck(pixels[0] == 255 &&
-                                pixels[1] == 255 &&
-                                pixels[2] == 255 &&
-                                pixels[3] == 255,
-                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            if (!SDL_ISPIXELFORMAT_ALPHA(format)) {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGB24, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGB24), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255,
+                                    "Verify PNG colors, expected 255/255/255 got %d/%d/%d", pixels[0], pixels[1], pixels[2]);
+            } else {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255 &&
+                                    pixels[3] == 255,
+                                    "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            }
             SDL_DestroySurface(surface);
         }
     }

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,14 @@
 
 #include "joystick/SDL_joystick_c.h" // For SDL_GetGamepadTypeFromVIDPID()
 
+#ifdef SDL_PLATFORM_EMSCRIPTEN
+#include <emscripten.h>
+
+EMSCRIPTEN_KEEPALIVE void Emscripten_force_free(void *ptr)
+{
+    free(ptr);  // This should NOT be SDL_free()
+}
+#endif
 
 // Common utility functions that aren't in the public API
 
@@ -54,12 +62,40 @@ int SDL_powerof2(int x)
     return value;
 }
 
-Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b)
+Uint64 SDL_CalculateGCD(Uint64 a, Uint64 b)
 {
     if (b == 0) {
         return a;
     }
     return SDL_CalculateGCD(b, (a % b));
+}
+
+void SDL_ReduceFraction(Uint64 numerator, Uint64 denominator, int *out_numerator, int *out_denominator)
+{
+    Uint64 gcd;
+
+    if (numerator == 0 || denominator == 0) {
+        *out_numerator = 0;
+        *out_denominator = 0;
+        return;
+    }
+
+    // Reduce to lowest terms, keeping the value exact if possible
+    gcd = SDL_CalculateGCD(numerator, denominator);
+    numerator /= gcd;
+    denominator /= gcd;
+
+    // If it still doesn't fit, drop low bits from both while preserving the ratio
+    while (numerator > SDL_MAX_SINT32 || denominator > SDL_MAX_SINT32) {
+        numerator >>= 1;
+        denominator >>= 1;
+    }
+    if (denominator == 0) {
+        // The ratio is too large to represent
+        numerator = 0;
+    }
+    *out_numerator = (int)numerator;
+    *out_denominator = (int)denominator;
 }
 
 // Algorithm adapted with thanks from John Cook's blog post:
@@ -103,7 +139,8 @@ void SDL_CalculateFraction(float x, int *numerator, int *denominator)
 
 bool SDL_startswith(const char *string, const char *prefix)
 {
-    if (SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
+    if (string && prefix &&
+        SDL_strncmp(string, prefix, SDL_strlen(prefix)) == 0) {
         return true;
     }
     return false;
@@ -120,6 +157,16 @@ bool SDL_endswith(const char *string, const char *suffix)
         }
     }
     return false;
+}
+
+bool SDL_IsZeroGUID(const SDL_GUID *guid)
+{
+    for (int i = 0; i < SDL_arraysize(guid->data); ++i) {
+        if (guid->data[i]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 SDL_COMPILE_TIME_ASSERT(sizeof_object_id, sizeof(int) == sizeof(Uint32));
@@ -376,6 +423,39 @@ int SDL_URIToLocal(const char *src, char *dst)
     return -1;
 }
 
+bool SDL_IsURI(const char *uri)
+{
+    /* A valid URI begins with a letter and is followed by any sequence of
+     * letters, digits, '+', '.', or '-'.
+     */
+    if (!uri) {
+        return false;
+    }
+
+    // The first character of the scheme must be a letter.
+    if (!((*uri >= 'a' && *uri <= 'z') || (*uri >= 'A' && *uri <= 'Z'))) {
+        return false;
+    }
+
+    /* If the colon is found before encountering the end of the string or
+     * any invalid characters, the scheme can be considered valid.
+     */
+    while (*uri) {
+        if (!((*uri >= 'a' && *uri <= 'z') ||
+              (*uri >= 'A' && *uri <= 'Z') ||
+              (*uri >= '0' && *uri <= '9') ||
+              *uri == '+' || *uri == '-' || *uri == '.')) {
+            return false;
+        }
+
+        if (*++uri == ':') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // This is a set of per-thread persistent strings that we can return from the SDL API.
 // This is used for short strings that might persist past the lifetime of the object
 // they are related to.
@@ -445,6 +525,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         const char *prefix;
         const char *replacement;
     } replacements[] = {
+        { "(Standard system devices) ", "" },
         { "8BitDo Tech Ltd", "8BitDo" },
         { "ASTRO Gaming", "ASTRO" },
         { "Bensussen Deutsch & Associates,Inc.(BDA)", "BDA" },
@@ -457,6 +538,7 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
         { "Performance Designed Products", "PDP" },
         { "QANBA USA, LLC", "Qanba" },
         { "QANBA USA,LLC", "Qanba" },
+        { "Voyetra Turtle Beach,Inc.", "Turtle Beach" },
         { "Unknown ", "" },
     };
     char *name = NULL;
@@ -504,6 +586,9 @@ char *SDL_CreateDeviceName(Uint16 vendor, Uint16 product, const char *vendor_nam
             break;
         case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
             name = SDL_strdup("Nintendo Switch Pro Controller");
+            break;
+        case SDL_GAMEPAD_TYPE_STEAM:
+            name = SDL_strdup("Steam Controller");
             break;
         default:
             len = (6 + 1 + 6 + 1);
@@ -579,4 +664,3 @@ void SDL_DebugLogBackend(const char *subsystem, const char *backend)
 {
     SDL_LogDebug(SDL_LOG_CATEGORY_SYSTEM, "SDL chose %s backend '%s'", subsystem, backend);
 }
-

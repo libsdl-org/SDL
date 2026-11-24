@@ -110,8 +110,17 @@ static void HIDAPI_DriverLg4ff_UnregisterHints(SDL_HintCallback callback, void *
 
 static bool HIDAPI_DriverLg4ff_IsEnabled(void)
 {
-    bool enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LG4FF,
-                              SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT));
+    #if defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_WINGDK)
+    /*
+     * hid.dll simply cannot send 7 bytes reports unlike other platforms
+     * it enforces full length repots of 17 from the device's descriptor, which does not work on the device
+     * this breaks ffb and led control, so we disable this by default
+     */
+    bool hint_default = false;
+    #else
+    bool hint_default = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI, SDL_HIDAPI_DEFAULT);
+    #endif
+    bool enabled = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_LG4FF, hint_default);
 
     return enabled;
 }
@@ -263,12 +272,12 @@ static bool HIDAPI_DriverLg4ff_IsSupportedDevice(
     if (vendor_id != USB_VENDOR_ID_LOGITECH) {
         return false;
     }
-    for (i = 0;i < sizeof(supported_device_ids) / sizeof(Uint32);i++) {
+    for (i = 0;i < SDL_arraysize(supported_device_ids);i++) {
         if (supported_device_ids[i] == product_id) {
             break;
         }
     }
-    if (i == sizeof(supported_device_ids) / sizeof(Uint32)) {
+    if (i == SDL_arraysize(supported_device_ids)) {
         return false;
     }
     Uint16 real_id = HIDAPI_DriverLg4ff_IdentifyWheel(product_id, version);
@@ -441,7 +450,7 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         // TODO do not adjust for MOMO wheels, when support is added
         expand_a = expand_a >> 1;
 
-        SDL_memset(cmd, 0x00, sizeof(cmd));
+        SDL_zeroa(cmd);
         cmd[0] = 0xfe;
         cmd[1] = 0x0d;
         cmd[2] = (Uint8)(expand_a / 0xaaaa);
@@ -454,7 +463,7 @@ static bool HIDAPI_DriverLg4ff_SetAutoCenter(SDL_HIDAPI_Device *device, int magn
         }
 
         // enable
-        SDL_memset(cmd, 0x00, sizeof(cmd));
+        SDL_zeroa(cmd);
         cmd[0] = 0x14;
 
         ret = SDL_hid_write(device->dev, cmd, sizeof(cmd));
@@ -481,7 +490,7 @@ static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
         SDL_OutOfMemory();
         return false;
     }
-    SDL_memset(ctx, 0, sizeof(SDL_DriverLg4ff_Context));
+    SDL_zerop(ctx);
 
     device->context = ctx;
     device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
@@ -507,15 +516,6 @@ static bool HIDAPI_DriverLg4ff_InitDevice(SDL_HIDAPI_Device *device)
     ctx->range = 900;
 
     return HIDAPI_JoystickConnected(device, NULL);
-}
-
-static int HIDAPI_DriverLg4ff_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverLg4ff_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
 }
 
 
@@ -863,16 +863,6 @@ static bool HIDAPI_DriverLg4ff_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return true;
 }
 
-static bool HIDAPI_DriverLg4ff_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverLg4ff_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverLg4ff_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     switch(device->product_id) {
@@ -975,25 +965,21 @@ static void HIDAPI_DriverLg4ff_FreeDevice(SDL_HIDAPI_Device *device)
 
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff = {
-    SDL_HINT_JOYSTICK_HIDAPI_LG4FF,
-    true,
-    HIDAPI_DriverLg4ff_RegisterHints,
-    HIDAPI_DriverLg4ff_UnregisterHints,
-    HIDAPI_DriverLg4ff_IsEnabled,
-    HIDAPI_DriverLg4ff_IsSupportedDevice,
-    HIDAPI_DriverLg4ff_InitDevice,
-    HIDAPI_DriverLg4ff_GetDevicePlayerIndex,
-    HIDAPI_DriverLg4ff_SetDevicePlayerIndex,
-    HIDAPI_DriverLg4ff_UpdateDevice,
-    HIDAPI_DriverLg4ff_OpenJoystick,
-    HIDAPI_DriverLg4ff_RumbleJoystick,
-    HIDAPI_DriverLg4ff_RumbleJoystickTriggers,
-    HIDAPI_DriverLg4ff_GetJoystickCapabilities,
-    HIDAPI_DriverLg4ff_SetJoystickLED,
-    HIDAPI_DriverLg4ff_SendJoystickEffect,
-    HIDAPI_DriverLg4ff_SetSensorsEnabled,
-    HIDAPI_DriverLg4ff_CloseJoystick,
-    HIDAPI_DriverLg4ff_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_LG4FF,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverLg4ff_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverLg4ff_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverLg4ff_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverLg4ff_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverLg4ff_InitDevice,
+    .UpdateDevice = HIDAPI_DriverLg4ff_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverLg4ff_OpenJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverLg4ff_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverLg4ff_SetJoystickLED,
+    .SendJoystickEffect = HIDAPI_DriverLg4ff_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverLg4ff_SetSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverLg4ff_CloseJoystick,
+    .FreeDevice = HIDAPI_DriverLg4ff_FreeDevice,
 };
 
 

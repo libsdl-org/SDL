@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -30,8 +30,8 @@
 
 #define VOID2U64(x) ((uint64_t)(size_t)(x))
 
-#ifndef EGL_PLATFORM_GBM_MESA
-#define EGL_PLATFORM_GBM_MESA 0x31D7
+#ifndef EGL_PLATFORM_GBM_KHR
+#define EGL_PLATFORM_GBM_KHR 0x31D7
 #endif
 
 #ifndef EGL_SYNC_NATIVE_FENCE_ANDROID
@@ -49,16 +49,18 @@
 
 // EGL implementation of SDL OpenGL support
 
-void KMSDRM_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
+void KMSDRM_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
 {
     /* if SDL was _also_ built with the Raspberry Pi driver (so we're
        definitely a Pi device) or with the ROCKCHIP video driver
        (it's a ROCKCHIP device),  default to GLES2. */
 #if defined(SDL_VIDEO_DRIVER_RPI) || defined(SDL_VIDEO_DRIVER_ROCKCHIP)
-    *mask = SDL_GL_CONTEXT_PROFILE_ES;
-    *major = 2;
-    *minor = 0;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 0;
 #endif
+
+    _this->gl_config.egl_platform = EGL_PLATFORM_GBM_KHR;
 }
 
 bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
@@ -70,7 +72,7 @@ bool KMSDRM_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
        call order in SDL_CreateWindow(). */
 #if 0
     NativeDisplayType display = (NativeDisplayType)_this->internal->gbm_dev;
-    return SDL_EGL_LoadLibrary(_this, path, display, EGL_PLATFORM_GBM_MESA);
+    return SDL_EGL_LoadLibrary(_this, path, display);
 #endif
     return true;
 }
@@ -123,7 +125,11 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
-    bool modesetting = false;
+    const bool modesetting = windata->egl_surface_dirty;
+
+    if (modesetting) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
 
     SDL_zero(info);
 
@@ -153,7 +159,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
     /* wait for GPU to finish rendering the frame (remember where we  */
     /* put the fence in the GL CMDSTREAM) before doing the changes    */
     /* requested in the atomic ioct (the pageflip in this case).      */
-    /* (We export the GPU-side FENCE OJECT to the fence INPUT FD now, */
+    /* (We export the GPU-side FENCE OBJECT to the fence INPUT FD now,*/
     /* not sooner, because now we are sure that the GPU-side fence is */
     /* in the CMDSTREAM to be lifted when the CMDSTREAM to this point */
     /* is completed).                                                 */
@@ -230,10 +236,7 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
  
     /* Do we have a pending modesetting? If so, set the necessary
        props so it's included in the incoming atomic commit. */
-    if (windata->egl_surface_dirty) {
-        // !!! FIXME: this CreateSurfaces call is what the legacy path does; it's not clear to me if the atomic paths need to do it too.
-        KMSDRM_CreateSurfaces(_this, window);
-
+    if (modesetting) {
         uint32_t blob_id;
         SDL_VideoData *viddata = (SDL_VideoData *)_this->internal;
 
@@ -241,7 +244,6 @@ static bool KMSDRM_GLES_SwapWindowFenced(SDL_VideoDevice *_this, SDL_Window * wi
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "active", 1);
-        modesetting = true;
     }
 
     /*****************************************************************/
@@ -292,7 +294,11 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
     SDL_DisplayData *dispdata = SDL_GetDisplayDriverDataForWindow(window);
     KMSDRM_FBInfo *fb;
     KMSDRM_PlaneInfo info;
-    bool modesetting = false;
+    const bool modesetting = windata->egl_surface_dirty;
+
+    if (modesetting) {
+        KMSDRM_CreateSurfaces(_this, window);
+    }
 
     SDL_zero(info);
 
@@ -350,10 +356,7 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
 
     /* Do we have a pending modesetting? If so, set the necessary
        props so it's included in the incoming atomic commit. */
-    if (windata->egl_surface_dirty) {
-        // !!! FIXME: this CreateSurfaces call is what the legacy path does; it's not clear to me if the atomic paths need to do it too.
-        KMSDRM_CreateSurfaces(_this, window);
-
+    if (modesetting) {
         uint32_t blob_id;
 
         SDL_VideoData *viddata = (SDL_VideoData *)_this->internal;
@@ -362,7 +365,6 @@ static bool KMSDRM_GLES_SwapWindowDoubleBuffered(SDL_VideoDevice *_this, SDL_Win
         KMSDRM_drmModeCreatePropertyBlob(viddata->drm_fd, &dispdata->mode, sizeof(dispdata->mode), &blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "MODE_ID", blob_id);
         add_crtc_property(dispdata->atomic_req, &dispdata->crtc, "active", 1);
-        modesetting = true;
     }
  
     /* Issue the one and only atomic commit where all changes will be requested!
@@ -470,6 +472,13 @@ static bool KMSDRM_GLES_SwapWindowLegacy(SDL_VideoDevice *_this, SDL_Window *win
 
         ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc.crtc->crtc_id,
                                      fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
+
+        // some drivers apparently claim they can do async page flip but can't (or have intermittent problems),
+        // so in this specific case just retry without the async flag. If it still fails after that, oh well.
+        if ((ret == -EINVAL) && (flip_flags & DRM_MODE_PAGE_FLIP_ASYNC)) {
+            flip_flags &= ~DRM_MODE_PAGE_FLIP_ASYNC;
+            ret = KMSDRM_drmModePageFlip(viddata->drm_fd, dispdata->crtc.crtc->crtc_id, fb_info->fb_id, flip_flags, &windata->waiting_for_flip);
+        }
 
         if (ret == 0) {
             windata->waiting_for_flip = true;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -51,14 +51,18 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #endif
 };
 
-#ifndef SDL_THREAD_SAFETY_ANALYSIS
-static
-#endif
-SDL_Mutex *SDL_sensor_lock = NULL; // This needs to support recursive locks
-static SDL_AtomicInt SDL_sensor_lock_pending;
+typedef struct SDL_SensorEventEntry
+{
+    SDL_Event event;
+    struct SDL_SensorEventEntry *next;
+} SDL_SensorEventEntry;
+
 static int SDL_sensors_locked;
 static bool SDL_sensors_initialized;
-static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_sensor_lock) = NULL;
+static SDL_Sensor *SDL_sensors SDL_GUARDED_BY(SDL_joystick_lock) = NULL;
+static SDL_SensorEventEntry *SDL_queued_sensor_events_head SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_SensorEventEntry *SDL_queued_sensor_events_tail SDL_GUARDED_BY(SDL_joystick_lock);
+static SDL_SensorEventEntry *SDL_free_sensor_events SDL_GUARDED_BY(SDL_joystick_lock);
 
 #define CHECK_SENSOR_MAGIC(sensor, result)                          \
     CHECK_PARAM(!SDL_ObjectValid(sensor, SDL_OBJECT_TYPE_SENSOR)) { \
@@ -74,43 +78,23 @@ bool SDL_SensorsInitialized(void)
 
 void SDL_LockSensors(void)
 {
-    (void)SDL_AtomicIncRef(&SDL_sensor_lock_pending);
-    SDL_LockMutex(SDL_sensor_lock);
-    (void)SDL_AtomicDecRef(&SDL_sensor_lock_pending);
-
+    SDL_LockMutex(SDL_joystick_lock);
     ++SDL_sensors_locked;
+}
+
+bool SDL_TryLockSensors(void)
+{
+    if (SDL_TryLockMutex(SDL_joystick_lock)) {
+        ++SDL_sensors_locked;
+        return true;
+    }
+    return false;
 }
 
 void SDL_UnlockSensors(void)
 {
-    bool last_unlock = false;
-
     --SDL_sensors_locked;
-
-    if (!SDL_sensors_initialized) {
-        // NOTE: There's a small window here where another thread could lock the mutex after we've checked for pending locks
-        if (!SDL_sensors_locked && SDL_GetAtomicInt(&SDL_sensor_lock_pending) == 0) {
-            last_unlock = true;
-        }
-    }
-
-    /* The last unlock after sensors are uninitialized will cleanup the mutex,
-     * allowing applications to lock sensors while reinitializing the system.
-     */
-    if (last_unlock) {
-        SDL_Mutex *sensor_lock = SDL_sensor_lock;
-
-        SDL_LockMutex(sensor_lock);
-        {
-            SDL_UnlockMutex(SDL_sensor_lock);
-
-            SDL_sensor_lock = NULL;
-        }
-        SDL_UnlockMutex(sensor_lock);
-        SDL_DestroyMutex(sensor_lock);
-    } else {
-        SDL_UnlockMutex(SDL_sensor_lock);
-    }
+    SDL_UnlockMutex(SDL_joystick_lock);
 }
 
 bool SDL_SensorsLocked(void)
@@ -123,15 +107,112 @@ void SDL_AssertSensorsLocked(void)
     SDL_assert(SDL_SensorsLocked());
 }
 
+static SDL_SensorEventEntry *SDL_AllocSensorEvent(SDL_Event **event)
+{
+    SDL_AssertSensorsLocked();
+
+    SDL_SensorEventEntry *entry = SDL_free_sensor_events;
+    if (entry) {
+        SDL_free_sensor_events = entry->next;
+    } else {
+        entry = (SDL_SensorEventEntry *)SDL_calloc(1, sizeof(*entry));
+        if (!entry) {
+            return NULL;
+        }
+    }
+
+    SDL_zerop(entry);
+    *event = &entry->event;
+    return entry;
+}
+
+static void SDL_QueueSensorEvent(SDL_SensorEventEntry *entry)
+{
+    SDL_AssertSensorsLocked();
+
+    if (SDL_queued_sensor_events_head) {
+        SDL_queued_sensor_events_tail->next = entry;
+    } else {
+        SDL_queued_sensor_events_head = entry;
+    }
+    SDL_queued_sensor_events_tail = entry;
+}
+
+static void SDL_FreeSensorEvents(SDL_SensorEventEntry *entries)
+{
+    SDL_SensorEventEntry *entry = entries;
+    while (entry) {
+        SDL_SensorEventEntry *next = entry->next;
+        SDL_free(entry);
+        entry = next;
+    }
+}
+
+static void SDL_PushSensorEvents(SDL_SensorEventEntry *entries)
+{
+    SDL_LockMutex(SDL_event_lock);
+    for (SDL_SensorEventEntry *entry = entries; entry; entry = entry->next) {
+        SDL_PushEvent(&entry->event);
+    }
+    SDL_UnlockMutex(SDL_event_lock);
+}
+
+void SDL_DispatchSensorEvents(void)
+{
+    SDL_SensorEventEntry *entries, *tail;
+    SDL_LockSensors();
+    if (!SDL_queued_sensor_events_head) {
+        SDL_UnlockSensors();
+        return;
+    }
+    entries = SDL_queued_sensor_events_head;
+    tail = SDL_queued_sensor_events_tail;
+    SDL_queued_sensor_events_head = NULL;
+    SDL_queued_sensor_events_tail = NULL;
+    SDL_UnlockSensors();
+
+    SDL_PushSensorEvents(entries);
+
+    SDL_LockSensors();
+    tail->next = SDL_free_sensor_events;
+    SDL_free_sensor_events = entries;
+    SDL_UnlockSensors();
+}
+
+void SDL_TryDispatchSensorEvents(void)
+{
+    SDL_SensorEventEntry *entries, *tail;
+
+    // Don't block on the sensor lock, it may be held by a thread waiting for us to quit.
+    // Any queued events will be dispatched the next time the sensors are updated.
+    if (!SDL_TryLockSensors()) {
+        return;
+    }
+    if (!SDL_queued_sensor_events_head) {
+        SDL_UnlockSensors();
+        return;
+    }
+    entries = SDL_queued_sensor_events_head;
+    tail = SDL_queued_sensor_events_tail;
+    SDL_queued_sensor_events_head = NULL;
+    SDL_queued_sensor_events_tail = NULL;
+    SDL_UnlockSensors();
+
+    SDL_PushSensorEvents(entries);
+
+    if (SDL_TryLockSensors()) {
+        tail->next = SDL_free_sensor_events;
+        SDL_free_sensor_events = entries;
+        SDL_UnlockSensors();
+    } else {
+        SDL_FreeSensorEvents(entries);
+    }
+}
+
 bool SDL_InitSensors(void)
 {
     int i;
     bool status;
-
-    // Create the sensor list lock
-    if (SDL_sensor_lock == NULL) {
-        SDL_sensor_lock = SDL_CreateMutex();
-    }
 
     if (!SDL_InitSubSystem(SDL_INIT_EVENTS)) {
         return false;
@@ -553,6 +634,17 @@ void SDL_QuitSensors(void)
         SDL_sensor_drivers[i]->Quit();
     }
 
+    if (SDL_queued_sensor_events_head) {
+        SDL_FreeSensorEvents(SDL_queued_sensor_events_head);
+        SDL_queued_sensor_events_head = NULL;
+        SDL_queued_sensor_events_tail = NULL;
+    }
+
+    if (SDL_free_sensor_events) {
+        SDL_FreeSensorEvents(SDL_free_sensor_events);
+        SDL_free_sensor_events = NULL;
+    }
+
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 
     SDL_sensors_initialized = false;
@@ -574,15 +666,18 @@ void SDL_SendSensorUpdate(Uint64 timestamp, SDL_Sensor *sensor, Uint64 sensor_ti
 
     // Post the event, if desired
     if (SDL_EventEnabled(SDL_EVENT_SENSOR_UPDATE)) {
-        SDL_Event event;
-        event.type = SDL_EVENT_SENSOR_UPDATE;
-        event.common.timestamp = timestamp;
-        event.sensor.which = sensor->instance_id;
-        num_values = SDL_min(num_values, SDL_arraysize(event.sensor.data));
-        SDL_memset(event.sensor.data, 0, sizeof(event.sensor.data));
-        SDL_memcpy(event.sensor.data, data, num_values * sizeof(*data));
-        event.sensor.sensor_timestamp = sensor_timestamp;
-        SDL_PushEvent(&event);
+        SDL_Event *event;
+        SDL_SensorEventEntry *entry = SDL_AllocSensorEvent(&event);
+        if (entry) {
+            event->common.type = SDL_EVENT_SENSOR_UPDATE;
+            event->common.timestamp = timestamp;
+            event->sensor.which = sensor->instance_id;
+            num_values = SDL_min(num_values, SDL_arraysize(event->sensor.data));
+            SDL_memset(event->sensor.data, 0, sizeof(event->sensor.data));
+            SDL_memcpy(event->sensor.data, data, num_values * sizeof(*data));
+            event->sensor.sensor_timestamp = sensor_timestamp;
+            SDL_QueueSensorEvent(entry);
+        }
     }
 
     SDL_GamepadSensorWatcher(timestamp, sensor->instance_id, sensor_timestamp, data, num_values);
@@ -622,4 +717,6 @@ void SDL_UpdateSensors(void)
     }
 
     SDL_UnlockSensors();
+
+    SDL_DispatchSensorEvents();
 }

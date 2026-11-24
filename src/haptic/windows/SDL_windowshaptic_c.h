@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -42,6 +42,7 @@ struct haptic_hwdata
 #endif
     DWORD axes[3];        // Axes to use.
     bool is_joystick; // Device is loaded as joystick.
+    SDL_JoystickID joystickID;
     SDL_Thread *thread;
     SDL_Mutex *mutex;
     Uint64 stopTicks;

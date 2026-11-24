@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -233,6 +233,15 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * not need to be null-terminated (e.g., you can directly copy a portion of a
  * document).
  *
+ * When the function returns success, the data passed to the function should
+ * remain valid until the cleanup callback is invoked. If no cleanup callback
+ * was provided, then the data should remain valid until the clipboard is
+ * cleared with SDL_ClearClipboardData(), or a subsequent successful call to
+ * SDL_SetClipboardData() replaces the existing clipboard data.
+ *
+ * On failure, the passed cleanup callback will be called, and no references
+ * to the data passed to the function are kept.
+ *
  * \param callback a function pointer to the function that provides the
  *                 clipboard data.
  * \param cleanup a function pointer to the function that cleans up the
@@ -252,7 +261,7 @@ typedef void (SDLCALL *SDL_ClipboardCleanupCallback)(void *userdata);
  * \sa SDL_GetClipboardData
  * \sa SDL_HasClipboardData
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char **mime_types, size_t num_mime_types);
+extern SDL_DECLSPEC bool SDLCALL SDL_SetClipboardData(SDL_ClipboardDataCallback callback, SDL_ClipboardCleanupCallback cleanup, void *userdata, const char *const *mime_types, size_t num_mime_types);
 
 /**
  * Clear the clipboard data.

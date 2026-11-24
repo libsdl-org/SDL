@@ -2,9 +2,9 @@
 #define VULKAN_METAL_H_ 1
 
 /*
-** Copyright 2015-2024 The Khronos Group Inc.
+** Copyright 2015-2026 The Khronos Group Inc.
 **
-** SPDX-License-Identifier: Apache-2.0
+** SPDX-License-Identifier: Apache-2.0 OR MIT
 */
 
 /*
@@ -21,6 +21,7 @@ extern "C" {
 
 // VK_EXT_metal_surface is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_surface 1
+
 #ifdef __OBJC__
 @class CAMetalLayer;
 #else
@@ -37,7 +38,9 @@ typedef void CAMetalLayer;
 
 #define VK_EXT_METAL_SURFACE_SPEC_VERSION 1
 #define VK_EXT_METAL_SURFACE_EXTENSION_NAME "VK_EXT_metal_surface"
+
 typedef VkFlags VkMetalSurfaceCreateFlagsEXT;
+
 typedef struct VkMetalSurfaceCreateInfoEXT {
     VkStructureType                 sType;
     const void*                     pNext;
@@ -45,47 +48,48 @@ typedef struct VkMetalSurfaceCreateInfoEXT {
     const CAMetalLayer SDL_UNSAFE_UNRETAINED *pLayer;
 } VkMetalSurfaceCreateInfoEXT;
 
+
 typedef VkResult (VKAPI_PTR *PFN_vkCreateMetalSurfaceEXT)(VkInstance instance, const VkMetalSurfaceCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkSurfaceKHR* pSurface);
 
 #ifndef VK_NO_PROTOTYPES
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateMetalSurfaceEXT(
     VkInstance                                  instance,
     const VkMetalSurfaceCreateInfoEXT*          pCreateInfo,
     const VkAllocationCallbacks*                pAllocator,
     VkSurfaceKHR*                               pSurface);
 #endif
+#endif
 
 
 // VK_EXT_metal_objects is a preprocessor guard. Do not pass it to API calls.
 #define VK_EXT_metal_objects 1
+
 #ifdef __OBJC__
 @protocol MTLDevice;
 typedef __unsafe_unretained id<MTLDevice> MTLDevice_id;
 #else
 typedef void* MTLDevice_id;
 #endif
-
 #ifdef __OBJC__
 @protocol MTLCommandQueue;
 typedef __unsafe_unretained id<MTLCommandQueue> MTLCommandQueue_id;
 #else
 typedef void* MTLCommandQueue_id;
 #endif
-
 #ifdef __OBJC__
 @protocol MTLBuffer;
 typedef __unsafe_unretained id<MTLBuffer> MTLBuffer_id;
 #else
 typedef void* MTLBuffer_id;
 #endif
-
 #ifdef __OBJC__
 @protocol MTLTexture;
 typedef __unsafe_unretained id<MTLTexture> MTLTexture_id;
 #else
 typedef void* MTLTexture_id;
 #endif
-
 typedef struct __IOSurface* IOSurfaceRef;
 #ifdef __OBJC__
 #pragma clang diagnostic push
@@ -110,6 +114,7 @@ typedef enum VkExportMetalObjectTypeFlagBitsEXT {
     VK_EXPORT_METAL_OBJECT_TYPE_FLAG_BITS_MAX_ENUM_EXT = 0x7FFFFFFF
 } VkExportMetalObjectTypeFlagBitsEXT;
 typedef VkFlags VkExportMetalObjectTypeFlagsEXT;
+
 typedef struct VkExportMetalObjectCreateInfoEXT {
     VkStructureType                       sType;
     const void*                           pNext;
@@ -191,12 +196,64 @@ typedef struct VkImportMetalSharedEventInfoEXT {
     MTLSharedEvent_id    mtlSharedEvent;
 } VkImportMetalSharedEventInfoEXT;
 
+
 typedef void (VKAPI_PTR *PFN_vkExportMetalObjectsEXT)(VkDevice device, VkExportMetalObjectsInfoEXT* pMetalObjectsInfo);
 
 #ifndef VK_NO_PROTOTYPES
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
 VKAPI_ATTR void VKAPI_CALL vkExportMetalObjectsEXT(
     VkDevice                                    device,
     VkExportMetalObjectsInfoEXT*                pMetalObjectsInfo);
+#endif
+#endif
+
+
+// VK_EXT_external_memory_metal is a preprocessor guard. Do not pass it to API calls.
+#define VK_EXT_external_memory_metal 1
+
+#define VK_EXT_EXTERNAL_MEMORY_METAL_SPEC_VERSION 1
+#define VK_EXT_EXTERNAL_MEMORY_METAL_EXTENSION_NAME "VK_EXT_external_memory_metal"
+
+typedef struct VkImportMemoryMetalHandleInfoEXT {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkExternalMemoryHandleTypeFlagBits    handleType;
+    void*                                 handle;
+} VkImportMemoryMetalHandleInfoEXT;
+
+typedef struct VkMemoryMetalHandlePropertiesEXT {
+    VkStructureType    sType;
+    void*              pNext;
+    uint32_t           memoryTypeBits;
+} VkMemoryMetalHandlePropertiesEXT;
+
+typedef struct VkMemoryGetMetalHandleInfoEXT {
+    VkStructureType                       sType;
+    const void*                           pNext;
+    VkDeviceMemory                        memory;
+    VkExternalMemoryHandleTypeFlagBits    handleType;
+} VkMemoryGetMetalHandleInfoEXT;
+
+
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryMetalHandleEXT)(VkDevice device, const VkMemoryGetMetalHandleInfoEXT* pGetMetalHandleInfo, void** pHandle);
+typedef VkResult (VKAPI_PTR *PFN_vkGetMemoryMetalHandlePropertiesEXT)(VkDevice device, VkExternalMemoryHandleTypeFlagBits handleType, const void* pHandle, VkMemoryMetalHandlePropertiesEXT* pMemoryMetalHandleProperties);
+
+#ifndef VK_NO_PROTOTYPES
+
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryMetalHandleEXT(
+    VkDevice                                    device,
+    const VkMemoryGetMetalHandleInfoEXT*        pGetMetalHandleInfo,
+    void**                                      pHandle);
+#endif
+#ifndef VK_ONLY_EXPORTED_PROTOTYPES
+VKAPI_ATTR VkResult VKAPI_CALL vkGetMemoryMetalHandlePropertiesEXT(
+    VkDevice                                    device,
+    VkExternalMemoryHandleTypeFlagBits          handleType,
+    const void*                                 pHandle,
+    VkMemoryMetalHandlePropertiesEXT*           pMemoryMetalHandleProperties);
+#endif
 #endif
 
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,10 +33,6 @@
 #define SDL_WAYLAND_SYM_OPT(rc,fn,params)
 #endif
 
-#ifndef SDL_WAYLAND_INTERFACE
-#define SDL_WAYLAND_INTERFACE(iface)
-#endif
-
 SDL_WAYLAND_MODULE(WAYLAND_CLIENT)
 SDL_WAYLAND_SYM(void, wl_proxy_marshal, (struct wl_proxy *, uint32_t, ...))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_create, (struct wl_proxy *, const struct wl_interface *))
@@ -65,6 +61,7 @@ SDL_WAYLAND_SYM(void, wl_display_cancel_read, (struct wl_display *))
 SDL_WAYLAND_SYM(int, wl_display_get_error, (struct wl_display *))
 SDL_WAYLAND_SYM(int, wl_display_flush, (struct wl_display *))
 SDL_WAYLAND_SYM(int, wl_display_roundtrip, (struct wl_display *))
+SDL_WAYLAND_SYM(int, wl_display_roundtrip_queue, (struct wl_display *, struct wl_event_queue *))
 SDL_WAYLAND_SYM(struct wl_event_queue *, wl_display_create_queue, (struct wl_display *))
 SDL_WAYLAND_SYM(void, wl_event_queue_destroy, (struct wl_event_queue *))
 SDL_WAYLAND_SYM(void, wl_log_set_handler_client, (wl_log_func_t))
@@ -74,6 +71,10 @@ SDL_WAYLAND_SYM(void, wl_list_remove, (struct wl_list *))
 SDL_WAYLAND_SYM(int, wl_list_length, (const struct wl_list *))
 SDL_WAYLAND_SYM(int, wl_list_empty, (const struct wl_list *))
 SDL_WAYLAND_SYM(void, wl_list_insert_list, (struct wl_list *, struct wl_list *))
+SDL_WAYLAND_SYM(void, wl_array_init, (struct wl_array *))
+SDL_WAYLAND_SYM(void, wl_array_release, (struct wl_array *))
+SDL_WAYLAND_SYM(void *, wl_array_add, (struct wl_array *, size_t))
+SDL_WAYLAND_SYM(int, wl_array_copy, (struct wl_array *, struct wl_array *))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_constructor, (struct wl_proxy *, uint32_t opcode, const struct wl_interface *interface, ...))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_constructor_versioned, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version, ...))
 SDL_WAYLAND_SYM(void, wl_proxy_set_tag, (struct wl_proxy *, const char * const *))
@@ -84,7 +85,7 @@ SDL_WAYLAND_SYM(const char * const *, wl_proxy_get_tag, (struct wl_proxy *))
  * non-optional when we are compiling against Wayland 1.20. We don't
  * explicitly call them ourselves, though, so if we are only compiling
  * against Wayland 1.18, they're unnecessary. */
-SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interfac, uint32_t version, uint32_t flags, ...))
+SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version, uint32_t flags, ...))
 SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_array_flags, (struct wl_proxy *proxy, uint32_t opcode, const struct wl_interface *interface, uint32_t version,  uint32_t flags, union wl_argument *args))
 #endif
 
@@ -97,22 +98,6 @@ SDL_WAYLAND_SYM_OPT(struct wl_event_queue *, wl_display_create_queue_with_name, 
 SDL_WAYLAND_SYM(int, wl_display_reconnect, (struct wl_display *))
 #endif
 #endif // 0
-
-SDL_WAYLAND_INTERFACE(wl_seat_interface)
-SDL_WAYLAND_INTERFACE(wl_surface_interface)
-SDL_WAYLAND_INTERFACE(wl_shm_pool_interface)
-SDL_WAYLAND_INTERFACE(wl_buffer_interface)
-SDL_WAYLAND_INTERFACE(wl_registry_interface)
-SDL_WAYLAND_INTERFACE(wl_region_interface)
-SDL_WAYLAND_INTERFACE(wl_pointer_interface)
-SDL_WAYLAND_INTERFACE(wl_keyboard_interface)
-SDL_WAYLAND_INTERFACE(wl_compositor_interface)
-SDL_WAYLAND_INTERFACE(wl_output_interface)
-SDL_WAYLAND_INTERFACE(wl_shm_interface)
-SDL_WAYLAND_INTERFACE(wl_data_device_interface)
-SDL_WAYLAND_INTERFACE(wl_data_source_interface)
-SDL_WAYLAND_INTERFACE(wl_data_offer_interface)
-SDL_WAYLAND_INTERFACE(wl_data_device_manager_interface)
 
 SDL_WAYLAND_MODULE(WAYLAND_EGL)
 SDL_WAYLAND_SYM(struct wl_egl_window *, wl_egl_window_create, (struct wl_surface *, int, int))
@@ -259,6 +244,5 @@ SDL_WAYLAND_SYM_OPT(enum libdecor_wm_capabilities, libdecor_frame_get_wm_capabil
 #undef SDL_WAYLAND_MODULE
 #undef SDL_WAYLAND_SYM
 #undef SDL_WAYLAND_SYM_OPT
-#undef SDL_WAYLAND_INTERFACE
 
 /* *INDENT-ON* */ // clang-format on

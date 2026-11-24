@@ -7,7 +7,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-python@v5
+    - uses: actions/setup-python@v6
       with:
         python-version: '3.x'
     - name: 'Verify platform'
@@ -52,7 +52,7 @@ runs:
         echo "extras-branch=${extras_branch}"   >> ${GITHUB_OUTPUT}
 #    - name: 'Restore cached ${{ steps.calc.outputs.archive }}'
 #      id: cache-restore
-#      uses: actions/cache/restore@v4
+#      uses: actions/cache/restore@v5
 #      with:
 #        path: '${{ runner.temp }}'
 #        key: ${{ steps.calc.outputs.cache-key }}
@@ -68,7 +68,7 @@ runs:
 
 #    - name: 'Cache ${{ steps.calc.outputs.archive }}'
 #      if: ${{ !steps.cache-restore.outputs.cache-hit || steps.cache-restore.outputs.cache-hit == 'false' }}
-#      uses: actions/cache/save@v4
+#      uses: actions/cache/save@v5
 #      with:
 #        path: |
 #          ${{ runner.temp }}/apps.zip

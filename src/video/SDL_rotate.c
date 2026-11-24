@@ -513,13 +513,13 @@ SDL_Surface *SDLgfx_rotateSurface(SDL_Surface *src, double angle, int smooth, in
     rz_dst = NULL;
     if (is8bit) {
         // Target surface is 8 bit
-        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
+        rz_dst = SDL_CreateSurfaceZeroed(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
         if (rz_dst) {
             SDL_SetSurfacePalette(rz_dst, src->palette);
         }
     } else {
         // Target surface is 32 bit with source RGBA ordering
-        rz_dst = SDL_CreateSurface(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
+        rz_dst = SDL_CreateSurfaceZeroed(rect_dest->w, rect_dest->h + GUARD_ROWS, src->format);
     }
 
     // Check target

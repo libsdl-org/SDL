@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,7 +29,8 @@
     !defined(SDL_PLATFORM_EMSCRIPTEN) && \
     !defined(SDL_PLATFORM_PSP) && \
     !defined(SDL_PLATFORM_PS2) && \
-    !defined(SDL_PLATFORM_3DS)
+    !defined(SDL_PLATFORM_3DS) && \
+    !defined(SDL_PLATFORM_DOS)
 
 int SDL_RunApp(int argc, char *argv[], SDL_main_func mainFunction, void * reserved)
 {

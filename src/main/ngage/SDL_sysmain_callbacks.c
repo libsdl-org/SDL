@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -21,6 +21,13 @@
 #include "SDL_internal.h"
 
 #ifdef SDL_PLATFORM_NGAGE
+
+void SDL_MainCallbacksSawEventTerminating(SDL_AtomicInt *apprc)
+{
+    // (this does the same thing as the generic implementation because ngage has its own EnterAppMainCallbacks. But ngage doesn't send SDL_EVENT_TERMINATING afaik.)
+    // if the app hasn't explicit set a termination result, call it a success and be done with it.
+    SDL_CompareAndSwapAtomicInt(apprc, SDL_APP_CONTINUE, SDL_APP_SUCCESS);
+}
 
 int SDL_EnterAppMainCallbacks(int argc, char *argv[], SDL_AppInit_func appinit, SDL_AppIterate_func appiter, SDL_AppEvent_func appevent, SDL_AppQuit_func appquit)
 {

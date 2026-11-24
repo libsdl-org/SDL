@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -49,6 +49,8 @@
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_ANDROID) // probably not useful on Android.
 #define SDL_DYNAMIC_API 0
+#elif defined(SDL_PLATFORM_OPENHARMONY) // probably not useful on OpenHarmony.
+#define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_EMSCRIPTEN) // probably not useful on Emscripten.
 #define SDL_DYNAMIC_API 0
 #elif defined(SDL_PLATFORM_PS2) && SDL_PLATFORM_PS2
@@ -65,6 +67,8 @@
 #define SDL_DYNAMIC_API 0 // devkitARM doesn't support dynamic linking
 #elif defined(SDL_PLATFORM_NGAGE)
 #define SDL_DYNAMIC_API 0
+#elif defined(SDL_PLATFORM_DOS)
+#define SDL_DYNAMIC_API 0 // DJGPP doesn't support dynamic linking
 #elif defined(DYNAPI_NEEDS_DLOPEN) && !defined(HAVE_DLOPEN)
 #define SDL_DYNAMIC_API 0 // we need dlopen(), but don't have it....
 #endif

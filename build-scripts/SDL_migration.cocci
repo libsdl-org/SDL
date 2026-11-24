@@ -30,6 +30,27 @@
 //
 // So this file is a set of many semantic patches, mostly independent.
 
+@@
+@@
+- SDL_VideoInit()
++ SDL_InitSubSystem(SDL_INIT_VIDEO)
+
+@@
+@@
+- SDL_VideoQuit()
++ SDL_QuitSubSystem(SDL_INIT_VIDEO)
+
+@@
+@@
+- SDL_AudioInit()
++ SDL_InitSubSystem(SDL_INIT_AUDIO)
+
+@@
+@@
+- SDL_AudioQuit()
++ SDL_QuitSubSystem(SDL_INIT_AUDIO)
+
+
 @ rule_audio_open @
 expression e1, e2;
 @@
@@ -84,8 +105,6 @@ expression e1, e2;
 + SDL_QueueAudio(g_audio_id, e1, e2)
 
 
-
-
 // SDL_EventState() - replaced with SDL_SetEventEnabled()
 @@
 expression e1;
@@ -110,6 +129,42 @@ expression e1;
 @@
 - SDL_GetEventState(e1)
 + SDL_EventEnabled(e1)
+
+
+// SDL_JoystickEventState() - replaced with SDL_SetJoystickEventsEnabled()
+@@
+@@
+(
+- SDL_JoystickEventState(SDL_IGNORE)
++ SDL_SetJoystickEventsEnabled(false)
+|
+- SDL_JoystickEventState(SDL_DISABLE)
++ SDL_SetJoystickEventsEnabled(false)
+|
+- SDL_JoystickEventState(SDL_ENABLE)
++ SDL_SetJoystickEventsEnabled(true)
+|
+- SDL_JoystickEventState(SDL_QUERY)
++ SDL_JoystickEventsEnabled()
+)
+
+
+// SDL_GameControllerEventState() - replaced with SDL_SetGamepadEventsEnabled()
+@@
+@@
+(
+- SDL_GameControllerEventState(SDL_IGNORE)
++ SDL_SetGamepadEventsEnabled(false)
+|
+- SDL_GameControllerEventState(SDL_DISABLE)
++ SDL_SetGamepadEventsEnabled(false)
+|
+- SDL_GameControllerEventState(SDL_ENABLE)
++ SDL_SetGamepadEventsEnabled(true)
+|
+- SDL_GameControllerEventState(SDL_QUERY)
++ SDL_GamepadEventsEnabled()
+)
 
 @@
 expression e;
@@ -341,6 +396,14 @@ expression e;
 - SDL_WINDOW_SHOWN
 + 0
 )
+
+
+@@
+// Add parameter to SDL_PremultiplyAlpha
+expression e1, e2, e3, e4, e5, e6, e7, e8;
+@@
+-SDL_PremultiplyAlpha(e1, e2, e3, e4, e5, e6, e7, e8)
++SDL_PremultiplyAlpha(e1, e2, e3, e4, e5, e6, e7, e8, false)
 
 
 @@
@@ -707,12 +770,12 @@ expression e1, e2, e3, e4, e5, e6, e7, e8, e9;
 |
 
 -SDL_CreateRGBSurface(e1, e2, e3, e4, e5, e6, e7, e8)
-+SDL_CreateSurface(e2, e3, SDL_MasksToPixelFormatEnum(e4, e5, e6, e7, e8))
++SDL_CreateSurface(e2, e3, SDL_GetPixelFormatForMasks(e4, e5, e6, e7, e8))
 
 |
 
 -SDL_CreateRGBSurfaceFrom(e1, e2, e3, e4, e5, e6, e7, e8, e9)
-+SDL_CreateSurfaceFrom(e1, e2, e3, e5, SDL_MasksToPixelFormatEnum(e4, e6, e7, e8, e9))
++SDL_CreateSurfaceFrom(e1, e2, e3, e5, SDL_GetPixelFormatForMasks(e4, e6, e7, e8, e9))
 
 )
 
@@ -2027,11 +2090,11 @@ expression e;
 @@
 @@
 - SDL_DISPLAYEVENT_CONNECTED
-+ SDL_EVENT_DISPLAY_CONNECTED
++ SDL_EVENT_DISPLAY_ADDED
 @@
 @@
 - SDL_DISPLAYEVENT_DISCONNECTED
-+ SDL_EVENT_DISPLAY_DISCONNECTED
++ SDL_EVENT_DISPLAY_REMOVED
 @@
 @@
 - SDL_DISPLAYEVENT_MOVED
@@ -3051,6 +3114,27 @@ expression e1, e2, e3, e4;
 + SDL_WindowHasSurface
   (...)
 @@
+@@
+- SDL_SetWindowGrab
++ SDL_SetWindowMouseGrab
+  (...)
+@@
+@@
+- SDL_ShowCursor(1)
++ SDL_ShowCursor()
+@@
+@@
+- SDL_ShowCursor(0)
++ SDL_HideCursor()
+@@
+@@
+- SDL_ShowCursor(SDL_TRUE)
++ SDL_ShowCursor()
+@@
+@@
+- SDL_ShowCursor(SDL_FALSE)
++ SDL_HideCursor()
+@@
 SDL_PixelFormat e1;
 @@
 - e1.BitsPerPixel
@@ -3301,10 +3385,10 @@ typedef SDL_Colour, SDL_Color;
 + SDL_MixAudio
   (...)
 @@
+expression e1, e2, e3, e4;
 @@
-- SDL_BlitScaled
-+ SDL_BlitSurfaceScaled
-  (...)
+- SDL_BlitScaled(e1, e2, e3, e4)
++ SDL_BlitSurfaceScaled(e1, e2, e3, e4, SDL_SCALEMODE_NEAREST)
 @@
 @@
 - SDL_SYSTEM_CURSOR_ARROW
@@ -3686,6 +3770,11 @@ typedef SDL_JoystickGUID, SDL_GUID;
 @@
 - SDL_JoystickGUID
 + SDL_GUID
+@@
+@@
+- SDL_JoystickGetGUIDString
++ SDL_GUIDToString
+  (...)
 @@
 @@
 - SDL_GUIDFromString

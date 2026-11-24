@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -61,6 +61,23 @@ void NGAGE_GetAppPath(char *path)
             path[i] = '/';
         }
     }
+}
+
+void NGAGE_GetExeName(char *path)
+{
+    TBuf<512> aPath;
+
+    TFileName fullExePath = RProcess().FileName();
+
+    TParsePtrC parser(fullExePath);
+    aPath.Copy(parser.NameAndExt());
+
+    TBuf8<512> utf8Path; // Temporary buffer for UTF-8 data.
+    CnvUtfConverter::ConvertFromUnicodeToUtf8(utf8Path, aPath);
+
+    // Copy UTF-8 data to the provided char* buffer.
+    strncpy(path, (const char *)utf8Path.Ptr(), utf8Path.Length());
+    path[utf8Path.Length()] = '\0';
 }
 
 #ifdef __cplusplus

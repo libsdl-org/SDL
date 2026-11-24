@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,6 +110,15 @@ static void image_description_info_handle_done(void *data,
         case WAYLAND_COLOR_OBJECT_TYPE_DISPLAY:
         {
             SDL_copyp(&state->display_data->HDR, &state->HDR);
+
+            if (state->display_data->display) {
+                SDL_VideoDisplay *disp = SDL_GetVideoDisplay(state->display_data->display);
+                if (disp) {
+                    SDL_SetDisplayHDRProperties(disp, &state->HDR);
+                }
+            } else {
+                SDL_copyp(&state->display_data->placeholder.HDR, &state->HDR);
+            }
         } break;
     }
 }
@@ -162,7 +171,12 @@ static void image_description_info_handle_luminances(void *data,
                                                      uint32_t reference_lum)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
-    state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
+    if (max_lum > reference_lum && reference_lum > 0) {
+        state->HDR.HDR_headroom = (float)max_lum / (float)reference_lum;
+    } else {
+        state->HDR.HDR_headroom = 1.0f;
+    }
+    state->HDR.SDR_white_level = 1.0f;
 }
 
 static void image_description_info_handle_target_primaries(void *data,
@@ -236,9 +250,9 @@ static void image_description_handle_failed(void *data,
     }
 }
 
-static void image_description_handle_ready(void *data,
-                                           struct wp_image_description_v1 *wp_image_description_v1,
-                                           uint32_t identity)
+static void image_description_handle_ready2(void *data,
+                                            struct wp_image_description_v1 *wp_image_description_v1,
+                                            uint32_t identity_hi, uint32_t identity_lo)
 {
     Wayland_ColorInfoState *state = (Wayland_ColorInfoState *)data;
 
@@ -247,7 +261,7 @@ static void image_description_handle_ready(void *data,
      */
     if (state->deferred_event_processing) {
         SDL_VideoData *vid = SDL_GetVideoDevice()->internal;
-        state->queue = Wayland_DisplayCreateQueue(vid->display, "SDL Color Management Queue");
+        state->queue = Wayland_CreateQueue(vid->display, "SDL Color Management Queue");
 
         struct wl_proxy *image_desc_wrapper = WAYLAND_wl_proxy_create_wrapper(state->wp_image_description);
         WAYLAND_wl_proxy_set_queue(image_desc_wrapper, state->queue);
@@ -263,9 +277,17 @@ static void image_description_handle_ready(void *data,
     }
 }
 
+static void image_description_handle_ready(void *data,
+                                           struct wp_image_description_v1 *wp_image_description_v1,
+                                           uint32_t identity)
+{
+    image_description_handle_ready2(data, wp_image_description_v1, 0, identity);
+}
+
 static const struct wp_image_description_v1_listener image_description_listener = {
     image_description_handle_failed,
-    image_description_handle_ready
+    image_description_handle_ready,
+    image_description_handle_ready2
 };
 
 void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event_processing)
@@ -281,7 +303,7 @@ void Wayland_GetColorInfoForWindow(SDL_WindowData *window_data, bool defer_event
         state->deferred_event_processing = defer_event_processing;
 
         if (!defer_event_processing) {
-            state->queue = Wayland_DisplayCreateQueue(window_data->waylandData->display, "SDL Color Management Queue");
+            state->queue = Wayland_CreateQueue(window_data->waylandData->display, "SDL Color Management Queue");
 
             struct wl_proxy *surface_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(window_data->wp_color_management_surface_feedback);
             WAYLAND_wl_proxy_set_queue(surface_feedback_wrapper, state->queue);
@@ -311,7 +333,7 @@ void Wayland_GetColorInfoForOutput(SDL_DisplayData *display_data, bool defer_eve
         state->deferred_event_processing = defer_event_processing;
 
         if (!defer_event_processing) {
-            state->queue = Wayland_DisplayCreateQueue(display_data->videodata->display, "SDL Color Management Queue");
+            state->queue = Wayland_CreateQueue(display_data->videodata->display, "SDL Color Management Queue");
 
             struct wl_proxy *output_feedback_wrapper = WAYLAND_wl_proxy_create_wrapper(display_data->wp_color_management_output);
             WAYLAND_wl_proxy_set_queue(output_feedback_wrapper, state->queue);

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,8 +31,6 @@
 
 // Define this if you want to log all packets from the controller
 // #define DEBUG_PS3_PROTOCOL
-
-#define LOAD16(A, B) (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
 
 typedef enum
 {
@@ -221,11 +219,6 @@ static bool HIDAPI_DriverPS3_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverPS3_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static bool HIDAPI_DriverPS3_UpdateEffects(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
@@ -300,19 +293,9 @@ static bool HIDAPI_DriverPS3_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joyst
     return HIDAPI_DriverPS3_UpdateEffects(device);
 }
 
-static bool HIDAPI_DriverPS3_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverPS3_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverPS3_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverPS3_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
@@ -347,6 +330,11 @@ static float HIDAPI_DriverPS3_ScaleAccel(Sint16 value)
     // Accelerometer values are in big endian order
     value = SDL_Swap16BE(value);
     return ((float)(value - 511) / 113.0f) * SDL_STANDARD_GRAVITY;
+}
+
+static float HIDAPI_DriverPS3ThirdParty_ScaleAccel(Sint16 value)
+{
+    return ((float)(value - 512) / 113.0f) * SDL_STANDARD_GRAVITY;
 }
 
 static void HIDAPI_DriverPS3_HandleMiniStatePacket(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -586,30 +574,22 @@ static void HIDAPI_DriverPS3_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joysti
     ctx->joystick = NULL;
 }
 
-static void HIDAPI_DriverPS3_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3 = {
-    SDL_HINT_JOYSTICK_HIDAPI_PS3,
-    true,
-    HIDAPI_DriverPS3_RegisterHints,
-    HIDAPI_DriverPS3_UnregisterHints,
-    HIDAPI_DriverPS3_IsEnabled,
-    HIDAPI_DriverPS3_IsSupportedDevice,
-    HIDAPI_DriverPS3_InitDevice,
-    HIDAPI_DriverPS3_GetDevicePlayerIndex,
-    HIDAPI_DriverPS3_SetDevicePlayerIndex,
-    HIDAPI_DriverPS3_UpdateDevice,
-    HIDAPI_DriverPS3_OpenJoystick,
-    HIDAPI_DriverPS3_RumbleJoystick,
-    HIDAPI_DriverPS3_RumbleJoystickTriggers,
-    HIDAPI_DriverPS3_GetJoystickCapabilities,
-    HIDAPI_DriverPS3_SetJoystickLED,
-    HIDAPI_DriverPS3_SendJoystickEffect,
-    HIDAPI_DriverPS3_SetJoystickSensorsEnabled,
-    HIDAPI_DriverPS3_CloseJoystick,
-    HIDAPI_DriverPS3_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_PS3,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverPS3_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverPS3_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverPS3_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverPS3_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverPS3_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverPS3_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverPS3_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverPS3_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverPS3_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverPS3_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverPS3_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverPS3_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverPS3_CloseJoystick,
 };
 
 static bool HIDAPI_DriverPS3ThirdParty_IsEnabled(void)
@@ -637,7 +617,14 @@ static bool HIDAPI_DriverPS3ThirdParty_IsSupportedDevice(SDL_HIDAPI_Device *devi
                 // Supported third party controller
                 return true;
             } else {
-                return false;
+                // Some third party controllers don't have report ids
+                size = ReadFeatureReport(device->dev, 0x00, data, sizeof(data));
+                if (size == 9 && data[2] == 0x26) {
+                    // Supported third party controller
+                    return true;
+                } else {
+                    return false;
+                }
             }
         } else {
             // Might be supported by this driver, enumerate and find out
@@ -656,7 +643,7 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
         return false;
     }
     ctx->device = device;
-    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER) {
+    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETRO_CONTROLLER) {
         ctx->has_analog_buttons = false;
     } else {
         ctx->has_analog_buttons = true;
@@ -671,16 +658,40 @@ static bool HIDAPI_DriverPS3ThirdParty_InitDevice(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "Logitech ChillStream");
     }
 
+    if (device->vendor_id == USB_VENDOR_HARMONIX) {
+        switch (device->product_id) {
+            case USB_PRODUCT_HARMONIX_WII_RB1_GUITAR:
+            case USB_PRODUCT_HARMONIX_WII_RB2_GUITAR:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_HARMONIX_WII_RB1_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB2_DRUMS:
+            case USB_PRODUCT_HARMONIX_WII_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (device->vendor_id == USB_VENDOR_SCEA) {
+        switch (device->product_id) {
+            case USB_PRODUCT_SCEA_PS3_GH_GUITAR:
+            case USB_PRODUCT_SCEA_PS3_RB_GUITAR:
+            case USB_PRODUCT_SCEA_PS3WIIU_GHLIVE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
+                break;
+            case USB_PRODUCT_SCEA_PS3_GH_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB_DRUMS:
+            case USB_PRODUCT_SCEA_PS3_RB3_MPA_DRUMS_MODE:
+                device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
+                break;
+            default:
+                break;
+        }
+    }
+
     return HIDAPI_JoystickConnected(device, NULL);
-}
-
-static int HIDAPI_DriverPS3ThirdParty_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverPS3ThirdParty_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
 }
 
 static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
@@ -700,42 +711,23 @@ static bool HIDAPI_DriverPS3ThirdParty_OpenJoystick(SDL_HIDAPI_Device *device, S
     }
     joystick->nhats = 1;
 
-    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETROBIT_CONTROLLER) {
+    if (device->vendor_id == USB_VENDOR_SWITCH && device->product_id == USB_PRODUCT_SWITCH_RETRO_CONTROLLER) {
         // This is a wireless controller using a USB dongle
         joystick->connection_state = SDL_JOYSTICK_CONNECTION_WIRELESS;
     }
 
+    SDL_PrivateJoystickAddSensor(joystick, SDL_SENSOR_ACCEL, 100.0f);
+
     return true;
-}
-
-static bool HIDAPI_DriverPS3ThirdParty_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverPS3ThirdParty_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static Uint32 HIDAPI_DriverPS3ThirdParty_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-    return 0;
-}
-
-static bool HIDAPI_DriverPS3ThirdParty_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverPS3ThirdParty_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
 {
-    return SDL_Unsupported();
+    SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
+
+    ctx->report_sensors = enabled;
+
+    return true;
 }
 
 static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket18(SDL_Joystick *joystick, SDL_DriverPS3_Context *ctx, Uint8 *data, int size)
@@ -973,6 +965,15 @@ static void HIDAPI_DriverPS3ThirdParty_HandleStatePacket19(SDL_Joystick *joystic
         }
     }
 
+    if (ctx->report_sensors) {
+        float sensor_data[3];
+
+        sensor_data[0] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[19], data[20]));
+        sensor_data[1] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[21], data[22]));
+        sensor_data[2] = -HIDAPI_DriverPS3ThirdParty_ScaleAccel(LOAD16(data[23], data[24]));
+        SDL_SendJoystickSensor(timestamp, joystick, SDL_SENSOR_ACCEL, timestamp, sensor_data, SDL_arraysize(sensor_data));
+    }
+
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
@@ -1023,30 +1024,18 @@ static void HIDAPI_DriverPS3ThirdParty_CloseJoystick(SDL_HIDAPI_Device *device, 
     ctx->joystick = NULL;
 }
 
-static void HIDAPI_DriverPS3ThirdParty_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3ThirdParty = {
-    SDL_HINT_JOYSTICK_HIDAPI_PS3,
-    true,
-    HIDAPI_DriverPS3_RegisterHints,
-    HIDAPI_DriverPS3_UnregisterHints,
-    HIDAPI_DriverPS3ThirdParty_IsEnabled,
-    HIDAPI_DriverPS3ThirdParty_IsSupportedDevice,
-    HIDAPI_DriverPS3ThirdParty_InitDevice,
-    HIDAPI_DriverPS3ThirdParty_GetDevicePlayerIndex,
-    HIDAPI_DriverPS3ThirdParty_SetDevicePlayerIndex,
-    HIDAPI_DriverPS3ThirdParty_UpdateDevice,
-    HIDAPI_DriverPS3ThirdParty_OpenJoystick,
-    HIDAPI_DriverPS3ThirdParty_RumbleJoystick,
-    HIDAPI_DriverPS3ThirdParty_RumbleJoystickTriggers,
-    HIDAPI_DriverPS3ThirdParty_GetJoystickCapabilities,
-    HIDAPI_DriverPS3ThirdParty_SetJoystickLED,
-    HIDAPI_DriverPS3ThirdParty_SendJoystickEffect,
-    HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled,
-    HIDAPI_DriverPS3ThirdParty_CloseJoystick,
-    HIDAPI_DriverPS3ThirdParty_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_PS3,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverPS3_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverPS3_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverPS3ThirdParty_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverPS3ThirdParty_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverPS3ThirdParty_InitDevice,
+    .UpdateDevice = HIDAPI_DriverPS3ThirdParty_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverPS3ThirdParty_OpenJoystick,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverPS3ThirdParty_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverPS3ThirdParty_CloseJoystick,
 };
 
 static bool HIDAPI_DriverPS3_UpdateRumbleSonySixaxis(SDL_HIDAPI_Device *device);
@@ -1119,11 +1108,6 @@ static bool HIDAPI_DriverPS3SonySixaxis_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-static int HIDAPI_DriverPS3SonySixaxis_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverPS3SonySixaxis_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
@@ -1174,21 +1158,6 @@ static bool HIDAPI_DriverPS3SonySixaxis_RumbleJoystick(SDL_HIDAPI_Device *device
     ctx->rumble_right = (high_frequency_rumble >> 8);
 
     return HIDAPI_DriverPS3_UpdateRumbleSonySixaxis(device);
-}
-
-static bool HIDAPI_DriverPS3SonySixaxis_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static Uint32 HIDAPI_DriverPS3SonySixaxis_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-    return 0;
-}
-
-static bool HIDAPI_DriverPS3SonySixaxis_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverPS3SonySixaxis_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *effect, int size)
@@ -1376,10 +1345,6 @@ static void HIDAPI_DriverPS3SonySixaxis_CloseJoystick(SDL_HIDAPI_Device *device,
     ctx->joystick = NULL;
 }
 
-static void HIDAPI_DriverPS3SonySixaxis_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 static bool HIDAPI_DriverPS3_UpdateRumbleSonySixaxis(SDL_HIDAPI_Device *device)
 {
     SDL_DriverPS3_Context *ctx = (SDL_DriverPS3_Context *)device->context;
@@ -1420,25 +1385,20 @@ static bool HIDAPI_DriverPS3_UpdateLEDsSonySixaxis(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS3SonySixaxis = {
-    SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER,
-    true,
-    HIDAPI_DriverPS3SonySixaxis_RegisterHints,
-    HIDAPI_DriverPS3SonySixaxis_UnregisterHints,
-    HIDAPI_DriverPS3SonySixaxis_IsEnabled,
-    HIDAPI_DriverPS3SonySixaxis_IsSupportedDevice,
-    HIDAPI_DriverPS3SonySixaxis_InitDevice,
-    HIDAPI_DriverPS3SonySixaxis_GetDevicePlayerIndex,
-    HIDAPI_DriverPS3SonySixaxis_SetDevicePlayerIndex,
-    HIDAPI_DriverPS3SonySixaxis_UpdateDevice,
-    HIDAPI_DriverPS3SonySixaxis_OpenJoystick,
-    HIDAPI_DriverPS3SonySixaxis_RumbleJoystick,
-    HIDAPI_DriverPS3SonySixaxis_RumbleJoystickTriggers,
-    HIDAPI_DriverPS3SonySixaxis_GetJoystickCapabilities,
-    HIDAPI_DriverPS3SonySixaxis_SetJoystickLED,
-    HIDAPI_DriverPS3SonySixaxis_SendJoystickEffect,
-    HIDAPI_DriverPS3SonySixaxis_SetJoystickSensorsEnabled,
-    HIDAPI_DriverPS3SonySixaxis_CloseJoystick,
-    HIDAPI_DriverPS3SonySixaxis_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverPS3SonySixaxis_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverPS3SonySixaxis_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverPS3SonySixaxis_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverPS3SonySixaxis_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverPS3SonySixaxis_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverPS3SonySixaxis_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverPS3SonySixaxis_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverPS3SonySixaxis_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverPS3SonySixaxis_RumbleJoystick,
+    .SendJoystickEffect = HIDAPI_DriverPS3SonySixaxis_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverPS3SonySixaxis_SetJoystickSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverPS3SonySixaxis_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_PS3

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,10 +53,17 @@ static int SDL_CreateThreadBarrier(SDL_ThreadBarrier *barrier, Uint32 count)
 
 static void SDL_DestroyThreadBarrier(SDL_ThreadBarrier *barrier)
 {
-    SDL_DestroyCondition(barrier->cond);
-    SDL_DestroyMutex(barrier->mutex);
+    if (barrier->cond) {
+        SDL_DestroyCondition(barrier->cond);
+        barrier->cond = NULL;
+    }
+    if (barrier->mutex) {
+        SDL_DestroyMutex(barrier->mutex);
+        barrier->mutex = NULL;
+    }
 }
 
+#if 0 // Not used
 static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
 {
     SDL_LockMutex(barrier->mutex);
@@ -71,6 +78,7 @@ static int SDL_WaitThreadBarrier(SDL_ThreadBarrier *barrier)
     SDL_UnlockMutex(barrier->mutex);
     return 0;
 }
+#endif
 
 #include "../../thread/SDL_systhread.h"
 
@@ -97,8 +105,14 @@ static void hidapi_thread_state_init(hidapi_thread_state *state)
 static void hidapi_thread_state_destroy(hidapi_thread_state *state)
 {
     SDL_DestroyThreadBarrier(&state->barrier);
-    SDL_DestroyCondition(state->condition);
-    SDL_DestroyMutex(state->mutex);
+    if (state->condition) {
+        SDL_DestroyCondition(state->condition);
+        state->condition = NULL;
+    }
+    if (state->mutex) {
+        SDL_DestroyMutex(state->mutex);
+        state->mutex = NULL;
+    }
 }
 
 static void hidapi_thread_cleanup_push(void (*routine)(void *), void *arg)
@@ -153,10 +167,12 @@ static void hidapi_thread_cond_broadcast(hidapi_thread_state *state)
     SDL_BroadcastCondition(state->condition);
 }
 
+#if 0 // Not used
 static void hidapi_thread_barrier_wait(hidapi_thread_state *state)
 {
     SDL_WaitThreadBarrier(&state->barrier);
 }
+#endif
 
 typedef struct
 {

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,10 +29,10 @@
  * provides a reasonable toolbox for transforming the data, including copying
  * between surfaces, filling rectangles in the image data, etc.
  *
- * There is also a simple .bmp loader, SDL_LoadBMP(), and a simple .png
- * loader, SDL_LoadPNG(). SDL itself does not provide loaders for other file
- * formats, but there are several excellent external libraries that do,
- * including its own satellite library,
+ * There is also a simple .bmp loader, SDL_LoadBMP(), a simple .png loader,
+ * SDL_LoadPNG(), and a simple .jpg loader, SDL_LoadJPG(). SDL itself does not
+ * provide loaders for other file formats, but there are several excellent
+ * external libraries that do, including its own satellite library,
  * [SDL_image](https://wiki.libsdl.org/SDL3_image)
  * .
  *
@@ -180,7 +180,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurface(int width, int heigh
  * you must free the surface before you free the pixel data.
  *
  * Pitch is the offset in bytes from one row of pixels to the next, e.g.
- * `width*4` for `SDL_PIXELFORMAT_RGBA8888`.
+ * `(width * 4)` for `SDL_PIXELFORMAT_RGBA8888`.
  *
  * You may pass NULL for pixels and 0 for pitch to create a surface that you
  * will fill in with valid values later.
@@ -241,6 +241,12 @@ extern SDL_DECLSPEC void SDLCALL SDL_DestroySurface(SDL_Surface *surface);
  *   left edge of the image, if this surface is being used as a cursor.
  * - `SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER`: the hotspot pixel offset from the
  *   top edge of the image, if this surface is being used as a cursor.
+ * - `SDL_PROP_SURFACE_ROTATION_FLOAT`: the number of degrees a surface's data
+ *   is meant to be rotated clockwise to make the image right-side up. Default
+ *   0. This is used by the camera API, if a mobile device is oriented
+ *   differently than what its camera provides (i.e. - the camera always
+ *   provides portrait images but the phone is being held in landscape
+ *   orientation). Since SDL 3.4.0.
  *
  * \param surface the SDL_Surface structure to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -257,6 +263,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
 #define SDL_PROP_SURFACE_TONEMAP_OPERATOR_STRING            "SDL.surface.tonemap"
 #define SDL_PROP_SURFACE_HOTSPOT_X_NUMBER                   "SDL.surface.hotspot.x"
 #define SDL_PROP_SURFACE_HOTSPOT_Y_NUMBER                   "SDL.surface.hotspot.y"
+#define SDL_PROP_SURFACE_ROTATION_FLOAT                     "SDL.surface.rotation"
 
 /**
  * Set the colorspace used by a surface.
@@ -503,7 +510,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_LockSurface(SDL_Surface *surface);
 extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 
 /**
- * Load a BMP or PNG image from a seekable SDL data stream.
+ * Load a BMP, PNG or JPEG image from a seekable SDL data stream.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -524,7 +531,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, bool closeio);
 
 /**
- * Load a BMP or PNG image from a file.
+ * Load a BMP, PNG or JPEG image from a file.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -587,11 +594,11 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP(const char *file);
 /**
  * Save a surface to a seekable SDL data stream in BMP format.
  *
- * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
- * BMP directly. Other RGB formats with 8-bit or higher get converted to a
- * 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit
- * surface before they are saved. YUV and paletted 1-bit and 4-bit formats are
- * not supported.
+ * Surfaces with a 24-bit, 32-bit and paletted format get saved in the BMP
+ * directly. Other RGB formats with 8-bit or higher get converted to a 24-bit
+ * surface or, if they have an alpha mask or a colorkey, to a 32-bit surface
+ * before they are saved. YUV and LSB paletted 1-bit and 4-bit formats are not
+ * supported.
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
  * \param dst a data stream to save to.
@@ -613,11 +620,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP_IO(SDL_Surface *surface, SDL_IOStre
 /**
  * Save a surface to a file in BMP format.
  *
- * Surfaces with a 24-bit, 32-bit and paletted 8-bit format get saved in the
- * BMP directly. Other RGB formats with 8-bit or higher get converted to a
- * 24-bit surface or, if they have an alpha mask or a colorkey, to a 32-bit
- * surface before they are saved. YUV and paletted 1-bit and 4-bit formats are
- * not supported.
+ * Surfaces with a 24-bit, 32-bit, paletted formats get saved in the BMP
+ * directly. Other RGB formats with 8-bit or higher get converted to a 24-bit
+ * surface or, if they have an alpha mask or a colorkey, to a 32-bit surface
+ * before they are saved. YUV and LSB paletted 1-bit and 4-bit formats are not
+ * supported.
  *
  * \param surface the SDL_Surface structure containing the image to be saved.
  * \param file a file to save to.
@@ -721,6 +728,54 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG_IO(SDL_Surface *surface, SDL_IOStre
  * \sa SDL_SavePNG_IO
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG(SDL_Surface *surface, const char *file);
+
+/**
+ * Load a JPEG image from a seekable SDL data stream.
+ *
+ * This is intended as a convenience function for loading images from trusted
+ * sources. If you want to load arbitrary images you should use libjpeg or
+ * another image loading library designed with security in mind.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param src the data stream for the surface.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadJPG
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadJPG_IO(SDL_IOStream *src, bool closeio);
+
+/**
+ * Load a JPEG image from a file.
+ *
+ * This is intended as a convenience function for loading images from trusted
+ * sources. If you want to load arbitrary images you should use libjpeg or
+ * another image loading library designed with security in mind.
+ *
+ * The new surface should be freed with SDL_DestroySurface(). Not doing so
+ * will result in a memory leak.
+ *
+ * \param file the JPG file to load.
+ * \returns a pointer to a new SDL_Surface structure or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_DestroySurface
+ * \sa SDL_LoadJPG_IO
+ */
+extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadJPG(const char *file);
 
 /**
  * Set the RLE acceleration hint for a surface.
@@ -1020,6 +1075,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlipSurface(SDL_Surface *surface, SDL_FlipM
  * larger than the original, with the background filled in with the colorkey,
  * if available, or RGBA 255/255/255/0 if not.
  *
+ * If `surface` has the SDL_PROP_SURFACE_ROTATION_FLOAT property set on it,
+ * the new copy will have the adjusted value set: if the rotation property is
+ * 90 and `angle` was 30, the new surface will have a property value of 60
+ * (that is: to be upright vs gravity, this surface needs to rotate 60 more
+ * degrees). However, note that further rotations on the new surface in this
+ * example will produce unexpected results, since the image will have resized
+ * and padded to accommodate the not-90 degree angle.
+ *
  * \param surface the surface to rotate.
  * \param angle the rotation angle, in degrees.
  * \returns a rotated copy of the surface or NULL on failure; call
@@ -1240,7 +1303,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PremultiplySurfaceAlpha(SDL_Surface *surfac
  * This function handles all surface formats, and ignores any clip rectangle.
  *
  * If the surface is YUV, the color is assumed to be in the sRGB colorspace,
- * otherwise the color is assumed to be in the colorspace of the suface.
+ * otherwise the color is assumed to be in the colorspace of the surface.
  *
  * \param surface the SDL_Surface to clear.
  * \param r the red component of the pixel, normally in the range 0-1.
@@ -1640,7 +1703,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGB(SDL_Surface *surface, Uint8
 extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 
 /**
- * Retrieves a single pixel from a surface.
+ * Retrieves a single pixel from a surface as RGBA in the sRGB colorspace.
  *
  * This function prioritizes correctness over speed: it is suitable for unit
  * tests, but is not intended for use in a game engine.
@@ -1670,7 +1733,7 @@ extern SDL_DECLSPEC Uint32 SDLCALL SDL_MapSurfaceRGBA(SDL_Surface *surface, Uint
 extern SDL_DECLSPEC bool SDLCALL SDL_ReadSurfacePixel(SDL_Surface *surface, int x, int y, Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 /**
- * Retrieves a single pixel from a surface.
+ * Retrieves a single pixel from a surface as RGBA in the sRGB colorspace.
  *
  * This function prioritizes correctness over speed: it is suitable for unit
  * tests, but is not intended for use in a game engine.

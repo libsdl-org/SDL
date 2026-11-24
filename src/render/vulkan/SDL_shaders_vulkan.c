@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,6 +26,7 @@
 
 // The shaders here were compiled with compile_shaders.bat
 #include "VULKAN_PixelShader_Colors.h"
+#include "VULKAN_PixelShader_Colors_PQ.h"
 #include "VULKAN_PixelShader_Textures.h"
 #include "VULKAN_PixelShader_Advanced.h"
 #include "VULKAN_VertexShader.h"
@@ -38,6 +39,8 @@ static struct
     size_t vs_shader_size;
 } VULKAN_shaders[NUM_SHADERS] = {
     { VULKAN_PixelShader_Colors, sizeof(VULKAN_PixelShader_Colors),
+      VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
+    { VULKAN_PixelShader_Colors_PQ, sizeof(VULKAN_PixelShader_Colors_PQ),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
     { VULKAN_PixelShader_Textures, sizeof(VULKAN_PixelShader_Textures),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -53,8 +53,8 @@ void NGAGE_DebugPrintf(const char *fmt, ...)
 
 TInt NGAGE_GetFreeHeapMemory()
 {
-    TInt free = 0;
-    return User::Available(free);
+    TInt heap_available = 0;
+    return User::Available(heap_available);
 }
 
 #ifdef __cplusplus

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,7 +45,7 @@ SDL_Process *SDL_CreateProcess(const char * const *args, bool pipe_stdio)
 SDL_Process *SDL_CreateProcessWithProperties(SDL_PropertiesID props)
 {
     const char * const *args = SDL_GetPointerProperty(props, SDL_PROP_PROCESS_CREATE_ARGS_POINTER, NULL);
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PROCESS_WINDOWS)
     const char *cmdline = SDL_GetStringProperty(props, SDL_PROP_PROCESS_CREATE_CMDLINE_STRING, NULL);
     CHECK_PARAM((!args || !args[0] || !args[0][0]) && (!cmdline || !cmdline[0])) {
         SDL_SetError("Either SDL_PROP_PROCESS_CREATE_ARGS_POINTER or SDL_PROP_PROCESS_CREATE_CMDLINE_STRING must be valid");

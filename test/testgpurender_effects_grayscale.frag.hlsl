@@ -13,7 +13,7 @@ struct PSOutput {
 PSOutput main(PSInput input) {
     PSOutput output;
     float4 color = u_texture.Sample(u_sampler, input.v_uv) * input.v_color;
-    float gray = color.r * 0.2126 + color.g * 0.7152 + color.r * 0.722;
+    float gray = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722;
     output.o_color = float4(gray, gray, gray, color.a);
     return output;
 }

@@ -2,8 +2,7 @@
  * Copyright 2015-2023 The Khronos Group Inc.
  * Copyright 2015-2023 Valve Corporation
  * Copyright 2015-2023 LunarG, Inc.
- *
- * SPDX-License-Identifier: Apache-2.0
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  */
 #pragma once
 
@@ -44,8 +43,9 @@
 typedef VkResult(VKAPI_PTR *PFN_vkNegotiateLoaderICDInterfaceVersion)(uint32_t *pVersion);
 // This is defined in vk_layer.h which will be found by the loader, but if an ICD is building against this
 // file directly, it won't be found.
-#ifndef PFN_GetPhysicalDeviceProcAddr
+#ifndef IS_DEFINED_PFN_GetPhysicalDeviceProcAddr
 typedef PFN_vkVoidFunction(VKAPI_PTR *PFN_GetPhysicalDeviceProcAddr)(VkInstance instance, const char *pName);
+#define IS_DEFINED_PFN_GetPhysicalDeviceProcAddr
 #endif
 
 // Typedefs for loader/ICD interface
@@ -118,6 +118,7 @@ typedef enum {
     VK_ICD_WSI_PLATFORM_GGP,
     VK_ICD_WSI_PLATFORM_SCREEN,
     VK_ICD_WSI_PLATFORM_FUCHSIA,
+    VK_ICD_WSI_PLATFORM_UBM,
 } VkIcdWsiPlatform;
 
 typedef struct {
@@ -139,6 +140,14 @@ typedef struct {
     struct wl_surface *surface;
 } VkIcdSurfaceWayland;
 #endif  // VK_USE_PLATFORM_WAYLAND_KHR
+
+#ifdef VK_USE_PLATFORM_UBM_SEC
+typedef struct {
+    VkIcdSurfaceBase base;
+    struct ubm_device *device;
+    struct ubm_surface *surface;
+} VkIcdSurfaceUbm;
+#endif  // VK_USE_PLATFORM_UBM_SEC
 
 #ifdef VK_USE_PLATFORM_WIN32_KHR
 typedef struct {

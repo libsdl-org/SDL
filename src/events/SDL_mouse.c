@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -188,25 +188,6 @@ static void SDLCALL SDL_PenMouseEventsChanged(void *userdata, const char *name, 
     mouse->pen_mouse_events = SDL_GetStringBoolean(hint, true);
 }
 
-static void SDLCALL SDL_PenTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
-{
-    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
-
-    mouse->pen_touch_events = SDL_GetStringBoolean(hint, true);
-
-    if (mouse->pen_touch_events) {
-        if (!mouse->added_pen_touch_device) {
-            SDL_AddTouch(SDL_PEN_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "pen_input");
-            mouse->added_pen_touch_device = true;
-        }
-    } else {
-        if (mouse->added_pen_touch_device) {
-            SDL_DelTouch(SDL_PEN_TOUCHID);
-            mouse->added_pen_touch_device = false;
-        }
-    }
-}
-
 static void SDLCALL SDL_MouseAutoCaptureChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
@@ -289,9 +270,6 @@ bool SDL_PreInitMouse(void)
     SDL_AddHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
                         SDL_PenMouseEventsChanged, mouse);
 
-    SDL_AddHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
-                        SDL_PenTouchEventsChanged, mouse);
-
     SDL_AddHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
 
@@ -321,9 +299,8 @@ void SDL_PostInitMouse(void)
      * so that mouse grab and focus functionality will work.
      */
     if (!mouse->def_cursor) {
-        SDL_Surface *surface = SDL_CreateSurface(1, 1, SDL_PIXELFORMAT_ARGB8888);
+        SDL_Surface *surface = SDL_CreateSurfaceZeroed(1, 1, SDL_PIXELFORMAT_ARGB8888);
         if (surface) {
-            SDL_memset(surface->pixels, 0, (size_t)surface->h * surface->pitch);
             SDL_SetDefaultCursor(SDL_CreateColorCursor(surface, 0, 0));
             SDL_DestroySurface(surface);
         }
@@ -422,7 +399,7 @@ SDL_MouseID *SDL_GetMice(int *count)
     int i;
     SDL_MouseID *mice;
 
-    mice = (SDL_JoystickID *)SDL_malloc((SDL_mouse_count + 1) * sizeof(*mice));
+    mice = (SDL_MouseID *)SDL_malloc((SDL_mouse_count + 1) * sizeof(*mice));
     if (mice) {
         if (count) {
             *count = SDL_mouse_count;
@@ -444,14 +421,38 @@ SDL_MouseID *SDL_GetMice(int *count)
 const char *SDL_GetMouseNameForID(SDL_MouseID instance_id)
 {
     const char *name = NULL;
-    if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
-        SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
-        return NULL;
-    }
-    if (!name) {
-        // SDL_strdup() failed during insert
-        SDL_OutOfMemory();
-        return NULL;
+
+    switch (instance_id) {
+    case SDL_GLOBAL_MOUSE_ID:
+        name = "Mouse";
+        break;
+    case SDL_TOUCH_MOUSEID:
+        // We can't tell which touch device it was, just use the first one
+        {
+            SDL_TouchID *devices = SDL_GetTouchDevices(NULL);
+            if (devices) {
+                name = SDL_GetTouchDeviceName(devices[0]);
+                SDL_free(devices);
+            }
+        }
+        if (!name) {
+            name = "Touch";
+        }
+        break;
+    case SDL_PEN_MOUSEID:
+        name = "Pen";
+        break;
+    default:
+        if (!SDL_FindInHashTable(SDL_mouse_names, (const void *)(uintptr_t)instance_id, (const void **)&name)) {
+            SDL_SetError("Mouse %" SDL_PRIu32 " not found", instance_id);
+            return NULL;
+        }
+        if (!name) {
+            // SDL_strdup() failed during insert
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        break;
     }
     return name;
 }
@@ -659,6 +660,31 @@ void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
     }
 
     SDL_PrivateSendMouseMotion(timestamp, window, mouseID, relative, x, y);
+}
+
+void SDL_SendMouseWarp(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    // Ignore the previous position when we warp, as warps don't generate relative motion.
+    mouse->last_x = x;
+    mouse->last_y = y;
+    mouse->has_position = false;
+
+    if (mouse->relative_mode) {
+        /* Sending motion events when warping while relative mode is active can confuse
+         * clients that don't expect it, so just update the absolute position and don't
+         * generate a motion event unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
+         */
+        if (!mouse->relative_mode_warp_motion) {
+            mouse->x = x;
+            mouse->y = y;
+            mouse->has_position = true;
+            return;
+        }
+    }
+
+    SDL_SendMouseMotion(timestamp, window, mouseID, false, x, y);
 }
 
 static void ConstrainMousePosition(SDL_Mouse *mouse, SDL_Window *window, float *x, float *y)
@@ -1156,9 +1182,6 @@ void SDL_QuitMouse(void)
     SDL_RemoveHintCallback(SDL_HINT_PEN_MOUSE_EVENTS,
                         SDL_PenMouseEventsChanged, mouse);
 
-    SDL_RemoveHintCallback(SDL_HINT_PEN_TOUCH_EVENTS,
-                        SDL_PenTouchEventsChanged, mouse);
-
     SDL_RemoveHintCallback(SDL_HINT_MOUSE_AUTO_CAPTURE,
                         SDL_MouseAutoCaptureChanged, mouse);
 
@@ -1265,24 +1288,29 @@ void SDL_PerformWarpMouseInWindow(SDL_Window *window, float x, float y, bool ign
         return;
     }
 
-    // Ignore the previous position when we warp
-    mouse->last_x = x;
-    mouse->last_y = y;
-    mouse->has_position = false;
+    /* If the backend sends explicit warp events, this will be taken care of if/when the pointer actually warps,
+     * Warps when in relative save the position to be applied when leaving relative mode.
+     */
+    if (!mouse->have_explicit_warp_event || mouse->relative_mode) {
+        // Ignore the previous position when we warp, as warps don't generate relative motion.
+        mouse->last_x = x;
+        mouse->last_y = y;
+        mouse->has_position = false;
 
-    if (mouse->relative_mode && !ignore_relative_mode) {
-        /* 2.0.22 made warping in relative mode actually functional, which
-         * surprised many applications that weren't expecting the additional
-         * mouse motion.
-         *
-         * So for now, warping in relative mode adjusts the absolution position
-         * but doesn't generate motion events, unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
-         */
-        if (!mouse->relative_mode_warp_motion) {
-            mouse->x = x;
-            mouse->y = y;
-            mouse->has_position = true;
-            return;
+        if (mouse->relative_mode && !ignore_relative_mode) {
+            /* 2.0.22 made warping in relative mode actually functional, which
+             * surprised many applications that weren't expecting the additional
+             * mouse motion.
+             *
+             * So for now, warping in relative mode adjusts the absolute position, but
+             * doesn't generate motion events, unless SDL_HINT_MOUSE_RELATIVE_WARP_MOTION is set.
+             */
+            if (!mouse->relative_mode_warp_motion) {
+                mouse->x = x;
+                mouse->y = y;
+                mouse->has_position = true;
+                return;
+            }
         }
     }
 
@@ -1421,7 +1449,13 @@ bool SDL_UpdateRelativeMouseMode(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *focus = SDL_GetKeyboardFocus();
-    bool relative_mode = (focus && (focus->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE));
+    bool relative_mode = false;
+
+    if (focus &&
+        (focus->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE) &&
+        (focus->flags & SDL_WINDOW_MOUSE_FOCUS)) {
+        relative_mode = true;
+    }
 
     if (relative_mode == mouse->relative_mode) {
         return true;
@@ -1528,7 +1562,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
     w = ((w + 7) & ~7);
 
     // Create the surface from a bitmap
-    surface = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_ARGB8888);
+    surface = SDL_CreateSurfaceUninitialized(w, h, SDL_PIXELFORMAT_ARGB8888);
     if (!surface) {
         return NULL;
     }
@@ -1548,6 +1582,7 @@ SDL_Cursor *SDL_CreateCursor(const Uint8 *data, const Uint8 *mask, int w, int h,
             maskb <<= 1;
         }
     }
+    SDL_SetBooleanProperty(SDL_GetSurfaceProperties(surface), SDL_PROP_SURFACE_MONOCHROME_CURSOR_BOOLEAN, true);
 
     cursor = SDL_CreateColorCursor(surface, hot_x, hot_y);
 

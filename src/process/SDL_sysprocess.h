@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,9 @@
 
 #ifndef SDL_sysprocess_h_
 #define SDL_sysprocess_h_
+
+// The process exited, but its exit status isn't available
+#define SDL_PROCESS_EXITCODE_UNKNOWN -255
 
 typedef struct SDL_ProcessData SDL_ProcessData;
 

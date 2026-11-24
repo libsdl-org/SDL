@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,9 +47,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                 NULL,
             };
             SDLTest_CommonLogUsage(state, argv[0], options);
-            SDL_Quit();
-            SDLTest_CommonDestroyState(state);
-            return 1;
+            return SDL_APP_FAILURE;
         }
         i += consumed;
     }

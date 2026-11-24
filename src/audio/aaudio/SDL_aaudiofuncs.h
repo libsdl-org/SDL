@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright , (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright , (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ SDL_PROC_UNUSED(void, AAudioStreamBuilder_setSharingMode, (AAudioStreamBuilder *
 SDL_PROC(void, AAudioStreamBuilder_setDirection, (AAudioStreamBuilder * builder, aaudio_direction_t direction))
 SDL_PROC(void, AAudioStreamBuilder_setBufferCapacityInFrames, (AAudioStreamBuilder * builder, int32_t numFrames))
 SDL_PROC(void, AAudioStreamBuilder_setPerformanceMode, (AAudioStreamBuilder * builder, aaudio_performance_mode_t mode))
-SDL_PROC_UNUSED(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         // API 28
+SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setUsage, (AAudioStreamBuilder * builder, aaudio_usage_t usage))                                         // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setContentType, (AAudioStreamBuilder * builder, aaudio_content_type_t contentType))                      // API 28
 SDL_PROC_OPTIONAL(void, AAudioStreamBuilder_setInputPreset, (AAudioStreamBuilder * builder, aaudio_input_preset_t inputPreset))                      // API 28
 SDL_PROC_UNUSED(void, AAudioStreamBuilder_setAllowedCapturePolicy, (AAudioStreamBuilder * builder, aaudio_allowed_capture_policy_t capturePolicy)) // API 29
@@ -58,9 +58,9 @@ SDL_PROC(aaudio_stream_state_t, AAudioStream_getState, (AAudioStream * stream))
 SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_waitForStateChange, (AAudioStream * stream, aaudio_stream_state_t inputState, aaudio_stream_state_t *nextState, int64_t timeoutNanoseconds))
 SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_read, (AAudioStream * stream, void *buffer, int32_t numFrames, int64_t timeoutNanoseconds))
 SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_write, (AAudioStream * stream, const void *buffer, int32_t numFrames, int64_t timeoutNanoseconds))
-SDL_PROC_UNUSED(aaudio_result_t, AAudioStream_setBufferSizeInFrames, (AAudioStream * stream, int32_t numFrames))
+SDL_PROC(aaudio_result_t, AAudioStream_setBufferSizeInFrames, (AAudioStream * stream, int32_t numFrames))
 SDL_PROC_UNUSED(int32_t, AAudioStream_getBufferSizeInFrames, (AAudioStream * stream))
-SDL_PROC_UNUSED(int32_t, AAudioStream_getFramesPerBurst, (AAudioStream * stream))
+SDL_PROC(int32_t, AAudioStream_getFramesPerBurst, (AAudioStream * stream))
 SDL_PROC(int32_t, AAudioStream_getBufferCapacityInFrames, (AAudioStream * stream))
 SDL_PROC(int32_t, AAudioStream_getFramesPerDataCallback, (AAudioStream * stream))
 SDL_PROC_UNUSED(int32_t, AAudioStream_getXRunCount, (AAudioStream * stream))

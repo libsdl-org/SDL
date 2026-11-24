@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -69,7 +69,7 @@ static bool PS2_VideoInit(SDL_VideoDevice *_this)
 
     SDL_zero(mode);
     mode.w = 640;
-    mode.h = 480;
+    mode.h = 448;
     mode.refresh_rate = 60.0f;
 
     // 32 bpp for default

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -101,6 +101,41 @@ typedef Uint32 SDL_WindowID;
  * \since This macro is available since SDL 3.2.0.
  */
 #define SDL_PROP_GLOBAL_VIDEO_WAYLAND_WL_DISPLAY_POINTER "SDL.video.wayland.wl_display"
+
+/**
+ * The session ID string used for saving and restoring window state across
+ * runs.
+ *
+ * This requires that the compositor supports the `xdg_session_management_v1`
+ * protocol.
+ *
+ * To save and restore the current state of Wayland toplevel windows, set this
+ * to a non-null value before creating a window, and serialize this value
+ * before shutting down. To restore the previous state on subsequent runs, set
+ * this property to the previously serialized value before window creation.
+ *
+ * This can be set at any time before the first call to a window creation
+ * function. Reading should be deferred until serialization time, as
+ * compositors may not set the session identifier string immediately, and the
+ * identifier string may change during runtime, so it should not be cached.
+ *
+ * Setting this to an empty string ("") before creating a window will cause a
+ * new session with an automatically generated identifier string to be
+ * created.
+ *
+ * Setting this to null or an empty string before shutting down the video
+ * subsystem will cause the existing session to be removed.
+ *
+ * Note that for windows to be saved/restored by the session, they also need a
+ * stable, unique identifier string set via the
+ * `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at creation
+ * time.
+ *
+ * \since This property is available since SDL 3.6.0.
+ *
+ * \sa SDL_CreateWindowWithProperties
+ */
+#define SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING "SDL.video.wayland.session_id"
 
 /**
  * System theme.
@@ -215,6 +250,7 @@ typedef Uint64 SDL_WindowFlags;
 #define SDL_WINDOW_TOOLTIP              SDL_UINT64_C(0x0000000000040000)    /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
 #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
+#define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
 #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
@@ -452,10 +488,10 @@ typedef SDL_EGLint *(SDLCALL *SDL_EGLIntArrayCallback)(void *userdata, SDL_EGLDi
 /**
  * An enumeration of OpenGL configuration attributes.
  *
- * While you can set most OpenGL attributes normally, the attributes listed
- * above must be known before SDL creates the window that will be used with
- * the OpenGL context. These attributes are set and read with
- * SDL_GL_SetAttribute() and SDL_GL_GetAttribute().
+ * While you can set most OpenGL attributes normally, they must be known
+ * before SDL creates the window that will be used with the OpenGL context.
+ * These attributes are set and read with SDL_GL_SetAttribute() and
+ * SDL_GL_GetAttribute().
  *
  * In some cases, these attributes are minimum requests; the GL does not
  * promise to give you exactly what you asked for. It's possible to ask for a
@@ -490,7 +526,7 @@ typedef enum SDL_GLAttr
     SDL_GL_CONTEXT_FLAGS,               /**< some combination of 0 or more of elements of the SDL_GLContextFlag enumeration; defaults to 0. */
     SDL_GL_CONTEXT_PROFILE_MASK,        /**< type of GL context (Core, Compatibility, ES). See SDL_GLProfile; default value depends on platform. */
     SDL_GL_SHARE_WITH_CURRENT_CONTEXT,  /**< OpenGL context sharing; defaults to 0. */
-    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB-capable visual if 1. Defaults to -1 ("don't care"). This is a request; GL drivers might not comply! */
+    SDL_GL_FRAMEBUFFER_SRGB_CAPABLE,    /**< requests sRGB capable visual; defaults to 0. */
     SDL_GL_CONTEXT_RELEASE_BEHAVIOR,    /**< sets context the release behavior. See SDL_GLContextReleaseFlag; defaults to FLUSH. */
     SDL_GL_CONTEXT_RESET_NOTIFICATION,  /**< set context reset notification. See SDL_GLContextResetNotification; defaults to NO_NOTIFICATION. */
     SDL_GL_CONTEXT_NO_ERROR,
@@ -1156,6 +1192,14 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
  * SDL_CreateWindow() will fail.
  *
+ * If SDL_WINDOW_TRANSPARENT is specified, the window contents are composited
+ * with the desktop using premultiplied alpha, so the color channels must
+ * already be multiplied by alpha. For example, white at 50% opacity is (128,
+ * 128, 128, 128), not (255, 255, 255, 128). With SDL_Renderer, clearing to
+ * transparent black and drawing with SDL_BLENDMODE_BLEND produces
+ * premultiplied output, but colors written with SDL_BLENDMODE_NONE or used
+ * with SDL_RenderClear() must be premultiplied by the application.
+ *
  * If you intend to use this window with an SDL_Renderer, you should use
  * SDL_CreateWindowAndRenderer() instead of this function, to avoid window
  * flicker.
@@ -1348,8 +1392,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   application wants an associated `wl_egl_window` object to be created and
  *   attached to the window, even if the window does not have the OpenGL
  *   property or `SDL_WINDOW_OPENGL` flag set.
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` - a string used as a
+ *   stable identifier for toplevel windows for the purpose of allowing the
+ *   compositor to save/restore their state between runs. This should be human
+ *   readable, but not translated, and must be unique for each individual
+ *   window.
  * - `SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER` - the wl_surface
  *   associated with the window, if you want to wrap an existing window. See
+ *   [README-wayland](README-wayland) for more information.
+ * - `SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN` - true if the
+ *   application wants to enable custom border inset window properties. See
  *   [README-wayland](README-wayland) for more information.
  *
  * These are additional supported properties on Windows:
@@ -1358,6 +1410,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   window, if you want to wrap an existing window.
  * - `SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER`: optional,
  *   another window to share pixel format with, useful for OpenGL windows
+ * - `SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER`: the window style
+ *   (WS_EX_*) flags to use instead of the defaults.
  *
  * These are additional supported properties with X11:
  *
@@ -1370,15 +1424,6 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING`: the id given to the
  *   canvas element. This should start with a '#' sign
- * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true to make
- *   the canvas element fill the entire document. Resize events will be
- *   generated as the browser window is resized, as that will adjust the
- *   canvas size as well. The canvas will cover anything else on the page,
- *   including any controls provided by Emscripten in its generated HTML file.
- *   Often times this is desirable for a browser-based game, but it means
- *   several things that we expect of an SDL window on other platforms might
- *   not work as expected, such as minimum window sizes and aspect ratios.
- *   Default false.
  * - `SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: override the
  *   binding element for keyboard inputs for this canvas. The variable can be
  *   one of:
@@ -1391,6 +1436,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   page with that ID. Windows with the "tooltip" and "menu" properties are
  *   popup windows and have the behaviors and guidelines outlined in
  *   SDL_CreatePopupWindow().
+ *
+ * These are additional supported properties with visionOS:
+ *
+ * - `SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING`: the settings of the
+ *   window in JSON format. If this isn't set, the window will have standard
+ *   UIKit behavior. If this is set to "" or a valid setting string then the
+ *   window is created with enhanced features allowing curved display. The
+ *   curvature in the settings is defined as a radius in millimeters. A common
+ *   value for a gaming monitor is 1000 and a setting string for that would be
+ *   "{\"curvatureRadius\":1000}".
  *
  * If this window is being created to be used with an SDL_Renderer, you should
  * not add a graphics API specific property
@@ -1448,13 +1503,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER                 "SDL.window.create.uikit.windowscene"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_SURFACE_ROLE_CUSTOM_BOOLEAN "SDL.window.create.wayland.surface_role_custom"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_CREATE_EGL_WINDOW_BOOLEAN   "SDL.window.create.wayland.create_egl_window"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING            "SDL.window.create.wayland.window_id"
 #define SDL_PROP_WINDOW_CREATE_WAYLAND_WL_SURFACE_POINTER          "SDL.window.create.wayland.wl_surface"
+#define SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN       "SDL.window.create.wayland.enable_insets"
 #define SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER                  "SDL.window.create.win32.hwnd"
 #define SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER     "SDL.window.create.win32.pixel_format_hwnd"
+#define SDL_PROP_WINDOW_CREATE_WIN32_STYLE_EX_NUMBER               "SDL.window.create.win32.style_ex"
 #define SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER                   "SDL.window.create.x11.window"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING         "SDL.window.create.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN    "SDL.window.create.emscripten.fill_document"
 #define SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING  "SDL.window.create.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_CREATE_VISIONOS_SETTINGS_STRING            "SDL.window.create.visionos.settings"
 
 /**
  * Get the numeric ID of a window.
@@ -1517,15 +1575,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN`: true if the window has HDR
  *   headroom above the SDR white point. This property can change dynamically
  *   when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the value of SDR white in the
- *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the
- *   SDR white level in scRGB colorspace, and on Apple platforms this is
- *   always 1.0 for EDR content. This property can change dynamically when
+ * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the scale factor to apply to an
+ *   sRGB value of 1.0 to display it as SDR white in
+ *   SDL_COLORSPACE_SRGB_LINEAR. On Windows this corresponds to the SDR white
+ *   level in scRGB colorspace. On Apple platforms this is always 1.0 for EDR
+ *   content. This property can change dynamically when
  *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the additional high dynamic range
- *   that can be displayed, in terms of the SDR white point. When HDR is not
- *   enabled, this will be 1.0. This property can change dynamically when
- *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the maximum brightness that can be
+ *   displayed, as a multiple of SDR white. When HDR is not enabled or there
+ *   is no additional headroom, this will be 1.0. This property can change
+ *   dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  *
  * On Android:
  *
@@ -1533,6 +1592,15 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   with the window
  * - `SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER`: the EGLSurface associated with
  *   the window
+ *
+ * On OpenHarmony/HarmonyOS:
+ *
+ * - `SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER`: the OH_NativeXComponent
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER`: the OHNativeWindow
+ *   associated with the window
+ * - `SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER`: the EGLSurface associated
+ *   with the window
  *
  * On iOS:
  *
@@ -1569,6 +1637,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER`: the OpenVR Overlay Handle ID
  *   for the associated overlay window.
  *
+ * On QNX:
+ *
+ * - `SDL_PROP_WINDOW_QNX_WINDOW_POINTER`: the screen_window_t associated with
+ *   the window.
+ * - `SDL_PROP_WINDOW_QNX_SURFACE_POINTER`: the EGLSurface associated with the
+ *   window
+ *
  * On Vivante:
  *
  * - `SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER`: the EGLNativeDisplayType
@@ -1591,6 +1666,10 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * show/hide calls. They will be null if the window is hidden and must be
  * queried each time it is shown.
  *
+ * Note: The `border_inset_*` properties can be set by the application when
+ * client-side decorations such as shadows or invisible resize borders extend
+ * beyond the visible frame (see docs/README-wayland.md for details).
+ *
  * - `SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER`: the wl_display associated with
  *   the window
  * - `SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER`: the wl_surface associated with
@@ -1599,6 +1678,12 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   with the window
  * - `SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER`: the wl_egl_window
  *   associated with the window
+ * - `SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING`: the window identification
+ *   string, initially set with
+ *   SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING, and used as an
+ *   identifier for session management. Setting this to null or an empty
+ *   string ("") before hiding or destroying the window will cause any session
+ *   information associated with the window to be removed
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER`: the xdg_surface associated
  *   with the window
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER`: the xdg_toplevel role
@@ -1609,6 +1694,14 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *   associated with the window
  * - `SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER`: the xdg_positioner
  *   associated with the window, in popup mode
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_LEFT_NUMBER`: the left border inset
+ *   of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_TOP_NUMBER`: the top border inset
+ *   of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_RIGHT_NUMBER`: the right border
+ *   inset of the visible window
+ * - `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_BOTTOM_NUMBER`: the bottom border
+ *   inset of the visible window
  *
  * On X11:
  *
@@ -1623,11 +1716,14 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  *
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING`: the id the canvas element
  *   will have
- * - `SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN`: true if the canvas is
- *   set to consume the entire browser window, bypassing some SDL window
- *   functionality.
  * - `SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING`: the keyboard
  *   element that associates keyboard events to this window
+ *
+ * On visionOS:
+ *
+ * - `SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING`: the current settings of the
+ *   window in JSON format, or NULL if the window has standard UIKit behavior.
+ *   SDL_EVENT_WINDOW_SETTINGS_CHANGED is sent when this value changes.
  *
  * \param window the window to query.
  * \returns a valid property ID on success or 0 on failure; call
@@ -1645,6 +1741,9 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT                          "SDL.window.HDR_headroom"
 #define SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER                      "SDL.window.android.window"
 #define SDL_PROP_WINDOW_ANDROID_SURFACE_POINTER                     "SDL.window.android.surface"
+#define SDL_PROP_WINDOW_OPENHARMONY_XCOMPONENT_POINTER              "SDL.window.openharmony.xcomponent"
+#define SDL_PROP_WINDOW_OPENHARMONY_WINDOW_POINTER                  "SDL.window.openharmony.window"
+#define SDL_PROP_WINDOW_OPENHARMONY_SURFACE_POINTER                 "SDL.window.openharmony.surface"
 #define SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER                        "SDL.window.uikit.window"
 #define SDL_PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER                 "SDL.window.uikit.metal_view_tag"
 #define SDL_PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER             "SDL.window.uikit.opengl.framebuffer"
@@ -1656,6 +1755,8 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_COCOA_WINDOW_POINTER                        "SDL.window.cocoa.window"
 #define SDL_PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER                 "SDL.window.cocoa.metal_view_tag"
 #define SDL_PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER                    "SDL.window.openvr.overlay_id"
+#define SDL_PROP_WINDOW_QNX_WINDOW_POINTER                          "SDL.window.qnx.window"
+#define SDL_PROP_WINDOW_QNX_SURFACE_POINTER                         "SDL.window.qnx.surface"
 #define SDL_PROP_WINDOW_VIVANTE_DISPLAY_POINTER                     "SDL.window.vivante.display"
 #define SDL_PROP_WINDOW_VIVANTE_WINDOW_POINTER                      "SDL.window.vivante.window"
 #define SDL_PROP_WINDOW_VIVANTE_SURFACE_POINTER                     "SDL.window.vivante.surface"
@@ -1666,17 +1767,22 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
 #define SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER                     "SDL.window.wayland.surface"
 #define SDL_PROP_WINDOW_WAYLAND_VIEWPORT_POINTER                    "SDL.window.wayland.viewport"
 #define SDL_PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER                  "SDL.window.wayland.egl_window"
+#define SDL_PROP_WINDOW_WAYLAND_WINDOW_ID_STRING                    "SDL.window.wayland.window_id"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER                 "SDL.window.wayland.xdg_surface"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER                "SDL.window.wayland.xdg_toplevel"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING   "SDL.window.wayland.xdg_toplevel_export_handle"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER                   "SDL.window.wayland.xdg_popup"
 #define SDL_PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER              "SDL.window.wayland.xdg_positioner"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_LEFT_NUMBER            "SDL.window.wayland.border_inset_left"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_TOP_NUMBER             "SDL.window.wayland.border_inset_top"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_RIGHT_NUMBER           "SDL.window.wayland.border_inset_right"
+#define SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_BOTTOM_NUMBER          "SDL.window.wayland.border_inset_bottom"
 #define SDL_PROP_WINDOW_X11_DISPLAY_POINTER                         "SDL.window.x11.display"
 #define SDL_PROP_WINDOW_X11_SCREEN_NUMBER                           "SDL.window.x11.screen"
 #define SDL_PROP_WINDOW_X11_WINDOW_NUMBER                           "SDL.window.x11.window"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING                 "SDL.window.emscripten.canvas_id"
-#define SDL_PROP_WINDOW_EMSCRIPTEN_FILL_DOCUMENT_BOOLEAN            "SDL.window.emscripten.fill_document"
 #define SDL_PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING          "SDL.window.emscripten.keyboard_element"
+#define SDL_PROP_WINDOW_VISIONOS_SETTINGS_STRING                    "SDL.window.visionos.settings"
 
 /**
  * Get the window flags.
@@ -1694,6 +1800,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetWindowProperties(SDL_Window 
  * \sa SDL_MinimizeWindow
  * \sa SDL_SetWindowFullscreen
  * \sa SDL_SetWindowMouseGrab
+ * \sa SDL_SetWindowFillDocument
  * \sa SDL_ShowWindow
  */
 extern SDL_DECLSPEC SDL_WindowFlags SDLCALL SDL_GetWindowFlags(SDL_Window *window);
@@ -1893,7 +2000,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetWindowSize(SDL_Window *window, int *w, i
  * notches, TV overscan, etc. This function provides the area of the window
  * which is safe to have interactable content. You should continue rendering
  * into the rest of the window, but it should not contain visually important
- * or interactible content.
+ * or interactable content.
  *
  * \param window the window to query.
  * \param rect a pointer filled in with the client area that is safe for
@@ -2162,6 +2269,37 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowResizable(SDL_Window *window, bool
  * \sa SDL_GetWindowFlags
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowAlwaysOnTop(SDL_Window *window, bool on_top);
+
+/**
+ * Set the window to fill the current document space (Emscripten only).
+ *
+ * This will add or remove the window's `SDL_WINDOW_FILL_DOCUMENT` flag.
+ *
+ * Currently this flag only applies to the Emscripten target.
+ *
+ * When enabled, the canvas element fills the entire document. Resize events
+ * will be generated as the browser window is resized, as that will adjust the
+ * canvas size as well. The canvas will cover anything else on the page,
+ * including any controls provided by Emscripten in its generated HTML file
+ * (in fact, any elements on the page that aren't the canvas will be moved
+ * into a hidden `div` element).
+ *
+ * Often times this is desirable for a browser-based game, but it means
+ * several things that we expect of an SDL window on other platforms might not
+ * work as expected, such as minimum window sizes and aspect ratios.
+ *
+ * \param window the window of which to change the fill-document state.
+ * \param fill true to set the window to fill the document, false to disable.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetWindowFlags
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowFillDocument(SDL_Window *window, bool fill);
 
 /**
  * Show a window.
@@ -3142,7 +3280,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_LoadLibrary(const char *path);
  * \returns a pointer to the named OpenGL function. The returned pointer
  *          should be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3163,7 +3302,8 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3199,7 +3339,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  * \param extension the name of the extension to check.
  * \returns true if the extension is supported, false otherwise.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3208,7 +3349,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 /**
  * Reset all previously set OpenGL context attributes to their default values.
  *
- * \threadsafety This function should only be called on the main thread.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3218,19 +3363,23 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
 
 /**
- * Set an OpenGL window attribute before window creation.
+ * Set an OpenGL window attribute before context creation.
  *
  * This function sets the OpenGL attribute `attr` to `value`. The requested
- * attributes should be set before creating an OpenGL window. You should use
+ * attributes should be set before creating an OpenGL context. You should use
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
+ *
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
  *
  * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3243,13 +3392,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
 /**
  * Get the actual value for an attribute from the current context.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             get.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \param attr the OpenGL attribute to query.
  * \param value a pointer filled in with the current value of `attr`.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3275,11 +3427,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
  *
  * SDL_GLContext is opaque to the application.
  *
+ * Generally it _should_ be safe to create a context from a background thread,
+ * to be used on that thread, but in case there are platforms that have
+ * trouble with that, the absolute best practice would be:
+ *
+ * - Create the context on the main thread.
+ * - Make the current context NULL on the main thread (or set it back to a
+ *   different context).
+ * - Make the new context current from the thread that will be using the new
+ *   context.
+ *
+ * This function is, for now, marked as safe to call from any thread; please
+ * send feedback if this turns out to not be true on a given platform.
+ *
  * \param window the window to associate with the context.
  * \returns the OpenGL context associated with `window` or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3289,7 +3454,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
 
 /**
- * Set up an OpenGL context for rendering into an OpenGL window.
+ * Set the currently-active OpenGL context.
+ *
+ * This function makes a GL context "current," in all the ways that term
+ * implies in OpenGL.
+ *
+ * This is a per-thread state that specifies what context future calls into
+ * OpenGL will operate on. Beyond context creation work, you must have a
+ * current context for the thread before attempting to use OpenGL in any way.
  *
  * The context must have been created with a compatible window.
  *
@@ -3298,7 +3470,8 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *windo
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was created for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3312,7 +3485,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLCo
  * \returns the currently active OpenGL window on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3324,7 +3497,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GL_GetCurrentWindow(void);
  * \returns the currently active OpenGL context or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3338,7 +3511,7 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
  * \returns the currently active EGL display or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3350,7 +3523,7 @@ extern SDL_DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentDisplay(void);
  * \returns the currently active EGL config or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3359,11 +3532,13 @@ extern SDL_DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentConfig(void);
 /**
  * Get the EGL surface associated with the window.
  *
+ * This operates on the current GL context for the calling thread.
+ *
  * \param window the window to query.
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3377,6 +3552,10 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
+ * Note that this is global state, and while you can use related functions
+ * from any thread, you should only use them to prepare a single GL context at
+ * a time.
+ *
  * \param platformAttribCallback callback for attributes to pass to
  *                               eglGetPlatformDisplay. May be NULL.
  * \param surfaceAttribCallback callback for attributes to pass to
@@ -3385,7 +3564,7 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *                              eglCreateContext. May be NULL.
  * \param userdata a pointer that is passed to the callbacks.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3406,7 +3585,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArra
  *
  * Adaptive vsync is implemented for some glX drivers with
  * GLX_EXT_swap_control_tear, and for some Windows drivers with
- * WGL_EXT_swap_control_tear.
+ * WGL_EXT_swap_control_tear. With EGL, EGL_EXT_swap_tearing_hint can be used.
  *
  * Read more on the Khronos wiki:
  * https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync
@@ -3416,7 +3595,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArra
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3437,7 +3617,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetSwapInterval(int interval);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3472,7 +3653,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

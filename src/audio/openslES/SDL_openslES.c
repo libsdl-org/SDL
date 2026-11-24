@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,6 +33,11 @@
 #include <SLES/OpenSLES_Android.h>
 #include <android/log.h>
 
+// OpenSL ES is deprecated, but we still support it for now.
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif // HAVE_GCC_DIAGNOSTIC_PRAGMA
 
 #define NUM_BUFFERS 2 // -- Don't lower this!
 
@@ -422,6 +427,8 @@ static void OPENSLES_DestroyPCMPlayer(SDL_AudioDevice *device)
 
 static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
 {
+    struct SDL_PrivateAudioData *audiodata = NULL;
+
     /* according to https://developer.android.com/ndk/guides/audio/opensl/opensl-for-android,
        Android's OpenSL ES only supports Uint8 and _littleendian_ Sint16.
        (and float32, with an extension we use, below.) */
@@ -583,7 +590,7 @@ static bool OPENSLES_CreatePCMPlayer(SDL_AudioDevice *device)
     }
 #endif
 
-    struct SDL_PrivateAudioData *audiodata = device->hidden;
+    audiodata = device->hidden;
 
     // Create the audio buffer semaphore
     audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);
@@ -655,12 +662,21 @@ static bool OPENSLES_WaitDevice(SDL_AudioDevice *device)
 
     while (!SDL_GetAtomicInt(&device->shutdown)) {
         // this semaphore won't fire when the app is in the background (OPENSLES_PauseDevices was called).
-        if (SDL_WaitSemaphoreTimeout(audiodata->playsem, 100)) {
+        if (SDL_WaitSemaphoreTimeout(audiodata->playsem, -1)) {
             return true;  // semaphore was signaled, let's go!
         }
         // Still waiting on the semaphore (or the system), check other things then wait again.
     }
     return true;
+}
+
+static void OPENSLES_UnblockWaitDevice(SDL_AudioDevice *device)
+{
+    struct SDL_PrivateAudioData *audiodata = device->hidden;
+    LOGV("OPENSLES_UnblockWaitDevice()");
+    if (audiodata) {
+        SDL_SignalSemaphore(audiodata->playsem);
+    }
 }
 
 static bool OPENSLES_PlayDevice(SDL_AudioDevice *device, const Uint8 *buffer, int buflen)
@@ -761,6 +777,7 @@ static bool OPENSLES_Init(SDL_AudioDriverImpl *impl)
     impl->ThreadInit = Android_AudioThreadInit;
     impl->OpenDevice = OPENSLES_OpenDevice;
     impl->WaitDevice = OPENSLES_WaitDevice;
+    impl->UnblockWaitDevice = OPENSLES_UnblockWaitDevice;
     impl->PlayDevice = OPENSLES_PlayDevice;
     impl->GetDeviceBuf = OPENSLES_GetDeviceBuf;
     impl->WaitRecordingDevice = OPENSLES_WaitDevice;
@@ -804,5 +821,9 @@ void OPENSLES_PauseDevices(void)
         }
     }
 }
+
+#ifdef HAVE_GCC_DIAGNOSTIC_PRAGMA
+#pragma GCC diagnostic pop
+#endif // HAVE_GCC_DIAGNOSTIC_PRAGMA
 
 #endif // SDL_AUDIO_DRIVER_OPENSLES

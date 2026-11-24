@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,6 +72,11 @@ typedef enum SDL_PowerState
  * not uncommon for older batteries to lose stored power much faster than it
  * reports, or completely drain when reporting it has 20 percent left, etc.
  *
+ * A failing battery might report SDL_POWERSTATE_CHARGED with 0 percent
+ * battery life left. This can happen when the battery's fuel gauge is not
+ * responding. In this case, the system will likely turn off as soon as the
+ * charging cable is unplugged.
+ *
  * Battery status can change at any time; if you are concerned with power
  * state, you should call this function frequently, and perhaps ignore changes
  * until they seem to be stable for a few seconds.
@@ -92,6 +97,8 @@ typedef enum SDL_PowerState
  *                is no battery.
  * \returns the current battery state or `SDL_POWERSTATE_ERROR` on failure;
  *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.2.0.
  */

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,20 +23,23 @@
 #include "SDL_sysasyncio.h"
 #include "SDL_asyncio_c.h"
 
-static const char *AsyncFileModeValid(const char *mode)
+static const char *AsyncFileModeValid(const char *mode, bool *readonly)
 {
-    static const struct { const char *valid; const char *with_binary; } mode_map[] = {
-        { "r", "rb" },
-        { "w", "wb" },
-        { "r+","r+b" },
-        { "w+", "w+b" }
+    static const struct { const char *valid; const char *with_binary; bool readonly; } mode_map[] = {
+        { "r", "rb", true },
+        { "w", "wb", false },
+        { "r+","r+b", false },
+        { "w+", "w+b", false }
     };
 
     for (int i = 0; i < SDL_arraysize(mode_map); i++) {
         if (SDL_strcmp(mode, mode_map[i].valid) == 0) {
+            *readonly = mode_map[i].readonly;
             return mode_map[i].with_binary;
         }
     }
+
+    *readonly = false;
     return NULL;
 }
 
@@ -51,7 +54,8 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
         return NULL;
     }
 
-    const char *binary_mode = AsyncFileModeValid(mode);
+    bool readonly = false;
+    const char *binary_mode = AsyncFileModeValid(mode, &readonly);
     if (!binary_mode) {
         SDL_SetError("Unsupported file mode");
         return NULL;
@@ -61,6 +65,8 @@ SDL_AsyncIO *SDL_AsyncIOFromFile(const char *file, const char *mode)
     if (!asyncio) {
         return NULL;
     }
+
+    asyncio->readonly = readonly;
 
     asyncio->lock = SDL_CreateMutex();
     if (!asyncio->lock) {
@@ -219,7 +225,8 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
     outcome->userdata = task->app_userdata;
 
     // Take the completed task out of the SDL_AsyncIO that created it.
-    SDL_LockMutex(asyncio->lock);
+    SDL_Mutex *lock = asyncio->lock;
+    SDL_LockMutex(lock);
     LINKED_LIST_UNLINK(task, asyncio);
     // see if it's time to queue a pending close request (close requested and no other pending tasks)
     SDL_AsyncIOTask *closing = asyncio->closing;
@@ -232,7 +239,7 @@ static bool GetAsyncIOTaskOutcome(SDL_AsyncIOTask *task, SDL_AsyncIOOutcome *out
             SDL_AddAtomicInt(&closing->queue->tasks_inflight, -1);
         }
     }
-    SDL_UnlockMutex(task->asyncio->lock);
+    SDL_UnlockMutex(lock);
 
     // was this the result of a closing task? Finally destroy the asyncio.
     bool retval = true;

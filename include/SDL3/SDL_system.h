@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -86,6 +86,8 @@ typedef bool (SDLCALL *SDL_WindowsMessageHook)(void *userdata, MSG *msg);
  * \param callback the SDL_WindowsMessageHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_WindowsMessageHook
@@ -169,6 +171,8 @@ typedef bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
  * \param callback the SDL_X11EventHook function to call.
  * \param userdata a pointer to pass to every iteration of `callback`.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, void *userdata);
@@ -186,6 +190,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_SetX11EventHook(SDL_X11EventHook callback, 
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int priority);
@@ -201,6 +207,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetLinuxThreadPriority(Sint64 threadID, int
  *                    SCHED_OTHER, etc...).
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -264,6 +272,8 @@ typedef void (SDLCALL *SDL_iOSAnimationCallback)(void *userdata);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function should only be called on the main thread.
+ *
  * \since This function is available since SDL 3.2.0.
  *
  * \sa SDL_SetiOSEventPump
@@ -276,6 +286,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetiOSAnimationCallback(SDL_Window *window,
  * This function is only available on Apple iOS.
  *
  * \param enabled true to enable the event pump, false to disable it.
+ *
+ * \threadsafety This function should only be called on the main thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -370,6 +382,8 @@ extern SDL_DECLSPEC void * SDLCALL SDL_GetAndroidActivity(void);
  *
  * \returns the Android API level.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
@@ -378,6 +392,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
  * Query if the application is running on a Chromebook.
  *
  * \returns true if this is a Chromebook, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -388,9 +404,22 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
  *
  * \returns true if this is a DeX docking station, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
+
+/**
+ * Query if the application is running on Google Play Games on PC
+ *
+ * \returns true if this is Google Play Games on PC, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGooglePlayOnPC(void);
 
 /**
  * Trigger the Android system back button behavior.
@@ -504,7 +533,7 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
 /**
- * Callback that presents a response from a SDL_RequestAndroidPermission call.
+ * Callback that presents SDL_RequestAndroidPermission() results.
  *
  * \param userdata an app-controlled pointer that is passed to the callback.
  * \param permission the Android-specific permission name that was requested.
@@ -530,10 +559,10 @@ typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, con
  * specific entitlement, the callback will still fire, probably on the current
  * thread and before this function returns.
  *
- * If the request submission fails, this function returns -1 and the callback
- * will NOT be called, but this should only happen in catastrophic conditions,
- * like memory running out. Normally there will be a yes or no to the request
- * through the callback.
+ * If the request submission fails, this function returns false and the
+ * callback will NOT be called, but this should only happen in catastrophic
+ * conditions, like memory running out. Normally there will be a yes or no to
+ * the request through the callback.
  *
  * For the `permission` parameter, choose a value from here:
  *
@@ -598,6 +627,115 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
 
 #endif /* SDL_PLATFORM_ANDROID */
 
+#ifdef SDL_PLATFORM_OPENHARMONY
+
+/**
+ * Query OpenHarmony API level of the current device.
+ *
+ * - API level 20: OpenHarmony 6.0.0
+ * - API level 18: OpenHarmony 5.1.0
+ * - API level 16: OpenHarmony 5.0.4
+ * - API level 15: OpenHarmony 5.0.3
+ * - API level 14: OpenHarmony 5.0.2
+ * - API level 13: OpenHarmony 5.0.1
+ * - API level 12: OpenHarmony 5.0.0
+ * - API level 11: OpenHarmony 4.1.0
+ * - API level 10: OpenHarmony 4.0.0
+ * - API level 9: OpenHarmony 3.2.0
+ *
+ * \returns the OpenHarmony API level.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+
+/**
+ * Get the path used for internal storage for this OpenHarmony application.
+ *
+ * This path is unique to your application and cannot be written to by other
+ * applications.
+ *
+ * Your internal storage path is typically: `/data/storage/el2/base/files`.
+ *
+ * \returns the path used for internal storage or NULL on failure; call
+ *          SDL_GetError() for more information.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+
+/**
+ * Callback that presents SDL_RequestOpenHarmonyPermission() results.
+ *
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \param permission the OpenHarmony-specific permission name that was
+ *                   requested.
+ * \param granted true if permission is granted, false if denied.
+ *
+ * \since This datatype is available since SDL 3.6.0.
+ *
+ * \sa SDL_RequestOpenHarmonyPermission
+ */
+typedef void (SDLCALL *SDL_RequestOpenHarmonyPermissionCallback)(void *userdata, const char *permission, bool granted);
+
+/**
+ * Request permissions at runtime, asynchronously.
+ *
+ * You do not need to call this for built-in functionality of SDL; recording
+ * from a microphone or reading images from a camera, using standard SDL APIs,
+ * will manage permission requests for you.
+ *
+ * This function never blocks. Instead, the app-supplied callback will be
+ * called when a decision has been made. This callback may happen on a
+ * different thread, and possibly much later, as it might wait on a user to
+ * respond to a system dialog. If permission has already been granted for a
+ * specific entitlement, the callback will still fire, probably on the current
+ * thread and before this function returns.
+ *
+ * If the request submission fails, this function returns false and the
+ * callback will NOT be called, but this should only happen in catastrophic
+ * conditions, like memory running out. Normally there will be a yes or no to
+ * the request through the callback.
+ *
+ * For the `permission` parameter, choose a value from here:
+ *
+ * https://developer.huawei.com/consumer/en/doc/harmonyos-guides/app-permissions
+ *
+ * Strings should be in the form of "ohos.permission.PERMISSION_NAME".
+ *
+ * \param permission the permission to request.
+ * \param cb the callback to trigger when the request has a response.
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \returns true if the request was submitted, false if there was an error
+ *          submitting. The result of the request is only ever reported
+ *          through the callback, not this return value.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(const char *permission, SDL_RequestOpenHarmonyPermissionCallback cb, void *userdata);
+
+#endif /* SDL_PLATFORM_OPENHARMONY */
+
+
+/**
+ * Query if the current device is a phone.
+ *
+ * If SDL can't determine this, it will return false.
+ *
+ * \returns true if the device is a phone, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_IsTablet
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsPhone(void);
+
 /**
  * Query if the current device is a tablet.
  *
@@ -605,7 +743,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendAndroidMessage(Uint32 command, int para
  *
  * \returns true if the device is a tablet, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_IsPhone
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
 
@@ -616,9 +758,70 @@ extern SDL_DECLSPEC bool SDLCALL SDL_IsTablet(void);
  *
  * \returns true if the device is a TV, false otherwise.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_IsTV(void);
+
+/**
+ * The possible form factors for a device.
+ *
+ * \since This enum is available since SDL 3.4.0.
+ *
+ * \sa SDL_GetDeviceFormFactor
+ * \sa SDL_GetDeviceFormFactorName
+ */
+typedef enum SDL_FormFactor {
+    SDL_FORMFACTOR_UNKNOWN = 0,
+    SDL_FORMFACTOR_DESKTOP,
+    SDL_FORMFACTOR_LAPTOP,
+    SDL_FORMFACTOR_PHONE,
+    SDL_FORMFACTOR_TABLET,
+    SDL_FORMFACTOR_CONSOLE,
+    SDL_FORMFACTOR_HANDHELD,
+    SDL_FORMFACTOR_WATCH,
+    SDL_FORMFACTOR_TV,
+    SDL_FORMFACTOR_HEADSET,
+    SDL_FORMFACTOR_CAR
+} SDL_FormFactor;
+
+/**
+ * Get the form factor of the current device.
+ *
+ * This function guesses what the device may be, but may report inaccurate or
+ * outright wrong results. For example, it may report a laptop as a desktop,
+ * or a car device as a phone.
+ *
+ * Depending on the usage, there may be different functions better suited for
+ * each purpose. For example, activating touch controls can be done by
+ * detecting the presence of a touchscreen rather than restricting to phones
+ * and tablets.
+ *
+ * \returns the best guess for the form factor of the current device.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_FormFactor
+ * \sa SDL_GetDeviceFormFactorName
+ */
+extern SDL_DECLSPEC SDL_FormFactor SDLCALL SDL_GetDeviceFormFactor(void);
+
+/**
+ * Get a short name for the current device.
+ *
+ * The name will be in English.
+ *
+ * \param form_factor the form factor to query.
+ * \returns a human-readable name for the given form factor, or
+ *          "SDL_FORMFACTOR_UNKNOWN" if the form factor isn't recognized.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_FormFactor
+ * \sa SDL_GetDeviceFormFactor
+ */
+extern SDL_DECLSPEC const char* SDLCALL SDL_GetDeviceFormFactorName(SDL_FormFactor form_factor);
 
 /**
  * Application sandbox environment.
@@ -631,11 +834,15 @@ typedef enum SDL_Sandbox
     SDL_SANDBOX_UNKNOWN_CONTAINER,
     SDL_SANDBOX_FLATPAK,
     SDL_SANDBOX_SNAP,
-    SDL_SANDBOX_MACOS
+    SDL_SANDBOX_MACOS,
+    SDL_SANDBOX_LOMIRI
 } SDL_Sandbox;
 
 /**
  * Get the application sandbox environment, if any.
+ *
+ * Note that a sandbox type of `SDL_SANDBOX_UNKNOWN_CONTAINER` does not
+ * necessarily imply that the container acts a security boundry.
  *
  * \returns the application sandbox environment or SDL_SANDBOX_NONE if the
  *          application is not running in a sandbox environment.
@@ -806,6 +1013,60 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKTaskQueue(XTaskQueueHandle *outTaskQu
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
+
+#endif
+
+/*
+ * Functions used only with Ubuntu Touch
+ */
+#ifdef SDL_PLATFORM_LINUX
+
+/**
+ * Detect whether the current platform is Ubuntu Touch.
+ *
+ * \returns true if the platform is Ubuntu Touch; false otherwise.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+
+/**
+ * The ID of the application on Ubuntu Touch, as reported in the manifest.
+ *
+ * This is often called the "App Name"; the human-readable name for an app is
+ * called the "App Title".
+ *
+ * This string is needed by some low-level OS features to operate properly.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ *
+ * \sa SDL_IsUbuntuTouch
+ */
+#define SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APPID_STRING "SDL.system.ubuntu_touch.appid"
+
+/**
+ * The identifier for the specific hook which launched the current executable,
+ * as reported in the manifest.
+ *
+ * This is relevant for application packages that ship multiple applications
+ * with their desktop files; they will have the same app ID but will differ by
+ * their hook.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ *
+ * \sa SDL_IsUbuntuTouch
+ */
+#define SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_HOOK_STRING "SDL.system.ubuntu_touch.hook"
+
+/**
+ * The version of the application on Ubuntu Touch, as reported in the
+ * manifest.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ *
+ * \sa SDL_IsUbuntuTouch
+ */
+#define SDL_PROP_GLOBAL_SYSTEM_UBUNTU_TOUCH_APP_VERSION_STRING "SDL.system.ubuntu_touch.app_version"
 
 #endif
 

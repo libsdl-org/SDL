@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -121,17 +121,9 @@ static void QuitSpriteOverlay(SpriteRenderState *rs)
 static SDL_Texture *CreateSpriteTexture(SDL_Renderer *renderer, unsigned char *data, unsigned int len)
 {
     SDL_Texture *texture = NULL;
-    SDL_Surface *surface;
     SDL_IOStream *src = SDL_IOFromConstMem(data, len);
     if (src) {
-        surface = SDL_LoadPNG_IO(src, true);
-        if (surface) {
-            /* Treat white as transparent */
-            SDL_SetSurfaceColorKey(surface, true, SDL_MapSurfaceRGB(surface, 255, 255, 255));
-
-            texture = SDL_CreateTextureFromSurface(renderer, surface);
-            SDL_DestroySurface(surface);
-        }
+        texture = SDL_LoadTexture_IO(renderer, src, true);
     }
     return texture;
 }
@@ -386,7 +378,7 @@ static void shutdownGPU(void)
 
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
-static void
+static SDL_NORETURN void
 quit(int rc)
 {
     shutdownGPU();
@@ -715,8 +707,6 @@ static void Render(SDL_Window *window, const int windownum)
         color_target.store_op = SDL_GPU_STOREOP_RESOLVE;
         color_target.texture = winstate->tex_msaa;
         color_target.resolve_texture = winstate->tex_resolve;
-        color_target.cycle = true;
-        color_target.cycle_resolve_texture = true;
     } else {
         color_target.load_op = SDL_GPU_LOADOP_CLEAR;
         color_target.store_op = SDL_GPU_STOREOP_STORE;
@@ -752,6 +742,13 @@ static void Render(SDL_Window *window, const int windownum)
     if (sprite_render_state.renderer) {
         /* Load the existing color target so we can blend with it */
         color_target.load_op = SDL_GPU_LOADOP_LOAD;
+
+        if (render_state.sample_count > SDL_GPU_SAMPLECOUNT_1) {
+            /* Use the resolve texture for the sprite overlay */
+            color_target.texture = winstate->tex_resolve;
+            color_target.resolve_texture = NULL;
+            color_target.store_op = SDL_GPU_STOREOP_STORE;
+        }
 
         pass = SDL_BeginGPURenderPass(cmd, &color_target, 1, NULL);
         RenderSpriteOverlay(pass, &sprite_render_state, &winstate->sprite_state);

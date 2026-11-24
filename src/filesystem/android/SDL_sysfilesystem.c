@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -26,27 +26,37 @@
 // System dependent filesystem routines
 
 #include "../SDL_sysfilesystem.h"
-
-#include <unistd.h>
+#include "../../core/android/SDL_android.h"
 
 char *SDL_SYS_GetBasePath(void)
 {
-    return SDL_strdup("./");
+    return SDL_strdup("assets://");
+}
+
+char *SDL_SYS_GetExeName(void)
+{
+    return SDL_GetAndroidPackageName();
+}
+
+static char *GetPathWithDirSepAppended(const char *dir)
+{
+    char *retval = NULL;
+    if (dir) {
+        if (SDL_asprintf(&retval, "%s/", dir) < 0) {
+            retval = NULL;
+        }
+    }
+    return retval;
 }
 
 char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 {
-    const char *path = SDL_GetAndroidInternalStoragePath();
-    if (path) {
-        size_t pathlen = SDL_strlen(path) + 2;
-        char *fullpath = (char *)SDL_malloc(pathlen);
-        if (!fullpath) {
-            return NULL;
-        }
-        SDL_snprintf(fullpath, pathlen, "%s/", path);
-        return fullpath;
-    }
-    return NULL;
+    return GetPathWithDirSepAppended(SDL_GetAndroidInternalStoragePath());
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetPathWithDirSepAppended(SDL_GetAndroidInternalCachePath());
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

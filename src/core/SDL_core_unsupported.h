@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +35,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendComplete(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_GetGDKDefaultUser(XUserHandle *outUserHandle);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendGPU(SDL_GPUDevice *device);
 extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeGPU(SDL_GPUDevice *device);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKSuspendRenderer(SDL_Renderer *renderer);
+extern SDL_DECLSPEC void SDLCALL SDL_GDKResumeRenderer(SDL_Renderer *renderer);
 #endif /* !SDL_PLATFORM_GDK */
 
 #if !defined(SDL_PLATFORM_WINDOWS)
@@ -61,5 +63,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ShowAndroidToast(const char *message, int d
 extern SDL_DECLSPEC int SDLCALL SDL_GetAndroidSDKVersion(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC bool SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_IsGooglePlayOnPC(void);
 extern SDL_DECLSPEC Sint32 SDLCALL JNI_OnLoad(JavaVM *vm, void *reserved);
 #endif /* !SDL_PLATFORM_ANDROID */
+
+#if !defined(SDL_PLATFORM_LINUX)
+extern SDL_DECLSPEC bool SDLCALL SDL_IsUbuntuTouch(void);
+#endif /* !SDL_PLATFORM_LINUX */
+
+#if !defined(SDL_PLATFORM_OPENHARMONY)
+typedef void *SDL_RequestOpenHarmonyPermissionCallback;
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetOpenHarmonyInternalStoragePath(void);
+extern SDL_DECLSPEC int SDLCALL SDL_GetOpenHarmonySDKVersion(void);
+extern SDL_DECLSPEC bool SDLCALL SDL_RequestOpenHarmonyPermission(const char *permission, SDL_RequestOpenHarmonyPermissionCallback cb, void *userdata);
+#endif
+

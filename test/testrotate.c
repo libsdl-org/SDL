@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -104,7 +104,9 @@ static bool UpdateRotation(SDL_Renderer *renderer)
         return false;
     }
 
-    SDL_DestroyTexture(texture);
+    if (texture) {
+        SDL_DestroyTexture(texture);
+    }
     texture = SDL_CreateTextureFromSurface(renderer, rotated);
     SDL_DestroySurface(rotated);
     if (!texture) {

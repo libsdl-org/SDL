@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,10 @@
 
 #include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
+
+#ifdef SDL_SVE2_INTRINSICS
+#include "./arm/SDL_sve2_blit_A.h"
+#endif
 
 // Functions to perform alpha blended blitting
 
@@ -131,7 +135,8 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_Color *dstpal = info->dst_pal->colors;
     int srcbpp = srcfmt->bytes_per_pixel;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     Uint32 Pixel;
     unsigned sR, sG, sB;
     unsigned dR, dG, dB;
@@ -142,7 +147,7 @@ static void BlitNto1SurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         DISEMBLE_RGB(src, srcbpp, srcfmt, Pixel, sR, sG, sB);
-        if ( Pixel != ckey ) {
+        if ( (Pixel & rgbmask) != ckey ) {
             dR = dstpal[*dst].r;
             dG = dstpal[*dst].g;
             dB = dstpal[*dst].b;
@@ -178,8 +183,10 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
     Uint8 *dst = info->dst;
     int dstskip = info->dst_skip;
     Uint8 alpha = info->a;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint32 fill = ~(dstfmt->Rmask | dstfmt->Gmask | dstfmt->Bmask);
 
-    const __m128i alpha_fill_mask = _mm_set1_epi32((int)0xff000000);
+    const __m128i alpha_fill_mask = _mm_set1_epi32((int)fill);
     const __m128i srcA = _mm_set1_epi16(alpha);
 
     while (height--) {
@@ -229,7 +236,7 @@ static void SDL_TARGETING("sse2") Blit888to888SurfaceAlphaSSE2(SDL_BlitInfo *inf
 
             FACTOR_BLEND_8888(src32, dst32, alpha);
 
-            *dst = dst32 | 0xff000000;
+            *(Uint32 *)dst = dst32 | fill;
 
             src += 4;
             dst += 4;
@@ -998,7 +1005,8 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
     int dstskip = info->dst_skip;
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    Uint32 ckey = info->colorkey;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+    Uint32 ckey = info->colorkey & rgbmask;
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     Uint32 Pixel;
@@ -1011,7 +1019,7 @@ static void BlitNtoNSurfaceAlphaKey(SDL_BlitInfo *info)
         DUFFS_LOOP(
         {
         RETRIEVE_RGB_PIXEL(src, srcbpp, Pixel);
-        if (sA && Pixel != ckey) {
+        if (sA && (Pixel & rgbmask) != ckey) {
             RGB_FROM_PIXEL(Pixel, srcfmt, sR, sG, sB);
             DISEMBLE_RGBA(dst, dstbpp, dstfmt, Pixel, dR, dG, dB, dA);
             ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA);
@@ -1477,6 +1485,17 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
             }
 
         case 2:
+#ifdef SDL_SVE2_INTRINSICS
+            if (SDL_HasSVE2()) {
+                if (SDL_PIXELLAYOUT(sf->format) == SDL_PACKEDLAYOUT_8888 &&
+                    df->bytes_per_pixel == 2 &&
+                    df->Rmask == 0x0000F800 &&
+                    df->Gmask == 0x000007E0 &&
+                    df->Bmask == 0x0000001F) {
+                    return Blit8888to565PixelAlphaSwizzleSVE2;
+                }
+            }
+#endif
             if (sf->bytes_per_pixel == 4 && sf->Amask == 0xff000000 && sf->Gmask == 0xff00 && ((sf->Rmask == 0xff && df->Rmask == 0x1f) || (sf->Bmask == 0xff && df->Bmask == 0x1f))) {
                 if (df->Gmask == 0x7e0) {
                     return BlitARGBto565PixelAlpha;
@@ -1504,18 +1523,29 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                     return Blit8888to8888PixelAlphaSwizzleLSX;
                 }
 #endif
+#ifdef SDL_SVE2_INTRINSICS
+                if (SDL_HasSVE2() 
+            /* NEON is faster than SVE2 when vector size is 128bit */
+            #if defined(SDL_NEON_INTRINSICS)
+                && (SDL_GetSVEVectorSize() > 128 || !SDL_HasNEON())
+            #endif
+                ) {
+                    // To prevent "unused function" compiler warnings/errors
+                    (void)Blit8888to8888PixelAlpha;
+                    (void)Blit8888to8888PixelAlphaSwizzle;
+                    return Blit8888to8888PixelAlphaSwizzleSVE2;
+                }
+#endif
 #if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
-                // To prevent "unused function" compiler warnings/errors
-                (void)Blit8888to8888PixelAlpha;
-                (void)Blit8888to8888PixelAlphaSwizzle;
-                return Blit8888to8888PixelAlphaSwizzleNEON;
-#else
+                if (SDL_HasNEON()) {
+                    return Blit8888to8888PixelAlphaSwizzleNEON;
+                }
+#endif
                 if (sf->format == df->format) {
                     return Blit8888to8888PixelAlpha;
                 } else {
                     return Blit8888to8888PixelAlphaSwizzle;
                 }
-#endif
             }
             return BlitNtoNPixelAlpha;
 
@@ -1544,6 +1574,11 @@ SDL_BlitFunc SDL_CalculateBlitA(SDL_Surface *surface)
                         if (SDL_HasMMX()) {
                             return Blit565to565SurfaceAlphaMMX;
                         } else
+#endif
+#ifdef SDL_SVE2_INTRINSICS
+                        if (SDL_HasSVE2()) {
+                            return Blit565to565SurfaceAlphaSVE2;
+                        } else 
 #endif
                         {
                             return Blit565to565SurfaceAlpha;

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,16 +27,16 @@
 
 // EGL implementation of SDL OpenGL support
 
-void RPI_GLES_DefaultProfileConfig(SDL_VideoDevice *_this, int *mask, int *major, int *minor)
+void RPI_GLES_SetDefaultProfileConfig(SDL_VideoDevice *_this)
 {
-    *mask = SDL_GL_CONTEXT_PROFILE_ES;
-    *major = 2;
-    *minor = 0;
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 0;
 }
 
 bool RPI_GLES_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
-    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
+    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY);
 }
 
 bool RPI_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)

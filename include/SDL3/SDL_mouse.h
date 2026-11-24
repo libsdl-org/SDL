@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -116,6 +116,20 @@ typedef enum SDL_SystemCursor
     SDL_SYSTEM_CURSOR_S_RESIZE,     /**< Window resize bottom. May be NS_RESIZE. */
     SDL_SYSTEM_CURSOR_SW_RESIZE,    /**< Window resize bottom-left. May be NESW_RESIZE. */
     SDL_SYSTEM_CURSOR_W_RESIZE,     /**< Window resize left. May be EW_RESIZE. */
+    SDL_SYSTEM_CURSOR_CONTEXT_MENU, /**< A context menu is available for the object under the cursor. */
+    SDL_SYSTEM_CURSOR_HELP,         /**< Help is available for the object under the cursor. */
+    SDL_SYSTEM_CURSOR_CELL,         /**< A set of cells may be selected. */
+    SDL_SYSTEM_CURSOR_VERTICAL_TEXT,/**< Text selection. May be TEXT */
+    SDL_SYSTEM_CURSOR_ALIAS,        /**< A shortcut is to be created. */
+    SDL_SYSTEM_CURSOR_COPY,         /**< Something is to be copied. */
+    SDL_SYSTEM_CURSOR_NO_DROP,      /**< The dragged item cannot be dropped at this location. May be NOT_ALLOWED. */
+    SDL_SYSTEM_CURSOR_GRAB,         /**< The object under the cursor can be grabbed */
+    SDL_SYSTEM_CURSOR_GRABBING,     /**< An object is currently being grabbed. */
+    SDL_SYSTEM_CURSOR_COL_RESIZE,   /**< Column resize. May be EW_RESIZE. */
+    SDL_SYSTEM_CURSOR_ROW_RESIZE,   /**< Row resize. May be NS_RESIZE. */
+    SDL_SYSTEM_CURSOR_ALL_SCROLL,   /**< Four pointed arrow pointing north, south, east, and west. */
+    SDL_SYSTEM_CURSOR_ZOOM_IN,      /**< Zoom in. */
+    SDL_SYSTEM_CURSOR_ZOOM_OUT,     /**< Zoom out. */
     SDL_SYSTEM_CURSOR_COUNT
 } SDL_SystemCursor;
 
@@ -203,10 +217,10 @@ typedef Uint32 SDL_MouseButtonFlags;
  * \sa SDL_SetRelativeMouseTransform
  */
 typedef void (SDLCALL *SDL_MouseMotionTransformCallback)(
-    void *userdata, 
-    Uint64 timestamp, 
-    SDL_Window *window, 
-    SDL_MouseID mouseID, 
+    void *userdata,
+    Uint64 timestamp,
+    SDL_Window *window,
+    SDL_MouseID mouseID,
     float *x, float *y
 );
 
@@ -593,9 +607,10 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_CreateCursor(const Uint8 *data,
  * If this function is passed a surface with alternate representations added
  * with SDL_AddSurfaceAlternateImage(), the surface will be interpreted as the
  * content to be used for 100% display scale, and the alternate
- * representations will be used for high DPI situations. For example, if the
- * original surface is 32x32, then on a 2x macOS display or 200% display scale
- * on Windows, a 64x64 version of the image will be used, if available. If a
+ * representations will be used for high DPI situations if
+ * SDL_HINT_MOUSE_DPI_SCALE_CURSORS is enabled. For example, if the original
+ * surface is 32x32, then on a 2x macOS display or 200% display scale on
+ * Windows, a 64x64 version of the image will be used, if available. If a
  * matching version of the image isn't available, the closest larger size
  * image will be downscaled to the appropriate size and be used instead, if
  * available. Otherwise, the closest smaller image will be upscaled and be
@@ -730,7 +745,7 @@ extern SDL_DECLSPEC SDL_Cursor * SDLCALL SDL_GetCursor(void);
  * You do not have to call SDL_DestroyCursor() on the return value, but it is
  * safe to do so.
  *
- * \returns the default cursor on success or NULL on failuree; call
+ * \returns the default cursor on success or NULL on failure; call
  *          SDL_GetError() for more information.
  *
  * \threadsafety This function should only be called on the main thread.

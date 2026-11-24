@@ -23,7 +23,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zxdg_decoration_manager_v1" version="1">
+  <interface name="zxdg_decoration_manager_v1" version="2">
     <description summary="window decoration manager">
       This interface allows a compositor to announce support for server-side
       decorations.
@@ -60,18 +60,33 @@
       <description summary="create a new toplevel decoration object">
         Create a new decoration object associated with the given toplevel.
 
-        Creating an xdg_toplevel_decoration from an xdg_toplevel which has a
-        buffer attached or committed is a client error, and any attempts by a
-        client to attach or manipulate a buffer prior to the first
-        xdg_toplevel_decoration.configure event must also be treated as
-        errors.
+        For objects of version 1, creating an xdg_toplevel_decoration from an
+        xdg_toplevel which has a buffer attached or committed is a client
+        error, and any attempts by a client to attach or manipulate a buffer
+        prior to the first xdg_toplevel_decoration.configure event must also be
+        treated as errors.
+
+        For objects of version 2 or newer, creating an xdg_toplevel_decoration
+        from an xdg_toplevel which has a buffer attached or committed is
+        allowed. The initial decoration mode of the surface if a buffer is
+        already attached depends on whether a xdg_toplevel_decoration object
+        has been associated with the surface or not prior to this request.
+
+        If an xdg_toplevel_decoration was associated with the surface, then
+        destroyed without a surface commit, the previous decoration mode is
+        retained.
+
+        If no xdg_toplevel_decoration was associated with the surface prior to
+        this request, or if a surface commit has been performed after a previous
+        xdg_toplevel_decoration object associated with the surface was
+        destroyed, the decoration mode is assumed to be client-side.
       </description>
       <arg name="id" type="new_id" interface="zxdg_toplevel_decoration_v1"/>
       <arg name="toplevel" type="object" interface="xdg_toplevel"/>
     </request>
   </interface>
 
-  <interface name="zxdg_toplevel_decoration_v1" version="1">
+  <interface name="zxdg_toplevel_decoration_v1" version="2">
     <description summary="decoration object for a toplevel surface">
       The decoration object allows the compositor to toggle server-side window
       decorations for a toplevel surface. The client can request to switch to
@@ -88,12 +103,14 @@
         summary="xdg_toplevel already has a decoration object"/>
       <entry name="orphaned" value="2"
         summary="xdg_toplevel destroyed before the decoration object"/>
+      <entry name="invalid_mode" value="3" summary="invalid mode"/>
     </enum>
 
     <request name="destroy" type="destructor">
       <description summary="destroy the decoration object">
         Switch back to a mode without any server-side decorations at the next
-        commit.
+        commit, unless a new xdg_toplevel_decoration is created for the surface
+        first.
       </description>
     </request>
 
@@ -113,7 +130,7 @@
         that the client prefers the provided decoration mode.
 
         After requesting a decoration mode, the compositor will respond by
-        emitting a xdg_surface.configure event. The client should then update
+        emitting an xdg_surface.configure event. The client should then update
         its content, drawing it without decorations if the received mode is
         server-side decorations. The client must also acknowledge the configure
         when committing the new content (see xdg_surface.ack_configure).
@@ -122,11 +139,14 @@
         different mode instead.
 
         Clients whose decoration mode depend on the xdg_toplevel state may send
-        a set_mode request in response to a xdg_surface.configure event and wait
+        a set_mode request in response to an xdg_surface.configure event and wait
         for the next xdg_surface.configure event to prevent unwanted state.
         Such clients are responsible for preventing configure loops and must
         make sure not to send multiple successive set_mode requests with the
         same decoration mode.
+
+        If an invalid mode is supplied by the client, the invalid_mode protocol
+        error is raised by the compositor.
       </description>
       <arg name="mode" type="uint" enum="mode" summary="the decoration mode"/>
     </request>
@@ -141,8 +161,8 @@
     </request>
 
     <event name="configure">
-      <description summary="suggest a surface change">
-        The configure event asks the client to change its decoration mode. The
+      <description summary="notify a decoration mode change">
+        The configure event configures the effective decoration mode. The
         configured state should not be applied immediately. Clients must send an
         ack_configure in response to this event. See xdg_surface.configure and
         xdg_surface.ack_configure for details.

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -27,12 +27,14 @@
 
 #include "SDL_shaders_d3d12.h"
 
-#define SDL_COMPOSE_ERROR(str) SDL_STRINGIFY_ARG(__FUNCTION__) ", " str
-
 // The shaders here were compiled with compile_shaders.bat
 
 #define g_main D3D12_PixelShader_Colors
 #include "D3D12_PixelShader_Colors.h"
+#undef g_main
+
+#define g_main D3D12_PixelShader_Colors_PQ
+#include "D3D12_PixelShader_Colors_PQ.h"
 #undef g_main
 
 #define g_main D3D12_PixelShader_Textures
@@ -77,8 +79,11 @@ static struct
     const void *vs_shader_data;
     SIZE_T vs_shader_size;
     D3D12_RootSignature root_sig;
-} D3D12_shaders[NUM_SHADERS] = {
+} D3D12_shaders[] = {
     { D3D12_PixelShader_Colors, sizeof(D3D12_PixelShader_Colors),
+      D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
+      ROOTSIG_COLOR },
+    { D3D12_PixelShader_Colors_PQ, sizeof(D3D12_PixelShader_Colors_PQ),
       D3D12_VertexShader_Colors, sizeof(D3D12_VertexShader_Colors),
       ROOTSIG_COLOR },
     { D3D12_PixelShader_Textures, sizeof(D3D12_PixelShader_Textures),
@@ -88,16 +93,18 @@ static struct
       D3D12_VertexShader_Advanced, sizeof(D3D12_VertexShader_Advanced),
       ROOTSIG_ADVANCED },
 };
+SDL_COMPILE_TIME_ASSERT(D3D12_shaders, SDL_arraysize(D3D12_shaders) == NUM_SHADERS);
 
 static struct
 {
     const void *rs_shader_data;
     SIZE_T rs_shader_size;
-} D3D12_rootsigs[NUM_ROOTSIGS] = {
+} D3D12_rootsigs[] = {
     { D3D12_RootSig_Color, sizeof(D3D12_RootSig_Color) },
     { D3D12_RootSig_Texture, sizeof(D3D12_RootSig_Texture) },
     { D3D12_RootSig_Advanced, sizeof(D3D12_RootSig_Advanced) },
 };
+SDL_COMPILE_TIME_ASSERT(D3D12_rootsigs, SDL_arraysize(D3D12_rootsigs) == NUM_ROOTSIGS);
 
 void D3D12_GetVertexShader(D3D12_Shader shader, D3D12_SHADER_BYTECODE *outBytecode)
 {

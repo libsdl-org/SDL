@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,8 @@
 extern "C" {
 #endif
 
+#define SDL_PROP_WINDOW_RENDERER_POINTER "SDL.internal.window.renderer"
+
 /**
  * A rectangle, with the origin at the upper left (double precision).
  */
@@ -52,9 +54,9 @@ typedef struct SDL_RenderViewState
 {
     int pixel_w;
     int pixel_h;
-    SDL_Rect viewport;
+    SDL_FRect viewport;
     SDL_Rect pixel_viewport;
-    SDL_Rect clip_rect;
+    SDL_FRect clip_rect;
     SDL_Rect pixel_clip_rect;
     bool clipping_enabled;
     SDL_FPoint scale;
@@ -64,16 +66,25 @@ typedef struct SDL_RenderViewState
     int logical_w, logical_h;
     SDL_FRect logical_src_rect;
     SDL_FRect logical_dst_rect;
+    SDL_FRect custom_dst_rect;
     SDL_FPoint logical_scale;
     SDL_FPoint logical_offset;
 
     SDL_FPoint current_scale;  // this is just `scale * logical_scale`, precalculated, since we use it a lot.
 } SDL_RenderViewState;
 
+// Hardware palettes are shared between textures with the same palette and color key
+typedef struct SDL_TexturePaletteKey
+{
+    SDL_Palette *palette;
+    int colorkey;               // -1 if there is no color key
+} SDL_TexturePaletteKey;
+
 // Define the SDL texture palette structure
 typedef struct SDL_TexturePalette
 {
     int refcount;
+    SDL_TexturePaletteKey key;
     Uint32 version;
     Uint32 last_command_generation; // last command queue generation this palette was in.
     void *internal;             // Driver specific palette representation
@@ -102,6 +113,7 @@ struct SDL_Texture
     SDL_Palette *public_palette;
     SDL_TexturePalette *palette;
     Uint32 palette_version;
+    int palette_colorkey;       // -1 if there is no color key
     SDL_Surface *palette_surface;
 
     // Support for formats not supported directly by the renderer
@@ -252,7 +264,6 @@ struct SDL_Renderer
     bool (*UpdateTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                          const SDL_Rect *rect, const void *pixels,
                          int pitch);
-#ifdef SDL_HAVE_YUV
     bool (*UpdateTextureYUV)(SDL_Renderer *renderer, SDL_Texture *texture,
                             const SDL_Rect *rect,
                             const Uint8 *Yplane, int Ypitch,
@@ -262,7 +273,6 @@ struct SDL_Renderer
                            const SDL_Rect *rect,
                            const Uint8 *Yplane, int Ypitch,
                            const Uint8 *UVplane, int UVpitch);
-#endif
     bool (*LockTexture)(SDL_Renderer *renderer, SDL_Texture *texture,
                        const SDL_Rect *rect, void **pixels, int *pitch);
     void (*UnlockTexture)(SDL_Renderer *renderer, SDL_Texture *texture);
@@ -275,10 +285,17 @@ struct SDL_Renderer
 
     bool (*SetVSync)(SDL_Renderer *renderer, int vsync);
 
+    void (*UpdateHDRMetadata)(SDL_Renderer *renderer);
+
     void *(*GetMetalLayer)(SDL_Renderer *renderer);
     void *(*GetMetalCommandEncoder)(SDL_Renderer *renderer);
 
     bool (*AddVulkanRenderSemaphores)(SDL_Renderer *renderer, Uint32 wait_stage_mask, Sint64 wait_semaphore, Sint64 signal_semaphore);
+
+#ifdef SDL_PLATFORM_GDK
+    void (*GDKSuspendRenderer)(SDL_Renderer *renderer);
+    void (*GDKResumeRenderer)(SDL_Renderer *renderer);
+#endif
 
     // The current renderer info
     const char *name;
@@ -317,9 +334,11 @@ struct SDL_Renderer
     // The list of palettes
     SDL_HashTable *palettes;
 
+    SDL_Colorspace current_colorspace;
     SDL_Colorspace output_colorspace;
     float SDR_white_point;
     float HDR_headroom;
+    float HDR_headroom_override;
 
     float desired_color_scale;
     float color_scale;
@@ -375,6 +394,7 @@ extern SDL_RenderDriver D3D_RenderDriver;
 extern SDL_RenderDriver D3D11_RenderDriver;
 extern SDL_RenderDriver D3D12_RenderDriver;
 extern SDL_RenderDriver GL_RenderDriver;
+extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver GLES2_RenderDriver;
 extern SDL_RenderDriver METAL_RenderDriver;
 extern SDL_RenderDriver NGAGE_RenderDriver;
@@ -401,9 +421,13 @@ extern bool SDL_AddSupportedTextureFormat(SDL_Renderer *renderer, SDL_PixelForma
 extern void SDL_SetupRendererColorspace(SDL_Renderer *renderer, SDL_PropertiesID props);
 
 // Colorspace conversion functions
-extern bool SDL_RenderingLinearSpace(SDL_Renderer *renderer);
-extern void SDL_ConvertToLinear(SDL_FColor *color);
-extern void SDL_ConvertFromLinear(SDL_FColor *color);
+#define SDL_RenderingLinearSpace(renderer) \
+    (renderer->current_colorspace == SDL_COLORSPACE_SRGB_LINEAR || \
+     renderer->current_colorspace == SDL_COLORSPACE_HDR10)
+
+extern void SDL_ConvertToLinear(SDL_Renderer *renderer, SDL_FColor *color);
+
+extern float SDL_GetRendererMaxLuminance(SDL_Renderer *renderer);
 
 // Blend mode functions
 extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);

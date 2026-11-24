@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,11 +38,16 @@
 #include "vita/SDL_systhread_c.h"
 #elif defined(SDL_THREAD_N3DS)
 #include "n3ds/SDL_systhread_c.h"
+#elif defined(SDL_THREAD_DOS)
+#include "dos/SDL_systhread_c.h"
 #else
 #error Need thread implementation for this platform
 #include "generic/SDL_systhread_c.h"
 #endif
 #include "../SDL_error_c.h"
+
+// Internal state while SDL_DetachThread() is detaching the system thread
+#define SDL_THREAD_DETACHING ((SDL_ThreadState)-1)
 
 // This is the system-independent thread info structure
 struct SDL_Thread
@@ -67,11 +72,18 @@ extern void SDL_RunThread(SDL_Thread *thread);
 typedef struct
 {
     int limit;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4200) // Flexible array members (C99)
+#endif
     struct
     {
         void *data;
         void(SDLCALL *destructor)(void *);
-    } array[1];
+    } array[];
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 } SDL_TLSData;
 
 // This is how many TLS entries we allocate at once
@@ -88,5 +100,8 @@ extern void SDL_Generic_InitTLSData(void);
 extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 extern bool SDL_Generic_SetTLSData(SDL_TLSData *data);
 extern void SDL_Generic_QuitTLSData(void);
+
+// Obtain the current thread's `SDL_Thread *`. Thread must have been created with SDL_CreateThread. The main thread and other OS-level threads will return NULL!
+extern SDL_Thread *SDL_GetCurrentThread(void);
 
 #endif // SDL_thread_c_h_

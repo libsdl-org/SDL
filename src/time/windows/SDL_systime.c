@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -36,7 +36,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 {
     WCHAR str[80]; // Per the docs, the time and short date format strings can be a max of 80 characters.
 
-    if (df && GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, str, sizeof(str) / sizeof(WCHAR))) {
+    if (df && GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SSHORTDATE, str, SDL_arraysize(str))) {
         LPWSTR s = str;
         while (*s) {
             switch (*s++) {
@@ -58,7 +58,7 @@ void SDL_GetSystemTimeLocalePreferences(SDL_DateFormat *df, SDL_TimeFormat *tf)
 found_date:
 
     // Figure out the preferred system date format.
-    if (tf && GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_STIMEFORMAT, str, sizeof(str) / sizeof(WCHAR))) {
+    if (tf && GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_STIMEFORMAT, str, SDL_arraysize(str))) {
         LPWSTR s = str;
         while (*s) {
             switch (*s++) {
@@ -119,6 +119,15 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
         return SDL_InvalidParamError("dt");
     }
 
+    int rem_ns = (int)(ticks % SDL_NS_PER_SECOND);
+    if (rem_ns < 0) {
+        // Prevent rounding errors if the remaining nanoseconds are less than one unit of system time.
+        if (-rem_ns < 100) {
+            ticks -= 100;
+        }
+        rem_ns += SDL_NS_PER_SECOND;
+    }
+
     SDL_TimeToWindows(ticks, &low, &high);
     ft.dwLowDateTime = (DWORD)low;
     ft.dwHighDateTime = (DWORD)high;
@@ -144,14 +153,14 @@ bool SDL_TimeToDateTime(SDL_Time ticks, SDL_DateTime *dt, bool localTime)
             dt->hour = st->wHour;
             dt->minute = st->wMinute;
             dt->second = st->wSecond;
-            dt->nanosecond = ticks % SDL_NS_PER_SECOND;
+            dt->nanosecond = rem_ns;
             dt->day_of_week = st->wDayOfWeek;
 
             return true;
         }
     }
 
-    return SDL_SetError("SDL_DateTime conversion failed (%lu)", GetLastError());
+    return SDL_SetError("SDL_DateTime conversion failed (%" SDL_PRIuULONG ")", GetLastError());
 }
 
 #endif // SDL_TIME_WINDOWS

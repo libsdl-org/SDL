@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -1532,6 +1532,8 @@ void SDL_DestroyAudioStream(SDL_AudioStream *stream)
     }
 
     SDL_aligned_free(stream->work_buffer);
+    SDL_free(stream->src_chmap);
+    SDL_free(stream->dst_chmap);
     SDL_DestroyAudioQueue(stream->queue);
     SDL_DestroyMutex(stream->lock);
 

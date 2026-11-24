@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,7 +33,7 @@
 #define PANEL_SPACING 25.0f
 #define PANEL_WIDTH 250.0f
 #define GAMEPAD_WIDTH 512.0f
-#define GAMEPAD_HEIGHT 560.0f
+#define GAMEPAD_HEIGHT 596.0f
 #define BUTTON_MARGIN  16.0f
 #define SCREEN_WIDTH  (PANEL_WIDTH + PANEL_SPACING + GAMEPAD_WIDTH + PANEL_SPACING + PANEL_WIDTH)
 #define SCREEN_HEIGHT (TITLE_HEIGHT + GAMEPAD_HEIGHT)
@@ -286,11 +286,13 @@ void CalibrationPhase_DriftProfiling(IMUState *imustate)
 /* Sample gyro packet in order to calculate drift*/
 void SampleGyroPacketForDrift(IMUState *imustate)
 {
-    /* Get the length squared difference of the last accelerometer data vs. the new one */
+    /* Get the length squared difference of the last accelerometer data vs. the new one.
+     * The accelerometer data is in meters per second squared, but the noise thresholds are in G.
+     */
     float accelerometer_difference[3];
-    accelerometer_difference[0] = imustate->accel_data[0] - imustate->last_accel_data[0];
-    accelerometer_difference[1] = imustate->accel_data[1] - imustate->last_accel_data[1];
-    accelerometer_difference[2] = imustate->accel_data[2] - imustate->last_accel_data[2];
+    accelerometer_difference[0] = (imustate->accel_data[0] - imustate->last_accel_data[0]) / SDL_STANDARD_GRAVITY;
+    accelerometer_difference[1] = (imustate->accel_data[1] - imustate->last_accel_data[1]) / SDL_STANDARD_GRAVITY;
+    accelerometer_difference[2] = (imustate->accel_data[2] - imustate->last_accel_data[2]) / SDL_STANDARD_GRAVITY;
     SDL_memcpy(imustate->last_accel_data, imustate->accel_data, sizeof(imustate->last_accel_data));
     imustate->accelerometer_length_squared = accelerometer_difference[0] * accelerometer_difference[0] + accelerometer_difference[1] * accelerometer_difference[1] + accelerometer_difference[2] * accelerometer_difference[2];
 
@@ -362,7 +364,6 @@ static Controller *controllers;
 static Controller *controller;
 static SDL_JoystickID mapping_controller = 0;
 static int binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-static int last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
 static bool binding_flow = false;
 static int binding_flow_direction = 0;
 static Uint64 binding_advance_time = 0;
@@ -378,9 +379,16 @@ static SDL_GamepadAxis virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
 static float virtual_axis_start_x;
 static float virtual_axis_start_y;
 static SDL_GamepadButton virtual_button_active = SDL_GAMEPAD_BUTTON_INVALID;
-static bool virtual_touchpad_active = false;
-static float virtual_touchpad_x;
-static float virtual_touchpad_y;
+
+typedef struct
+{
+    bool active;
+    float x;
+    float y;
+} VirtualTouchpad;
+
+#define MAX_VIRTUAL_TOUCHPADS 2
+static VirtualTouchpad virtual_touchpad[MAX_VIRTUAL_TOUCHPADS];
 
 static int s_arrBindingOrder[] = {
     /* Standard sequence */
@@ -655,9 +663,6 @@ static void SetCurrentBindingElement(int element, bool flow)
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
         binding_flow_direction = 0;
-        last_binding_element = SDL_GAMEPAD_ELEMENT_INVALID;
-    } else {
-        last_binding_element = binding_element;
     }
     binding_element = element;
     binding_flow = flow || (element == SDL_GAMEPAD_BUTTON_SOUTH);
@@ -1069,7 +1074,6 @@ static const char *GetBindingInstruction(void)
         default:
             return "";
         }
-        break;
     case SDL_GAMEPAD_BUTTON_BACK:
         return "Press the left center button (Back/View/Share)";
     case SDL_GAMEPAD_BUTTON_GUIDE:
@@ -1312,6 +1316,7 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
             SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
             const char *name = SDL_GetGamepadName(gamepad);
             const char *path = SDL_GetGamepadPath(gamepad);
+            const char *container_id = SDL_GetStringProperty(props, SDL_PROP_GAMEPAD_CONTAINER_ID_STRING, NULL);
             SDL_GUID guid = SDL_GetGamepadGUIDForID(id);
             char guid_string[33];
             SDL_GUIDToString(guid, guid_string, sizeof(guid_string));
@@ -1336,6 +1341,26 @@ static void HandleGamepadAdded(SDL_JoystickID id, bool verbose)
 
             if (SDL_GetGamepadPlayerIndex(gamepad) >= 0) {
                 SDL_Log("Player index: %d", SDL_GetGamepadPlayerIndex(gamepad));
+            }
+
+            if (container_id) {
+                SDL_Log("Container ID: %s", container_id);
+
+                // Look for associated audio devices
+                for (int recording = 0; recording <= 1; ++recording) {
+                    int num_devices = 0;
+                    SDL_AudioDeviceID *devices = recording ? SDL_GetAudioRecordingDevices(&num_devices) : SDL_GetAudioPlaybackDevices(&num_devices);
+                    if (devices) {
+                        for (int j = 0; j < num_devices; ++j) {
+                            SDL_PropertiesID audio_props = SDL_GetAudioDeviceProperties(devices[j]);
+                            const char *audio_container_id = SDL_GetStringProperty(audio_props, SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING, NULL);
+                            if (audio_container_id && SDL_strcmp(audio_container_id, container_id) == 0) {
+                                SDL_Log("Audio %s device: %s", recording ? "recording" : "playback", SDL_GetAudioDeviceName(devices[j]));
+                            }
+                        }
+                        SDL_free(devices);
+                    }
+                }
             }
 
             switch (SDL_GetJoystickTypeForID(id)) {
@@ -1586,7 +1611,10 @@ static bool SDLCALL VirtualGamepadSetLED(void *userdata, Uint8 red, Uint8 green,
 
 static void OpenVirtualGamepad(void)
 {
-    SDL_VirtualJoystickTouchpadDesc virtual_touchpad = { 1, { 0, 0, 0 } };
+    SDL_VirtualJoystickTouchpadDesc virtual_touchpad_desc[MAX_VIRTUAL_TOUCHPADS] = {
+        { 1, { 0, 0, 0 } },
+        { 1, { 0, 0, 0 } }
+    };
     SDL_VirtualJoystickSensorDesc virtual_sensors[] = {
         { SDL_SENSOR_ACCEL, 0.0f },
         { SDL_SENSOR_GYRO, 0.0f }
@@ -1602,8 +1630,8 @@ static void OpenVirtualGamepad(void)
     desc.type = SDL_JOYSTICK_TYPE_GAMEPAD;
     desc.naxes = SDL_GAMEPAD_AXIS_COUNT;
     desc.nbuttons = SDL_GAMEPAD_BUTTON_COUNT;
-    desc.ntouchpads = 1;
-    desc.touchpads = &virtual_touchpad;
+    desc.ntouchpads = MAX_VIRTUAL_TOUCHPADS;
+    desc.touchpads = virtual_touchpad_desc;
     desc.nsensors = SDL_arraysize(virtual_sensors);
     desc.sensors = virtual_sensors;
     desc.SetPlayerIndex = VirtualGamepadSetPlayerIndex;
@@ -1682,12 +1710,14 @@ static void VirtualGamepadMouseMotion(float x, float y)
         }
     }
 
-    if (virtual_touchpad_active) {
-        SDL_FRect touchpad;
-        GetGamepadTouchpadArea(image, &touchpad);
-        virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
-        virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
-        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, true, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+    for (int i = 0; i < MAX_VIRTUAL_TOUCHPADS; ++i) {
+        if (virtual_touchpad[i].active) {
+            SDL_FRect touchpad;
+            GetGamepadTouchpadArea(image, &touchpad, i);
+            virtual_touchpad[i].x = (x - touchpad.x) / touchpad.w;
+            virtual_touchpad[i].y = (y - touchpad.y) / touchpad.h;
+            SDL_SetJoystickVirtualTouchpad(virtual_joystick, i, 0, true, virtual_touchpad[i].x, virtual_touchpad[i].y, 1.0f);
+        }
     }
 }
 
@@ -1696,16 +1726,18 @@ static void VirtualGamepadMouseDown(float x, float y)
     int element = GetGamepadImageElementAt(image, x, y);
 
     if (element == SDL_GAMEPAD_ELEMENT_INVALID) {
-        SDL_FPoint point;
-        point.x = x;
-        point.y = y;
-        SDL_FRect touchpad;
-        GetGamepadTouchpadArea(image, &touchpad);
-        if (SDL_PointInRectFloat(&point, &touchpad)) {
-            virtual_touchpad_active = true;
-            virtual_touchpad_x = (x - touchpad.x) / touchpad.w;
-            virtual_touchpad_y = (y - touchpad.y) / touchpad.h;
-            SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, true, virtual_touchpad_x, virtual_touchpad_y, 1.0f);
+        for (int i = 0; i < MAX_VIRTUAL_TOUCHPADS; ++i) {
+            SDL_FPoint point;
+            point.x = x;
+            point.y = y;
+            SDL_FRect touchpad;
+            GetGamepadTouchpadArea(image, &touchpad, i);
+            if (SDL_PointInRectFloat(&point, &touchpad)) {
+                virtual_touchpad[i].active = true;
+                virtual_touchpad[i].x = (x - touchpad.x) / touchpad.w;
+                virtual_touchpad[i].y = (y - touchpad.y) / touchpad.h;
+                SDL_SetJoystickVirtualTouchpad(virtual_joystick, i, 0, true, virtual_touchpad[i].x, virtual_touchpad[i].y, 1.0f);
+            }
         }
         return;
     }
@@ -1757,9 +1789,11 @@ static void VirtualGamepadMouseUp(float x, float y)
         virtual_axis_active = SDL_GAMEPAD_AXIS_INVALID;
     }
 
-    if (virtual_touchpad_active) {
-        SDL_SetJoystickVirtualTouchpad(virtual_joystick, 0, 0, false, virtual_touchpad_x, virtual_touchpad_y, 0.0f);
-        virtual_touchpad_active = false;
+    for (int i = 0; i < MAX_VIRTUAL_TOUCHPADS; ++i) {
+        if (virtual_touchpad[i].active) {
+            SDL_SetJoystickVirtualTouchpad(virtual_joystick, i, 0, false, virtual_touchpad[i].x, virtual_touchpad[i].y, 0.0f);
+            virtual_touchpad[i].active = false;
+        }
     }
 }
 
@@ -2198,6 +2232,16 @@ SDL_AppResult SDLCALL SDL_AppEvent(void *appstate, SDL_Event *event)
         }
         break;
 
+    case SDL_EVENT_GAMEPAD_CAPSENSE_TOUCH:
+    case SDL_EVENT_GAMEPAD_CAPSENSE_RELEASE:
+#ifdef VERBOSE_CAPSENSE
+        SDL_Log("Gamepad %" SDL_PRIu32 " capsense %u %s",
+                event->gcapsense.which,
+                event->gcapsense.capsense,
+                event->gcapsense.down ? "touch" : "release");
+#endif /* VERBOSE_CAPSENSE */
+        break;
+
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
         if (virtual_joystick && controller && controller->joystick == virtual_joystick) {
             VirtualGamepadMouseDown(event->button.x, event->button.y);
@@ -2495,6 +2539,9 @@ SDL_AppResult SDLCALL SDL_AppInit(void **appstate, int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
+
+    /* Initialize audio so we can look up audio devices associated with controllers */
+    SDL_Init(SDL_INIT_AUDIO);
 
     SDL_AddGamepadMappingsFromFile("gamecontrollerdb.txt");
 

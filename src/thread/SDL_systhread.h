@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -66,7 +66,12 @@ extern bool SDL_SYS_SetTLSData(SDL_TLSData *data);
 // Quit the global TLS data
 extern void SDL_SYS_QuitTLSData(void);
 
+// Fill the current thread's OS-level name, null-terminated, into buf. Only called for threads SDL didn't create.
+// Return false if can't provide. Do NOT call SDL_SetError in this case, as we've already set a "Thread not created by SDL" error message.
+extern bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen);
+
 // A helper function for setting up a thread with a stack size.
+// !!! FIXME: this declaration should be in SDL_thread_c.h, right?
 extern SDL_Thread *SDL_CreateThreadWithStackSize(SDL_ThreadFunction fn, const char *name, size_t stacksize, void *data);
 
 // Ends C function definitions when using C++

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -87,7 +87,6 @@ typedef unsigned int uintptr_t;
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0A00  /* Windows 10 SDK */
 #define HAVE_DXGI1_5_H 1
 #define HAVE_DXGI1_6_H 1
-#define HAVE_WINDOWS_GAMING_INPUT_H 1
 #endif
 #if defined(_WIN32_MAXVER) && _WIN32_MAXVER >= 0x0602  /* Windows 8 SDK */
 #define HAVE_D3D11_H 1
@@ -100,9 +99,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_AUDIOCLIENT_H 1
 #define HAVE_TPCSHRD_H 1
 #define HAVE_SENSORSAPI_H 1
-#if defined(__has_include) && __has_include(<gameinput.h>)
 #define HAVE_GAMEINPUT_H 1
-#endif
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64)) && (defined(_MSC_VER) && _MSC_VER >= 1600)
 #elif defined(__has_include) && (defined(__i386__) || defined(__x86_64))
 # if !__has_include(<immintrin.h>)
@@ -225,15 +222,9 @@ typedef unsigned int uintptr_t;
 
 /* Enable various input drivers */
 #define SDL_JOYSTICK_DINPUT 1
-#ifdef HAVE_GAMEINPUT_H
 #define SDL_JOYSTICK_GAMEINPUT 1
-#endif
 #define SDL_JOYSTICK_HIDAPI 1
-#define SDL_JOYSTICK_RAWINPUT 1
 #define SDL_JOYSTICK_VIRTUAL 1
-#ifdef HAVE_WINDOWS_GAMING_INPUT_H
-#define SDL_JOYSTICK_WGI 1
-#endif
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_DINPUT 1
 
@@ -289,6 +280,7 @@ typedef unsigned int uintptr_t;
 #endif
 #define SDL_GPU_D3D12 1
 #define SDL_GPU_VULKAN 1
+#define HAVE_GPU_OPENXR 1
 #define SDL_VIDEO_RENDER_GPU 1
 
 /* Enable system power support */

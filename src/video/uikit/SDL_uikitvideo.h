@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -41,10 +41,17 @@ extern CGRect UIKit_ComputeViewFrame(SDL_Window *window);
 extern CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 #endif
 
-extern API_AVAILABLE(ios(13.0)) UIWindowScene *UIKit_GetActiveWindowScene(void);
+extern API_AVAILABLE(ios(13.0), tvos(13.0)) UIWindowScene *UIKit_GetActiveWindowScene(void);
+#ifndef SDL_PLATFORM_VISIONOS
+extern API_AVAILABLE(ios(13.0), tvos(13.0)) UIWindowScene *UIKit_GetWindowSceneForScreen(UIScreen *screen);
+#endif
 
 extern void UIKit_SetGameControllerInteraction(bool enabled);
 extern void UIKit_SetViewGameControllerInteraction(UIView *view, bool enabled);
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+extern UIInterfaceOrientation UIKit_GetInterfaceOrientation(void);
+#endif
 
 #endif // __OBJC__
 

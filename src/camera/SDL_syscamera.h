@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -37,7 +37,7 @@ extern SDL_Camera *SDL_AddCamera(const char *name, SDL_CameraPosition position, 
 extern void SDL_CameraDisconnected(SDL_Camera *device);
 
 // Find an SDL_Camera, selected by a callback. NULL if not found. DOES NOT LOCK THE DEVICE.
-extern SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(SDL_Camera *device, void *userdata), void *userdata);
+extern SDL_Camera *SDL_FindPhysicalCameraByCallback(bool (*callback)(void *userdata, SDL_Camera *device), void *userdata);
 
 // Backends should call this when the user has approved/denied access to a camera.
 extern void SDL_CameraPermissionOutcome(SDL_Camera *device, bool approved);
@@ -99,7 +99,7 @@ struct SDL_Camera
 
     // These are, initially, set from camera_driver, but we might swap them out with Zombie versions on disconnect/failure.
     bool (*WaitDevice)(SDL_Camera *device);
-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS);
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation);
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame);
 
     // All supported formats/dimensions for this device.
@@ -167,13 +167,18 @@ struct SDL_Camera
     struct SDL_PrivateCameraData *hidden;
 };
 
+
+// Note that for AcquireFrame, `rotation` is degrees, with positive values rotating clockwise. This is the amount to rotate an image so it would be right-side up.
+// Rotations should be in 90 degree increments at this time (landscape to portrait, or upside down to right side up, etc).
+// Most platforms won't care about this, but mobile devices might need to deal with the device itself being physically rotated, causing the fixed-orientation camera to be presenting sideways images.
+
 typedef struct SDL_CameraDriverImpl
 {
     void (*DetectDevices)(void);
     bool (*OpenDevice)(SDL_Camera *device, const SDL_CameraSpec *spec);
     void (*CloseDevice)(SDL_Camera *device);
     bool (*WaitDevice)(SDL_Camera *device);
-    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS); // set frame->pixels, frame->pitch, and *timestampNS!
+    SDL_CameraFrameResult (*AcquireFrame)(SDL_Camera *device, SDL_Surface *frame, Uint64 *timestampNS, float *rotation); // set frame->pixels, frame->pitch, *timestampNS, and *rotation!
     void (*ReleaseFrame)(SDL_Camera *device, SDL_Surface *frame); // Reclaim frame->pixels and frame->pitch!
     void (*FreeDeviceHandle)(SDL_Camera *device); // SDL is done with this device; free the handle from SDL_AddCamera()
     void (*Deinitialize)(void);
@@ -217,6 +222,7 @@ extern CameraBootStrap PIPEWIRECAMERA_bootstrap;
 extern CameraBootStrap V4L2_bootstrap;
 extern CameraBootStrap COREMEDIA_bootstrap;
 extern CameraBootStrap ANDROIDCAMERA_bootstrap;
+extern CameraBootStrap OPENHARMONYCAMERA_bootstrap;
 extern CameraBootStrap EMSCRIPTENCAMERA_bootstrap;
 extern CameraBootStrap MEDIAFOUNDATION_bootstrap;
 extern CameraBootStrap VITACAMERA_bootstrap;

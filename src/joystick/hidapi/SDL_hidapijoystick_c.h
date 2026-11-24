@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,6 +47,7 @@
 #define SDL_JOYSTICK_HIDAPI_LG4FF
 #define SDL_JOYSTICK_HIDAPI_8BITDO
 #define SDL_JOYSTICK_HIDAPI_FLYDIGI
+#define SDL_JOYSTICK_HIDAPI_GAMESIR
 #define SDL_JOYSTICK_HIDAPI_GIP
 #define SDL_JOYSTICK_HIDAPI_SINPUT
 #define SDL_JOYSTICK_HIDAPI_ZUIKI
@@ -99,7 +100,6 @@ typedef struct SDL_HIDAPI_Device
 
     struct SDL_HIDAPI_DeviceDriver *driver;
     void *context;
-    SDL_Mutex *dev_lock;
     SDL_hid_device *dev;
     SDL_AtomicInt rumble_pending;
     int num_joysticks;
@@ -108,12 +108,15 @@ typedef struct SDL_HIDAPI_Device
     // Used during scanning for device changes
     bool seen;
 
-    // Used to flag that the device is being updated
-    bool updating;
+    // True if the device should not be enumerated
+    bool unavailable;
 
     // Used to flag devices that failed open
     // This can happen on Windows with Bluetooth devices that have turned off
     bool broken;
+
+    // Used to flag children whose parent has been removed
+    bool orphaned;
 
     struct SDL_HIDAPI_Device *parent;
     int num_children;
@@ -167,26 +170,26 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch2;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverWii;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360BB;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamHori;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverLg4ff;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_Driver8BitDo;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverFlydigi;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSInput;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverZUIKI;
 
-// Return true if a HID device is present and supported as a joystick of the given type
-extern bool HIDAPI_IsDeviceTypePresent(SDL_GamepadType type);
+#define LOAD16(A, B)       (Sint16)((Uint16)(A) | (((Uint16)(B)) << 8))
+#define LOAD32(A, B, C, D) ((((Uint32)(A)) << 0) |  \
+                            (((Uint32)(B)) << 8) |  \
+                            (((Uint32)(C)) << 16) | \
+                            (((Uint32)(D)) << 24))
 
-// Return true if a HID device is present and supported as a joystick
-extern bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
-
-// Return the name of a connected device, which should be freed with SDL_free(), or NULL if it's not available
-extern char *HIDAPI_GetDeviceProductName(Uint16 vendor_id, Uint16 product_id);
-
-// Return the manufacturer of a connected device, which should be freed with SDL_free(), or NULL if it's not available
-extern char *HIDAPI_GetDeviceManufacturerName(Uint16 vendor_id, Uint16 product_id);
+// Get the manufacturer and product strings of a connected device, which should be freed with SDL_free()
+// Returns true if the product string is available
+extern bool HIDAPI_GetDeviceStrings(Uint16 vendor_id, Uint16 product_id, char **manufacturer_string, char **product_string);
 
 // Return the type of a joystick if it's present and supported
 extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid);
@@ -195,6 +198,7 @@ extern SDL_JoystickType HIDAPI_GetJoystickTypeFromGUID(SDL_GUID guid);
 extern SDL_GamepadType HIDAPI_GetGamepadTypeFromGUID(SDL_GUID guid);
 
 extern void HIDAPI_UpdateDevices(void);
+extern void HIDAPI_IgnoredDevicesChanged(void);
 extern void HIDAPI_SetDeviceName(SDL_HIDAPI_Device *device, const char *name);
 extern void HIDAPI_SetDeviceProduct(SDL_HIDAPI_Device *device, Uint16 vendor_id, Uint16 product_id);
 extern void HIDAPI_SetDeviceSerial(SDL_HIDAPI_Device *device, const char *serial);

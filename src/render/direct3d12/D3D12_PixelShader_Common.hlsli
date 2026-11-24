@@ -33,9 +33,13 @@ static const float INPUTTYPE_SRGB = 1;
 static const float INPUTTYPE_SCRGB = 2;
 static const float INPUTTYPE_HDR10 = 3;
 
+static const float OUTPUTTYPE_SRGB = 1;
+static const float OUTPUTTYPE_SCRGB = 2;
+static const float OUTPUTTYPE_HDR10 = 3;
+
 cbuffer Constants : register(b1)
 {
-    float scRGB_output;
+    float output_type;
     float texture_type;
     float input_type;
     float color_scale;
@@ -64,6 +68,16 @@ static const float3x3 mat2020to709 = {
     { -0.018154, -0.100597, 1.118751 }
 };
 
+float3 scRGBtoNits( float3 v )
+{
+    return v * 80.0;
+}
+
+float3 scRGBfromNits(float3 v)
+{
+    return v / 80.0;
+}
+
 float sRGBtoLinear(float v)
 {
     if (v <= 0.04045) {
@@ -71,6 +85,14 @@ float sRGBtoLinear(float v)
     } else {
         v = pow(abs(v + 0.055) / 1.055, 2.4);
     }
+    return v;
+}
+
+float3 sRGBtoLinear(float3 v)
+{
+    v.r = sRGBtoLinear(v.r);
+    v.g = sRGBtoLinear(v.g);
+    v.b = sRGBtoLinear(v.b);
     return v;
 }
 
@@ -84,7 +106,15 @@ float sRGBfromLinear(float v)
     return v;
 }
 
-float3 PQtoLinear(float3 v)
+float3 sRGBfromLinear(float3 v)
+{
+    v.r = sRGBfromLinear(v.r);
+    v.g = sRGBfromLinear(v.g);
+    v.b = sRGBfromLinear(v.b);
+    return v;
+}
+
+float3 PQtoNits(float3 v)
 {
     const float c1 = 0.8359375;
     const float c2 = 18.8515625;
@@ -94,7 +124,26 @@ float3 PQtoLinear(float3 v)
 
     float3 num = max(pow(abs(v), oo_m2) - c1, 0.0);
     float3 den = c2 - c3 * pow(abs(v), oo_m2);
-    return (10000.0 * pow(abs(num / den), oo_m1) / sdr_white_point);
+    return 10000.0 * pow(abs(num / den), oo_m1);
+}
+
+float3 PQtoLinear(float3 v)
+{
+    return PQtoNits(v) / sdr_white_point;
+}
+
+float3 PQFromNits(float3 v)
+{
+    const float c1 = 0.8359375;
+    const float c2 = 18.8515625;
+    const float c3 = 18.6875;
+    const float m1 = 0.1593017578125;
+    const float m2 = 78.84375;
+
+    float3 y = saturate( v / 10000.0 );
+    float3 num = c1 + c2 * pow( abs( y ), m1 );
+    float3 den = 1.0 + c3 * pow( abs( y ), m1 );
+    return pow( abs( num / den ), m2 );
 }
 
 float3 ApplyTonemap(float3 v)
@@ -102,20 +151,10 @@ float3 ApplyTonemap(float3 v)
     if (tonemap_method == TONEMAP_LINEAR) {
         v *= tonemap_factor1;
     } else if (tonemap_method == TONEMAP_CHROME) {
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.2020 colorspace for tone mapping
-            v = mul(mat709to2020, v);
-        }
-
         float vmax = max(v.r, max(v.g, v.b));
         if (vmax > 0.0) {
             float scale = (1.0 + tonemap_factor1 * vmax) / (1.0 + tonemap_factor2 * vmax);
             v *= scale;
-        }
-
-        if (input_type == INPUTTYPE_SCRGB) {
-            // Convert to BT.709 colorspace after tone mapping
-            v = mul(mat2020to709, v);
         }
     }
     return v;
@@ -234,33 +273,19 @@ float4 GetOutputColor(float4 rgba)
     return output;
 }
 
-float3 GetOutputColorFromSRGB(float3 rgb)
+float4 PQColorPixelShader(PixelShaderInput input)
 {
-    float3 output;
+    float3 rgb = float3(1.0, 1.0, 1.0);
+    float4 output;
 
-    if (scRGB_output) {
-        rgb.r = sRGBtoLinear(rgb.r);
-        rgb.g = sRGBtoLinear(rgb.g);
-        rgb.b = sRGBtoLinear(rgb.b);
-    }
+    // Apply color scaling, which will include display SDR white level
+    rgb = rgb * input.color.rgb * color_scale;
 
-    output.rgb = rgb * color_scale;
+    // Convert to nits
+    rgb = scRGBtoNits(rgb);
 
-    return output;
-}
-
-float3 GetOutputColorFromLinear(float3 rgb)
-{
-    float3 output;
-
-    output.rgb = rgb * color_scale;
-
-    if (!scRGB_output) {
-        output.r = sRGBfromLinear(output.r);
-        output.g = sRGBfromLinear(output.g);
-        output.b = sRGBfromLinear(output.b);
-        output.rgb = saturate(output.rgb);
-    }
+    output.rgb = PQFromNits(rgb);
+    output.a = input.color.a;
 
     return output;
 }
@@ -268,29 +293,49 @@ float3 GetOutputColorFromLinear(float3 rgb)
 float4 AdvancedPixelShader(PixelShaderInput input)
 {
     float4 rgba = GetInputColor(input);
-    float4 output;
+    float3 rgb = rgba.rgb;
+    bool rgb2020 = false;
 
+    // Convert the input to linear values, unless we're staying in sRGB space
     if (input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = PQtoLinear(rgba.rgb);
+        rgb = PQtoLinear(rgb);
+        rgb2020 = true;
+    } else if (input_type == INPUTTYPE_SRGB) {
+        if (output_type != OUTPUTTYPE_SRGB) {
+            rgb = sRGBtoLinear(rgb);
+        }
     }
 
+    // Tone mapping is done in the BT.2020 colorspace
     if (tonemap_method != TONEMAP_NONE) {
-        rgba.rgb = ApplyTonemap(rgba.rgb);
+        if (!rgb2020) {
+            rgb = mul(mat709to2020, rgb);
+            rgb2020 = true;
+        }
+        rgb = ApplyTonemap(rgb);
     }
 
-    if (input_type == INPUTTYPE_SRGB) {
-        output.rgb = GetOutputColorFromSRGB(rgba.rgb);
-        output.a = rgba.a;
-    } else if (input_type == INPUTTYPE_SCRGB) {
-        output.rgb = GetOutputColorFromLinear(rgba.rgb);
-        output.a = rgba.a;
-    } else if (input_type == INPUTTYPE_HDR10) {
-        rgba.rgb = mul(mat2020to709, rgba.rgb);
-        output.rgb = GetOutputColorFromLinear(rgba.rgb);
-        output.a = rgba.a;
+    // Convert to the output color primaries
+    if (output_type == OUTPUTTYPE_HDR10) {
+        if (!rgb2020) {
+            rgb = mul(mat709to2020, rgb);
+        }
     } else {
-        output = GetOutputColor(rgba);
+        if (rgb2020) {
+            rgb = mul(mat2020to709, rgb);
+        }
     }
 
-    return output * input.color;
+    rgb *= color_scale;
+
+    if (output_type == OUTPUTTYPE_SRGB &&
+        (input_type == INPUTTYPE_SCRGB || input_type == INPUTTYPE_HDR10)) {
+        rgb = saturate(sRGBfromLinear(rgb));
+    }
+
+    float4 output = float4(rgb, rgba.a) * input.color;
+    if (output_type == OUTPUTTYPE_HDR10) {
+        output.rgb = PQFromNits(scRGBtoNits(output.rgb));
+    }
+    return output;
 }

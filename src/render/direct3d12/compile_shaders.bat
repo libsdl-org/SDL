@@ -9,6 +9,7 @@ echo Suffix %SUFFIX%
 cd "%~dp0"
 
 %DXC% -E main -T ps_6_0 -Fh D3D12_PixelShader_Colors%SUFFIX% D3D12_PixelShader_Colors.hlsl
+%DXC% -E main -T ps_6_0 -Fh D3D12_PixelShader_Colors_PQ%SUFFIX% D3D12_PixelShader_Colors_PQ.hlsl
 %DXC% -E main -T ps_6_0 -Fh D3D12_PixelShader_Textures%SUFFIX% D3D12_PixelShader_Textures.hlsl
 %DXC% -E main -T ps_6_0 -Fh D3D12_PixelShader_Advanced%SUFFIX% D3D12_PixelShader_Advanced.hlsl
 

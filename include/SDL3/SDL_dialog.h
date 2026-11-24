@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -91,8 +91,8 @@ typedef struct SDL_DialogFileFilter
  * when the callback returns.
  *
  * The filter argument is the index of the filter that was selected, or -1 if
- * no filter was selected or if the platform or method doesn't support
- * fetching the selected filter.
+ * no filter was selected, the dialog was canceled, or if the platform or
+ * method doesn't support fetching the selected filter.
  *
  * In Android, the `filelist` are `content://` URIs. They should be opened
  * using SDL_IOFromFile() with appropriate modes. This applies both to open
@@ -139,15 +139,17 @@ typedef void (SDLCALL *SDL_DialogFileCallback)(void *userdata, const char * cons
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
- * \param filters a list of filters, may be NULL. See the
- *                [`SDL_DialogFileFilter`](SDL_DialogFileFilter#code-examples)
- *                documentation for examples]. Not all platforms support this
- *                option, and platforms that do support it may allow the user
- *                to ignore the filters. If non-NULL, it must remain valid at
- *                least until the callback is invoked.
+ * \param filters a list of filters, may be NULL. Not all platforms support
+ *                this option, and platforms that do support it may allow the
+ *                user to ignore the filters. If non-NULL, it must remain
+ *                valid at least until the callback is invoked.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
- *                         may be NULL. Not all platforms support this option.
+ *                         may be NULL to use the platform default. A location
+ *                         ending in a path separator is a folder; otherwise
+ *                         the dialog starts in the folder before the last
+ *                         separator, with the rest as the default file name.
+ *                         Not all platforms support this option.
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
@@ -198,7 +200,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowOpenFileDialog(SDL_DialogFileCallback c
  *                valid at least until the callback is invoked.
  * \param nfilters the number of filters. Ignored if filters is NULL.
  * \param default_location the default folder or file to start the dialog at,
- *                         may be NULL. Not all platforms support this option.
+ *                         may be NULL to use the platform default. A location
+ *                         ending in a path separator is a folder; otherwise
+ *                         the dialog starts in the folder before the last
+ *                         separator, with the rest as the default file name.
+ *                         Not all platforms support this option.
  *
  * \threadsafety This function should be called only from the main thread. The
  *               callback may be invoked from the same thread or from a
@@ -241,8 +247,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_ShowSaveFileDialog(SDL_DialogFileCallback c
  *                 it will be invoked.
  * \param window the window that the dialog should be modal for, may be NULL.
  *               Not all platforms support this option.
- * \param default_location the default folder or file to start the dialog at,
- *                         may be NULL. Not all platforms support this option.
+ * \param default_location the default folder to start the dialog at, may be
+ *                         NULL to use the platform default. Not all platforms
+ *                         support this option.
  * \param allow_many if non-zero, the user will be allowed to select multiple
  *                   entries. Not all platforms support this option.
  *
@@ -291,7 +298,10 @@ typedef enum SDL_FileDialogType
  * - `SDL_PROP_FILE_DIALOG_WINDOW_POINTER`: the window that the dialog should
  *   be modal for.
  * - `SDL_PROP_FILE_DIALOG_LOCATION_STRING`: the default folder or file to
- *   start the dialog at.
+ *   start the dialog at. A location ending in a path separator is a folder;
+ *   otherwise the dialog starts in the folder before the last separator, with
+ *   the rest as the default file name. For SDL_FILEDIALOG_OPENFOLDER, the
+ *   location is always a folder.
  * - `SDL_PROP_FILE_DIALOG_MANY_BOOLEAN`: true to allow the user to select
  *   more than one entry.
  * - `SDL_PROP_FILE_DIALOG_TITLE_STRING`: the title for the dialog.

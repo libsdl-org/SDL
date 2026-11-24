@@ -210,18 +210,21 @@ Calling SDL_RenderPresent (or SDL_GL_SwapWindow) will not actually
 present anything on the screen until your return from your mainloop
 function.
 
-Note that on other platforms, SDL will default to vsync _off_ in the 2D render
-API. Since changing this will affect how the mainloop runs, the 2D render API
-will only change vsync settings if explicitly requested by the app, either
-with SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER, or calling
-SDL_SetRenderVSync(). Otherwise it will default to whatever the Emscripten
-mainloop is set to use via emscripten_set_main_loop().
+Note that SDL attempts to default to vsync _off_ on all platforms. You almost
+certainly do _not_ want this in Emscripten, however, as it will affect the
+efficiency of the mainloop. If using OpenGL directly, you should call
+SDL_GL_SetSwapInterval(1) sometime near startup; if using the 2D render API,
+either create the renderer with the property
+SDL_PROP_RENDERER_CREATE_PRESENT_VSYNC_NUMBER set to 1, or call
+SDL_SetRenderVSync(renderer, 1). If you don't explicitly set vsync, you'll get
+a higher (but perhaps unstable) framerate, and use more power, but it will
+still work. Choosing a vsync of 1 will use requestAnimationFrame if possible.
 
 If you're using the SDL main callbacks, the mainloop defaults to using
 requestAnimationFrame (effectively vsync), because it calls
 emscripten_set_main_loop() with a zero fps. This is almost certainly what you
 want to do! Do this even if you aren't using the main callbacks!
-SDL will attempt to accomodate the app if it messes with vsync settings, or
+SDL will attempt to accommodate the app if it messes with vsync settings, or
 doesn't use requestAnimationFrame, but modern thinking is that this is the
 most efficient, consistent, and correct way to run a game in a web browser.
 
@@ -343,6 +346,64 @@ all has to live in memory at runtime.
 [Emscripten's documentation on the matter](https://emscripten.org/docs/porting/files/packaging_files.html)
 gives other options and details, and is worth a read.
 
+Please also read the next section on persistent storage, for a little help
+from SDL.
+
+
+## Automount persistent storage
+
+The file tree in Emscripten is provided by MEMFS by default, which stores all
+files in RAM. This is often what you want, because it's fast and can be
+accessed with the usual synchronous i/o functions like fopen or SDL_IOFromFile.
+You can also write files to MEMFS, but when the browser tab goes away, so do
+the files. But we want things like high scores, save games, etc, to still
+exist if we reload the game later.
+
+For this, Emscripten offers IDBFS, which backs files with the browser's
+[IndexedDB](https://en.wikipedia.org/wiki/IndexedDB) functionality.
+
+To use this, the app has to mount the IDBFS filesystem somewhere in the
+virtual file tree, and then wait for it to sync up. This needs to be done in
+Javascript code. The sync will not complete until at least one (but possibly
+several) iterations of the mainloop have passed, which means you can not
+access any saved files during main() or SDL_AppInit() by default.
+
+SDL can solve this problem for you: it can be built to automatically mount the
+persistent files from IDBFS to a specific place in the file tree and wait
+until the sync has completed before calling main() or SDL_AppInit(), so to
+your C code, it looks like the files were always available.
+
+To use this functionality, set the CMake variable
+`SDL_EMSCRIPTEN_PERSISTENT_PATH` to a path in the filetree where persistent
+storage should be mounted:
+
+```bash
+mkdir build
+cd build
+emcmake cmake -DSDL_EMSCRIPTEN_PERSISTENT_PATH=/storage ..
+```
+
+You should also link your app with `-lidbfs.js`. If your project links to SDL
+using CMake's find_package(SDL3), or uses `pkg-config sdl3 --libs`, this will
+be handled for you when used with an SDL built with
+`-DSDL_EMSCRIPTEN_PERSISTENT_PATH`.
+
+Now `/storage` will be prepared when your program runs, and SDL_GetPrefPath()
+will return a directory under that path. The storage is mounted with the
+`autoPersist: true` option, so when you write to that tree, whether with
+SDL APIs or other functions like fopen(), Emscripten will know it needs to
+sync that data back to the persistent database, and will do so automatically
+within the next few iterations of the mainloop.
+
+It's best to assume the sync will take a few frames to complete, and the
+data is not safe until it does.
+
+To summarize how to automate this:
+
+- Build with `emcmake cmake -DSDL_EMSCRIPTEN_PERSISTENT_PATH=/storage`
+- Link your app with `-lidbfs.js` if not handled automatically.
+- Write under `/storage`, or use SDL_GetPrefPath()
+
 
 ## Customizing index.html
 
@@ -374,9 +435,9 @@ If you try debugging in Firefox and it doesn't work well for no apparent
 reason, try Chrome, and vice-versa. These tools are still relatively new,
 and improving all the time.
 
-SDL_Log() (or even plain old printf) will write to the Javascript console,
-and honestly I find printf-style debugging to be easier than setting up a build
-for proper debugging, so use whatever tools work best for you.
+SDL_Log() (or printf) will write to the Javascript console,
+so printf-style debugging can be easier than setting up a build
+for proper debugging. Use whatever tools work best for you.
 
 
 ## Questions?

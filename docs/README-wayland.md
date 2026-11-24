@@ -22,6 +22,21 @@ encounter limitations or behavior that is different from other windowing systems
   if a plugin to generate native-looking decorations is not installed (i.e. the GTK plugin), the decorations will not
   appear to be 'native'.
 
+### Border insets for client-side decorations
+
+- Applications drawing client-side decorations (shadows or invisible resize borders) can declare their insets via the
+  `SDL_PROP_WINDOW_WAYLAND_BORDER_INSET_*` window properties when the window is created with the
+  `SDL_PROP_WINDOW_CREATE_WAYLAND_ENABLE_INSETS_BOOLEAN` property set to `true`. SDL then sets the xdg window geometry
+  to the surface minus the insets (in points, regardless of pixel density) and translates configure sizes and size
+  limits accordingly. Maximized and fullscreen windows are always sized exactly as configured, while tiled windows keep
+  their insets. Changes take effect on the next configure. Only xdg-toplevel windows are affected; popup and custom-role
+  surfaces ignore the properties, as does libdecor, which manages the window geometry itself (see
+  `SDL_HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR`). Note that in certain cases, compositors may ignore the min and max size
+  hints, as well as the non-resizable state on windows. When this occurs and insets are enabled, SDL can't mask around
+  the main surface or use scaled viewports to compensate, so clients are responsible for handling this behavior
+  themselves.
+
+
 ### Windows do not appear immediately after creation
 
 - Wayland requires that the application initially present a buffer before the window becomes visible. Additionally,
@@ -37,6 +52,19 @@ encounter limitations or behavior that is different from other windowing systems
 ### ```SDL_SetWindowPosition()``` doesn't work on non-popup windows
 
 - Wayland does not allow toplevel windows to position themselves programmatically.
+
+### How do I save and restore window layout and state between runs?
+
+- To preserve the state of toplevel windows across runs, the `xdg-session-management-v1` protocol is required:
+  - Create a session by setting the `SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING` property to a non-null value
+    before creating a window.
+  - Assign the windows you want managed by the session a unique, stable ID string with the
+    `SDL_PROP_WINDOW_CREATE_WAYLAND_WINDOW_ID_STRING` property at creation time. This string should be human-readable,
+    but not translated.
+  - Serialize the session ID property `SDL_PROP_GLOBAL_VIDEO_WAYLAND_SESSION_ID_STRING` before shutting down.
+  - On subsequent runs, restore the session ID string property to the previously serialized value before window
+    creation. This property may change at some arbitrary point during runtime, so serialization should be deferred as
+    late as possible.
 
 ### Retrieving the global mouse cursor position when the cursor is outside a window doesn't work
 
@@ -68,7 +96,7 @@ encounter limitations or behavior that is different from other windowing systems
 
 ### The application progress bar can't be set via ```SDL_SetWindowProgressState()``` or ```SDL_SetWindowProgressValue()```
 
-- Only some Desktop Environemnts support the underlying API. Known compatible DEs: Unity, KDE
+- Only some Desktop Environments support the underlying API. Known compatible DEs: Unity, KDE
 - The underlying API requires a desktop entry file, aka a `.desktop` file.
   Please see the [Desktop Entry Specification](https://specifications.freedesktop.org/desktop-entry-spec/latest/) for
   more information on the format of this file. Note that if your application manually sets the application ID via the

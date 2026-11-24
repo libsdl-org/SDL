@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -72,10 +72,6 @@ static char kmsdrm_dri_cardpath[32];
 #endif
 #ifndef DRM_FORMAT_MOD_LINEAR
 #define DRM_FORMAT_MOD_LINEAR fourcc_mod_code(NONE, 0)
-#endif
-
-#ifndef EGL_PLATFORM_GBM_MESA
-#define EGL_PLATFORM_GBM_MESA 0x31D7
 #endif
 
 static int get_driindex(void)
@@ -183,20 +179,23 @@ static int get_driindex(void)
 
 static void CalculateRefreshRate(drmModeModeInfo *mode, int *numerator, int *denominator)
 {
-    *numerator = mode->clock * 1000;
-    *denominator = mode->htotal * mode->vtotal;
+    // The clock is in kHz, so the pixel clock in Hz can exceed INT_MAX for high bandwidth modes (e.g. 4K at 240 Hz)
+    Uint64 num = (Uint64)mode->clock * 1000;
+    Uint64 den = (Uint64)mode->htotal * mode->vtotal;
 
     if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
-        *numerator *= 2;
+        num *= 2;
     }
 
     if (mode->flags & DRM_MODE_FLAG_DBLSCAN) {
-        *denominator *= 2;
+        den *= 2;
     }
 
     if (mode->vscan > 1) {
-        *denominator *= mode->vscan;
+        den *= mode->vscan;
     }
+
+    SDL_ReduceFraction(num, den, numerator, denominator);
 }
 
 
@@ -301,15 +300,17 @@ static void print_plane_info(SDL_VideoDevice *_this, drmModePlanePtr plane)
     /* Now we look for the CRTCs supported by the plane. */
     drmModeRes *resources = KMSDRM_drmModeGetResources(viddata->drm_fd);
     if (resources) {
-        printf("--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
+        SDL_IOStream *io = SDL_IOFromDynamicMem();
+        SDL_IOprintf(io, "--PLANE ID: %d\nPLANE TYPE: %s\nCRTC READING THIS PLANE: %d\nCRTCS SUPPORTED BY THIS PLANE: ",  plane->plane_id, plane_type, plane->crtc_id);
         for (int i = 0; i < resources->count_crtcs; i++) {
             if (plane->possible_crtcs & (1 << i)) {
                 uint32_t crtc_id = resources->crtcs[i];
-                printf ("%d", crtc_id);
+                SDL_IOprintf(io, " %d", crtc_id);
                 break;
             }
         }
-        printf ("\n\n");
+        SDL_Log("%s\n\n", (const char *)SDL_GetPointerProperty(SDL_GetIOProperties(io), SDL_PROP_IOSTREAM_DYNAMIC_MEMORY_POINTER, ""));
+        SDL_CloseIO(io);
     }
 }
 
@@ -319,12 +320,12 @@ static void get_planes_info(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
 
     drmModePlaneResPtr plane_resources = KMSDRM_drmModeGetPlaneResources(viddata->drm_fd);
     if (!plane_resources) {
-        printf("drmModeGetPlaneResources failed: %s\n", strerror(errno));
+        SDL_Log("drmModeGetPlaneResources failed: %s", strerror(errno));
         return;
     }
 
-    printf("--Number of planes found: %d-- \n", plane_resources->count_planes);
-    printf("--Usable CRTC that we have chosen: %d-- \n", dispdata->crtc.crtc->crtc_id);
+    SDL_Log("--Number of planes found: %d--", plane_resources->count_planes);
+    SDL_Log("--Usable CRTC that we have chosen: %d--", dispdata->crtc.crtc->crtc_id);
 
     /* Iterate on all the available planes. */
     for (uint32_t i = 0; (i < plane_resources->count_planes); i++) {
@@ -332,7 +333,7 @@ static void get_planes_info(SDL_VideoDevice *_this, SDL_DisplayData *dispdata)
 
         drmModePlanePtr plane = KMSDRM_drmModeGetPlane(viddata->drm_fd, plane_id);
         if (!plane) {
-            printf("drmModeGetPlane(%u) failed: %s\n", plane_id, strerror(errno));
+            SDL_Log("drmModeGetPlane(%u) failed: %s", plane_id, strerror(errno));
             continue;
         }
 
@@ -491,18 +492,18 @@ void free_plane(KMSDRM_plane **_plane)
 /* A PLANE reads a BUFFER, and a CRTC reads a PLANE and sends it's contents       */
 /*   over to a CONNECTOR->ENCODER system (several CONNECTORS can be connected     */
 /*   to the same PLANE).                                                          */
-/*   Think of a plane as a "frame" sorrounding a picture, where the "picture"     */
+/*   Think of a plane as a "frame" surrounding a picture, where the "picture"     */
 /*   is the buffer, and we move the "frame" from  a picture to another,           */
 /*   and the one that has the "frame" is the one sent over to the screen          */
 /*   via the CONNECTOR->ENCODER system.                                           */
 /*   Think of a PLANE as being "in the middle", it's the CENTRAL part             */
-/*   bewteen the CRTC and the BUFFER that is shown on screen.                     */
+/*   between the CRTC and the BUFFER that is shown on screen.                     */
 /*   What we do here is connect a PLANE to a CRTC and a BUFFER.                   */
 /*   -ALWAYS set the CRTC_ID and FB_ID attribs of a plane at the same time,       */
 /*   meaning IN THE SAME atomic request.                                          */
 /*   -And NEVER destroy a GBM surface whose buffers are being read by a plane:    */
 /*   first, move the plane away from those buffers and ONLY THEN destroy the      */
-/*   buffers and/or the GBM surface containig them.                               */
+/*   buffers and/or the GBM surface containing them.                              */
 /**********************************************************************************/
 void
 drm_atomic_set_plane_props(SDL_DisplayData *dispdata, struct KMSDRM_PlaneInfo *info)
@@ -549,7 +550,7 @@ int drm_atomic_commit(SDL_VideoDevice *_this, SDL_DisplayData *dispdata, bool bl
         SDL_SetError("Atomic commit failed, returned %d.", ret);
         /* Uncomment this for fast-debugging */
 #if 0
-        printf("ATOMIC COMMIT FAILED: %s.\n", strerror(errno));
+        SDL_Log("ATOMIC COMMIT FAILED: %s.", strerror(errno));
 #endif
         goto out;
     }
@@ -696,7 +697,7 @@ static SDL_VideoDevice *KMSDRM_CreateDevice(void)
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DestroyContext = KMSDRM_GLES_DestroyContext;
-    device->GL_DefaultProfileConfig = KMSDRM_GLES_DefaultProfileConfig;
+    device->GL_SetDefaultProfileConfig = KMSDRM_GLES_SetDefaultProfileConfig;
 
 #ifdef SDL_VIDEO_VULKAN
     device->Vulkan_LoadLibrary = KMSDRM_Vulkan_LoadLibrary;
@@ -1129,6 +1130,7 @@ static void KMSDRM_AddDisplay(SDL_VideoDevice *_this, drmModeConnector *conn, dr
        to sane values. */
     dispdata->cursor_bo = NULL;
     dispdata->cursor_bo_drm_fd = -1;
+    dispdata->kms_in_fence_fd = -1;
     dispdata->kms_out_fence_fd = -1;
 
     /* Since we create and show the default cursor on KMSDRM_InitMouse(),
@@ -1629,10 +1631,10 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         plane_info.plane = dispdata->display_plane;
         plane_info.crtc_id = 0;
         plane_info.fb_id = 0;
-        /***********************************************************************/
-        /* Restore the original CRTC configuration: configue the crtc with the */
-        /* original video mode and make it point to the original TTY buffer.   */
-        /***********************************************************************/
+        /************************************************************************/
+        /* Restore the original CRTC configuration: configure the crtc with the */
+        /* original video mode and make it point to the original TTY buffer.    */
+        /************************************************************************/
 
         drm_atomic_set_plane_props(dispdata, &plane_info);
         ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
@@ -1642,7 +1644,7 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
         /* Issue atomic commit that is blocking and allows modesetting. */
         if (drm_atomic_commit(_this, dispdata, true, true)) {
             SDL_SetError("Failed to issue atomic commit on surfaces destruction.");
-        /* If we failed to set the original mode, try to set the connector prefered mode. */
+        /* If we failed to set the original mode, try to set the connector preferred mode. */
         if (ret && (dispdata->crtc->mode_valid == 0)) {
             ret = KMSDRM_drmModeSetCrtc(viddata->drm_fd, dispdata->crtc->crtc_id,
                     dispdata->crtc->buffer_id, 0, 0, &dispdata->connector->connector_id, 1,
@@ -1692,7 +1694,23 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     if (ret) {
-        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Could not restore CRTC");
+    }
+
+    /***************************/
+    // Destroy the GBM buffers
+    /***************************/
+
+    if (windata->bo) {
+        if (windata->bo != windata->next_bo) {
+            KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
+        }
+        windata->bo = NULL;
+    }
+
+    if (windata->next_bo) {
+        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
+        windata->next_bo = NULL;
     }
 
     /***************************/
@@ -1704,20 +1722,6 @@ static void KMSDRM_DestroySurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     if (windata->egl_surface != EGL_NO_SURFACE) {
         SDL_EGL_DestroySurface(_this, windata->egl_surface);
         windata->egl_surface = EGL_NO_SURFACE;
-    }
-
-    /***************************/
-    // Destroy the GBM buffers
-    /***************************/
-
-    if (windata->bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->bo);
-        windata->bo = NULL;
-    }
-
-    if (windata->next_bo) {
-        KMSDRM_gbm_surface_release_buffer(windata->gs, windata->next_bo);
-        windata->next_bo = NULL;
     }
 
     /***************************/
@@ -1767,78 +1771,123 @@ static void KMSDRM_DirtySurfaces(SDL_Window *window)
    that we create here. */
 bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
 {
+    static const struct { uint32_t fmt; const char *name; int r; int g; int b; int a; } gbm_formats[] = {
+        // !!! FIXME: I have no idea if this is a good preferred order for this list.
+        #define FMT(name, r, g, b, a) { GBM_FORMAT_##name, #name, r, g, b, a }
+        FMT(ARGB8888, 8, 8, 8, 8),
+        FMT(ABGR8888, 8, 8, 8, 8),
+        FMT(BGRA8888, 8, 8, 8, 8),
+        FMT(RGBA8888, 8, 8, 8, 8),
+        FMT(BGRX8888, 8, 8, 8, 0),
+        FMT(RGBX8888, 8, 8, 8, 0),
+        FMT(XRGB8888, 8, 8, 8, 0),
+        FMT(XBGR8888, 8, 8, 8, 0),
+        FMT(RGBA1010102, 10, 10, 10, 2),
+        FMT(BGRA1010102, 10, 10, 10, 2),
+        FMT(ARGB2101010, 10, 10, 10, 2),
+        FMT(ABGR2101010, 10, 10, 10, 2),
+        FMT(XRGB2101010, 10, 10, 10, 0),
+        FMT(XBGR2101010, 10, 10, 10, 0),
+        FMT(RGBX1010102, 10, 10, 10, 0),
+        FMT(BGRX1010102, 10, 10, 10, 0),
+        FMT(ARGB1555, 5, 5, 5, 1),
+        FMT(ABGR1555, 5, 5, 5, 1),
+        FMT(RGBA5551, 5, 5, 5, 1),
+        FMT(BGRA5551, 5, 5, 5, 1),
+        FMT(XRGB1555, 5, 5, 5, 0),
+        FMT(XBGR1555, 5, 5, 5, 0),
+        FMT(RGBX5551, 5, 5, 5, 0),
+        FMT(BGRX5551, 5, 5, 5, 0),
+        FMT(RGB565, 5, 6, 5, 0),
+        FMT(BGR565, 5, 6, 5, 0)
+        #undef FMT
+    };
+
     SDL_VideoData *viddata = _this->internal;
     SDL_WindowData *windata = window->internal;
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->internal;
-
-    uint32_t surface_fmt = GBM_FORMAT_ARGB8888;
-    uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-
     EGLContext egl_context;
-
-    bool result = true;
+    bool result = false;
 
     // If the current window already has surfaces, destroy them before creating other.
     if (windata->gs) {
         KMSDRM_DestroySurfaces(_this, window);
     }
 
-    if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev,
-                                               surface_fmt, surface_flags)) {
-        SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
-                    "GBM surface format not supported. Trying anyway.");
-    }
+    bool tried_setting_format = false;
+    const uint32_t surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+    for (int i = 0; i < SDL_arraysize(gbm_formats); i++) {
+        const uint32_t surface_fmt = gbm_formats[i].fmt;
 
-    /* The KMSDRM backend doesn't always set the mode the higher-level code in
-       SDL_video.c expects. Hulk-smash the display's current_mode to keep the
-       mode that's set in sync with what SDL_video.c thinks is set
+        SDL_Log("KMSDRM: Trying format GBM_FORMAT_%s", gbm_formats[i].name);
 
-       FIXME: How do we do that now? Can we get a better idea at the higher level?
-     */
-    KMSDRM_GetModeToSet(window, &dispdata->mode);
+        if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: GBM_FORMAT_%s is not supported.", gbm_formats[i].name);
+            continue;  // try the next one.
+        }
 
-    windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                                            dispdata->mode.hdisplay, dispdata->mode.vdisplay,
-                                            surface_fmt, surface_flags);
-    if (!windata->gs && errno == ENOSYS) {
-        // Try again without the scanout flags, needed on NVIDIA drivers
-        windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev,
-                                                dispdata->mode.hdisplay, dispdata->mode.vdisplay,
-                                                surface_fmt, 0);
-    }
-    if (!windata->gs) {
-        return SDL_SetError("Could not create GBM surface: %s", strerror(errno));
-    }
+        tried_setting_format = true;
 
-    /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
-       but we need an EGL surface NOW, or GL won't be able to render into any surface
-       and we won't see the first frame. */
-    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
-    windata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windata->gs);
+        /* The KMSDRM backend doesn't always set the mode the higher-level code in
+           SDL_video.c expects. Hulk-smash the display's current_mode to keep the
+           mode that's set in sync with what SDL_video.c thinks is set
 
-    if (windata->egl_surface == EGL_NO_SURFACE) {
-        result = SDL_SetError("Could not create EGL window surface");
-        goto cleanup;
-    }
+           FIXME: How do we do that now? Can we get a better idea at the higher level?
+         */
+        KMSDRM_GetModeToSet(window, &dispdata->mode);
 
-    /* Current context passing to EGL is now done here. If something fails,
-       go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
-    egl_context = (EGLContext)SDL_GL_GetCurrentContext();
-    result = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, dispdata->mode.hdisplay, dispdata->mode.vdisplay, surface_fmt, surface_flags);
+        if (!windata->gs && errno == ENOSYS) {
+            // Try again without the scanout flags, needed on NVIDIA drivers
+            windata->gs = KMSDRM_gbm_surface_create(viddata->gbm_dev, dispdata->mode.hdisplay, dispdata->mode.vdisplay, surface_fmt, 0);
+        }
+        if (!windata->gs) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: gbm_surface_create(GBM_FORMAT_%s) failed.", gbm_formats[i].name);
+            SDL_SetError("Could not create %s GBM surface: %s", gbm_formats[i].name, strerror(errno));  // set error in case this was the last supposedly-supported format.
+            continue;   // try the next one.
+        }
 
-    SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED,
-                        dispdata->mode.hdisplay, dispdata->mode.vdisplay);
-
-    windata->egl_surface_dirty = false;
-
-cleanup:
-
-    if (!result) {
-        // Error (complete) cleanup.
-        if (windata->gs) {
+        /* We can't get the EGL context yet because SDL_CreateRenderer has not been called,
+           but we need an EGL surface NOW, or GL won't be able to render into any surface
+           and we won't see the first frame. */
+        SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
+        windata->egl_surface = SDL_EGL_CreateSurface(_this, window, (NativeWindowType)windata->gs);
+        if (windata->egl_surface == EGL_NO_SURFACE) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: SDL_EGL_CreateSurface(GBM_FORMAT_%s) failed: %s", gbm_formats[i].name, SDL_GetError());
             KMSDRM_gbm_surface_destroy(windata->gs);
             windata->gs = NULL;
+            continue;  // try the next one.
+        }
+
+        /* Current context passing to EGL is now done here. If something fails,
+           go back to delayed SDL_EGL_MakeCurrent() call in SwapWindow. */
+        egl_context = (EGLContext)SDL_GL_GetCurrentContext();
+        result = SDL_EGL_MakeCurrent(_this, windata->egl_surface, egl_context);
+        if (!result) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: SDL_EGL_MakeCurrent with GBM_FORMAT_%s failed: %s", gbm_formats[i].name, SDL_GetError());
+        }
+
+        _this->gl_config.red_size = gbm_formats[i].r;
+        _this->gl_config.green_size = gbm_formats[i].g;
+        _this->gl_config.blue_size = gbm_formats[i].b;
+        _this->gl_config.alpha_size = gbm_formats[i].a;
+
+        windata->egl_surface_dirty = false;
+
+        result = true;
+
+        SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, dispdata->mode.hdisplay, dispdata->mode.vdisplay);
+
+        break;
+    }
+
+    SDL_assert(result || (windata->gs == NULL));
+
+    if (!result) {
+        SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: Failed to create surfaces in _any_ format!");
+        if (!tried_setting_format) {   // make sure there's an error string set.
+            SDL_SetError("Could not find any supported GBM surface format.");
         }
     }
 
@@ -2132,12 +2181,12 @@ bool KMSDRM_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Propert
            before we call KMSDRM_GBMInit(), causing all GLES programs to fail. */
         if (!_this->egl_data) {
             egl_display = (NativeDisplayType)_this->internal->gbm_dev;
-            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+            if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display)) {
                 // Try again with OpenGL ES 2.0
                 _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
                 _this->gl_config.major_version = 2;
                 _this->gl_config.minor_version = 0;
-                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display, EGL_PLATFORM_GBM_MESA)) {
+                if (!SDL_EGL_LoadLibrary(_this, NULL, egl_display)) {
                     return SDL_SetError("Can't load EGL/GL library on window creation.");
                 }
             }

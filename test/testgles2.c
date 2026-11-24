@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,7 +19,7 @@
 
 #include <stdlib.h>
 
-#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_HURD)
+#if defined(SDL_PLATFORM_IOS) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_EMSCRIPTEN) || defined(SDL_PLATFORM_WIN32) || defined(SDL_PLATFORM_LINUX) || defined(SDL_PLATFORM_HURD) || defined(SDL_PLATFORM_OPENHARMONY)
 #define HAVE_OPENGLES2
 #endif
 

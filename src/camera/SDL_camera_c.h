@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
 #define SDL_camera_c_h_
 
 // Initialize the camera subsystem
-extern bool SDL_CameraInit(const char *driver_name);
+extern bool SDL_InitCamera(const char *driver_name);
 
 // Shutdown the camera subsystem
 extern void SDL_QuitCamera(void);

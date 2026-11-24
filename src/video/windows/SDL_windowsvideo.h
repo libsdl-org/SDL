@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -582,6 +582,9 @@ struct SDL_VideoData
 #endif
 
     bool cleared;
+    bool dpi_unaware_context_declared;
+
+    bool detect_device_hotplug;
 
     BYTE *rawinput;
     UINT rawinput_offset;
@@ -590,24 +593,22 @@ struct SDL_VideoData
     Uint64 last_rawinput_poll;
     SDL_Point last_raw_mouse_position;
     bool raw_mouse_enabled;
+    bool raw_mouse_flag_nolegacy;
     bool raw_keyboard_enabled;
     bool raw_keyboard_flag_nohotkeys;
+    bool raw_keyboard_flag_inputsink;
     bool pending_E1_key_sequence;
-    Uint32 raw_input_enabled;
     SDL_PenID raw_input_fake_pen_id;
 
     WIN_GameInputData *gameinput_context;
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     bool ime_initialized;
-    bool ime_enabled;
     bool ime_available;
     bool ime_internal_composition;
     bool ime_internal_candidates;
-    HWND ime_hwnd_main;
     HWND ime_hwnd_current;
     bool ime_needs_clear_composition;
-    HIMC ime_himc;
 
     WCHAR *ime_composition;
     int ime_composition_length;

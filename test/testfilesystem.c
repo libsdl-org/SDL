@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -91,8 +91,12 @@ int main(int argc, char *argv[])
 {
     SDLTest_CommonState *state;
     char *pref_path;
+    char *cache_path;
     char *curdir;
     const char *base_path;
+
+    /* this will be SDL's best guess at the human-readable exe name (or bundle id, or whatever) by default. */
+    SDL_Log("Default app name: '%s'", SDL_GetAppMetadataProperty(SDL_PROP_APP_METADATA_NAME_STRING));
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, 0);
@@ -135,6 +139,15 @@ int main(int argc, char *argv[])
         SDL_Log("pref path: '%s'", pref_path);
     }
     SDL_free(pref_path);
+
+    cache_path = SDL_GetCachePath("libsdl", "test_filesystem");
+    if (!cache_path) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find cache path: %s",
+                     SDL_GetError());
+    } else {
+        SDL_Log("cache path: '%s'", cache_path);
+    }
+    SDL_free(cache_path);
 
     curdir = SDL_GetCurrentDirectory();
     if (!curdir) {

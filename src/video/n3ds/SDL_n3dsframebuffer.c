@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -52,7 +52,7 @@ bool SDL_N3DS_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(window));
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    framebuffer = SDL_CreateSurface(w, h, mode->format);
+    framebuffer = SDL_CreateSurfaceZeroed(w, h, mode->format);
 
     if (!framebuffer) {
         return false;
@@ -75,7 +75,7 @@ bool SDL_N3DS_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window
 
     surface = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), N3DS_SURFACE, NULL);
     if (!surface) {
-        return SDL_SetError("%s: Unable to get the window surface.", __func__);
+        return SDL_SetError("%s: Unable to get the window surface.", SDL_FUNCTION);
     }
 
     // Get the N3DS internal framebuffer and its size

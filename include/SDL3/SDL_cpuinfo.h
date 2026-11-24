@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -280,6 +280,18 @@ extern SDL_DECLSPEC bool SDLCALL SDL_HasARMSIMD(void);
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_HasNEON(void);
+
+/**
+ * Determine whether the CPU has SVE2 (Scalable Vector Extension 2).
+ *
+ * This is only relevant on ARM64 Linux. On other platforms it always returns
+ * false.
+ *
+ * \returns true if the CPU has SVE2, false otherwise.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_HasSVE2(void);
 
 /**
  * Determine whether the CPU has LSX (LOONGARCH SIMD) features.

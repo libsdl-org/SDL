@@ -31,31 +31,36 @@
 typedef unsigned int u_int32_t;
 #endif
 
-#define atan            SDL_uclibc_atan
-#define __ieee754_atan2 SDL_uclibc_atan2
-#define copysign        SDL_uclibc_copysign
-#define cos             SDL_uclibc_cos
-#define __ieee754_exp   SDL_uclibc_exp
-#define fabs            SDL_uclibc_fabs
-#define floor           SDL_uclibc_floor
-#define __ieee754_fmod  SDL_uclibc_fmod
+#define atan                SDL_uclibc_atan
+#define __ieee754_atan2     SDL_uclibc_atan2
+#define copysign            SDL_uclibc_copysign
+#define cos                 SDL_uclibc_cos
+#define __ieee754_exp       SDL_uclibc_exp
+#define fabs                SDL_uclibc_fabs
+#define floor               SDL_uclibc_floor
+#define __ieee754_fmod      SDL_uclibc_fmod
 #undef __isinf
-#define __isinf         SDL_uclibc_isinf
+#define __isinf             SDL_uclibc_isinf
 #undef __isinff
-#define __isinff        SDL_uclibc_isinff
+#define __isinff            SDL_uclibc_isinff
 #undef __isnan
-#define __isnan         SDL_uclibc_isnan
+#define __isnan             SDL_uclibc_isnan
 #undef __isnanf
-#define __isnanf        SDL_uclibc_isnanf
-#define __ieee754_log   SDL_uclibc_log
-#define __ieee754_log10 SDL_uclibc_log10
-#define modf            SDL_uclibc_modf
-#define __ieee754_pow   SDL_uclibc_pow
-#define scalbln         SDL_uclibc_scalbln
-#define scalbn          SDL_uclibc_scalbn
-#define sin             SDL_uclibc_sin
-#define __ieee754_sqrt  SDL_uclibc_sqrt
-#define tan             SDL_uclibc_tan
+#define __isnanf            SDL_uclibc_isnanf
+#define __ieee754_log       SDL_uclibc_log
+#define __ieee754_log10     SDL_uclibc_log10
+#define modf                SDL_uclibc_modf
+#define __ieee754_pow       SDL_uclibc_pow
+#define scalbln             SDL_uclibc_scalbln
+#define scalbn              SDL_uclibc_scalbn
+#define sin                 SDL_uclibc_sin
+#define __ieee754_sqrt      SDL_uclibc_sqrt
+#define tan                 SDL_uclibc_tan
+#define __ieee754_rem_pio2  SDL_uclibc_rem_pio2
+#define __kernel_cos        SDL_uclibc_kernel_cos
+#define __kernel_rem_pio2   SDL_uclibc_kernel_rem_pio2
+#define __kernel_sin        SDL_uclibc_kernel_sin
+#define __kernel_tan        SDL_uclibc_kernel_tan
 
 /* The original fdlibm code used statements like:
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *

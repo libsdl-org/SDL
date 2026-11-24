@@ -3,8 +3,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3DB9B219-769E-43AC-8B8B-319DB6045DCF}</ProjectGuid>
   </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(SolutionDir)\examples\Examples.props" />
   <ItemGroup>
     <None Include="$(SolutionDir)\..\examples\demo\04-bytepusher\README.txt" />
     <ClCompile Include="$(SolutionDir)\..\examples\demo\04-bytepusher\bytepusher.c" />

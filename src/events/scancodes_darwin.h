@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -122,7 +122,7 @@ static const SDL_Scancode darwin_scancode_table[] = {
     /*  92 */   SDL_SCANCODE_KP_9,
     /*  93 */   SDL_SCANCODE_INTERNATIONAL3, // Cosmo_USB2ADB.c says "Yen (JIS)"
     /*  94 */   SDL_SCANCODE_INTERNATIONAL1, // Cosmo_USB2ADB.c says "Ro (JIS)"
-    /*  95 */   SDL_SCANCODE_KP_COMMA, // Cosmo_USB2ADB.c says ", JIS only"
+    /*  95 */   SDL_SCANCODE_INTERNATIONAL6, // Cosmo_USB2ADB.c says ", JIS only"
     /*  96 */   SDL_SCANCODE_F5,
     /*  97 */   SDL_SCANCODE_F6,
     /*  98 */   SDL_SCANCODE_F7,

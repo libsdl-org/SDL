@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,12 +31,21 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-// Current pad state
-static SceCtrlData pad = { .Lx = 0, .Ly = 0, .Buttons = 0 };
+#define PSP_HAT_MASK (PSP_CTRL_DOWN | PSP_CTRL_LEFT | PSP_CTRL_UP | PSP_CTRL_RIGHT )
+
+struct joystick_hwdata
+{
+    // Current pad state
+    SceCtrlData pad;
+
+    // Pad state from the last update
+    enum PspCtrlButtons last_buttons;
+    int last_x, last_y;
+};
+
 static const enum PspCtrlButtons button_map[] = {
     PSP_CTRL_TRIANGLE, PSP_CTRL_CIRCLE, PSP_CTRL_CROSS, PSP_CTRL_SQUARE,
     PSP_CTRL_LTRIGGER, PSP_CTRL_RTRIGGER,
-    PSP_CTRL_DOWN, PSP_CTRL_LEFT, PSP_CTRL_UP, PSP_CTRL_RIGHT,
     PSP_CTRL_SELECT, PSP_CTRL_START, PSP_CTRL_HOME, PSP_CTRL_HOLD
 };
 static int analog_map[256]; // Map analog inputs to -32768 -> 32767
@@ -67,13 +76,9 @@ static int calc_bezier_y(float t)
     return dest.y;
 }
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * It should return number of joysticks, or -1 on an unrecoverable fatal error.
- */
 static bool PSP_JoystickInit(void)
 {
-    int i;
+    const char *name = "PSP builtin joypad";
 
     // Setup input
     sceCtrlSetSamplingCycle(0);
@@ -81,197 +86,113 @@ static bool PSP_JoystickInit(void)
 
     /* Create an accurate map from analog inputs (0 to 255)
        to SDL joystick positions (-32768 to 32767) */
-    for (i = 0; i < 128; i++) {
+    for (int i = 0; i < 128; i++) {
         float t = (float)i / 127.0f;
         analog_map[i + 128] = calc_bezier_y(t);
         analog_map[127 - i] = -1 * analog_map[i + 128];
     }
 
-    SDL_PrivateJoystickAdded(1);
+    // There is always one builtin joypad
+    SDL_JoystickDevice *device = SDL_CreateJoystickDevice(&SDL_PSP_JoystickDriver, 0);
+    if (!device) {
+        return false;
+    }
+    device->name = SDL_strdup(name);
+    device->guid = SDL_CreateJoystickGUIDForName(name);
 
-    return 1;
+    SDL_AddJoystickDevice(device);
+    return true;
 }
 
-static int PSP_JoystickGetCount(void)
+static bool PSP_JoystickOpen(SDL_Joystick *joystick, SDL_JoystickDevice *device)
 {
-    return 1;
-}
-
-static void PSP_JoystickDetect(void)
-{
-}
-
-static bool PSP_JoystickIsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name)
-{
-    // We don't override any other drivers
-    return false;
-}
-
-// Function to get the device-dependent name of a joystick
-static const char *PSP_JoystickGetDeviceName(int device_index)
-{
-    if (device_index == 0) {
-        return "PSP builtin joypad";
+    joystick->hwdata = (struct joystick_hwdata *)SDL_calloc(1, sizeof(*joystick->hwdata));
+    if (!joystick->hwdata) {
+        return false;
     }
 
-    SDL_SetError("No joystick available with that index");
-    return NULL;
-}
-
-static const char *PSP_JoystickGetDevicePath(int index)
-{
-    return NULL;
-}
-
-static int PSP_JoystickGetDeviceSteamVirtualGamepadSlot(int device_index)
-{
-    return -1;
-}
-
-static int PSP_JoystickGetDevicePlayerIndex(int device_index)
-{
-    return -1;
-}
-
-static void PSP_JoystickSetDevicePlayerIndex(int device_index, int player_index)
-{
-}
-
-static SDL_GUID PSP_JoystickGetDeviceGUID(int device_index)
-{
-    // the GUID is just the name for now
-    const char *name = PSP_JoystickGetDeviceName(device_index);
-    return SDL_CreateJoystickGUIDForName(name);
-}
-
-// Function to perform the mapping from device index to the instance id for this index
-static SDL_JoystickID PSP_JoystickGetDeviceInstanceID(int device_index)
-{
-    return device_index + 1;
-}
-
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-static bool PSP_JoystickOpen(SDL_Joystick *joystick, int device_index)
-{
     joystick->nbuttons = SDL_arraysize(button_map);
     joystick->naxes = 2;
-    joystick->nhats = 0;
+    joystick->nhats = 1;  // we treat the d-pad as a hat.
+
+    // Make sure we send fresh state when the controller is opened
+    joystick->hwdata->last_x = -1;
+    joystick->hwdata->last_y = -1;
 
     return true;
 }
 
-static bool PSP_JoystickRumble(SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickRumbleTriggers(SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetLED(SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSendEffect(SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool PSP_JoystickSetSensorsEnabled(SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
-}
-
-/* Function to update the state of a joystick - called as a device poll.
- * This function shouldn't update the joystick structure directly,
- * but instead should call SDL_PrivateJoystick*() to deliver events
- * and update joystick device state.
- */
 static void PSP_JoystickUpdate(SDL_Joystick *joystick)
 {
+    struct joystick_hwdata *hwdata = joystick->hwdata;
     int i;
     enum PspCtrlButtons buttons;
     enum PspCtrlButtons changed;
     unsigned char x, y;
-    static enum PspCtrlButtons old_buttons = 0;
-    static unsigned char old_x = 0, old_y = 0;
     Uint64 timestamp = SDL_GetTicksNS();
 
-    if (sceCtrlPeekBufferPositive(&pad, 1) <= 0) {
+    if (sceCtrlPeekBufferPositive(&hwdata->pad, 1) <= 0) {
         return;
     }
-    buttons = pad.Buttons;
-    x = pad.Lx;
-    y = pad.Ly;
+    buttons = hwdata->pad.Buttons;
+    x = hwdata->pad.Lx;
+    y = hwdata->pad.Ly;
 
     // Axes
-    if (old_x != x) {
+    if (hwdata->last_x != x) {
         SDL_SendJoystickAxis(timestamp, joystick, 0, analog_map[x]);
-        old_x = x;
+        hwdata->last_x = x;
     }
-    if (old_y != y) {
+    if (hwdata->last_y != y) {
         SDL_SendJoystickAxis(timestamp, joystick, 1, analog_map[y]);
-        old_y = y;
+        hwdata->last_y = y;
     }
 
     // Buttons
-    changed = old_buttons ^ buttons;
-    old_buttons = buttons;
-    if (changed) {
+    changed = hwdata->last_buttons ^ buttons;
+    hwdata->last_buttons = buttons;
+    if (changed & ~PSP_HAT_MASK) {
         for (i = 0; i < SDL_arraysize(button_map); i++) {
             if (changed & button_map[i]) {
-                bool down = ((buttons & button_map[i]) != 0);
-                SDL_SendJoystickButton(timestamp,
-                    joystick, i, down);
+                const bool down = ((buttons & button_map[i]) != 0);
+                SDL_SendJoystickButton(timestamp, joystick, i, down);
             }
         }
     }
+
+    if (changed & PSP_HAT_MASK) {
+        // The PSP dpad looks like 4 buttons at this level, but we treat it as a hat switch, so apps that are talking to SDL_Joystick can hope to do basic directional things without a configuration step.
+        // (but they should _really_ be using the gamepad API.)
+        Uint8 hat = SDL_HAT_CENTERED;
+        #define HATSTATE(name) if (buttons & PSP_CTRL_##name) { hat |= SDL_HAT_##name; }
+        HATSTATE(UP);
+        HATSTATE(RIGHT);
+        HATSTATE(DOWN);
+        HATSTATE(LEFT);
+        #undef HATSTATE
+
+        // this is a physical d-pad on the device, so it probably _can't_ send opposing buttons at the same time, but just in case, cancel them out.
+        if ((hat & (SDL_HAT_UP|SDL_HAT_DOWN)) == (SDL_HAT_UP|SDL_HAT_DOWN)) {
+            hat &= ~(SDL_HAT_UP|SDL_HAT_DOWN);
+        }
+        if ((hat & (SDL_HAT_LEFT|SDL_HAT_RIGHT)) == (SDL_HAT_LEFT|SDL_HAT_RIGHT)) {
+            hat &= ~(SDL_HAT_LEFT|SDL_HAT_RIGHT);
+        }
+        SDL_SendJoystickHat(timestamp, joystick, 0, hat);
+    }
 }
 
-// Function to close a joystick after use
 static void PSP_JoystickClose(SDL_Joystick *joystick)
 {
-}
-
-// Function to perform any system-specific joystick related cleanup
-static void PSP_JoystickQuit(void)
-{
-}
-
-static bool PSP_JoystickGetGamepadMapping(int device_index, SDL_GamepadMapping *out)
-{
-    return false;
+    SDL_free(joystick->hwdata);
+    joystick->hwdata = NULL;
 }
 
 SDL_JoystickDriver SDL_PSP_JoystickDriver = {
-    PSP_JoystickInit,
-    PSP_JoystickGetCount,
-    PSP_JoystickDetect,
-    PSP_JoystickIsDevicePresent,
-    PSP_JoystickGetDeviceName,
-    PSP_JoystickGetDevicePath,
-    PSP_JoystickGetDeviceSteamVirtualGamepadSlot,
-    PSP_JoystickGetDevicePlayerIndex,
-    PSP_JoystickSetDevicePlayerIndex,
-    PSP_JoystickGetDeviceGUID,
-    PSP_JoystickGetDeviceInstanceID,
-    PSP_JoystickOpen,
-    PSP_JoystickRumble,
-    PSP_JoystickRumbleTriggers,
-    PSP_JoystickSetLED,
-    PSP_JoystickSendEffect,
-    PSP_JoystickSetSensorsEnabled,
-    PSP_JoystickUpdate,
-    PSP_JoystickClose,
-    PSP_JoystickQuit,
-    PSP_JoystickGetGamepadMapping
+    .Init = PSP_JoystickInit,
+    .Open = PSP_JoystickOpen,
+    .Update = PSP_JoystickUpdate,
+    .Close = PSP_JoystickClose
 };
 
 #endif // SDL_JOYSTICK_PSP

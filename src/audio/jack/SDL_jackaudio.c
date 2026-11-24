@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -55,7 +55,7 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for audio through libjack",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     SDL_AUDIO_DRIVER_JACK_DYNAMIC
-);
+)
 
 static const char *jack_library = SDL_AUDIO_DRIVER_JACK_DYNAMIC;
 static SDL_SharedObject *jack_handle = NULL;
@@ -376,12 +376,6 @@ static bool JACK_OpenDevice(SDL_AudioDevice *device)
 
     JACK_jack_on_shutdown(client, jackShutdownCallback, device);
 
-    if (JACK_jack_activate(client) != 0) {
-        SDL_free(audio_ports);
-        return SDL_SetError("Failed to activate JACK client");
-    }
-
-    // once activated, we can connect all the ports.
     for (i = 0; i < channels; i++) {
         const char *sdlport = JACK_jack_port_name(device->hidden->sdlports[i]);
         const char *srcport = recording ? devports[audio_ports[i]] : sdlport;
@@ -396,7 +390,17 @@ static bool JACK_OpenDevice(SDL_AudioDevice *device)
     JACK_jack_free(devports);
     SDL_free(audio_ports);
 
-    // We're ready to rock and roll. :-)
+    // We're (almost, need PostOpenDevice still!) ready to rock and roll. :-)
+    return true;
+}
+
+// this runs WITHOUT the device lock!
+static bool JACK_PostOpenDevice(SDL_AudioDevice *device)
+{
+    // actually activate the client; this will start callbacks rolling, etc.
+    if (JACK_jack_activate(device->hidden->client) != 0) {
+        return SDL_SetError("Failed to activate JACK client");
+    }
     return true;
 }
 
@@ -421,6 +425,7 @@ static bool JACK_Init(SDL_AudioDriverImpl *impl)
     }
 
     impl->OpenDevice = JACK_OpenDevice;
+    impl->PostOpenDevice = JACK_PostOpenDevice;
     impl->GetDeviceBuf = JACK_GetDeviceBuf;
     impl->PlayDevice = JACK_PlayDevice;
     impl->CloseDevice = JACK_CloseDevice;

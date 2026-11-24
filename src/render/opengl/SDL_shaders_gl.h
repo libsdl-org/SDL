@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -38,13 +38,11 @@ typedef enum
     SHADER_RGB_PIXELART,
     SHADER_RGBA,
     SHADER_RGBA_PIXELART,
-#ifdef SDL_HAVE_YUV
     SHADER_YUV,
     SHADER_NV12_RA,
     SHADER_NV12_RG,
     SHADER_NV21_RA,
     SHADER_NV21_RG,
-#endif
     NUM_SHADERS
 } GL_Shader;
 

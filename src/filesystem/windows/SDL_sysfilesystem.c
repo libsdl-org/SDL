@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -45,54 +45,35 @@ DEFINE_GUID(SDL_FOLDERID_Videos, 0x18989B1D, 0x99B5, 0x455B, 0x84, 0x1C, 0xAB, 0
 
 char *SDL_SYS_GetBasePath(void)
 {
-    DWORD buflen = 128;
-    WCHAR *path = NULL;
-    char *result = NULL;
-    DWORD len = 0;
-    int i;
-
-    while (true) {
-        void *ptr = SDL_realloc(path, buflen * sizeof(WCHAR));
-        if (!ptr) {
-            SDL_free(path);
-            return NULL;
-        }
-
-        path = (WCHAR *)ptr;
-
-        len = GetModuleFileNameW(NULL, path, buflen);
-        // if it truncated, then len >= buflen - 1
-        // if there was enough room (or failure), len < buflen - 1
-        if (len < buflen - 1) {
-            break;
-        }
-
-        // buffer too small? Try again.
-        buflen *= 2;
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
     }
 
-    if (len == 0) {
-        SDL_free(path);
-        WIN_SetError("Couldn't locate our .exe");
-        return NULL;
-    }
+    char *ptr = SDL_strrchr(path, '\\');
+    SDL_assert(ptr != NULL);  // Should have been an absolute path.
 
-    for (i = len - 1; i > 0; i--) {
-        if (path[i] == '\\') {
-            break;
-        }
-    }
+    ptr[1] = '\0'; // chop off filename, leave '\\'.
 
-    SDL_assert(i > 0);  // Should have been an absolute path.
-    path[i + 1] = '\0'; // chop off filename.
-
-    result = WIN_StringToUTF8W(path);
-    SDL_free(path);
-
-    return result;
+    ptr = (char *) SDL_realloc(path, ((size_t) (ptr - path)) + 2);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetExeName(void)
+{
+    char *path = WIN_GetModulePath(NULL);  // look up full path of the current process's EXE file.
+    if (!path) {
+        return NULL;  // error message was already set.
+    }
+
+    char *ptr = SDL_strrchr(path, '\\');
+    const size_t slen = SDL_strlen(ptr);  // counts null terminator because we're still sitting on path separator.
+    SDL_memmove(path, ptr + 1, slen);  // move filename string to start of SDL_realloc'd region.
+    ptr = (char *) SDL_realloc(path, slen);  // try to shrink this allocation down a little.
+    return ptr ? ptr : path;  // return shrunk buffer if shrink worked out, unchanged original buffer if not.
+}
+
+static char *GetWindowsUserPath(int folderid, const char *org, const char *app)
 {
     /*
      * Vista and later has a new API for this, but SHGetFolderPath works there,
@@ -102,72 +83,39 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
      *                          NULL, &wszPath);
      */
 
-    HRESULT hr = E_FAIL;
-    WCHAR path[MAX_PATH];
-    char *result = NULL;
-    WCHAR *worg = NULL;
-    WCHAR *wapp = NULL;
-    size_t new_wpath_len = 0;
-    BOOL api_result = FALSE;
-
-    hr = SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path);
+    WCHAR wpath[MAX_PATH];
+    HRESULT hr = SHGetFolderPathW(NULL, folderid | CSIDL_FLAG_CREATE, NULL, 0, wpath);
     if (!SUCCEEDED(hr)) {
-        WIN_SetErrorFromHRESULT("Couldn't locate our prefpath", hr);
+        WIN_SetErrorFromHRESULT("Couldn't locate user's folder path", hr);
         return NULL;
     }
 
-    worg = WIN_UTF8ToStringW(org);
-    if (!worg) {
+    char *utf8path = WIN_StringToUTF8W(wpath);
+    if (!utf8path) {
         return NULL;
     }
 
-    wapp = WIN_UTF8ToStringW(app);
-    if (!wapp) {
-        SDL_free(worg);
-        return NULL;
+    char *retval = NULL;
+    if (SDL_asprintf(&retval, "%s\\%s%s%s\\", utf8path, org, *org ? "\\" : "", app) < 0) {
+        retval = NULL;
+    } else if (!SDL_CreateDirectory(retval)) {
+        SDL_free(retval);
+        retval = NULL;
     }
 
-    new_wpath_len = SDL_wcslen(worg) + SDL_wcslen(wapp) + SDL_wcslen(path) + 3;
+    SDL_free(utf8path);
 
-    if ((new_wpath_len + 1) > MAX_PATH) {
-        SDL_free(worg);
-        SDL_free(wapp);
-        WIN_SetError("Path too long.");
-        return NULL;
-    }
+    return retval;
+}
 
-    if (*worg) {
-        SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-        SDL_wcslcat(path, worg, SDL_arraysize(path));
-    }
-    SDL_free(worg);
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_APPDATA, org, app);
+}
 
-    api_result = CreateDirectoryW(path, NULL);
-    if (api_result == FALSE) {
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            SDL_free(wapp);
-            WIN_SetError("Couldn't create a prefpath.");
-            return NULL;
-        }
-    }
-
-    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-    SDL_wcslcat(path, wapp, SDL_arraysize(path));
-    SDL_free(wapp);
-
-    api_result = CreateDirectoryW(path, NULL);
-    if (api_result == FALSE) {
-        if (GetLastError() != ERROR_ALREADY_EXISTS) {
-            WIN_SetError("Couldn't create a prefpath.");
-            return NULL;
-        }
-    }
-
-    SDL_wcslcat(path, L"\\", SDL_arraysize(path));
-
-    result = WIN_StringToUTF8W(path);
-
-    return result;
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetWindowsUserPath(CSIDL_LOCAL_APPDATA, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)
@@ -234,7 +182,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Invalid SDL_Folder: %d", (int)folder);
             goto done;
-        };
+        }
 
         hr = pSHGetKnownFolderPath(&type, 0x00008000 /* KF_FLAG_CREATE */, NULL, &path);
         if (SUCCEEDED(hr)) {
@@ -296,7 +244,7 @@ char *SDL_SYS_GetUserFolder(SDL_Folder folder)
         default:
             SDL_SetError("Unsupported SDL_Folder on Windows before Vista: %d", (int)folder);
             goto done;
-        };
+        }
 
         // Create the OS-specific folder if it doesn't already exist
         type |= CSIDL_FLAG_CREATE;

@@ -33,7 +33,7 @@ runs:
             exit 1
             ;;
         esac
-    - uses: actions/cache/restore@v4
+    - uses: actions/cache/restore@v5
       id: restore-cache
       with:
         path: /vita/dependencies
@@ -81,7 +81,7 @@ runs:
         wget https://github.com/SonicMastr/gl4es4vita/releases/download/v$gl4es4vita_version-vita/vitasdk_stubs.zip -P/tmp
         unzip /tmp/vitasdk_stubs.zip -d/vita/dependencies/lib
 
-    - uses: actions/cache/save@v4
+    - uses: actions/cache/save@v5
       if: ${{ !steps.restore-cache.outputs.cache-hit }}
       with:
         path: /vita/dependencies

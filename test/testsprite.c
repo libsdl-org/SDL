@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -56,11 +56,11 @@ static bool LoadSprite(const char *file)
     int i;
 
     for (i = 0; i < state->num_windows; ++i) {
-        /* This does the SDL_LoadPNG step repeatedly, but that's OK for test code. */
+        /* This does the SDL_LoadSurface step repeatedly, but that's OK for test code. */
         if (sprites[i]) {
             SDL_DestroyTexture(sprites[i]);
         }
-        sprites[i] = LoadTexture(state->renderers[i], file, true);
+        sprites[i] = LoadTexture(state->renderers[i], file);
         if (sprites[i]) {
             sprite_w = (float)sprites[i]->w;
             sprite_h = (float)sprites[i]->h;

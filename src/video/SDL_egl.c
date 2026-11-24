@@ -1,6 +1,6 @@
 /*
  *  Simple DirectMedia Layer
- *  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+ *  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
  *
  *  This software is provided 'as-is', without any express or implied
  *  warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,10 @@
 #include <android/native_window.h>
 #include "../video/android/SDL_androidvideo.h"
 #endif
+#ifdef SDL_VIDEO_DRIVER_QNX
+#include <screen/screen.h>
+#include "../video/qnx/SDL_qnx.h"
+#endif
 #ifdef SDL_VIDEO_DRIVER_RPI
 #include <unistd.h>
 #endif
@@ -38,6 +42,7 @@
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"
+#include "../SDL_hints_c.h"
 
 #ifdef EGL_KHR_create_context
 // EGL_OPENGL_ES3_BIT_KHR was added in version 13 of the extension.
@@ -63,14 +68,24 @@
 #define EGL_PRESENT_OPAQUE_EXT 0x31DF
 #endif // EGL_EXT_present_opaque
 
+#ifndef EGL_EXT_swap_tearing_hint
+#define EGL_EXT_swap_tearing_hint 1
+#define EGL_SWAP_TEARING_HINT_VSYNC_EXT 0x35A1
+#define EGL_SWAP_TEARING_HINT_ASYNC_EXT 0x35A2
+#define EGL_SWAP_TEARING_HINT_DEFAULT_EXT 0x35A3
+#define EGL_SWAP_TEARING_HINT_EXT 0x35A0
+#endif // EGL_EXT_swap_tearing_hint
+
 #ifdef SDL_VIDEO_DRIVER_RPI
 // Raspbian places the OpenGL ES/EGL binaries in a non standard path
 #define DEFAULT_EGL        (vc4 ? "libEGL.so.1" : "libbrcmEGL.so")
-#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_EGL            "libEGL.so"
+#define DEFAULT_OGL_ES2    (vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so")
 #define ALT_OGL_ES2        "libGLESv2.so"
+// The GLESv2 library also contains GLESv1 exports when using the dispmanx implementation
 #define DEFAULT_OGL_ES_PVR (vc4 ? "libGLES_CM.so.1" : "libbrcmGLESv2.so")
 #define DEFAULT_OGL_ES     (vc4 ? "libGLESv1_CM.so.1" : "libbrcmGLESv2.so")
+#define ALT_OGL_ES         "libGLESv2.so"
 
 #elif defined(SDL_VIDEO_DRIVER_ANDROID) || defined(SDL_VIDEO_DRIVER_VIVANTE)
 // Android
@@ -78,6 +93,10 @@
 #define DEFAULT_OGL_ES2    "libGLESv2.so"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
+
+#elif defined(SDL_VIDEO_DRIVER_OPENHARMONY)
+#define DEFAULT_EGL        "libEGL.so"
+#define DEFAULT_OGL_ES2    "libGLESv3.so"
 
 #elif defined(SDL_VIDEO_DRIVER_WINDOWS)
 // EGL AND OpenGL ES support via ANGLE
@@ -102,6 +121,11 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES     "libGLESv1_CM.so"
 
+#elif defined(SDL_VIDEO_DRIVER_QNX)
+// QNX
+#define DEFAULT_EGL        "libEGL.so.1"
+#define DEFAULT_OGL_ES2    "libGLESv2.so.1"
+
 #else
 // Desktop Linux/Unix-like
 #define DEFAULT_OGL        "libGL.so.1"
@@ -116,31 +140,31 @@ SDL_ELF_NOTE_DLOPEN(
     "Support for OpenGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL, ALT_OGL
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-egl",
     "Support for EGL",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_EGL
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es2",
     "Support for EGL ES2",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES2
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-es-pvr",
     "Support for EGL ES PVR",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES_PVR
-);
+)
 SDL_ELF_NOTE_DLOPEN(
     "egl-ogl-es",
     "Support for OpenGL ES",
     SDL_ELF_NOTE_DLOPEN_PRIORITY_SUGGESTED,
     DEFAULT_OGL_ES
-);
+)
 #endif // SDL_VIDEO_DRIVER_RPI
 
 #if defined(SDL_VIDEO_OPENGL) && !defined(SDL_VIDEO_VITA_PVR_OGL)
@@ -170,7 +194,7 @@ static const char *SDL_EGL_GetErrorName(EGLint eglErrorCode)
 {
 #define SDL_EGL_ERROR_TRANSLATE(e) \
     case e:                        \
-        return #e;
+        return #e
     switch (eglErrorCode) {
         SDL_EGL_ERROR_TRANSLATE(EGL_SUCCESS);
         SDL_EGL_ERROR_TRANSLATE(EGL_NOT_INITIALIZED);
@@ -381,34 +405,45 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
     if (!opengl_dll_handle) {
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
             if (_this->gl_config.major_version > 1) {
-                path = DEFAULT_OGL_ES2;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES2
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES2;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
 #ifdef ALT_OGL_ES2
                 if (!opengl_dll_handle && !vc4) {
                     path = ALT_OGL_ES2;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
-
             } else {
-                path = DEFAULT_OGL_ES;
-                opengl_dll_handle = SDL_LoadObject(path);
+#ifdef DEFAULT_OGL_ES
+                if (!opengl_dll_handle) {
+                    path = DEFAULT_OGL_ES;
+                    opengl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
+#ifdef DEFAULT_OGL_ES_PVR
                 if (!opengl_dll_handle) {
                     path = DEFAULT_OGL_ES_PVR;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
-#ifdef ALT_OGL_ES2
+#endif
+#ifdef ALT_OGL_ES
                 if (!opengl_dll_handle && !vc4) {
-                    path = ALT_OGL_ES2;
+                    path = ALT_OGL_ES;
                     opengl_dll_handle = SDL_LoadObject(path);
                 }
 #endif
             }
-        }
+        } else {
 #ifdef DEFAULT_OGL
-        else {
-            path = DEFAULT_OGL;
-            opengl_dll_handle = SDL_LoadObject(path);
+            if (!opengl_dll_handle) {
+                path = DEFAULT_OGL;
+                opengl_dll_handle = SDL_LoadObject(path);
+            }
+#endif
 #ifdef ALT_OGL
             if (!opengl_dll_handle) {
                 path = ALT_OGL;
@@ -416,7 +451,6 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
             }
 #endif
         }
-#endif
     }
     _this->egl_data->opengl_dll_handle = opengl_dll_handle;
 
@@ -478,6 +512,8 @@ static bool SDL_EGL_LoadLibraryInternal(SDL_VideoDevice *_this, const char *egl_
     LOAD_FUNC(PFNEGLWAITGLPROC, eglWaitGL);
     LOAD_FUNC(PFNEGLBINDAPIPROC, eglBindAPI);
     LOAD_FUNC(PFNEGLGETERRORPROC, eglGetError);
+    LOAD_FUNC(PFNEGLGETCURRENTSURFACEPROC, eglGetCurrentSurface);
+    LOAD_FUNC(PFNEGLSURFACEATTRIBPROC, eglSurfaceAttrib);
     LOAD_FUNC_EGLEXT(PFNEGLQUERYDEVICESEXTPROC, eglQueryDevicesEXT);
     LOAD_FUNC_EGLEXT(PFNEGLGETPLATFORMDISPLAYEXTPROC, eglGetPlatformDisplayEXT);
     // Atomic functions
@@ -532,7 +568,7 @@ static void SDL_EGL_GetVersion(SDL_VideoDevice *_this)
     }
 }
 
-bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
+bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDisplayType native_display)
 {
     if (!SDL_EGL_LoadLibraryOnly(_this, egl_path)) {
         return false;
@@ -541,6 +577,7 @@ bool SDL_EGL_LoadLibrary(SDL_VideoDevice *_this, const char *egl_path, NativeDis
     _this->egl_data->egl_display = EGL_NO_DISPLAY;
 
 #ifndef SDL_VIDEO_DRIVER_VITA
+    EGLenum platform = _this->gl_config.egl_platform;
     if (platform) {
         /* EGL 1.5 allows querying for client version with EGL_NO_DISPLAY
          * --
@@ -745,7 +782,7 @@ static Attribute all_attributes[] = {
 static void dumpconfig(SDL_VideoDevice *_this, EGLConfig config)
 {
     int attr;
-    for (attr = 0; attr < sizeof(all_attributes) / sizeof(Attribute); attr++) {
+    for (attr = 0; attr < SDL_arraysize(all_attributes); attr++) {
         EGLint value;
         _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, all_attributes[attr].attribute, &value);
         SDL_Log("\t%-32s: %10d (0x%08x)", all_attributes[attr].name, value, value);
@@ -1065,7 +1102,7 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
 #endif
 
     if (_this->egl_contextattrib_callback) {
-        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        const int maxAttribs = SDL_arraysize(attribs);
         EGLint *userAttribs, *userAttribP;
         userAttribs = _this->egl_contextattrib_callback(_this->egl_attrib_callback_userdata, _this->egl_data->egl_display, _this->egl_data->egl_config);
         if (!userAttribs) {
@@ -1096,7 +1133,10 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
     } else {
         _this->egl_data->apitype = EGL_OPENGL_API;
     }
-    _this->egl_data->eglBindAPI(_this->egl_data->apitype);
+    if (!_this->egl_data->eglBindAPI(_this->egl_data->apitype)) {
+        SDL_SetError("Could not bind EGL API");
+        return NULL;
+    }
 
     egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                                     _this->egl_data->egl_config,
@@ -1107,8 +1147,8 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
         return NULL;
     }
 
-    // The default swap interval is 1, according to the spec
-    _this->egl_data->egl_swapinterval = 1;
+    // The default swap interval is 1, according to the spec, but SDL3's policy is to default vsync to off by default.
+    _this->egl_data->egl_swapinterval = 0;
 
     if (!SDL_EGL_MakeCurrent(_this, egl_surface, (SDL_GLContext)egl_context)) {
         // Delete the context
@@ -1143,6 +1183,8 @@ SDL_GLContext SDL_EGL_CreateContext(SDL_VideoDevice *_this, EGLSurface egl_surfa
 #endif
         }
     }
+
+    SDL_EGL_SetSwapInterval(_this, 0);  // EGL tends to default to vsync=1. To make this consistent with the rest of SDL, we force it off at startup. Apps can explicitly enable it afterwards.
 
     return (SDL_GLContext)egl_context;
 }
@@ -1186,20 +1228,48 @@ bool SDL_EGL_MakeCurrent(SDL_VideoDevice *_this, EGLSurface egl_surface, SDL_GLC
 
 bool SDL_EGL_SetSwapInterval(SDL_VideoDevice *_this, int interval)
 {
-    EGLBoolean status;
-
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
     }
 
-    /* FIXME: Revisit this check when EGL_EXT_swap_control_tear is published:
-     * https://github.com/KhronosGroup/EGL-Registry/pull/113
-     */
-    if (interval < 0) {
-        return SDL_SetError("Late swap tearing currently unsupported");
+    const bool has_swap_tearing_hint = SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_EXT_swap_tearing_hint");
+    if ((interval < 0) && !has_swap_tearing_hint) {
+        return SDL_SetError("Late swap tearing unsupported");
     }
 
-    status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, interval);
+    EGLBoolean status;
+    int egl_interval = interval;
+    if (has_swap_tearing_hint) {  // (quotes in this block's comments are from the EGL_EXT_swap_tearing_hint spec.)
+        EGLSurface surface = _this->egl_data->eglGetCurrentSurface(EGL_DRAW);
+        if (surface != EGL_NO_SURFACE) {
+            const char *sdlhint = SDL_GetHint(SDL_HINT_VIDEO_EGL_SWAP_TEARING_HINT);
+            EGLint hint_value;
+            if (sdlhint) {
+                if (SDL_strcmp(sdlhint, "async") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+                } else if (SDL_strcmp(sdlhint, "vsync") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_VSYNC_EXT;
+                } else if (SDL_strcmp(sdlhint, "default") == 0) {
+                    hint_value = EGL_SWAP_TEARING_HINT_DEFAULT_EXT;
+                } else {
+                    hint_value = EGL_SWAP_TEARING_HINT_DEFAULT_EXT;  // oh well.
+                }
+            } else if (interval < 0) {
+                // "EGL_SWAP_TEARING_HINT_ASYNC_EXT, swap_interval > 0: This is equivalent to a negative swap interval with GLX_EXT_swap_control_tear, and to Vulkan's VK_PRESENT_MODE_FIFO_RELAXED_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+                egl_interval = -interval;  // make it positive for eglSwapInterval.
+            } else if (interval == 0) {
+                // "EGL_SWAP_TEARING_HINT_ASYNC_EXT, swap_interval = 0: This is the normal behavior in GLX and core EGL for a swap interval of zero. The Vulkan equivalent is VK_PRESENT_MODE_IMMEDIATE_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_ASYNC_EXT;
+            } else /*if (interval > 0)*/ {
+                // "EGL_SWAP_TEARING_HINT_VSYNC_EXT, swap_interval > 0: This is the normal behavior in GLX and core EGL for a non-zero swap interval. The Vulkan equivalent is VK_PRESENT_MODE_FIFO_KHR."
+                hint_value = EGL_SWAP_TEARING_HINT_VSYNC_EXT;
+            }
+            status = _this->egl_data->eglSurfaceAttrib(_this->egl_data->egl_display, surface, EGL_SWAP_TEARING_HINT_EXT, hint_value);
+        }
+    }
+
+    status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, egl_interval);
     if (status == EGL_TRUE) {
         _this->egl_data->egl_swapinterval = interval;
         return true;
@@ -1268,18 +1338,33 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
     ANativeWindow_setBuffersGeometry(nw, 0, 0, format_wanted);
 #endif
 
-    if (_this->gl_config.framebuffer_srgb_capable >= 0) {
-#ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
-            attribs[attr++] = EGL_GL_COLORSPACE_KHR;
-            attribs[attr++] = _this->gl_config.framebuffer_srgb_capable ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
-        } else
-#endif
-        if (_this->gl_config.framebuffer_srgb_capable > 0) {
-            SDL_SetError("EGL implementation does not support sRGB system framebuffers");
+#ifdef SDL_VIDEO_DRIVER_QNX
+    // Wayland is also a supported platform on QNX, so we need to be specific.
+    if (SDL_strcmp(_this->name, "qnx") == 0) {
+        int format = QNX_ChooseFormat(_this, _this->egl_data->egl_config);
+
+        if (screen_set_window_property_iv(nw, SCREEN_PROPERTY_FORMAT, &format) < 0) {
             return EGL_NO_SURFACE;
         }
     }
+#endif
+
+#ifdef EGL_KHR_gl_colorspace
+    if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                // don't set an attribute at all.
+            } else {
+                attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+                attribs[attr++] = SDL_GetStringBoolean(srgbhint, false) ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
+            }
+        } else if (_this->gl_config.framebuffer_srgb_capable >= 0) {  // default behavior without the hint.
+            attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+            attribs[attr++] = _this->gl_config.framebuffer_srgb_capable ? EGL_GL_COLORSPACE_SRGB_KHR : EGL_GL_COLORSPACE_LINEAR_KHR;
+        }
+    }
+#endif
 
     int opaque_ext_idx = -1;
 
@@ -1296,7 +1381,7 @@ EGLSurface SDL_EGL_CreateSurface(SDL_VideoDevice *_this, SDL_Window *window, Nat
 #endif
 
     if (_this->egl_surfaceattrib_callback) {
-        const int maxAttribs = sizeof(attribs) / sizeof(attribs[0]);
+        const int maxAttribs = SDL_arraysize(attribs);
         EGLint *userAttribs, *userAttribP;
         userAttribs = _this->egl_surfaceattrib_callback(_this->egl_attrib_callback_userdata, _this->egl_data->egl_display, _this->egl_data->egl_config);
         if (!userAttribs) {

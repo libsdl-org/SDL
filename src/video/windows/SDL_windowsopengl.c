@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,6 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsopengles.h"
+#include "../../SDL_hints_c.h"
 
 // WGL implementation of SDL OpenGL support
 
@@ -72,6 +73,13 @@
 #define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB 0x20A9
 #endif
 
+#ifndef WGL_EXT_colorspace
+#define WGL_EXT_colorspace
+#define WGL_COLORSPACE_EXT      0x309D
+#define WGL_COLORSPACE_SRGB_EXT 0x3089
+#define WGL_COLORSPACE_LINEAR_EXT 0x308A
+#endif
+
 #ifndef WGL_ARB_pixel_format_float
 #define WGL_ARB_pixel_format_float
 #define WGL_TYPE_RGBA_FLOAT_ARB 0x21A0
@@ -105,9 +113,34 @@ typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC)(HDC hDC,
 #define SetPixelFormat       _this->gl_data->wglSetPixelFormat
 #endif
 
+static bool WIN_GL_LoadLibrary_EGLFallback(SDL_VideoDevice *_this, const char *path)
+{
+#ifdef SDL_VIDEO_OPENGL_EGL
+    WIN_GL_UnloadLibrary(_this);
+    _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
+    _this->GL_GetProcAddress = WIN_GLES_GetProcAddress;
+    _this->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
+    _this->GL_CreateContext = WIN_GLES_CreateContext;
+    _this->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+    _this->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
+    _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
+    _this->GL_SwapWindow = WIN_GLES_SwapWindow;
+    _this->GL_DestroyContext = WIN_GLES_DestroyContext;
+    _this->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
+    return WIN_GLES_LoadLibrary(_this, path);
+#else
+    return SDL_SetError("SDL not configured with EGL support");
+#endif
+}
+
 bool WIN_GL_LoadLibrary(SDL_VideoDevice *_this, const char *path)
 {
     void *handle;
+
+    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) &&
+        SDL_GetHintBoolean(SDL_HINT_OPENGL_ES_DRIVER, false)) {
+        return WIN_GL_LoadLibrary_EGLFallback(_this, path);
+    }
 
     if (path == NULL) {
         path = SDL_GetHint(SDL_HINT_OPENGL_LIBRARY);
@@ -519,6 +552,9 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
         _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
     }
 
+    // Check for WGL_EXT_colorspace
+    _this->gl_data->HAS_WGL_EXT_colorspace = HasExtension("WGL_EXT_colorspace", extensions);
+
     /* Check for WGL_ARB_pixel_format_float */
     _this->gl_data->HAS_WGL_ARB_pixel_format_float =
         HasExtension("WGL_ARB_pixel_format_float", extensions);
@@ -565,6 +601,15 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
                 int qAttrib = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
                 _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
             }
+
+            if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && _this->gl_data->HAS_WGL_EXT_colorspace) {
+                int colorspace = WGL_COLORSPACE_LINEAR_EXT;
+                int qAttrib = WGL_COLORSPACE_EXT;
+                _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &colorspace);
+
+                srgb = (colorspace == WGL_COLORSPACE_SRGB_EXT);
+            }
+
             _this->gl_config.framebuffer_srgb_capable = srgb;
         }
 
@@ -659,9 +704,29 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
-    if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
-        *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        *iAttr++ = (_this->gl_config.framebuffer_srgb_capable > 0) ? GL_TRUE : GL_FALSE;
+    if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB || _this->gl_data->HAS_WGL_EXT_colorspace) {
+        const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        int want_srgb = _this->gl_config.framebuffer_srgb_capable;
+        bool skip = false;
+
+        if (srgbhint && *srgbhint) {
+            if (SDL_strcmp(srgbhint, "skip") == 0) {
+                skip = true; // don't set an attribute at all.
+            } else {
+                want_srgb = SDL_GetStringBoolean(srgbhint, false);
+            }
+        }
+
+        if(!skip) {
+            if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && _this->gl_data->HAS_WGL_EXT_colorspace) {
+                *iAttr++ = WGL_COLORSPACE_EXT;
+                *iAttr++ = want_srgb ? WGL_COLORSPACE_SRGB_EXT : WGL_COLORSPACE_LINEAR_EXT;
+            }
+            if(_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+                *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                *iAttr++ = want_srgb ? GL_TRUE : GL_FALSE;
+            }
+        }
     }
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
@@ -729,19 +794,8 @@ SDL_GLContext WIN_GL_CreateContext(SDL_VideoDevice *_this, SDL_Window *window)
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && WIN_GL_UseEGL(_this)) {
 #ifdef SDL_VIDEO_OPENGL_EGL
         // Switch to EGL based functions
-        WIN_GL_UnloadLibrary(_this);
-        _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
-        _this->GL_GetProcAddress = WIN_GLES_GetProcAddress;
-        _this->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
-        _this->GL_CreateContext = WIN_GLES_CreateContext;
-        _this->GL_MakeCurrent = WIN_GLES_MakeCurrent;
-        _this->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
-        _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
-        _this->GL_SwapWindow = WIN_GLES_SwapWindow;
-        _this->GL_DestroyContext = WIN_GLES_DestroyContext;
-        _this->GL_GetEGLSurface = WIN_GLES_GetEGLSurface;
 
-        if (!WIN_GLES_LoadLibrary(_this, NULL)) {
+        if (!WIN_GL_LoadLibrary_EGLFallback(_this, NULL)) {
             return NULL;
         }
 
@@ -899,7 +953,7 @@ bool WIN_GL_GetSwapInterval(SDL_VideoDevice *_this, int *interval)
         *interval = _this->gl_data->wglGetSwapIntervalEXT();
         return true;
     } else {
-        return false;
+        return SDL_Unsupported();
     }
 }
 

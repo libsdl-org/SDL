@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,6 +32,7 @@
 
 #include "SDL_waylandshmbuffer.h"
 #include "SDL_waylandvideo.h"
+#include "single-pixel-buffer-v1-client-protocol.h"
 
 static bool SetTempFileSize(int fd, off_t size)
 {
@@ -105,15 +106,6 @@ static int CreateTempFD(off_t size)
     return fd;
 }
 
-static void buffer_handle_release(void *data, struct wl_buffer *wl_buffer)
-{
-    // NOP
-}
-
-static struct wl_buffer_listener buffer_listener = {
-    buffer_handle_release
-};
-
 struct Wayland_SHMPool
 {
     struct wl_shm_pool *shm_pool;
@@ -170,7 +162,6 @@ struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int widt
 
     *data = (Uint8 *)shmPool->shm_pool_memory + shmPool->offset;
     struct wl_buffer *buffer = wl_shm_pool_create_buffer(shmPool->shm_pool, shmPool->offset, width, height, width * 4, SHM_FMT);
-    wl_buffer_add_listener(buffer, &buffer_listener, shmPool);
 
     shmPool->offset += width * height * 4;
 
@@ -183,6 +174,30 @@ void Wayland_ReleaseSHMPool(Wayland_SHMPool *shmPool)
         wl_shm_pool_destroy(shmPool->shm_pool);
         munmap(shmPool->shm_pool_memory, shmPool->shm_pool_size);
         SDL_free(shmPool);
+    }
+}
+
+struct wl_buffer *Wayland_CreateSinglePixelBuffer(Uint32 r, Uint32 g, Uint32 b, Uint32 a)
+{
+    SDL_VideoData *viddata = SDL_GetVideoDevice()->internal;
+
+    // The single-pixel buffer protocol is preferred, as the compositor can choose an optimal format.
+    if (viddata->single_pixel_buffer_manager) {
+        return wp_single_pixel_buffer_manager_v1_create_u32_rgba_buffer(viddata->single_pixel_buffer_manager, r, g, b, a);
+    } else {
+        Wayland_SHMPool *pool = Wayland_AllocSHMPool(4);
+        if (!pool) {
+            return NULL;
+        }
+
+        void *mem;
+        struct wl_buffer *wl_buffer = Wayland_AllocBufferFromPool(pool, 1, 1, &mem);
+
+        const Uint8 pixel[4] = { r >> 24, g >> 24, b >> 24, a >> 24 };
+        SDL_memcpy(mem, pixel, sizeof(pixel));
+
+        Wayland_ReleaseSHMPool(pool);
+        return wl_buffer;
     }
 }
 

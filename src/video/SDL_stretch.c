@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -20,10 +20,26 @@
 */
 #include "SDL_internal.h"
 
+#include "SDL_pixels_c.h"
 #include "SDL_surface_c.h"
 
 static bool SDL_StretchSurfaceUncheckedNearest(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
 static bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+static bool SDL_ConvertAndStretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect);
+
+static bool SDL_CanLinearStretchFormat(SDL_PixelFormat format)
+{
+    if (SDL_ISPIXELFORMAT_PACKED(format)) {
+        if (!SDL_ISPIXELFORMAT_10BIT(format)) {
+            return true;
+        }
+    } else if (SDL_ISPIXELFORMAT_ARRAY(format)) {
+        if (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) {
+            return true;
+        }
+    }
+    return false;
+}
 
 bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect, SDL_ScaleMode scaleMode)
 {
@@ -38,64 +54,6 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
     }
     CHECK_PARAM(!dst) {
         return SDL_InvalidParamError("dst");
-    }
-
-    if (src->format != dst->format) {
-        // Slow!
-        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
-        if (!src_tmp) {
-            return false;
-        }
-        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
-        SDL_DestroySurface(src_tmp);
-        return result;
-    }
-
-    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
-        // Slow!
-        if (!dstrect) {
-            full_dst.x = 0;
-            full_dst.y = 0;
-            full_dst.w = dst->w;
-            full_dst.h = dst->h;
-            dstrect = &full_dst;
-        }
-
-        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
-        SDL_Surface *dst_tmp = SDL_CreateSurface(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
-        if (src_tmp && dst_tmp) {
-            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
-            if (result) {
-                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
-                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
-                            dst_tmp->pixels, dst_tmp->pitch,
-                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
-                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
-            }
-        } else {
-            result = false;
-        }
-        SDL_DestroySurface(src_tmp);
-        SDL_DestroySurface(dst_tmp);
-        return result;
-    }
-
-    switch (scaleMode) {
-    case SDL_SCALEMODE_NEAREST:
-        break;
-    case SDL_SCALEMODE_LINEAR:
-        break;
-    case SDL_SCALEMODE_PIXELART:
-        scaleMode = SDL_SCALEMODE_NEAREST;
-        break;
-    default:
-        return SDL_InvalidParamError("scaleMode");
-    }
-
-    if (scaleMode == SDL_SCALEMODE_LINEAR) {
-        if (SDL_BYTESPERPIXEL(src->format) != 4 || src->format == SDL_PIXELFORMAT_ARGB2101010) {
-            return SDL_SetError("Wrong format");
-        }
     }
 
     // Verify the blit rectangles
@@ -135,6 +93,57 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
         return SDL_SetError("Size too large for scaling");
     }
 
+    if (src->format != dst->format ||
+        (src->colorspace != dst->colorspace && dst->colorspace != SDL_COLORSPACE_UNKNOWN)) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurfaceAndColorspace(src, dst->format, dst->palette, dst->colorspace, dst->props);
+        if (!src_tmp) {
+            return false;
+        }
+        result = SDL_StretchSurface(src_tmp, srcrect, dst, dstrect, scaleMode);
+        SDL_DestroySurface(src_tmp);
+        return result;
+    }
+
+    if (SDL_ISPIXELFORMAT_FOURCC(src->format)) {
+        // Slow!
+        SDL_Surface *src_tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_XRGB8888);
+        SDL_Surface *dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, SDL_PIXELFORMAT_XRGB8888);
+        if (src_tmp && dst_tmp) {
+            result = SDL_StretchSurface(src_tmp, srcrect, dst_tmp, NULL, scaleMode);
+            if (result) {
+                result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                            dst_tmp->format, SDL_COLORSPACE_SRGB, 0,
+                            dst_tmp->pixels, dst_tmp->pitch,
+                            dst->format, dst->colorspace, SDL_GetSurfaceProperties(dst),
+                            (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+            }
+        } else {
+            result = false;
+        }
+        SDL_DestroySurface(src_tmp);
+        SDL_DestroySurface(dst_tmp);
+        return result;
+    }
+
+    switch (scaleMode) {
+    case SDL_SCALEMODE_NEAREST:
+        break;
+    case SDL_SCALEMODE_LINEAR:
+        break;
+    case SDL_SCALEMODE_PIXELART:
+        scaleMode = SDL_SCALEMODE_NEAREST;
+        break;
+    default:
+        return SDL_InvalidParamError("scaleMode");
+    }
+
+    if (scaleMode == SDL_SCALEMODE_LINEAR) {
+        if (!SDL_CanLinearStretchFormat(src->format)) {
+            return SDL_SetError("Wrong format");
+        }
+    }
+
     // Lock the destination if it's in hardware
     dst_locked = 0;
     if (SDL_MUSTLOCK(dst)) {
@@ -157,8 +166,10 @@ bool SDL_StretchSurface(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *
 
     if (scaleMode == SDL_SCALEMODE_NEAREST) {
         result = SDL_StretchSurfaceUncheckedNearest(src, srcrect, dst, dstrect);
-    } else {
+    } else if (SDL_ISPIXELFORMAT_PACKED_8888(src->format)) {
         result = SDL_StretchSurfaceUncheckedLinear(src, srcrect, dst, dstrect);
+    } else {
+        result = SDL_ConvertAndStretchSurfaceUncheckedLinear(src, srcrect, dst, dstrect);
     }
 
     // We need to unlock the surfaces if they're locked
@@ -285,15 +296,6 @@ typedef struct color_t
     Uint8 d;
 } color_t;
 
-#if 0
-static void printf_64(const char *str, void *var)
-{
-    uint8_t *val = (uint8_t *)var;
-    printf(" *   %s: %02x %02x %02x %02x _ %02x %02x %02x %02x\n",
-           str, val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
-}
-#endif
-
 /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
 
 static SDL_INLINE void INTERPOL(const Uint32 *src_x0, const Uint32 *src_x1, int frac0, int frac1, Uint32 *dst)
@@ -375,30 +377,7 @@ static bool scale_mat(const Uint32 *src, int src_w, int src_h, int src_pitch, Ui
     return true;
 }
 
-#ifdef SDL_NEON_INTRINSICS
-#define CAST_uint8x8_t       (uint8x8_t)
-#define CAST_uint32x2_t      (uint32x2_t)
-#endif
-
-#if defined(_MSC_VER)
-#ifdef SDL_NEON_INTRINSICS
-#undef CAST_uint8x8_t
-#undef CAST_uint32x2_t
-#define CAST_uint8x8_t
-#define CAST_uint32x2_t
-#endif
-#endif
-
 #ifdef SDL_SSE2_INTRINSICS
-
-#if 0
-static void SDL_TARGETING("sse2") printf_128(const char *str, __m128i var)
-{
-    uint16_t *val = (uint16_t *)&var;
-    printf(" *   %s: %04x %04x %04x %04x _ %04x %04x %04x %04x\n",
-           str, val[0], val[1], val[2], val[3], val[4], val[5], val[6], val[7]);
-}
-#endif
 
 static SDL_INLINE int hasSSE2(void)
 {
@@ -587,8 +566,8 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     uint16x8_t d0;
     uint8x8_t e0;
 
-    x_00_01 = CAST_uint8x8_t vld1_u32(s0); // Load 2 pixels
-    x_10_11 = CAST_uint8x8_t vld1_u32(s1);
+    x_00_01 = vreinterpret_u8_u32(vld1_u32(s0)); // Load 2 pixels
+    x_10_11 = vreinterpret_u8_u32(vld1_u32(s1));
 
     /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
     k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
@@ -608,7 +587,7 @@ static SDL_INLINE void INTERPOL_BILINEAR_NEON(const Uint32 *s0, const Uint32 *s1
     e0 = vmovn_u16(d0);
 
     // Store 1 pixel
-    *dst = vget_lane_u32(CAST_uint32x2_t e0, 0);
+    *dst = vget_lane_u32(vreinterpret_u32_u8(e0), 0);
 }
 
 static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitch, Uint32 *dst, int dst_w, int dst_h, int dst_pitch)
@@ -672,14 +651,14 @@ static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitc
             s_16_17 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_3);
 
             // Interpolation vertical
-            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); // Load 2 pixels
-            x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
-            x_04_05 = CAST_uint8x8_t vld1_u32(s_04_05);
-            x_06_07 = CAST_uint8x8_t vld1_u32(s_06_07);
-            x_10_11 = CAST_uint8x8_t vld1_u32(s_10_11);
-            x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
-            x_14_15 = CAST_uint8x8_t vld1_u32(s_14_15);
-            x_16_17 = CAST_uint8x8_t vld1_u32(s_16_17);
+            x_00_01 = vreinterpret_u8_u32(vld1_u32(s_00_01)); // Load 2 pixels
+            x_02_03 = vreinterpret_u8_u32(vld1_u32(s_02_03));
+            x_04_05 = vreinterpret_u8_u32(vld1_u32(s_04_05));
+            x_06_07 = vreinterpret_u8_u32(vld1_u32(s_06_07));
+            x_10_11 = vreinterpret_u8_u32(vld1_u32(s_10_11));
+            x_12_13 = vreinterpret_u8_u32(vld1_u32(s_12_13));
+            x_14_15 = vreinterpret_u8_u32(vld1_u32(s_14_15));
+            x_16_17 = vreinterpret_u8_u32(vld1_u32(s_16_17));
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
             k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
@@ -729,7 +708,7 @@ static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitc
             // Narrow again
             e1 = vmovn_u16(d1);
 
-            f0 = vcombine_u32(CAST_uint32x2_t e0, CAST_uint32x2_t e1);
+            f0 = vcombine_u32(vreinterpret_u32_u8(e0), vreinterpret_u32_u8(e1));
             // Store 4 pixels
             vst1q_u32(dst, f0);
 
@@ -768,10 +747,10 @@ static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitc
             s_12_13 = (const Uint32 *)((const Uint8 *)src_h1 + index_w_1);
 
             // Interpolation vertical
-            x_00_01 = CAST_uint8x8_t vld1_u32(s_00_01); // Load 2 pixels
-            x_02_03 = CAST_uint8x8_t vld1_u32(s_02_03);
-            x_10_11 = CAST_uint8x8_t vld1_u32(s_10_11);
-            x_12_13 = CAST_uint8x8_t vld1_u32(s_12_13);
+            x_00_01 = vreinterpret_u8_u32(vld1_u32(s_00_01)); // Load 2 pixels
+            x_02_03 = vreinterpret_u8_u32(vld1_u32(s_02_03));
+            x_10_11 = vreinterpret_u8_u32(vld1_u32(s_10_11));
+            x_12_13 = vreinterpret_u8_u32(vld1_u32(s_12_13));
 
             /* Interpolated == x0 + frac * (x1 - x0) == x0 * (1 - frac) + x1 * frac */
             k0 = vmull_u8(x_00_01, v_frac_h1);     /* k0 := x0 * (1 - frac)    */
@@ -801,7 +780,7 @@ static bool scale_mat_NEON(const Uint32 *src, int src_w, int src_h, int src_pitc
             e0 = vmovn_u16(d0);
 
             // Store 2 pixels
-            vst1_u32(dst, CAST_uint32x2_t e0);
+            vst1_u32(dst, vreinterpret_u32_u8(e0));
             dst += 2;
         }
 
@@ -857,6 +836,49 @@ bool SDL_StretchSurfaceUncheckedLinear(SDL_Surface *s, const SDL_Rect *srcrect, 
         result = scale_mat(src, src_w, src_h, src_pitch, dst, dst_w, dst_h, dst_pitch);
     }
 
+    return result;
+}
+
+static bool SDL_ConvertAndStretchSurfaceUncheckedLinear(SDL_Surface *src, const SDL_Rect *srcrect, SDL_Surface *dst, const SDL_Rect *dstrect)
+{
+    SDL_PixelFormat format = SDL_PromotePixelFormatTo8888(src->format);
+    SDL_Colorspace colorspace = src->colorspace;
+    SDL_PropertiesID props = src->props;
+    SDL_Surface *src_tmp = NULL;
+    SDL_Surface *dst_tmp = NULL;
+    SDL_Rect src_tmp_rect = { 0, 0, srcrect->w, srcrect->h };
+    SDL_Rect dst_tmp_rect = { 0, 0, dstrect->w, dstrect->h };
+    bool result = false;
+
+    src_tmp = SDL_CreateSurfaceUninitialized(srcrect->w, srcrect->h, format);
+    if (!src_tmp) {
+        goto done;
+    }
+    if (!SDL_ConvertPixelsAndColorspace(srcrect->w, srcrect->h, src->format, src->colorspace, src->props,
+                                        (const Uint8 *)src->pixels + srcrect->y * src->pitch + srcrect->x * SDL_BYTESPERPIXEL(src->format), src->pitch,
+                                        format, colorspace, props,
+                                        src_tmp->pixels, src_tmp->pitch)) {
+        goto done;
+    }
+    src = src_tmp;
+    srcrect = &src_tmp_rect;
+
+    dst_tmp = SDL_CreateSurfaceUninitialized(dstrect->w, dstrect->h, format);
+    if (!dst_tmp) {
+        goto done;
+    }
+
+    if (SDL_StretchSurfaceUncheckedLinear(src, srcrect, dst_tmp, &dst_tmp_rect)) {
+        result = SDL_ConvertPixelsAndColorspace(dstrect->w, dstrect->h,
+                                                format, colorspace, props,
+                                                dst_tmp->pixels, dst_tmp->pitch,
+                                                dst->format, dst->colorspace, dst->props,
+                                                (Uint8 *)dst->pixels + dstrect->y * dst->pitch + dstrect->x * SDL_BYTESPERPIXEL(dst->format), dst->pitch);
+    }
+
+done:
+    SDL_DestroySurface(src_tmp);
+    SDL_DestroySurface(dst_tmp);
     return result;
 }
 

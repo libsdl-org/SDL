@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,6 +22,7 @@
 #ifndef SDL_render_sw_c_h_
 #define SDL_render_sw_c_h_
 
+extern bool SW_UpdateRendererSurface(SDL_Renderer *renderer, SDL_Surface *surface);
 extern bool SW_CreateRendererForSurface(SDL_Renderer *renderer, SDL_Surface *surface, SDL_PropertiesID create_props);
 
 #endif // SDL_render_sw_c_h_

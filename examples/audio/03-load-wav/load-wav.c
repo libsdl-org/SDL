@@ -11,7 +11,8 @@
  *    Publisher: 5 Guys Named Will
  *    Copyright 1996 Will Provost
  *    https://itunes.apple.com/us/album/the-living-proof/id4153978
- *    http://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+ *    https://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+ *    https://music.amazon.com/albums/B0G39SYDX1
  */
 
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */

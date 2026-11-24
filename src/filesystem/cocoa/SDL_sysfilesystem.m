@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -47,7 +47,7 @@ char *SDL_SYS_GetBasePath(void)
         } else if (SDL_strcasecmp(baseType, "parent") == 0) {
             base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
         } else {
-            // this returns the exedir for non-bundled  and the resourceDir for bundled apps
+            // this returns the exedir for non-bundled and the resourceDir for bundled apps
             base = [[bundle resourcePath] fileSystemRepresentation];
         }
 
@@ -63,7 +63,29 @@ char *SDL_SYS_GetBasePath(void)
     }
 }
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+char *SDL_SYS_GetExeName(void)
+{
+    @autoreleasepool {
+        NSBundle *bundle = [NSBundle mainBundle];
+        const char *name = [[[bundle infoDictionary] objectForKey:@"CFBundleIdentifier"] UTF8String];
+        if (!name) {
+            name = [[[bundle infoDictionary] objectForKey:@"CFBundleDisplayName"] UTF8String];
+            if (!name) {
+                name = [[[bundle infoDictionary] objectForKey:@"CFBundleName"] UTF8String];
+                if (!name) {
+                    name = [[[bundle infoDictionary] objectForKey:@"CFBundleExecutable"] UTF8String];
+                    if (!name) {
+                        name = [[[NSProcessInfo processInfo] processName] UTF8String];  // oh well.
+                    }
+                }
+            }
+        }
+
+        return name ? SDL_strdup(name) : NULL;
+    }
+}
+
+static char *GetAppleUserPath(NSSearchPathDirectory dir, const char *org, const char *app)
 {
     @autoreleasepool {
         char *result = NULL;
@@ -117,6 +139,35 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
 
         return result;
     }
+}
+
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+#ifdef SDL_PLATFORM_TVOS
+    /* tvOS does not have persistent local storage!
+     * The only place on-device where we can store data is
+     * a cache directory that the OS can empty at any time.
+     *
+     * It's therefore very likely that save data will be erased
+     * between sessions. If you want your app's save data to
+     * actually stick around, you'll need to use iCloud storage.
+     */
+    {
+        static bool shown = false;
+        if (!shown) {
+            shown = true;
+            SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.");
+        }
+    }
+    return GetAppleUserPath(NSCachesDirectory, org, app);
+#else
+    return GetAppleUserPath(NSApplicationSupportDirectory, org, app);
+#endif // SDL_PLATFORM_TVOS
+}
+
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetAppleUserPath(NSCachesDirectory, org, app);
 }
 
 char *SDL_SYS_GetUserFolder(SDL_Folder folder)

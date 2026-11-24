@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -89,14 +89,6 @@ int main(int argc, char *argv[])
     if (!renderer) {
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         goto quit;
-    }
-
-    if (!SDL_ISPIXELFORMAT_ALPHA(shape->format)) {
-        /* Set the colorkey to the top-left pixel */
-        Uint8 r, g, b, a;
-
-        SDL_ReadSurfacePixel(shape, 0, 0, &r, &g, &b, &a);
-        SDL_SetSurfaceColorKey(shape, 1, SDL_MapSurfaceRGBA(shape, r, g, b, a));
     }
 
     if (!resizable) {

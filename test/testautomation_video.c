@@ -268,12 +268,10 @@ static int SDLCALL video_createWindowVariousFlags(void *arg)
             flags = SDL_WINDOW_FULLSCREEN;
             /* Skip - blanks screen; comment out next line to run test */
             continue;
-            break;
         case 2:
             flags = SDL_WINDOW_OPENGL;
             /* Skip - not every video driver supports OpenGL; comment out next line to run test */
             continue;
-            break;
         case 3:
             flags = 0;
             break;
@@ -845,6 +843,7 @@ static int SDLCALL video_getSetWindowPosition(void *arg)
 {
     const char *title = "video_getSetWindowPosition Test Window";
     SDL_Window *window;
+    SDL_WindowFlags flags;
     int result;
     int maxxVariation, maxyVariation;
     int xVariation, yVariation;
@@ -973,6 +972,95 @@ static int SDLCALL video_getSetWindowPosition(void *arg)
             SDL_GetWindowPosition(window, NULL, &currentY);
             SDLTest_AssertPass("Call to SDL_GetWindowPosition(&x=NULL)");
             SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+        }
+    }
+
+    /* Fullscreen test */
+    desiredX = 100;
+    desiredY = 100;
+    SDL_SetWindowPosition(window, desiredX, desiredY);
+    SDLTest_AssertPass("Call to SDL_SetWindowPosition(...,%d,%d)", desiredX, desiredY);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Get position */
+    currentX = desiredX + 1;
+    currentY = desiredY + 1;
+    SDL_GetWindowPosition(window, &currentX, &currentY);
+    SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
+
+    if (desiredX == currentX && desiredY == currentY) {
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+    } else {
+        bool hasEvent;
+        /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+         * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+        currentX = desiredX + 1;
+        currentY = desiredY + 1;
+        hasEvent = getPositionFromEvent(&currentX, &currentY);
+        SDLTest_AssertCheck(hasEvent == true, "Changing position was not honored by WM, checking present of SDL_EVENT_WINDOW_MOVED");
+        if (hasEvent) {
+            SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position is the position from SDL event; expected: %d, got: %d", desiredX, currentX);
+            SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position is the position from SDL event; expected: %d, got: %d", desiredY, currentY);
+        }
+    }
+
+    /* Test setting position while fullscreen */
+    result = SDL_SetWindowFullscreen(window, true);
+    SDLTest_AssertPass("SDL_SetWindowFullscreen()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Verify that window is in fullscreen */
+    flags = SDL_GetWindowFlags(window);
+    SDLTest_AssertPass("SDL_GetWindowFlags()");
+    SDLTest_AssertCheck(flags & SDL_WINDOW_FULLSCREEN, "Verify the `SDL_WINDOW_FULLSCREEN` flag is set: %s", (flags & SDL_WINDOW_FULLSCREEN) ? "true" : "false");
+
+    /* Set the fullscreen window position */
+    desiredX = desiredX + 10;
+    desiredY = desiredY + 10;
+    SDL_SetWindowPosition(window, desiredX, desiredY);
+    SDLTest_AssertPass("Call to SDL_SetWindowPosition(...,%d,%d)", desiredX, desiredY);
+
+    result = SDL_SetWindowFullscreen(window, false);
+    SDLTest_AssertPass("SDL_SetWindowFullscreen()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    result = SDL_SyncWindow(window);
+    SDLTest_AssertPass("SDL_SyncWindow()");
+    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+    /* Verify that window left fullscreen */
+    flags = SDL_GetWindowFlags(window);
+    SDLTest_AssertPass("SDL_GetWindowFlags()");
+    SDLTest_AssertCheck(!(flags & SDL_WINDOW_FULLSCREEN), "Verify the `SDL_WINDOW_FULLSCREEN` flag is not set: %s", !(flags & SDL_WINDOW_FULLSCREEN) ? "true" : "false");
+
+    /* Get position */
+    currentX = desiredX + 1;
+    currentY = desiredY + 1;
+    SDL_GetWindowPosition(window, &currentX, &currentY);
+    SDLTest_AssertPass("Call to SDL_GetWindowPosition()");
+
+    if (desiredX == currentX && desiredY == currentY) {
+        SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position; expected: %d, got: %d", desiredX, currentX);
+        SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position; expected: %d, got: %d", desiredY, currentY);
+    } else {
+        bool hasEvent;
+        /* SDL_SetWindowPosition() and SDL_SetWindowSize() will make requests of the window manager and set the internal position and size,
+         * and then we get events signaling what actually happened, and they get passed on to the application if they're not what we expect. */
+        currentX = desiredX + 1;
+        currentY = desiredY + 1;
+        hasEvent = getPositionFromEvent(&currentX, &currentY);
+        SDLTest_AssertCheck(hasEvent == true, "Changing position was not honored by WM, checking present of SDL_EVENT_WINDOW_MOVED");
+        if (hasEvent) {
+            SDLTest_AssertCheck(desiredX == currentX, "Verify returned X position is the position from SDL event; expected: %d, got: %d", desiredX, currentX);
+            SDLTest_AssertCheck(desiredY == currentY, "Verify returned Y position is the position from SDL event; expected: %d, got: %d", desiredY, currentY);
         }
     }
 
@@ -1723,7 +1811,8 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
     int result;
     SDL_Rect display0, display1;
     const char *video_driver = SDL_GetCurrentVideoDriver();
-    bool video_driver_is_wayland = SDL_strcmp(video_driver, "wayland") == 0;
+    const bool video_driver_is_wayland = SDL_strcmp(video_driver, "wayland") == 0;
+    const bool video_driver_is_emscripten = SDL_strcmp(video_driver, "emscripten") == 0;
 
     displays = SDL_GetDisplays(&displayNum);
     if (displays) {
@@ -1816,76 +1905,81 @@ static int SDLCALL video_setWindowCenteredOnDisplay(void *arg)
                     SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
                 }
 
-                /* Enter fullscreen desktop */
-                SDL_SetWindowPosition(window, x, y);
-                result = SDL_SetWindowFullscreen(window, true);
-                SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
-
-                result = SDL_SyncWindow(window);
-                SDLTest_AssertPass("SDL_SyncWindow()");
-                SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
-
-                /* Check we are filling the full display */
-                currentDisplay = SDL_GetDisplayForWindow(window);
-                SDL_GetWindowSize(window, &currentW, &currentH);
-                SDL_GetWindowPosition(window, &currentX, &currentY);
-
-                /* Get the expected fullscreen rect.
-                 * This needs to be queried after window creation and positioning as some drivers can alter the
-                 * usable bounds based on the window scaling mode.
-                 */
-                result = SDL_GetDisplayBounds(expectedDisplay, &expectedFullscreenRect);
-                SDLTest_AssertPass("SDL_GetDisplayBounds()");
-                SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
-
-                if (video_driver_is_wayland) {
-                    SDLTest_Log("Skipping display ID validation: Wayland driver does not support window positioning");
+                if (video_driver_is_emscripten) {
+                    SDLTest_Log("Skipping fullscreen checks on Emscripten: can't toggle fullscreen without returning to mainloop.");
                 } else {
-                    SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
-                }
+                    /* Enter fullscreen desktop */
+                    SDL_SetWindowPosition(window, x, y);
+                    result = SDL_SetWindowFullscreen(window, true);
+                    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
-                if (VideoSupportsWindowResizing()) {
-                    SDLTest_AssertCheck(currentW == expectedFullscreenRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedFullscreenRect.w);
-                    SDLTest_AssertCheck(currentH == expectedFullscreenRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedFullscreenRect.h);
-                } else {
-                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
-                }
-                if (VideoSupportsWindowPositioning()) {
-                    SDLTest_AssertCheck(currentX == expectedFullscreenRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedFullscreenRect.x);
-                    SDLTest_AssertCheck(currentY == expectedFullscreenRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedFullscreenRect.y);
-                } else {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
-                }
+                    result = SDL_SyncWindow(window);
+                    SDLTest_AssertPass("SDL_SyncWindow()");
+                    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
-                /* Leave fullscreen desktop */
-                result = SDL_SetWindowFullscreen(window, false);
-                SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+                    /* Check we are filling the full display */
+                    currentDisplay = SDL_GetDisplayForWindow(window);
+                    SDL_GetWindowSize(window, &currentW, &currentH);
+                    SDL_GetWindowPosition(window, &currentX, &currentY);
 
-                result = SDL_SyncWindow(window);
-                SDLTest_AssertPass("SDL_SyncWindow()");
-                SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+                    /* Get the expected fullscreen rect.
+                     * This needs to be queried after window creation and positioning as some drivers can alter the
+                     * usable bounds based on the window scaling mode.
+                     */
+                    result = SDL_GetDisplayBounds(expectedDisplay, &expectedFullscreenRect);
+                    SDLTest_AssertPass("SDL_GetDisplayBounds()");
+                    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
 
-                /* Check window was restored correctly */
-                currentDisplay = SDL_GetDisplayForWindow(window);
-                SDL_GetWindowSize(window, &currentW, &currentH);
-                SDL_GetWindowPosition(window, &currentX, &currentY);
+                    if (video_driver_is_wayland) {
+                        SDLTest_Log("Skipping display ID validation: Wayland driver does not support window positioning");
+                    } else {
+                        SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display ID (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+                    }
 
-                if (video_driver_is_wayland) {
-                    SDLTest_Log("Skipping display ID validation: %s driver does not support window positioning", video_driver);
-                } else {
-                    SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
-                }
-                if (VideoSupportsWindowResizing()) {
-                    SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
-                    SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
-                } else {
-                    SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
-                }
-                if (VideoSupportsWindowPositioning()) {
-                    SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
-                    SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
-                } else {
-                    SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
+                    if (VideoSupportsWindowResizing()) {
+                        SDLTest_AssertCheck(currentW == expectedFullscreenRect.w, "Validate width (current: %d, expected: %d)", currentW, expectedFullscreenRect.w);
+                        SDLTest_AssertCheck(currentH == expectedFullscreenRect.h, "Validate height (current: %d, expected: %d)", currentH, expectedFullscreenRect.h);
+                    } else {
+                        SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                    }
+                    if (VideoSupportsWindowPositioning()) {
+                        SDLTest_AssertCheck(currentX == expectedFullscreenRect.x, "Validate x (current: %d, expected: %d)", currentX, expectedFullscreenRect.x);
+                        SDLTest_AssertCheck(currentY == expectedFullscreenRect.y, "Validate y (current: %d, expected: %d)", currentY, expectedFullscreenRect.y);
+                    } else {
+                        SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
+                    }
+
+                    /* Leave fullscreen desktop */
+
+                    result = SDL_SetWindowFullscreen(window, false);
+                    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+                    result = SDL_SyncWindow(window);
+                    SDLTest_AssertPass("SDL_SyncWindow()");
+                    SDLTest_AssertCheck(result == true, "Verify return value; expected: true, got: %d", result);
+
+                    /* Check window was restored correctly */
+                    currentDisplay = SDL_GetDisplayForWindow(window);
+                    SDL_GetWindowSize(window, &currentW, &currentH);
+                    SDL_GetWindowPosition(window, &currentX, &currentY);
+
+                    if (video_driver_is_wayland) {
+                        SDLTest_Log("Skipping display ID validation: %s driver does not support window positioning", video_driver);
+                    } else {
+                        SDLTest_AssertCheck(currentDisplay == expectedDisplay, "Validate display index (current: %d, expected: %d)", currentDisplay, expectedDisplay);
+                    }
+                    if (VideoSupportsWindowResizing()) {
+                        SDLTest_AssertCheck(currentW == w, "Validate width (current: %d, expected: %d)", currentW, w);
+                        SDLTest_AssertCheck(currentH == h, "Validate height (current: %d, expected: %d)", currentH, h);
+                    } else {
+                        SDLTest_Log("Skipping window size validation: %s driver does not support window resizing", video_driver);
+                    }
+                    if (VideoSupportsWindowPositioning()) {
+                        SDLTest_AssertCheck(currentX == expectedX, "Validate x (current: %d, expected: %d)", currentX, expectedX);
+                        SDLTest_AssertCheck(currentY == expectedY, "Validate y (current: %d, expected: %d)", currentY, expectedY);
+                    } else {
+                        SDLTest_Log("Skipping window position validation: %s driver does not support window positioning", video_driver);
+                    }
                 }
 
                 /* Center on display yVariation, and check window properties */
@@ -1951,7 +2045,7 @@ static int SDLCALL video_getSetWindowState(void *arg)
     SDL_Rect display;
     SDL_WindowFlags flags;
     int windowedX, windowedY;
-    int currentX, currentY;
+    int currentX = 0, currentY = 0;
     int desiredX = 0, desiredY = 0;
     int windowedW, windowedH;
     int currentW, currentH;
@@ -2494,6 +2588,60 @@ static int SDLCALL video_getWindowSurface(void *arg)
 }
 
 /**
+ * Tests that the window surface implementation is chosen again after changing SDL_HINT_FRAMEBUFFER_ACCELERATION 
+ */
+static int SDLCALL video_getWindowSurfaceRetry(void *arg)
+{
+    const char *title = "video_getWindowSurfaceRetry Test Window";
+    SDL_Window *window;
+    SDL_Surface *surface;
+    bool has_native_framebuffer;
+
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
+        SDLTest_Log("Skipping test: dummy driver has no accelerated renderers");
+        return TEST_SKIPPED;
+    }
+
+    window = SDL_CreateWindow(title, 320, 320, 0);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',320,320,0)");
+    SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
+
+    /* Ask for a render driver that doesn't exist, so the accelerated framebuffer fails */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "invalid");
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with an invalid render driver");
+    has_native_framebuffer = (surface != NULL);
+    SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window does not have a renderer");
+    SDL_DestroyWindowSurface(window);
+
+    /* Now ask for an accelerated framebuffer */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with accelerated framebuffer");
+    SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+    SDLTest_AssertCheck(SDL_GetRenderer(window) != NULL, "Validate that window surface is using a renderer");
+    SDLTest_AssertCheck(SDL_UpdateWindowSurface(window), "Validate that SDL_UpdateWindowSurface() succeeds");
+    SDL_DestroyWindowSurface(window);
+    SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window does not have a renderer");
+
+    if (has_native_framebuffer) {
+        /* And back to a software framebuffer */
+        SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "software");
+        surface = SDL_GetWindowSurface(window);
+        SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with software framebuffer");
+        SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+        SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window surface is not using a renderer");
+        SDLTest_AssertCheck(SDL_UpdateWindowSurface(window), "Validate that SDL_UpdateWindowSurface() succeeds");
+    }
+
+    /* Clean up */
+    SDL_ResetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+    SDL_DestroyWindow(window);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests SDL_RaiseWindow
  */
 static int SDLCALL video_raiseWindow(void *arg)
@@ -2502,7 +2650,8 @@ static int SDLCALL video_raiseWindow(void *arg)
     SDL_Window *window;
 
     SDLTest_AssertPass("SDL_SetWindowInputFocus is not supported on dummy and SDL2 wayland driver");
-        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 || SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 ||
+        SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
         return TEST_SKIPPED;
     }
 
@@ -2610,6 +2759,9 @@ static const SDLTest_TestCaseReference videoTestCreateMaximized = {
 static const SDLTest_TestCaseReference videoTestGetWindowSurface = {
     video_getWindowSurface, "video_getWindowSurface", "Checks window surface functionality", TEST_ENABLED
 };
+static const SDLTest_TestCaseReference videoTestGetWindowSurfaceRetry = {
+    video_getWindowSurfaceRetry, "video_getWindowSurfaceRetry", "Checks window surface creation after changing SDL_HINT_FRAMEBUFFER_ACCELERATION", TEST_ENABLED
+};
 static const SDLTest_TestCaseReference videoTestRaiseWindow = {
     video_raiseWindow, "video_raiseWindow", "Checks window focus", TEST_ENABLED
 };
@@ -2638,6 +2790,7 @@ static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTestCreateMinimized,
     &videoTestCreateMaximized,
     &videoTestGetWindowSurface,
+    &videoTestGetWindowSurfaceRetry,
     &videoTestRaiseWindow,
     NULL
 };

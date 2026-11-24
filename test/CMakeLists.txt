@@ -4,14 +4,24 @@
 
 cmake_minimum_required(VERSION 3.16)
 
+if(NOT DEFINED CMAKE_C_STANDARD)
+    set(CMAKE_C_STANDARD 99)
+endif()
+
 set(SDL3_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../cmake")
 
 include(CheckIncludeFile)
+include(CheckLanguage)
 include(CheckStructHasMember)
 include(CMakePushCheckState)
 include(sdlcompilers)
+
+check_language(CXX)
+if(CMAKE_CXX_COMPILER)
+    enable_language(CXX)
+endif()
 
 find_package(Python3 COMPONENTS Interpreter)
 if(NOT PYTHON3_EXECUTABLE)
@@ -25,11 +35,18 @@ else()
 endif()
 set(HAVE_TESTS_LINK_SHARED "${SDL_TESTS_LINK_SHARED}" PARENT_SCOPE)
 
+if(CYGWIN)
+# FindOpenGL from cmake >= 3.19 or cygwin-provided cmake versions don't
+# test for native windows opengl32, but we want native windows opengl32.
+    set(OPENGL_gl_LIBRARY opengl32)
+    set(OPENGL_FOUND TRUE)
+else()
 # CMake incorrectly detects opengl32.lib being present on MSVC ARM64
 if(NOT (MSVC AND SDL_CPU_ARM64))
     # Prefer GLVND, if present
     set(OpenGL_GL_PREFERENCE GLVND)
     find_package(OpenGL)
+endif()
 endif()
 
 add_library(sdltests_utils OBJECT
@@ -44,12 +61,17 @@ option(SDLTEST_TRACKMEM "Run tests with --trackmem" OFF)
 if(WIN32)
     option(SDLTEST_PROCDUMP "Run tests using sdlprocdump for minidump generation" OFF)
     add_executable(sdlprocdump win32/sdlprocdump.c)
-    set_property(TARGET sdlprocdump PROPERTY C_STANDARD "90")
     SDL_AddCommonCompilerFlags(sdlprocdump)
     if(SDLTEST_PROCDUMP)
         set(CMAKE_TEST_LAUNCHER "$<TARGET_FILE:sdlprocdump>;--")
     else()
         set_property(TARGET sdlprocdump PROPERTY EXCLUDE_FROM_ALL "1")
+    endif()
+else()
+    option(SDLTEST_GDB "Run tests using headless gdb" OFF)
+    find_program(GDB_BIN NAMES "gdb")
+    if(SDLTEST_GDB AND GDB_BIN)
+        set(CMAKE_TEST_LAUNCHER "${GDB_BIN};-batch;-nx;-x;${CMAKE_CURRENT_SOURCE_DIR}/unix/gdbcmds.txt;--args")
     endif()
 endif()
 
@@ -79,15 +101,31 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.20)
     set(test_bin_dir "${test_bin_dir}$<$<BOOL:${is_multi_config}>:/$<CONFIG>>")
 endif()
 
+if(DOS)
+    set(NAME83_LONG "unifont-15.1.05.hex;unifont-15.1.05-license.txt;physaudiodev.png;logaudiodev.png;audiofile.png;soundboard.png;soundboard_levels.png;trashcan.png;msdf_font.png;msdf_font.csv;gamepad_front.png;gamepad_back.png;gamepad_face_abxy.png;gamepad_face_axby.png;gamepad_face_bayx.png;gamepad_face_sony.png;gamepad_battery.png;gamepad_battery_unknown.png;gamepad_battery_wired.png;gamepad_touchpad.png;gamepad_dual_touchpad.png;gamepad_button.png;gamepad_button_small.png;gamepad_button_background.png;gamepad_axis.png;gamepad_axis_arrow.png;gamepad_wired.png;gamepad_wireless.png;gamepad_grip_sense.png;sdl-test_round.png")
+    set(DOS83_SHORT "UNIFONT.HEX;UNIFONTL.TXT;PHYSADEV.PNG;LOGADEV.PNG;AUDIOFIL.PNG;SNDBRD.PNG;SNDLVL.PNG;TRASHCAN.PNG;MSDFFONT.PNG;MSDFFONT.CSV;GP_FRONT.PNG;GP_BACK.PNG;GP_FABXY.PNG;GP_FAXBY.PNG;GP_FBAYX.PNG;GP_FSONY.PNG;GP_BATT.PNG;GP_BATTX.PNG;GP_BATTW.PNG;GP_TOUCH.PNG;GP_BTN.PNG;GP_BTNSM.PNG;GP_BTNBG.PNG;GP_AXIS.PNG;GP_AXARW.PNG;GP_WIRED.PNG;GP_WLESS.PNG;SDLROUND.PNG")
+endif()
+
 set(RESOURCE_FILE_NAMES)
 set(RESOURCE_FILES_BINDIR)
 foreach(resource_file IN LISTS RESOURCE_FILES)
     get_filename_component(res_file_name ${resource_file} NAME)
-    list(APPEND RESOURCE_FILE_NAMES "${res_file_name}")
-    set(resource_file_bindir "${test_bin_dir}/${res_file_name}")
+    set(output_name "${res_file_name}")
+    if(DOS)
+        list(FIND DOS83_LONG "${res_file_name}" _dos83_idx)
+        if(NOT _dos83_idx EQUAL -1)
+            list(GET DOS83_SHORT ${_dos83_idx} output_name)
+        endif()
+    endif()
+    list(APPEND RESOURCE_FILE_NAMES "${output_name}")
+    set(resource_file_bindir "${test_bin_dir}/${output_name}")
+    set(depends_resource_file "${resource_file}")
+    if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+        set(depends_resource_file "${CMAKE_CURRENT_LIST_FILE}")
+    endif()
     add_custom_command(OUTPUT "${resource_file_bindir}"
         COMMAND "${CMAKE_COMMAND}" -E copy "${resource_file}" "${resource_file_bindir}"
-        DEPENDS "${resource_file}"
+        DEPENDS "${depends_resource_file}"
     )
     list(APPEND RESOURCE_FILES_BINDIR "${resource_file_bindir}")
 endforeach()
@@ -99,8 +137,26 @@ define_property(TARGET PROPERTY SDL_NONINTERACTIVE BRIEF_DOCS "If true, target i
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_ARGUMENTS BRIEF_DOCS "Argument(s) to run executable in non-interactive mode." FULL_DOCS "Argument(s) to run executable in non-interactive mode.")
 define_property(TARGET PROPERTY SDL_NONINTERACTIVE_TIMEOUT BRIEF_DOCS "Timeout for noninteractive executable." FULL_DOCS "Timeout for noninteractive executable.")
 
+if(HAVE_X11)
+    find_package(X11 QUIET)
+    if(NOT TARGET X11::X11)
+        set(HAVE_X11 OFF)
+    endif()
+endif()
+
+if(HAVE_WAYLAND)
+    find_package(PkgConfig QUIET)
+    pkg_check_modules(PkgWaylandClient QUIET IMPORTED_TARGET wayland-client)
+    if(NOT TARGET PkgConfig::PkgWaylandClient)
+        set(HAVE_WAYLAND OFF)
+    endif()
+endif()
+
+check_include_file(signal.h LIBC_HAS_SIGNAL_H)
+check_include_file(libudev.h HAVE_LIBUDEV_H)
+
 function(add_sdl_test_executable TARGET)
-    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;NO_C90;MAIN_CALLBACKS;NOTRACKMEM" "" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
+    cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;MAIN_CALLBACKS;NOTRACKMEM" "NAME83" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
         message(FATAL_ERROR "Unknown argument(s): ${AST_UNPARSED_ARGUMENTS}")
     endif()
@@ -114,19 +170,20 @@ function(add_sdl_test_executable TARGET)
     if(AST_NEEDS_RESOURCES)
         list(APPEND EXTRA_SOURCES ${RESOURCE_FILES})
     endif()
-    if(ANDROID)
+    if(ANDROID OR OHOS)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
+    endif()
+    if(ANDROID)
+        if(NOT SDL_TESTS_LINK_SHARED)
+            target_link_options(${TARGET} PRIVATE "LINKER:SHELL:--version-script \"${CMAKE_CURRENT_SOURCE_DIR}/android/SDL_static_versyms.sym")
+        endif()
     endif()
     target_compile_definitions(${TARGET} PRIVATE HAVE_BUILD_CONFIG)
     SDL_AddCommonCompilerFlags(${TARGET})
     target_include_directories(${TARGET} PRIVATE "${SDL3_SOURCE_DIR}/src/video/khronos")
     target_link_libraries(${TARGET} PRIVATE SDL3::SDL3_test SDL3::${sdl_name_component})
-    if(NOT AST_NO_C90 AND NOT SDL_CMAKE_PLATFORM MATCHES "^(n3ds|ps2|psp)$")
-        set_property(TARGET ${TARGET} PROPERTY C_STANDARD 90)
-        set_property(TARGET ${TARGET} PROPERTY C_EXTENSIONS FALSE)
-    endif()
     if(AST_DEPENDS)
         add_dependencies(${TARGET} ${AST_DEPENDS})
     endif()
@@ -203,25 +260,27 @@ function(add_sdl_test_executable TARGET)
             set_property(TARGET ${TARGET} PROPERTY "EXCLUDE_FROM_ALL" "1")
             set_propertY(TARGET ${TARGET} PROPERTY SDL_INSTALL "0")
         endif()
+    elseif(DOS)
+        if(AST_NAME83)
+            set_property(TARGET ${TARGET} PROPERTY OUTPUT_NAME "${AST_NAME83}")
+        endif()
     endif()
 
     if(OPENGL_FOUND)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
 
+    if(LIBC_HAS_SIGNAL_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_SIGNAL_H)
+    endif()
+
+    if(HAVE_LIBUDEV_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_LIBUDEV_H)
+    endif()
+
     # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endfunction()
-
-check_include_file(signal.h LIBC_HAS_SIGNAL_H)
-if(LIBC_HAS_SIGNAL_H)
-    add_definitions(-DHAVE_SIGNAL_H)
-endif()
-
-check_include_file(libudev.h HAVE_LIBUDEV_H)
-if(HAVE_LIBUDEV_H)
-    add_definitions(-DHAVE_LIBUDEV_H)
-endif()
 
 function(files2headers OUTPUT)
     set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
@@ -256,11 +315,13 @@ files2headers(gamepad_image_headers
     gamepad_button_background.png
     gamepad_button.png
     gamepad_button_small.png
+    gamepad_dual_touchpad.png
     gamepad_face_abxy.png
     gamepad_face_axby.png
     gamepad_face_bayx.png
     gamepad_face_sony.png
     gamepad_front.png
+    gamepad_grip_sense.png
     gamepad_touchpad.png
     gamepad_wired.png
     gamepad_wireless.png
@@ -268,8 +329,7 @@ files2headers(gamepad_image_headers
 files2headers(icon_png_header icon.png)
 files2headers(glass_png_header glass.png)
 
-set(FFmpeg_FIND_COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
-include("${CMAKE_CURRENT_LIST_DIR}/../cmake/FindFFmpeg.cmake")
+find_package(FFmpeg COMPONENTS AVCODEC AVFORMAT AVUTIL SWSCALE)
 if(FFmpeg_FOUND)
     cmake_push_check_state()
     list(APPEND CMAKE_REQUIRED_INCLUDES "${FFmpeg_AVUTIL_INCLUDE_DIRS}")
@@ -279,7 +339,7 @@ if(FFmpeg_FOUND)
     cmake_pop_check_state()
 endif()
 if(FFmpeg_FOUND AND LIBAVUTIL_AVFRAME_HAS_CH_LAYOUT)
-    add_sdl_test_executable(testffmpeg NO_C90 SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_png_header} DEPENDS generate-icon_png_header)
+    add_sdl_test_executable(testffmpeg SOURCES testffmpeg.c testffmpeg_vulkan.c ${icon_png_header} DEPENDS generate-icon_png_header)
     if(LIBAVUTIL_AVFULKANFRAMESCONTEXT_HAS_FORMAT)
       target_compile_definitions(testffmpeg PRIVATE FFMPEG_VULKAN_SUPPORT)
     endif()
@@ -297,34 +357,38 @@ else()
     message(STATUS "Can't find ffmpeg 5.1.3 or newer, skipping testffmpeg")
 endif()
 
-add_sdl_test_executable(checkkeys SOURCES checkkeys.c)
+add_sdl_test_executable(checkkeys SOURCES checkkeys.c NAME83 chkkeys)
 add_sdl_test_executable(loopwave NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES loopwave.c)
-add_sdl_test_executable(testsurround SOURCES testsurround.c)
-add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c)
-add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c)
-add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c)
+add_sdl_test_executable(testdynaudioreopen NEEDS_RESOURCES TESTUTILS MAIN_CALLBACKS SOURCES testdynaudioreopen.c)
+add_sdl_test_executable(testsurround SOURCES testsurround.c NAME83 surround)
+add_sdl_test_executable(testresample NEEDS_RESOURCES SOURCES testresample.c NAME83 resample)
+add_sdl_test_executable(testaudioinfo SOURCES testaudioinfo.c NAME83 audioinf)
+add_sdl_test_executable(testaudiostreamdynamicresample NEEDS_RESOURCES TESTUTILS SOURCES testaudiostreamdynamicresample.c NAME83 audynres)
 
 file(GLOB TESTAUTOMATION_SOURCE_FILES testautomation*.c)
-add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES BUILD_DEPENDENT NO_C90 SOURCES ${TESTAUTOMATION_SOURCE_FILES})
+add_sdl_test_executable(testautomation NONINTERACTIVE NONINTERACTIVE_TIMEOUT 120 NEEDS_RESOURCES BUILD_DEPENDENT SOURCES ${TESTAUTOMATION_SOURCE_FILES} NAME83 automat)
 if(EMSCRIPTEN)
     target_link_options(testautomation PRIVATE -sALLOW_MEMORY_GROWTH=1 -sMAXIMUM_MEMORY=1gb)
 endif()
-add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmultiaudio.c)
-add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c)
-add_sdl_test_executable(testaudiorecording MAIN_CALLBACKS SOURCES testaudiorecording.c)
-add_sdl_test_executable(testatomic NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testatomic.c)
-add_sdl_test_executable(testintersections SOURCES testintersections.c)
-add_sdl_test_executable(testrelative SOURCES testrelative.c)
-add_sdl_test_executable(testhittesting SOURCES testhittesting.c)
-add_sdl_test_executable(testdraw SOURCES testdraw.c)
-add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c)
-add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c)
-add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c)
-add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARGS 0 10 20 40 80 160 320 640 SOURCES testsymbols.c)
+add_sdl_test_executable(testmultiaudio NEEDS_RESOURCES TESTUTILS SOURCES testmultiaudio.c NAME83 multaudi)
+add_sdl_test_executable(testaudiohotplug NEEDS_RESOURCES TESTUTILS SOURCES testaudiohotplug.c NAME83 audhotpl)
+add_sdl_test_executable(testaudiorecording MAIN_CALLBACKS SOURCES testaudiorecording.c NAME83 aurecord)
+add_sdl_test_executable(testatomic NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testatomic.c NAME83 atomic)
+add_sdl_test_executable(testintersections SOURCES testintersections.c NAME83 intersec)
+add_sdl_test_executable(testrelative SOURCES testrelative.c NAME83 relative)
+add_sdl_test_executable(testhittesting SOURCES testhittesting.c NAME83 hittest)
+add_sdl_test_executable(testdraw SOURCES testdraw.c NAME83 draw)
+add_sdl_test_executable(testdrawchessboard SOURCES testdrawchessboard.c NAME83 drawches)
+add_sdl_test_executable(testdropfile MAIN_CALLBACKS SOURCES testdropfile.c NAME83 dropfile)
+add_sdl_test_executable(testerror NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" SOURCES testerror.c NAME83 error)
+add_sdl_test_executable(testsymbols NONINTERACTIVE NOTRACKMEM NONINTERACTIVE_ARGS 0 10 20 40 80 160 320 640 SOURCES testsymbols.c NAME83 symbols)
 
 set(build_options_dependent_tests )
 
-add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE NO_C90 SOURCES testevdev.c)
+add_sdl_test_executable(testevdev BUILD_DEPENDENT NONINTERACTIVE SOURCES testevdev.c NAME83 evdev)
+
+add_sdl_test_executable(testdescriptor BUILD_DEPENDENT SOURCES testdescriptor.c NAME83 descriptr)
+target_compile_definitions(testdescriptor PRIVATE DEBUG_DESCRIPTOR)
 
 if(MACOS)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS
@@ -333,106 +397,113 @@ if(MACOS)
             testnativecocoa.m
             testnativex11.c
     )
-elseif(WINDOWS)
+elseif(WINDOWS OR CYGWIN)
     add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c testnativew32.c)
 elseif(HAVE_X11 OR HAVE_WAYLAND)
-    add_sdl_test_executable(testnative BUILD_DEPENDENT NO_C90 NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
+    add_sdl_test_executable(testnative BUILD_DEPENDENT NEEDS_RESOURCES TESTUTILS SOURCES testnative.c)
     if(HAVE_X11)
         target_sources(testnative PRIVATE testnativex11.c)
-        target_link_libraries(testnative PRIVATE X11)
+        target_link_libraries(testnative PRIVATE X11::X11)
     endif()
     if(HAVE_WAYLAND)
         set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
-        target_sources(testnative PRIVATE testnativewayland.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+        target_sources(testnative PRIVATE testnativewayland.c "${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c")
 
         # Needed to silence the documentation warning in the generated header file
         target_compile_options(testnative PRIVATE -Wno-documentation-unknown-command)
-        target_link_libraries(testnative PRIVATE wayland-client)
+        target_link_libraries(testnative PRIVATE PkgConfig::PkgWaylandClient)
     endif ()
 endif()
 
-add_sdl_test_executable(testasyncio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testasyncio.c)
-add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c)
-add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c)
+add_sdl_test_executable(testasyncio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testasyncio.c NAME83 asyncio)
+add_sdl_test_executable(testaudio MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testaudio.c NAME83 audio)
+add_sdl_test_executable(testcolorspace SOURCES testcolorspace.c NAME83 colorspc)
 add_sdl_test_executable(testfile NONINTERACTIVE SOURCES testfile.c)
-add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers} DEPENDS generate-gamepad_image_headers)
-add_sdl_test_executable(testdlopennote TESTUTILS SOURCES testdlopennote.c)
-add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c)
-add_sdl_test_executable(testgl SOURCES testgl.c)
-add_sdl_test_executable(testgles SOURCES testgles.c)
-add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c)
-add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header)
-add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c)
-add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c)
+add_sdl_test_executable(testcontroller TESTUTILS SOURCES testcontroller.c gamepadutils.c ${gamepad_image_headers} DEPENDS generate-gamepad_image_headers NAME83 control)
+add_sdl_test_executable(testdlopennote TESTUTILS SOURCES testdlopennote.c NAME83 dlnote)
+add_sdl_test_executable(testgeometry TESTUTILS SOURCES testgeometry.c NAME83 geometry)
+add_sdl_test_executable(testgl SOURCES testgl.c NAME83 gl)
+add_sdl_test_executable(testgles SOURCES testgles.c NAME83 tstgles NAME83 gles)
+add_sdl_test_executable(testgpu_simple_clear SOURCES testgpu_simple_clear.c NAME83 gpuclear)
+add_sdl_test_executable(testgpu_spinning_cube SOURCES testgpu_spinning_cube.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 gpucube)
+add_sdl_test_executable(testgpurender_effects MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_effects.c NAME83 gpufx)
+add_sdl_test_executable(testgpurender_msdf MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testgpurender_msdf.c NAME83 gpumsdf)
+add_sdl_test_executable(testgpu_spinning_cube_xr SOURCES testgpu_spinning_cube_xr.c NAME83 gpucubxr)
+
 if(ANDROID)
     target_link_libraries(testgles PRIVATE GLESv1_CM)
 elseif(IOS OR TVOS)
     find_library(GLES_LIB OpenGLES REQUIRED)
     target_link_libraries(testgles PRIVATE "${GLES_LIB}")
 endif()
-add_sdl_test_executable(testgles2 SOURCES testgles2.c)
-add_sdl_test_executable(testhaptic SOURCES testhaptic.c)
-add_sdl_test_executable(testhotplug SOURCES testhotplug.c)
-add_sdl_test_executable(testpen SOURCES testpen.c)
-add_sdl_test_executable(testrumble SOURCES testrumble.c)
-add_sdl_test_executable(testthread NONINTERACTIVE THREADS NONINTERACTIVE_TIMEOUT 40 SOURCES testthread.c)
-add_sdl_test_executable(testiconv NEEDS_RESOURCES TESTUTILS SOURCES testiconv.c)
-add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS SOURCES testime.c)
-add_sdl_test_executable(testkeys SOURCES testkeys.c)
-add_sdl_test_executable(testloadso SOURCES testloadso.c)
-add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c)
-add_sdl_test_executable(testlock NO_C90 SOURCES testlock.c)
-add_sdl_test_executable(testrwlock SOURCES testrwlock.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 20)
-add_sdl_test_executable(testmouse SOURCES testmouse.c)
+add_sdl_test_executable(testgles2 SOURCES testgles2.c NAME83 gles2)
+add_sdl_test_executable(testhaptic SOURCES testhaptic.c NAME83 haptic)
+add_sdl_test_executable(testhotplug SOURCES testhotplug.c NAME83 hotplug)
+add_sdl_test_executable(testpen SOURCES testpen.c NAME83 pen)
+add_sdl_test_executable(testrumble SOURCES testrumble.c NAME83 rumble)
+add_sdl_test_executable(testthread NONINTERACTIVE THREADS NONINTERACTIVE_TIMEOUT 40 SOURCES testthread.c NAME83 thread)
+add_sdl_test_executable(testiconv NEEDS_RESOURCES TESTUTILS SOURCES testiconv.c NAME83 iconv)
+add_sdl_test_executable(testime NEEDS_RESOURCES TESTUTILS SOURCES testime.c NAME83 ime)
+add_sdl_test_executable(testkeys SOURCES testkeys.c NAME83 keys)
+add_sdl_test_executable(testloadso SOURCES testloadso.c NAME83 loadso)
+add_sdl_test_executable(testlocale NONINTERACTIVE SOURCES testlocale.c NAME83 locale)
+add_sdl_test_executable(testlock SOURCES testlock.c NAME83 lock)
+add_sdl_test_executable(testrwlock SOURCES testrwlock.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 20 NAME83 rwlock)
+add_sdl_test_executable(testmouse SOURCES testmouse.c NAME83 mouse)
+add_sdl_test_executable(testnotification NEEDS_RESOURCES SOURCES testnotification.c NAME83 notify)
 
-add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c)
-add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c)
-add_sdl_test_executable(testpower NONINTERACTIVE SOURCES testpower.c)
-add_sdl_test_executable(testfilesystem NONINTERACTIVE SOURCES testfilesystem.c)
+add_sdl_test_executable(testoverlay NEEDS_RESOURCES TESTUTILS SOURCES testoverlay.c NAME83 overlay)
+add_sdl_test_executable(testplatform NONINTERACTIVE SOURCES testplatform.c NAME83 platform)
+add_sdl_test_executable(testpower NONINTERACTIVE SOURCES testpower.c NAME83 power)
+add_sdl_test_executable(testfilesystem NONINTERACTIVE SOURCES testfilesystem.c NAME83 filesyst)
 if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     add_sdl_test_executable(pretest SOURCES pretest.c NONINTERACTIVE NONINTERACTIVE_TIMEOUT 60)
 endif()
-add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS SOURCES testrendertarget.c)
-add_sdl_test_executable(testrotate SOURCES testrotate.c)
-add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS SOURCES testscale.c)
-add_sdl_test_executable(testsem NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" NONINTERACTIVE_ARGS 10 NONINTERACTIVE_TIMEOUT 30 SOURCES testsem.c)
-add_sdl_test_executable(testsensor SOURCES testsensor.c)
-add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.c)
+add_sdl_test_executable(testrendertarget NEEDS_RESOURCES TESTUTILS SOURCES testrendertarget.c NAME83 rendrtgt)
+add_sdl_test_executable(testrotate SOURCES testrotate.c NAME83 rotate)
+add_sdl_test_executable(testscale NEEDS_RESOURCES TESTUTILS SOURCES testscale.c NAME83 scale)
+add_sdl_test_executable(testsem NONINTERACTIVE DISABLE_THREADS_ARGS "--no-threads" NONINTERACTIVE_ARGS 10 NONINTERACTIVE_TIMEOUT 30 SOURCES testsem.c NAME83 sem)
+add_sdl_test_executable(testsensor SOURCES testsensor.c NAME83 sensor)
+add_sdl_test_executable(testshader NEEDS_RESOURCES TESTUTILS SOURCES testshader.c NAME83 shader)
 if(EMSCRIPTEN)
     target_link_options(testshader PRIVATE "-sLEGACY_GL_EMULATION")
 endif()
-add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_png_header} DEPENDS generate-glass_png_header)
-add_sdl_test_executable(testsoftwaretransparent SOURCES testsoftwaretransparent.c)
-add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c)
-add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_png_header} DEPENDS generate-icon_png_header)
-add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_png_header} DEPENDS generate-icon_png_header)
-add_sdl_test_executable(testpalette SOURCES testpalette.c)
-add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c)
-add_sdl_test_executable(testurl SOURCES testurl.c)
-add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c)
-add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c)
-add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_png_header} DEPENDS generate-icon_png_header)
-add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c)
-add_sdl_test_executable(testwm SOURCES testwm.c)
-add_sdl_test_executable(testyuv NONINTERACTIVE NONINTERACTIVE_ARGS "--automated" NEEDS_RESOURCES TESTUTILS SOURCES testyuv.c testyuv_cvt.c)
-add_sdl_test_executable(torturethread NONINTERACTIVE THREADS NONINTERACTIVE_TIMEOUT 30 SOURCES torturethread.c)
-add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS SOURCES testrendercopyex.c)
-add_sdl_test_executable(testmessage SOURCES testmessage.c)
-add_sdl_test_executable(testdisplayinfo SOURCES testdisplayinfo.c)
-add_sdl_test_executable(testqsort NONINTERACTIVE SOURCES testqsort.c)
+add_sdl_test_executable(testshape NEEDS_RESOURCES SOURCES testshape.c ${glass_png_header} DEPENDS generate-glass_png_header NAME83 shape)
+add_sdl_test_executable(testsoftwaretransparent SOURCES testsoftwaretransparent.c NAME83 swtransp)
+add_sdl_test_executable(testsprite MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.c NAME83 sprite)
+add_sdl_test_executable(testspriteminimal SOURCES testspriteminimal.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 spritmin)
+add_sdl_test_executable(testspritesurface SOURCES testspritesurface.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 spritsrf)
+if(CMAKE_CXX_COMPILER)
+    add_sdl_test_executable(testspritecxx MAIN_CALLBACKS NEEDS_RESOURCES TESTUTILS SOURCES testsprite.cpp NAME83 spritexx)
+endif()
+add_sdl_test_executable(testpalette SOURCES testpalette.c NAME83 palette)
+add_sdl_test_executable(testtimer NONINTERACTIVE NONINTERACTIVE_ARGS --no-interactive NONINTERACTIVE_TIMEOUT 60 SOURCES testtimer.c NAME83 timer)
+add_sdl_test_executable(testurl SOURCES testurl.c NAME83 url)
+add_sdl_test_executable(testver NONINTERACTIVE NOTRACKMEM SOURCES testver.c NAME83 versdl)
+set_property(TARGET testver PROPERTY C_STANDARD 90)
+add_sdl_test_executable(testcamera MAIN_CALLBACKS SOURCES testcamera.c NAME83 camera)
+add_sdl_test_executable(testclipboard MAIN_CALLBACKS SOURCES testclipboard.c ${icon_png_header} DEPENDS generate-icon_png_header NAME83 clipbrd)
+add_sdl_test_executable(testviewport NEEDS_RESOURCES TESTUTILS SOURCES testviewport.c NAME83 viewport)
+add_sdl_test_executable(testwm SOURCES testwm.c NAME83 wm)
+add_sdl_test_executable(testyuv NONINTERACTIVE NONINTERACTIVE_ARGS "--automated" NEEDS_RESOURCES TESTUTILS SOURCES testyuv.c testyuv_cvt.c NAME83 yuv)
+add_sdl_test_executable(torturethread NONINTERACTIVE THREADS NONINTERACTIVE_TIMEOUT 30 SOURCES torturethread.c NAME83 tortthrd)
+add_sdl_test_executable(testrendercopyex NEEDS_RESOURCES TESTUTILS SOURCES testrendercopyex.c NAME83 rndcopex)
+add_sdl_test_executable(testmessage SOURCES testmessage.c NAME83 message)
+add_sdl_test_executable(testdisplayinfo SOURCES testdisplayinfo.c NAME83 dispinfo)
+add_sdl_test_executable(testqsort NONINTERACTIVE SOURCES testqsort.c NAME83 qsort)
 if(EMSCRIPTEN)
     target_link_options(testqsort PRIVATE -sALLOW_MEMORY_GROWTH)
 endif()
-add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c)
-add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c)
-add_sdl_test_executable(testvulkan NO_C90 SOURCES testvulkan.c)
-add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c)
-add_sdl_test_executable(testpopup SOURCES testpopup.c)
-add_sdl_test_executable(testdialog SOURCES testdialog.c)
-add_sdl_test_executable(testtime SOURCES testtime.c)
-add_sdl_test_executable(testmanymouse SOURCES testmanymouse.c)
-add_sdl_test_executable(testmodal SOURCES testmodal.c)
-add_sdl_test_executable(testtray NEEDS_RESOURCES TESTUTILS SOURCES testtray.c)
+add_sdl_test_executable(testbounds NONINTERACTIVE SOURCES testbounds.c NAME83 bounds)
+add_sdl_test_executable(testcustomcursor SOURCES testcustomcursor.c NAME83 custcurs)
+add_sdl_test_executable(testvulkan MAIN_CALLBACKS SOURCES testvulkan.c NAME83 vulkan)
+add_sdl_test_executable(testoffscreen SOURCES testoffscreen.c NAME83 offscrn)
+add_sdl_test_executable(testpopup SOURCES testpopup.c NAME83 popup)
+add_sdl_test_executable(testdialog SOURCES testdialog.c NAME83 dialog)
+add_sdl_test_executable(testtime SOURCES testtime.c NAME83 timesdl)
+add_sdl_test_executable(testmanymouse SOURCES testmanymouse.c NAME83 manymous)
+add_sdl_test_executable(testmodal SOURCES testmodal.c NAME83 modal)
+add_sdl_test_executable(testtray NEEDS_RESOURCES TESTUTILS SOURCES testtray.c NAME83 tray)
 
 
 add_sdl_test_executable(testprocess
@@ -440,8 +511,9 @@ add_sdl_test_executable(testprocess
     NONINTERACTIVE_ARGS $<TARGET_FILE:childprocess>
     INSTALLED_ARGS "${CMAKE_INSTALL_FULL_LIBEXECDIR}/installed-tests/SDL3/childprocess${CMAKE_EXECUTABLE_SUFFIX}"
     SOURCES testprocess.c
+    NAME83 process
 )
-add_sdl_test_executable(childprocess SOURCES childprocess.c)
+add_sdl_test_executable(childprocess SOURCES childprocess.c NAME83 chldproc)
 add_dependencies(testprocess childprocess)
 
 get_property(SDL_TEST_EXECUTABLES DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPERTY SDL_TEST_EXECUTABLES)
@@ -449,10 +521,10 @@ get_property(SDL_TEST_EXECUTABLES DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}" PROPER
 if (HAVE_WAYLAND)
     # Set the GENERATED property on the protocol file, since it is first created at build time
     set_property(SOURCE ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c PROPERTY GENERATED 1)
-    add_sdl_test_executable(testwaylandcustom NO_C90 NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
+    add_sdl_test_executable(testwaylandcustom NEEDS_RESOURCES SOURCES testwaylandcustom.c ${SDL3_BINARY_DIR}/wayland-generated-protocols/xdg-shell-protocol.c)
     # Needed to silence the documentation warning in the generated header file
     target_compile_options(testwaylandcustom PRIVATE -Wno-documentation-unknown-command)
-    target_link_libraries(testwaylandcustom PRIVATE wayland-client)
+    target_link_libraries(testwaylandcustom PRIVATE PkgConfig::PkgWaylandClient)
 endif()
 
 check_c_compiler_flag(-Wformat-overflow HAVE_WFORMAT_OVERFLOW)
@@ -626,7 +698,7 @@ function(add_sdl_test TEST TARGET)
             COMMAND ${command}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         )
-        if(WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
+        if((WIN32 OR CYGWIN) AND CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
             set_property(TEST ${TEST} APPEND PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_prepend:$<TARGET_RUNTIME_DLL_DIRS:${TARGET}>")
         endif()
         if(NOT notrackmem)
@@ -731,7 +803,35 @@ if(ANDROID AND TARGET SDL3::Jar)
             configure_file(android/cmake/SDLTestActivity.java.cmake "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" @ONLY)
             configure_file(android/cmake/res/values/strings.xml.cmake android/res/values/strings-${TEST}.xml @ONLY)
             configure_file(android/cmake/res/xml/shortcuts.xml.cmake "${GENERATED_RES_FOLDER}/xml/shortcuts.xml" @ONLY)
-            configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            # Use XR-specific manifest for XR tests, standard manifest for others
+            if("${TEST}" MATCHES "_xr$")
+                # Meta Quest-specific manifest sections (enabled by default, set to empty to disable)
+                # These are ignored by non-Meta runtimes but required for proper Quest integration
+                if(NOT DEFINED SDL_ANDROID_XR_META_SUPPORT OR SDL_ANDROID_XR_META_SUPPORT)
+                    set(ANDROID_XR_META_FEATURES
+"    <!-- Meta Quest hand tracking support -->
+    <uses-feature android:name=\"oculus.software.handtracking\" android:required=\"false\" />
+")
+                    set(ANDROID_XR_META_METADATA
+"        <!-- Meta Quest supported devices -->
+        <meta-data android:name=\"com.oculus.supportedDevices\" android:value=\"quest|quest2|questpro|quest3|quest3s\" />
+        <meta-data android:name=\"com.oculus.vr.focusaware\" android:value=\"true\" />
+        <!-- Hand tracking support level (V2 allows launching without controllers) -->
+        <meta-data android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />
+        <meta-data android:name=\"com.oculus.handtracking.frequency\" android:value=\"HIGH\" />
+")
+                    set(ANDROID_XR_META_INTENT_CATEGORY
+"                <!-- VR intent category for Meta Quest -->
+                <category android:name=\"com.oculus.intent.category.VR\" />")
+                else()
+                    set(ANDROID_XR_META_FEATURES "")
+                    set(ANDROID_XR_META_METADATA "")
+                    set(ANDROID_XR_META_INTENT_CATEGORY "")
+                endif()
+                configure_file(android/cmake/AndroidManifest.xr.xml.cmake "${generated_manifest_path}" @ONLY)
+            else()
+                configure_file(android/cmake/AndroidManifest.xml.cmake "${generated_manifest_path}" @ONLY)
+            endif()
             file(GENERATE
                 OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/android/${TEST}-$<CONFIG>/res/values/strings.xml"
                 INPUT "${CMAKE_CURRENT_BINARY_DIR}/android/res/values/strings-${TEST}.xml"
@@ -770,7 +870,7 @@ if(ANDROID AND TARGET SDL3::Jar)
                     -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     -d "${classes_path}"
                 COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
-                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                DEPENDS SDL3-jar $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
             )
             add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
             set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")
@@ -795,11 +895,16 @@ if(ANDROID AND TARGET SDL3::Jar)
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT "${classes_dex}")
             set_property(TARGET ${TEST}-dex PROPERTY OUTPUT_BASE_NAME "${classes_dex_base_name}")
 
+            set(native_libs ${TEST})
+            if(SDL_TESTS_LINK_SHARED)
+                list(APPEND native_libs SDL3::SDL3-shared)
+            endif()
+
             sdl_add_to_apk_unaligned(${TEST}-unaligned-apk
                 APK_IN ${TEST}-apk-linked
                 OUTDIR "${CMAKE_CURRENT_BINARY_DIR}/intermediates"
                 ASSETS ${RESOURCE_FILES}
-                NATIVE_LIBS SDL3::SDL3-shared ${TEST}
+                NATIVE_LIBS ${native_libs}
                 DEX ${TEST}-dex
             )
 

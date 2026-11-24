@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -80,6 +80,10 @@
 #include <sys/auxv.h>
 #endif
 
+#ifndef PPC_FEATURE_HAS_ALTIVEC
+#define PPC_FEATURE_HAS_ALTIVEC 0x10000000
+#endif
+
 #ifdef SDL_PLATFORM_RISCOS
 #include <kernel.h>
 #include <swis.h>
@@ -109,6 +113,7 @@
 #define CPU_HAS_ARM_SIMD (1 << 11)
 #define CPU_HAS_LSX      (1 << 12)
 #define CPU_HAS_LASX     (1 << 13)
+#define CPU_HAS_SVE2     (1 << 14)
 
 #define CPU_CFG2      0x2
 #define CPU_CFG2_LSX  (1 << 6)
@@ -153,7 +158,7 @@ static int CPU_haveCPUID(void)
     :
     : "%eax", "%ecx"
     );
-#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__) && !defined(__arm64ec__)
 /* Technically, if this is being compiled under __x86_64__ then it has
    CPUid by definition.  But it's nice to be able to prove it.  :)      */
     __asm__ (
@@ -236,7 +241,7 @@ done:
         "        popl %%ebx         \n"      \
         : "=a"(a), "=S"(b), "=c"(c), "=d"(d) \
         : "a"(func))
-#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__)
+#elif (defined(__GNUC__) || defined(__llvm__)) && defined(__x86_64__) && !defined(__arm64ec__)
 #define cpuid(func, a, b, c, d)              \
     __asm__ __volatile__(                    \
         "        pushq %%rbx        \n"      \
@@ -303,7 +308,7 @@ static void CPU_calcCPUIDFeatures(void)
                 // Check to make sure we can call xgetbv
                 if (c & 0x08000000) {
                     // Call xgetbv to see if YMM (etc) register state is saved
-#if (defined(__GNUC__) || defined(__llvm__)) && (defined(__i386__) || defined(__x86_64__))
+#if (defined(__GNUC__) || defined(__llvm__)) && (defined(__i386__) || defined(__x86_64__)) && !defined(__arm64ec__)
                     __asm__(".byte 0x0f, 0x01, 0xd0"
                             : "=a"(a)
                             : "c"(0)
@@ -331,10 +336,11 @@ static int CPU_haveAltiVec(void)
     volatile int altivec = 0;
 #ifndef SDL_CPUINFO_DISABLED
 #if (defined(SDL_PLATFORM_FREEBSD) || defined(SDL_PLATFORM_OPENBSD)) && defined(__powerpc__) && defined(HAVE_ELF_AUX_INFO)
-    unsigned long cpufeatures = 0;
-    elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures));
+    unsigned long cpufeatures;
+    if (elf_aux_info(AT_HWCAP, &cpufeatures, sizeof(cpufeatures)) != 0) {
+        cpufeatures = 0;
+    }
     altivec = cpufeatures & PPC_FEATURE_HAS_ALTIVEC;
-    return altivec;
 #elif (defined(SDL_PLATFORM_MACOS) && (defined(__ppc__) || defined(__ppc64__))) || (defined(SDL_PLATFORM_OPENBSD) && defined(__powerpc__))
 #ifdef SDL_PLATFORM_OPENBSD
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
@@ -483,12 +489,12 @@ static int CPU_haveNEON(void)
 #elif !defined(__arm__)
     return 0; // not an ARM CPU at all.
 #elif defined(HAVE_ELF_AUX_INFO)
-    unsigned long hasneon = 0;
+    unsigned long hasneon;
     if (elf_aux_info(AT_HWCAP, (void *)&hasneon, (int)sizeof(hasneon)) != 0) {
-        return 0;
+        hasneon = 0;
     }
     return (hasneon & HWCAP_NEON) == HWCAP_NEON;
-#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID)
+#elif (defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON;
 #elif defined(SDL_PLATFORM_LINUX)
     return readProcAuxvForNeon();
@@ -510,6 +516,27 @@ static int CPU_haveNEON(void)
     return 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
+    return 0;
+#endif
+}
+
+#ifndef AT_HWCAP2
+#define AT_HWCAP2 26
+#endif
+#ifndef HWCAP_SVE
+#define HWCAP_SVE (1 << 22)
+#endif
+#ifndef HWCAP2_SVE2
+#define HWCAP2_SVE2 (1 << 1)
+#endif
+
+static int CPU_haveSVE2(void)
+{
+#if defined(__aarch64__) && \
+    ((defined(SDL_PLATFORM_LINUX) && defined(HAVE_GETAUXVAL)) || defined(SDL_PLATFORM_ANDROID))
+    return ((getauxval(AT_HWCAP2) & HWCAP2_SVE2) == HWCAP2_SVE2)
+        && ((getauxval(AT_HWCAP) & HWCAP_SVE) == HWCAP_SVE);
+#else
     return 0;
 #endif
 }
@@ -960,6 +987,8 @@ static Uint32 SDLCALL SDL_CPUFeatureMaskFromHint(void)
                 spot_mask = CPU_HAS_LSX;
             } else if (ref_string_equals("lasx", spot, end)) {
                 spot_mask = CPU_HAS_LASX;
+            } else if (ref_string_equals("sve2", spot, end)) {
+                spot_mask = CPU_HAS_SVE2;
             } else {
                 // Ignore unknown/incorrect cpu feature(s)
                 continue;
@@ -1035,6 +1064,10 @@ static Uint32 SDL_GetCPUFeatures(void)
         if (CPU_haveLASX()) {
             SDL_CPUFeatures |= CPU_HAS_LASX;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
+        }
+        if (CPU_haveSVE2()) {
+            SDL_CPUFeatures |= CPU_HAS_SVE2;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         SDL_CPUFeatures &= SDL_CPUFeatureMaskFromHint();
     }
@@ -1115,6 +1148,11 @@ bool SDL_HasLSX(void)
 bool SDL_HasLASX(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_LASX);
+}
+
+bool SDL_HasSVE2(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_SVE2);
 }
 
 static int SDL_SystemRAM = 0;

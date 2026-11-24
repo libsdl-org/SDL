@@ -1,0 +1,7 @@
+{
+  "name": "libSDL3.so",
+  "types": "./Index.d.ts",
+  "version": "1.0.0",
+  "description": "SDL3 interfaces callable from ArkTS."
+}
+

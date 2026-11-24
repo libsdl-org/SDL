@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,6 +18,15 @@
 #endif
 
 #include <stdlib.h>
+
+enum
+{
+    CUSTOM_CURSOR_ARGUMENTS = -1,
+    CUSTOM_CURSOR_ARROW = -2,
+    CUSTOM_CURSOR_CROSS = -3,
+    CUSTOM_ANIMATED_CURSOR = -4,
+    CUSTOM_ANIMATED_CURSOR_ONE_SHOT = -5,
+};
 
 /* Stolen from the mailing list */
 /* Creates a new mouse cursor from an XPM */
@@ -109,40 +118,9 @@ static const char *cross[] = {
     "16,16"
 };
 
-static SDL_Surface *load_image_file(const char *file)
-{
-    SDL_Surface *surface = SDL_LoadSurface(file);
-    if (surface) {
-        if (SDL_GetSurfacePalette(surface)) {
-            const Uint8 bpp = SDL_BITSPERPIXEL(surface->format);
-            const Uint8 mask = (1 << bpp) - 1;
-            if (SDL_PIXELORDER(surface->format) == SDL_BITMAPORDER_4321)
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint8 *)surface->pixels) & mask);
-            else
-                SDL_SetSurfaceColorKey(surface, 1, ((*(Uint8 *)surface->pixels) >> (8 - bpp)) & mask);
-        } else {
-            switch (SDL_BITSPERPIXEL(surface->format)) {
-            case 15:
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint16 *)surface->pixels) & 0x00007FFF);
-                break;
-            case 16:
-                SDL_SetSurfaceColorKey(surface, 1, *(Uint16 *)surface->pixels);
-                break;
-            case 24:
-                SDL_SetSurfaceColorKey(surface, 1, (*(Uint32 *)surface->pixels) & 0x00FFFFFF);
-                break;
-            case 32:
-                SDL_SetSurfaceColorKey(surface, 1, *(Uint32 *)surface->pixels);
-                break;
-            }
-        }
-    }
-    return surface;
-}
-
 static SDL_Surface *load_image(const char *file)
 {
-    SDL_Surface *surface = load_image_file(file);
+    SDL_Surface *surface = SDL_LoadSurface(file);
     if (surface) {
         /* Add a 2x version of this image, if available */
         SDL_Surface *surface2x = NULL;
@@ -157,7 +135,7 @@ static SDL_Surface *load_image(const char *file)
             } else {
                 SDL_strlcat(file2x, "2x", len);
             }
-            surface2x = load_image_file(file2x);
+            surface2x = SDL_LoadSurface(file2x);
             SDL_free(file2x);
         }
         if (surface2x) {
@@ -168,53 +146,35 @@ static SDL_Surface *load_image(const char *file)
     return surface;
 }
 
-static SDL_Cursor *init_color_cursor(const char *file)
+static SDL_Cursor *init_color_cursor(char **files, int num_frames)
 {
     SDL_Cursor *cursor = NULL;
-    SDL_CursorFrameInfo *frames = NULL;
-    int frame_cnt = 0;
+    SDL_CursorFrameInfo *frames = (SDL_CursorFrameInfo *)SDL_calloc(num_frames, sizeof(SDL_CursorFrameInfo));
     int i;
 
-    char *str = SDL_strdup(file);
-    if (!str) {
-        return NULL;
-    }
-
-    char *saveptr = NULL;
-    char *token = SDL_strtok_r(str, ";", &saveptr);
-    while(token != NULL) {
-        SDL_Surface *img = load_image(token);
+    for (i = 0; i < num_frames; i++) {
+        SDL_Surface *img = load_image(files[i]);
         if (!img) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_TEST, "Failed to load %s", files[i]);
             goto cleanup;
         }
-
-        frames = SDL_realloc(frames, (frame_cnt + 1) * sizeof(SDL_CursorFrameInfo));
-        if (!frames) {
-            goto cleanup;
+        frames[i].surface = img;
+        if (i > 0) {
+            frames[i].duration = 150;
         }
-
-        frames[frame_cnt].surface = img;
-        frames[frame_cnt++].duration = 150;
-
-        token = SDL_strtok_r(NULL, ";", &saveptr);
     }
 
-    if (frame_cnt == 1) {
+    if (num_frames == 1) {
         cursor = SDL_CreateColorCursor(frames[0].surface, 0, 0);
     } else {
-        cursor = SDL_CreateAnimatedCursor(frames, frame_cnt, 0, 0);
+        cursor = SDL_CreateAnimatedCursor(frames, num_frames, 0, 0);
     }
 
 cleanup:
-    if (frames) {
-        for (i = 0; i < frame_cnt; ++i) {
-            SDL_DestroySurface(frames[i].surface);
-        }
-
-        SDL_free(frames);
+    for (i = 0; i < num_frames; ++i) {
+        SDL_DestroySurface(frames[i].surface);
     }
-
-    SDL_free(str);
+    SDL_free(frames);
 
     return cursor;
 }
@@ -239,13 +199,16 @@ static SDL_Cursor *init_system_cursor(const char *image[])
             }
             switch (image[4 + row][col]) {
             case 'X':
+                // Black
                 data[i] |= 0x01;
                 mask[i] |= 0x01;
                 break;
             case '.':
+                // White
                 mask[i] |= 0x01;
                 break;
             case 'o':
+                // Inverted or black
                 data[i] |= 0x01;
                 break;
             case ' ':
@@ -322,7 +285,12 @@ static SDL_Cursor *init_animated_cursor(const char *image[], bool oneshot)
         frame_count = 6;
     }
 
-    return SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+    SDL_Cursor *cursor = SDL_CreateAnimatedCursor(frames, frame_count, hot_x, hot_y);
+
+    SDL_DestroySurface(surface);
+    SDL_DestroySurface(invsurface);
+
+    return cursor;
 }
 
 static SDLTest_CommonState *state;
@@ -341,6 +309,92 @@ quit(int rc)
     /* Let 'main()' return normally */
     if (rc != 0) {
         exit(rc);
+    }
+}
+
+static const char *get_active_cursor_name()
+{
+    switch ((int)cursor_types[current_cursor]) {
+    case CUSTOM_CURSOR_ARGUMENTS:
+        return "Custom cursor (arguments)";
+    case CUSTOM_CURSOR_ARROW:
+        return "Custom cursor (arrow)";
+    case CUSTOM_CURSOR_CROSS:
+        return "Custom cursor (cross - inverted pixels)";
+    case CUSTOM_ANIMATED_CURSOR_ONE_SHOT:
+        return "Animated custom cursor (one-shot)";
+    case CUSTOM_ANIMATED_CURSOR:
+        return "Animated custom cursor";
+    case SDL_SYSTEM_CURSOR_DEFAULT:
+        return "Default";
+    case SDL_SYSTEM_CURSOR_TEXT:
+        return "Text";
+    case SDL_SYSTEM_CURSOR_WAIT:
+        return "Wait";
+    case SDL_SYSTEM_CURSOR_CROSSHAIR:
+        return "Crosshair";
+    case SDL_SYSTEM_CURSOR_PROGRESS:
+        return "Progress: Small wait cursor (or Wait if not available)";
+    case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
+        return "Double arrow pointing northwest and southeast";
+    case SDL_SYSTEM_CURSOR_NESW_RESIZE:
+        return "Double arrow pointing northeast and southwest";
+    case SDL_SYSTEM_CURSOR_EW_RESIZE:
+        return "Double arrow pointing west and east";
+    case SDL_SYSTEM_CURSOR_NS_RESIZE:
+        return "Double arrow pointing north and south";
+    case SDL_SYSTEM_CURSOR_MOVE:
+        return "Move: Four pointed arrow pointing north, south, east, and west";
+    case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
+        return "Not Allowed: Slashed circle or crossbones";
+    case SDL_SYSTEM_CURSOR_POINTER:
+        return "Pointer: Hand";
+    case SDL_SYSTEM_CURSOR_NW_RESIZE:
+        return "Window resize top-left";
+    case SDL_SYSTEM_CURSOR_N_RESIZE:
+        return "Window resize top";
+    case SDL_SYSTEM_CURSOR_NE_RESIZE:
+        return "Window resize top-right";
+    case SDL_SYSTEM_CURSOR_E_RESIZE:
+        return "Window resize right";
+    case SDL_SYSTEM_CURSOR_SE_RESIZE:
+        return "Window resize bottom-right";
+    case SDL_SYSTEM_CURSOR_S_RESIZE:
+        return "Window resize bottom";
+    case SDL_SYSTEM_CURSOR_SW_RESIZE:
+        return "Window resize bottom-left";
+    case SDL_SYSTEM_CURSOR_W_RESIZE:
+        return "Window resize left";
+    case SDL_SYSTEM_CURSOR_CONTEXT_MENU:
+        return "Context menu";
+    case SDL_SYSTEM_CURSOR_HELP:
+        return "Help";
+    case SDL_SYSTEM_CURSOR_CELL:
+        return "Cell";
+    case SDL_SYSTEM_CURSOR_VERTICAL_TEXT:
+        return "Vertical text";
+    case SDL_SYSTEM_CURSOR_ALIAS:
+        return "Alias";
+    case SDL_SYSTEM_CURSOR_COPY:
+        return "Copy";
+    case SDL_SYSTEM_CURSOR_NO_DROP:
+        return "No drop";
+    case SDL_SYSTEM_CURSOR_GRAB:
+        return "Grab";
+    case SDL_SYSTEM_CURSOR_GRABBING:
+        return "Grabbing";
+    case SDL_SYSTEM_CURSOR_COL_RESIZE:
+        return "Column resize";
+    case SDL_SYSTEM_CURSOR_ROW_RESIZE:
+        return "Row resize";
+    case SDL_SYSTEM_CURSOR_ALL_SCROLL:
+        return "All scroll: Four pointed arrow pointing north, south, east, and west";
+    case SDL_SYSTEM_CURSOR_ZOOM_IN:
+        return "Zoom in";
+    case SDL_SYSTEM_CURSOR_ZOOM_OUT:
+        return "Zoom out";
+    default:
+        return "UNKNOWN CURSOR TYPE, FIX THIS PROGRAM.";
     }
 }
 
@@ -364,80 +418,7 @@ static void loop(void)
 
                 SDL_SetCursor(cursors[current_cursor]);
 
-                switch ((int)cursor_types[current_cursor]) {
-                case (SDL_SystemCursor)-3:
-                    SDL_Log("Animated custom cursor (one-shot)");
-                    break;
-                case (SDL_SystemCursor)-2:
-                    SDL_Log("Animated custom cursor");
-                    break;
-                case (SDL_SystemCursor)-1:
-                    SDL_Log("Custom cursor");
-                    break;
-                case SDL_SYSTEM_CURSOR_DEFAULT:
-                    SDL_Log("Default");
-                    break;
-                case SDL_SYSTEM_CURSOR_TEXT:
-                    SDL_Log("Text");
-                    break;
-                case SDL_SYSTEM_CURSOR_WAIT:
-                    SDL_Log("Wait");
-                    break;
-                case SDL_SYSTEM_CURSOR_CROSSHAIR:
-                    SDL_Log("Crosshair");
-                    break;
-                case SDL_SYSTEM_CURSOR_PROGRESS:
-                    SDL_Log("Progress: Small wait cursor (or Wait if not available)");
-                    break;
-                case SDL_SYSTEM_CURSOR_NWSE_RESIZE:
-                    SDL_Log("Double arrow pointing northwest and southeast");
-                    break;
-                case SDL_SYSTEM_CURSOR_NESW_RESIZE:
-                    SDL_Log("Double arrow pointing northeast and southwest");
-                    break;
-                case SDL_SYSTEM_CURSOR_EW_RESIZE:
-                    SDL_Log("Double arrow pointing west and east");
-                    break;
-                case SDL_SYSTEM_CURSOR_NS_RESIZE:
-                    SDL_Log("Double arrow pointing north and south");
-                    break;
-                case SDL_SYSTEM_CURSOR_MOVE:
-                    SDL_Log("Move: Four pointed arrow pointing north, south, east, and west");
-                    break;
-                case SDL_SYSTEM_CURSOR_NOT_ALLOWED:
-                    SDL_Log("Not Allowed: Slashed circle or crossbones");
-                    break;
-                case SDL_SYSTEM_CURSOR_POINTER:
-                    SDL_Log("Pointer: Hand");
-                    break;
-                case SDL_SYSTEM_CURSOR_NW_RESIZE:
-                    SDL_Log("Window resize top-left");
-                    break;
-                case SDL_SYSTEM_CURSOR_N_RESIZE:
-                    SDL_Log("Window resize top");
-                    break;
-                case SDL_SYSTEM_CURSOR_NE_RESIZE:
-                    SDL_Log("Window resize top-right");
-                    break;
-                case SDL_SYSTEM_CURSOR_E_RESIZE:
-                    SDL_Log("Window resize right");
-                    break;
-                case SDL_SYSTEM_CURSOR_SE_RESIZE:
-                    SDL_Log("Window resize bottom-right");
-                    break;
-                case SDL_SYSTEM_CURSOR_S_RESIZE:
-                    SDL_Log("Window resize bottom");
-                    break;
-                case SDL_SYSTEM_CURSOR_SW_RESIZE:
-                    SDL_Log("Window resize bottom-left");
-                    break;
-                case SDL_SYSTEM_CURSOR_W_RESIZE:
-                    SDL_Log("Window resize left");
-                    break;
-                default:
-                    SDL_Log("UNKNOWN CURSOR TYPE, FIX THIS PROGRAM.");
-                    break;
-                }
+                SDL_Log("%s", get_active_cursor_name());
 
             } else {
                 show_cursor = !show_cursor;
@@ -476,6 +457,8 @@ static void loop(void)
                 black = !black;
             }
         }
+        SDL_SetRenderDrawColor(renderer, 0xDD, 0x33, 0x00, 0xFF);
+        SDL_RenderDebugText(renderer, 4.0f, 4.0f, get_active_cursor_name());
         SDL_RenderPresent(renderer);
     }
 #ifdef SDL_PLATFORM_EMSCRIPTEN
@@ -488,7 +471,8 @@ static void loop(void)
 int main(int argc, char *argv[])
 {
     int i;
-    const char *color_cursor = NULL;
+    char **frames = NULL;
+    int num_frames = -1;
     SDL_Cursor *cursor;
 
     /* Initialize test framework */
@@ -502,11 +486,18 @@ int main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
-            color_cursor = argv[i];
-            break;
+            if (SDL_strcmp(argv[i], "--frames") == 0 && frames == NULL) {
+                num_frames = 0;
+                while (i + 1 + num_frames < argc && argv[i + 1 + num_frames][0] != '-') {
+                    num_frames += 1;
+                }
+                frames = &argv[i + 1];
+                consumed = num_frames + 1;
+            }
         }
-        if (consumed < 0) {
-            SDLTest_CommonLogUsage(state, argv[0], NULL);
+        if (consumed <= 0) {
+            static const char *options[] = { "[--frames frame0.bmp [frame1.bmp [frame2.bmp ...]]]", NULL};
+            SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
         i += consumed;
@@ -518,28 +509,20 @@ int main(int argc, char *argv[])
 
     num_cursors = 0;
 
-    if (color_cursor) {
+    if (num_frames > 0) {
         /* Only load the first file in the list for the icon. */
-        char *icon_str = SDL_strdup(color_cursor);
-        if (icon_str) {
-            char *tok = SDL_strchr(icon_str, ';');
-            if (tok) {
-                *tok = '\0';
+        SDL_Surface *icon = load_image(frames[0]);
+        if (icon) {
+            for (i = 0; i < state->num_windows; ++i) {
+                SDL_SetWindowIcon(state->windows[i], icon);
             }
-            SDL_Surface *icon = load_image(icon_str);
-            SDL_free(icon_str);
-            if (icon) {
-                for (i = 0; i < state->num_windows; ++i) {
-                    SDL_SetWindowIcon(state->windows[i], icon);
-                }
-                SDL_DestroySurface(icon);
-            }
+            SDL_DestroySurface(icon);
         }
 
-        cursor = init_color_cursor(color_cursor);
+        cursor = init_color_cursor(frames, num_frames);
         if (cursor) {
             cursors[num_cursors] = cursor;
-            cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+            cursor_types[num_cursors] = (SDL_SystemCursor)CUSTOM_CURSOR_ARGUMENTS;
             num_cursors++;
         }
     }
@@ -547,28 +530,28 @@ int main(int argc, char *argv[])
     cursor = init_system_cursor(arrow);
     if (cursor) {
         cursors[num_cursors] = cursor;
-        cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+        cursor_types[num_cursors] = (SDL_SystemCursor)CUSTOM_CURSOR_ARROW;
         num_cursors++;
     }
 
     cursor = init_system_cursor(cross);
     if (cursor) {
         cursors[num_cursors] = cursor;
-        cursor_types[num_cursors] = (SDL_SystemCursor)-1;
+        cursor_types[num_cursors] = (SDL_SystemCursor)CUSTOM_CURSOR_CROSS;
         num_cursors++;
     }
 
     cursor = init_animated_cursor(arrow, false);
     if (cursor) {
         cursors[num_cursors] = cursor;
-        cursor_types[num_cursors] = (SDL_SystemCursor)-2;
+        cursor_types[num_cursors] = (SDL_SystemCursor)CUSTOM_ANIMATED_CURSOR;
         num_cursors++;
     }
 
     cursor = init_animated_cursor(arrow, true);
     if (cursor) {
         cursors[num_cursors] = cursor;
-        cursor_types[num_cursors] = (SDL_SystemCursor)-3;
+        cursor_types[num_cursors] = (SDL_SystemCursor)CUSTOM_ANIMATED_CURSOR_ONE_SHOT;
         num_cursors++;
     }
 

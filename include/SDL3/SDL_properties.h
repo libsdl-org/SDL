@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -110,6 +110,8 @@ typedef enum SDL_PropertyType
  *
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -505,6 +507,21 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetBooleanProperty(SDL_PropertiesID props, 
  * \since This function is available since SDL 3.2.0.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ClearProperty(SDL_PropertiesID props, const char *name);
+
+/**
+ * Get the current number of items in a group of properties.
+ *
+ * For an invalid SDL_PropertiesID, this returns zero and does not set an
+ * error message.
+ *
+ * \param props the properties to query.
+ * \returns the number of property items available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC int SDLCALL SDL_GetNumProperties(SDL_PropertiesID props);
 
 /**
  * A callback used to enumerate all the properties in a group of properties.
