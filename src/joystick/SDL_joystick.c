@@ -1186,10 +1186,11 @@ static bool ShouldAttemptSensorFusion(SDL_Joystick *joystick, bool *invert_senso
         }
     }
 
-    // See if this is another known wraparound gamepad
+    // See if this is another known built-in or wraparound gamepad
     if (joystick->name &&
         (SDL_strstr(joystick->name, "Backbone One") ||
-         SDL_strstr(joystick->name, "Kishi"))) {
+         SDL_strstr(joystick->name, "Kishi") ||
+         SDL_strcmp(joystick->name, "Odin Controller") == 0)) {
         return true;
     }
     if (IsROGAlly(joystick)) {
