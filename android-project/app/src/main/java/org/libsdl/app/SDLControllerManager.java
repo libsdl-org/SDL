@@ -502,6 +502,7 @@ class SDLJoystickHandler {
         " System Control",
         " Keyboard",
         " Mouse",
+        " Touchpad",
     };
 
     String getJoystickName(InputDevice joystickDevice) {
