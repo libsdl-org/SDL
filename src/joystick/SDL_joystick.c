@@ -4516,7 +4516,7 @@ static bool SDL_IsJoystickDrumKit(Uint16 vendor_id, Uint16 product_id)
     return SDL_VIDPIDInList(vendor_id, product_id, &drum_devices);
 }
 
-SDL_JoystickType SDL_GetJoystickTypeForXInput(SDL_XInputSubType subtype) {
+SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype) {
     switch (subtype) {
     case SDL_XINPUT_SUBTYPE_GAMEPAD:
     case SDL_XINPUT_SUBTYPE_STAGE_KIT:
@@ -4580,7 +4580,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_GUID guid)
     }
 
     if (SDL_IsJoystickXInput(guid)) {
-        return SDL_GetJoystickTypeForXInput(guid.data[15]);
+        return SDL_GetJoystickTypeForXInputSubType(guid.data[15]);
     }
 
     if (SDL_IsJoystickGameInput(guid)) {

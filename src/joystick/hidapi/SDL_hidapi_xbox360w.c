@@ -327,7 +327,7 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
                 ctx->capabilities.flags |= FLAG_FORCE_FEEDBACK;
             }
 
-            device->joystick_type = SDL_GetJoystickTypeForXInput(ctx->capabilities.subType);
+            device->joystick_type = SDL_GetJoystickTypeForXInputSubType(ctx->capabilities.subType);
             device->guid.data[15] = ctx->capabilities.subType;
             const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             if (SDL_hid_write(device->dev, capabilities_packet, sizeof(capabilities_packet)) != sizeof(capabilities_packet)) {

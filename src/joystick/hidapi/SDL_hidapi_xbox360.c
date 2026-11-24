@@ -114,7 +114,7 @@ static void FetchXInputCapabilities(SDL_HIDAPI_Device *device)
         if (intf_desc->extra_length == 17 && intf_desc->extra[1] == 0x21) {
             ctx->capabilities.type = intf_desc->extra[3];
             ctx->capabilities.subType = intf_desc->extra[4];
-            device->joystick_type = SDL_GetJoystickTypeForXInput(ctx->capabilities.subType);
+            device->joystick_type = SDL_GetJoystickTypeForXInputSubType(ctx->capabilities.subType);
             device->guid.data[15] = ctx->capabilities.subType;
             unsigned char buf[20];
             int ret = libusb_ctx->control_transfer(handle, 0xC1, 0x01, 0x100, 0x0, buf, sizeof(buf), 100);
