@@ -1411,8 +1411,7 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         }
     }
 
-    if (createinfo->size < 4)
-    {
+    if (createinfo->size < 4) {
         SDL_SetError("Cannot create a buffer with size less than 4 bytes");
         return NULL;
     }
@@ -1443,14 +1442,12 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
             SDL_assert_release(!"Invalid transfer buffer usage!");
         }
 
-        if (createinfo->size < 4)
-        {
+        if (createinfo->size < 4) {
             SDL_assert_release(!"Cannot create a transfer buffer with size less than 4 bytes!");
         }
     }
 
-    if (createinfo->size < 4)
-    {
+    if (createinfo->size < 4) {
         SDL_SetError("Cannot create a transfer buffer with size less than 4 bytes");
         return NULL;
     }
