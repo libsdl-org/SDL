@@ -1768,6 +1768,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         // Have we been requested to quit (or another client message?)
     case ClientMessage:
     {
+#ifdef DEBUG_XEVENTS
+        SDL_Log("window 0x%lx: ClientMessage : %s", xevent->xany.window, X11_XGetAtomName(display, xevent->xclient.message_type));
+#endif
+
         static int xdnd_version = 0;
 
         if (xevent->xclient.message_type == videodata->atoms.XdndEnter) {
