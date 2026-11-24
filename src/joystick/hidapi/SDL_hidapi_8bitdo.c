@@ -162,6 +162,7 @@ static bool HIDAPI_Driver8BitDo_IsSupportedDevice(SDL_HIDAPI_Device *device, con
         case USB_PRODUCT_8BITDO_PRO_3:
         case USB_PRODUCT_8BITDO_ULTIMATE2_BT:
         case USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS:
+        case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED:
         case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS:
         case USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G:
         case USB_PRODUCT_8BITDO_ULTIMATE3:
@@ -201,9 +202,10 @@ static bool HIDAPI_Driver8BitDo_InitDevice(SDL_HIDAPI_Device *device)
             }
             break;
         }
-    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED ||
+               device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
                device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G) {
-        // The Ultimate 2C Wireless controller has no sensor or rumble support
+        // The Ultimate 2C controller has no sensor or rumble support
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
         // Supported by default
         ctx->sensors_supported = true;
@@ -360,7 +362,8 @@ static bool HIDAPI_Driver8BitDo_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joys
         device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS) {
 		// This controller has additional buttons
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_BUTTONS;
-    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
+    } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED ||
+               device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS ||
                device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G) {
         joystick->nbuttons = SDL_GAMEPAD_NUM_8BITDO_ULTIMATE2C_BUTTONS;
     } else if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE3) {
@@ -820,7 +823,9 @@ static bool HIDAPI_Driver8BitDo_UpdateDevice(SDL_HIDAPI_Device *device)
             continue;
         }
 
-        if (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G && size == 64) {
+        if (size == 64 &&
+            (device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED ||
+             device->product_id == USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G)) {
             HIDAPI_Driver8BitDo_Handle2CStatePacket(joystick, ctx, data, size);
         } else if (size == 9) {
             // Old firmware USB report for the SF30 Pro and SN30 Pro controllers
