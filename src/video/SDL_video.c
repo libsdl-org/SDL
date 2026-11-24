@@ -2340,16 +2340,17 @@ static void SDL_FinishWindowCreation(SDL_Window *window, SDL_WindowFlags flags)
 {
     PrepareDragAndDropSupport(window);
 
+    // This is applied to external windows too, since SDL filters mouse events based on this flag
+    if ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) &&
+        (!_this->SetWindowMousePassthrough ||
+         !_this->SetWindowMousePassthrough(_this, window, true))) {
+        window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
+    }
+
     if (window->flags & SDL_WINDOW_EXTERNAL) {
         // Whoever has created the window has already applied whatever flags are needed
     } else {
         ApplyWindowFlags(window, flags);
-
-        if ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) &&
-            (!_this->SetWindowMousePassthrough ||
-             !_this->SetWindowMousePassthrough(_this, window, true))) {
-            window->flags &= ~SDL_WINDOW_MOUSE_PASSTHROUGH;
-        }
 
         if (!(flags & SDL_WINDOW_HIDDEN)) {
             SDL_ShowWindow(window);
