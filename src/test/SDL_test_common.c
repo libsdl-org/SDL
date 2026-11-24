@@ -2590,6 +2590,12 @@ SDL_AppResult SDLTest_CommonEventMainCallbacks(SDLTest_CommonState *state, const
                 if (window) {
                     SDL_SetWindowRelativeMouseMode(window, !SDL_GetWindowRelativeMouseMode(window));
                 }
+            } else if (withAlt) {
+                /* Alt-R toggles the resizable property */
+                SDL_Window *window = SDL_GetWindowFromEvent(event);
+                if (window) {
+                    SDL_SetWindowResizable(window, !(SDL_GetWindowFlags(window) & SDL_WINDOW_RESIZABLE));
+                }
             }
             break;
         case SDLK_T:
