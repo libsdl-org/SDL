@@ -47,6 +47,7 @@
 
 // These headers have system specific definitions, so aren't included above
 #include <SDL3/SDL_vulkan.h>
+#include <SDL3/SDL_wgpu.h>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 #ifndef WIN32_LEAN_AND_MEAN

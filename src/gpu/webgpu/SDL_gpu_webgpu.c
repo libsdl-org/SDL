@@ -20,6 +20,8 @@
 #include "../SDL_sysgpu.h"
 #include "webgpu.h"
 
+#include <SDL3/SDL_wgpu.h>
+
 #define WINDOW_PROPERTY_DATA                           "SDL.internal.gpu.webgpu.data"
 #define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
 #define DEFAULT_BINDGROUP_EXPIRY                       10000
