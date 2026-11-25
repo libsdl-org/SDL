@@ -622,7 +622,7 @@ struct SDL_VideoData
     char *ime_candidates[MAX_CANDLIST];
     int ime_candcount;
     DWORD ime_candref;
-    DWORD ime_candsel;
+    int ime_candsel;
     int ime_candlistindexbase;
     bool ime_horizontal_candidates;
 #endif
