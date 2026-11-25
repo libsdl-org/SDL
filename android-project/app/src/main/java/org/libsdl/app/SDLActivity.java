@@ -18,7 +18,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -972,13 +971,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             if (readyToRun) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
-                    // Start up the C app thread and enable sensor input for the first time
-                    // FIXME: Why aren't we enabling sensor input at start?
-
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
-                    if (mSurface != null) {
-                        mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
-                    }
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem

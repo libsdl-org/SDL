@@ -229,6 +229,7 @@ class SDLJoystickHandler {
         Sensor gyroscopeSensor;
         volatile boolean sensorsRequested;
         boolean sensorsEnabled;
+        boolean gyroscopeRegistered;
     }
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
@@ -501,6 +502,7 @@ class SDLJoystickHandler {
         " System Control",
         " Keyboard",
         " Mouse",
+        " Touchpad",
     };
 
     String getJoystickName(InputDevice joystickDevice) {
@@ -767,18 +769,47 @@ class SDLJoystickHandler {
                         SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
                     }
                     if (joystick.gyroscopeSensor != null) {
-                        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
+                        if (joystick.accelerometerSensor != null) {
+                            // Enabling a sensor can change the input device on some devices, and if that change
+                            // is delivered while we're registering another sensor, InputDeviceSensorManager
+                            // deadlocks (its sensor lock and the InputManagerGlobal device lock are taken in
+                            // opposite orders). Register the gyroscope separately, once input devices settle.
+                            mHandler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    postWhenInputDevicesSettle(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            registerGyroscope(device_id);
+                                        }
+                                    });
+                                }
+                            }, INPUT_DEVICE_SETTLE_TIME_MS);
+                        } else {
+                            registerGyroscope(device_id);
+                        }
                     }
                 } else {
                     if (joystick.accelerometerSensor != null) {
                         SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.accelerometerSensor);
                     }
-                    if (joystick.gyroscopeSensor != null) {
+                    if (joystick.gyroscopeSensor != null && joystick.gyroscopeRegistered) {
                         SDLSensorManager.unregisterListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor);
+                        joystick.gyroscopeRegistered = false;
                     }
                 }
             }
         });
+    }
+
+    private void registerGyroscope(int device_id) {
+        SDLJoystick joystick = getJoystick(device_id);
+        if (joystick == null || !joystick.sensorsEnabled || joystick.gyroscopeRegistered) {
+            // The sensors were disabled or the joystick was removed in the meantime
+            return;
+        }
+        SDLSensorManager.registerListener(joystick.sensorManager, joystick.sensorListener, joystick.gyroscopeSensor, SensorManager.SENSOR_DELAY_GAME);
+        joystick.gyroscopeRegistered = true;
     }
 }
 

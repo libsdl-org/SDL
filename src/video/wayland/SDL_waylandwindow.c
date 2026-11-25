@@ -1195,7 +1195,7 @@ static void handle_xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_t
         /* xdg_toplevel spec states that this is a suggestion.
          * Ignore if less than or greater than max/min size.
          */
-        if ((window->flags & SDL_WINDOW_RESIZABLE) || maximized) {
+        if ((window->flags & SDL_WINDOW_RESIZABLE) || maximized || tiled) {
             if (!width) {
                 /* This happens when the compositor indicates that the size is
                  * up to the client, so use the cached window size here.
@@ -1619,8 +1619,8 @@ static void decoration_frame_configure(struct libdecor_frame *frame,
             }
         }
     } else {
-        if (!(window->flags & SDL_WINDOW_RESIZABLE) && !maximized) {
-            /* If we're a fixed-size, non-maximized window, we know our size for sure.
+        if (!(window->flags & SDL_WINDOW_RESIZABLE) && !maximized && !tiled) {
+            /* If we're a fixed-size, non-maximized, non-tiled window, we know our size for sure.
              * Always assume the configure is wrong.
              */
             if (!wind->scale_to_display) {
@@ -2926,6 +2926,15 @@ void Wayland_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool
 {
     SDL_WindowData *wind = window->internal;
 
+    if (!resizable) {
+        // In a fixed-size layout, freeze the current dimensions after fast-forwarding.
+        FlushPendingEvents(window);
+        if ((window->flags & SDL_WINDOW_MAXIMIZED) || window->tiled) {
+            window->floating.w = window->windowed.w = window->w;
+            window->floating.h = window->windowed.h = window->h;
+        }
+    }
+
     // Reset the system limits if libdecor changed them.
     wind->system_limits.min_width = 1;
     wind->system_limits.min_height = 1;
@@ -2933,7 +2942,7 @@ void Wayland_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool
     /* When changing the resize capability on libdecor windows, the limits must always
      * be reapplied, as when libdecor changes states, it overwrites the values internally.
      */
-    SetMinMaxDimensions(window);
+    ConfigureWindowGeometry(window);
     CommitLibdecorFrame(window);
 
     if (wind->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
@@ -3360,21 +3369,23 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
      */
     FlushPendingEvents(window);
 
-    const bool maximized = (window->flags & SDL_WINDOW_MAXIMIZED) != 0;
-    const bool resizable_state = !(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN));
-
-    /* Maximized and fullscreen windows don't get resized, and the new size is ignored
-     * if this is just to recalculate the min/max or aspect limits on a tiled window.
+    /* The sizes of maximized and fullscreen windows are dictated by the compositor.
      *
      * Some compositors will mark tiled windows as maximized. In these cases, the content
      * size is recalculated, but window size itself is left alone, as the spec states that
      * the configure size of a maximized window must be obeyed.
      */
-    if (resizable_state || (window->tiled && !wind->limits_changed) ||
-        wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
+    const bool resizable_state = !(window->flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN));
 
-        // Don't change the window size if maximized and tiled.
-        if (!maximized) {
+    if (resizable_state || wind->shell_surface_type == WAYLAND_SHELL_SURFACE_TYPE_CUSTOM) {
+        /* Only try to resize tiled windows if this isn't in response to a limits change.
+         *
+         * The spec doesn't explicitly prohibit programmatically resizing tiled windows,
+         * but it won't be done unless directly requested since compositors typically
+         * either don't allow it, or the window and tiled arrangement ends up in some
+         * semi-broken state.
+         */
+        if (!window->tiled || (window->tiled && !wind->limits_changed)) {
             if (!wind->scale_to_display) {
                 wind->requested.logical_width = window->pending.w;
                 wind->requested.logical_height = window->pending.h;
@@ -3384,21 +3395,21 @@ void Wayland_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
                 wind->requested.pixel_width = window->pending.w;
                 wind->requested.pixel_height = window->pending.h;
             }
-        }
-
-        /* If a non-resizable window somehow wound up in the tiled state, store the new
-         * size in the floating parameters so the size will be preserved for future
-         * configure events.
-         *
-         * This shouldn't happen, but apparently it can on at least one compositor...
-         */
-        if (window->tiled && !(window->flags & SDL_WINDOW_RESIZABLE)) {
-            window->floating.w = window->pending.w;
-            window->floating.h = window->pending.h;
+        } else {
+            window->last_size_pending = false;
         }
     } else {
         // Can't resize the window.
         window->last_size_pending = false;
+    }
+
+    /* If a non-resizable window somehow wound up in the tiled state, and this isn't
+     * just a limits change, store the new size in the floating parameters so the
+     * size will be preserved for future configure events.
+     */
+    if (window->tiled && !wind->limits_changed && !(window->flags & SDL_WINDOW_RESIZABLE)) {
+        window->floating.w = window->pending.w;
+        window->floating.h = window->pending.h;
     }
 
     wind->limits_changed = false;
@@ -3493,6 +3504,27 @@ bool Wayland_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float 
     }
 
     return SDL_SetError("wayland: set window opacity failed; compositor lacks support for the required wp_alpha_modifier_v1 protocol");
+}
+
+bool Wayland_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+    SDL_VideoData *viddata = _this->internal;
+    SDL_WindowData *data = window->internal;
+
+    // Tooltips and mouse passthrough windows never receive mouse input
+    if (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_MOUSE_PASSTHROUGH)) {
+        struct wl_region *region = wl_compositor_create_region(viddata->compositor);
+        if (!region) {
+            return SDL_OutOfMemory();
+        }
+        wl_surface_set_input_region(data->surface, region);
+        wl_region_destroy(region);
+    } else {
+        wl_surface_set_input_region(data->surface, NULL);
+    }
+
+    // The input region is double-buffered and is applied with the next surface commit
+    return true;
 }
 
 void Wayland_SetWindowTitle(SDL_VideoDevice *_this, SDL_Window *window)

@@ -1326,6 +1326,7 @@ _SDL_LoadTexture
 _SDL_GetCachePath
 _SDL_SetRenderLogicalPresentationRect
 _SDL_IsGooglePlayOnPC
+_SDL_SetWindowMousePassthrough
 _SDL_SetTrayMenuShownCallback
 _SDL_SetTrayStatus
 _SDL_GetTrayStatus

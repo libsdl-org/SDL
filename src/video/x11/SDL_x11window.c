@@ -33,6 +33,7 @@
 #include "SDL_x11mouse.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11xfixes.h"
+#include "SDL_x11shape.h"
 
 #ifdef SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -1368,6 +1369,13 @@ bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opac
     }
 
     return true;
+}
+
+bool X11_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+    // Update the shape to take mouse passthrough and the window shape into account
+    SDL_Surface *shape = (SDL_Surface *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_SHAPE_POINTER, NULL);
+    return X11_UpdateWindowShape(_this, window, shape);
 }
 
 bool X11_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent)

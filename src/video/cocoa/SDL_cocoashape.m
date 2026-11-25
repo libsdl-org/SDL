@@ -31,7 +31,10 @@ bool Cocoa_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Sur
     SDL_CocoaWindowData *data = (__bridge SDL_CocoaWindowData *)window->internal;
     BOOL ignoresMouseEvents = NO;
 
-    if (shape) {
+    // Tooltips and mouse passthrough windows never receive mouse input
+    if (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_MOUSE_PASSTHROUGH)) {
+        ignoresMouseEvents = YES;
+    } else if (shape) {
         SDL_FPoint point;
         SDL_GetGlobalMouseState(&point.x, &point.y);
         point.x -= window->x;

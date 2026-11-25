@@ -299,7 +299,6 @@ static SDL_Cursor *cursors[5 + SDL_SYSTEM_CURSOR_COUNT];
 static SDL_SystemCursor cursor_types[5 + SDL_SYSTEM_CURSOR_COUNT];
 static int num_cursors;
 static int current_cursor;
-static bool current_cursor_valid;
 static bool show_cursor;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -315,9 +314,6 @@ quit(int rc)
 
 static const char *get_active_cursor_name()
 {
-    // if (!current_cursor_valid) {
-    //     return "";
-    // }
     switch ((int)cursor_types[current_cursor]) {
     case CUSTOM_CURSOR_ARGUMENTS:
         return "Custom cursor (arguments)";
@@ -415,7 +411,6 @@ static void loop(void)
                     continue;
                 }
 
-                current_cursor_valid = true;
                 ++current_cursor;
                 if (current_cursor == num_cursors) {
                     current_cursor = 0;

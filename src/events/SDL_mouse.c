@@ -573,6 +573,10 @@ void SDL_SetMouseFocus(SDL_Window *window)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    if (SDL_IsMousePassthroughWindow(window)) {
+        window = NULL;
+    }
+
     if (mouse->focus == window) {
         return;
     }
@@ -623,7 +627,11 @@ bool SDL_MousePositionInWindow(SDL_Window *window, float x, float y)
 static bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint32 buttonstate, bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    bool inWindow = SDL_MousePositionInWindow(window, x, y);
+    bool inWindow = false;
+
+    if (!SDL_IsMousePassthroughWindow(window)) {
+        inWindow = SDL_MousePositionInWindow(window, x, y);
+    }
 
     if (!inWindow) {
         if (window == mouse->focus) {
@@ -652,6 +660,10 @@ static bool SDL_UpdateMouseFocus(SDL_Window *window, float x, float y, Uint32 bu
 
 void SDL_SendMouseMotion(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, bool relative, float x, float y)
 {
+    if (SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
+
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
         if (!SDL_UpdateMouseFocus(window, x, y, SDL_GetMouseButtonState(mouse, mouseID, true), (mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID))) {
@@ -943,6 +955,14 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
     }
     buttonstate = source->buttonstate;
 
+    if (SDL_IsMousePassthroughWindow(window)) {
+        // Releases of buttons pressed before passthrough was enabled still go through,
+        // so the button state doesn't get stuck and automatic mouse capture is released.
+        if (down || !(buttonstate & SDL_BUTTON_MASK(button))) {
+            return;
+        }
+    }
+
     // SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events
     if (mouse->mouse_touch_events) {
         if (mouseID != SDL_TOUCH_MOUSEID && mouseID != SDL_PEN_MOUSEID && button == SDL_BUTTON_LEFT) {
@@ -1020,10 +1040,16 @@ static void SDL_PrivateSendMouseButton(Uint64 timestamp, SDL_Window *window, SDL
             mouseID = source->mouseID;
         }
 
+        SDL_Window *event_window = mouse->focus;
+        if (!event_window && SDL_IsMousePassthroughWindow(window)) {
+            // This is the release of a button that was held when mouse passthrough was enabled
+            event_window = window;
+        }
+
         SDL_Event event;
         event.type = type;
         event.common.timestamp = timestamp;
-        event.button.windowID = mouse->focus ? mouse->focus->id : 0;
+        event.button.windowID = event_window ? event_window->id : 0;
         event.button.which = mouseID;
         event.button.down = down;
         event.button.button = button;
@@ -1058,6 +1084,10 @@ void SDL_SendMouseButton(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouse
 void SDL_SendMouseWheel(Uint64 timestamp, SDL_Window *window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
 
     if (window) {
         SDL_SetMouseFocus(window);
@@ -1473,10 +1503,15 @@ bool SDL_UpdateMouseCapture(bool force_release)
     }
 
     if (!force_release) {
-        if (SDL_GetMessageBoxCount() == 0 &&
-            (mouse->capture_desired || (mouse->auto_capture && SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, false) != 0))) {
+        const bool auto_captured = (mouse->auto_capture && SDL_GetMouseButtonState(mouse, SDL_GLOBAL_MOUSE_ID, false) != 0);
+        if (SDL_GetMessageBoxCount() == 0 && (mouse->capture_desired || auto_captured)) {
             if (!mouse->relative_mode) {
                 capture_window = mouse->focus;
+
+                // A window that enabled mouse passthrough while buttons were held keeps the automatic capture
+                if (!capture_window && auto_captured && SDL_IsMousePassthroughWindow(mouse->capture_window)) {
+                    capture_window = mouse->capture_window;
+                }
             }
         }
     }

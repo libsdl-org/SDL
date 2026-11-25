@@ -93,6 +93,11 @@ static SDL_VideoDevice *UIKit_CreateDevice(void)
         device->HideWindow = UIKit_HideWindow;
         device->RaiseWindow = UIKit_RaiseWindow;
         device->SetWindowBordered = UIKit_SetWindowBordered;
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+        if (@available(iOS 13.0, *)) {
+            device->SetWindowResizable = UIKit_SetWindowResizable;
+        }
+#endif
         device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
         device->DestroyWindow = UIKit_DestroyWindow;
         device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;

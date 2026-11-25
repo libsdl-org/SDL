@@ -420,6 +420,11 @@ void SDL_SendTouch(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid, SDL_
                 SDL_SendTouch(timestamp, id, fingerid, window, SDL_EVENT_FINGER_CANCELED, x, y, pressure);
             }
 
+            if (SDL_IsMousePassthroughWindow(window)) {
+                SDL_UnlockTouch();
+                return;
+            }
+
             if (!SDL_AddFinger(touch, fingerid, x, y, pressure)) {
                 SDL_UnlockTouch();
                 return;
@@ -544,6 +549,11 @@ void SDL_SendTouchMotion(Uint64 timestamp, SDL_TouchID id, SDL_FingerID fingerid
         finger->x = x;
         finger->y = y;
         finger->pressure = pressure;
+
+        if (SDL_IsMousePassthroughWindow(window)) {
+            SDL_UnlockTouch();
+            return;
+        }
 
         // Post the event, if desired
         if (SDL_EventEnabled(SDL_EVENT_FINGER_MOTION)) {

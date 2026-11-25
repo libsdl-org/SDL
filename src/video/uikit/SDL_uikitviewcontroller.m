@@ -236,6 +236,8 @@ static void SDLCALL SDL_HideHomeIndicatorHintChanged(void *userdata, const char 
     int h = (int)size.height;
 
     SDL_SendWindowEvent(window, SDL_EVENT_WINDOW_RESIZED, w, h);
+
+    UIKit_UpdateWindowSizeLock(window);
 }
 
 #ifndef SDL_PLATFORM_TVOS

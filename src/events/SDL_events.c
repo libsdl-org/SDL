@@ -116,7 +116,6 @@ typedef struct SDL2_SysWMmsg
 
 static SDL_EventWatchList SDL_event_watchers;
 static SDL_AtomicInt SDL_sentinel_pending;
-static Uint32 SDL_last_event_id = 0;
 
 typedef struct
 {
@@ -1142,8 +1141,6 @@ static int SDL_AddEvent(SDL_Event *event)
         SDL_EventQ.max_events_seen = final_count;
     }
 
-    ++SDL_last_event_id;
-
     return 1;
 }
 
@@ -1610,8 +1607,6 @@ bool SDL_PollEvent(SDL_Event *event)
     return SDL_WaitEventTimeoutNS(event, 0);
 }
 
-#ifndef SDL_PLATFORM_ANDROID
-
 static Sint64 SDL_events_get_polling_interval(void)
 {
     Sint64 poll_intervalNS = SDL_MAX_SINT64;
@@ -1648,6 +1643,8 @@ static Sint64 SDL_events_get_polling_interval(void)
 #endif
     return poll_intervalNS;
 }
+
+#ifndef SDL_PLATFORM_ANDROID
 
 static bool SDL_HasMainThreadCallbacks(void)
 {
@@ -1821,14 +1818,18 @@ bool SDL_WaitEventTimeoutNS(SDL_Event *event, Sint64 timeoutNS)
             return true;
         }
 
-        Uint64 delay = -1;
+        // Wake up periodically if joysticks or sensors need to be polled
+        Sint64 delay = SDL_events_get_polling_interval();
         if (timeoutNS > 0) {
             Uint64 now = SDL_GetTicksNS();
             if (now >= expiration) {
                 // Timeout expired and no events
                 return false;
             }
-            delay = (expiration - now);
+            delay = SDL_min((Sint64)(expiration - now), delay);
+        }
+        if (delay == SDL_MAX_SINT64) {
+            delay = -1;
         }
         Android_PumpEvents(delay);
     }

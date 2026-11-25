@@ -1363,6 +1363,7 @@ SDL_DYNAPI_PROC(SDL_Texture*,SDL_LoadTexture,(SDL_Renderer *a,const char *b),(a,
 SDL_DYNAPI_PROC(char*,SDL_GetCachePath,(const char *a,const char *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_SetRenderLogicalPresentationRect,(SDL_Renderer *a,const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_IsGooglePlayOnPC,(void),(),return)
+SDL_DYNAPI_PROC(bool,SDL_SetWindowMousePassthrough,(SDL_Window *a,bool b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_SetTrayMenuShownCallback,(SDL_TrayMenu *a,SDL_TrayMenuShownCallback b,void *c),(a,b,c),)
 SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_SetTrayStatus,(SDL_Tray *a, SDL_TrayStatus b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_GetTrayStatus,(SDL_Tray *a),(a),return)

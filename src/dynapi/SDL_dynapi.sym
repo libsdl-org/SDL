@@ -1327,6 +1327,7 @@ SDL3_0.0.0 {
     SDL_GetCachePath;
     SDL_SetRenderLogicalPresentationRect;
     SDL_IsGooglePlayOnPC;
+    SDL_SetWindowMousePassthrough;
     SDL_SetTrayMenuShownCallback;
     SDL_SetTrayStatus;
     SDL_GetTrayStatus;

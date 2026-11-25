@@ -139,8 +139,8 @@ class JobSpec:
 JOB_SPECS = {
     "msys2-mingw32": JobSpec(name="Windows (msys2, mingw32)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw32",            msys2_platform=Msys2Platform.Mingw32, ),
     "msys2-mingw64": JobSpec(name="Windows (msys2, mingw64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64",            msys2_platform=Msys2Platform.Mingw64, ),
-    "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
-    "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,        artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
+    "msys2-clang64": JobSpec(name="Windows (msys2, clang64)",               priority=True, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,       artifact="SDL-mingw64-clang",      msys2_platform=Msys2Platform.Clang64, ),
+    "msys2-ucrt64": JobSpec(name="Windows (msys2, ucrt64)",                 priority=False,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msys2,        artifact="SDL-mingw64-ucrt",       msys2_platform=Msys2Platform.Ucrt64, ),
     "cygwin": JobSpec(name="Cygwin",                                        priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Cygwin,      artifact="SDL-cygwin", ),
     "msvc-x64": JobSpec(name="Windows (MSVC, x64)",                         priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x64",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC/SDL.sln", ),
     "msvc-x86": JobSpec(name="Windows (MSVC, x86)",                         priority=True,  os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-VC-x86",             msvc_arch=MsvcArch.X86,   msvc_project="VisualC/SDL.sln", ),
@@ -806,7 +806,6 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
             job.binutils_strings = "/opt/devkitpro/devkitARM/bin/arm-none-eabi-strings"
             job.static_lib = StaticLibType.A
         case SdlPlatform.Msys2:
-            job.ccache = True
             job.shell = "msys2 {0}"
             assert spec.msys2_platform
             job.msys2_msystem = spec.msys2_platform.value
@@ -825,6 +824,7 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 f"{msys2_env}-pkg-config",
             ])
             if spec.msys2_platform not in (Msys2Platform.Mingw32, ):
+                job.ccache = True
                 job.msys2_packages.append(f"{msys2_env}-clang-tools-extra")
                 job.msys2_packages.append(f"{msys2_env}-perl")
                 job.msys2_packages.append(f"{msys2_env}-ffmpeg")

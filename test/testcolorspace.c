@@ -39,7 +39,9 @@ static SDL_Colorspace colorspaces[] = {
        SDL_COLORSPACE_HDR10
 };
 static int colorspace_count = SDL_arraysize(colorspaces);
+#ifdef CYCLE_COLORSPACES
 static int colorspace_index = 0;
+#endif
 static SDL_Colorspace colorspace = SDL_COLORSPACE_SRGB;
 static const char *colorspace_name = "sRGB";
 static int renderer_count = 0;
@@ -1096,7 +1098,9 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
                 colorspace = SDL_COLORSPACE_UNKNOWN;
                 for (int j = 0; j < colorspace_count; ++j) {
                     if (SDL_strcasecmp(colorspace_name, colorspace_names[j]) == 0) {
+#ifdef CYCLE_COLORSPACES
                         colorspace_index = j;
+#endif
                         colorspace = colorspaces[j];
                         break;
                     }

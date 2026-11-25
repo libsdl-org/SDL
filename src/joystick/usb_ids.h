@@ -77,8 +77,11 @@
 #define USB_PRODUCT_8BITDO_PRO_2                          0x6003    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
+#define USB_PRODUCT_8BITDO_ULTIMATE2_BT                   0x6011    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
 #define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS            0x301b    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G       0x301c
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED               0x301d    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE3                      0x202f    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
@@ -208,6 +211,8 @@
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLE                   0x0b20
 #define USB_PRODUCT_XBOX_SERIES_X                         0x0b12
 #define USB_PRODUCT_XBOX_SERIES_X_BLE                     0x0b13
+#define USB_PRODUCT_XBOX_ONE_NANO                         0x0b4e
+#define USB_PRODUCT_XBOX_ONE_NANO_BLE                     0x0b4f
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 #define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6

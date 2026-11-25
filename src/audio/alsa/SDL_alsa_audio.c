@@ -305,6 +305,7 @@ static void ALSA_guess_device_prefix(void)
                 }
             }
         }
+        ALSA_snd_device_name_free_hint(hints);
     }
 
     if (!ALSA_device_prefix) {
@@ -827,10 +828,12 @@ static int alsa_chmap_cfg_ordered_fixed_or_paired(struct ALSA_pcm_cfg_ctx *ctx)
             continue;
         }
 
-        for (unsigned int chan_idx = 0; ctx->sdl_chmap[chan_idx] == alsa_chmap[chan_idx]; chan_idx++) {
-            if (chan_idx == ctx->chans_n) {
-                return alsa_chmap_install(ctx, alsa_chmap);
-            }
+        unsigned int chan_idx = 0;
+        while ((chan_idx < ctx->chans_n) && (ctx->sdl_chmap[chan_idx] == alsa_chmap[chan_idx])) {
+            chan_idx++;
+        }
+        if (chan_idx == ctx->chans_n) {
+            return alsa_chmap_install(ctx, alsa_chmap);
         }
     }
     return CHMAP_NOT_FOUND;
@@ -1274,6 +1277,7 @@ static bool ALSA_OpenDevice(SDL_AudioDevice *device)
         ALSA_snd_pcm_nonblock(cfg_ctx.device->hidden->pcm, 0);
     }
 #endif
+    ALSA_snd_pcm_free_chmaps(cfg_ctx.chmap_queries);
     return true;  // We're ready to rock and roll. :-)
 
 err_cleanup_ctx:
@@ -1637,6 +1641,7 @@ static void ALSA_DeinitializeStart(void)
     for (dev = hotplug_devices; dev; dev = next) {
         //SDL_LogInfo(SDL_LOG_CATEGORY_AUDIO, "ALSA: at shutdown, removing %s device '%s'", dev->recording ? "recording" : "playback", dev->name);
         next = dev->next;
+        SDL_free(dev->id);
         SDL_free(dev->name);
         SDL_free(dev);
     }

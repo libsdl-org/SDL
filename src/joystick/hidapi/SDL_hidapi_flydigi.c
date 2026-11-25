@@ -241,7 +241,12 @@ static void HIDAPI_DriverFlydigi_UpdateDeviceIdentity(SDL_HIDAPI_Device *device)
         HIDAPI_SetDeviceName(device, "Flydigi Apex 3");
         break;
     case SDL_FLYDIGI_APEX4:
-        // The Apex 4 controller has sensors, but they're only reported when gyro mouse is enabled
+        ctx->sensors_supported = true;
+        ctx->accelScale = SDL_STANDARD_GRAVITY / 800.0f;
+        ctx->gyroScale[0] = DEG2RAD(12750.0f);
+        ctx->gyroScale[1] = DEG2RAD(12750.0f);
+        ctx->gyroScale[2] = -DEG2RAD(3500.0f);
+        ctx->sensor_timestamp_step_ns = ctx->wireless ? SENSOR_INTERVAL_VADER4_PRO_DONGLE_NS : SENSOR_INTERVAL_VADER4_PRO_WIRED_NS;
         HIDAPI_SetDeviceName(device, "Flydigi Apex 4");
         break;
     case SDL_FLYDIGI_APEX5:
