@@ -1223,7 +1223,6 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
             break;
         case IMN_SETCOMPOSITIONFONT:
             SDL_DebugIMELog("IMN_SETCOMPOSITIONFONT");
-            IME_SetWindow(videodata, data->window);
             break;
         case IMN_SETCANDIDATEPOS:
             SDL_DebugIMELog("IMN_SETCANDIDATEPOS");
