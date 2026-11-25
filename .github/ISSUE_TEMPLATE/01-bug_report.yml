@@ -1,0 +1,26 @@
+name: Bug Report
+description: File a bug report.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Hi, here are [some tips](https://wiki.libsdl.org/SDL3/HowToReportBugs) for reporting SDL bugs!
+
+        - [Are you here to ask a question?](https://wiki.libsdl.org/SDL3/HowToReportBugs#dont-use-the-bug-tracker-for-questions)
+        - [Are you sure it's an SDL bug?](https://wiki.libsdl.org/SDL3/HowToReportBugs#try-the-example-programs)
+        - [Are you sure it's SDL's memory leak?](https://wiki.libsdl.org/SDL3/HowToReportBugs#reporting-memory-leaks)
+        - [Tell us what platform you're using.](https://wiki.libsdl.org/SDL3/HowToReportBugs#tell-us-what-platform-youre-using)
+
+        Thank you for helping make SDL better!
+  - type: checkboxes
+    attributes:
+      label: "By opening this issue, I confirm that:"
+      options:
+        - label: "I did not paste LLM-generated text into this description."
+          required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Add a description.
+    validations:
+      required: false
