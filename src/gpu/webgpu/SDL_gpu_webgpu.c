@@ -11,6 +11,7 @@
 // FIXME: Uniform buffers are constant and therefore will break if the user pushes more than 1MiB of data
 //        to one within a single command buffer. Why would you ever do that? I have no idea. But it might happen.
 // FIXME: We should seperate the swapchain fences from the submitted command buffer fences!
+// FIXME: Frame pacing is screwed up on Firefox. Don't really know why, probably has to do with their stupid 100ms polling
 
 #include "SDL_internal.h"
 
@@ -25,6 +26,10 @@
 #define DEFAULT_PSEUDOMAP_SIZE_THRESHOLD               (1 << 25) // 32MiB
 #define DEFAULT_UNIFORM_BUFFER_SIZE                    (1 << 20) // 1MiB
 #define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
+
+// previously public properties that were moved to be internal
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS    "SDL.internal.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB "SDL.internal.gpu.device.create.webgpu.pseudomapsizethreshold"
 
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
 #define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)                                \
@@ -5313,8 +5318,11 @@ static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
     SDL_DestroyMutex(renderer->submittingCommandBufferLock);
 
     wgpuQueueRelease(renderer->queue);
-    // FIXME: Releasing the device leaks a bunch of memory each time!!! There's 100% some resource I'm not freeing.
-    // wgpuDeviceRelease(renderer->device);
+    // FIXME: Releasing the device here causes memory leaks (according to ASan).
+    // Those memory leaks are also entirely illegible. I have NO idea why they happen since
+    // ASan straight up just blames them on random BS. We're releasing the device here since
+    // Emscripten doesn't like it if we don't, but I have NO way of knowing what's wrong here.
+    wgpuDeviceRelease(renderer->device);
     wgpuAdapterRelease(renderer->adapter);
     wgpuInstanceRelease(renderer->instance);
 
@@ -5891,7 +5899,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     bool getAdapterSucceeded = false;
     bool getDeviceSucceeded = false;
 
-    renderer = (WebGPURenderer *)SDL_calloc(1, sizeof(*renderer));
+    renderer = SDL_calloc(1, sizeof(*renderer));
 
     if (renderer == NULL) {
         return NULL;
@@ -5899,7 +5907,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->debugMode = debugMode;
     renderer->preferLowPower = preferLowPower;
-    renderer->props = SDL_CreateProperties();
+    renderer->props = props;
     renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
     renderer->pseudoMapBufferSizeThreshold = pseudoMapThreshold;
     renderer->maxFramesInFlight = 2; // Default
@@ -5908,10 +5916,6 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
 
     renderer->destroyingSelfLock = SDL_CreateMutex();
     renderer->submittingCommandBufferLock = SDL_CreateMutex();
-
-    if (!SDL_CopyProperties(props, renderer->props)) {
-        SDL_Log("Failed to copy properties! Oh no!\n%s", SDL_GetError());
-    }
 
 // I do not like MSVC.
 #ifdef _MSC_VER
@@ -5949,7 +5953,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     WEBGPU_INTERNAL_InitUniformResources(renderer);
     WEBGPU_INTERNAL_InitBlitResources(renderer);
 
-    result = (SDL_GPUDevice *)SDL_calloc(1, sizeof(SDL_GPUDevice));
+    result = SDL_calloc(1, sizeof(SDL_GPUDevice));
 
     result->driverData = (SDL_GPURenderer *)renderer;
     result->shader_formats = SDL_GPU_SHADERFORMAT_WGSL;

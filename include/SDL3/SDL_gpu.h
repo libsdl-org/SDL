@@ -2427,32 +2427,6 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDevice(
  * not support indirect command buffers, MSAA depth resolve, and stencil
  * resolve/feedback, but these are not exposed features in SDL_GPU.)
  *
- * TODO: This is gigantic and confusing, we need to polish this up
- * With the WebGPU backend:
- *
- * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS`:
- *   This property controls how aggressive the bind group cache pruning is.
- *   If this is set to 100, any bind groups that haven't been used in the last
- *   100 command buffer submissions will be automatically freed.
- *   A proper explanation of this would take about a million years, but TLDR:
- *   Every render & compute pass has multiple bind groups. Those bind groups are
- *   only valid for the specific textures, samplers, and buffers you bound during
- *   that pass. This means that for every new resource that gets bound, we must
- *   create an entirely new bind group. SDLGPU automatically caches these groups
- *   for better performance. However, every cached bind group takes up a small
- *   amount of VRAM (a couple hundred bytes), so, SDLGPU will automatically free
- *   any unused bind groups. This property is generally unimportant, but there
- *   are usecases for when you want to disable caching (if so, set this to 0)
- *   or if you want to disable cache pruning. (if so, set this to -1)
- *   TLDR: Don't touch this if you don't know EXACTLY what it does.
- * - `SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB`:
- *   This sets the limit as to how large a GPU transfer buffer can be before it
- *   can no longer be "pseudo-mapped". Pseudo-mapping refers to an internal
- *   optimization which disables traditional GPU buffer mapping in favor of a
- *   WebGPU owned staging buffer. This is almost always the best option, however
- *   it does come with the caveat of requiring an equally sized CPU buffer for
- *   each mapped GPU transfer buffer.
- *
  * \param props the properties to use.
  * \returns a GPU context on success or NULL on failure; call SDL_GetError()
  *          for more information.
@@ -2489,8 +2463,6 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_REQUIRE_HARDWARE_ACCELERATION_BOOLEAN "SDL.gpu.device.create.vulkan.requirehardwareacceleration"
 #define SDL_PROP_GPU_DEVICE_CREATE_VULKAN_OPTIONS_POINTER                       "SDL.gpu.device.create.vulkan.options"
 #define SDL_PROP_GPU_DEVICE_CREATE_METAL_ALLOW_MACFAMILY1_BOOLEAN               "SDL.gpu.device.create.metal.allowmacfamily1"
-#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS      "SDL.gpu.device.create.webgpu.bindgroupexpiry"
-#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB   "SDL.gpu.device.create.webgpu.pseudomapsizethreshold"
 
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_ENABLE_BOOLEAN                            "SDL.gpu.device.create.xr.enable"
 #define SDL_PROP_GPU_DEVICE_CREATE_XR_INSTANCE_POINTER                          "SDL.gpu.device.create.xr.instance_out"
@@ -2906,13 +2878,49 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ---
  *
- * // TODO: Add WGSL example here!
+ * **WGSL (WebGPU Shading Language)**
  *
  * For WGSL, use the following order:
  * - 0: Sampled textures, followed by read-only storage textures, followed by
  *   read-only storage buffers
  * - 1: Read-write storage textures, followed by read-write storage buffers
  * - 2: Uniform buffers
+ *
+ * Note that WebGPU does not differentiate between simultaneous read-write and non-simultaneous
+ * read-write. This means that any storage bind with both READ & WRITE accesses will be treated
+ * as if it were simultaneous. If simultaneous RW is unsupported, the backend will fall back
+ * to write-only.
+ *
+ * **Example**
+ *
+ * For a compute shader binding 2 of each resource type, the binds should look
+ * like this:
+ *
+ * ```wgsl
+ * // Sampled textures come first, followed by the sampler, in SDL slot order.
+ * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
+ * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
+ * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
+ * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
+ * // Any read-only storage textures come next, in SDL slot order.
+ * \@group(0) \@binding(4) var readOnlyStorageTextureBoundToSlot0: ...
+ * \@group(0) \@binding(5) var readOnlyStorageTextureBoundToSlot1: ...
+ * // Any read-only storage buffers come next, in SDL slot order.
+ * \@group(0) \@binding(6) var<storage, ...> readOnlyStorageBufferBoundToSlot0: ...
+ * \@group(0) \@binding(7) var<storage, ...> readOnlyStorageBufferBoundToSlot1: ...
+ * // Read-write storage textures and buffers have their own bind group.
+ * // Read-write storage textures go first, in SDL slot order.
+ * \@group(1) \@binding(0) var readWriteStorageTextureBoundToSlot0: ...
+ * \@group(1) \@binding(1) var readWriteStorageTextureBoundToSlot1: ...
+ * // Any read-write storage textures come next, in SDL slot order.
+ * \@group(1) \@binding(2) var<storage, ...> readWriteStorageBufferBoundToSlot0: ...
+ * \@group(1) \@binding(3) var<storage, ...> readWriteStorageBufferBoundToSlot1: ...
+ * // Any uniform buffers are in their own set, in SDL slot order.
+ * \@group(2) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * \@group(2) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
+ * ```
+ *
+ * ---
  *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
