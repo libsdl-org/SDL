@@ -1084,8 +1084,6 @@ static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd)
                         UINT page_start = 0;
                         UINT page_size = 0;
 
-                        videodata->ime_candsel = cand_list->dwSelection;
-
                         if (LANG() == LANG_CHS && IME_GetId(videodata, 0)) {
                             const UINT maxcandchar = 18;
                             size_t cchars = 0;
@@ -1106,11 +1104,21 @@ static void IME_GetCandidateList(SDL_VideoData *videodata, HWND hwnd)
                             page_size = i - page_start;
                         } else {
                             page_size = SDL_min(cand_list->dwPageSize == 0 ? MAX_CANDLIST : cand_list->dwPageSize, MAX_CANDLIST);
-                            page_start = (cand_list->dwSelection / page_size) * page_size;
+                            page_start = cand_list->dwPageStart;
+                            if (cand_list->dwSelection < page_start || cand_list->dwSelection - page_start >= page_size) {
+                                page_start = (cand_list->dwSelection / page_size) * page_size;
+                            }
                         }
                         for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < page_size; i++, j++) {
                             LPCWSTR candidate = (LPCWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i]);
                             IME_AddCandidate(videodata, j, candidate);
+                        }
+
+                        // The candidates are indexed from the start of the page, not the whole list
+                        if (cand_list->dwSelection >= page_start && cand_list->dwSelection - page_start < (DWORD)videodata->ime_candcount) {
+                            videodata->ime_candsel = (int)(cand_list->dwSelection - page_start);
+                        } else {
+                            videodata->ime_candsel = -1;
                         }
 
                         has_candidates = true;
