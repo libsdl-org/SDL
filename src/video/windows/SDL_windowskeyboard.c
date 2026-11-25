@@ -728,6 +728,27 @@ static void IME_SetWindow(SDL_VideoData *videodata, SDL_Window *window)
 
 #endif
 
+static int GetFontHeight(HWND hwnd, const LOGFONTW *font)
+{
+    int height = 0;
+
+    HFONT hfont = CreateFontIndirectW(font);
+    if (hfont) {
+        HDC hdc = GetDC(hwnd);
+        if (hdc) {
+            TEXTMETRICW tm;
+            HGDIOBJ old_font = SelectObject(hdc, hfont);
+            if (GetTextMetricsW(hdc, &tm)) {
+                height = tm.tmHeight;
+            }
+            SelectObject(hdc, old_font);
+            ReleaseDC(hwnd, hdc);
+        }
+        DeleteObject(hfont);
+    }
+    return height;
+}
+
 static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_Rect *rect, int cursor)
 {
     HIMC himc;
@@ -736,21 +757,43 @@ static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_
     if (himc) {
         COMPOSITIONFORM cof;
         CANDIDATEFORM caf;
-        int font_height = rect->h;
+        int font_height = 0;
+        int top, height;
 
         LOGFONTW font;
+        SDL_zero(font);
         if (ImmGetCompositionFontW(himc, &font)) {
-            font_height = font.lfHeight;
+            if (videodata->ime_font_height && SDL_memcmp(&font, &videodata->ime_font, sizeof(font)) == 0) {
+                font_height = videodata->ime_font_height;
+            } else {
+                font_height = GetFontHeight(hwnd, &font);
+                if (!font_height) {
+                    font_height = SDL_abs(font.lfHeight);
+                }
+                SDL_copyp(&videodata->ime_font, &font);
+                videodata->ime_font_height = font_height;
+            }
+        }
+        if (!font_height) {
+            font_height = rect->h;
+        }
+
+        // The composition text is clipped to the area, so grow it around the center if the font doesn't fit
+        top = rect->y;
+        height = rect->h;
+        if (font_height > height) {
+            top -= (font_height - height) / 2;
+            height = font_height;
         }
 
         SDL_zero(cof);
         cof.dwStyle = CFS_RECT;
         cof.ptCurrentPos.x = rect->x + cursor;
-        cof.ptCurrentPos.y = rect->y + (rect->h - font_height) / 2;
+        cof.ptCurrentPos.y = top + (height - font_height) / 2;
         cof.rcArea.left = rect->x;
         cof.rcArea.right = (LONG)rect->x + rect->w;
-        cof.rcArea.top = rect->y;
-        cof.rcArea.bottom = (LONG)rect->y + rect->h;
+        cof.rcArea.top = top;
+        cof.rcArea.bottom = (LONG)top + height;
         if (SDL_memcmp(&cof, &videodata->ime_composition_area, sizeof(cof)) != 0) {
             SDL_copyp(&videodata->ime_composition_area, &cof);
             ImmSetCompositionWindow(himc, &cof);
@@ -760,11 +803,11 @@ static void IME_SetTextInputArea(SDL_VideoData *videodata, HWND hwnd, const SDL_
         caf.dwIndex = 0;
         caf.dwStyle = CFS_EXCLUDE;
         caf.ptCurrentPos.x = rect->x + cursor;
-        caf.ptCurrentPos.y = rect->y;
+        caf.ptCurrentPos.y = top;
         caf.rcArea.left = rect->x;
         caf.rcArea.right = (LONG)rect->x + rect->w;
-        caf.rcArea.top = rect->y;
-        caf.rcArea.bottom = (LONG)rect->y + rect->h;
+        caf.rcArea.top = top;
+        caf.rcArea.bottom = (LONG)top + height;
         if (SDL_memcmp(&caf, &videodata->ime_candidate_area, sizeof(caf)) != 0) {
             SDL_copyp(&videodata->ime_candidate_area, &caf);
             ImmSetCandidateWindow(himc, &caf);
@@ -1180,6 +1223,7 @@ bool WIN_HandleIMEMessage(HWND hwnd, UINT msg, WPARAM wParam, LPARAM *lParam, SD
             break;
         case IMN_SETCOMPOSITIONFONT:
             SDL_DebugIMELog("IMN_SETCOMPOSITIONFONT");
+            IME_SetWindow(videodata, data->window);
             break;
         case IMN_SETCANDIDATEPOS:
             SDL_DebugIMELog("IMN_SETCANDIDATEPOS");
