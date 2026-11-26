@@ -11154,7 +11154,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 imageCopy.srcSubresource.mipLevel = srcSubresource->level;
                 imageCopy.extent.width = SDL_max(1, info.width >> srcSubresource->level);
                 imageCopy.extent.height = SDL_max(1, info.height >> srcSubresource->level);
-                imageCopy.extent.depth = info.type == SDL_GPU_TEXTURETYPE_3D ? info.layer_count_or_depth : 1;
+                imageCopy.extent.depth = info.type == SDL_GPU_TEXTURETYPE_3D ? SDL_max(1, info.layer_count_or_depth >> srcSubresource->level) : 1;
                 imageCopy.dstOffset.x = 0;
                 imageCopy.dstOffset.y = 0;
                 imageCopy.dstOffset.z = 0;

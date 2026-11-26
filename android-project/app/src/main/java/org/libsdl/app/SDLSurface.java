@@ -3,10 +3,7 @@ package org.libsdl.app;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Insets;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
+import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -32,11 +29,11 @@ import java.util.function.Consumer;
 */
 public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     View.OnApplyWindowInsetsListener, View.OnKeyListener, View.OnTouchListener,
-    SensorEventListener, ScaleGestureDetector.OnScaleGestureListener {
+    ScaleGestureDetector.OnScaleGestureListener {
 
-    // Sensors
-    protected SensorManager mSensorManager;
+    // Display handling
     protected Display mDisplay;
+    protected DisplayManager.DisplayListener mDisplayListener;
 
     // Keep track of the surface size to normalize touch events
     protected float mWidth, mHeight;
@@ -97,7 +94,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setOnTouchListener(this);
 
         mDisplay = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-        mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 
         setOnGenericMotionListener(SDLActivity.getMotionListener());
 
@@ -113,7 +109,7 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     }
 
     protected void handlePause() {
-        enableSensor(Sensor.TYPE_ACCELEROMETER, false);
+        enableRotationListener(false);
     }
 
     protected void handleResume() {
@@ -123,7 +119,68 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         setOnApplyWindowInsetsListener(this);
         setOnKeyListener(this);
         setOnTouchListener(this);
-        enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+        enableRotationListener(true);
+    }
+
+    protected void enableRotationListener(boolean enabled) {
+        DisplayManager displayManager = (DisplayManager) getContext().getSystemService(Context.DISPLAY_SERVICE);
+        if (displayManager == null) {
+            return;
+        }
+
+        if (enabled) {
+            if (mDisplayListener == null) {
+                mDisplayListener = new DisplayManager.DisplayListener() {
+                    @Override
+                    public void onDisplayAdded(int displayId) {
+                    }
+
+                    @Override
+                    public void onDisplayRemoved(int displayId) {
+                    }
+
+                    @Override
+                    public void onDisplayChanged(int displayId) {
+                        if (displayId == mDisplay.getDisplayId()) {
+                            updateRotation();
+                        }
+                    }
+                };
+                displayManager.registerDisplayListener(mDisplayListener, null);
+            }
+
+            // Get the current rotation
+            updateRotation();
+        } else {
+            if (mDisplayListener != null) {
+                displayManager.unregisterDisplayListener(mDisplayListener);
+                mDisplayListener = null;
+            }
+        }
+    }
+
+    protected void updateRotation() {
+        int newRotation;
+        switch (mDisplay.getRotation()) {
+            case Surface.ROTATION_0:
+            default:
+                newRotation = 0;
+                break;
+            case Surface.ROTATION_90:
+                newRotation = 90;
+                break;
+            case Surface.ROTATION_180:
+                newRotation = 180;
+                break;
+            case Surface.ROTATION_270:
+                newRotation = 270;
+                break;
+        }
+
+        if (newRotation != SDLActivity.mCurrentRotation) {
+            SDLActivity.mCurrentRotation = newRotation;
+            SDLActivity.onNativeRotationChanged(newRotation);
+        }
     }
 
     protected Surface getNativeSurface() {
@@ -516,64 +573,6 @@ public class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 removeCallbacks(mHDRStableRunnable);
             }
         } catch (Exception ignored) {
-        }
-    }
-
-    // Sensor events
-    protected void enableSensor(int sensortype, boolean enabled) {
-        // TODO: This uses getDefaultSensor - what if we have >1 accels?
-        if (enabled) {
-            SDLSensorManager.registerListener(mSensorManager, this,
-                            mSensorManager.getDefaultSensor(sensortype),
-                            SensorManager.SENSOR_DELAY_GAME);
-        } else {
-            SDLSensorManager.unregisterListener(mSensorManager, this,
-                            mSensorManager.getDefaultSensor(sensortype));
-        }
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        // TODO
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-
-            // Since we may have an orientation set, we won't receive onConfigurationChanged events.
-            // We thus should check here.
-            int newRotation;
-
-            float x, y;
-            switch (mDisplay.getRotation()) {
-                case Surface.ROTATION_0:
-                default:
-                    x = event.values[0];
-                    y = event.values[1];
-                    newRotation = 0;
-                    break;
-                case Surface.ROTATION_90:
-                    x = -event.values[1];
-                    y = event.values[0];
-                    newRotation = 90;
-                    break;
-                case Surface.ROTATION_180:
-                    x = -event.values[0];
-                    y = -event.values[1];
-                    newRotation = 180;
-                    break;
-                case Surface.ROTATION_270:
-                    x = event.values[1];
-                    y = -event.values[0];
-                    newRotation = 270;
-                    break;
-            }
-
-            if (newRotation != SDLActivity.mCurrentRotation) {
-                SDLActivity.mCurrentRotation = newRotation;
-                SDLActivity.onNativeRotationChanged(newRotation);
-            }
         }
     }
 

@@ -28,13 +28,6 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
 
-typedef struct SDL_PrivateGLESData
-{
-    // 1401 If the struct-declaration-list contains no named members, the behavior is undefined.
-    // warning: empty struct has size 0 in C, size 1 in C++ [-Wc++-compat]
-    int dummy;
-} SDL_PrivateGLESData;
-
 // OpenGLES functions
 #define X11_GLES_GetAttribute    SDL_EGL_GetAttribute
 #define X11_GLES_GetProcAddress  SDL_EGL_GetProcAddressInternal

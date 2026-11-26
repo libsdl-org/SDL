@@ -622,7 +622,7 @@ struct SDL_VideoData
     char *ime_candidates[MAX_CANDLIST];
     int ime_candcount;
     DWORD ime_candref;
-    DWORD ime_candsel;
+    int ime_candsel;
     int ime_candlistindexbase;
     bool ime_horizontal_candidates;
 #endif
@@ -630,6 +630,8 @@ struct SDL_VideoData
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     COMPOSITIONFORM ime_composition_area;
     CANDIDATEFORM ime_candidate_area;
+    LOGFONTW ime_font;
+    int ime_font_height;
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #ifndef SDL_DISABLE_WINDOWS_IME

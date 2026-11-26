@@ -3322,7 +3322,7 @@ void Wayland_UpdatePointerGrab(Wayland_Seat *seat)
             SDL_Window *window = w->sdlwindow;
 
             // Don't confine the pointer if the window doesn't have input focus, or it shouldn't be confined.
-            if (!(window->flags & SDL_WINDOW_INPUT_FOCUS) ||
+            if (!(window->flags & SDL_WINDOW_INPUT_FOCUS) || SDL_IsMousePassthroughWindow(window) ||
                 (!(window->flags & SDL_WINDOW_MOUSE_GRABBED) && SDL_RectEmpty(&window->mouse_rect))) {
                 return;
             }

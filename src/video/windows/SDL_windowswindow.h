@@ -74,6 +74,7 @@ struct SDL_WindowData
     WPARAM mouse_button_flags;
     LPARAM last_pointer_update;
     WCHAR high_surrogate;
+    float opacity;
     bool initializing;
     bool expected_resize;
     bool in_border_change;
@@ -115,6 +116,7 @@ extern void WIN_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool WIN_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern void WIN_GetWindowSizeInPixels(SDL_VideoDevice *_this, SDL_Window *window, int *width, int *height);
 extern bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+extern bool WIN_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough);
 extern void WIN_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_HideWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void WIN_RaiseWindow(SDL_VideoDevice *_this, SDL_Window *window);

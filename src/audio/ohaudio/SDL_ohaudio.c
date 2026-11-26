@@ -397,19 +397,7 @@ static bool BuildOHAudioStream(SDL_AudioDevice *device)
     ctx.OH_AudioStreamBuilder_SetSampleFormat(builder, format);
     ctx.OH_AudioStreamBuilder_SetSamplingRate(builder, device->spec.freq);
     ctx.OH_AudioStreamBuilder_SetChannelCount(builder, device->spec.channels);
-
-#if 0  // !!! FIXME: maybe we don't mess with this. (this is from the AAudio backend.)
-    int32_t sample_frames;
-    if (SDL_GetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES)) {
-        sample_frames = device->sample_frames;
-    } else {
-        // Use 20 ms for the default audio buffer size
-        sample_frames = (device->spec.freq / 50);
-    }
-    ctx.AAudioStreamBuilder_setBufferCapacityInFrames(builder, 2 * sample_frames); // AAudio requires that the buffer capacity is at least
-    ctx.AAudioStreamBuilder_setFramesPerDataCallback(builder, sample_frames);      // twice the size of the data callback buffer size
-#endif
-
+    ctx.OH_AudioStreamBuilder_SetFrameSizeInCallback(builder, device->sample_frames);
     ctx.OH_AudioStreamBuilder_SetLatencyMode(builder, AUDIOSTREAM_LATENCY_MODE_FAST);
     ctx.OH_AudioStreamBuilder_SetChannelLayout(builder, sdl_layout_map[device->spec.channels-1]);
 

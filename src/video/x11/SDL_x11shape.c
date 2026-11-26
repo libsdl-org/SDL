@@ -55,13 +55,17 @@ static Uint8 *GenerateShapeMask(SDL_Surface *shape)
 
 bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surface *shape)
 {
-    bool result = false;
-
 #ifdef SDL_VIDEO_DRIVER_X11_XSHAPE
     SDL_WindowData *windowdata = window->internal;
+    Display *display = windowdata->videodata->display;
 
-    // Generate a set of spans for the region
-    if (shape) {
+    // This sets the input region, which is shared by tooltips, mouse passthrough and the window shape
+    if (window->flags & (SDL_WINDOW_TOOLTIP | SDL_WINDOW_MOUSE_PASSTHROUGH)) {
+        // An empty input region passes all mouse input through to the windows below
+        Region region = X11_XCreateRegion();
+        X11_XShapeCombineRegion(display, windowdata->xwindow, ShapeInput, 0, 0, region, ShapeSet);
+        X11_XDestroyRegion(region);
+    } else if (shape) {
         SDL_Surface *stretched = NULL;
         Uint8 *mask;
         Pixmap pixmap;
@@ -79,33 +83,27 @@ bool X11_UpdateWindowShape(SDL_VideoDevice *_this, SDL_Window *window, SDL_Surfa
         }
 
         mask = GenerateShapeMask(shape);
-        if (mask) {
-            pixmap = X11_XCreateBitmapFromData(windowdata->videodata->display, windowdata->xwindow, (const char *)mask, shape->w, shape->h);
-            X11_XShapeCombineMask(windowdata->videodata->display, windowdata->xwindow, ShapeInput, 0, 0, pixmap, ShapeSet);
+        const bool have_mask = (mask != NULL);
+        if (have_mask) {
+            pixmap = X11_XCreateBitmapFromData(display, windowdata->xwindow, (const char *)mask, shape->w, shape->h);
+            X11_XShapeCombineMask(display, windowdata->xwindow, ShapeInput, 0, 0, pixmap, ShapeSet);
+            X11_XFreePixmap(display, pixmap);
             SDL_free(mask);
-
-            result = true;
         }
 
         if (stretched) {
             SDL_DestroySurface(stretched);
         }
+        if (!have_mask) {
+            return false;
+        }
     } else {
-        Region region = X11_XCreateRegion();
-        XRectangle rect;
-
-        rect.x = 0;
-        rect.y = 0;
-        rect.width = window->w;
-        rect.height = window->h;
-        X11_XUnionRectWithRegion(&rect, region, region);
-        X11_XShapeCombineRegion(windowdata->videodata->display, windowdata->xwindow, ShapeInput, 0, 0, region, ShapeSet);
-        X11_XDestroyRegion(region);
-        result = true;
+        X11_XShapeCombineMask(display, windowdata->xwindow, ShapeInput, 0, 0, None, ShapeSet);
     }
+    return true;
+#else
+    return SDL_Unsupported();
 #endif // SDL_VIDEO_DRIVER_X11_XSHAPE
-
-    return result;
 }
 
 #endif // SDL_VIDEO_DRIVER_X11

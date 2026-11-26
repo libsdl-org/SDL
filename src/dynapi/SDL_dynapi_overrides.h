@@ -1353,5 +1353,6 @@
 #define SDL_GetCachePath SDL_GetCachePath_REAL
 #define SDL_SetRenderLogicalPresentationRect SDL_SetRenderLogicalPresentationRect_REAL
 #define SDL_IsGooglePlayOnPC SDL_IsGooglePlayOnPC_REAL
+#define SDL_SetWindowMousePassthrough SDL_SetWindowMousePassthrough_REAL
 #define SDL_WGPU_CreateSurface SDL_WGPU_CreateSurface_REAL
 #define SDL_WGPU_DestroySurface SDL_WGPU_DestroySurface_REAL

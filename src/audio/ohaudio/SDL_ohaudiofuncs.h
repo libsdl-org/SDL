@@ -40,6 +40,7 @@ SDL_PROC(OH_AudioStream_Result, OH_AudioStreamBuilder_SetRendererWriteDataCallba
 SDL_PROC(OH_AudioStream_Result, OH_AudioStreamBuilder_SetRendererErrorCallback, (OH_AudioStreamBuilder* builder, OH_AudioRenderer_OnErrorCallback callback, void* userData))
 SDL_PROC(OH_AudioStream_Result, OH_AudioStreamBuilder_SetCapturerReadDataCallback, (OH_AudioStreamBuilder* builder, OH_AudioCapturer_OnReadDataCallback callback, void* userData))
 SDL_PROC(OH_AudioStream_Result, OH_AudioStreamBuilder_SetCapturerErrorCallback, (OH_AudioStreamBuilder* builder, OH_AudioCapturer_OnErrorCallback callback, void* userData))
+SDL_PROC(OH_AudioStream_Result, OH_AudioStreamBuilder_SetFrameSizeInCallback, (OH_AudioStreamBuilder* builder, int32_t frameSize))
 SDL_PROC(OH_AudioStream_Result, OH_AudioRenderer_Release, (OH_AudioRenderer* renderer))
 SDL_PROC(OH_AudioStream_Result, OH_AudioRenderer_Start, (OH_AudioRenderer* renderer))
 SDL_PROC(OH_AudioStream_Result, OH_AudioRenderer_Pause, (OH_AudioRenderer* renderer))
