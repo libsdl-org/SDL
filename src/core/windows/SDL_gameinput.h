@@ -40,6 +40,10 @@
 #define GAMEINPUT_API_VERSION 0
 #endif
 
+#if GAMEINPUT_API_VERSION != 0 && GAMEINPUT_API_VERSION < 4
+#error Only GameInput v0 and v4 or newer are supported
+#endif
+
 #if GAMEINPUT_API_VERSION > 0
 // Use the namespace of the current GameInput version
 #define STR_JOIN2(A, B) A##B
@@ -48,7 +52,7 @@ using namespace GameInput::STR_JOIN(v, GAMEINPUT_API_VERSION);
 #endif
 
 // Default value for SDL_HINT_JOYSTICK_GAMEINPUT
-#if defined(SDL_PLATFORM_GDK) || (GAMEINPUT_API_VERSION >= 3)
+#if defined(SDL_PLATFORM_GDK) || (GAMEINPUT_API_VERSION >= 4)
 #define SDL_GAMEINPUT_DEFAULT true
 #else
 #define SDL_GAMEINPUT_DEFAULT false

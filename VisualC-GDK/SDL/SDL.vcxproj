@@ -477,8 +477,6 @@
     <ClInclude Include="..\..\src\joystick\usb_ids.h" />
     <ClInclude Include="..\..\src\joystick\virtual\SDL_virtualjoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h" />
-    <ClInclude Include="..\..\src\joystick\windows\SDL_rawinputjoystick_c.h" />
-    <ClInclude Include="..\..\src\joystick\windows\SDL_windowsjoystick_c.h" />
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
@@ -756,18 +754,6 @@
     <ClCompile Include="..\..\src\joystick\SDL_steam_virtual_gamepad.c" />
     <ClCompile Include="..\..\src\joystick\virtual\SDL_virtualjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
-    <ClCompile Include="..\..\src\joystick\windows\SDL_rawinputjoystick.c" />
-    <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">CompileAsCpp</CompileAs>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Release|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>
-    </ClCompile>
-    <ClCompile Include="..\..\src\joystick\windows\SDL_windows_gaming_input.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c">
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.Scarlett.x64'">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Gaming.Xbox.XboxOne.x64'">stdcpp17</LanguageStandard>

@@ -39,6 +39,9 @@ struct recElement
     SInt32 minReport; // min returned value
     SInt32 maxReport; // max returned value
 
+    // mask applied to values when the logical range is unsigned but declared as negative
+    Uint32 unsignedMask;
+
     struct recElement *pNext; // next element in list
 };
 typedef struct recElement recElement;
@@ -67,15 +70,18 @@ struct joystick_hwdata
 
     bool removed;
     SDL_Joystick *joystick;
-    bool runLoopAttached; // is 'deviceRef' attached to a CFRunLoop?
+    bool opened;          // has 'deviceRef' been opened with IOHIDDeviceOpen()?
+    Uint64 entry_id;      // IORegistry entry ID, used to match removal notifications
 
-    int instance_id;
+    Uint16 vendor_id;
+    Uint16 product_id;
     SDL_GUID guid;
     int steam_virtual_gamepad_slot;
-    bool nacon_revolution_x_unlimited;
 
     struct joystick_hwdata *pNext; // next device
 };
 typedef struct joystick_hwdata recDevice;
+
+extern bool DARWIN_GetKnownDevice(const char *product_string, Uint16 *bus, Uint16 *vendor_id, Uint16 *product_id, char **name);
 
 #endif // SDL_JOYSTICK_IOKIT_H

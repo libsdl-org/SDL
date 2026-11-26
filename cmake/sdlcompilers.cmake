@@ -189,6 +189,10 @@ function(SDL_AddCommonCompilerFlags TARGET)
       # Stop the `clang: warning: argument unused during compilation: '--gcc-toolchain=$X/sdk/default/openharmony/native/llvm' [-Wunused-command-line-argument]` on every file compiled. I think this is a toolchain file issue...?
       sdl_target_compile_option_all_languages(${TARGET} "-Wno-unused-command-line-argument")
   endif()
+
+  if(MSVC)
+    target_compile_options(${TARGET} PRIVATE /utf-8)
+  endif()
 endfunction()
 
 function(check_x86_source_compiles BODY VAR)

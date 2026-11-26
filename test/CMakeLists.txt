@@ -152,6 +152,9 @@ if(HAVE_WAYLAND)
     endif()
 endif()
 
+check_include_file(signal.h LIBC_HAS_SIGNAL_H)
+check_include_file(libudev.h HAVE_LIBUDEV_H)
+
 function(add_sdl_test_executable TARGET)
     cmake_parse_arguments(AST "BUILD_DEPENDENT;NONINTERACTIVE;NEEDS_RESOURCES;TESTUTILS;THREADS;MAIN_CALLBACKS;NOTRACKMEM" "NAME83" "DEPENDS;DISABLE_THREADS_ARGS;NONINTERACTIVE_TIMEOUT;NONINTERACTIVE_ARGS;INSTALLED_ARGS;SOURCES" ${ARGN})
     if(AST_UNPARSED_ARGUMENTS)
@@ -171,6 +174,11 @@ function(add_sdl_test_executable TARGET)
         add_library(${TARGET} SHARED ${AST_SOURCES} ${EXTRA_SOURCES})
     else()
         add_executable(${TARGET} ${AST_SOURCES} ${EXTRA_SOURCES})
+    endif()
+    if(ANDROID)
+        if(NOT SDL_TESTS_LINK_SHARED)
+            target_link_options(${TARGET} PRIVATE "LINKER:SHELL:--version-script \"${CMAKE_CURRENT_SOURCE_DIR}/android/SDL_static_versyms.sym")
+        endif()
     endif()
     target_compile_definitions(${TARGET} PRIVATE HAVE_BUILD_CONFIG)
     SDL_AddCommonCompilerFlags(${TARGET})
@@ -262,19 +270,17 @@ function(add_sdl_test_executable TARGET)
         target_compile_definitions(${TARGET} PRIVATE HAVE_OPENGL)
     endif()
 
+    if(LIBC_HAS_SIGNAL_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_SIGNAL_H)
+    endif()
+
+    if(HAVE_LIBUDEV_H)
+        target_compile_definitions(${TARGET} PRIVATE HAVE_LIBUDEV_H)
+    endif()
+
     # FIXME: only add "${SDL3_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>" + include paths of external dependencies
     target_include_directories(${TARGET} PRIVATE "$<TARGET_PROPERTY:SDL3::${sdl_name_component},INCLUDE_DIRECTORIES>")
 endfunction()
-
-check_include_file(signal.h LIBC_HAS_SIGNAL_H)
-if(LIBC_HAS_SIGNAL_H)
-    add_definitions(-DHAVE_SIGNAL_H)
-endif()
-
-check_include_file(libudev.h HAVE_LIBUDEV_H)
-if(HAVE_LIBUDEV_H)
-    add_definitions(-DHAVE_LIBUDEV_H)
-endif()
 
 function(files2headers OUTPUT)
     set(xxd "${SDL3_SOURCE_DIR}/cmake/xxd.py")
@@ -864,7 +870,7 @@ if(ANDROID AND TARGET SDL3::Jar)
                     -cp "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>:${SDL_ANDROID_PLATFORM_ANDROID_JAR}"
                     -d "${classes_path}"
                 COMMAND ${Java_JAR_EXECUTABLE} cf "${OUT_JAR}" -C "${classes_path}" .
-                DEPENDS $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
+                DEPENDS SDL3-jar $<TARGET_PROPERTY:${TEST}-apk-linked,OUTPUTS> "$<TARGET_PROPERTY:SDL3::Jar,JAR_FILE>" "${JAVA_PACKAGE_DIR}/SDLTestActivity.java" "${JAVA_PACKAGE_DIR}/SDLEntryTestActivity.java"
             )
             add_custom_target(${TEST}-jar DEPENDS "${OUT_JAR}")
             set_property(TARGET ${TEST}-jar PROPERTY OUTPUT "${OUT_JAR}")

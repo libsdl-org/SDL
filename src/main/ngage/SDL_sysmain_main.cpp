@@ -74,8 +74,12 @@ GLDEF_C TInt E32Main()
 
               __crt0(argc, argv_lvalue, envp_lvalue);
 
-              // Increase heap size.
-              RHeap *newHeap = User::ChunkHeap(NULL, 7500000, 7500000, KMinHeapGrowBy);
+              // A heap that starts small and grows with what the application
+              // uses, up to what the device has free.
+              RHeap *newHeap = NULL;
+              for (TInt maxHeap = 32 * 1024 * 1024; newHeap == NULL && maxHeap >= 8 * 1024 * 1024; maxHeap /= 2) {
+                  newHeap = User::ChunkHeap(NULL, 1024 * 1024, maxHeap, 256 * 1024);
+              }
               if (!newHeap) {
                   SDL_Log("Error: Failed to create new heap");
                   User::Leave(KErrNoMemory);

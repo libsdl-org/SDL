@@ -93,14 +93,18 @@ SDL_Environment *SDL_CreateEnvironment(bool populated)
         return NULL;
     }
 
-    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
-    if (!env->strings) {
+    env->lock = SDL_CreateMutex();
+    if (!env->lock) {
         SDL_free(env);
         return NULL;
     }
 
-    // Don't fail if we can't create a mutex (e.g. on a single-thread environment)  // !!! FIXME: single-threaded environments should still return a non-NULL, do-nothing object here. Check for failure!
-    env->lock = SDL_CreateMutex();
+    env->strings = SDL_CreateHashTable(0, false, SDL_HashString, SDL_KeyMatchString, SDL_DestroyHashKey, NULL);
+    if (!env->strings) {
+        SDL_DestroyMutex(env->lock);
+        SDL_free(env);
+        return NULL;
+    }
 
     if (populated) {
 #if defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)

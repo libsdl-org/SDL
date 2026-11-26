@@ -74,6 +74,7 @@ struct SDL_WindowData
     unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
+    bool dnd_seq_active;
     bool flashing_window;
     Uint64 flash_cancel_time;
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -143,6 +144,7 @@ extern void X11_SetWindowMaximumSize(SDL_VideoDevice *_this, SDL_Window *window)
 extern void X11_SetWindowAspectRatio(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool X11_GetWindowBordersSize(SDL_VideoDevice *_this, SDL_Window *window, int *top, int *left, int *bottom, int *right);
 extern bool X11_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+extern bool X11_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough);
 extern bool X11_SetWindowParent(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
 extern bool X11_SetWindowModal(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
 extern void X11_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window);

@@ -67,8 +67,6 @@
 #define SDL_ANDROID_NEED_CONTROLLER_MANAGER
 #endif
 
-static void checkJNIReady(void);
-
 /*******************************************************************************
  This file links the Java side of Android with libsdl
 *******************************************************************************/
@@ -90,6 +88,7 @@ static jmethodID midGetManifestEnvironmentVariables;
 static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
+static jmethodID midIsGooglePlayOnPC;
 static jmethodID midIsTablet;
 static jmethodID midOpenURL;
 static jmethodID midRequestPermission;
@@ -115,6 +114,7 @@ static jmethodID midInitTouch;
 static jmethodID midMinimizeWindow;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetCustomCursor;
+static jmethodID midSetDesiredHDRHeadroom;
 static jmethodID midSetOrientation;
 static jmethodID midSetRelativeMouseEnabled;
 static jmethodID midSetSystemCursor;
@@ -204,6 +204,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     JNIEnv *env, jclass jcls,
     jint surfaceWidth, jint surfaceHeight,
     jint deviceWidth, jint deviceHeight, jfloat density, jfloat rate);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom)(
+    JNIEnv *env, jclass jcls,
+    jfloat headroom);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
     JNIEnv *env, jclass cls);
@@ -376,6 +380,7 @@ static JNINativeMethod SDLActivity_tab[] = {
     // Video/input methods, registered only when the video subsystem is enabled
     { "onNativeDropFile", "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
     { "nativeSetScreenResolution", "(IIIIFF)V", SDL_JAVA_INTERFACE(nativeSetScreenResolution) },
+    { "nativeSetScreenHDRHeadroom", "(F)V", SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom) },
     { "onNativeResize", "()V", SDL_JAVA_INTERFACE(onNativeResize) },
     { "nativeSetNaturalOrientation", "(I)V", SDL_JAVA_INTERFACE(nativeSetNaturalOrientation) },
     { "onNativeRotationChanged", "(I)V", SDL_JAVA_INTERFACE(onNativeRotationChanged) },
@@ -449,7 +454,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
     jint button_mask, jint naxes, jint axis_mask, jint nhats,
-    jboolean can_rumble, jboolean has_rgb_led, jboolean has_accelerometer, jboolean has_gyroscope);
+    jboolean can_rumble, jboolean has_rgb_led, jboolean has_accelerometer, jboolean has_gyroscope,
+    jboolean is_usb);
 
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
     JNIEnv *env, jclass jcls,
@@ -474,7 +480,7 @@ static JNINativeMethod SDLControllerManager_tab[] = {
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
     { "onNativeJoySensor", "(IIJFFF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor) },
-    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
+    { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZZZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
 #ifndef SDL_HAPTIC_DISABLED
     { "nativeAddHaptic", "(ILjava/lang/String;)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddHaptic) },
@@ -591,28 +597,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     return JNI_VERSION_1_4;
 }
 
-void checkJNIReady(void)
-{
-    if (!mActivityClass) {
-        // We aren't fully initialized, let's just return.
-        return;
-    }
-
-#ifdef SDL_ANDROID_NEED_CONTROLLER_MANAGER
-    if (!mControllerManagerClass) {
-        return;
-    }
-#endif
-
-#ifndef SDL_AUDIO_DISABLED
-    if (!mAudioManagerClass) {
-        return;
-    }
-#endif
-
-    SDL_SetMainReady();
-}
-
 // Get SDL version -- called before SDL_main() to verify JNI bindings
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jclass cls)
 {
@@ -673,6 +657,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midIsAndroidTV = (*env)->GetStaticMethodID(env, mActivityClass, "isAndroidTV", "()Z");
     midIsChromebook = (*env)->GetStaticMethodID(env, mActivityClass, "isChromebook", "()Z");
     midIsDeXMode = (*env)->GetStaticMethodID(env, mActivityClass, "isDeXMode", "()Z");
+    midIsGooglePlayOnPC = (*env)->GetStaticMethodID(env, mActivityClass, "isGooglePlayOnPC", "()Z");
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass, "isTablet", "()Z");
     midOpenURL = (*env)->GetStaticMethodID(env, mActivityClass, "openURL", "(Ljava/lang/String;)Z");
     midRequestPermission = (*env)->GetStaticMethodID(env, mActivityClass, "requestPermission", "(Ljava/lang/String;I)V");
@@ -692,6 +677,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midIsAndroidTV ||
         !midIsChromebook ||
         !midIsDeXMode ||
+        !midIsGooglePlayOnPC ||
         !midIsTablet ||
         !midOpenURL ||
         !midRequestPermission ||
@@ -718,6 +704,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass, "minimizeWindow", "()V");
     midSetActivityTitle = (*env)->GetStaticMethodID(env, mActivityClass, "setActivityTitle", "(Ljava/lang/String;)Z");
     midSetCustomCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setCustomCursor", "(I)Z");
+    midSetDesiredHDRHeadroom = (*env)->GetStaticMethodID(env, mActivityClass, "setDesiredHDRHeadroom", "(F)V");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass, "setOrientation", "(IIZLjava/lang/String;)V");
     midSetRelativeMouseEnabled = (*env)->GetStaticMethodID(env, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
     midSetSystemCursor = (*env)->GetStaticMethodID(env, mActivityClass, "setSystemCursor", "(I)Z");
@@ -736,6 +723,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         !midMinimizeWindow ||
         !midSetActivityTitle ||
         !midSetCustomCursor ||
+        !midSetDesiredHDRHeadroom ||
         !midSetOrientation ||
         !midSetRelativeMouseEnabled ||
         !midSetSystemCursor ||
@@ -746,8 +734,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some video Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 #endif // !SDL_VIDEO_DISABLED
-
-    checkJNIReady();
 }
 
 JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeGetCompiledSubsystems)(JNIEnv *env, jclass jcls)
@@ -806,8 +792,6 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
         __android_log_print(ANDROID_LOG_WARN, "SDL",
                             "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
-
-    checkJNIReady();
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *env, jclass jcls, jboolean recording, jstring name, jint device_id)
@@ -817,7 +801,7 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeAddAudioDevice)(JNIEnv *en
         void *handle = (void *)((size_t)device_id);
         if (!SDL_FindPhysicalAudioDeviceByHandle(handle)) {
             const char *utf8name = (*env)->GetStringUTFChars(env, name, NULL);
-            SDL_AddAudioDevice(recording, SDL_strdup(utf8name), NULL, NULL, handle);
+            SDL_AddAudioDevice(recording, utf8name, NULL, NULL, NULL, handle);
             (*env)->ReleaseStringUTFChars(env, name, utf8name);
         }
     }
@@ -874,10 +858,61 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
         ) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
-
-    checkJNIReady();
 }
 #endif // SDL_ANDROID_NEED_CONTROLLER_MANAGER
+
+static void parse_args(JNIEnv *env, jobject array, const char *argv0,
+        void **args_out, int *argc_out, char ***argv_out)
+{
+    const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
+    int argc = 0;
+    char **argv = NULL;
+
+    size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
+    for (int i = 0; i < len; ++i) {
+        total_alloc_len++;  // null terminator.
+        jstring string = (*env)->GetObjectArrayElement(env, array, i);
+        if (string) {
+            const char *utf = (*env)->GetStringUTFChars(env, string, 0);
+            if (utf) {
+                total_alloc_len += SDL_strlen(utf) + 1;
+                (*env)->ReleaseStringUTFChars(env, string, utf);
+            }
+            (*env)->DeleteLocalRef(env, string);
+        }
+    }
+
+    void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
+    if (args) {
+        size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
+        argv = (char **) args;
+        char *ptr = (char *) &argv[len + 2];
+        size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
+        argv[argc++] = ptr;
+        SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
+        for (int i = 0; i < len; ++i) {
+            jstring string = (*env)->GetObjectArrayElement(env, array, i);
+            const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
+            cpy = SDL_strlcpy(ptr, utf ? utf : "", remain) + 1;
+            if (cpy < remain) {
+                argv[argc++] = ptr;
+                remain -= cpy;
+                ptr += cpy;
+            }
+            if (utf) {
+                (*env)->ReleaseStringUTFChars(env, string, utf);
+            }
+            if (string) {
+                (*env)->DeleteLocalRef(env, string);
+            }
+        }
+        argv[argc] = NULL;
+    }
+
+    *args_out = args;
+    *argc_out = argc;
+    *argv_out = argv;
+}
 
 static int run_count = 0;
 static bool allow_recreate_activity;
@@ -920,95 +955,68 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeCleanupMainThread)(
 JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls, jstring library, jstring function, jobject array)
 {
     int status = -1;
-    const char *library_file;
-    void *library_handle;
+    SDL_main_func sdlmain = NULL;
+    void *library_handle = NULL;
 
-    library_file = (*env)->GetStringUTFChars(env, library, NULL);
-    library_handle = dlopen(library_file, RTLD_GLOBAL);
+    extern int main(int argc, char **argv) __attribute__((weak));
 
-    if (library_handle == NULL) {
-        /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
-           In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
-        const char *library_name = SDL_strrchr(library_file, '/');
-        if (library_name && *library_name) {
-            library_name += 1;
-            library_handle = dlopen(library_name, RTLD_GLOBAL);
+    // try to get sdlmain from static linking
+    sdlmain = (SDL_main_func) main;
+
+    // load the main function from user shared library
+    if (!sdlmain) {
+        const char *library_file = (*env)->GetStringUTFChars(env, library, NULL);
+        library_handle = dlopen(library_file, RTLD_GLOBAL);
+
+        if (library_handle == NULL) {
+            /* When deploying android app bundle format uncompressed native libs may not extract from apk to filesystem.
+               In this case we should use lib name without path. https://bugzilla.libsdl.org/show_bug.cgi?id=4739 */
+            const char *library_name = SDL_strrchr(library_file, '/');
+            if (library_name && *library_name) {
+                library_name += 1;
+                library_handle = dlopen(library_name, RTLD_GLOBAL);
+            }
         }
+
+        if (library_handle) {
+            const char *function_name = (*env)->GetStringUTFChars(env, function, NULL);
+            sdlmain = (SDL_main_func)dlsym(library_handle, function_name);
+            if (!sdlmain) {
+                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
+            }
+            (*env)->ReleaseStringUTFChars(env, function, function_name);
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
+        }
+        (*env)->ReleaseStringUTFChars(env, library, library_file);
+    }
+
+    if (sdlmain) {
+        // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
+        //   https://github.com/love2d/love-android/issues/24
+        // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
+        const char *argv0 = "app_process";
+        void *args = NULL;
+        int argc = 0;
+        char **argv = NULL;
+
+        parse_args(env, array, argv0, &args, &argc, &argv);
+        if (args) {
+            // Run the application.
+            status = SDL_RunApp(argc, argv, sdlmain, NULL);
+
+            // Release the arguments.
+            free(args);  // This should NOT be SDL_free()
+        } else {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
+        }
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): no SDL_main()");
     }
 
     if (library_handle) {
-        const char *function_name;
-        SDL_main_func SDL_main;
-
-        function_name = (*env)->GetStringUTFChars(env, function, NULL);
-        SDL_main = (SDL_main_func)dlsym(library_handle, function_name);
-        if (SDL_main) {
-            // Use the name "app_process" for argv[0] so PHYSFS_platformCalcBaseDir() works.
-            //   https://github.com/love2d/love-android/issues/24
-            // (note that PhysicsFS hasn't used argv on Android in a long time, but we'll keep this for compat at least for SDL3's lifetime.  --ryan.)
-            const char *argv0 = "app_process";
-            const int len = (*env)->GetArrayLength(env, array);  // argv elements, not counting argv[0].
-
-            size_t total_alloc_len = (SDL_strlen(argv0) + 1) + ((len + 2) * sizeof (char *));  // len+2 to allocate an array that also holds argv0 and a NULL terminator.
-            for (int i = 0; i < len; ++i) {
-                total_alloc_len++;  // null terminator.
-                jstring string = (*env)->GetObjectArrayElement(env, array, i);
-                if (string) {
-                    const char *utf = (*env)->GetStringUTFChars(env, string, 0);
-                    if (utf) {
-                        total_alloc_len += SDL_strlen(utf) + 1;
-                        (*env)->ReleaseStringUTFChars(env, string, utf);
-                    }
-                    (*env)->DeleteLocalRef(env, string);
-                }
-            }
-
-            void *args = malloc(total_alloc_len);  // This should NOT be SDL_malloc()
-            if (!args) { // uhoh.
-                __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Out of memory parsing command line!");
-            } else {
-                size_t remain = total_alloc_len - (sizeof (char *) * (len + 2));
-                int argc = 0;
-                char **argv = (char **) args;
-                char *ptr = (char *) &argv[len + 2];
-                size_t cpy = SDL_strlcpy(ptr, argv0, remain) + 1;
-                argv[argc++] = ptr;
-                SDL_assert(cpy <= remain); remain -= cpy; ptr += cpy;
-                for (int i = 0; i < len; ++i) {
-                    jstring string = (*env)->GetObjectArrayElement(env, array, i);
-                    const char *utf = string ? (*env)->GetStringUTFChars(env, string, 0) : NULL;
-                    cpy = SDL_strlcpy(ptr, utf ? utf : "", remain) + 1;
-                    if (cpy < remain) {
-                        argv[argc++] = ptr;
-                        remain -= cpy;
-                        ptr += cpy;
-                    }
-                    if (utf) {
-                        (*env)->ReleaseStringUTFChars(env, string, utf);
-                    }
-                    if (string) {
-                        (*env)->DeleteLocalRef(env, string);
-                    }
-                }
-                argv[argc] = NULL;
-
-                // Run the application.
-                status = SDL_RunApp(argc, argv, SDL_main, NULL);
-
-                // Release the arguments.
-                free(args);  // This should NOT be SDL_free()
-            }
-        } else {
-            __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);
-        }
-        (*env)->ReleaseStringUTFChars(env, function, function_name);
-
         dlclose(library_handle);
-
-    } else {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
     }
-    (*env)->ReleaseStringUTFChars(env, library, library_file);
 
     // Do not issue an exit or the whole application will terminate instead of just the SDL thread
     // exit(status);
@@ -1094,14 +1102,14 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     jint device_id, jstring device_name, jstring device_desc,
     jint vendor_id, jint product_id,
     jint button_mask, jint naxes, jint axis_mask, jint nhats, jboolean can_rumble, jboolean has_rgb_led,
-    jboolean has_accelerometer, jboolean has_gyroscope)
+    jboolean has_accelerometer, jboolean has_gyroscope, jboolean is_usb)
 {
 #ifdef SDL_JOYSTICK_ANDROID
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
     Android_AddJoystick(device_id, name, desc, vendor_id, product_id, button_mask, naxes, axis_mask, nhats,
-        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope);
+        can_rumble, has_rgb_led, has_accelerometer, has_gyroscope, is_usb);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);
@@ -1161,6 +1169,18 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
     SDL_LockMutex(Android_ActivityMutex);
 
     Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, density, rate);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+// Set screen HDR headroom
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenHDRHeadroom)(
+    JNIEnv *env, jclass jcls,
+    jfloat headroom)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    Android_SetScreenHDRHeadroom(headroom);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -2348,58 +2368,77 @@ bool SDL_IsDeXMode(void)
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
 }
 
+bool SDL_IsGooglePlayOnPC(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsGooglePlayOnPC);
+}
+
+static char *GetAndroidAppContextPath(const char *method)
+{
+    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
+    jmethodID mid;
+    jobject context;
+    jobject fileObject;
+    jstring pathString;
+    const char *path;
+
+    JNIEnv *env = Android_JNI_GetEnv();
+    if (!LocalReferenceHolder_Init(&refs, env)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // context = SDLActivity.getContext();
+    context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+    if (!context) {
+        SDL_SetError("Couldn't get Android context!");
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // fileObj = context.getFilesDir() or whatever;
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), method, "()Ljava/io/File;");
+    fileObject = (*env)->CallObjectMethod(env, context, mid);
+    if (!fileObject) {
+        SDL_SetError("Couldn't get internal directory");
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    // path = fileObject.getCanonicalPath();
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject), "getCanonicalPath", "()Ljava/lang/String;");
+    pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
+    if (Android_JNI_ExceptionOccurred(false)) {
+        LocalReferenceHolder_Cleanup(&refs);
+        return NULL;
+    }
+
+    path = (*env)->GetStringUTFChars(env, pathString, NULL);
+    char *retval = SDL_strdup(path);
+    (*env)->ReleaseStringUTFChars(env, pathString, path);
+
+    LocalReferenceHolder_Cleanup(&refs);
+
+    return retval;
+}
+
 const char *SDL_GetAndroidInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
-
     if (!s_AndroidInternalFilesPath) {
-        struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(SDL_FUNCTION);
-        jmethodID mid;
-        jobject context;
-        jobject fileObject;
-        jstring pathString;
-        const char *path;
-
-        JNIEnv *env = Android_JNI_GetEnv();
-        if (!LocalReferenceHolder_Init(&refs, env)) {
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // context = SDLActivity.getContext();
-        context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
-        if (!context) {
-            SDL_SetError("Couldn't get Android context!");
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // fileObj = context.getFilesDir();
-        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
-                                  "getFilesDir", "()Ljava/io/File;");
-        fileObject = (*env)->CallObjectMethod(env, context, mid);
-        if (!fileObject) {
-            SDL_SetError("Couldn't get internal directory");
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        // path = fileObject.getCanonicalPath();
-        mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
-                                  "getCanonicalPath", "()Ljava/lang/String;");
-        pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
-        if (Android_JNI_ExceptionOccurred(false)) {
-            LocalReferenceHolder_Cleanup(&refs);
-            return NULL;
-        }
-
-        path = (*env)->GetStringUTFChars(env, pathString, NULL);
-        s_AndroidInternalFilesPath = SDL_strdup(path);
-        (*env)->ReleaseStringUTFChars(env, pathString, path);
-
-        LocalReferenceHolder_Cleanup(&refs);
+        s_AndroidInternalFilesPath = GetAndroidAppContextPath("getFilesDir");
     }
     return s_AndroidInternalFilesPath;
+}
+
+const char *SDL_GetAndroidInternalCachePath(void)
+{
+    static char *s_AndroidInternalCachePath = NULL;
+    if (!s_AndroidInternalCachePath) {
+        s_AndroidInternalCachePath = GetAndroidAppContextPath("getCacheDir");
+    }
+    return s_AndroidInternalCachePath;
 }
 
 Uint32 SDL_GetAndroidExternalStorageState(void)
@@ -2560,7 +2599,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         if (info->request_code == (int) requestCode) {
             prev->next = info->next;
             SDL_UnlockMutex(SDL_event_lock);
-            info->callback(info->userdata, info->permission, result ? true : false);
+            if (info->callback) {
+                info->callback(info->userdata, info->permission, result ? true : false);
+            }
             SDL_free(info->permission);
             SDL_free(info);
             return;
@@ -2575,8 +2616,6 @@ bool SDL_RequestAndroidPermission(const char *permission, SDL_RequestAndroidPerm
 {
     if (!permission) {
         return SDL_InvalidParamError("permission");
-    } else if (!cb) {
-        return SDL_InvalidParamError("cb");
     }
 
     NativePermissionRequestInfo *info = (NativePermissionRequestInfo *) SDL_calloc(1, sizeof (NativePermissionRequestInfo));
@@ -2850,6 +2889,12 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     (*env)->DeleteLocalRef(env, jhint);
 }
 
+void Android_JNI_SetDesiredHDRHeadroom(float headroom)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midSetDesiredHDRHeadroom, headroom);
+}
+
 void Android_JNI_MinimizeWindow(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -3111,7 +3156,7 @@ bool Android_JNI_FileOpen(void **puserdata, const char *fileName, const char *mo
 
     fileName = GetAssetPath(fileName);
 
-    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_UNKNOWN);
+    asset = AAssetManager_open(asset_manager, fileName, AASSET_MODE_RANDOM);
     if (!asset) {
         return SDL_SetError("Couldn't open asset '%s'", fileName);
     }
@@ -3582,7 +3627,9 @@ SDL_FormFactor SDL_GetAndroidDeviceFormFactor(void)
     if (string) {
         const char *utf = (*env)->GetStringUTFChars(env, string, 0);
         if (utf) {
-            if (SDL_strcmp(utf, "tv") == 0) {
+            if (SDL_strcmp(utf, "desktop") == 0) {
+                form_factor = SDL_FORMFACTOR_DESKTOP;
+            } else if (SDL_strcmp(utf, "tv") == 0) {
                 form_factor = SDL_FORMFACTOR_TV;
             } else if (SDL_strcmp(utf, "tablet") == 0) {
                 form_factor = SDL_FORMFACTOR_TABLET;

@@ -242,7 +242,7 @@ static Uint16 get_effect_direction(SDL_HapticEffect *effect)
                 SDL_assert(0);
         }
     }
-    
+
     return direction;
 }
 
@@ -377,6 +377,9 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 no
             state->updated_at = state->play_at;
         }
         state->direction_gain = sin_deg(effect_direction * 360 / 0x10000);
+        if (state->direction_gain == 0.0) {
+            state->direction_gain = 0x7fff;
+        }
         if (effect_is_periodic(effect)) {
             state->phase_adj = effect->periodic.phase * 360 / effect->periodic.period;
         }
@@ -390,6 +393,9 @@ static void lg4ff_update_state(struct lg4ff_effect_state *state, const Uint64 no
         __clear_bit(FF_EFFECT_PLAYING, &state->flags);
         state->play_at = state->updated_at + get_effect_replay_delay(effect);
         state->direction_gain = sin_deg(effect_direction * 360 / 0x10000);
+        if (state->direction_gain == 0.0) {
+            state->direction_gain = 0x7fff;
+        }
         if (get_effect_replay_length(effect)) {
             state->stop_at = state->updated_at + get_effect_replay_length(effect);
         }
@@ -572,7 +578,7 @@ static void lg4ff_update_slot(struct lg4ff_slot *slot, struct lg4ff_effect_param
 {
     Uint8 original_cmd[7];
     Sint32 d1;
-    Sint32 d2; 
+    Sint32 d2;
     Sint32 k1;
     Sint32 k2;
     Sint32 s1;

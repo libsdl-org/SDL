@@ -81,7 +81,7 @@ extern "C" {
  * help Clang's thread safety analysis tools to function. Do not attempt
  * to access this symbol from your app, it will not work!
  */
-extern SDL_Mutex *SDL_event_lock;
+extern SDL_Mutex *SDL_joystick_lock;
 #endif
 
 /**
@@ -186,7 +186,7 @@ typedef enum SDL_JoystickConnectionState
  *
  * \since This function is available since SDL 3.2.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_event_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_joystick_lock);
 
 /**
  * Locking for atomic access to the joystick API.
@@ -201,7 +201,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_LockJoysticks(void) SDL_ACQUIRE(SDL_event_l
  *
  * \since This function is available since SDL 3.6.0.
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_TRY_ACQUIRE(true, SDL_event_lock);
+extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_TRY_ACQUIRE(true, SDL_joystick_lock);
 
 /**
  * Unlocking for atomic access to the joystick API.
@@ -211,7 +211,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_TryLockJoysticks(void) SDL_TRY_ACQUIRE(true
  *
  * \since This function is available since SDL 3.2.0.
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_event_lock);
+extern SDL_DECLSPEC void SDLCALL SDL_UnlockJoysticks(void) SDL_RELEASE(SDL_joystick_lock);
 
 /**
  * Return whether a joystick is currently connected.
@@ -763,6 +763,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick 
  *
  * The following read-only properties are provided by SDL:
  *
+ * - `SDL_PROP_JOYSTICK_CONTAINER_ID_STRING`: a string identifying the
+ *   container for this joystick, if available.
  * - `SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN`: true if this joystick has an
  *   LED that has adjustable brightness
  * - `SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN`: true if this joystick has an LED
@@ -784,6 +786,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SendJoystickVirtualSensorData(SDL_Joystick 
  */
 extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetJoystickProperties(SDL_Joystick *joystick);
 
+#define SDL_PROP_JOYSTICK_CONTAINER_ID_STRING           "SDL.joystick.container_id"
 #define SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN          "SDL.joystick.cap.mono_led"
 #define SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN           "SDL.joystick.cap.rgb_led"
 #define SDL_PROP_JOYSTICK_CAP_PLAYER_LED_BOOLEAN        "SDL.joystick.cap.player_led"

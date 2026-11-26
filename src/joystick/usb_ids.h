@@ -77,7 +77,11 @@
 #define USB_PRODUCT_8BITDO_PRO_2                          0x6003    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_2_BT                       0x6006    // mode switch to D
 #define USB_PRODUCT_8BITDO_PRO_3                          0x6009    // mode switch to D
+#define USB_PRODUCT_8BITDO_ULTIMATE2_BT                   0x6011    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE2_WIRELESS             0x6012    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS            0x301b    // mode switch to BT
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRELESS_2_4G       0x301c
+#define USB_PRODUCT_8BITDO_ULTIMATE2C_WIRED               0x301d    // mode switch to D
 #define USB_PRODUCT_8BITDO_ULTIMATE3                      0x202f    // mode switch to BT
 #define USB_PRODUCT_AMAZON_LUNA_CONTROLLER                0x0419
 #define USB_PRODUCT_ASTRO_C40_XBOX360                     0x0024
@@ -88,9 +92,9 @@
 #define USB_PRODUCT_BDA_XB1_FIGHTPAD                      0x791a
 #define USB_PRODUCT_BDA_XB1_SPECTRA_PRO                   0x592a
 #define USB_PRODUCT_GOOGLE_STADIA_CONTROLLER              0x9400
-#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER1            0x1843
-#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER2            0x1844
-#define USB_PRODUCT_EVORETRO_GAMECUBE_ADAPTER3            0x1846
+#define USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER1          0x1843
+#define USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER2          0x1844
+#define USB_PRODUCT_DRAGONRISE_GAMECUBE_ADAPTER3          0x1846
 #define USB_PRODUCT_FLYDIGI_V1_GAMEPAD                    0x2412
 #define USB_PRODUCT_FLYDIGI_V2_APEX                       0x2501
 #define USB_PRODUCT_FLYDIGI_V2_APEX6                      0x2502
@@ -117,7 +121,6 @@
 #define USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS4_WIRED      0x0d17
 #define USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRELESS   0x0d18
 #define USB_PRODUCT_NACON_REVOLUTION_5_PRO_PS5_WIRED      0x0d19
-#define USB_PRODUCT_NACON_REVOLUTION_X_UNLIMITED_BT       0x0689
 #define USB_PRODUCT_NINTENDO_GAMECUBE_ADAPTER             0x0337
 #define USB_PRODUCT_NINTENDO_N64_CONTROLLER               0x2019
 #define USB_PRODUCT_NINTENDO_SEGA_GENESIS_CONTROLLER      0x201e
@@ -183,6 +186,8 @@
 #define USB_PRODUCT_THRUSTMASTER_ESWAPX_PRO_PS4           0xd00e
 #define USB_PRODUCT_THRUSTMASTER_T_FLIGHT_HOTAS_ONE       0xb68c
 #define USB_PRODUCT_VALVE_STEAM_CONTROLLER_DONGLE         0x1142
+#define USB_PRODUCT_VALVE_STEAM_TRITON                    0x1302
+#define USB_PRODUCT_VALVE_STEAM_TRITON_BLE                0x1303
 #define USB_PRODUCT_VALVE_STEAM_PROTEUS_DONGLE            0x1304
 #define USB_PRODUCT_VALVE_STEAM_NEREID_DONGLE             0x1305
 #define USB_PRODUCT_VICTRIX_FS_PRO                        0x0203
@@ -206,6 +211,8 @@
 #define USB_PRODUCT_XBOX_ONE_S_REV2_BLE                   0x0b20
 #define USB_PRODUCT_XBOX_SERIES_X                         0x0b12
 #define USB_PRODUCT_XBOX_SERIES_X_BLE                     0x0b13
+#define USB_PRODUCT_XBOX_ONE_NANO                         0x0b4e
+#define USB_PRODUCT_XBOX_ONE_NANO_BLE                     0x0b4f
 #define USB_PRODUCT_XBOX_ONE_XBOXGIP_CONTROLLER           0x02ff // XBOXGIP driver software PID
 #define USB_PRODUCT_STEAM_VIRTUAL_GAMEPAD                 0x11ff
 #define USB_PRODUCT_HANDHELDLEGEND_SINPUT_GENERIC         0x10c6

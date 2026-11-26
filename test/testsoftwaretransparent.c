@@ -15,7 +15,7 @@
 
 #define SQUARE_SIZE 100.0f
 
-/* Draw opaque red squares at the four corners of the form, and draw a red square with an alpha value of 180 in the center of the form */
+/* Draw opaque red squares at the four corners of the form, and draw a red square with an alpha value of 50% in the center of the form */
 static void draw(SDL_Renderer *renderer)
 {
     SDL_FRect rect = { 0.0f, 0.0f, SQUARE_SIZE, SQUARE_SIZE };
@@ -25,6 +25,11 @@ static void draw(SDL_Renderer *renderer)
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
     SDL_RenderClear(renderer);
+
+    /* Transparent windows are composited using premultiplied alpha.
+     * Blending onto the transparent black background produces premultiplied output.
+     */
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     if (w >= 3 * SQUARE_SIZE && h >= 3 * SQUARE_SIZE) {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -43,7 +48,7 @@ static void draw(SDL_Renderer *renderer)
         SDL_RenderFillRect(renderer, &rect);
     }
 
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 180);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 128);
     rect.x = (w - SQUARE_SIZE) / 2;
     rect.y = (h - SQUARE_SIZE) / 2;
     SDL_RenderFillRect(renderer, &rect);
@@ -80,9 +85,6 @@ int main(int argc, char *argv[])
         SDL_Log("Couldn't create renderer: %s", SDL_GetError());
         goto quit;
     }
-
-    /* Make sure we're setting the alpha channel while drawing */
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_NONE);
 
     /* We're ready to go! */
     while (!done) {

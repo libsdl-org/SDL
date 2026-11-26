@@ -71,6 +71,7 @@ extern void Android_JNI_SetActivityTitle(const char *title);
 extern void Android_JNI_SetWindowStyle(bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 extern void Android_JNI_MinimizeWindow(void);
+extern void Android_JNI_SetDesiredHDRHeadroom(float headroom);
 extern bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
 
 extern void Android_JNI_ShowScreenKeyboard(int input_type, SDL_Rect *inputRect);
@@ -112,6 +113,8 @@ size_t Android_JNI_FileWrite(void *userdata, const void *buffer, size_t size, SD
 bool Android_JNI_FileClose(void *userdata);
 bool Android_JNI_EnumerateAssetDirectory(const char *path, SDL_EnumerateDirectoryCallback cb, void *userdata);
 bool Android_JNI_GetAssetPathInfo(const char *path, SDL_PathInfo *info);
+
+const char *SDL_GetAndroidInternalCachePath(void);
 
 #define SDL_PlatformEnumerateAssetDirectory Android_JNI_EnumerateAssetDirectory
 #define SDL_GetPlatformInternalStoragePath SDL_GetAndroidInternalStoragePath

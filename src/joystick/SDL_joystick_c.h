@@ -31,8 +31,16 @@
 extern "C" {
 #endif
 
-struct SDL_JoystickDriver;
+typedef struct SDL_JoystickDriver SDL_JoystickDriver;
+typedef struct SDL_JoystickDevice SDL_JoystickDevice;
 struct SDL_SteamVirtualGamepadInfo;
+
+typedef struct SDL_JoystickEventEntry
+{
+    SDL_Event event;
+    struct SDL_JoystickEventEntry *next;
+} SDL_JoystickEventEntry;
+
 
 // Initialization and shutdown functions
 extern bool SDL_InitJoysticks(void);
@@ -44,17 +52,55 @@ extern bool SDL_JoysticksInitialized(void);
 // Return whether the joystick system is shutting down
 extern bool SDL_JoysticksQuitting(void);
 
+// Return whether the joystick update thread is running
+extern bool SDL_JoystickUpdateThreadRunning(void);
+
+// Return the current polling interval for the joystick update thread
+extern int SDL_GetJoystickAsyncUpdateInterval(void);
+
+// Wake up the joystick update thread
+extern void SDL_WakeJoystickUpdateThread(void);
+
 // Return whether the joysticks are currently locked
 extern bool SDL_JoysticksLocked(void);
 
 // Make sure we currently have the joysticks locked
-extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_event_lock);
+extern void SDL_AssertJoysticksLocked(void) SDL_ASSERT_CAPABILITY(SDL_joystick_lock);
+
+// Function to allocate an event to be delivered by the joystick subsystem
+extern SDL_JoystickEventEntry *SDL_AllocJoystickEvent(SDL_EventType type, Uint64 timestamp, SDL_Event **event);
+
+// Function to queue an event for delivery
+extern void SDL_QueueJoystickEvent(SDL_JoystickEventEntry *entry);
 
 // Function to return whether there are any joysticks opened by the application
 extern bool SDL_JoysticksOpened(void);
 
-// Function to determine whether a device is currently detected by this driver
-extern bool SDL_JoystickHandledByAnotherDriver(struct SDL_JoystickDriver *driver, Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
+// Function to allocate a joystick device
+extern SDL_JoystickDevice *SDL_CreateJoystickDevice(SDL_JoystickDriver *driver, size_t extra_length);
+
+// Function to free a joystick device that isn't passed back via QueryDevices()
+extern void SDL_DestroyJoystickDevice(SDL_JoystickDevice *device);
+
+// Functions to add joystick device matches
+extern void SDL_AddJoystickDeviceMatchType(SDL_JoystickDevice *device, SDL_GamepadType type);
+extern void SDL_AddJoystickDeviceMatchVIDPID(SDL_JoystickDevice *device, Uint16 vendor_id, Uint16 product_id);
+// The xinput_index is a specific slot or -1 to match all slots
+extern void SDL_AddJoystickDeviceMatchXInput(SDL_JoystickDevice *device, int xinput_index);
+
+// Function to get the current list of joystick devices
+extern SDL_JoystickDevice *SDL_GetJoystickDevices(void);
+
+// Manually publish a device
+extern SDL_JoystickID SDL_AddJoystickDevice(SDL_JoystickDevice *device);
+
+// Remove a device published with SDL_AddJoystickDevice()
+extern void SDL_RemoveJoystickDevice(SDL_JoystickID instance_id);
+
+// Request a joystick device update, can be called from any thread
+// If immediate is true, this will do a single update the next time joysticks are updated
+// If immediate is false, this will kick off several updates over the next few seconds to catch hardware settling
+extern void SDL_RequestJoystickDeviceUpdate(bool immediate);
 
 /* Function to standardize the name for a controller
    This should be freed with SDL_free() when no longer needed
@@ -66,6 +112,9 @@ extern SDL_GUID SDL_CreateJoystickGUID(Uint16 bus, Uint16 vendor, Uint16 product
 
 // Function to create a GUID for a joystick based on the name, with no VID/PID information
 extern SDL_GUID SDL_CreateJoystickGUIDForName(const char *name);
+
+// Function to set the bus field of a joystick GUID
+extern void SDL_SetJoystickGUIDBus(SDL_GUID *guid, Uint16 bus);
 
 // Function to set the vendor field of a joystick GUID
 extern void SDL_SetJoystickGUIDVendor(SDL_GUID *guid, Uint16 vendor);
@@ -79,12 +128,18 @@ extern void SDL_SetJoystickGUIDVersion(SDL_GUID *guid, Uint16 version);
 // Function to set the CRC field of a joystick GUID
 extern void SDL_SetJoystickGUIDCRC(SDL_GUID *guid, Uint16 crc);
 
+// Function to get the bus field of a joystick GUID
+extern Uint16 SDL_GetJoystickGUIDBus(SDL_GUID guid);
+
 // Function to return the type of a controller
 extern SDL_GamepadType SDL_GetGamepadTypeFromVIDPID(Uint16 vendor, Uint16 product, const char *name, bool forUI);
 extern SDL_GamepadType SDL_GetGamepadTypeFromGUID(SDL_GUID guid, const char *name);
 
 // Function to return whether a joystick GUID uses the version field
 extern bool SDL_JoystickGUIDUsesVersion(SDL_GUID guid);
+
+// Function to return whether a Windows device is handled by XInput
+extern bool SDL_IsXInputDevice(Uint16 vendor_id, Uint16 product_id, const char *path);
 
 // Function to return whether a joystick is an Xbox One controller
 extern bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
@@ -155,9 +210,6 @@ extern bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id);
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 
-// Function to return whether a joystick guid comes from the WGI driver
-extern bool SDL_IsJoystickWGI(SDL_GUID guid);
-
 // Function to return whether a joystick guid comes from the GameInput driver
 extern bool SDL_IsJoystickGameInput(SDL_GUID guid);
 
@@ -167,14 +219,14 @@ extern bool SDL_IsJoystickHIDAPI(SDL_GUID guid);
 // Function to return whether a joystick guid comes from the MFI driver
 extern bool SDL_IsJoystickMFI(SDL_GUID guid);
 
-// Function to return whether a joystick guid comes from the RAWINPUT driver
-extern bool SDL_IsJoystickRAWINPUT(SDL_GUID guid);
-
 // Function to return whether a joystick guid comes from the Virtual driver
 extern bool SDL_IsJoystickVIRTUAL(SDL_GUID guid);
 
 // Function to return whether a joystick is a wheel
 extern bool SDL_IsJoystickWheel(Uint16 vendor_id, Uint16 product_id, Uint16 crc);
+
+// Function to return whether a joystick only charges over USB and doesn't provide input
+extern bool SDL_IsJoystickUSBChargingOnly(Uint16 vendor_id, Uint16 product_id);
 
 // Function to return whether a joystick should be ignored
 extern bool SDL_ShouldIgnoreJoystick(Uint16 vendor_id, Uint16 product_id, Uint16 version, const char *name);
@@ -260,6 +312,28 @@ typedef struct SDL_GamepadMapping
 extern bool SDL_PrivateJoystickGetAutoGamepadMapping(SDL_JoystickID instance_id,
                                                          SDL_GamepadMapping *out);
 
+typedef enum
+{
+    SDL_XINPUT_SUBTYPE_GAMEPAD = 1,
+    SDL_XINPUT_SUBTYPE_WHEEL = 2,
+    SDL_XINPUT_SUBTYPE_ARCADE_STICK = 3,
+    SDL_XINPUT_SUBTYPE_FLIGHT_STICK = 4,
+    SDL_XINPUT_SUBTYPE_DANCE_PAD = 5,
+    SDL_XINPUT_SUBTYPE_GUITAR = 6,
+    SDL_XINPUT_SUBTYPE_GUITAR_ALTERNATE = 7,
+    SDL_XINPUT_SUBTYPE_DRUMS = 8,
+    SDL_XINPUT_SUBTYPE_STAGE_KIT = 9,
+    SDL_XINPUT_SUBTYPE_GUITAR_BASS = 11,
+    SDL_XINPUT_SUBTYPE_PRO_KEYS = 15,
+    SDL_XINPUT_SUBTYPE_ARCADE_PAD = 19,
+    SDL_XINPUT_SUBTYPE_TURNTABLE = 23,
+    SDL_XINPUT_SUBTYPE_PRO_GUITAR = 25,
+    SDL_XINPUT_SUBTYPE_DISNEY_INFINITY_AND_LEGO_DIMENSIONS = 33,
+    SDL_XINPUT_SUBTYPE_SKYLANDERS = 36
+} SDL_XInputSubType;
+
+// Function to return the joystick type for an XInput device based on its subtype
+extern SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype);
 
 typedef struct
 {
@@ -275,6 +349,8 @@ typedef struct
 
     int num_initial_entries;
     Uint32 *initial_entries;
+
+    bool affects_ignored_joysticks;
 
     bool initialized;
 } SDL_vidpid_list;

@@ -440,13 +440,6 @@ static bool convert_format(Uint32 pixel_format, GLint *internalFormat, GLenum *f
         *format = GL_LUMINANCE;
         *type = GL_UNSIGNED_BYTE;
         break;
-#ifdef SDL_PLATFORM_MACOS
-    case SDL_PIXELFORMAT_UYVY:
-        *internalFormat = GL_RGB8;
-        *format = GL_YCBCR_422_APPLE;
-        *type = GL_UNSIGNED_SHORT_8_8_APPLE;
-        break;
-#endif
     default:
         return false;
     }
@@ -567,6 +560,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     renderdata->drawstate.texture = NULL; // we trash this state.
     renderdata->drawstate.texturing_dirty = true; // we trash this state.
+
+    if (SDL_ISPIXELFORMAT_FOURCC(texture->format) &&
+        SDL_COLORSPACETRANSFER(texture->colorspace) == SDL_TRANSFER_CHARACTERISTICS_PQ) {
+        return SDL_SetError("Unsupported YUV colorspace");
+    }
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET &&
         !renderdata->GL_EXT_framebuffer_object_supported) {
@@ -2032,9 +2030,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     } else {
         SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL NV12/NV21 not supported");
     }
-#ifdef SDL_PLATFORM_MACOS
-    SDL_AddSupportedTextureFormat(renderer, SDL_PIXELFORMAT_UYVY);
-#endif
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = true;

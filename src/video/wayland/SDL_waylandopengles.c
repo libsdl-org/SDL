@@ -22,15 +22,12 @@
 
 #if defined(SDL_VIDEO_DRIVER_WAYLAND) && defined(SDL_VIDEO_OPENGL_EGL)
 
-#include "../../core/unix/SDL_poll.h"
 #include "../SDL_sysvideo.h"
-#include "../../events/SDL_windowevents_c.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandevents_c.h"
-
-#include "xdg-shell-client-protocol.h"
+#include "SDL_waylandframebuffer.h"
 
 #ifndef EGL_PLATFORM_WAYLAND_KHR
 #define EGL_PLATFORM_WAYLAND_KHR 0x31D8
@@ -142,44 +139,8 @@ bool Wayland_GLES_SwapWindow(SDL_VideoDevice *_this, SDL_Window *window)
     }
 
     // Control swap interval ourselves. See comments on Wayland_GLES_SetSwapInterval
-    if (swap_interval != 0 && data->shell_surface_status == WAYLAND_SHELL_SURFACE_STATUS_SHOWN) {
-        SDL_VideoData *videodata = _this->internal;
-        struct wl_display *display = videodata->display;
-        // 20hz, so we'll progress even if throttled to zero.
-        const Uint64 max_wait = SDL_GetTicksNS() + (SDL_NS_PER_SECOND / 20);
-        while (SDL_GetAtomicInt(&data->swap_interval_ready) == 0) {
-            Uint64 now;
-
-            WAYLAND_wl_display_flush(display);
-
-            /* wl_display_prepare_read_queue() will return false if the event queue is not empty.
-             * If the event queue is empty, it will prepare us for our SDL_IOReady() call. */
-            if (WAYLAND_wl_display_prepare_read_queue(display, data->gles_swap_frame_event_queue) != 0) {
-                // We have some pending events. Check if the frame callback happened.
-                WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
-                continue;
-            }
-
-            // Beyond this point, we must either call wl_display_cancel_read() or wl_display_read_events()
-
-            now = SDL_GetTicksNS();
-            if (now >= max_wait) {
-                // Timeout expired. Cancel the read.
-                WAYLAND_wl_display_cancel_read(display);
-                break;
-            }
-
-            if (SDL_IOReady(WAYLAND_wl_display_get_fd(display), SDL_IOR_READ, max_wait - now) <= 0) {
-                // Error or timeout expired without any events for us. Cancel the read.
-                WAYLAND_wl_display_cancel_read(display);
-                break;
-            }
-
-            // We have events. Read and dispatch them.
-            WAYLAND_wl_display_read_events(display);
-            WAYLAND_wl_display_dispatch_queue_pending(display, data->gles_swap_frame_event_queue);
-        }
-        SDL_SetAtomicInt(&data->swap_interval_ready, 0);
+    if (swap_interval != 0) {
+        Wayland_WaitForSwapInterval(data);
     }
 
     if (!data->double_buffer) {

@@ -86,7 +86,7 @@ int X11_GetXFixesSelectionNotifyEvent(void)
 
 bool X11_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window)
 {
-    if (SDL_RectEmpty(&window->mouse_rect)) {
+    if (SDL_RectEmpty(&window->mouse_rect) || SDL_IsMousePassthroughWindow(window)) {
         X11_ConfineCursorWithFlags(_this, window, NULL, 0);
     } else {
         if (window->flags & SDL_WINDOW_INPUT_FOCUS) {

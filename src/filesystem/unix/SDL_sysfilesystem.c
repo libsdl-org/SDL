@@ -290,24 +290,12 @@ char *SDL_SYS_GetExeName(void)
 }
 
 
-char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+static char *GetUnixPath(const char *envrvar, const char *fallback, const char *org, const char *app)
 {
-    /*
-     * We use XDG's base directory spec, even if you're not on Linux.
-     *  This isn't strictly correct, but the results are relatively sane
-     *  in any case.
-     *
-     * http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
-     */
-    const char *envr = SDL_getenv("XDG_DATA_HOME");
-    const char *prepend;
-    char *result = NULL;
-    char *ptr = NULL;
-
 #ifdef SDL_PLATFORM_LINUX
     if (SDL_IsUbuntuTouch()) {
         // On Ubuntu Touch, the only allowed data folder is:
-        //     ~/.local/share/<app id>/
+        //     ~/$FALLBACK/<app id>/
 
         SDL_PropertiesID props = SDL_GetGlobalProperties();
         if (!props) {
@@ -325,53 +313,44 @@ char *SDL_SYS_GetPrefPath(const char *org, const char *app)
     }
 #endif
 
-    if (!envr) {
-        // You end up with "$HOME/.local/share/Game Name 2"
+    // We use XDG's base directory spec, even if you're not on Linux.
+    // This isn't strictly correct, but the results are relatively sane
+    //  in any case.  https://specifications.freedesktop.org/basedir/latest/
+    const char *envr = SDL_getenv(envrvar);
+    const char *prepend = NULL;
+
+    if (!envr || !*envr) {
+        // You end up with "$HOME/.local/share/Game Name 2" (or whatever)
         envr = SDL_getenv("HOME");
-        if (!envr) {
+        if (!envr || !*envr) {
             // we could take heroic measures with /etc/passwd, but oh well.
             SDL_SetError("neither XDG_DATA_HOME nor HOME environment is set");
             return NULL;
         }
-        prepend = "/.local/share/";
+        prepend = fallback;
     } else {
-        prepend = "/";
+        prepend = "";
     }
 
-    size_t len = SDL_strlen(envr);
-    if (envr[len - 1] == '/') {
-        prepend += 1;
+    char *retval = NULL;
+    if (SDL_asprintf(&retval, "%s%s%s%s%s%s/", envr, (envr[strlen(envr) - 1] != '/') ? "/" : "", prepend, org, *org ? "/" : "", app) < 0) {
+        retval = NULL;
+    } else if (!SDL_CreateDirectory(retval)) {
+        SDL_free(retval);
+        retval = NULL;
     }
 
-    len += SDL_strlen(prepend) + SDL_strlen(org) + SDL_strlen(app) + 3;
-    result = (char *)SDL_malloc(len);
-    if (!result) {
-        return NULL;
-    }
+    return retval;
+}
 
-    if (*org) {
-        (void)SDL_snprintf(result, len, "%s%s%s/%s/", envr, prepend, org, app);
-    } else {
-        (void)SDL_snprintf(result, len, "%s%s%s/", envr, prepend, app);
-    }
+char *SDL_SYS_GetPrefPath(const char *org, const char *app)
+{
+    return GetUnixPath("XDG_DATA_HOME", ".local/share/", org, app);
+}
 
-    for (ptr = result + 1; *ptr; ptr++) {
-        if (*ptr == '/') {
-            *ptr = '\0';
-            if (mkdir(result, 0700) != 0 && errno != EEXIST) {
-                goto error;
-            }
-            *ptr = '/';
-        }
-    }
-    if (mkdir(result, 0700) != 0 && errno != EEXIST) {
-    error:
-        SDL_SetError("Couldn't create directory '%s': '%s'", result, strerror(errno));
-        SDL_free(result);
-        return NULL;
-    }
-
-    return result;
+char *SDL_SYS_GetCachePath(const char *org, const char *app)
+{
+    return GetUnixPath("XDG_CACHE_HOME", ".cache/", org, app);
 }
 
 /*

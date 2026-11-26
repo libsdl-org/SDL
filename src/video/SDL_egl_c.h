@@ -53,6 +53,8 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLWAITNATIVEPROC) (EGLint engine);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLWAITGLPROC) (void);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLBINDAPIPROC) (EGLenum api);
 typedef EGLint (EGLAPIENTRYP PFNEGLGETERRORPROC) (void);
+typedef EGLSurface (EGLAPIENTRYP PFNEGLGETCURRENTSURFACEPROC) (EGLint readdraw);
+typedef EGLBoolean (EGLAPIENTRYP PFNEGLSURFACEATTRIBPROC) (EGLDisplay dpy, EGLSurface surface, EGLint attribute, EGLint value);
 typedef EGLBoolean (EGLAPIENTRYP PFNEGLQUERYDEVICESEXTPROC) (EGLint max_devices, EGLDeviceEXT *devices, EGLint *num_devices);
 typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYPROC) (EGLenum platform, void *native_display, const EGLAttrib *attrib_list);
 typedef EGLDisplay (EGLAPIENTRYP PFNEGLGETPLATFORMDISPLAYEXTPROC) (EGLenum platform, void *native_display, const EGLint *attrib_list);
@@ -94,6 +96,8 @@ typedef struct SDL_EGL_VideoData
     PFNEGLWAITGLPROC eglWaitGL;
     PFNEGLBINDAPIPROC eglBindAPI;
     PFNEGLGETERRORPROC eglGetError;
+    PFNEGLSURFACEATTRIBPROC eglSurfaceAttrib;
+    PFNEGLGETCURRENTSURFACEPROC eglGetCurrentSurface;
     PFNEGLQUERYDEVICESEXTPROC eglQueryDevicesEXT;
     PFNEGLGETPLATFORMDISPLAYPROC eglGetPlatformDisplay;
     PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT;

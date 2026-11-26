@@ -208,6 +208,8 @@ static HRESULT STDMETHODCALLTYPE ISensorEventsVtbl_OnDataUpdated(ISensorEvents *
     }
     SDL_UnlockSensors();
 
+    SDL_DispatchSensorEvents();
+
     return S_OK;
 }
 

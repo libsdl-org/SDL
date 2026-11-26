@@ -27,48 +27,6 @@
 
 #include "../SDL_sysjoystick.h"
 
-#define AXES_CHANGED        0x00000001
-#define BALLS_CHANGED       0x00000002
-#define BUTTONS_CHANGED     0x00000004
-#define HATS_CHANGED        0x00000008
-#define TOUCHPADS_CHANGED   0x00000010
-
-/**
- * Data for a virtual, software-only joystick.
- */
-typedef struct VirtualSensorEvent
-{
-    SDL_SensorType type;
-    Uint64 sensor_timestamp;
-    float data[3];
-    int num_values;
-} VirtualSensorEvent;
-
-typedef struct joystick_hwdata
-{
-    SDL_JoystickID instance_id;
-    bool attached;
-    char *name;
-    SDL_JoystickType type;
-    SDL_GUID guid;
-    SDL_VirtualJoystickDesc desc;
-    Uint32 changes;
-    Sint16 *axes;
-    bool *buttons;
-    Uint8 *hats;
-    SDL_JoystickBallData *balls;
-    SDL_JoystickTouchpadInfo *touchpads;
-    SDL_JoystickSensorInfo *sensors;
-    bool sensors_enabled;
-    int num_sensor_events;
-    int max_sensor_events;
-    VirtualSensorEvent *sensor_events;
-
-    SDL_Joystick *joystick;
-
-    struct joystick_hwdata *next;
-} joystick_hwdata;
-
 extern SDL_JoystickID SDL_JoystickAttachVirtualInner(const SDL_VirtualJoystickDesc *desc);
 extern bool SDL_JoystickDetachVirtualInner(SDL_JoystickID instance_id);
 

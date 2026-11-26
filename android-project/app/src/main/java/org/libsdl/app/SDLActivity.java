@@ -18,7 +18,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.hardware.Sensor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -486,6 +485,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         // So we can call stuff from static callbacks
         mSingleton = this;
         SDL.setContext(this);
+
+        // Set the manifest environment variables now, on the UI thread, before the first frame.
+        // Adding a new environment variable reallocates the environment, which can crash other
+        // threads reading it at the same time, e.g. graphics drivers initializing EGL on the
+        // render thread.
+        getManifestEnvironmentVariables();
 
         if (SDL.isControllerManagerReady()) {
             SDLControllerManager.initializeDeviceListener();
@@ -966,13 +971,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             if (readyToRun) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
-                    // Start up the C app thread and enable sensor input for the first time
-                    // FIXME: Why aren't we enabling sensor input at start?
-
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
-                    if (mSurface != null) {
-                        mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
-                    }
                     mSDLThread.start();
 
                     // No nativeResume(), don't signal Android_ResumeSem
@@ -1165,7 +1164,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             }
 
-            if (bShouldWait && (getContext() != null)) {
+            Activity activity = getContext();
+            if (bShouldWait && activity != null) {
                 // We'll wait for the surfaceChanged() method, which will notify us
                 // when called.  That way, we know our current size is really the
                 // size we need, instead of grabbing a size that's still got
@@ -1175,9 +1175,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // take a surprisingly long time for the surface resize, but
                 // then we'll just give up and return.
                 //
-                synchronized (getContext()) {
+                synchronized (activity) {
                     try {
-                        getContext().wait(500);
+                        activity.wait(500);
                     } catch (InterruptedException ie) {
                         ie.printStackTrace();
                     }
@@ -1204,6 +1204,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
     public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, float density, float rate);
+    public static native void nativeSetScreenHDRHeadroom(float headroom);
     public static native void onNativeResize();
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
@@ -1339,6 +1340,28 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static void setDesiredHDRHeadroom(final float headroom) {
+        if (Build.VERSION.SDK_INT < 35 /* Android 15 (V) */) {
+            return;
+        }
+
+        if (mSingleton == null) {
+            return;
+        }
+
+        mSingleton.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mSurface != null) {
+                    mSurface.setDesiredHDRHeadroom(headroom);
+                }
+            }
+        });
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void minimizeWindow() {
 
         if (mSingleton == null) {
@@ -1410,9 +1433,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean isAndroidTV() {
-        UiModeManager uiModeManager = (UiModeManager) getContext().getSystemService(UI_MODE_SERVICE);
-        if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
-            return true;
+        Activity activity = getContext();
+        if (activity != null) {
+            UiModeManager uiModeManager = (UiModeManager) activity.getSystemService(UI_MODE_SERVICE);
+            if (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION) {
+                return true;
+            }
         }
         if (Build.MANUFACTURER.equals("MINIX") && Build.MODEL.equals("NEO-U1")) {
             return true;
@@ -1442,7 +1468,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     static String getDeviceFormFactor()
     {
         // TODO: WearOS
-        if (isAndroidTV()) {
+        if (isGooglePlayOnPC()) {
+            return "desktop";
+        } else if (isAndroidTV()) {
             return "tv";
         } else if (isVRHeadset()) {
             return "headset";
@@ -1483,9 +1511,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean isChromebook() {
         // https://stackoverflow.com/questions/39784415/how-to-detect-programmatically-if-android-app-is-running-in-chrome-book-or-in
-        if (getContext() != null) {
-            if (getContext().getPackageManager().hasSystemFeature("org.chromium.arc")
-                || getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management")) {
+        Activity activity = getContext();
+        if (activity != null) {
+            if (activity.getPackageManager().hasSystemFeature("org.chromium.arc") ||
+                activity.getPackageManager().hasSystemFeature("org.chromium.arc.device_management")) {
                 return true;
             }
         }
@@ -1515,13 +1544,27 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static boolean isGooglePlayOnPC() {
+        Activity activity = getContext();
+        if (activity != null) {
+            if (activity.getPackageManager().hasSystemFeature("com.google.android.play.feature.HPE_EXPERIENCE")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean getManifestEnvironmentVariables() {
         try {
-            if (getContext() == null) {
+            Activity activity = getContext();
+            if (activity == null) {
                 return false;
             }
 
-            ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
+            ApplicationInfo applicationInfo = activity.getPackageManager().getApplicationInfo(activity.getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
             if (bundle == null) {
                 return false;
@@ -1549,13 +1592,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     static class ShowTextInputTask implements Runnable {
-        /*
-         * This is used to regulate the pan&scan method to have some offset from
-         * the bottom edge of the input region and the top edge of an input
-         * method (soft keyboard)
-         */
-        static final int HEIGHT_PADDING = 15;
-
         public int input_type;
         public int x, y, w, h;
 
@@ -1570,8 +1606,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             if (this.w <= 0) {
                 this.w = 1;
             }
-            if (this.h + HEIGHT_PADDING <= 0) {
-                this.h = 1 - HEIGHT_PADDING;
+            if (this.h <= 0) {
+                this.h = 1;
             }
         }
 
@@ -1581,7 +1617,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 return;
             }
 
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h + HEIGHT_PADDING);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(w, h);
             params.leftMargin = x;
             params.topMargin = y;
 
@@ -1632,13 +1668,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         int deviceId = event.getDeviceId();
         int source = event.getSource();
         InputDevice device = InputDevice.getDevice(deviceId);
-
-        if ((event.getFlags() & KeyEvent.FLAG_FALLBACK) != 0) {
-            // If this is a fallback event -- e.g., the mouse is being turned into dpad navigational keys 
-            // just eat it, since that's almost never what we actually want to have happen. This will 
-            // happen with Logitech mice on Amazon Fire TV devices and some Samsung devices.
-            return true; 
-        }
 
         if (source == InputDevice.SOURCE_UNKNOWN) {
             if (device != null) {

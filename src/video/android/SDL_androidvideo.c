@@ -64,6 +64,7 @@ static int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_RGB565; // Default SurfaceView format, in case this is queried before being filled
 float Android_ScreenDensity = 1.0f;
 static float Android_ScreenRate = 0.0f;
+static float Android_ScreenHDRHeadroom = 1.0f;
 static SDL_DisplayOrientation Android_ScreenOrientation = SDL_ORIENTATION_UNKNOWN;
 int Android_SafeInsetLeft = 0;
 int Android_SafeInsetRight = 0;
@@ -195,6 +196,7 @@ bool Android_VideoInit(SDL_VideoDevice *_this)
     display->natural_orientation = Android_JNI_GetDisplayNaturalOrientation();
     display->current_orientation = Android_JNI_GetDisplayCurrentOrientation();
     display->content_scale = Android_ScreenDensity;
+    Android_SetScreenHDRHeadroom(Android_ScreenHDRHeadroom);
 
     SDL_AddHintCallback(SDL_HINT_ANDROID_TRAP_BACK_BUTTON, Android_Video_InternalHintCallback, 0);
 
@@ -223,19 +225,34 @@ void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int device
     Android_ScreenRate = rate;
 }
 
+void Android_SetScreenHDRHeadroom(float headroom)
+{
+    Android_ScreenHDRHeadroom = headroom;
+
+    SDL_VideoDevice *device = SDL_GetVideoDevice();
+    if (device && device->num_displays > 0) {
+        SDL_VideoDisplay *display = device->displays[0];
+        SDL_HDROutputProperties HDR;
+
+        HDR.SDR_white_level = 1.0f;
+        HDR.HDR_headroom = headroom;
+        SDL_SetDisplayHDRProperties(display, &HDR);
+    }
+}
+
 static Uint32 format_to_pixelFormat(int format)
 {
     Uint32 pf;
     if (format == AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM) { // 1
-        pf = SDL_PIXELFORMAT_RGBA8888;
+        pf = SDL_PIXELFORMAT_RGBA32;
     } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8X8_UNORM) { // 2
-        pf = SDL_PIXELFORMAT_RGBX8888;
+        pf = SDL_PIXELFORMAT_RGBX32;
     } else if (format == AHARDWAREBUFFER_FORMAT_R8G8B8_UNORM) { // 3
         pf = SDL_PIXELFORMAT_RGB24;
     } else if (format == AHARDWAREBUFFER_FORMAT_R5G6B5_UNORM) { // 4
         pf = SDL_PIXELFORMAT_RGB565;
     } else if (format == 5) {
-        pf = SDL_PIXELFORMAT_BGRA8888;
+        pf = SDL_PIXELFORMAT_BGRA32;
     } else if (format == 6) {
         pf = SDL_PIXELFORMAT_RGBA5551;
     } else if (format == 7) {

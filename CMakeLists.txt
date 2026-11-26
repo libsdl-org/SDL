@@ -13,12 +13,6 @@ else()
   set(SDL3_MAINPROJECT OFF)
 endif()
 
-# Add UTF-8 encoding support for MSVC compiler.
-# This ensures that the MSVC compiler interprets source files as UTF-8 encoded,
-# which is useful for projects containing non-ASCII characters in source files.
-add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
 # By default, configure SDL3 in RelWithDebInfo configuration
 if(SDL3_MAINPROJECT)
   get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -1177,6 +1171,9 @@ if(SDL_LIBC)
     sdl_link_dependency(math LIBS m)
     list(APPEND CMAKE_REQUIRED_LIBRARIES m)
   endif()
+  if(UNIX)
+    list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1)
+  endif()
   foreach(_FN IN LISTS symbols_to_check)
     string(TOUPPER ${_FN} _UPPER)
     set(LIBC_HAS_VAR "LIBC_HAS_${_UPPER}")
@@ -1689,7 +1686,7 @@ if(ANDROID)
       get_property(sdl3_jar_location TARGET SDL3-jar PROPERTY JAR_FILE)
       set_property(TARGET SDL3__Jar PROPERTY JAR_FILE "${sdl3_jar_location}")
       set(javasourcesjar "${SDL3_BINARY_DIR}/SDL3-${SDL3_VERSION}-sources.jar")
-      string(REGEX REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
+      string(REPLACE "${android_java_sources_root}/" "" sdl_relative_java_sources "${SDL_JAVA_SOURCES}")
       add_custom_command(
         OUTPUT "${javasourcesjar}"
         COMMAND ${Java_JAR_EXECUTABLE} cf "${javasourcesjar}" ${sdl_relative_java_sources}
@@ -2317,6 +2314,8 @@ elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     sdl_sources(
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_evdev_capabilities.h"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.c"
+      "${SDL3_SOURCE_DIR}/src/core/linux/SDL_sysfs.h"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_threadprio.c"
       "${SDL3_SOURCE_DIR}/src/core/linux/SDL_ubuntu_touch.c"
     )
@@ -2519,14 +2518,6 @@ elseif(WINDOWS OR CYGWIN)
     )
   endif()
 
-  # headers needed elsewhere
-  check_c_source_compiles("
-    #define COBJMACROS
-    #include <windows.gaming.input.h>
-    static __x_ABI_CWindows_CGaming_CInput_CIGamepadStatics2 *s2;
-    int main(int argc, char **argv) { return 0; }" HAVE_WINDOWS_GAMING_INPUT_H
-  )
-
   set(HAVE_GAMEINPUT_H 1)
   sdl_include_directories(PRIVATE SYSTEM "${SDL3_SOURCE_DIR}/src/core/windows/gameinput")
   sdl_sources("${SDL3_SOURCE_DIR}/src/core/windows/gameinput/gameinput.cpp")
@@ -2722,7 +2713,6 @@ elseif(WINDOWS OR CYGWIN)
       "${SDL3_SOURCE_DIR}/src/joystick/windows/*.h"
     )
 
-    set(SDL_JOYSTICK_RAWINPUT 1)
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       sdl_link_dependency(joystick LIBS dinput8)
@@ -2730,9 +2720,6 @@ elseif(WINDOWS OR CYGWIN)
     if(HAVE_XINPUT_H)
       set(SDL_JOYSTICK_XINPUT 1)
       set(HAVE_XINPUT TRUE)
-    endif()
-    if(HAVE_WINDOWS_GAMING_INPUT_H)
-      set(SDL_JOYSTICK_WGI 1)
     endif()
     if(HAVE_GAMEINPUT_H)
       sdl_glob_sources("${SDL3_SOURCE_DIR}/src/joystick/gdk/*.cpp")
@@ -2770,6 +2757,13 @@ elseif(APPLE)
   # TODO: rework this all for proper macOS, iOS and Darwin support
 
   # !!! FIXME: all the `if(IOS OR TVOS OR VISIONOS)` checks should get merged into one variable, so we're ready for the next platform (or just WatchOS).
+
+  if(MACOS)
+    sdl_glob_sources(
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.c"
+      "${SDL3_SOURCE_DIR}/src/core/macos/*.h"
+    )
+  endif()
 
   # We always need these libs on macOS at the moment.
   # !!! FIXME: we need Carbon for some very old API calls in
@@ -3762,6 +3756,9 @@ if (SDL_DIALOG)
   sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/SDL_dialog_utils.c)
   if(ANDROID)
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/android/SDL_androiddialog.c)
+    set(HAVE_SDL_DIALOG TRUE)
+  elseif(EMSCRIPTEN)
+    sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/emscripten/SDL_emscriptendialog.c)
     set(HAVE_SDL_DIALOG TRUE)
   elseif(UNIX AND NOT (APPLE OR RISCOS OR HAIKU OR CYGWIN))
     sdl_sources(${SDL3_SOURCE_DIR}/src/dialog/unix/SDL_unixdialog.c)

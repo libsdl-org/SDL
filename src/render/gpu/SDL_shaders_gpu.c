@@ -152,6 +152,14 @@ static const GPU_ShaderSources frag_shader_sources[NUM_FRAG_SHADERS] = {
         SHADER_DXIL60(texture_advanced_frag_dxil)
         SHADER_METAL(texture_advanced_frag_msl)
     },
+    [FRAG_SHADER_COLOR_PQ] = {
+        .num_samplers = 0,
+        .num_uniform_buffers = 1,
+        SHADER_PRIVATE(color_pq_frag_private)
+        SHADER_SPIRV(color_pq_frag_spv)
+        SHADER_DXIL60(color_pq_frag_dxil)
+        SHADER_METAL(color_pq_frag_msl)
+    },
 };
 // clang-format on
 
@@ -262,15 +270,23 @@ SDL_GPUShader *GPU_GetFragmentShader(GPU_Shaders *shaders, GPU_FragmentShaderID 
 void GPU_FillSupportedShaderFormats(SDL_PropertiesID props)
 {
     bool custom_shaders = false;
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_PRIVATE_BOOLEAN, false)) {
+        SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN, HAVE_PRIVATE_SHADERS);
+        custom_shaders = true;
+    }
     if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_SPIRV_BOOLEAN, false)) {
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN, HAVE_SPIRV_SHADERS);
         custom_shaders = true;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, false)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXBC_BOOLEAN, false) ||
+        SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_DXIL_BOOLEAN, false)) {
+        // This will select DirectX shader format. The renderer uses DXIL
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, HAVE_DXIL60_SHADERS);
         custom_shaders = true;
     }
-    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, false)) {
+    if (SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_MSL_BOOLEAN, false) ||
+        SDL_GetBooleanProperty(props, SDL_PROP_RENDERER_CREATE_GPU_SHADERS_METALLIB_BOOLEAN, false)) {
+        // This will select Metal shader format. The renderer uses MSL
         SDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN, HAVE_METAL_SHADERS);
         custom_shaders = true;
     }

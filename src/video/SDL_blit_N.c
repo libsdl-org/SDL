@@ -2132,7 +2132,7 @@ static void Blit2to2Key(SDL_BlitInfo *info)
     Uint16 *dstp = (Uint16 *)info->dst;
     int dstskip = info->dst_skip;
     Uint32 ckey = info->colorkey;
-    Uint32 rgbmask = ~info->src_fmt->Amask;
+    Uint32 rgbmask = info->src_fmt->Rmask | info->src_fmt->Gmask | info->src_fmt->Bmask;
 
     // Set up some basic variables
     srcskip /= 2;
@@ -2170,7 +2170,7 @@ static void BlitNtoNKey(SDL_BlitInfo *info)
     int srcbpp = srcfmt->bytes_per_pixel;
     int dstbpp = dstfmt->bytes_per_pixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
-    Uint32 rgbmask = ~srcfmt->Amask;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
     int sfmt = srcfmt->format;
     int dfmt = dstfmt->format;
 
@@ -2438,7 +2438,7 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     Uint32 ckey = info->colorkey;
     const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
     const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
-    Uint32 rgbmask = ~srcfmt->Amask;
+    Uint32 rgbmask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
 
     Uint8 srcbpp;
     Uint8 dstbpp;
@@ -2451,30 +2451,23 @@ static void BlitNtoNKeyCopyAlpha(SDL_BlitInfo *info)
     ckey &= rgbmask;
 
     // Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster
-    if (srcfmt->format == dstfmt->format) {
-
-        if (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
-            srcfmt->format == SDL_PIXELFORMAT_RGBA8888) {
-
-            Uint32 *src32 = (Uint32 *)src;
-            Uint32 *dst32 = (Uint32 *)dst;
-            while (height--) {
-                /* *INDENT-OFF* */ // clang-format off
-                DUFFS_LOOP_TRIVIAL(
-                {
-                    if ((*src32 & rgbmask) != ckey) {
-                        *dst32 = *src32;
-                    }
-                    ++src32;
-                    ++dst32;
-                },
-                width);
-                /* *INDENT-ON* */ // clang-format on
-                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
-                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
-            }
+    if (srcfmt->format == dstfmt->format && srcbpp == 4) {
+        Uint32 *src32 = (Uint32 *)src;
+        Uint32 *dst32 = (Uint32 *)dst;
+        while (height--) {
+            /* *INDENT-OFF* */ // clang-format off
+            DUFFS_LOOP_TRIVIAL(
+            {
+                if ((*src32 & rgbmask) != ckey) {
+                    *dst32 = *src32;
+                }
+                ++src32;
+                ++dst32;
+            },
+            width);
+            /* *INDENT-ON* */ // clang-format on
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
         }
         return;
     }
@@ -2779,6 +2772,276 @@ static void Blit8888to8888PixelSwizzleNEON(SDL_BlitInfo *info)
 
 #endif
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+
+// Convert between 24-bit and 8888 pixels with differing formats.
+#define SWIZZLE_24_TO_8888(src, srcRindex, srcGindex, srcBindex,            \
+                           dst, dstRindex, dstGindex, dstBindex, dstAindex) \
+    do {                                                                    \
+        dst[dstRindex] = src[srcRindex];                                    \
+        dst[dstGindex] = src[srcGindex];                                    \
+        dst[dstBindex] = src[srcBindex];                                    \
+        dst[dstAindex] = 0xFF;                                              \
+    } while (0)
+
+#define SWIZZLE_8888_TO_24(src, srcRindex, srcGindex, srcBindex,    \
+                           dst, dstRindex, dstGindex, dstBindex)    \
+    do {                                                            \
+        dst[dstRindex] = src[srcRindex];                            \
+        dst[dstGindex] = src[srcGindex];                            \
+        dst[dstBindex] = src[srcBindex];                            \
+    } while (0)
+
+#ifdef SDL_SSE4_1_INTRINSICS
+
+static void SDL_TARGETING("sse4.1") Blit24to8888PixelSwizzleSSE41(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint32 dstAmask, dstAshift;
+    Uint8 mask[16];
+    int i;
+    const int srcRindex = (srcfmt->Rshift >> 3);
+    const int srcGindex = (srcfmt->Gshift >> 3);
+    const int srcBindex = (srcfmt->Bshift >> 3);
+    const int dstRindex = (dstfmt->Rshift >> 3);
+    const int dstGindex = (dstfmt->Gshift >> 3);
+    const int dstBindex = (dstfmt->Bshift >> 3);
+    int dstAindex;
+
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+    dstAindex = (dstAshift >> 3);
+
+    // Move 4 packed 3 byte pixels into 4 byte pixels, leaving alpha zero
+    SDL_memset(mask, 0x80, sizeof(mask));
+    for (i = 0; i < 4; ++i) {
+        mask[i * 4 + dstRindex] = (Uint8)(i * 3 + srcRindex);
+        mask[i * 4 + dstGindex] = (Uint8)(i * 3 + srcGindex);
+        mask[i * 4 + dstBindex] = (Uint8)(i * 3 + srcBindex);
+    }
+    const __m128i convert_mask = _mm_loadu_si128((const __m128i *)mask);
+    const __m128i alpha_fill_mask = _mm_set1_epi32((int)dstAmask);
+
+    while (height--) {
+        i = 0;
+
+        for (; i + 16 <= width; i += 16) {
+            // Load 16 src pixels
+            __m128i a = _mm_loadu_si128((const __m128i *)(src + 0));
+            __m128i b = _mm_loadu_si128((const __m128i *)(src + 16));
+            __m128i c = _mm_loadu_si128((const __m128i *)(src + 32));
+
+            // Line up each group of 4 pixels at the start of a register
+            __m128i p0 = a;
+            __m128i p1 = _mm_alignr_epi8(b, a, 12);
+            __m128i p2 = _mm_alignr_epi8(c, b, 8);
+            __m128i p3 = _mm_srli_si128(c, 4);
+
+            // Convert to dst format and set the alpha channels to 255
+            p0 = _mm_or_si128(_mm_shuffle_epi8(p0, convert_mask), alpha_fill_mask);
+            p1 = _mm_or_si128(_mm_shuffle_epi8(p1, convert_mask), alpha_fill_mask);
+            p2 = _mm_or_si128(_mm_shuffle_epi8(p2, convert_mask), alpha_fill_mask);
+            p3 = _mm_or_si128(_mm_shuffle_epi8(p3, convert_mask), alpha_fill_mask);
+
+            // Save the result
+            _mm_storeu_si128((__m128i *)(dst + 0), p0);
+            _mm_storeu_si128((__m128i *)(dst + 16), p1);
+            _mm_storeu_si128((__m128i *)(dst + 32), p2);
+            _mm_storeu_si128((__m128i *)(dst + 48), p3);
+
+            src += 48;
+            dst += 64;
+        }
+
+        for (; i < width; ++i) {
+            SWIZZLE_24_TO_8888(src, srcRindex, srcGindex, srcBindex,
+                               dst, dstRindex, dstGindex, dstBindex, dstAindex);
+            src += 3;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+static void SDL_TARGETING("sse4.1") Blit8888to24PixelSwizzleSSE41(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint8 mask[16];
+    int i;
+    const int srcRindex = (srcfmt->Rshift >> 3);
+    const int srcGindex = (srcfmt->Gshift >> 3);
+    const int srcBindex = (srcfmt->Bshift >> 3);
+    const int dstRindex = (dstfmt->Rshift >> 3);
+    const int dstGindex = (dstfmt->Gshift >> 3);
+    const int dstBindex = (dstfmt->Bshift >> 3);
+
+    // Pack 4 pixels into the low 12 bytes, dropping alpha
+    SDL_memset(mask, 0x80, sizeof(mask));
+    for (i = 0; i < 4; ++i) {
+        mask[i * 3 + dstRindex] = (Uint8)(i * 4 + srcRindex);
+        mask[i * 3 + dstGindex] = (Uint8)(i * 4 + srcGindex);
+        mask[i * 3 + dstBindex] = (Uint8)(i * 4 + srcBindex);
+    }
+    const __m128i convert_mask = _mm_loadu_si128((const __m128i *)mask);
+
+    while (height--) {
+        i = 0;
+
+        for (; i + 16 <= width; i += 16) {
+            // Load 16 src pixels and convert each group of 4 to dst format
+            __m128i p0 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(src + 0)), convert_mask);
+            __m128i p1 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(src + 16)), convert_mask);
+            __m128i p2 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(src + 32)), convert_mask);
+            __m128i p3 = _mm_shuffle_epi8(_mm_loadu_si128((const __m128i *)(src + 48)), convert_mask);
+
+            // Pack the 12 byte groups together and save the result
+            _mm_storeu_si128((__m128i *)(dst + 0), _mm_or_si128(p0, _mm_slli_si128(p1, 12)));
+            _mm_storeu_si128((__m128i *)(dst + 16), _mm_or_si128(_mm_srli_si128(p1, 4), _mm_slli_si128(p2, 8)));
+            _mm_storeu_si128((__m128i *)(dst + 32), _mm_or_si128(_mm_srli_si128(p2, 8), _mm_slli_si128(p3, 4)));
+
+            src += 64;
+            dst += 48;
+        }
+
+        for (; i < width; ++i) {
+            SWIZZLE_8888_TO_24(src, srcRindex, srcGindex, srcBindex,
+                               dst, dstRindex, dstGindex, dstBindex);
+            src += 4;
+            dst += 3;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif // SDL_SSE4_1_INTRINSICS
+
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+
+static void Blit24to8888PixelSwizzleNEON(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    Uint32 dstAmask, dstAshift;
+    const int srcRindex = (srcfmt->Rshift >> 3);
+    const int srcGindex = (srcfmt->Gshift >> 3);
+    const int srcBindex = (srcfmt->Bshift >> 3);
+    const int dstRindex = (dstfmt->Rshift >> 3);
+    const int dstGindex = (dstfmt->Gshift >> 3);
+    const int dstBindex = (dstfmt->Bshift >> 3);
+    int dstAindex;
+
+    SDL_Get8888AlphaMaskAndShift(dstfmt, &dstAmask, &dstAshift);
+    dstAindex = (dstAshift >> 3);
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 16 <= width; i += 16) {
+            // Load 16 src pixels, one register per channel
+            uint8x16x3_t in = vld3q_u8(src);
+            uint8x16x4_t out;
+
+            // Convert to dst format and set the alpha channels to 255
+            out.val[dstRindex] = in.val[srcRindex];
+            out.val[dstGindex] = in.val[srcGindex];
+            out.val[dstBindex] = in.val[srcBindex];
+            out.val[dstAindex] = vdupq_n_u8(0xFF);
+
+            // Save the result
+            vst4q_u8(dst, out);
+
+            src += 48;
+            dst += 64;
+        }
+
+        for (; i < width; ++i) {
+            SWIZZLE_24_TO_8888(src, srcRindex, srcGindex, srcBindex,
+                               dst, dstRindex, dstGindex, dstBindex, dstAindex);
+            src += 3;
+            dst += 4;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+static void Blit8888to24PixelSwizzleNEON(SDL_BlitInfo *info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    const SDL_PixelFormatDetails *srcfmt = info->src_fmt;
+    const SDL_PixelFormatDetails *dstfmt = info->dst_fmt;
+    const int srcRindex = (srcfmt->Rshift >> 3);
+    const int srcGindex = (srcfmt->Gshift >> 3);
+    const int srcBindex = (srcfmt->Bshift >> 3);
+    const int dstRindex = (dstfmt->Rshift >> 3);
+    const int dstGindex = (dstfmt->Gshift >> 3);
+    const int dstBindex = (dstfmt->Bshift >> 3);
+
+    while (height--) {
+        int i = 0;
+
+        for (; i + 16 <= width; i += 16) {
+            // Load 16 src pixels, one register per channel
+            uint8x16x4_t in = vld4q_u8(src);
+            uint8x16x3_t out;
+
+            // Convert to dst format, dropping alpha
+            out.val[dstRindex] = in.val[srcRindex];
+            out.val[dstGindex] = in.val[srcGindex];
+            out.val[dstBindex] = in.val[srcBindex];
+
+            // Save the result
+            vst3q_u8(dst, out);
+
+            src += 64;
+            dst += 48;
+        }
+
+        for (; i < width; ++i) {
+            SWIZZLE_8888_TO_24(src, srcRindex, srcGindex, srcBindex,
+                               dst, dstRindex, dstGindex, dstBindex);
+            src += 4;
+            dst += 3;
+        }
+
+        src += srcskip;
+        dst += dstskip;
+    }
+}
+
+#endif // SDL_NEON_INTRINSICS
+
+#endif // SDL_BYTEORDER == SDL_LIL_ENDIAN
+
 // Blit_3or4_to_3or4__same_rgb: 3 or 4 bpp, same RGB triplet
 static void Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo *info)
 {
@@ -3002,6 +3265,14 @@ static const struct blit_table normal_blit_2[] = {
       0, Blit_RGB565_RGBA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
     { 0x0000F800, 0x000007E0, 0x0000001F, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
       0, Blit_RGB565_BGRA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+    { 0x0000001F, 0x000007E0, 0x0000F800, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+      0, Blit_RGB565_ARGB8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+    { 0x0000001F, 0x000007E0, 0x0000F800, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+      0, Blit_RGB565_ABGR8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+    { 0x0000001F, 0x000007E0, 0x0000F800, 4, 0x0000FF00, 0x00FF0000, 0xFF000000,
+      0, Blit_RGB565_RGBA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
+    { 0x0000001F, 0x000007E0, 0x0000F800, 4, 0xFF000000, 0x00FF0000, 0x0000FF00,
+      0, Blit_RGB565_BGRA8888, NO_ALPHA | COPY_ALPHA | SET_ALPHA },
 #endif
     // Default for 16-bit RGB source, used if no other blitter matches
     { 0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0 }
@@ -3081,7 +3352,11 @@ static const struct blit_table normal_blit_4[] = {
     // RGB 888 and RGB 565
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
       0, Blit_XRGB8888_RGB565, NO_ALPHA },
+    { 0x000000FF, 0x0000FF00, 0x00FF0000, 2, 0x0000001F, 0x000007E0, 0x0000F800,
+      0, Blit_XRGB8888_RGB565, NO_ALPHA },
     { 0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x00007C00, 0x000003E0, 0x0000001F,
+      0, Blit_XRGB8888_RGB555, NO_ALPHA },
+    { 0x000000FF, 0x0000FF00, 0x00FF0000, 2, 0x0000001F, 0x000003E0, 0x00007C00,
       0, Blit_XRGB8888_RGB555, NO_ALPHA },
     // Default for 32-bit RGB source, used if no other blitter matches
     { 0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0 }
@@ -3136,10 +3411,40 @@ SDL_BlitFunc SDL_CalculateBlitN(SDL_Surface *surface)
             }
 #endif
         }
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        if ((srcfmt->format == SDL_PIXELFORMAT_RGB24 ||
+             srcfmt->format == SDL_PIXELFORMAT_BGR24) &&
+            SDL_PIXELLAYOUT(dstfmt->format) == SDL_PACKEDLAYOUT_8888) {
+#ifdef SDL_SSE4_1_INTRINSICS
+            if (SDL_HasSSE41()) {
+                return Blit24to8888PixelSwizzleSSE41;
+            }
+#endif
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+            if (SDL_HasNEON()) {
+                return Blit24to8888PixelSwizzleNEON;
+            }
+#endif
+        }
+        if (SDL_PIXELLAYOUT(srcfmt->format) == SDL_PACKEDLAYOUT_8888 &&
+            (dstfmt->format == SDL_PIXELFORMAT_RGB24 ||
+             dstfmt->format == SDL_PIXELFORMAT_BGR24)) {
+#ifdef SDL_SSE4_1_INTRINSICS
+            if (SDL_HasSSE41()) {
+                return Blit8888to24PixelSwizzleSSE41;
+            }
+#endif
+#if defined(SDL_NEON_INTRINSICS) && (__ARM_ARCH >= 8) && (defined(__aarch64__) || defined(_M_ARM64))
+            if (SDL_HasNEON()) {
+                return Blit8888to24PixelSwizzleNEON;
+            }
+#endif
+        }
+#endif // SDL_BYTEORDER == SDL_LIL_ENDIAN
 #ifdef SDL_SVE2_INTRINSICS
         if (SDL_HasSVE2()) {
             /* RGBA8888/ARGB8888/XRGB8888 -> RGB565 */
-            if (srcfmt->bytes_per_pixel == 4 &&
+            if (SDL_PIXELLAYOUT(srcfmt->format) == SDL_PACKEDLAYOUT_8888 &&
                 dstfmt->bytes_per_pixel == 2 &&
                 dstfmt->Rmask == 0x0000F800 &&
                 dstfmt->Gmask == 0x000007E0 &&

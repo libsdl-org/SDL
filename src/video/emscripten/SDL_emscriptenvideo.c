@@ -797,7 +797,9 @@ static bool Emscripten_SetWindowIcon(SDL_VideoDevice *_this, SDL_Window *window,
     MAIN_THREAD_EM_ASM({
         // Use `.slice` to make a copy of the data if we are dealing with a SharedArrayBuffer, or `.subarray` to create a
         // view into the existing buffer if its non-shared.
-        var pngData = HEAPU8.buffer instanceof ArrayBuffer ? HEAPU8.subarray($0, $0 + $1) : HEAPU8.slice($0, $0 + $1);
+        var ptr = Number($0);
+        var len = Number($1);
+        var pngData = HEAPU8.buffer instanceof ArrayBuffer ? HEAPU8.subarray(ptr, ptr + len) : HEAPU8.slice(ptr, ptr + len);
 
         var blob = new Blob([pngData], {type: 'image/png'});
         var url = URL.createObjectURL(blob);

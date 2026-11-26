@@ -657,10 +657,10 @@ static int LIBUSB_CALL hotplug_callback(struct libusb_context *ctx, struct libus
 {
 	switch (event) {
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_ARRIVED:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	case LIBUSB_HOTPLUG_EVENT_DEVICE_LEFT:
-		++SDL_HIDAPI_discovery.m_unDeviceChangeCounter;
+		HIDAPI_DeviceChanged();
 		break;
 	default:
 		break;
@@ -1047,7 +1047,7 @@ static int should_enumerate_interface(unsigned short vendor_id, unsigned short p
 	printf("Checking interface 0x%x %d/%d/%d/%d\n", vendor_id, intf_desc->bInterfaceNumber, intf_desc->bInterfaceClass, intf_desc->bInterfaceSubClass, intf_desc->bInterfaceProtocol);
 #endif
 
-#ifdef HIDAPI_IGNORE_DEVICE
+#if defined(HIDAPI_IGNORE_DEVICE) && defined(SDL_PLATFORM_MACOS)
 	/* See if there are any devices we should skip in enumeration */
 	if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, vendor_id, product_id, 0, 0, true, is_xbox)) {
 		return 0;
@@ -1114,6 +1114,13 @@ struct hid_device_info  HID_API_EXPORT *hid_enumerate(unsigned short vendor_id, 
 		    libusb_blacklist(dev_vid, dev_pid)) {
 			continue;
 		}
+
+#if defined(HIDAPI_IGNORE_DEVICE) && !defined(SDL_PLATFORM_MACOS)
+		/* See if there are any devices we should skip in enumeration */
+		if (HIDAPI_IGNORE_DEVICE(HID_API_BUS_USB, dev_vid, dev_pid, 0, 0, true, false)) {
+			continue;
+		}
+#endif
 
 		res = libusb_get_active_config_descriptor(dev, &conf_desc);
 		if (res < 0)

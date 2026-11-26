@@ -49,6 +49,13 @@ static SDL_Pen *pen_devices SDL_GUARDED_BY(pen_device_rwlock) = NULL;
 static int pen_device_count SDL_GUARDED_BY(pen_device_rwlock) = 0;
 static SDL_AtomicInt pending_proximity_out;
 
+/* The expected mouse button emulation for most platforms is pen button 1 to right mouse, and pen button 2 to middle mouse.
+ * Unix environments using Wayland or X11 expect a mapping of button 1 to middle mouse, and button 2 to right mouse.
+ */
+static const Uint8 default_mouse_buttons[] = { SDL_BUTTON_LEFT, SDL_BUTTON_RIGHT, SDL_BUTTON_MIDDLE, SDL_BUTTON_X1, SDL_BUTTON_X2 };
+static const Uint8 unix_mouse_buttons[] = { SDL_BUTTON_LEFT, SDL_BUTTON_MIDDLE, SDL_BUTTON_RIGHT, SDL_BUTTON_X1, SDL_BUTTON_X2 };
+static const Uint8 *mouse_buttons;
+
 // You must hold pen_device_rwlock before calling this, and result is only safe while lock is held!
 // If SDL isn't initialized, grabbing the NULL lock is a no-op and there will be zero devices, so
 // locking and calling this in that case will do the right thing.
@@ -129,6 +136,7 @@ bool SDL_InitPen(void)
     SDL_assert(pen_device_rwlock == NULL);
     SDL_assert(pen_devices == NULL);
     SDL_assert(pen_device_count == 0);
+    mouse_buttons = default_mouse_buttons;
     pen_device_rwlock = SDL_CreateRWLock();
     if (!pen_device_rwlock) {
         return false;
@@ -148,6 +156,15 @@ void SDL_QuitPen(void)
     SDL_RemoveAllPenDevices(NULL, NULL);
     SDL_DestroyRWLock(pen_device_rwlock);
     pen_device_rwlock = NULL;
+}
+
+void SDL_SetPenUnixMouseButtonMapping(bool use_unix_mapping)
+{
+    if (use_unix_mapping) {
+        mouse_buttons = unix_mouse_buttons;
+    } else {
+        mouse_buttons = default_mouse_buttons;
+    }
 }
 
 #if 0 // not a public API at the moment.
@@ -359,6 +376,11 @@ void SDL_SendPenTouch(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *windo
     float x = 0.0f;
     float y = 0.0f;
 
+    // Pens lifted after mouse passthrough was enabled still go through, so they don't get stuck
+    if (down && SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
+
     // note that this locks for _reading_ because the lock protects the
     // pen_devices array from being reallocated from under us, not the data in it;
     // we assume only one thread (in the backend) is modifying an individual pen at
@@ -474,6 +496,10 @@ void SDL_SendPenAxis(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *window
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
+    if (SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
+
     if (send_event && SDL_EventEnabled(SDL_EVENT_PEN_AXIS)) {
         SDL_Event event;
         SDL_zero(event);
@@ -534,6 +560,10 @@ void SDL_SendPenMotion(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
     }
     SDL_UnlockRWLock(pen_device_rwlock);
 
+    if (SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
+
     if (send_event && SDL_EventEnabled(SDL_EVENT_PEN_MOTION)) {
         SDL_Event event;
         SDL_zero(event);
@@ -592,8 +622,7 @@ static void SendPenButtonEvents(Uint64 timestamp, SDL_PenID instance_id, SDL_Win
         if (window && (!pen_touching || (pen_touching == instance_id))) {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (mouse && mouse->pen_mouse_events) {
-                static const Uint8 mouse_buttons[] = { SDL_BUTTON_LEFT, SDL_BUTTON_RIGHT, SDL_BUTTON_MIDDLE, SDL_BUTTON_X1, SDL_BUTTON_X2 };
-                if (button < SDL_arraysize(mouse_buttons)) {
+                if (button < SDL_arraysize(default_mouse_buttons)) {
                     SDL_SendMouseButton(timestamp, window, SDL_PEN_MOUSEID, mouse_buttons[button], down);
                 }
             }
@@ -611,6 +640,11 @@ void SDL_SendPenButton(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *wind
 
     if ((button < 1) || (button > 5)) {
         return; // clamp for now.
+    }
+
+    // Buttons released after mouse passthrough was enabled still go through, so they don't get stuck
+    if (down && SDL_IsMousePassthroughWindow(window)) {
+        return;
     }
 
     // note that this locks for _reading_ because the lock protects the
@@ -651,6 +685,11 @@ void SDL_SendPenProximity(Uint64 timestamp, SDL_PenID instance_id, SDL_Window *w
     SDL_PenDeviceType device_type = SDL_PEN_DEVICE_TYPE_UNKNOWN;
     float x = 0.0f;
     float y = 0.0f;
+
+    // Pens leaving proximity after mouse passthrough was enabled still go through, so they don't get stuck
+    if (in && SDL_IsMousePassthroughWindow(window)) {
+        return;
+    }
 
     // note that this locks for _reading_ because the lock protects the
     // pen_devices array from being reallocated from under us, not the data in it;

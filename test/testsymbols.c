@@ -28,6 +28,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_GetAndroidJNIEnv(void);
 extern SDL_DECLSPEC void SDLCALL SDL_GetAndroidSDKVersion(void);
 extern SDL_DECLSPEC void SDLCALL SDL_IsChromebook(void);
 extern SDL_DECLSPEC void SDLCALL SDL_IsDeXMode(void);
+extern SDL_DECLSPEC void SDLCALL SDL_IsGooglePlayOnPC(void);
 extern SDL_DECLSPEC void SDLCALL SDL_RequestAndroidPermission(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
 extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidMessage(void);

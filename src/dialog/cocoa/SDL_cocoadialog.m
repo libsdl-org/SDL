@@ -164,7 +164,8 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
     if (default_location && *default_location) {
         char last = default_location[SDL_strlen(default_location) - 1];
         NSURL* url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:default_location]];
-        if (last == '/') {
+        // A folder dialog always treats the location as a folder
+        if (last == '/' || type == SDL_FILEDIALOG_OPENFOLDER) {
             [dialog setDirectoryURL:url];
         } else {
             [dialog setDirectoryURL:[url URLByDeletingLastPathComponent]];
@@ -197,7 +198,7 @@ void SDL_SYS_ShowFileDialogWithProperties(SDL_FileDialogType type, SDL_DialogFil
                     const char *files[2] = { [[[dialog URL] path] UTF8String], NULL };
                     callback(userdata, files, -1);
                 }
-            } else if (result == NSModalResponseCancel) {
+            } else {
                 const char *files[1] = { NULL };
                 callback(userdata, files, -1);
             }

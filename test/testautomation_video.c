@@ -2588,6 +2588,60 @@ static int SDLCALL video_getWindowSurface(void *arg)
 }
 
 /**
+ * Tests that the window surface implementation is chosen again after changing SDL_HINT_FRAMEBUFFER_ACCELERATION 
+ */
+static int SDLCALL video_getWindowSurfaceRetry(void *arg)
+{
+    const char *title = "video_getWindowSurfaceRetry Test Window";
+    SDL_Window *window;
+    SDL_Surface *surface;
+    bool has_native_framebuffer;
+
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0) {
+        SDLTest_Log("Skipping test: dummy driver has no accelerated renderers");
+        return TEST_SKIPPED;
+    }
+
+    window = SDL_CreateWindow(title, 320, 320, 0);
+    SDLTest_AssertPass("Call to SDL_CreateWindow('Title',320,320,0)");
+    SDLTest_AssertCheck(window != NULL, "Validate that returned window is not NULL");
+
+    /* Ask for a render driver that doesn't exist, so the accelerated framebuffer fails */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "invalid");
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with an invalid render driver");
+    has_native_framebuffer = (surface != NULL);
+    SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window does not have a renderer");
+    SDL_DestroyWindowSurface(window);
+
+    /* Now ask for an accelerated framebuffer */
+    SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "1");
+    surface = SDL_GetWindowSurface(window);
+    SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with accelerated framebuffer");
+    SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+    SDLTest_AssertCheck(SDL_GetRenderer(window) != NULL, "Validate that window surface is using a renderer");
+    SDLTest_AssertCheck(SDL_UpdateWindowSurface(window), "Validate that SDL_UpdateWindowSurface() succeeds");
+    SDL_DestroyWindowSurface(window);
+    SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window does not have a renderer");
+
+    if (has_native_framebuffer) {
+        /* And back to a software framebuffer */
+        SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "software");
+        surface = SDL_GetWindowSurface(window);
+        SDLTest_AssertPass("Call to SDL_GetWindowSurface(window) with software framebuffer");
+        SDLTest_AssertCheck(surface != NULL, "Validate that returned surface is not NULL");
+        SDLTest_AssertCheck(SDL_GetRenderer(window) == NULL, "Validate that window surface is not using a renderer");
+        SDLTest_AssertCheck(SDL_UpdateWindowSurface(window), "Validate that SDL_UpdateWindowSurface() succeeds");
+    }
+
+    /* Clean up */
+    SDL_ResetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
+    SDL_DestroyWindow(window);
+
+    return TEST_COMPLETED;
+}
+
+/**
  * Tests SDL_RaiseWindow
  */
 static int SDLCALL video_raiseWindow(void *arg)
@@ -2596,7 +2650,8 @@ static int SDLCALL video_raiseWindow(void *arg)
     SDL_Window *window;
 
     SDLTest_AssertPass("SDL_SetWindowInputFocus is not supported on dummy and SDL2 wayland driver");
-        if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 || SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "dummy") == 0 ||
+        SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
         return TEST_SKIPPED;
     }
 
@@ -2704,6 +2759,9 @@ static const SDLTest_TestCaseReference videoTestCreateMaximized = {
 static const SDLTest_TestCaseReference videoTestGetWindowSurface = {
     video_getWindowSurface, "video_getWindowSurface", "Checks window surface functionality", TEST_ENABLED
 };
+static const SDLTest_TestCaseReference videoTestGetWindowSurfaceRetry = {
+    video_getWindowSurfaceRetry, "video_getWindowSurfaceRetry", "Checks window surface creation after changing SDL_HINT_FRAMEBUFFER_ACCELERATION", TEST_ENABLED
+};
 static const SDLTest_TestCaseReference videoTestRaiseWindow = {
     video_raiseWindow, "video_raiseWindow", "Checks window focus", TEST_ENABLED
 };
@@ -2732,6 +2790,7 @@ static const SDLTest_TestCaseReference *videoTests[] = {
     &videoTestCreateMinimized,
     &videoTestCreateMaximized,
     &videoTestGetWindowSurface,
+    &videoTestGetWindowSurfaceRetry,
     &videoTestRaiseWindow,
     NULL
 };

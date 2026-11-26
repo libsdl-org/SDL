@@ -129,7 +129,6 @@ char *GetResourceFilename(const char *user_specified, const char *def)
  */
 SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file)
 {
-    SDL_Surface *temp = NULL;
     SDL_Texture *texture = NULL;
     char *path;
 
@@ -139,16 +138,10 @@ SDL_Texture *LoadTexture(SDL_Renderer *renderer, const char *file)
         file = path;
     }
 
-    temp = SDL_LoadSurface(file);
-    if (!temp) {
+    texture = SDL_LoadTexture(renderer, file);
+    if (!texture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
-    } else {
-        texture = SDL_CreateTextureFromSurface(renderer, temp);
-        if (!texture) {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s", SDL_GetError());
-        }
     }
-    SDL_DestroySurface(temp);
     SDL_free(path);
     return texture;
 }

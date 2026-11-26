@@ -892,12 +892,12 @@ extern "C" {
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Git commit SHA1: e80a2e0050 $ on $Git commit date: 2026-03-19 06:21:49 +0100 $
+** Khronos $Git commit SHA1: e09d19412a $ on $Git commit date: 2026-11-17 01:45:15 -0600 $
 */
 
 /*#include <EGL/eglplatform.h>*/
 
-#define EGL_EGLEXT_VERSION 20260319
+#define EGL_EGLEXT_VERSION 20261117
 
 /* Generated C header for:
  * API: egl
@@ -1894,6 +1894,14 @@ typedef EGLBoolean (EGLAPIENTRYP PFNEGLSWAPBUFFERSWITHDAMAGEEXTPROC) (EGLDisplay
 EGLAPI EGLBoolean EGLAPIENTRY eglSwapBuffersWithDamageEXT (EGLDisplay dpy, EGLSurface surface, const EGLint *rects, EGLint n_rects);
 #endif
 #endif /* EGL_EXT_swap_buffers_with_damage */
+
+#ifndef EGL_EXT_swap_tearing_hint
+#define EGL_EXT_swap_tearing_hint 1
+#define EGL_SWAP_TEARING_HINT_EXT         0x35A0
+#define EGL_SWAP_TEARING_HINT_VSYNC_EXT   0x35A1
+#define EGL_SWAP_TEARING_HINT_ASYNC_EXT   0x35A2
+#define EGL_SWAP_TEARING_HINT_DEFAULT_EXT 0x35A3
+#endif /* EGL_EXT_swap_tearing_hint */
 
 #ifndef EGL_EXT_sync_reuse
 #define EGL_EXT_sync_reuse 1

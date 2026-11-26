@@ -954,6 +954,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceConnected)(JNI
 	{
 		g_Devices = pDevice;
 	}
+	SDL_HIDAPI_DeviceChanged();
 }
 
 extern "C"
@@ -976,6 +977,9 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceOpenResult)(JN
 	{
 		pDevice->SetOpenResult( bOpened );
 	}
+
+	// Devices waiting for permission are hidden from enumeration until the open completes
+	SDL_HIDAPI_DeviceChanged();
 }
 
 extern "C"
@@ -1007,6 +1011,7 @@ JNIEXPORT void JNICALL HID_DEVICE_MANAGER_JAVA_INTERFACE(HIDDeviceDisconnected)(
 	{
 		pDevice->Close( false );
 	}
+	SDL_HIDAPI_DeviceChanged();
 }
 
 extern "C"

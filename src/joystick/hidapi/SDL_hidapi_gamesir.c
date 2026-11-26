@@ -396,17 +396,6 @@ static bool HIDAPI_DriverGameSir_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_JoystickConnected(device, NULL);
 }
 
-
-static int HIDAPI_DriverGameSir_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-
-static void HIDAPI_DriverGameSir_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static int HIDAPI_DriverGameSir_GetJoystickButtonCount(SDL_HIDAPI_Device *device)
 {
     if (device->is_bluetooth) {
@@ -488,12 +477,6 @@ static bool HIDAPI_DriverGameSir_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_J
 }
 
 
-static bool HIDAPI_DriverGameSir_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
-
 static Uint32 HIDAPI_DriverGameSir_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
@@ -532,11 +515,6 @@ static bool HIDAPI_DriverGameSir_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_J
         return false;
     }
     return true;
-}
-
-static bool HIDAPI_DriverGameSir_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverGameSir_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
@@ -1037,11 +1015,6 @@ static bool HIDAPI_DriverGameSir_UpdateDevice(SDL_HIDAPI_Device *device)
     return (size >= 0);
 }
 
-
-static void HIDAPI_DriverGameSir_CloseJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
-{
-}
-
 static void HIDAPI_DriverGameSir_FreeDevice(SDL_HIDAPI_Device *device)
 {
     SDL_DriverGamesir_Context *ctx = (SDL_DriverGamesir_Context *)device->context;
@@ -1055,25 +1028,20 @@ static void HIDAPI_DriverGameSir_FreeDevice(SDL_HIDAPI_Device *device)
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameSir = {
-    SDL_HINT_JOYSTICK_HIDAPI_GAMESIR,
-    true,
-    HIDAPI_DriverGameSir_RegisterHints,
-    HIDAPI_DriverGameSir_UnregisterHints,
-    HIDAPI_DriverGameSir_IsEnabled,
-    HIDAPI_DriverGameSir_IsSupportedDevice,
-    HIDAPI_DriverGameSir_InitDevice,
-    HIDAPI_DriverGameSir_GetDevicePlayerIndex,
-    HIDAPI_DriverGameSir_SetDevicePlayerIndex,
-    HIDAPI_DriverGameSir_UpdateDevice,
-    HIDAPI_DriverGameSir_OpenJoystick,
-    HIDAPI_DriverGameSir_RumbleJoystick,
-    HIDAPI_DriverGameSir_RumbleJoystickTriggers,
-    HIDAPI_DriverGameSir_GetJoystickCapabilities,
-    HIDAPI_DriverGameSir_SetJoystickLED,
-    HIDAPI_DriverGameSir_SendJoystickEffect,
-    HIDAPI_DriverGameSir_SetJoystickSensorsEnabled,
-    HIDAPI_DriverGameSir_CloseJoystick,
-    HIDAPI_DriverGameSir_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_GAMESIR,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverGameSir_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverGameSir_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverGameSir_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverGameSir_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverGameSir_InitDevice,
+    .UpdateDevice = HIDAPI_DriverGameSir_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverGameSir_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverGameSir_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverGameSir_GetJoystickCapabilities,
+    .SetJoystickLED = HIDAPI_DriverGameSir_SetJoystickLED,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverGameSir_SetJoystickSensorsEnabled,
+    .FreeDevice = HIDAPI_DriverGameSir_FreeDevice,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_GAMESIR

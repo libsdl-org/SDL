@@ -38,7 +38,6 @@
 /* No SDK version checks needed for these because the SDK has to be new. */
 /* #define HAVE_DXGI_H 1 */
 #define HAVE_XINPUT_H 1
-/*#define HAVE_WINDOWS_GAMING_INPUT_H 1*/
 /*#define HAVE_ROAPI_H 1*/
 /*#define HAVE_SHELLSCALINGAPI_H 1*/
 #define HAVE_MMDEVICEAPI_H 1

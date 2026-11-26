@@ -99,6 +99,9 @@ SDL_PenInputFlags SDL_GetPenStatus(SDL_PenID instance_id, float *axes, int num_a
 // Backend can use this to map an axis to a capability bit.
 SDL_PenCapabilityFlags SDL_GetPenCapabilityFromAxis(SDL_PenAxis axis);
 
+// Backends can use this to enable the mouse button mappings expected in Wayland and X11 environments.
+extern void SDL_SetPenUnixMouseButtonMapping(bool use_unix_mapping);
+
 // Higher-level SDL video subsystem code calls this when starting up. Backends shouldn't.
 extern bool SDL_InitPen(void);
 

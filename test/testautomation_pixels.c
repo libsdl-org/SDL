@@ -1152,12 +1152,20 @@ static int SDLCALL pixels_saveLoadPNG(void *arg)
         /* Verify the PNG contents */
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
-            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
-            SDLTest_AssertCheck(pixels[0] == 255 &&
-                                pixels[1] == 255 &&
-                                pixels[2] == 255 &&
-                                pixels[3] == 255,
-                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            if (!SDL_ISPIXELFORMAT_ALPHA(format)) {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGB24, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGB24), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255,
+                                    "Verify PNG colors, expected 255/255/255 got %d/%d/%d", pixels[0], pixels[1], pixels[2]);
+            } else {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255 &&
+                                    pixels[3] == 255,
+                                    "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            }
             SDL_DestroySurface(surface);
         }
     }
@@ -1192,12 +1200,20 @@ static int SDLCALL pixels_saveLoadPNG(void *arg)
         /* Verify the PNG contents */
         if (surface) {
             Uint8 *pixels = (Uint8 *)surface->pixels;
-            SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
-            SDLTest_AssertCheck(pixels[0] == 255 &&
-                                pixels[1] == 255 &&
-                                pixels[2] == 255 &&
-                                pixels[3] == 255,
-                                "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            if (!SDL_ISPIXELFORMAT_ALPHA(format)) {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGB24, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGB24), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255,
+                                    "Verify PNG colors, expected 255/255/255 got %d/%d/%d", pixels[0], pixels[1], pixels[2]);
+            } else {
+                SDLTest_AssertCheck(surface->format == SDL_PIXELFORMAT_RGBA32, "Verify PNG surface format, expected %s, got %s", SDL_GetPixelFormatName(SDL_PIXELFORMAT_RGBA32), SDL_GetPixelFormatName(surface->format));
+                SDLTest_AssertCheck(pixels[0] == 255 &&
+                                    pixels[1] == 255 &&
+                                    pixels[2] == 255 &&
+                                    pixels[3] == 255,
+                                    "Verify PNG colors, expected 255/255/255/255 got %d/%d/%d/%d", pixels[0], pixels[1], pixels[2], pixels[3]);
+            }
             SDL_DestroySurface(surface);
         }
     }

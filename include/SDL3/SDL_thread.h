@@ -378,6 +378,31 @@ extern SDL_DECLSPEC SDL_Thread * SDLCALL SDL_CreateThreadWithPropertiesRuntime(S
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetThreadName(SDL_Thread *thread);
 
 /**
+ * Get the thread name for the current thread.
+ *
+ * Thread names are always available for threads started through
+ * SDL_CreateThread() or SDL_CreateThreadWithProperties(). For other threads,
+ * SDL will query the OS if possible. This is not possible on every platform,
+ * and will return NULL in these cases.
+ *
+ * On supported platforms, and for SDL-created threads, this might still
+ * return NULL if there was an error, or the system is out of memory, etc.
+ *
+ * The returned string is owned by SDL and guaranteed to live until the
+ * calling thread terminates. If it needs to be passed to another thread that
+ * might outlive the caller's thread, you should make a copy of the string.
+ *
+ * \returns the name of the current thread, or NULL if not available.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ *
+ * \sa SDL_GetThreadName
+ */
+extern SDL_DECLSPEC const char * SDLCALL SDL_GetCurrentThreadName(void);
+
+/**
  * Get the thread identifier for the current thread.
  *
  * This thread identifier is as reported by the underlying operating system.

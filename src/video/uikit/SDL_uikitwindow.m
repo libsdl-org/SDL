@@ -54,6 +54,114 @@
 
 @end
 
+// Return whether a window can take input, e.g. it isn't on a non-interactive external display
+static bool UIKit_IsFocusableWindow(UIWindow *uiwindow)
+{
+#ifdef SDL_PLATFORM_VISIONOS
+    return true;
+#else
+    if (@available(iOS 13.0, tvOS 13.0, *)) {
+        UIWindowScene *scene = uiwindow.windowScene;
+        if (scene) {
+            return [scene.session.role isEqualToString:UIWindowSceneSessionRoleApplication];
+        }
+    }
+    return (uiwindow.screen == [UIScreen mainScreen]);
+#endif
+}
+
+static SDL_Window *UIKit_GetSDLWindow(UIWindow *uiwindow)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        for (SDL_Window *window = _this->windows; window; window = window->next) {
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+            if (data && data.uiwindow == uiwindow) {
+                return window;
+            }
+        }
+    }
+    return NULL;
+}
+
+#ifdef SDL_PLATFORM_VISIONOS
+static SDL_Window *UIKit_GetSDLWindowForScene(UIWindowScene *scene)
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this && scene) {
+        for (SDL_Window *window = _this->windows; window; window = window->next) {
+            SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+            if (data && data.uiwindow.windowScene == scene) {
+                return window;
+            }
+        }
+    }
+    return NULL;
+}
+#endif
+
+static id SDL_BecomeKeyObserver;
+static id SDL_ResignKeyObserver;
+
+// Track keyboard focus with the key window of scenes that can take input
+void UIKit_InitWindowFocus(void)
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    SDL_BecomeKeyObserver = [center addObserverForName:UIWindowDidBecomeKeyNotification
+                                                object:nil
+                                                 queue:nil
+                                            usingBlock:^(NSNotification *notification) {
+        UIWindow *uiwindow = (UIWindow *)notification.object;
+        SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
+#ifdef SDL_PLATFORM_VISIONOS
+        if (!window) {
+            // The uiwindow may be an ornament that has become key in the scene
+            window = UIKit_GetSDLWindowForScene(uiwindow.windowScene);
+            if (!window) {
+                // A different scene without an SDL window has become key
+                SDL_SetKeyboardFocus(NULL);
+                return;
+            }
+        }
+#endif
+        if (window && UIKit_IsFocusableWindow(uiwindow)) {
+            SDL_SetKeyboardFocus(window);
+        }
+    }];
+
+    SDL_ResignKeyObserver = [center addObserverForName:UIWindowDidResignKeyNotification
+                                                object:nil
+                                                 queue:nil
+                                            usingBlock:^(NSNotification *notification) {
+        UIWindow *uiwindow = (UIWindow *)notification.object;
+        SDL_Window *window = UIKit_GetSDLWindow(uiwindow);
+        if (window && SDL_GetKeyboardFocus() == window) {
+#ifdef SDL_PLATFORM_VISIONOS
+            if (uiwindow.windowScene.activationState == UISceneActivationStateForegroundActive) {
+                // The key window may be moving to one of our ornaments, so keep focus on this window
+                return;
+            }
+#endif
+            SDL_SetKeyboardFocus(NULL);
+        }
+    }];
+}
+
+void UIKit_QuitWindowFocus(void)
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    if (SDL_BecomeKeyObserver) {
+        [center removeObserver:SDL_BecomeKeyObserver];
+        SDL_BecomeKeyObserver = nil;
+    }
+    if (SDL_ResignKeyObserver) {
+        [center removeObserver:SDL_ResignKeyObserver];
+        SDL_ResignKeyObserver = nil;
+    }
+}
+
 static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow *uiwindow, SDL_PropertiesID create_props, bool created)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
@@ -134,6 +242,9 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, UIWindow
      * hierarchy. */
     [view setSDLWindow:window];
 
+    // Apply the initial resizable flag to the window scene's size restrictions
+    UIKit_SetWindowResizable(_this, window, (window->flags & SDL_WINDOW_RESIZABLE) != 0);
+
     return true;
 }
 
@@ -192,6 +303,12 @@ bool UIKit_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properti
         UIWindow *uiwindow = nil;
         if (@available(iOS 13.0, tvOS 13.0, *)) {
             UIWindowScene *scene = (__bridge UIWindowScene *)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WINDOWSCENE_POINTER, NULL);
+#ifndef SDL_PLATFORM_VISIONOS
+            if (!scene) {
+                // Use the scene on the window's display, if there is one
+                scene = UIKit_GetWindowSceneForScreen(data.uiscreen);
+            }
+#endif
             if (!scene) {
                 scene = UIKit_GetActiveWindowScene();
             }
@@ -277,12 +394,7 @@ void UIKit_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
         [data.uiwindow makeKeyAndVisible];
 
         // Make this window the current mouse focus for touch input
-        SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
-        SDL_UIKitDisplayData *displaydata = (__bridge SDL_UIKitDisplayData *)display->internal;
-#ifndef SDL_PLATFORM_VISIONOS
-        if (displaydata.uiscreen == [UIScreen mainScreen])
-#endif
-        {
+        if (UIKit_IsFocusableWindow(data.uiwindow)) {
             SDL_SetMouseFocus(window);
             SDL_SetKeyboardFocus(window);
         }
@@ -356,6 +468,118 @@ void UIKit_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bo
     }
 }
 
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+static void UIKit_LockWindowSize(SDL_UIKitWindowData *data) API_AVAILABLE(ios(13.0))
+{
+    UISceneSizeRestrictions *restrictions = data.uiwindow.windowScene.sizeRestrictions;
+    CGSize size = data.uiwindow.bounds.size;
+
+    if (!restrictions) {
+        // The scene doesn't support size restrictions
+        return;
+    }
+
+    if (size.width <= 0.0 || size.height <= 0.0) {
+        // We'll try again when the window has a valid size
+        return;
+    }
+
+    if (data.sizeLocked) {
+        if (CGSizeEqualToSize(restrictions.minimumSize, size) &&
+            CGSizeEqualToSize(restrictions.maximumSize, size)) {
+            // Already locked to this size
+            return;
+        }
+    } else {
+        data.savedMinimumSize = restrictions.minimumSize;
+        data.savedMaximumSize = restrictions.maximumSize;
+        data.sizeLocked = YES;
+    }
+
+    // Set the size restrictions based on the window size, clearing the minimum first
+    restrictions.minimumSize = CGSizeZero;
+    restrictions.maximumSize = size;
+    restrictions.minimumSize = size;
+}
+
+static void UIKit_UnlockWindowSize(SDL_UIKitWindowData *data) API_AVAILABLE(ios(13.0))
+{
+    if (!data.sizeLocked) {
+        return;
+    }
+
+    UISceneSizeRestrictions *restrictions = data.uiwindow.windowScene.sizeRestrictions;
+    if (restrictions) {
+        // Restore the size restrictions, clearing the minimum first
+        restrictions.minimumSize = CGSizeZero;
+        restrictions.maximumSize = data.savedMaximumSize;
+        restrictions.minimumSize = data.savedMinimumSize;
+    }
+    data.sizeLocked = NO;
+}
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+static bool UIKit_ShouldLockWindowSize(SDL_Window *window)
+{
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        return false;
+    }
+
+    // A window that can rotate between portrait and landscape can't have a fixed size
+    NSUInteger orientations = UIKit_GetSupportedOrientations(window);
+    bool supportsLandscape = (orientations & UIInterfaceOrientationMaskLandscape) != 0;
+    bool supportsPortrait = (orientations & (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown)) != 0;
+    if (supportsLandscape && supportsPortrait) {
+        return false;
+    }
+
+    return true;
+}
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+
+// Lock or unlock the scene size to match the window state, called when the
+// resizable flag changes and when the window is laid out with a new size
+void UIKit_UpdateWindowSizeLock(SDL_Window *window)
+{
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+    if (!window) {
+        return;
+    }
+
+    @autoreleasepool {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+
+        if (!data) {
+            return;
+        }
+
+        if (@available(iOS 13.0, *)) {
+            if (UIKit_ShouldLockWindowSize(window)) {
+                UIKit_LockWindowSize(data);
+            } else {
+                UIKit_UnlockWindowSize(data);
+            }
+        }
+    }
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+}
+
+void UIKit_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable)
+{
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+    @autoreleasepool {
+        SDL_UIKitWindowData *data = (__bridge SDL_UIKitWindowData *)window->internal;
+
+        UIKit_UpdateWindowSizeLock(window);
+
+        if (@available(iOS 16.0, *)) {
+            [data.viewcontroller setNeedsUpdateOfSupportedInterfaceOrientations];
+        }
+    }
+#endif // !SDL_PLATFORM_TVOS && !SDL_PLATFORM_VISIONOS
+}
+
 SDL_FullscreenResult UIKit_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     @autoreleasepool {
@@ -390,6 +614,7 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
 #ifdef SDL_PLATFORM_VISIONOS
             SDL_UIKit_HideCurvedWindow(window);
 #endif
+
             /* Detach all views from this window. We use a copy of the array
              * because setSDLWindow will remove the object from the original
              * array, which would be undesirable if we were iterating over it. */
@@ -404,6 +629,13 @@ void UIKit_DestroyWindow(SDL_VideoDevice *_this, SDL_Window *window)
              * SDL window. */
             data.uiwindow.rootViewController = nil;
             data.uiwindow.hidden = YES;
+
+#if !defined(SDL_PLATFORM_TVOS) && !defined(SDL_PLATFORM_VISIONOS)
+            // Restore the scene's original size restrictions
+            if (@available(iOS 13.0, *)) {
+                UIKit_UnlockWindowSize(data);
+            }
+#endif
 
             CFRelease(window->internal);
             window->internal = NULL;

@@ -1171,10 +1171,10 @@ static int set_report(hid_device *dev, IOHIDReportType type, const unsigned char
 		data_to_send = data+1;
 		length_to_send = length-1;
 	}
-	else if (length > 6 && memcmp(data, pass_through_magic, pass_through_magic_length) == 0) {
+	else if (length > (pass_through_magic_length + 1) && memcmp(data, pass_through_magic, pass_through_magic_length) == 0) {
 		report_id = data[pass_through_magic_length];
-		data_to_send = data+pass_through_magic_length;
-		length_to_send = length-pass_through_magic_length;
+		data_to_send = (data + pass_through_magic_length + 1);
+		length_to_send = (length - pass_through_magic_length - 1);
 	}
 
 	/* Avoid crash if the device has been unplugged. */

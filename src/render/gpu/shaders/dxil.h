@@ -1,4 +1,5 @@
 #include "color.frag.dxil.h"
+#include "color_pq.frag.dxil.h"
 #include "linepoint.vert.dxil.h"
 #include "texture_advanced.frag.dxil.h"
 #include "texture_rgb.frag.dxil.h"

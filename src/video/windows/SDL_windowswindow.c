@@ -165,6 +165,47 @@ static ITaskbarList3 *GetTaskbarList(SDL_Window *window)
 }
 #endif
 
+static bool WIN_UpdateLayeredStyle(SDL_Window *window, float opacity)
+{
+#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
+    return SDL_Unsupported();
+#else
+    const SDL_WindowData *data = window->internal;
+    HWND hwnd = data->hwnd;
+    LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool passthrough = ((window->flags & SDL_WINDOW_MOUSE_PASSTHROUGH) != 0);
+    const bool transparent = ((window->flags & SDL_WINDOW_TRANSPARENT) != 0);
+
+    // WS_EX_TRANSPARENT only passes clicks through to other windows on a layered window
+    const bool layered = (passthrough || transparent || opacity < 1.0f);
+
+    if (passthrough) {
+        style |= WS_EX_TRANSPARENT;
+    } else {
+        style &= ~WS_EX_TRANSPARENT;
+    }
+    if (layered) {
+        style |= WS_EX_LAYERED;
+    } else {
+        style &= ~WS_EX_LAYERED;
+    }
+
+    // SetWindowLong() returns the previous style, which can legitimately be 0
+    SetLastError(0);
+    if (SetWindowLong(hwnd, GWL_EXSTYLE, style) == 0 && GetLastError() != 0) {
+        return WIN_SetError("SetWindowLong()");
+    }
+
+    if (layered) {
+        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
+        if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
+            return WIN_SetError("SetLayeredWindowAttributes()");
+        }
+    }
+    return true;
+#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+}
+
 /**
  * Returns arguments to pass to SetWindowPos - the window rect, including frame, in Windows coordinates.
  * Can be called before we have a HWND.
@@ -325,7 +366,7 @@ bool WIN_SetWindowPositionInternal(SDL_Window *window, UINT flags, SDL_WindowRec
 
     WIN_AdjustWindowRect(window, &x, &y, &w, &h, rect_type);
 
-    data->expected_resize = true;
+    data->expected_resize = !(flags & SWP_NOSIZE);
     if (SetWindowPos(hwnd, top, x, y, w, h, flags) == 0) {
         result = WIN_SetError("SetWindowPos()");
     }
@@ -388,6 +429,7 @@ static bool SetupWindowData(SDL_VideoDevice *_this, SDL_Window *window, HWND hwn
 #endif
     data->hinstance = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->mouse_button_flags = (WPARAM)-1;
+    data->opacity = 1.0f;
     data->last_pointer_update = (LPARAM)-1;
     data->videodata = videodata;
     data->initializing = true;
@@ -605,6 +647,11 @@ static void CleanupWindowData(SDL_VideoDevice *_this, SDL_Window *window)
                 DestroyWindow(data->parent);
             }
         } else {
+#if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+            // Restore the default IME context
+            ImmAssociateContextEx(data->hwnd, NULL, IACE_DEFAULT);
+#endif
+
             // Restore any original event handler...
             if (data->wndproc) {
 #ifdef GWLP_WNDPROC
@@ -648,15 +695,16 @@ static void WIN_ConstrainPopup(SDL_Window *window, bool output_to_pending)
 
             // Constrain the popup window to the display of the toplevel parent
             displayID = SDL_GetDisplayForWindow(w);
-            SDL_GetDisplayBounds(displayID, &rect);
-            if (abs_x + width > rect.x + rect.w) {
-                abs_x -= (abs_x + width) - (rect.x + rect.w);
+            if (SDL_GetDisplayBounds(displayID, &rect)) {
+                if (abs_x + width > rect.x + rect.w) {
+                    abs_x -= (abs_x + width) - (rect.x + rect.w);
+                }
+                if (abs_y + height > rect.y + rect.h) {
+                    abs_y -= (abs_y + height) - (rect.y + rect.h);
+                }
+                abs_x = SDL_max(abs_x, rect.x);
+                abs_y = SDL_max(abs_y, rect.y);
             }
-            if (abs_y + height > rect.y + rect.h) {
-                abs_y -= (abs_y + height) - (rect.y + rect.h);
-            }
-            abs_x = SDL_max(abs_x, rect.x);
-            abs_y = SDL_max(abs_y, rect.y);
         }
 
         if (output_to_pending) {
@@ -772,6 +820,9 @@ bool WIN_CreateWindow(SDL_VideoDevice *_this, SDL_Window *window, SDL_Properties
             videodata->DwmEnableBlurBehindWindow(hwnd, &bb);
             DeleteObject(rgn);
         }
+
+        // Some drivers need a layered window for per-pixel alpha, e.g. NVIDIA with OpenGL/Vulkan layered on DXGI
+        WIN_UpdateLayeredStyle(window, window->internal->opacity);
     }
 
     HWND share_hwnd = (HWND)SDL_GetPointerProperty(create_props, SDL_PROP_WINDOW_CREATE_WIN32_PIXEL_FORMAT_HWND_POINTER, NULL);
@@ -1540,6 +1591,7 @@ void WIN_UnclipCursorForWindow(SDL_Window *window) {
 void WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = window->internal;
+    SDL_VideoData *videodata = data->videodata;
     if (data->in_title_click || data->focus_click_pending || data->postpone_clipcursor) {
         return;
     }
@@ -1549,7 +1601,7 @@ void WIN_UpdateClipCursor(SDL_Window *window)
     bool win_have_focus = (window->flags & SDL_WINDOW_INPUT_FOCUS);
     bool win_is_grabbed = (window->flags & SDL_WINDOW_MOUSE_GRABBED);
     bool win_in_relmode = (window->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE);
-    bool cursor_confine = win_in_relmode || win_is_grabbed || win_mouse_rect;
+    bool cursor_confine = !SDL_IsMousePassthroughWindow(window) && (win_in_relmode || win_is_grabbed || win_mouse_rect);
 
     // This is verbatim translation of the old logic,
     // but I don't quite get what it's trying to do.
@@ -1624,6 +1676,42 @@ void WIN_UpdateClipCursor(SDL_Window *window)
             WIN_UnclipCursorForWindow(window);
             return;
         }
+    } else if (videodata->dpi_unaware_context_declared) {
+        /* Windows has a rounding bug when a DPI unaware context and fractional scale value
+         * are used that will cause the cursor coordinates to jitter across a confining edge
+         * while dragging along it, which can cause spurious pointer enter/leave events when the
+         * clip rect matches the window bounds. Move the sides of the clip rect in by 1 in each
+         * dimension to prevent rapid focus switching when the cursor is at the window edge.
+         *
+         * NOTE: Remove or bypass this if Microsoft ever fixes the issue.
+         */
+
+        // Temporarily set the thread to per-monitor awareness v2 to get the display DPI.
+        DPI_AWARENESS_CONTEXT prev_ctx = videodata->SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+        if (prev_ctx) {
+            HMONITOR hmon = MonitorFromWindow(data->hwnd, MONITOR_DEFAULTTONEAREST);
+            if (hmon) {
+                UINT hdpi_uint, vdpi_uint;
+                if (videodata->GetDpiForMonitor(hmon, MDT_EFFECTIVE_DPI, &hdpi_uint, &vdpi_uint) == S_OK) {
+                    const float scale = (float)hdpi_uint / (float)USER_DEFAULT_SCREEN_DPI;
+                    if (scale != SDL_floorf(scale)) {
+                        if (target.left < target.right) {
+                            target.left += 1;
+                        }
+                        if (target.right > target.left) {
+                            target.right -= 1;
+                        }
+                        if (target.top < target.bottom) {
+                            target.top += 1;
+                        }
+                        if (target.bottom > target.top) {
+                            target.bottom -= 1;
+                        }
+                    }
+                }
+            }
+            videodata->SetThreadDpiAwarenessContext(prev_ctx);
+        }
     }
 
     if (GetClipCursor(&client) &&
@@ -1641,36 +1729,21 @@ bool WIN_SetWindowHitTest(SDL_Window *window, bool enabled)
 
 bool WIN_SetWindowOpacity(SDL_VideoDevice *_this, SDL_Window *window, float opacity)
 {
-#if defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES)
-    return false;
-#else
-    const SDL_WindowData *data = window->internal;
-    HWND hwnd = data->hwnd;
-    const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+    SDL_WindowData *data = window->internal;
 
-    if (opacity == 1.0f) {
-        // want it fully opaque, just mark it unlayered if necessary.
-        if (style & WS_EX_LAYERED) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_LAYERED) == 0) {
-                return WIN_SetError("SetWindowLong()");
-            }
-        }
-    } else {
-        const BYTE alpha = (BYTE)((int)(opacity * 255.0f));
-        // want it transparent, mark it layered if necessary.
-        if (!(style & WS_EX_LAYERED)) {
-            if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED) == 0) {
-                return WIN_SetError("SetWindowLong()");
-            }
-        }
-
-        if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
-            return WIN_SetError("SetLayeredWindowAttributes()");
-        }
+    if (!WIN_UpdateLayeredStyle(window, opacity)) {
+        return false;
     }
 
+    data->opacity = opacity;
     return true;
-#endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
+}
+
+bool WIN_SetWindowMousePassthrough(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough)
+{
+    SDL_WindowData *data = window->internal;
+
+    return WIN_UpdateLayeredStyle(window, data->opacity);
 }
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

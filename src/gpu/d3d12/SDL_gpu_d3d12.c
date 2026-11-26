@@ -680,7 +680,8 @@ static DXGI_FORMAT SDLToD3D12_VertexFormat[] = {
     DXGI_FORMAT_R16G16_UNORM,       // USHORT2_NORM
     DXGI_FORMAT_R16G16B16A16_UNORM, // USHORT4_NORM
     DXGI_FORMAT_R16G16_FLOAT,       // HALF2
-    DXGI_FORMAT_R16G16B16A16_FLOAT  // HALF4
+    DXGI_FORMAT_R16G16B16A16_FLOAT, // HALF4
+    DXGI_FORMAT_R10G10B10A2_UNORM   // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToD3D12_VertexFormat, SDL_arraysize(SDLToD3D12_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -6609,8 +6610,8 @@ static bool D3D12_SupportsSwapchainComposition(
         SET_STRING_ERROR_AND_RETURN("Must claim window before querying swapchain composition support!", false);
     }
 
-    // Check the color space support if necessary
-    if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
+    // Assume that SDR and scRGB will be supported by the compositor
+    if (swapchainComposition == SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084) {
         IDXGISwapChain3_CheckColorSpaceSupport(
             windowData->swapchain,
             SwapchainCompositionToColorSpace[swapchainComposition],
@@ -6888,11 +6889,13 @@ static bool D3D12_INTERNAL_ResizeSwapchain(
     }
 
     // Resize the swapchain
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
     HRESULT res = IDXGISwapChain_ResizeBuffers(
         windowData->swapchain,
         0, // Keep buffer count the same
-        0, // use client window width
-        0, // use client window height
+        (UINT)width,
+        (UINT)height,
         DXGI_FORMAT_UNKNOWN, // Keep the old format
         renderer->supportsTearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
     CHECK_D3D12_ERROR_AND_RETURN("Could not resize swapchain buffers", false);
@@ -6967,9 +6970,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     // Min swapchain image count is 2
     windowData->swapchainTextureCount = SDL_clamp(renderer->allowedFramesInFlight, 2, 3);
 
+    // Use the window size rather than the client area, which is empty while minimized
+    int width, height;
+    SDL_GetWindowSizeInPixels(windowData->window, &width, &height);
+
     // Initialize the swapchain buffer descriptor
-    swapchainDesc.Width = 0;  // use client window width
-    swapchainDesc.Height = 0; // use client window height
+    swapchainDesc.Width = (UINT)width;
+    swapchainDesc.Height = (UINT)height;
     swapchainDesc.Format = swapchainFormat;
     swapchainDesc.SampleDesc.Count = 1;
     swapchainDesc.SampleDesc.Quality = 0;
@@ -7017,10 +7024,13 @@ static bool D3D12_INTERNAL_CreateSwapchain(
     CHECK_D3D12_ERROR_AND_RETURN("Could not create IDXGISwapChain3", false);
 
     if (swapchainComposition != SDL_GPU_SWAPCHAINCOMPOSITION_SDR) {
-        // Support already verified if we hit this block
-        IDXGISwapChain3_SetColorSpace1(
+        res = IDXGISwapChain3_SetColorSpace1(
             swapchain3,
             SwapchainCompositionToColorSpace[swapchainComposition]);
+        if (FAILED(res)) {
+            IDXGISwapChain3_Release(swapchain3);
+        }
+        CHECK_D3D12_ERROR_AND_RETURN("Could not set swapchain color space", false);
     }
 
     /*
@@ -7269,6 +7279,20 @@ static bool D3D12_SetAllowedFramesInFlight(
             return false;
         }
     }
+
+#if (defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
+    // Update the frame interval
+    HRESULT res;
+    res = renderer->device->SetFrameIntervalX(
+        NULL,
+        D3D12XBOX_FRAME_INTERVAL_60_HZ,
+        allowedFramesInFlight,
+        D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
+    if (FAILED(res)) {
+        SDL_SetError("Could not set frame interval: %X", res);
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -8465,11 +8489,10 @@ static void D3D12_INTERNAL_InitBlitResources(
     }
 
     // Create samplers
+    SDL_zero(samplerCreateInfo);
     samplerCreateInfo.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
     samplerCreateInfo.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE;
-    samplerCreateInfo.enable_anisotropy = 0;
-    samplerCreateInfo.enable_compare = 0;
     samplerCreateInfo.mag_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.min_filter = SDL_GPU_FILTER_NEAREST;
     samplerCreateInfo.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST;
@@ -10016,7 +10039,7 @@ static SDL_GPUDevice *D3D12_CreateDevice(bool debugMode, bool preferLowPower, SD
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         D3D12_INTERNAL_DestroyRenderer(renderer);
@@ -10114,7 +10137,7 @@ void SDL_GDKResumeGPU(SDL_GPUDevice *device)
     res = renderer->device->SetFrameIntervalX(
         NULL,
         D3D12XBOX_FRAME_INTERVAL_60_HZ,
-        renderer->allowedFramesInFlight - 1,
+        renderer->allowedFramesInFlight,
         D3D12XBOX_FRAME_INTERVAL_FLAG_NONE);
     if (FAILED(res)) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not set frame interval: %X", res);

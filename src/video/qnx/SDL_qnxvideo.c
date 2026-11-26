@@ -149,6 +149,11 @@ static bool QNX_VideoInit(SDL_VideoDevice *_this)
         }
     }
 
+    if (_this->num_displays == 0) {
+        SDL_free(screen_display);
+        return SDL_SetError("No displays available");
+    }
+
     initMouse(_this);
 
     // Assume we have a mouse and keyboard

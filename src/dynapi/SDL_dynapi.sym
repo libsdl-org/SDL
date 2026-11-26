@@ -1316,6 +1316,18 @@ SDL3_0.0.0 {
     SDL_GetOpenHarmonyInternalStoragePath;
     SDL_RequestOpenHarmonyPermission;
     SDL_GetAudioDeviceProperties;
+    SDL_SetSoftwareRendererWindow;
+    SDL_SetSoftwareRendererSurface;
+    SDL_EncodeURL;
+    SDL_SetRenderHDRHeadroom;
+    SDL_GetRenderHDRHeadroom;
+    SDL_GetCurrentThreadName;
+    SDL_LoadTexture_IO;
+    SDL_LoadTexture;
+    SDL_GetCachePath;
+    SDL_SetRenderLogicalPresentationRect;
+    SDL_IsGooglePlayOnPC;
+    SDL_SetWindowMousePassthrough;
     # extra symbols go here (don't modify this line)
   local: *;
 };

@@ -24,6 +24,9 @@
 #ifdef SDL_AUDIO_DRIVER_PIPEWIRE
 
 #include "SDL_pipewire.h"
+#ifdef SDL_PLATFORM_LINUX
+#include "../../core/linux/SDL_sysfs.h"
+#endif
 
 #include <pipewire/extensions/metadata.h>
 #include <spa/param/audio/format-utils.h>
@@ -240,6 +243,7 @@ struct io_node
     Uint32 id;
     bool recording;
     SDL_AudioSpec spec;
+    int alsa_card; // ALSA card number, or -1 if unknown
 
     const char *name; // Friendly name
     const char *path; // OS identifier (i.e. ALSA endpoint)
@@ -275,6 +279,17 @@ static bool pipewire_core_version_at_least(int major, int minor, int patch)
            (pipewire_version_major > major || pipewire_version_minor > minor || pipewire_version_patch >= patch);
 }
 
+static SDL_AudioDevice *AddPipewireAudioDevice(struct io_node *node)
+{
+    char *container_id = NULL;
+#ifdef SDL_PLATFORM_LINUX
+    container_id = SDL_GetContainerIDFromALSACard(node->alsa_card);
+#endif
+    SDL_AudioDevice *device = SDL_AddAudioDevice(node->recording, node->name, container_id, NULL, &node->spec, PW_ID_TO_HANDLE(node->id));
+    SDL_free(container_id);
+    return device;
+}
+
 // The active node list
 static bool io_list_check_add(struct io_node *node)
 {
@@ -291,7 +306,11 @@ static bool io_list_check_add(struct io_node *node)
     spa_list_append(&hotplug_io_list, &node->link);
 
     if (hotplug_events_enabled) {
-        SDL_AddAudioDevice(node->recording, node->name, NULL, &node->spec, PW_ID_TO_HANDLE(node->id));
+        SDL_AudioDevice *device = AddPipewireAudioDevice(node);
+        const char *default_path = node->recording ? pipewire_default_source_id : pipewire_default_sink_id;
+        if (default_path && SDL_strcmp(node->path, default_path) == 0) {
+            SDL_DefaultAudioDeviceChanged(device);
+        }
     }
 
     return true;
@@ -557,6 +576,14 @@ static void node_event_info(void *object, const struct pw_node_info *info)
             io->spec.channels = (Uint8)SDL_atoi(prop_val);
         }
 
+        prop_val = spa_dict_lookup(info->props, "api.alsa.card");
+        if (!prop_val) {
+            prop_val = spa_dict_lookup(info->props, "alsa.card");
+        }
+        if (prop_val) {
+            io->alsa_card = SDL_atoi(prop_val);
+        }
+
         // Need to parse the parameters to get the sample rate
         for (i = 0; i < info->n_params; ++i) {
             pw_node_enum_params((struct pw_node *)node->proxy, 0, info->params[i].id, 0, 0, NULL);
@@ -736,6 +763,7 @@ static void registry_event_global_callback(void *object, uint32_t id, uint32_t p
                 // Begin setting the node properties
                 io->id = id;
                 io->recording = recording;
+                io->alsa_card = -1;
                 if (io->spec.format == SDL_AUDIO_UNKNOWN) {
                     io->spec.format = SDL_AUDIO_S16;  // we'll go conservative here if for some reason the format isn't known.
                 }
@@ -876,7 +904,7 @@ static void PIPEWIRE_DetectDevices(SDL_AudioDevice **default_playback, SDL_Audio
     }
 
     spa_list_for_each (io, &hotplug_io_list, link) {
-        SDL_AudioDevice *device = SDL_AddAudioDevice(io->recording, io->name, NULL, &io->spec, PW_ID_TO_HANDLE(io->id));
+        SDL_AudioDevice *device = AddPipewireAudioDevice(io);
         if (pipewire_default_sink_id && SDL_strcmp(io->path, pipewire_default_sink_id) == 0) {
             if (!io->recording) {
                 *default_playback = device;

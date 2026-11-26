@@ -8,6 +8,11 @@ on:
     paths-ignore:
       - 'docs/**'
       - '*.md'
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: 'SDL commit'
+        required: true
   schedule:
     #        ┌────────────── minute (0 - 59)
     #        │  ┌───────────── hour (0 - 23)
@@ -35,6 +40,7 @@ jobs:
           python-version: 3.x
       - uses: actions/checkout@main
         with:
+          ref: ${{ (github.event.name == 'workflow_dispatch' && inputs.commit) || '' }}
           sparse-checkout: '.github/workflows/create-test-plan.py'
       - name: 'Create plan'
         id: plan
@@ -46,7 +52,8 @@ jobs:
           printf '%s\n' "$COMMIT_MESSAGE" >/tmp/commit_message.txt
 
           python .github/workflows/create-test-plan.py \
-            ${{ (github.event_name != 'schedule' && '--priority-only') || '' }} \
+            ${{ (github.event_name != 'schedule' && github.event_name != 'workflow_dispatch' && '--priority-only') || '' }} \
+            ${{ (github.event.name == 'workflow_dispatch' && format('--commit {0}', inputs.commit)) || '' }} \
             --github-variable-prefix platforms \
             --github-ci \
             --verbose \

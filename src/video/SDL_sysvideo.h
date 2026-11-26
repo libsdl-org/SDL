@@ -41,6 +41,13 @@ typedef struct
     float HDR_headroom;
 } SDL_HDROutputProperties;
 
+typedef enum
+{
+    SDL_WINDOW_FRAMEBUFFER_NONE,
+    SDL_WINDOW_FRAMEBUFFER_NATIVE,
+    SDL_WINDOW_FRAMEBUFFER_TEXTURE
+} SDL_WindowFramebufferType;
+
 // Define the SDL window structure, corresponding to toplevel windows
 struct SDL_Window
 {
@@ -97,6 +104,7 @@ struct SDL_Window
 
     float opacity;
 
+    SDL_WindowFramebufferType framebuffer_type;
     SDL_Surface *surface;
     bool surface_valid;
 
@@ -108,6 +116,7 @@ struct SDL_Window
     bool constrain_popup;
     bool is_destroying;
     bool is_dropping; // drag/drop in progress, expecting SDL_SendDropComplete().
+    bool is_live_resizing;
 
     int safe_inset_left;
     int safe_inset_right;
@@ -226,6 +235,15 @@ struct SDL_VideoDevice
     bool (*VideoInit)(SDL_VideoDevice *_this);
 
     /*
+     * Called when Video subsystem is beginning to terminate. This allows for
+     * special case code that need to happen before internal SDL bits
+     * clean up that must happen before VideoQuit(). An example is stopping
+     * a hotplug thread that might add mice/keyboards after SDL has cleaned
+     * up its internal list. Most work is meant to happen in VideoQuit, though.
+     */
+    void (*VideoPreQuit)(SDL_VideoDevice *_this);
+
+    /*
      * Reverse the effects VideoInit() -- called if VideoInit() fails or
      * if the application is shutting down the video subsystem.
      */
@@ -285,6 +303,7 @@ struct SDL_VideoDevice
     float (*GetWindowContentScale)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*GetWindowSizeInPixels)(SDL_VideoDevice *_this, SDL_Window *window, int *w, int *h);
     bool (*SetWindowOpacity)(SDL_VideoDevice *_this, SDL_Window *window, float opacity);
+    bool (*SetWindowMousePassthrough)(SDL_VideoDevice *_this, SDL_Window *window, bool passthrough);
     bool (*SetWindowParent)(SDL_VideoDevice *_this, SDL_Window *window, SDL_Window *parent);
     bool (*SetWindowModal)(SDL_VideoDevice *_this, SDL_Window *window, bool modal);
     void (*ShowWindow)(SDL_VideoDevice *_this, SDL_Window *window);
@@ -404,7 +423,6 @@ struct SDL_VideoDevice
     /* * * */
     // Data common to all drivers
     SDL_ThreadID thread;
-    bool checked_texture_framebuffer;
     bool suspend_screensaver;
     void *wakeup_window;
     int num_displays;
@@ -412,6 +430,7 @@ struct SDL_VideoDevice
     SDL_Rect desktop_bounds;
     SDL_Window *windows;
     SDL_Window *grabbed_window;
+    SDL_WindowID background_focus_windowID;
     Uint32 clipboard_sequence;
     SDL_ClipboardDataCallback clipboard_callback;
     SDL_ClipboardCleanupCallback clipboard_cleanup;
@@ -503,10 +522,6 @@ struct SDL_VideoDevice
     struct SDL_EGL_VideoData *egl_data;
 #endif
 
-#if defined(SDL_VIDEO_OPENGL_ES) || defined(SDL_VIDEO_OPENGL_ES2)
-    struct SDL_PrivateGLESData *gles_data;
-#endif
-
     /* * * */
     // The function used to dispose of this structure
     void (*free)(SDL_VideoDevice *_this);
@@ -593,6 +608,9 @@ extern void SDL_OnWindowMoved(SDL_Window *window);
 extern void SDL_OnWindowResized(SDL_Window *window);
 extern void SDL_CheckWindowPixelSizeChanged(SDL_Window *window);
 extern void SDL_OnWindowPixelSizeChanged(SDL_Window *window);
+extern void SDL_StartWindowLiveResize(SDL_Window *window);
+extern void SDL_StopWindowLiveResize(SDL_Window *window);
+extern bool SDL_IsWindowLiveResizing(SDL_Window *window);
 extern void SDL_OnWindowLiveResizeUpdate(SDL_Window *window);
 extern void SDL_OnWindowMinimized(SDL_Window *window);
 extern void SDL_OnWindowMaximized(SDL_Window *window);
@@ -602,6 +620,7 @@ extern void SDL_OnWindowLeave(SDL_Window *window);
 extern void SDL_OnWindowFocusGained(SDL_Window *window);
 extern void SDL_OnWindowFocusLost(SDL_Window *window);
 extern void SDL_OnWindowDisplayChanged(SDL_Window *window);
+extern void SDL_OnWindowFullscreenChanged(SDL_Window *window);
 extern void SDL_UpdateWindowGrab(SDL_Window *window);
 extern bool SDL_UpdateFullscreenMode(SDL_Window *window, SDL_FullscreenOp fullscreen, bool commit);
 extern SDL_Window *SDL_GetToplevelForKeyboardFocus(void);
@@ -616,8 +635,11 @@ extern SDL_TextInputType SDL_GetTextInputType(SDL_PropertiesID props);
 extern SDL_Capitalization SDL_GetTextInputCapitalization(SDL_PropertiesID props);
 extern bool SDL_GetTextInputAutocorrect(SDL_PropertiesID props);
 extern bool SDL_GetTextInputMultiline(SDL_PropertiesID props);
+extern int SDL_GetTextInputKeyboardMargin(SDL_PropertiesID props);
 
 extern void SDL_SendScreenKeyboardShown(void);
 extern void SDL_SendScreenKeyboardHidden(void);
+
+extern bool SDL_IsMousePassthroughWindow(SDL_Window *window);
 
 #endif // SDL_sysvideo_h_

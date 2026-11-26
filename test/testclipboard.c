@@ -168,17 +168,13 @@ static float PrintClipboardImage(float x, float y, const char *mime_type)
             bool rendered = false;
             SDL_IOStream *stream = SDL_IOFromConstMem(data, size);
             if (stream) {
-                SDL_Surface *surface = SDL_LoadSurface_IO(stream, false);
-                if (surface) {
-                    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-                    if (texture) {
-                        SDL_GetTextureSize(texture, &w, &h);
+                SDL_Texture *texture = SDL_LoadTexture_IO(renderer, stream, false);
+                if (texture) {
+                    SDL_GetTextureSize(texture, &w, &h);
 
-                        SDL_FRect dst = { x, y, w, h };
-                        rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
-                        SDL_DestroyTexture(texture);
-                    }
-                    SDL_DestroySurface(surface);
+                    SDL_FRect dst = { x, y, w, h };
+                    rendered = SDL_RenderTexture(renderer, texture, NULL, &dst);
+                    SDL_DestroyTexture(texture);
                 }
                 SDL_CloseIO(stream);
             }

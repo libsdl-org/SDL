@@ -538,18 +538,27 @@ static float WIN_GetSDRWhitePoint(SDL_VideoDevice *_this, HMONITOR hMonitor)
     return SDR_white_level;
 }
 
-static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, SDL_HDROutputProperties *HDR)
+static void WIN_GetHDRPropertiesForLuminance(SDL_VideoDevice *_this, HMONITOR hMonitor, float max_luminance, SDL_HDROutputProperties *HDR)
+{
+    SDL_zerop(HDR);
+
+    if (max_luminance > 0.0f) {
+        HDR->SDR_white_level = WIN_GetSDRWhitePoint(_this, hMonitor);
+        HDR->HDR_headroom = (max_luminance / SCRGB_NITS) / HDR->SDR_white_level;
+    }
+}
+
+static void WIN_GetHDRProperties(SDL_VideoDevice *_this, HMONITOR hMonitor, float *max_luminance, SDL_HDROutputProperties *HDR)
 {
     DXGI_OUTPUT_DESC1 desc;
 
-    SDL_zerop(HDR);
-
+    *max_luminance = 0.0f;
     if (WIN_GetMonitorDESC1(hMonitor, &desc)) {
         if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
-            HDR->SDR_white_level = WIN_GetSDRWhitePoint(_this, hMonitor);
-            HDR->HDR_headroom = (desc.MaxLuminance / SCRGB_NITS) / HDR->SDR_white_level;
+            *max_luminance = desc.MaxLuminance;
         }
     }
+    WIN_GetHDRPropertiesForLuminance(_this, hMonitor, *max_luminance, HDR);
 }
 #endif // HAVE_DXGI1_6_H
 
@@ -629,7 +638,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
                 SDL_SetDisplayContentScale(existing_display, content_scale);
 #ifdef HAVE_DXGI1_6_H
                 SDL_HDROutputProperties HDR;
-                WIN_GetHDRProperties(_this, hMonitor, &HDR);
+                WIN_GetHDRProperties(_this, hMonitor, &internal->MaxLuminance, &HDR);
                 SDL_SetDisplayHDRProperties(existing_display, &HDR);
 #endif
             }
@@ -664,7 +673,7 @@ static void WIN_AddDisplay(SDL_VideoDevice *_this, HMONITOR hMonitor, const MONI
     display.internal = displaydata;
     WIN_GetDisplayBounds(_this, &display, &displaydata->bounds);
 #ifdef HAVE_DXGI1_6_H
-    WIN_GetHDRProperties(_this, hMonitor, &display.HDR);
+    WIN_GetHDRProperties(_this, hMonitor, &displaydata->MaxLuminance, &display.HDR);
 #endif
     SDL_DisplayID displayID = SDL_AddVideoDisplay(&display, false);
     if (displayID) {
@@ -731,10 +740,6 @@ static void WIN_AddDisplays(SDL_VideoDevice *_this)
 bool WIN_InitModes(SDL_VideoDevice *_this)
 {
     WIN_AddDisplays(_this);
-
-    if (_this->num_displays == 0) {
-        return SDL_SetError("No displays available");
-    }
     return true;
 }
 
@@ -947,6 +952,22 @@ void WIN_UpdateDisplayUsableBounds(SDL_VideoDevice *_this)
     for (int i = 0; i < _this->num_displays; ++i) {
         SDL_SendDisplayEvent(_this->displays[i], SDL_EVENT_DISPLAY_USABLE_BOUNDS_CHANGED, 0, 0);
     }
+}
+
+void WIN_UpdateDisplaySDRWhiteLevels(SDL_VideoDevice *_this)
+{
+#ifdef HAVE_DXGI1_6_H
+    // The SDR white level can change without a display change, but the maximum luminance can't
+    for (int i = 0; i < _this->num_displays; ++i) {
+        SDL_VideoDisplay *display = _this->displays[i];
+        SDL_DisplayData *internal = display->internal;
+        if (internal->MaxLuminance > 0.0f) {
+            SDL_HDROutputProperties HDR;
+            WIN_GetHDRPropertiesForLuminance(_this, internal->MonitorHandle, internal->MaxLuminance, &HDR);
+            SDL_SetDisplayHDRProperties(display, &HDR);
+        }
+    }
+#endif
 }
 
 void WIN_QuitModes(SDL_VideoDevice *_this)

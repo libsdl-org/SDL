@@ -283,37 +283,38 @@ static VkComponentMapping SwapchainCompositionSwizzle[] = {
 };
 
 static VkFormat SDLToVK_VertexFormat[] = {
-    VK_FORMAT_UNDEFINED,           // INVALID
-    VK_FORMAT_R32_SINT,            // INT
-    VK_FORMAT_R32G32_SINT,         // INT2
-    VK_FORMAT_R32G32B32_SINT,      // INT3
-    VK_FORMAT_R32G32B32A32_SINT,   // INT4
-    VK_FORMAT_R32_UINT,            // UINT
-    VK_FORMAT_R32G32_UINT,         // UINT2
-    VK_FORMAT_R32G32B32_UINT,      // UINT3
-    VK_FORMAT_R32G32B32A32_UINT,   // UINT4
-    VK_FORMAT_R32_SFLOAT,          // FLOAT
-    VK_FORMAT_R32G32_SFLOAT,       // FLOAT2
-    VK_FORMAT_R32G32B32_SFLOAT,    // FLOAT3
-    VK_FORMAT_R32G32B32A32_SFLOAT, // FLOAT4
-    VK_FORMAT_R8G8_SINT,           // BYTE2
-    VK_FORMAT_R8G8B8A8_SINT,       // BYTE4
-    VK_FORMAT_R8G8_UINT,           // UBYTE2
-    VK_FORMAT_R8G8B8A8_UINT,       // UBYTE4
-    VK_FORMAT_R8G8_SNORM,          // BYTE2_NORM
-    VK_FORMAT_R8G8B8A8_SNORM,      // BYTE4_NORM
-    VK_FORMAT_R8G8_UNORM,          // UBYTE2_NORM
-    VK_FORMAT_R8G8B8A8_UNORM,      // UBYTE4_NORM
-    VK_FORMAT_R16G16_SINT,         // SHORT2
-    VK_FORMAT_R16G16B16A16_SINT,   // SHORT4
-    VK_FORMAT_R16G16_UINT,         // USHORT2
-    VK_FORMAT_R16G16B16A16_UINT,   // USHORT4
-    VK_FORMAT_R16G16_SNORM,        // SHORT2_NORM
-    VK_FORMAT_R16G16B16A16_SNORM,  // SHORT4_NORM
-    VK_FORMAT_R16G16_UNORM,        // USHORT2_NORM
-    VK_FORMAT_R16G16B16A16_UNORM,  // USHORT4_NORM
-    VK_FORMAT_R16G16_SFLOAT,       // HALF2
-    VK_FORMAT_R16G16B16A16_SFLOAT  // HALF4
+    VK_FORMAT_UNDEFINED,               // INVALID
+    VK_FORMAT_R32_SINT,                // INT
+    VK_FORMAT_R32G32_SINT,             // INT2
+    VK_FORMAT_R32G32B32_SINT,          // INT3
+    VK_FORMAT_R32G32B32A32_SINT,       // INT4
+    VK_FORMAT_R32_UINT,                // UINT
+    VK_FORMAT_R32G32_UINT,             // UINT2
+    VK_FORMAT_R32G32B32_UINT,          // UINT3
+    VK_FORMAT_R32G32B32A32_UINT,       // UINT4
+    VK_FORMAT_R32_SFLOAT,              // FLOAT
+    VK_FORMAT_R32G32_SFLOAT,           // FLOAT2
+    VK_FORMAT_R32G32B32_SFLOAT,        // FLOAT3
+    VK_FORMAT_R32G32B32A32_SFLOAT,     // FLOAT4
+    VK_FORMAT_R8G8_SINT,               // BYTE2
+    VK_FORMAT_R8G8B8A8_SINT,           // BYTE4
+    VK_FORMAT_R8G8_UINT,               // UBYTE2
+    VK_FORMAT_R8G8B8A8_UINT,           // UBYTE4
+    VK_FORMAT_R8G8_SNORM,              // BYTE2_NORM
+    VK_FORMAT_R8G8B8A8_SNORM,          // BYTE4_NORM
+    VK_FORMAT_R8G8_UNORM,              // UBYTE2_NORM
+    VK_FORMAT_R8G8B8A8_UNORM,          // UBYTE4_NORM
+    VK_FORMAT_R16G16_SINT,             // SHORT2
+    VK_FORMAT_R16G16B16A16_SINT,       // SHORT4
+    VK_FORMAT_R16G16_UINT,             // USHORT2
+    VK_FORMAT_R16G16B16A16_UINT,       // USHORT4
+    VK_FORMAT_R16G16_SNORM,            // SHORT2_NORM
+    VK_FORMAT_R16G16B16A16_SNORM,      // SHORT4_NORM
+    VK_FORMAT_R16G16_UNORM,            // USHORT2_NORM
+    VK_FORMAT_R16G16B16A16_UNORM,      // USHORT4_NORM
+    VK_FORMAT_R16G16_SFLOAT,           // HALF2
+    VK_FORMAT_R16G16B16A16_SFLOAT,     // HALF4
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32 // R10G10B10A2_UNORM
 };
 SDL_COMPILE_TIME_ASSERT(SDLToVK_VertexFormat, SDL_arraysize(SDLToVK_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
 
@@ -1234,10 +1235,6 @@ struct VulkanRenderer
     SDL_Mutex *computePipelineLayoutFetchLock;
     SDL_Mutex *descriptorSetLayoutFetchLock;
     SDL_Mutex *windowLock;
-
-    // We don't want transfer commands to block each other,
-    // but we want all transfers to block during defrag.
-    SDL_RWLock *defragLock;
 
     Uint8 defragInProgress;
 
@@ -4797,7 +4794,7 @@ static Uint32 VULKAN_INTERNAL_CreateSwapchain(
     swapchainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     swapchainCreateInfo.queueFamilyIndexCount = 0;
     swapchainCreateInfo.pQueueFamilyIndices = NULL;
-#ifdef SDL_PLATFORM_ANDROID
+#if defined(SDL_PLATFORM_ANDROID) || defined(SDL_PLATFORM_OPENHARMONY)
     swapchainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 #else
     swapchainCreateInfo.preTransform = swapchainSupportDetails.capabilities.currentTransform;
@@ -5843,11 +5840,6 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
         &texture->usedRegion);
 
     if (bindResult != 1) {
-        renderer->vkDestroyImage(
-            renderer->logicalDevice,
-            texture->image,
-            NULL);
-
         VULKAN_INTERNAL_DestroyTexture(renderer, texture);
         SET_STRING_ERROR_AND_RETURN("Unable to bind memory for texture!", NULL);
     }
@@ -8897,8 +8889,6 @@ static void VULKAN_UploadToTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VkBufferImageCopy imageCopy;
 
-    SDL_LockRWLockForReading(renderer->defragLock);
-
     // Note that the transfer buffer does not need a barrier, as it is synced by the client
     vulkanTextureSubresource = VULKAN_INTERNAL_PrepareTextureSubresourceForWrite(
         renderer,
@@ -8940,8 +8930,6 @@ static void VULKAN_UploadToTexture(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_UploadToBuffer(
@@ -8955,8 +8943,6 @@ static void VULKAN_UploadToBuffer(
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)source->transfer_buffer;
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Note that the transfer buffer does not need a barrier, as it is synced by the client
     VulkanBuffer *vulkanBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
@@ -8987,8 +8973,6 @@ static void VULKAN_UploadToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, vulkanBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, vulkanBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 // Readback
@@ -9004,8 +8988,6 @@ static void VULKAN_DownloadFromTexture(
     VulkanTextureSubresource *vulkanTextureSubresource;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferImageCopy imageCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     vulkanTextureSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         textureContainer,
@@ -9051,8 +9033,6 @@ static void VULKAN_DownloadFromTexture(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, vulkanTextureSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, vulkanTextureSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_DownloadFromBuffer(
@@ -9065,8 +9045,6 @@ static void VULKAN_DownloadFromBuffer(
     VulkanBufferContainer *bufferContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *transferBufferContainer = (VulkanBufferContainer *)destination->transfer_buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Note that transfer buffer does not need a barrier, as it is synced by the client
     VULKAN_INTERNAL_BufferTransitionFromDefaultUsage(
@@ -9095,8 +9073,6 @@ static void VULKAN_DownloadFromBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, transferBufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, bufferContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, bufferContainer->activeBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyTextureToTexture(
@@ -9113,8 +9089,6 @@ static void VULKAN_CopyTextureToTexture(
     VulkanTextureSubresource *srcSubresource;
     VulkanTextureSubresource *dstSubresource;
     VkImageCopy imageCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     srcSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
         (VulkanTextureContainer *)source->texture,
@@ -9179,8 +9153,6 @@ static void VULKAN_CopyTextureToTexture(
     VULKAN_INTERNAL_TrackTexture(vulkanCommandBuffer, dstSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, srcSubresource->parent);
     VULKAN_INTERNAL_TrackTextureTransfer(vulkanCommandBuffer, dstSubresource->parent);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_CopyBufferToBuffer(
@@ -9195,8 +9167,6 @@ static void VULKAN_CopyBufferToBuffer(
     VulkanBufferContainer *srcContainer = (VulkanBufferContainer *)source->buffer;
     VulkanBufferContainer *dstContainer = (VulkanBufferContainer *)destination->buffer;
     VkBufferCopy bufferCopy;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     VulkanBuffer *dstBuffer = VULKAN_INTERNAL_PrepareBufferForWrite(
         renderer,
@@ -9238,8 +9208,6 @@ static void VULKAN_CopyBufferToBuffer(
     VULKAN_INTERNAL_TrackBuffer(vulkanCommandBuffer, dstBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, srcContainer->activeBuffer);
     VULKAN_INTERNAL_TrackBufferTransfer(vulkanCommandBuffer, dstBuffer);
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_GenerateMipmaps(
@@ -9252,8 +9220,6 @@ static void VULKAN_GenerateMipmaps(
     VulkanTextureSubresource *srcTextureSubresource;
     VulkanTextureSubresource *dstTextureSubresource;
     VkImageBlit blit;
-
-    SDL_LockRWLockForReading(renderer->defragLock);
 
     // Blit each slice sequentially. Barriers, barriers everywhere!
     for (Uint32 layerOrDepthIndex = 0; layerOrDepthIndex < container->header.info.layer_count_or_depth; layerOrDepthIndex += 1) {
@@ -9340,8 +9306,6 @@ static void VULKAN_GenerateMipmaps(
 
         }
     }
-
-    SDL_UnlockRWLock(renderer->defragLock);
 }
 
 static void VULKAN_EndCopyPass(
@@ -10006,7 +9970,8 @@ static bool VULKAN_ClaimWindow(
         }
 
         Uint32 createSwapchainResult = VULKAN_INTERNAL_CreateSwapchain(renderer, windowData);
-        if (createSwapchainResult == 1) {
+        if (createSwapchainResult == 1 ||
+            createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
             SDL_SetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, windowData);
 
             SDL_LockMutex(renderer->windowLock);
@@ -10023,9 +9988,10 @@ static bool VULKAN_ClaimWindow(
 
             SDL_AddWindowEventWatch(SDL_WINDOW_EVENT_WATCH_NORMAL, VULKAN_INTERNAL_OnWindowResize, window);
 
-            return true;
-        } else if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
-            windowData->needsSwapchainRecreate = true;
+            if (createSwapchainResult == VULKAN_INTERNAL_TRY_AGAIN) {
+                // We successfully claimed the window, but we'll need to recreate the swap chain
+                windowData->needsSwapchainRecreate = true;
+            }
             return true;
         } else {
             // Failed to create swapchain, destroy surface and free data
@@ -11039,7 +11005,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
     commandBuffer->isDefrag = 1;
 
     SDL_LockMutex(renderer->allocatorLock);
-    SDL_LockRWLockForWriting(renderer->defragLock);
 
     // Find an allocation that doesn't have any pending transfer operations
     Sint32 indexToDefrag = -1;
@@ -11052,7 +11017,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
 
     if (indexToDefrag == -1) {
         // Nothing is available to defrag, but it's not an error
-        SDL_UnlockRWLock(renderer->defragLock);
         SDL_UnlockMutex(renderer->allocatorLock);
         return true;
     }
@@ -11082,7 +11046,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 currentRegion->vulkanBuffer->container != NULL ? currentRegion->vulkanBuffer->container->debugName : NULL);
 
             if (newBuffer == NULL) {
-                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11121,6 +11084,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                     VULKAN_BUFFER_USAGE_MODE_COPY_DESTINATION,
                     newBuffer);
 
+                // Need to transition the old buffer in case it is read by a separate command buffer.
+                VULKAN_INTERNAL_BufferTransitionToDefaultUsage(
+                    renderer,
+                    commandBuffer,
+                    VULKAN_BUFFER_USAGE_MODE_COPY_SOURCE,
+                    currentRegion->vulkanBuffer);
+
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, currentRegion->vulkanBuffer);
                 VULKAN_INTERNAL_TrackBuffer(commandBuffer, newBuffer);
             }
@@ -11148,7 +11118,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 &currentRegion->vulkanTexture->container->header.info);
 
             if (newTexture == NULL) {
-                SDL_UnlockRWLock(renderer->defragLock);
                 SDL_UnlockMutex(renderer->allocatorLock);
                 SDL_LogError(SDL_LOG_CATEGORY_GPU, "%s", "Failed to allocate defrag buffer!");
                 return false;
@@ -11185,7 +11154,7 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 imageCopy.srcSubresource.mipLevel = srcSubresource->level;
                 imageCopy.extent.width = SDL_max(1, info.width >> srcSubresource->level);
                 imageCopy.extent.height = SDL_max(1, info.height >> srcSubresource->level);
-                imageCopy.extent.depth = info.type == SDL_GPU_TEXTURETYPE_3D ? info.layer_count_or_depth : 1;
+                imageCopy.extent.depth = info.type == SDL_GPU_TEXTURETYPE_3D ? SDL_max(1, info.layer_count_or_depth >> srcSubresource->level) : 1;
                 imageCopy.dstOffset.x = 0;
                 imageCopy.dstOffset.y = 0;
                 imageCopy.dstOffset.z = 0;
@@ -11213,6 +11182,13 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
                 VULKAN_TEXTURE_USAGE_MODE_COPY_DESTINATION,
                 newTexture);
 
+            // Need to transition the old texture in case it is read by a separate command buffer.
+            VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
+                renderer,
+                commandBuffer,
+                VULKAN_TEXTURE_USAGE_MODE_COPY_SOURCE,
+                currentRegion->vulkanTexture);
+
             // re-point original container to new texture
             newTexture->container = currentRegion->vulkanTexture->container;
             newTexture->containerIndex = currentRegion->vulkanTexture->containerIndex;
@@ -11225,7 +11201,6 @@ static bool VULKAN_INTERNAL_DefragmentMemory(
         }
     }
 
-    SDL_UnlockRWLock(renderer->defragLock);
     SDL_UnlockMutex(renderer->allocatorLock);
 
     return true;
@@ -12160,8 +12135,8 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
     bool isConformant;
 
     VkPhysicalDeviceType deviceType;
+    VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     if (physicalDeviceExtensions->KHR_driver_properties || physicalDeviceExtensions->MSFT_layered_driver) {
-        VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
         VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties = { 0 };
         VkPhysicalDeviceLayeredDriverPropertiesMSFT physicalDeviceLayeredDriverProperties = { 0 };
         void** ppNext = &physicalDeviceProperties.pNext;
@@ -12211,11 +12186,10 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
             deviceType = physicalDeviceProperties.properties.deviceType;
         }
     } else {
-        VkPhysicalDeviceProperties physicalDeviceProperties;
         renderer->vkGetPhysicalDeviceProperties(
             physicalDevice,
-            &physicalDeviceProperties);
-        deviceType = physicalDeviceProperties.deviceType;
+            &physicalDeviceProperties.properties);
+        deviceType = physicalDeviceProperties.properties.deviceType;
         isConformant = true; // We can't check this, so just assume it's conformant
     }
 
@@ -12234,6 +12208,7 @@ static bool VULKAN_INTERNAL_GetDeviceRank(
      * -flibit
      */
     if (!isConformant) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Device %s is not Vulkan-conformant, skipping", physicalDeviceProperties.properties.deviceName);
         return 0;
     }
 
@@ -12570,6 +12545,10 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->vkGetPhysicalDeviceProperties(
             renderer->physicalDevice,
             &renderer->physicalDeviceProperties.properties);
+    }
+
+    if (renderer->physicalDeviceProperties.properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Selected Vulkan device is CPU-based, this is rarely intentional");
     }
 
     renderer->vkGetPhysicalDeviceMemoryProperties(

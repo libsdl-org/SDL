@@ -24,6 +24,10 @@
 #ifndef SDL_waylanddatamanager_h_
 #define SDL_waylanddatamanager_h_
 
+typedef struct Wayland_DataDevice Wayland_DataDevice;
+typedef struct Wayland_PrimarySelectionDevice Wayland_PrimarySelectionDevice;
+
+#include "SDL_waylandevents_c.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
 
@@ -32,115 +36,23 @@
 #define FILE_PORTAL_MIME     "application/vnd.portal.filetransfer"
 #define SDL_DATA_ORIGIN_MIME "application/x-sdl3-source-id"
 
-typedef struct SDL_WaylandDataDevice SDL_WaylandDataDevice;
-typedef struct SDL_WaylandPrimarySelectionDevice SDL_WaylandPrimarySelectionDevice;
+// Data device (clipboard and drag & drop)
+extern bool Wayland_CreateDataDevice(Wayland_Seat *seat);
+extern void Wayland_DestroyDataDevice(Wayland_DataDevice *data_device);
+extern bool Wayland_HasSelectionSource(Wayland_DataDevice *data_device);
+extern bool Wayland_SetSelectionSource(Wayland_DataDevice *data_device, const char *const *mime_types, size_t mime_count,
+                                       SDL_ClipboardDataCallback data_callback, SDL_ClipboardCleanupCallback cleanup_callback, void *userdata, Uint32 sequence);
+extern bool Wayland_HasSelectionOfferMIME(Wayland_DataDevice *data_device, const char *mime_type);
+extern void *Wayland_ReceiveSelectionOffer(Wayland_DataDevice *data_device, const char *mime_type, size_t *length);
+extern void Wayland_RemoveSelectionOffer(Wayland_DataDevice *data_device, bool clear);
+extern void Wayland_RemoveWindowReferencesFromDataDevice(Wayland_DataDevice *data_device, SDL_Window *window);
 
-typedef struct
-{
-    char *mime_type;
-    void *data;
-    size_t length;
-    struct wl_list link;
-} SDL_MimeDataList;
-
-typedef struct SDL_WaylandUserdata
-{
-    Uint32 sequence;
-    void *data;
-} SDL_WaylandUserdata;
-
-typedef struct
-{
-    struct wl_data_source *source;
-    SDL_WaylandDataDevice *data_device;
-    SDL_ClipboardDataCallback callback;
-    SDL_WaylandUserdata userdata;
-} SDL_WaylandDataSource;
-
-typedef struct
-{
-    struct zwp_primary_selection_source_v1 *source;
-    SDL_WaylandDataDevice *data_device;
-    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
-    SDL_ClipboardDataCallback callback;
-    SDL_WaylandUserdata userdata;
-} SDL_WaylandPrimarySelectionSource;
-
-typedef struct
-{
-    struct wl_data_offer *offer;
-    struct wl_list mimes;
-    SDL_WaylandDataDevice *data_device;
-
-    // Callback data for queued receive.
-    struct wl_callback *callback;
-    int read_fd;
-} SDL_WaylandDataOffer;
-
-typedef struct
-{
-    struct zwp_primary_selection_offer_v1 *offer;
-    struct wl_list mimes;
-    SDL_WaylandPrimarySelectionDevice *primary_selection_device;
-} SDL_WaylandPrimarySelectionOffer;
-
-struct SDL_WaylandDataDevice
-{
-    struct wl_data_device *data_device;
-    struct SDL_WaylandSeat *seat;
-    char *id_str;
-
-    // Drag and Drop
-    uint32_t drag_serial;
-    SDL_WaylandDataOffer *drag_offer;
-    SDL_WaylandDataOffer *selection_offer;
-    const char *mime_type;
-    bool has_mime_file, has_mime_text;
-    SDL_Window *dnd_window;
-    struct wl_surface *dnd_surface;
-
-    // Clipboard and Primary Selection
-    uint32_t selection_serial;
-    SDL_WaylandDataSource *selection_source;
-};
-
-struct SDL_WaylandPrimarySelectionDevice
-{
-    struct zwp_primary_selection_device_v1 *primary_selection_device;
-    struct SDL_WaylandSeat *seat;
-
-    uint32_t selection_serial;
-    SDL_WaylandPrimarySelectionSource *selection_source;
-    SDL_WaylandPrimarySelectionOffer *selection_offer;
-};
-
-// Wayland Data Source / Primary Selection Source - (Sending)
-extern SDL_WaylandDataSource *Wayland_DataSourceCreate(SDL_VideoData *video_data);
-extern SDL_WaylandPrimarySelectionSource *Wayland_PrimarySelectionSourceCreate(SDL_VideoData *video_data);
-extern ssize_t Wayland_DataSourceSend(SDL_WaylandDataSource *source, const char *mime_type, int fd);
-extern ssize_t Wayland_PrimarySelectionSourceSend(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, int fd);
-extern void Wayland_DataSourceSetCallback(SDL_WaylandDataSource *source, SDL_ClipboardDataCallback callback, void *userdata, Uint32 sequence);
-extern void Wayland_PrimarySelectionSourceSetCallback(SDL_WaylandPrimarySelectionSource *source, SDL_ClipboardDataCallback callback, void *userdata);
-extern void *Wayland_DataSourceGetData(SDL_WaylandDataSource *source, const char *mime_type, size_t *length);
-extern void *Wayland_PrimarySelectionSourceGetData(SDL_WaylandPrimarySelectionSource *source, const char *mime_type, size_t *length);
-extern void Wayland_DataSourceDestroy(SDL_WaylandDataSource *source);
-extern void Wayland_PrimarySelectionSourceDestroy(SDL_WaylandPrimarySelectionSource *source);
-
-// Wayland Data / Primary Selection Offer - (Receiving)
-extern void *Wayland_DataOfferReceive(SDL_WaylandDataOffer *offer, const char *mime_type, size_t *length, bool extended_timeout);
-extern void *Wayland_PrimarySelectionOfferReceive(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type, size_t *length);
-extern bool Wayland_DataOfferHasMIME(SDL_WaylandDataOffer *offer, const char *mime_type);
-extern void Wayland_DataDeviceSetSelectionOffer(SDL_WaylandDataDevice *data_device, SDL_WaylandDataOffer *offer);
-extern bool Wayland_PrimarySelectionOfferHasMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type);
-extern bool Wayland_DataOfferAddMIME(SDL_WaylandDataOffer *offer, const char *mime_type);
-extern bool Wayland_PrimarySelectionOfferAddMIME(SDL_WaylandPrimarySelectionOffer *offer, const char *mime_type);
-extern void Wayland_DataOfferDestroy(SDL_WaylandDataOffer *offer);
-extern void Wayland_PrimarySelectionOfferDestroy(SDL_WaylandPrimarySelectionOffer *offer);
-
-// Clipboard / Primary Selection
-extern bool Wayland_DataDeviceSetSelectionSource(SDL_WaylandDataDevice *device, SDL_WaylandDataSource *source, const char **mime_types, size_t mime_count);
-extern bool Wayland_PrimarySelectionDeviceSetSelection(SDL_WaylandPrimarySelectionDevice *device, SDL_WaylandPrimarySelectionSource *source, const char *const *mime_types, size_t mime_count);
-extern void Wayland_DataDeviceSetSerial(SDL_WaylandDataDevice *device, uint32_t serial);
-extern void Wayland_PrimarySelectionDeviceSetSerial(SDL_WaylandPrimarySelectionDevice *device, uint32_t serial);
+// Primary selection
+extern bool Wayland_CreatePrimarySelectionDevice(Wayland_Seat *seat);
+extern void Wayland_DestroyPrimarySelectionDevice(Wayland_PrimarySelectionDevice *primary_selection_device);
+extern bool Wayland_HasPrimarySelectionDeviceText(Wayland_PrimarySelectionDevice *primary_selection_device);
+extern char *Wayland_GetPrimarySelectionDeviceText(Wayland_PrimarySelectionDevice *primary_selection_device, size_t *length);
+extern bool Wayland_SetPrimarySelectionDeviceText(Wayland_PrimarySelectionDevice *primary_selection_device, const char *text);
+extern void Wayland_RemovePrimarySelectionDeviceOffer(Wayland_PrimarySelectionDevice *primary_selection_device);
 
 #endif // SDL_waylanddatamanager_h_

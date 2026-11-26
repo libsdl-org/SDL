@@ -146,6 +146,13 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetKeyboardFocus(void);
  * Note: This function doesn't take into account whether shift has been
  * pressed or not.
  *
+ * Note that this function is "thread safe," in that calling it from two
+ * threads at once will return the same array and that it won't be reallocated
+ * or free'd without warning, as more events arrive, the contents of this
+ * array may change without warning or any sort of thread synchronization. For
+ * apps that need precision, it is better to use the key events in the SDL
+ * event queue.
+ *
  * \param numkeys if non-NULL, receives the length of the returned array.
  * \returns a pointer to an array of key states.
  *
@@ -457,6 +464,12 @@ typedef enum SDL_Capitalization
  *   with.
  * - `SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER` - maximum length for the text
  *   field, in characters (not bytes).
+ * - `SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER` - the space, in window
+ *   coordinates, to keep between the bottom of the text input area and the
+ *   top of the on-screen keyboard when the view is moved to keep the text
+ *   input area visible, defaults to the value of
+ *   SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN, which defaults to 0. This is
+ *   currently supported on Android and iOS.
  *
  * On Android you can directly specify the input type:
  *
@@ -494,6 +507,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_StartTextInputWithProperties(SDL_Window *wi
 #define SDL_PROP_TEXTINPUT_PLACEHOLDER_STRING           "SDL.textinput.placeholder"
 #define SDL_PROP_TEXTINPUT_DEFAULT_TEXT_STRING          "SDL.textinput.default_text"
 #define SDL_PROP_TEXTINPUT_MAX_LENGTH_NUMBER            "SDL.textinput.max_length"
+#define SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER       "SDL.textinput.keyboard_margin"
 #define SDL_PROP_TEXTINPUT_ANDROID_INPUTTYPE_NUMBER     "SDL.textinput.android.inputtype"
 #define SDL_PROP_TEXTINPUT_OPENHARMONY_INPUTTYPE_NUMBER "SDL.textinput.openharmony.inputtype"
 

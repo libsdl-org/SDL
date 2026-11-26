@@ -29,11 +29,17 @@
 // Return the smallest power of 2 greater than or equal to 'x'
 extern int SDL_powerof2(int x);
 
-extern Uint32 SDL_CalculateGCD(Uint32 a, Uint32 b);
+extern Uint64 SDL_CalculateGCD(Uint64 a, Uint64 b);
 extern void SDL_CalculateFraction(float x, int *numerator, int *denominator);
+
+// Reduce a 64-bit fraction so it fits in int, approximating if needed.
+// Returns 0/0 if either input is 0 or the ratio is too large to represent.
+extern void SDL_ReduceFraction(Uint64 numerator, Uint64 denominator, int *out_numerator, int *out_denominator);
 
 extern bool SDL_startswith(const char *string, const char *prefix);
 extern bool SDL_endswith(const char *string, const char *suffix);
+
+extern bool SDL_IsZeroGUID(const SDL_GUID *guid);
 
 /** Convert URI to a local filename, stripping the "file://"
  *  preamble and hostname if present, and writes the result

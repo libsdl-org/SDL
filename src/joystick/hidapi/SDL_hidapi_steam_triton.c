@@ -24,6 +24,7 @@
 
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
+#include "SDL_hidapi_rumble.h"
 
 #ifdef SDL_JOYSTICK_HIDAPI_STEAM_TRITON
 
@@ -52,6 +53,8 @@ enum
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_PADDLE2,
     SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TOUCHPAD,
     SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
+    SDL_GAMEPAD_BUTTON_TRITON_LEFT_TRIGGER_CLICK,
+    SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TRIGGER_CLICK,
     SDL_GAMEPAD_NUM_TRITON_BUTTONS,
 };
 
@@ -105,7 +108,7 @@ typedef struct
     Uint32 last_sensor_tick32;
     Uint64 sensor_timestamp_ns;
     Uint64 last_button_state;
-    Uint64 last_lizard_update;
+    Uint64 last_maintenance_update;
     Uint16 low_frequency_rumble;
     Uint16 high_frequency_rumble;
     Uint64 last_rumble_time;
@@ -124,8 +127,10 @@ static bool IsProteusDongle(Uint16 product_id)
             product_id == USB_PRODUCT_VALVE_STEAM_NEREID_DONGLE);
 }
 
-static bool DisableSteamTritonLizardMode(SDL_hid_device *dev)
+static bool MaintainTritonState(SDL_HIDAPI_Device *device)
 {
+    SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
+
     int rc;
     Uint8 buffer[HID_FEATURE_REPORT_BYTES] = { 1 };
     FeatureReportMsg *msg = (FeatureReportMsg *)(buffer + 1);
@@ -135,7 +140,13 @@ static bool DisableSteamTritonLizardMode(SDL_hid_device *dev)
     msg->payload.setSettingsValues.settings[0].settingNum = SETTING_LIZARD_MODE;
     msg->payload.setSettingsValues.settings[0].settingValue = LIZARD_MODE_OFF;
 
-    rc = SDL_hid_send_feature_report(dev, buffer, sizeof(buffer));
+    if (ctx->report_sensors) {
+        msg->header.length += 1 * sizeof(ControllerSetting);
+        msg->payload.setSettingsValues.settings[1].settingNum = SETTING_IMU_MODE;
+        msg->payload.setSettingsValues.settings[1].settingValue = (SETTING_GYRO_MODE_SEND_RAW_ACCEL | SETTING_GYRO_MODE_SEND_RAW_GYRO);
+    }
+
+    rc = SDL_hid_send_feature_report(device->dev, buffer, sizeof(buffer));
     if (rc != sizeof(buffer)) {
         return false;
     }
@@ -191,6 +202,10 @@ static void HIDAPI_DriverSteamTriton_HandleGenericState(SDL_DriverSteamTriton_Co
                                ((pTritonReport->buttons & TRITON_RIGHT_TOUCHPAD_CLICK) != 0));
         SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TOUCHPAD,
                                ((pTritonReport->buttons & TRITON_LEFT_TOUCHPAD_CLICK) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_LEFT_TRIGGER_CLICK,
+                               ((pTritonReport->buttons & TRITON_LEFT_TRIGGER_CLICK) != 0));
+        SDL_SendJoystickButton(timestamp, joystick, SDL_GAMEPAD_BUTTON_TRITON_RIGHT_TRIGGER_CLICK,
+                               ((pTritonReport->buttons & TRITON_RIGHT_TRIGGER_CLICK) != 0));
 
         SDL_SendJoystickCapSense(timestamp, joystick, SDL_GAMEPAD_CAPSENSE_RIGHT_STICK,
                                  ((pTritonReport->buttons & TRITON_RIGHT_JOYSTICK_TOUCH) != 0));
@@ -471,15 +486,6 @@ static bool HIDAPI_DriverSteamTriton_InitDevice(SDL_HIDAPI_Device *device)
     return HIDAPI_DriverSteamTriton_SetControllerConnected(device, true);
 }
 
-static int HIDAPI_DriverSteamTriton_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
-static void HIDAPI_DriverSteamTriton_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
-{
-}
-
 static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble);
 
 static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
@@ -493,9 +499,9 @@ static bool HIDAPI_DriverSteamTriton_UpdateDevice(SDL_HIDAPI_Device *device)
 
     if (ctx->connected && joystick) {
         Uint64 now = SDL_GetTicks();
-        if (!ctx->last_lizard_update || (now - ctx->last_lizard_update) >= 3000) {
-            DisableSteamTritonLizardMode(device->dev);
-            ctx->last_lizard_update = now;
+        if (!ctx->last_maintenance_update || (now - ctx->last_maintenance_update) >= 3000) {
+            MaintainTritonState(device);
+            ctx->last_maintenance_update = now;
         }
 
         if (ctx->low_frequency_rumble || ctx->high_frequency_rumble) {
@@ -595,7 +601,6 @@ static bool HIDAPI_DriverSteamTriton_OpenJoystick(SDL_HIDAPI_Device *device, SDL
 static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble)
 {
     SDL_DriverSteamTriton_Context *ctx = (SDL_DriverSteamTriton_Context *)device->context;
-    int rc;
 
     ctx->low_frequency_rumble = low_frequency_rumble;
     ctx->high_frequency_rumble = high_frequency_rumble;
@@ -612,30 +617,15 @@ static bool HIDAPI_DriverSteamTriton_RumbleJoystick(SDL_HIDAPI_Device *device, S
     msg->payload.hapticRumble.right.speed = high_frequency_rumble;
     msg->payload.hapticRumble.right.gain = 0;
 
-    rc = SDL_hid_write(device->dev, buffer, sizeof(buffer));
-    if (rc < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_INPUT, 
-            "Steam Controller HID Write FAILED! rc: %d. SDL_Error: %s", 
-            rc, SDL_GetError());
-
-        return false;
+    if (SDL_HIDAPI_SendRumble(device, buffer, sizeof(buffer)) != sizeof(buffer)) {
+        return SDL_SetError("Couldn't send rumble packet");
     }
     return true;
-}
-
-static bool HIDAPI_DriverSteamTriton_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
 }
 
 static Uint32 HIDAPI_DriverSteamTriton_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     return SDL_JOYSTICK_CAP_RUMBLE;
-}
-
-static bool HIDAPI_DriverSteamTriton_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
 }
 
 static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
@@ -647,6 +637,39 @@ static bool HIDAPI_DriverSteamTriton_SendJoystickEffect(SDL_HIDAPI_Device *devic
         }
         return true;
     }
+
+    // Haptic effects use short HID output reports, unlike the feature reports above
+    if (data && size > 0) {
+        const Uint8 report_id = *(const Uint8 *)data;
+        int expected_size = 0;
+
+        // Accept only known haptic report IDs and their fixed sizes
+        switch (report_id) {
+        case ID_OUT_REPORT_HAPTIC_PULSE:
+            expected_size = HID_HAPTIC_PULSE_OUTPUT_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_COMMAND:
+            expected_size = HID_HAPTIC_COMMAND_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_LFO_TONE:
+            expected_size = HID_HAPTIC_LFO_TONE_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_LOG_SWEEP:
+            expected_size = HID_HAPTIC_LOG_SWEEP_REPORT_BYTES;
+            break;
+        case ID_OUT_REPORT_HAPTIC_SCRIPT:
+            expected_size = HID_HAPTIC_SCRIPT_REPORT_BYTES;
+            break;
+        default:
+            break;
+        }
+
+        if (size == expected_size) {
+            // Windows HIDAPI may return the padded output report length.
+            return SDL_hid_write(device->dev, data, size) >= size;
+        }
+    }
+
     return SDL_Unsupported();
 }
 
@@ -681,30 +704,21 @@ static void HIDAPI_DriverSteamTriton_CloseJoystick(SDL_HIDAPI_Device *device, SD
     // Lizard mode id automatically re-enabled by watchdog. Nothing to do here.
 }
 
-static void HIDAPI_DriverSteamTriton_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteamTriton = {
-    SDL_HINT_JOYSTICK_HIDAPI_STEAM,
-    true,
-    HIDAPI_DriverSteamTriton_RegisterHints,
-    HIDAPI_DriverSteamTriton_UnregisterHints,
-    HIDAPI_DriverSteamTriton_IsEnabled,
-    HIDAPI_DriverSteamTriton_IsSupportedDevice,
-    HIDAPI_DriverSteamTriton_InitDevice,
-    HIDAPI_DriverSteamTriton_GetDevicePlayerIndex,
-    HIDAPI_DriverSteamTriton_SetDevicePlayerIndex,
-    HIDAPI_DriverSteamTriton_UpdateDevice,
-    HIDAPI_DriverSteamTriton_OpenJoystick,
-    HIDAPI_DriverSteamTriton_RumbleJoystick,
-    HIDAPI_DriverSteamTriton_RumbleJoystickTriggers,
-    HIDAPI_DriverSteamTriton_GetJoystickCapabilities,
-    HIDAPI_DriverSteamTriton_SetJoystickLED,
-    HIDAPI_DriverSteamTriton_SendJoystickEffect,
-    HIDAPI_DriverSteamTriton_SetSensorsEnabled,
-    HIDAPI_DriverSteamTriton_CloseJoystick,
-    HIDAPI_DriverSteamTriton_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_STEAM,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverSteamTriton_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverSteamTriton_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverSteamTriton_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverSteamTriton_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverSteamTriton_InitDevice,
+    .UpdateDevice = HIDAPI_DriverSteamTriton_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverSteamTriton_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverSteamTriton_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverSteamTriton_GetJoystickCapabilities,
+    .SendJoystickEffect = HIDAPI_DriverSteamTriton_SendJoystickEffect,
+    .SetJoystickSensorsEnabled = HIDAPI_DriverSteamTriton_SetSensorsEnabled,
+    .CloseJoystick = HIDAPI_DriverSteamTriton_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_STEAM_TRITON

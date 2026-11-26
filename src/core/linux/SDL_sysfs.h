@@ -19,14 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_internal.h"
-#include "../../core/windows/SDL_windows.h"
 
-// Return true if the RawInput driver is enabled
-extern bool RAWINPUT_IsEnabled(void);
+#ifndef SDL_sysfs_h_
+#define SDL_sysfs_h_
 
-// Registers for input events
-extern bool RAWINPUT_RegisterNotifications(HWND hWnd);
-extern bool RAWINPUT_UnregisterNotifications(void);
+// Get a container ID for a character device node, e.g. /dev/input/event3 or /dev/hidraw2
+extern char *SDL_GetContainerIDFromDevicePath(const char *devpath);
 
-// Returns 0 if message was handled
-extern LRESULT CALLBACK RAWINPUT_WindowProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+// Get a container ID for an ALSA sound card
+extern char *SDL_GetContainerIDFromALSACard(int card);
+
+#endif // SDL_sysfs_h_

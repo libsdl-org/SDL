@@ -138,4 +138,16 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return true;
 }
 
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    SceKernelThreadInfo info;
+    SDL_zero(info);
+    info.size = sizeof (info);
+    if (sceKernelGetThreadInfo(sceKernelGetThreadId(), &info) != 0) {
+        return false;
+    }
+    SDL_strlcpy(buf, info.name, buflen);
+    return true;
+}
+
 #endif // SDL_THREAD_VITA

@@ -73,6 +73,13 @@
 #define WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB 0x20A9
 #endif
 
+#ifndef WGL_EXT_colorspace
+#define WGL_EXT_colorspace
+#define WGL_COLORSPACE_EXT      0x309D
+#define WGL_COLORSPACE_SRGB_EXT 0x3089
+#define WGL_COLORSPACE_LINEAR_EXT 0x308A
+#endif
+
 #ifndef WGL_ARB_pixel_format_float
 #define WGL_ARB_pixel_format_float
 #define WGL_TYPE_RGBA_FLOAT_ARB 0x21A0
@@ -545,6 +552,9 @@ void WIN_GL_InitExtensions(SDL_VideoDevice *_this)
         _this->gl_data->HAS_WGL_ARB_framebuffer_sRGB = true;
     }
 
+    // Check for WGL_EXT_colorspace
+    _this->gl_data->HAS_WGL_EXT_colorspace = HasExtension("WGL_EXT_colorspace", extensions);
+
     /* Check for WGL_ARB_pixel_format_float */
     _this->gl_data->HAS_WGL_ARB_pixel_format_float =
         HasExtension("WGL_ARB_pixel_format_float", extensions);
@@ -591,6 +601,15 @@ static int WIN_GL_ChoosePixelFormatARB(SDL_VideoDevice *_this, int *iAttribs, fl
                 int qAttrib = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
                 _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &srgb);
             }
+
+            if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && _this->gl_data->HAS_WGL_EXT_colorspace) {
+                int colorspace = WGL_COLORSPACE_LINEAR_EXT;
+                int qAttrib = WGL_COLORSPACE_EXT;
+                _this->gl_data->wglGetPixelFormatAttribivARB(hdc, pixel_format, 0, 1, &qAttrib, &colorspace);
+
+                srgb = (colorspace == WGL_COLORSPACE_SRGB_EXT);
+            }
+
             _this->gl_config.framebuffer_srgb_capable = srgb;
         }
 
@@ -685,18 +704,28 @@ static bool WIN_GL_SetupWindowInternal(SDL_VideoDevice *_this, SDL_Window *windo
         *iAttr++ = WGL_TYPE_RGBA_FLOAT_ARB;
     }
 
-    if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+    if (_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB || _this->gl_data->HAS_WGL_EXT_colorspace) {
         const char *srgbhint = SDL_GetHint(SDL_HINT_OPENGL_FORCE_SRGB_FRAMEBUFFER);
+        int want_srgb = _this->gl_config.framebuffer_srgb_capable;
+        bool skip = false;
+
         if (srgbhint && *srgbhint) {
             if (SDL_strcmp(srgbhint, "skip") == 0) {
-                // don't set an attribute at all.
+                skip = true; // don't set an attribute at all.
             } else {
-                *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-                *iAttr++ = SDL_GetStringBoolean(srgbhint, false) ? GL_TRUE : GL_FALSE;
+                want_srgb = SDL_GetStringBoolean(srgbhint, false);
             }
-        } else if (_this->gl_config.framebuffer_srgb_capable) {  // default behavior without the hint.
-            *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-            *iAttr++ = GL_TRUE;
+        }
+
+        if(!skip) {
+            if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && _this->gl_data->HAS_WGL_EXT_colorspace) {
+                *iAttr++ = WGL_COLORSPACE_EXT;
+                *iAttr++ = want_srgb ? WGL_COLORSPACE_SRGB_EXT : WGL_COLORSPACE_LINEAR_EXT;
+            }
+            if(_this->gl_data->HAS_WGL_ARB_framebuffer_sRGB) {
+                *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                *iAttr++ = want_srgb ? GL_TRUE : GL_FALSE;
+            }
         }
     }
 

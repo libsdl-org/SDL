@@ -1,7 +1,5 @@
 # Add project specific ProGuard rules here.
-# By default, the flags in this file are appended to flags specified
-# in [sdk]/tools/proguard/proguard-android.txt
-# You can edit the include path and order by changing the proguardFiles
+# You can change the rules that are applied by changing the proguardFiles
 # directive in build.gradle.
 #
 # For more details, see
@@ -31,6 +29,7 @@
     boolean isAndroidTV();
     boolean isChromebook();
     boolean isDeXMode();
+    boolean isGooglePlayOnPC();
     boolean isTablet();
     void manualBackButton();
     int messageboxShowMessageBox(int, java.lang.String, java.lang.String, int[], int[], java.lang.String[], int[]);
@@ -42,6 +41,7 @@
     boolean setActivityTitle(java.lang.String);
     void setBackButtonTrapEnabled(boolean);
     boolean setCustomCursor(int);
+    void setDesiredHDRHeadroom(float);
     void setOrientation(int, int, boolean, java.lang.String);
     boolean setRelativeMouseEnabled(boolean);
     boolean setSystemCursor(int);

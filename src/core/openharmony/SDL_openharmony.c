@@ -334,7 +334,10 @@ SDL_DisplayOrientation SDL_GetOpenHarmonyDeviceCurrentOrientation(void)
     return device_orientation;
 }
 
-const char *SDL_GetOpenHarmonyInternalStoragePath(void)
+
+typedef AbilityRuntime_ErrorCode (*GetOHPathFn)(char* buffer, int32_t bufferSize, int32_t* writeLength);
+
+static const char *GetOpenHarmonyPath(GetOHPathFn getpathfn)
 {
     static char *files_path = NULL;
     if (!files_path) {
@@ -349,7 +352,7 @@ const char *SDL_GetOpenHarmonyInternalStoragePath(void)
             }
             path = (char *) ptr;
 
-            const AbilityRuntime_ErrorCode rc = OH_AbilityRuntime_ApplicationContextGetFilesDir(path, slen, &writelen);
+            const AbilityRuntime_ErrorCode rc = getpathfn(path, slen, &writelen);
             if (rc == ABILITY_RUNTIME_ERROR_CODE_NO_ERROR) {
                 break;
             } else if (rc != ABILITY_RUNTIME_ERROR_CODE_PARAM_INVALID) {
@@ -367,6 +370,16 @@ const char *SDL_GetOpenHarmonyInternalStoragePath(void)
     }
 
     return files_path;
+}
+
+const char *SDL_GetOpenHarmonyInternalStoragePath(void)
+{
+    return GetOpenHarmonyPath(OH_AbilityRuntime_ApplicationContextGetFilesDir);
+}
+
+const char *SDL_GetOpenHarmonyInternalCachePath(void)
+{
+    return GetOpenHarmonyPath(OH_AbilityRuntime_ApplicationContextGetCacheDir);
 }
 
 
@@ -936,6 +949,8 @@ static napi_value SDL_JS_UIAbility_OnDestroy(napi_env env, napi_callback_info in
     SDL_SendQuit();
     SDL_OnApplicationWillTerminate();
 
+    // !!! FIXME: clean this stuff up elsewhere (and maybe clean up more of it).
+    // !!! FIXME: alternately: Clean up _none_ of it because the process is about to go away anyhow.
     if (commonevent_subscriber) {
         OH_CommonEvent_UnSubscribe(commonevent_subscriber);
         OH_CommonEvent_DestroySubscriber(commonevent_subscriber);

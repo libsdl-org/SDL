@@ -562,7 +562,7 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
         const bool x11KeyPressed = (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
         const bool sdlKeyPressed = keystate[scancode];
 
-        if (x11KeyPressed && !sdlKeyPressed) {
+        if (x11KeyPressed) {
             // Only update modifier state for keys that are pressed in another application
             switch (SDL_GetKeyFromScancode(scancode, SDL_KMOD_NONE, false)) {
             case SDLK_LCTRL:
@@ -576,14 +576,18 @@ void X11_ReconcileKeyboardState(SDL_VideoDevice *_this)
             case SDLK_MODE:
             case SDLK_LEVEL5_SHIFT:
                 X11_HandleModifierKeys(videodata, scancode, true);
-                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                if (!sdlKeyPressed) {
+                    SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, true);
+                }
                 break;
             default:
                 break;
             }
-        } else if (!x11KeyPressed && sdlKeyPressed) {
+        } else {
             X11_HandleModifierKeys(videodata, scancode, false);
-            SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
+            if (sdlKeyPressed) {
+                SDL_SendKeyboardKeyIgnoreModifiers(0, SDL_GLOBAL_KEYBOARD_ID, keycode, scancode, false);
+            }
         }
     }
 
@@ -852,7 +856,7 @@ static void X11_HandleClipboardEvent(SDL_VideoDevice *_this, const XEvent *xeven
         SDL_zero(sevent);
         sevent.xany.type = SelectionNotify;
         sevent.xselection.selection = req->selection;
-        sevent.xselection.target = None;
+        sevent.xselection.target = req->target;
         sevent.xselection.property = None; // tell them no by default
         sevent.xselection.requestor = req->requestor;
         sevent.xselection.time = req->time;
@@ -1283,6 +1287,27 @@ void X11_EmitConfigureNotifyEvents(SDL_WindowData *data, XConfigureEvent *xevent
             data->pending_operation &= ~X11_PENDING_OP_RESIZE;
         }
         SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_RESIZED, xevent->width, xevent->height);
+
+        // Update the pointer coordinates if the focused window moved under the cursor.
+        if (data->window == SDL_GetMouseFocus()) {
+            float m_x, m_y;
+            SDL_GetGlobalMouseState(&m_x, &m_y);
+            x = (int)SDL_floor(m_x);
+            y = (int)SDL_floor(m_y);
+
+            // Is the new position still in the window?
+            if (x >= xevent->x && y >= xevent->y && m_x < (xevent->x + data->window->w) && y < (xevent->y + data->window->h)) {
+                // Global to relative
+                m_x -= (float)xevent->x;
+                m_y -= (float)xevent->y;
+
+                // Dedup, as a configure event doesn't imply a move.
+                SDL_Mouse *m = SDL_GetMouse();
+                if (m->last_x != m_x || m->last_y != m_y) {
+                    SDL_SendMouseWarp(0, data->window, SDL_GLOBAL_MOUSE_ID, m_x, m_y);
+                }
+            }
+        }
     }
 
     SDL_copyp(&data->last_xconfigure, xevent);
@@ -1743,6 +1768,10 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
         // Have we been requested to quit (or another client message?)
     case ClientMessage:
     {
+#ifdef DEBUG_XEVENTS
+        SDL_Log("window 0x%lx: ClientMessage : %s", xevent->xany.window, X11_XGetAtomName(display, xevent->xclient.message_type));
+#endif
+
         static int xdnd_version = 0;
 
         if (xevent->xclient.message_type == videodata->atoms.XdndEnter) {
@@ -1750,6 +1779,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             bool use_list = xevent->xclient.data.l[1] & 1;
             data->xdnd_source = xevent->xclient.data.l[0];
             xdnd_version = (xevent->xclient.data.l[1] >> 24);
+            data->dnd_seq_active = true;
 #ifdef DEBUG_XEVENTS
             SDL_Log("XID of source window : 0x%lx", data->xdnd_source);
             SDL_Log("Protocol version to use : %d", xdnd_version);
@@ -1771,7 +1801,11 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
 #ifdef DEBUG_XEVENTS
             SDL_Log("XID of source window : 0x%lx", xevent->xclient.data.l[0]);
 #endif
-            SDL_SendDropComplete(data->window);
+            // GNOME can send a spurious XdndLeave after XdndDrop when dragging from a Wayland to XWayland window.
+            if (data->dnd_seq_active) {
+                SDL_SendDropComplete(data->window);
+            }
+            data->dnd_seq_active = false;
         } else if (xevent->xclient.message_type == videodata->atoms.XdndPosition) {
 
 #ifdef DEBUG_XEVENTS
@@ -1810,6 +1844,7 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
             X11_XSendEvent(display, xevent->xclient.data.l[0], False, NoEventMask, (XEvent *)&m);
             X11_XFlush(display);
         } else if (xevent->xclient.message_type == videodata->atoms.XdndDrop) {
+            data->dnd_seq_active = false;
             if (data->xdnd_req == None) {
                 // say again - not interested!
                 SDL_zero(m);
@@ -2169,7 +2204,8 @@ static void X11_DispatchEvent(SDL_VideoDevice *_this, XEvent *xevent)
                     // WM_STATE: 0=Withdrawn, 1=Normal, 3=Iconic
                     Uint32 state = *(Uint32 *)prop_data;
 
-                    if (state == 0 || state == 3) { // Withdrawn or Iconic
+                    if ((state == 0 || state == 3) && !data->window->is_hiding && !(data->window->flags & SDL_WINDOW_HIDDEN)) {
+                        // Withdrawn or Iconic
                         if (!(data->window->flags & SDL_WINDOW_MINIMIZED)) {
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_MINIMIZED, 0, 0);
                             SDL_SendWindowEvent(data->window, SDL_EVENT_WINDOW_OCCLUDED, 0, 0);

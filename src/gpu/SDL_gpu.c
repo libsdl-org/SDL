@@ -1411,6 +1411,11 @@ SDL_GPUBuffer *SDL_CreateGPUBuffer(
         }
     }
 
+    if (createinfo->size < 4) {
+        SDL_SetError("Cannot create a buffer with size less than 4 bytes");
+        return NULL;
+    }
+
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_BUFFER_CREATE_NAME_STRING, NULL);
 
     return device->CreateBuffer(
@@ -1436,6 +1441,15 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
             createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD) {
             SDL_assert_release(!"Invalid transfer buffer usage!");
         }
+
+        if (createinfo->size < 4) {
+            SDL_assert_release(!"Cannot create a transfer buffer with size less than 4 bytes!");
+        }
+    }
+
+    if (createinfo->size < 4) {
+        SDL_SetError("Cannot create a transfer buffer with size less than 4 bytes");
+        return NULL;
     }
 
     const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING, NULL);
@@ -1882,6 +1896,10 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
         if (depth_stencil_target_info != NULL) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
+
+            COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_width, textureHeader->info.width);
+            COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_height, textureHeader->info.height);
+
             if (!(textureHeader->info.usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)) {
                 SDL_assert_release(!"Depth target must have been created with the DEPTH_STENCIL_TARGET usage flag!");
                 return NULL;
@@ -2058,6 +2076,10 @@ void SDL_BindGPUVertexBuffers(
     }
     if (bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("bindings");
+        return;
+    }
+    CHECK_PARAM(first_binding + num_bindings > MAX_VERTEX_BUFFERS) {
+        SDL_SetError("first_binding + num_bindings exceeds MAX_VERTEX_BUFFERS");
         return;
     }
 
@@ -3533,6 +3555,13 @@ bool SDL_WaitForGPUFences(
     CHECK_PARAM(fences == NULL) {
         SDL_InvalidParamError("fences");
         return false;
+    }
+
+    for (Uint32 i = 0; i < num_fences; ++i) {
+        CHECK_PARAM(fences[i] == NULL) {
+            SDL_InvalidParamError("fences");
+            return false;
+        }
     }
 
     return device->WaitForFences(

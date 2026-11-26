@@ -582,6 +582,7 @@ struct SDL_VideoData
 #endif
 
     bool cleared;
+    bool dpi_unaware_context_declared;
 
     bool detect_device_hotplug;
 
@@ -603,14 +604,11 @@ struct SDL_VideoData
 
 #ifndef SDL_DISABLE_WINDOWS_IME
     bool ime_initialized;
-    bool ime_enabled;
     bool ime_available;
     bool ime_internal_composition;
     bool ime_internal_candidates;
-    HWND ime_hwnd_main;
     HWND ime_hwnd_current;
     bool ime_needs_clear_composition;
-    HIMC ime_himc;
 
     WCHAR *ime_composition;
     int ime_composition_length;
@@ -624,7 +622,7 @@ struct SDL_VideoData
     char *ime_candidates[MAX_CANDLIST];
     int ime_candcount;
     DWORD ime_candref;
-    DWORD ime_candsel;
+    int ime_candsel;
     int ime_candlistindexbase;
     bool ime_horizontal_candidates;
 #endif
@@ -632,6 +630,8 @@ struct SDL_VideoData
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
     COMPOSITIONFORM ime_composition_area;
     CANDIDATEFORM ime_candidate_area;
+    LOGFONTW ime_font;
+    int ime_font_height;
 #endif // !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)
 
 #ifndef SDL_DISABLE_WINDOWS_IME

@@ -146,11 +146,6 @@ static bool HIDAPI_DriverXbox360W_InitDevice(SDL_HIDAPI_Device *device)
     return true;
 }
 
-static int HIDAPI_DriverXbox360W_GetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id)
-{
-    return -1;
-}
-
 static void HIDAPI_DriverXbox360W_SetDevicePlayerIndex(SDL_HIDAPI_Device *device, SDL_JoystickID instance_id, int player_index)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
@@ -214,11 +209,6 @@ static bool HIDAPI_DriverXbox360W_RumbleJoystick(SDL_HIDAPI_Device *device, SDL_
     return true;
 }
 
-static bool HIDAPI_DriverXbox360W_RumbleJoystickTriggers(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint16 left_rumble, Uint16 right_rumble)
-{
-    return SDL_Unsupported();
-}
-
 static Uint32 HIDAPI_DriverXbox360W_GetJoystickCapabilities(SDL_HIDAPI_Device *device, SDL_Joystick *joystick)
 {
     SDL_DriverXbox360W_Context *ctx = (SDL_DriverXbox360W_Context *)device->context;
@@ -228,21 +218,6 @@ static Uint32 HIDAPI_DriverXbox360W_GetJoystickCapabilities(SDL_HIDAPI_Device *d
         result |= SDL_JOYSTICK_CAP_PLAYER_LED;
     }
     return result;
-}
-
-static bool HIDAPI_DriverXbox360W_SetJoystickLED(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, Uint8 red, Uint8 green, Uint8 blue)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXbox360W_SendJoystickEffect(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, const void *data, int size)
-{
-    return SDL_Unsupported();
-}
-
-static bool HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled(SDL_HIDAPI_Device *device, SDL_Joystick *joystick, bool enabled)
-{
-    return SDL_Unsupported();
 }
 
 static void HIDAPI_DriverXbox360W_HandleStatePacket(SDL_Joystick *joystick, SDL_hid_device *dev, SDL_DriverXbox360W_Context *ctx, Uint8 *data, int size)
@@ -351,34 +326,8 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             if ((data[25] & 0x80) != 0) {
                 ctx->capabilities.flags |= FLAG_FORCE_FEEDBACK;
             }
-            switch (data[25] & 0x7f) {
-                case 0x01: // XINPUT_DEVSUBTYPE_GAMEPAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_GAMEPAD;
-                    break;
-                case 0x02: // XINPUT_DEVSUBTYPE_WHEEL
-                    device->joystick_type = SDL_JOYSTICK_TYPE_WHEEL;
-                    break;
-                case 0x03: // XINPUT_DEVSUBTYPE_ARCADE_STICK
-                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_STICK;
-                    break;
-                case 0x04: // XINPUT_DEVSUBTYPE_FLIGHT_STICK
-                    device->joystick_type = SDL_JOYSTICK_TYPE_FLIGHT_STICK;
-                    break;
-                case 0x05: // XINPUT_DEVSUBTYPE_DANCE_PAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_DANCE_PAD;
-                    break;
-                case 0x06: // XINPUT_DEVSUBTYPE_GUITAR
-                case 0x07: // XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
-                case 0x0B: // XINPUT_DEVSUBTYPE_GUITAR_BASS
-                    device->joystick_type = SDL_JOYSTICK_TYPE_GUITAR;
-                    break;
-                case 0x08: // XINPUT_DEVSUBTYPE_DRUM_KIT
-                    device->joystick_type = SDL_JOYSTICK_TYPE_DRUM_KIT;
-                    break;
-                case 0x13: // XINPUT_DEVSUBTYPE_ARCADE_PAD
-                    device->joystick_type = SDL_JOYSTICK_TYPE_ARCADE_PAD;
-                    break;
-            }
+
+            device->joystick_type = SDL_GetJoystickTypeForXInputSubType(ctx->capabilities.subType);
             device->guid.data[15] = ctx->capabilities.subType;
             const Uint8 capabilities_packet[] = { 0x00, 0x00, 0x02, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
             if (SDL_hid_write(device->dev, capabilities_packet, sizeof(capabilities_packet)) != sizeof(capabilities_packet)) {
@@ -399,7 +348,16 @@ static bool HIDAPI_DriverXbox360W_UpdateDevice(SDL_HIDAPI_Device *device)
             ctx->capabilities.gamepad.sThumbLY = LOAD16(data[12], data[13]);
             ctx->capabilities.gamepad.sThumbRX = LOAD16(data[14], data[15]);
             ctx->capabilities.gamepad.sThumbRY = LOAD16(data[16], data[17]);
-            ctx->capabilities.flags |= data[20];
+            // Wireless reports encode flags differently
+            if (data[20] & 0x03) {
+                ctx->capabilities.flags |= FLAG_VOICE;
+            }
+            if (data[20] & 0x08) {
+                ctx->capabilities.flags |= FLAG_PLUGIN_MODULES;
+            }
+            if (data[20] & 0x10) {
+                ctx->capabilities.flags |= FLAG_NO_NAVIGATION;
+            }
             ctx->capabilities.vibration.wLeftMotorSpeed = data[18] << 8;
             ctx->capabilities.vibration.wRightMotorSpeed = data[19] << 8;
 #ifdef DEBUG_XBOX_PROTOCOL
@@ -439,30 +397,20 @@ static void HIDAPI_DriverXbox360W_CloseJoystick(SDL_HIDAPI_Device *device, SDL_J
                         SDL_PlayerLEDHintChanged, ctx);
 }
 
-static void HIDAPI_DriverXbox360W_FreeDevice(SDL_HIDAPI_Device *device)
-{
-}
-
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360W = {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
-    true,
-    HIDAPI_DriverXbox360W_RegisterHints,
-    HIDAPI_DriverXbox360W_UnregisterHints,
-    HIDAPI_DriverXbox360W_IsEnabled,
-    HIDAPI_DriverXbox360W_IsSupportedDevice,
-    HIDAPI_DriverXbox360W_InitDevice,
-    HIDAPI_DriverXbox360W_GetDevicePlayerIndex,
-    HIDAPI_DriverXbox360W_SetDevicePlayerIndex,
-    HIDAPI_DriverXbox360W_UpdateDevice,
-    HIDAPI_DriverXbox360W_OpenJoystick,
-    HIDAPI_DriverXbox360W_RumbleJoystick,
-    HIDAPI_DriverXbox360W_RumbleJoystickTriggers,
-    HIDAPI_DriverXbox360W_GetJoystickCapabilities,
-    HIDAPI_DriverXbox360W_SetJoystickLED,
-    HIDAPI_DriverXbox360W_SendJoystickEffect,
-    HIDAPI_DriverXbox360W_SetJoystickSensorsEnabled,
-    HIDAPI_DriverXbox360W_CloseJoystick,
-    HIDAPI_DriverXbox360W_FreeDevice,
+    .name = SDL_HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS,
+    .enabled = true,
+    .RegisterHints = HIDAPI_DriverXbox360W_RegisterHints,
+    .UnregisterHints = HIDAPI_DriverXbox360W_UnregisterHints,
+    .IsEnabled = HIDAPI_DriverXbox360W_IsEnabled,
+    .IsSupportedDevice = HIDAPI_DriverXbox360W_IsSupportedDevice,
+    .InitDevice = HIDAPI_DriverXbox360W_InitDevice,
+    .SetDevicePlayerIndex = HIDAPI_DriverXbox360W_SetDevicePlayerIndex,
+    .UpdateDevice = HIDAPI_DriverXbox360W_UpdateDevice,
+    .OpenJoystick = HIDAPI_DriverXbox360W_OpenJoystick,
+    .RumbleJoystick = HIDAPI_DriverXbox360W_RumbleJoystick,
+    .GetJoystickCapabilities = HIDAPI_DriverXbox360W_GetJoystickCapabilities,
+    .CloseJoystick = HIDAPI_DriverXbox360W_CloseJoystick,
 };
 
 #endif // SDL_JOYSTICK_HIDAPI_XBOX360

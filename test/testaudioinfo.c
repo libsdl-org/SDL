@@ -44,6 +44,11 @@ print_devices(bool recording)
                 SDL_Log("     Unique ID: '%s'", str);
             }
 
+            str = SDL_GetStringProperty(SDL_GetAudioDeviceProperties(devices[i]), SDL_PROP_AUDIO_DEVICE_CONTAINER_ID_STRING, NULL);
+            if (str) {
+                SDL_Log("     Container ID: '%s'", str);
+            }
+
             if (SDL_GetAudioDeviceFormat(devices[i], &spec, &frames)) {
                 SDL_Log("     Sample Rate: %d", spec.freq);
                 SDL_Log("     Channels: %d", spec.channels);

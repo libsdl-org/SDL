@@ -261,6 +261,28 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
+ * A variable controlling whether the Apple TV remote's touchpad swipe gesture
+ * recognizers are installed.
+ *
+ * On tvOS SDL installs UISwipeGestureRecognizers so that swipes on the
+ * remote's touchpad generate arrow-key events, which is convenient for apps
+ * that do not process touch directly. These recognizers cancel the underlying
+ * touches when they fire, which interferes with apps that implement their own
+ * handling of the remote touchpad's touch events.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The swipe gesture recognizers are not installed; raw touch events
+ *   are delivered without being cancelled.
+ * - "1": The swipe gesture recognizers are installed. (default)
+ *
+ * This hint should be set before a window is created.
+ *
+ * \since This hint is available since SDL 3.5.0.
+ */
+#define SDL_HINT_APPLE_TV_REMOTE_SWIPE_GESTURES "SDL_APPLE_TV_REMOTE_SWIPE_GESTURES"
+
+/**
  * Specify the default ALSA audio device name.
  *
  * This variable is a specific audio device to open when the "default" audio
@@ -339,7 +361,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio channel count when opening the
  * device, this hint can be used to specify a default channel count that will
- * be used. This defaults to "1" for recording and "2" for playback devices.
+ * be used. If the application didn't specify and this hint isn't set, SDL
+ * will choose a reasonable value.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -568,7 +591,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio format when opening the
  * device, this hint can be used to specify a default format that will be
- * used.
+ * used. If the application didn't specify and this hint isn't set, SDL will
+ * choose a reasonable value.
  *
  * The variable can be set to the following values:
  *
@@ -595,7 +619,8 @@ extern "C" {
  *
  * If the application doesn't specify the audio frequency when opening the
  * device, this hint can be used to specify a default frequency that will be
- * used. This defaults to "44100".
+ * used. If the application didn't specify and this hint isn't set, SDL will
+ * choose a reasonable value.
  *
  * This hint should be set before an audio device is opened.
  *
@@ -771,6 +796,34 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_FILE_DIALOG_DRIVER "SDL_FILE_DIALOG_DRIVER"
+
+/**
+ * A variable that controls whether D-Bus portal interfaces are preferred over
+ * non-portal interfaces.
+ *
+ * Some functionality in SDL (screensaver inhibition and notifications) uses
+ * D-Bus interfaces that have both a portal, and non-portal interface. When
+ * not running in a secure sandbox, SDL will first attempt to use the
+ * non-portal interface, then fall back to the portal interface if the former
+ * is unavailable. In a known secure sandbox environment, such as Flatpak or
+ * Snap, SDL will first attempt to use the portal interface. When enabled,
+ * this hint forces SDL to attempt using the portal interface first, even when
+ * not running in a known secure sandbox environment.
+ *
+ * This is intended for debugging, and should not be enabled by default in
+ * shipping applications and games.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": The appropriate interface will be auto-detected (default)
+ * - "1": Portal interfaces will be preferred, even when not running in a
+ *   secure sandbox
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_DBUS_PREFER_PORTALS "SDL_DBUS_PREFER_PORTALS"
 
 /**
  * Override for SDL_GetDisplayUsableBounds().
@@ -1399,6 +1452,48 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
+
+/**
+ * A variable controlling whether a separate thread should be used for
+ * joystick detection and updates.
+ *
+ * If this is enabled, joystick initialization will return immediately.
+ * Connected joysticks and gamepads will not be immediately visible, they will
+ * come in as hotplug events in the background. SDL_UpdateJoysticks() will
+ * also return immediately and joystick state will be updated asynchronously
+ * in the background. Joystick and gamepad events are delivered off the main
+ * thread.
+ *
+ * If you enable this hint, you should not hold the joystick lock while
+ * quitting the joystick subsystem.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "0": A separate thread is not used. (default)
+ * - "1": A separate thread is used for joystick updates.
+ *
+ * This hint should be set before SDL is initialized.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC "SDL_JOYSTICK_ASYNC"
+
+/**
+ * A variable controlling the polling interval for asynchronous joystick
+ * updates.
+ *
+ * If this hint is set to "-1" (the default), asynchronous joystick updates
+ * will be triggered when the event loop runs. Otherwise this value is the
+ * polling interval, in milliseconds, for asynchronous joystick updates.
+ *
+ * Regardless of the value of this hint, you can trigger an update at a
+ * specific time using SDL_UpdateJoysticks()
+ *
+ * This hint can be set anytime.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_JOYSTICK_ASYNC_UPDATE_INTERVAL "SDL_JOYSTICK_ASYNC_UPDATE_INTERVAL"
 
 /**
  * A variable containing a list of devices that should not be considered
@@ -2449,38 +2544,6 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_MFI "SDL_JOYSTICK_MFI"
 
 /**
- * A variable controlling whether the RAWINPUT joystick drivers should be used
- * for better handling XInput-capable devices.
- *
- * The variable can be set to the following values:
- *
- * - "0": RAWINPUT drivers are not used. (default)
- * - "1": RAWINPUT drivers are used.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_RAWINPUT "SDL_JOYSTICK_RAWINPUT"
-
-/**
- * A variable controlling whether the RAWINPUT driver should pull correlated
- * data from XInput.
- *
- * The variable can be set to the following values:
- *
- * - "0": RAWINPUT driver will only use data from raw input APIs.
- * - "1": RAWINPUT driver will also pull data from XInput and
- *   Windows.Gaming.Input, providing better trigger axes, guide button
- *   presses, and rumble support for Xbox controllers. (default)
- *
- * This hint should be set before a gamepad is opened.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
-
-/**
  * A variable controlling whether the ROG Chakram mice should show up as
  * joysticks.
  *
@@ -2494,21 +2557,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_ROG_CHAKRAM "SDL_JOYSTICK_ROG_CHAKRAM"
-
-/**
- * A variable controlling whether a separate thread should be used for
- * handling joystick detection and raw input messages on Windows.
- *
- * The variable can be set to the following values:
- *
- * - "0": A separate thread is not used.
- * - "1": A separate thread is used for handling raw input messages. (default)
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_THREAD "SDL_JOYSTICK_THREAD"
 
 /**
  * A variable containing a list of throttle style controllers.
@@ -2547,21 +2595,6 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"
-
-/**
- * A variable controlling whether Windows.Gaming.Input should be used for
- * controller handling.
- *
- * The variable can be set to the following values:
- *
- * - "0": WGI is not used. (default)
- * - "1": WGI is used.
- *
- * This hint should be set before SDL is initialized.
- *
- * \since This hint is available since SDL 3.2.0.
- */
-#define SDL_HINT_JOYSTICK_WGI "SDL_JOYSTICK_WGI"
 
 /**
  * A variable containing a list of wheel style controllers.
@@ -3660,6 +3693,19 @@ extern "C" {
 #define SDL_HINT_PS2_GS_MODE    "SDL_PS2_GS_MODE"
 
 /**
+ * A variable controlling the pixel storage mode of the PS2's framebuffer.
+ *
+ * The variable can be set to the following values:
+ *
+ * - "32"
+ * - "24" (default)
+ * - "16"
+ *
+ * \since This hint is available since SDL 3.4.20.
+ */
+#define SDL_HINT_PS2_GS_COLOR_DEPTH "SDL_PS2_GS_COLOR_DEPTH"
+
+/**
  * A variable controlling which Dispmanx layer to use on a Raspberry PI.
  *
  * Also known as Z-order. The variable can take a negative or positive value.
@@ -3739,6 +3785,24 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_STORAGE_USER_DRIVER "SDL_STORAGE_USER_DRIVER"
+
+/**
+ * A variable controlling the spacing between the on-screen keyboard and text
+ * input areas.
+ *
+ * This is the space, in window coordinates, to keep between the bottom of the
+ * text input area and the top of the on-screen keyboard when the view is
+ * moved to keep the text input area visible. This defaults to 0.
+ *
+ * This hint sets the default value of
+ * SDL_PROP_TEXTINPUT_KEYBOARD_MARGIN_NUMBER.
+ *
+ * This hint should be set before calling SDL_StartTextInput() or
+ * SDL_StartTextInputWithProperties().
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_TEXTINPUT_KEYBOARD_MARGIN "SDL_TEXTINPUT_KEYBOARD_MARGIN"
 
 /**
  * Specifies whether SDL_THREAD_PRIORITY_TIME_CRITICAL should be treated as
@@ -3971,6 +4035,30 @@ extern "C" {
  * \since This hint is available since SDL 3.2.0.
  */
 #define SDL_HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK "SDL_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK"
+
+/**
+ * Let EGL use more specific swapinterval hints.
+ *
+ * This hint is only used if the video subsystem is using EGL for OpenGL
+ * context management, and the EGL context supports the
+ * EGL_EXT_swap_tearing_hint extension. This lets the app specify the value
+ * for EGL_SWAP_TEARING_HINT_EXT in addition to the normal swap interval
+ * value.
+ *
+ * Most apps should not set this hint. SDL will do the normal thing with
+ * standard calls to SDL_GL_SetSwapInterval by default.
+ *
+ * The variable can be set to one of the following values:
+ *
+ * - "async": Use EGL_SWAP_TEARING_HINT_ASYNC_EXT.
+ * - "vsync": Use EGL_SWAP_TEARING_HINT_VSYNC_EXT.
+ * - "default": Use EGL_SWAP_TEARING_HINT_DEFAULT_EXT.
+ *
+ * This hint should be set before calling SDL_GL_SetSwapInterval.
+ *
+ * \since This hint is available since SDL 3.6.0.
+ */
+#define SDL_HINT_VIDEO_EGL_SWAP_TEARING_HINT "SDL_VIDEO_EGL_SWAP_TEARING_HINT"
 
 /**
  * A variable controlling whether the OpenGL context should be created with

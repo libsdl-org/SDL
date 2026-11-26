@@ -86,4 +86,10 @@ bool SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return true;
 }
 
+bool SDL_SYS_GetCurrentThreadName(char *buf, int buflen)
+{
+    SDL_assert(!"Should never be called.");  // SDL controls all threads on DOS, so they should all have names and we should never hit this function.
+    return false;
+}
+
 #endif /* SDL_THREAD_DOS */

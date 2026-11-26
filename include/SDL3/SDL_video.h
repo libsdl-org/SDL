@@ -251,6 +251,7 @@ typedef Uint64 SDL_WindowFlags;
 #define SDL_WINDOW_POPUP_MENU           SDL_UINT64_C(0x0000000000080000)    /**< window should be treated as a popup menu, requires a parent window */
 #define SDL_WINDOW_KEYBOARD_GRABBED     SDL_UINT64_C(0x0000000000100000)    /**< window has grabbed keyboard input */
 #define SDL_WINDOW_FILL_DOCUMENT        SDL_UINT64_C(0x0000000000200000)    /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
+#define SDL_WINDOW_MOUSE_PASSTHROUGH    SDL_UINT64_C(0x0000000000400000)    /**< window is transparent to mouse input, since SDL 3.6.0 */
 #define SDL_WINDOW_VULKAN               SDL_UINT64_C(0x0000000010000000)    /**< window usable for Vulkan surface */
 #define SDL_WINDOW_METAL                SDL_UINT64_C(0x0000000020000000)    /**< window usable for Metal view */
 #define SDL_WINDOW_TRANSPARENT          SDL_UINT64_C(0x0000000040000000)    /**< window with transparent buffer */
@@ -1154,6 +1155,7 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *   buffer if possible
  * - `SDL_WINDOW_MOUSE_CAPTURE`: window has mouse captured (unrelated to
  *   MOUSE_GRABBED)
+ * - `SDL_WINDOW_MOUSE_PASSTHROUGH`: window is transparent to mouse input
  * - `SDL_WINDOW_ALWAYS_ON_TOP`: window should always be above others
  * - `SDL_WINDOW_UTILITY`: window should be treated as a utility window, not
  *   showing in the task bar and window list
@@ -1191,6 +1193,14 @@ extern SDL_DECLSPEC SDL_Window ** SDLCALL SDL_GetWindows(int *count);
  *
  * If SDL_WINDOW_METAL is specified on an OS that does not support Metal,
  * SDL_CreateWindow() will fail.
+ *
+ * If SDL_WINDOW_TRANSPARENT is specified, the window contents are composited
+ * with the desktop using premultiplied alpha, so the color channels must
+ * already be multiplied by alpha. For example, white at 50% opacity is (128,
+ * 128, 128, 128), not (255, 255, 255, 128). With SDL_Renderer, clearing to
+ * transparent black and drawing with SDL_BLENDMODE_BLEND produces
+ * premultiplied output, but colors written with SDL_BLENDMODE_NONE or used
+ * with SDL_RenderClear() must be premultiplied by the application.
  *
  * If you intend to use this window with an SDL_Renderer, you should use
  * SDL_CreateWindowAndRenderer() instead of this function, to avoid window
@@ -1333,6 +1343,8 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreatePopupWindow(SDL_Window *paren
  *   its parent
  * - `SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN`: true if the window starts
  *   with grabbed mouse focus
+ * - `SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN`: true if the window
+ *   should be transparent to mouse input
  * - `SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN`: true if the window will be used
  *   with OpenGL rendering
  * - `SDL_PROP_WINDOW_CREATE_PARENT_POINTER`: an SDL_Window that will be the
@@ -1479,6 +1491,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowWithProperties(SDL_Prop
 #define SDL_PROP_WINDOW_CREATE_MINIMIZED_BOOLEAN                   "SDL.window.create.minimized"
 #define SDL_PROP_WINDOW_CREATE_MODAL_BOOLEAN                       "SDL.window.create.modal"
 #define SDL_PROP_WINDOW_CREATE_MOUSE_GRABBED_BOOLEAN               "SDL.window.create.mouse_grabbed"
+#define SDL_PROP_WINDOW_CREATE_MOUSE_PASSTHROUGH_BOOLEAN           "SDL.window.create.mouse_passthrough"
 #define SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN                      "SDL.window.create.opengl"
 #define SDL_PROP_WINDOW_CREATE_PARENT_POINTER                      "SDL.window.create.parent"
 #define SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN                   "SDL.window.create.resizable"
@@ -1567,15 +1580,16 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GetWindowParent(SDL_Window *window)
  * - `SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN`: true if the window has HDR
  *   headroom above the SDR white point. This property can change dynamically
  *   when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the value of SDR white in the
- *   SDL_COLORSPACE_SRGB_LINEAR colorspace. On Windows this corresponds to the
- *   SDR white level in scRGB colorspace, and on Apple platforms this is
- *   always 1.0 for EDR content. This property can change dynamically when
+ * - `SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT`: the scale factor to apply to an
+ *   sRGB value of 1.0 to display it as SDR white in
+ *   SDL_COLORSPACE_SRGB_LINEAR. On Windows this corresponds to the SDR white
+ *   level in scRGB colorspace. On Apple platforms this is always 1.0 for EDR
+ *   content. This property can change dynamically when
  *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
- * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the additional high dynamic range
- *   that can be displayed, in terms of the SDR white point. When HDR is not
- *   enabled, this will be 1.0. This property can change dynamically when
- *   SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
+ * - `SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT`: the maximum brightness that can be
+ *   displayed, as a multiple of SDR white. When HDR is not enabled or there
+ *   is no additional headroom, this will be 1.0. This property can change
+ *   dynamically when SDL_EVENT_WINDOW_HDR_STATE_CHANGED is sent.
  *
  * On Android:
  *
@@ -2833,6 +2847,28 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowOpacity(SDL_Window *window, float 
 extern SDL_DECLSPEC float SDLCALL SDL_GetWindowOpacity(SDL_Window *window);
 
 /**
+ * Enable or disable mouse passthrough for a window.
+ *
+ * This will add or remove the window's `SDL_WINDOW_MOUSE_PASSTHROUGH` flag.
+ *
+ * When enabled, the window will lose mouse focus and will not get any further
+ * mouse, pen, or touch events (except release events for buttons held down at
+ * the time) and clicks in the window will go through and hit windows behind
+ * it.
+ *
+ * \param window the window to set mouse passthrough for.
+ * \param passthrough true to make the window transparent to mouse input,
+ *                    false to accept mouse input.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function should only be called on the main thread.
+ *
+ * \since This function is available since SDL 3.6.0.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SetWindowMousePassthrough(SDL_Window *window, bool passthrough);
+
+/**
  * Set the window as a child of a parent window.
  *
  * If the window is already the child of an existing window, it will be
@@ -3257,7 +3293,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_LoadLibrary(const char *path);
  * \returns a pointer to the named OpenGL function. The returned pointer
  *          should be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3278,7 +3315,8 @@ extern SDL_DECLSPEC SDL_FunctionPointer SDLCALL SDL_GL_GetProcAddress(const char
  * \returns a pointer to the named EGL function. The returned pointer should
  *          be cast to the appropriate function signature.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3314,7 +3352,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_GL_UnloadLibrary(void);
  * \param extension the name of the extension to check.
  * \returns true if the extension is supported, false otherwise.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3323,7 +3362,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 /**
  * Reset all previously set OpenGL context attributes to their default values.
  *
- * \threadsafety This function should only be called on the main thread.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3333,19 +3376,23 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_ExtensionSupported(const char *extension
 extern SDL_DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
 
 /**
- * Set an OpenGL window attribute before window creation.
+ * Set an OpenGL window attribute before context creation.
  *
  * This function sets the OpenGL attribute `attr` to `value`. The requested
- * attributes should be set before creating an OpenGL window. You should use
+ * attributes should be set before creating an OpenGL context. You should use
  * SDL_GL_GetAttribute() to check the values after creating the OpenGL
  * context, since the values obtained can differ from the requested ones.
+ *
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
  *
  * \param attr an enum value specifying the OpenGL attribute to set.
  * \param value the desired value for the attribute.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3358,13 +3405,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetAttribute(SDL_GLAttr attr, int value)
 /**
  * Get the actual value for an attribute from the current context.
  *
- * \param attr an SDL_GLAttr enum value specifying the OpenGL attribute to
- *             get.
+ * SDL's GL attributes are global state, and while you can use related
+ * functions from any thread, you should only use them to prepare a single GL
+ * context at a time.
+ *
+ * \param attr the OpenGL attribute to query.
  * \param value a pointer filled in with the current value of `attr`.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3390,11 +3440,24 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
  *
  * SDL_GLContext is opaque to the application.
  *
+ * Generally it _should_ be safe to create a context from a background thread,
+ * to be used on that thread, but in case there are platforms that have
+ * trouble with that, the absolute best practice would be:
+ *
+ * - Create the context on the main thread.
+ * - Make the current context NULL on the main thread (or set it back to a
+ *   different context).
+ * - Make the new context current from the thread that will be using the new
+ *   context.
+ *
+ * This function is, for now, marked as safe to call from any thread; please
+ * send feedback if this turns out to not be true on a given platform.
+ *
  * \param window the window to associate with the context.
  * \returns the OpenGL context associated with `window` or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3404,7 +3467,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_GetAttribute(SDL_GLAttr attr, int *value
 extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *window);
 
 /**
- * Set up an OpenGL context for rendering into an OpenGL window.
+ * Set the currently-active OpenGL context.
+ *
+ * This function makes a GL context "current," in all the ways that term
+ * implies in OpenGL.
+ *
+ * This is a per-thread state that specifies what context future calls into
+ * OpenGL will operate on. Beyond context creation work, you must have a
+ * current context for the thread before attempting to use OpenGL in any way.
  *
  * The context must have been created with a compatible window.
  *
@@ -3413,7 +3483,8 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_CreateContext(SDL_Window *windo
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was created for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3427,7 +3498,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_MakeCurrent(SDL_Window *window, SDL_GLCo
  * \returns the currently active OpenGL window on success or NULL on failure;
  *          call SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3439,7 +3510,7 @@ extern SDL_DECLSPEC SDL_Window * SDLCALL SDL_GL_GetCurrentWindow(void);
  * \returns the currently active OpenGL context or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3453,7 +3524,7 @@ extern SDL_DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
  * \returns the currently active EGL display or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3465,7 +3536,7 @@ extern SDL_DECLSPEC SDL_EGLDisplay SDLCALL SDL_EGL_GetCurrentDisplay(void);
  * \returns the currently active EGL config or NULL on failure; call
  *          SDL_GetError() for more information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3474,11 +3545,13 @@ extern SDL_DECLSPEC SDL_EGLConfig SDLCALL SDL_EGL_GetCurrentConfig(void);
 /**
  * Get the EGL surface associated with the window.
  *
+ * This operates on the current GL context for the calling thread.
+ *
  * \param window the window to query.
  * \returns the EGLSurface pointer associated with the window, or NULL on
  *          failure.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3492,6 +3565,10 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *
  * NOTE: These callback pointers will be reset after SDL_GL_ResetAttributes.
  *
+ * Note that this is global state, and while you can use related functions
+ * from any thread, you should only use them to prepare a single GL context at
+ * a time.
+ *
  * \param platformAttribCallback callback for attributes to pass to
  *                               eglGetPlatformDisplay. May be NULL.
  * \param surfaceAttribCallback callback for attributes to pass to
@@ -3500,7 +3577,7 @@ extern SDL_DECLSPEC SDL_EGLSurface SDLCALL SDL_EGL_GetWindowSurface(SDL_Window *
  *                              eglCreateContext. May be NULL.
  * \param userdata a pointer that is passed to the callbacks.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  */
@@ -3521,7 +3598,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArra
  *
  * Adaptive vsync is implemented for some glX drivers with
  * GLX_EXT_swap_control_tear, and for some Windows drivers with
- * WGL_EXT_swap_control_tear.
+ * WGL_EXT_swap_control_tear. With EGL, EGL_EXT_swap_tearing_hint can be used.
  *
  * Read more on the Khronos wiki:
  * https://www.khronos.org/opengl/wiki/Swap_Interval#Adaptive_Vsync
@@ -3531,7 +3608,8 @@ extern SDL_DECLSPEC void SDLCALL SDL_EGL_SetAttributeCallbacks(SDL_EGLAttribArra
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3552,7 +3630,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SetSwapInterval(int interval);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread (as long as
+ *               a unique GL context was made current for that thread).
  *
  * \since This function is available since SDL 3.2.0.
  *
@@ -3587,7 +3666,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GL_SwapWindow(SDL_Window *window);
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \threadsafety This function should only be called on the main thread.
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.2.0.
  *

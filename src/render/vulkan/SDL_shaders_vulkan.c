@@ -29,8 +29,6 @@
 #include "VULKAN_PixelShader_Colors_PQ.h"
 #include "VULKAN_PixelShader_Textures.h"
 #include "VULKAN_PixelShader_Advanced.h"
-#include "VULKAN_PixelShader_Textures_PQ.h"
-#include "VULKAN_PixelShader_Textures_Simple.h"
 #include "VULKAN_VertexShader.h"
 
 static struct
@@ -47,10 +45,6 @@ static struct
     { VULKAN_PixelShader_Textures, sizeof(VULKAN_PixelShader_Textures),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
     { VULKAN_PixelShader_Advanced, sizeof(VULKAN_PixelShader_Advanced),
-      VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
-    { VULKAN_PixelShader_Textures_PQ, sizeof(VULKAN_PixelShader_Textures_PQ),
-      VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
-    { VULKAN_PixelShader_Textures_Simple, sizeof(VULKAN_PixelShader_Textures_Simple),
       VULKAN_VertexShader, sizeof(VULKAN_VertexShader) },
 };
 

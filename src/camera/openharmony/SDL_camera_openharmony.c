@@ -209,20 +209,20 @@ static Camera_Format ConvertSDLFormatToOpenHarmony(SDL_PixelFormat fmt)
     }
 }
 
-static bool FindOpenHarmonyCameraByDevicePtr(SDL_Camera *device, void *userdata)
+static bool FindOpenHarmonyCameraByDevicePtr(void *userdata, SDL_Camera *device)
 {
     const Camera_Device *ohdevice = (const Camera_Device *) userdata;
     return (SDL_strcmp(ohdevice->cameraId, ((const Camera_Device *) device->handle)->cameraId) == 0);
 }
 
-static bool FindOpenHarmonyCameraByImageReceiver(SDL_Camera *device, void *userdata)
+static bool FindOpenHarmonyCameraByImageReceiver(void *userdata, SDL_Camera *device)
 {
     OH_ImageReceiverNative *receiver = (OH_ImageReceiverNative *) userdata;
     struct SDL_PrivateCameraData *hidden = device->hidden;
     return (hidden && (hidden->image_receiver == receiver));
 }
 
-static bool FindOpenHarmonyCameraByInput(SDL_Camera *device, void *userdata)
+static bool FindOpenHarmonyCameraByInput(void *userdata, SDL_Camera *device)
 {
     Camera_Input *input = (Camera_Input *) userdata;
     struct SDL_PrivateCameraData *hidden = device->hidden;

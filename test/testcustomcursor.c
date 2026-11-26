@@ -199,13 +199,16 @@ static SDL_Cursor *init_system_cursor(const char *image[])
             }
             switch (image[4 + row][col]) {
             case 'X':
+                // Black
                 data[i] |= 0x01;
                 mask[i] |= 0x01;
                 break;
             case '.':
+                // White
                 mask[i] |= 0x01;
                 break;
             case 'o':
+                // Inverted or black
                 data[i] |= 0x01;
                 break;
             case ' ':
@@ -296,7 +299,6 @@ static SDL_Cursor *cursors[5 + SDL_SYSTEM_CURSOR_COUNT];
 static SDL_SystemCursor cursor_types[5 + SDL_SYSTEM_CURSOR_COUNT];
 static int num_cursors;
 static int current_cursor;
-static bool current_cursor_valid;
 static bool show_cursor;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -312,16 +314,13 @@ quit(int rc)
 
 static const char *get_active_cursor_name()
 {
-    // if (!current_cursor_valid) {
-    //     return "";
-    // }
     switch ((int)cursor_types[current_cursor]) {
     case CUSTOM_CURSOR_ARGUMENTS:
         return "Custom cursor (arguments)";
     case CUSTOM_CURSOR_ARROW:
         return "Custom cursor (arrow)";
     case CUSTOM_CURSOR_CROSS:
-        return "Custom cursor (cross)";
+        return "Custom cursor (cross - inverted pixels)";
     case CUSTOM_ANIMATED_CURSOR_ONE_SHOT:
         return "Animated custom cursor (one-shot)";
     case CUSTOM_ANIMATED_CURSOR:
@@ -412,7 +411,6 @@ static void loop(void)
                     continue;
                 }
 
-                current_cursor_valid = true;
                 ++current_cursor;
                 if (current_cursor == num_cursors) {
                     current_cursor = 0;
@@ -459,8 +457,8 @@ static void loop(void)
                 black = !black;
             }
         }
-        SDL_SetRenderDrawColor(renderer, 0xff, 0x00, 0x00, 0xFF);
-        SDL_RenderDebugText(renderer, 0.0f, 0.0f, get_active_cursor_name());
+        SDL_SetRenderDrawColor(renderer, 0xDD, 0x33, 0x00, 0xFF);
+        SDL_RenderDebugText(renderer, 4.0f, 4.0f, get_active_cursor_name());
         SDL_RenderPresent(renderer);
     }
 #ifdef SDL_PLATFORM_EMSCRIPTEN

@@ -226,7 +226,7 @@ static bool PS2_QueueSetViewport(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     data->gsGlobal->OffsetX = (int)((2048.0f + (float)viewport->x) * 16.0f);
     data->gsGlobal->OffsetY = (int)((2048.0f + (float)viewport->y) * 16.0f);
-    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w - 1, viewport->y, viewport->y + viewport->h - 1));
 
     return true;
 }
@@ -361,7 +361,7 @@ static bool PS2_RenderSetClipRect(SDL_Renderer *renderer, SDL_RenderCommand *cmd
         viewport->w = SDL_min(viewport->w, rect->w);
         viewport->h = SDL_min(viewport->h, rect->h);
     }
-    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w - 1, viewport->y, viewport->y + viewport->h - 1));
 
     return true;
 }
@@ -396,7 +396,7 @@ static bool PS2_RenderClear(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
 
     // // Put back view port
     viewport = data->viewport;
-    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w, viewport->y, viewport->y + viewport->h));
+    gsKit_set_scissor(data->gsGlobal, GS_SETREG_SCISSOR(viewport->x, viewport->x + viewport->w - 1, viewport->y, viewport->y + viewport->h - 1));
 
     return true;
 }
@@ -713,7 +713,20 @@ static bool PS2_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_P
         }
     }
 
+    // GS color depth
     gsGlobal->PSM = GS_PSM_CT24;
+
+    hint = SDL_GetHint(SDL_HINT_PS2_GS_COLOR_DEPTH);
+    if (hint) {
+        if (SDL_strcmp(hint, "32") == 0) {
+            gsGlobal->PSM = GS_PSM_CT32;
+        } else if (SDL_strcmp(hint, "24") == 0) {
+            gsGlobal->PSM = GS_PSM_CT24;
+        } else if (SDL_strcmp(hint, "16") == 0) {
+            gsGlobal->PSM = GS_PSM_CT16;
+        }
+    }
+
     gsGlobal->PSMZ = GS_PSMZ_16S;
     gsGlobal->ZBuffering = GS_SETTING_OFF;
     gsGlobal->DoubleBuffering = GS_SETTING_ON;

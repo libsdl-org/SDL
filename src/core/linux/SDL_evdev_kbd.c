@@ -192,9 +192,6 @@ static void SDL_EVDEV_kbd_reraise_signal(int sig)
     (void)raise(sig);
 }
 
-static siginfo_t *SDL_EVDEV_kdb_cleanup_siginfo = NULL;
-static void *SDL_EVDEV_kdb_cleanup_ucontext = NULL;
-
 static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontext)
 {
     struct sigaction *old_action_p = &(old_sigaction[signum]);
@@ -207,10 +204,6 @@ static void kbd_cleanup_signal_action(int signum, siginfo_t *info, void *ucontex
     sigemptyset(&sigset);
     sigaddset(&sigset, signum);
     sigprocmask(SIG_UNBLOCK, &sigset, NULL);
-
-    // Save original signal info and context for archeologists.
-    SDL_EVDEV_kdb_cleanup_siginfo = info;
-    SDL_EVDEV_kdb_cleanup_ucontext = ucontext;
 
     // Restore keyboard.
     kbd_cleanup();
