@@ -3047,6 +3047,12 @@ bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool
     return true;
 }
 
+void Wayland_UpdateWindowRelativeMouseMode(SDL_VideoDevice *_this, SDL_Window *window)
+{
+    // The relative pointer and its lock follow the window flag, so refresh them.
+    Wayland_UpdatePointerGrabs(_this->internal, window->internal);
+}
+
 bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed)
 {
     SDL_VideoData *data = _this->internal;

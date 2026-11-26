@@ -719,6 +719,7 @@ static SDL_VideoDevice *CreateWaylandDevice(bool require_preferred_protocols)
     device->SetWindowMouseRect = Wayland_SetWindowMouseRect;
     device->SetWindowMouseGrab = Wayland_SetWindowMouseGrab;
     device->SetWindowKeyboardGrab = Wayland_SetWindowKeyboardGrab;
+    device->UpdateWindowRelativeMouseMode = Wayland_UpdateWindowRelativeMouseMode;
     device->RestoreWindow = Wayland_RestoreWindow;
     device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowResizable = Wayland_SetWindowResizable;

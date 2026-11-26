@@ -4280,6 +4280,14 @@ bool SDL_SetWindowRelativeMouseMode(SDL_Window *window, bool enabled)
         }
         return false;
     }
+
+    /* The global relative mode follows the window with keyboard focus, so it
+     * doesn't change when the flag is toggled on another window (e.g. while a
+     * popup menu has focus). Let backends that track the flag per-window know.
+     */
+    if (_this->UpdateWindowRelativeMouseMode) {
+        _this->UpdateWindowRelativeMouseMode(_this, window);
+    }
     return true;
 }
 

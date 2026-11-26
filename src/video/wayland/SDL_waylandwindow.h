@@ -272,6 +272,7 @@ extern void Wayland_MinimizeWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_SetWindowMouseRect(SDL_VideoDevice *_this, SDL_Window *window);
 extern bool Wayland_SetWindowMouseGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
 extern bool Wayland_SetWindowKeyboardGrab(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
+extern void Wayland_UpdateWindowRelativeMouseMode(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_RestoreWindow(SDL_VideoDevice *_this, SDL_Window *window);
 extern void Wayland_SetWindowBordered(SDL_VideoDevice *_this, SDL_Window *window, bool bordered);
 extern void Wayland_SetWindowResizable(SDL_VideoDevice *_this, SDL_Window *window, bool resizable);

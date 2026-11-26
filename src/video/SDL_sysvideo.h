@@ -321,6 +321,7 @@ struct SDL_VideoDevice
     bool (*SetWindowMouseRect)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*SetWindowMouseGrab)(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
     bool (*SetWindowKeyboardGrab)(SDL_VideoDevice *_this, SDL_Window *window, bool grabbed);
+    void (*UpdateWindowRelativeMouseMode)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*DestroyWindow)(SDL_VideoDevice *_this, SDL_Window *window);
     bool (*CreateWindowFramebuffer)(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
     bool (*SetWindowFramebufferVSync)(SDL_VideoDevice *_this, SDL_Window *window, int vsync);
