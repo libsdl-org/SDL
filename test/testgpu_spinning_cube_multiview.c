@@ -631,6 +631,7 @@ static void init_render_state(int msaa)
     pipelinedesc.target_info.color_target_descriptions = &color_target_desc;
     pipelinedesc.target_info.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM;
     pipelinedesc.target_info.has_depth_stencil_target = true;
+    pipelinedesc.target_info.num_multiviews = 2;
 
     pipelinedesc.depth_stencil_state.enable_depth_test = true;
     pipelinedesc.depth_stencil_state.enable_depth_write = true;

@@ -950,6 +950,7 @@ typedef struct RenderPassHashTableKey
     Uint32 numResolveTargets;
     RenderPassDepthStencilTargetDescription depthStencilTargetDescription;
     VkSampleCountFlagBits sampleCount;
+    Uint32 viewCount;
 } RenderPassHashTableKey;
 
 typedef struct VulkanRenderPassHashTableValue
@@ -966,6 +967,7 @@ typedef struct FramebufferHashTableKey
     VkImageView depthStencilAttachmentView;
     Uint32 width;
     Uint32 height;
+    Uint32 viewCount;
 } FramebufferHashTableKey;
 
 // Command structures
@@ -5889,7 +5891,8 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
 
     texture->usedRegion->vulkanTexture = texture; // lol
 
-    if (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
+    // FIXME
+    if (true /*createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)*/) {
 
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.pNext = NULL;
@@ -6477,8 +6480,7 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
         renderer,
         createinfo->target_info,
         SDLToVK_SampleCount[createinfo->multisample_state.sample_count],
-        // TODO: where do we put this? a property?
-        2);
+        createinfo->target_info.num_multiviews);
 
     // Dynamic state
 
@@ -7376,6 +7378,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
         key.sampleCount = SDLToVK_SampleCount[((VulkanTextureContainer *)depthStencilTargetInfo->texture)->header.info.sample_count];
     }
 
+    key.viewCount = viewCount;
+
     key.numColorTargets = numColorTargets;
 
     if (depthStencilTargetInfo == NULL) {
@@ -7440,7 +7444,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     Uint32 numColorTargets,
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
     Uint32 width,
-    Uint32 height)
+    Uint32 height,
+    Uint32 viewCount)
 {
     VulkanFramebuffer *vulkanFramebuffer = NULL;
     VkFramebufferCreateInfo framebufferInfo;
@@ -7462,18 +7467,26 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
             colorTargetInfos[i].mip_level);
 
-        Uint32 rtvIndex =
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
-        key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
+        if (viewCount == 0) {
+            Uint32 rtvIndex =
+                container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
+            key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
+        } else {
+            key.colorAttachmentViews[i] = container->activeTexture->fullView;
+        }
 
         if (colorTargetInfos[i].resolve_texture != NULL) {
             VulkanTextureContainer *resolveTextureContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
-            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-                resolveTextureContainer,
-                colorTargetInfos[i].layer_or_depth_plane,
-                colorTargetInfos[i].mip_level);
+            if (viewCount == 0) {
+                VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                    resolveTextureContainer,
+                    colorTargetInfos[i].layer_or_depth_plane,
+                    colorTargetInfos[i].mip_level);
 
-            key.resolveAttachmentViews[key.numResolveAttachments] = resolveSubresource->renderTargetViews[0];
+                key.resolveAttachmentViews[key.numResolveAttachments] = resolveSubresource->renderTargetViews[0];
+            } else {
+                key.resolveAttachmentViews[key.numResolveAttachments] = resolveTextureContainer->activeTexture->fullView;
+            }
             key.numResolveAttachments += 1;
         }
     }
@@ -7481,15 +7494,22 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     if (depthStencilTargetInfo == NULL) {
         key.depthStencilAttachmentView = VK_NULL_HANDLE;
     } else {
-        VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            depthStencilTargetInfo->layer,
-            depthStencilTargetInfo->mip_level);
-        key.depthStencilAttachmentView = subresource->depthStencilView;
+        VulkanTextureContainer *texture = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
+
+        if (viewCount == 0) {
+            VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                texture,
+                depthStencilTargetInfo->layer,
+                depthStencilTargetInfo->mip_level);
+            key.depthStencilAttachmentView = subresource->depthStencilView;
+        } else {
+            key.depthStencilAttachmentView = texture->activeTexture->fullView;
+        }
     }
 
     key.width = width;
     key.height = height;
+    key.viewCount = viewCount;
 
     SDL_LockMutex(renderer->framebufferFetchLock);
 
@@ -7516,32 +7536,46 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
             colorTargetInfos[i].mip_level);
 
-        Uint32 rtvIndex =
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
+        if (viewCount == 0) {
+            Uint32 rtvIndex =
+                container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
 
-        imageViewAttachments[attachmentCount] = subresource->renderTargetViews[rtvIndex];
+            imageViewAttachments[attachmentCount] = subresource->renderTargetViews[rtvIndex];
+        } else {
+            imageViewAttachments[attachmentCount] = container->activeTexture->fullView;
+        }
 
         attachmentCount += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
-            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-                resolveContainer,
-                colorTargetInfos[i].resolve_layer,
-                colorTargetInfos[i].resolve_mip_level);
 
-            imageViewAttachments[attachmentCount] = resolveSubresource->renderTargetViews[0];
+            if (viewCount == 0) {
+                VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                    resolveContainer,
+                    colorTargetInfos[i].resolve_layer,
+                    colorTargetInfos[i].resolve_mip_level);
+
+                imageViewAttachments[attachmentCount] = resolveSubresource->renderTargetViews[0];
+            } else {
+                imageViewAttachments[attachmentCount] = resolveContainer->activeTexture->fullView;
+            }
 
             attachmentCount += 1;
         }
     }
 
     if (depthStencilTargetInfo != NULL) {
-        VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            depthStencilTargetInfo->layer,
-            depthStencilTargetInfo->mip_level);
-        imageViewAttachments[attachmentCount] = subresource->depthStencilView;
+        VulkanTextureContainer *texture = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
+        if (viewCount == 0) {
+            VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                texture,
+                depthStencilTargetInfo->layer,
+                depthStencilTargetInfo->mip_level);
+            imageViewAttachments[attachmentCount] = subresource->depthStencilView;
+        } else {
+            imageViewAttachments[attachmentCount] = texture->activeTexture->fullView;
+        }
 
         attachmentCount += 1;
     }
@@ -7554,7 +7588,7 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     framebufferInfo.pAttachments = imageViewAttachments;
     framebufferInfo.width = key.width;
     framebufferInfo.height = key.height;
-    framebufferInfo.layers = 1;
+    framebufferInfo.layers = viewCount;
 
     result = renderer->vkCreateFramebuffer(
         renderer->logicalDevice,
@@ -8107,7 +8141,8 @@ static void VULKAN_BeginRenderPass(
         numColorTargets,
         depthStencilTargetInfo,
         framebufferWidth,
-        framebufferHeight);
+        framebufferHeight,
+        viewCount);
 
     if (framebuffer == NULL) {
         return;
