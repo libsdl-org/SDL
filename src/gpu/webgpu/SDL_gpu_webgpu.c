@@ -30,8 +30,8 @@
 #define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
 
 // previously public properties that were moved to be internal
-#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS    "SDL.internal.gpu.device.create.webgpu.bindgroupexpiry"
-#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB "SDL.internal.gpu.device.create.webgpu.pseudomapsizethreshold"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS "SDL.internal.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN   "SDL.internal.gpu.device.create.webgpu.pseudomapsizethreshold"
 
 // I hate manual memory management so much I'm just reinventing the dynamic array but worse
 #define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)                                \
@@ -989,7 +989,7 @@ typedef struct WebGPUSampler
 typedef struct WebGPUFence
 {
     WGPUFutureWaitInfo future;
-    SDL_AtomicInt status;
+    bool signaled;
 } WebGPUFence;
 
 typedef struct WebGPUQueuedResourceBindSampler
@@ -1258,7 +1258,8 @@ static void
 WEBGPU_INTERNAL_FenceCallback(WGPUQueueWorkDoneStatus status, WGPUStringView message, void *fence, void *unused)
 {
     if (fence != NULL) {
-        SDL_SetAtomicInt(&((WebGPUFence *)fence)->status, 1);
+        // We're just gonna presume this never fails since that's easier
+        ((WebGPUFence *)fence)->signaled = true;
     }
 }
 
@@ -1864,16 +1865,14 @@ static WebGPUFence *WEBGPU_INTERNAL_CreateFenceFromFuture(WGPUFuture future)
 static bool WEBGPU_INTERNAL_QueryFence(WebGPURenderer *renderer, WebGPUFence *fence)
 {
     if (fence != NULL) {
-        if ((bool)SDL_GetAtomicInt(&fence->status)) {
-            return true;
+        if (!fence->signaled) {
+            // Despite its name, WaitAny isn't actually blocking unless the TimedWaitAny instance feature is enabled,
+            // and you give a value to the timeoutNS argument.
+            wgpuInstanceWaitAny(renderer->instance, 1, &fence->future, 0);
+
+            fence->signaled = fence->future.completed;
         }
-        // Despite its name, WaitAny isn't actually blocking unless the TimedWaitAny instance feature is enabled,
-        // and you give a value to the timeoutNS argument.
-        wgpuInstanceWaitAny(renderer->instance, 1, &fence->future, 0);
-
-        SDL_SetAtomicInt(&fence->status, fence->future.completed);
-
-        return (bool)SDL_GetAtomicInt(&fence->status);
+        return fence->signaled;
     } else {
         return true;
     }
@@ -1950,11 +1949,9 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
     Uint32 offsetVert = 0;
     Uint32 offsetFrag = 0;
 
-    // Temporary.
-    // 1024 was just arbitrarily picked since that's never gonna be too small.
-    // Should probably just have this be a dynamically allocated array.
-    WebGPUBindGroupLayoutEntryType entriesVert[1024] = { 0 };
-    WebGPUBindGroupLayoutEntryType entriesFrag[1024] = { 0 };
+    // 48 is enough to store all textures (16), samplers (16), storage textures (8), and storage buffers (8)
+    WebGPUBindGroupLayoutEntryType entriesVert[48] = { 0 };
+    WebGPUBindGroupLayoutEntryType entriesFrag[48] = { 0 };
     Uint32 entriesVertOffset = 0;
     Uint32 entriesFragOffset = 0;
 
@@ -2108,8 +2105,8 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebG
         }
     }
 
-    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesVert, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
-    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesFrag, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesVert, sizeof(WebGPUBindGroupLayoutEntryType) * 48);
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesFrag, sizeof(WebGPUBindGroupLayoutEntryType) * 48);
 
     if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0xAAAA1BEE) {
         goto finish;
@@ -2163,8 +2160,8 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
     Uint32 offsetRW = 0;
     Uint32 hash = 0xAAAA1BEE;
 
-    // Excellent naming by yours truly.
-    WebGPUBindGroupLayoutEntryType entriesHashStuff[1024] = { 0 };
+    // 64 is enough to fit all of them (probably)
+    WebGPUBindGroupLayoutEntryType entriesHashStuff[64] = { 0 };
     Uint32 entriesOffset = 0;
 
     for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
@@ -2287,7 +2284,7 @@ static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGP
         }
     }
 
-    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesHashStuff, sizeof(WebGPUBindGroupLayoutEntryType) * 1024);
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesHashStuff, sizeof(WebGPUBindGroupLayoutEntryType) * 64);
 
     if (cmdBuf->boundComputePipeline->currentPipelineHash == hash && hash != 0xAAA1ABEE) {
         goto finish;
@@ -2410,11 +2407,6 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 continue;
             }
 
-            if (current->destroysAttempted >= 100 && current->destroysAttempted % 100 == 0 && renderer->debugMode) {
-                // shut up
-                // SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Queued destroy has been attempted %i times!", current->destroysAttempted);
-            }
-
             if (current->destroysAttempted >= FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED && renderer->debugMode) {
                 SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Queued destroy has been attempted %i times! Forcibly destroying.", current->destroysAttempted);
                 forciblyDestroy = true;
@@ -2429,6 +2421,10 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 for (int j = 0; j < current->resource.textureContainer->textureCount; j++) {
                     int refCount = SDL_GetAtomicInt(&current->resource.textureContainer->textures[j]->referenceCount);
                     currentRefCount += refCount;
+
+                    if (currentRefCount > 0) {
+                        break;
+                    }
                 }
 
                 if (currentRefCount == 0 || forciblyDestroy) {
@@ -2452,6 +2448,10 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 for (int j = 0; j < current->resource.bufferContainer->bufferCount; j++) {
                     int refCount = SDL_GetAtomicInt(&current->resource.bufferContainer->buffers[j]->referenceCount);
                     currentRefCount += refCount;
+
+                    if (currentRefCount > 0) {
+                        break;
+                    }
                 }
                 if (currentRefCount == 0 || forciblyDestroy) {
                     WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, current->resource.bufferContainer);
@@ -2466,7 +2466,9 @@ static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
                 }
                 break;
             case WEBGPU_QUEUED_DESTROY_FENCE:
-                WEBGPU_INTERNAL_WaitForFences(renderer, true, &current->resource.fence, 1);
+                if (!WEBGPU_INTERNAL_QueryFence(renderer, current->resource.fence)) {
+                    WEBGPU_INTERNAL_WaitForFences(renderer, true, &current->resource.fence, 1);
+                }
 
                 SDL_free(current->resource.fence);
                 wasReleased = true;
@@ -4344,12 +4346,7 @@ static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBu
     if (((WebGPUBufferContainer *)transferBuffer)->shouldPseudomap) {
         // Time to do our magic tricks.
         if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange == NULL) {
-            ((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange = SDL_malloc(((WebGPUBufferContainer *)transferBuffer)->size);
-            SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
-        }
-
-        if (cycle) {
-            SDL_memset(((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange, 0, ((WebGPUBufferContainer *)transferBuffer)->size);
+            ((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange = SDL_calloc(((WebGPUBufferContainer *)transferBuffer)->size, 1);
         }
 
         // Mapped on CPU.
@@ -4814,10 +4811,10 @@ static void WEBGPU_ReleaseTexture(SDL_GPURenderer *renderer, SDL_GPUTexture *tex
 // Will bind a deferred graphics pipeline if it hasn't already been bound
 static void WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound(WebGPUCommandBuffer *cmdBuf)
 {
-    WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(cmdBuf);
-    WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(cmdBuf->renderer, cmdBuf->boundGraphicsPipeline);
-
     if (cmdBuf->hasBoundGraphicsPipeline == false && cmdBuf->boundGraphicsPipeline) {
+        WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(cmdBuf);
+        WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(cmdBuf->renderer, cmdBuf->boundGraphicsPipeline);
+
         wgpuRenderPassEncoderSetPipeline(cmdBuf->renderPassEncoder, cmdBuf->boundGraphicsPipeline->pipeline);
 
         cmdBuf->hasBoundGraphicsPipeline = true;
@@ -4827,10 +4824,10 @@ static void WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound(WebGPUCommandBuffer *c
 // Will bind a deferred compute pipeline if it hasn't already been bound
 static void WEBGPU_INTERNAL_EnsureComputePipelineIsBound(WebGPUCommandBuffer *cmdBuf)
 {
-    WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(cmdBuf);
-    WEBGPU_INTERNAL_EnsureComputePipelineExists(cmdBuf->renderer, cmdBuf->boundComputePipeline);
-
     if (cmdBuf->hasBoundComputePipeline == false && cmdBuf->boundComputePipeline) {
+        WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(cmdBuf);
+        WEBGPU_INTERNAL_EnsureComputePipelineExists(cmdBuf->renderer, cmdBuf->boundComputePipeline);
+
         wgpuComputePassEncoderSetPipeline(cmdBuf->computePassEncoder, cmdBuf->boundComputePipeline->pipeline);
 
         cmdBuf->hasBoundComputePipeline = true;
@@ -4998,8 +4995,6 @@ static void WEBGPU_BindComputeStorageTextures(SDL_GPUCommandBuffer *commandBuffe
 
 static void WEBGPU_INTERNAL_BindQueuedGraphicsResources(WebGPUCommandBuffer *cmdBuf)
 {
-    WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(cmdBuf);
-
     WGPUBindGroup bindGroups[4] = {
         cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE) : NULL,
         cmdBuf->vertexStageBinds.uniformBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_VERTEXUNIFORMS) : NULL,
@@ -5896,7 +5891,7 @@ static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, S
     SDL_GPUDevice *result;
 
     Sint64 bindGroupsExpireAfter = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS, DEFAULT_BINDGROUP_EXPIRY);
-    Sint64 pseudoMapThreshold = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN_N_MB, DEFAULT_PSEUDOMAP_SIZE_THRESHOLD);
+    Sint64 pseudoMapThreshold = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN, DEFAULT_PSEUDOMAP_SIZE_THRESHOLD);
 
     bool getAdapterSucceeded = false;
     bool getDeviceSucceeded = false;
