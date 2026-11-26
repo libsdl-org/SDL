@@ -3221,7 +3221,14 @@ static void UpdateRelativePointer(Wayland_Seat *seat)
              */
             if (seat->pointer.focus->sdlwindow->flags & SDL_WINDOW_MOUSE_RELATIVE_MODE) {
                 if (seat->keyboard.wl_keyboard) {
-                    relative_focus = seat->keyboard.focus == seat->pointer.focus;
+                    SDL_WindowData *kb_focus = seat->keyboard.focus;
+                    if (kb_focus) {
+                        SDL_Window *sdl_focus = kb_focus->sdlwindow;
+                        if (sdl_focus->keyboard_focus) {
+                            kb_focus = sdl_focus->keyboard_focus->internal;
+                        }
+                    }
+                    relative_focus = kb_focus == seat->pointer.focus;
                 } else {
                     relative_focus = seat->pointer.focus->keyboard_focus_count != 0;
                 }
