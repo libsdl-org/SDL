@@ -906,6 +906,22 @@ static void UpdateWindowFullscreen(SDL_Window *window, bool fullscreen)
     }
 }
 
+static void SetKeyboardFocus(SDL_Window *window, bool set_focus)
+{
+    SDL_Window *toplevel = window;
+
+    // Find the toplevel parent
+    while (SDL_WINDOW_IS_POPUP(toplevel)) {
+        toplevel = toplevel->parent;
+    }
+
+    toplevel->keyboard_focus = window;
+
+    if (set_focus && !window->is_hiding && !window->is_destroying) {
+        SDL_SetKeyboardFocus(window);
+    }
+}
+
 static const struct wl_callback_listener surface_frame_listener;
 
 static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time)
@@ -944,6 +960,11 @@ static void surface_frame_done(void *data, struct wl_callback *cb, uint32_t time
                     Wayland_SetWindowModal(SDL_GetVideoDevice(), w, true);
                 }
             }
+        }
+
+        // If this is a popup window, see if it should get keyboard focus.
+        if ((wind->sdlwindow->flags & SDL_WINDOW_POPUP_MENU) && !(wind->sdlwindow->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
+            SetKeyboardFocus(wind->sdlwindow, true);
         }
 
         /* If the window was initially set to the suspended state, send the occluded event now,
@@ -2087,22 +2108,6 @@ static const struct wp_color_management_surface_feedback_v1_listener color_manag
     handle_surface_feedback_preferred_changed2
 };
 
-static void Wayland_SetKeyboardFocus(SDL_Window *window, bool set_focus)
-{
-    SDL_Window *toplevel = window;
-
-    // Find the toplevel parent
-    while (SDL_WINDOW_IS_POPUP(toplevel)) {
-        toplevel = toplevel->parent;
-    }
-
-    toplevel->keyboard_focus = window;
-
-    if (set_focus && !window->is_hiding && !window->is_destroying) {
-        SDL_SetKeyboardFocus(window);
-    }
-}
-
 bool Wayland_SetWindowHitTest(SDL_Window *window, bool enabled)
 {
     return true; // just succeed, the real work is done elsewhere.
@@ -2414,8 +2419,6 @@ void Wayland_ShowWindow(SDL_VideoDevice *_this, SDL_Window *window)
                 wl_region_add(region, 0, 0, 0, 0);
                 wl_surface_set_input_region(data->surface, region);
                 wl_region_destroy(region);
-            } else if ((window->flags & SDL_WINDOW_POPUP_MENU) && !(window->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
-                Wayland_SetKeyboardFocus(window, true);
             }
 
             SDL_SetPointerProperty(props, SDL_PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER, data->shell_surface.xdg.popup.xdg_popup);
@@ -2564,7 +2567,7 @@ static void ReleasePopup(SDL_VideoDevice *_this, SDL_Window *popup)
     if ((popup->flags & SDL_WINDOW_POPUP_MENU) && !(popup->flags & SDL_WINDOW_NOT_FOCUSABLE)) {
         SDL_Window *new_focus;
         const bool set_focus = SDL_ShouldRelinquishPopupFocus(popup, &new_focus);
-        Wayland_SetKeyboardFocus(new_focus, set_focus);
+        SetKeyboardFocus(new_focus, set_focus);
     }
 
     xdg_popup_destroy(popupdata->shell_surface.xdg.popup.xdg_popup);
@@ -3734,10 +3737,10 @@ bool Wayland_SetWindowFocusable(SDL_VideoDevice *_this, SDL_Window *window, bool
             if (!focusable && (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
                 SDL_Window *new_focus;
                 const bool set_focus = SDL_ShouldRelinquishPopupFocus(window, &new_focus);
-                Wayland_SetKeyboardFocus(new_focus, set_focus);
+                SetKeyboardFocus(new_focus, set_focus);
             } else if (focusable) {
                 if (SDL_ShouldFocusPopup(window)) {
-                    Wayland_SetKeyboardFocus(window, true);
+                    SetKeyboardFocus(window, true);
                 }
             }
         }
