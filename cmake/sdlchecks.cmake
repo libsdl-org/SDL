@@ -960,6 +960,7 @@ macro(CheckWebGPU)
       # we could use our own if supply-chain attacks are an issue.
       # (Although, if somebody's breached the Emscripten repo there's probably bigger issues.)
       # https://github.com/emscripten-core/emscripten/blob/main/tools/ports/emdawnwebgpu.py
+      sdl_compile_options(PRIVATE "--use-port=emdawnwebgpu")
       sdl_link_dependency(sdlgpu-emdawnwebgpu LINK_OPTIONS "--use-port=emdawnwebgpu")
       set(HAVE_WEBGPU_EMSCRIPTEN TRUE)
       set(HAVE_WEBGPU TRUE)
