@@ -335,6 +335,46 @@ typedef enum
 // Function to return the joystick type for an XInput device based on its subtype
 extern SDL_JoystickType SDL_GetJoystickTypeForXInputSubType(SDL_XInputSubType subtype);
 
+typedef enum
+{
+    SDL_SANTROLLER_SUBTYPE_GAMEPAD                = 1,
+    SDL_SANTROLLER_SUBTYPE_DANCEPAD               = 2,
+    SDL_SANTROLLER_SUBTYPE_GUITAR_HERO_GUITAR     = 3,
+    SDL_SANTROLLER_SUBTYPE_ROCK_BAND_GUITAR       = 4,
+    SDL_SANTROLLER_SUBTYPE_GUITAR_HERO_DRUMS      = 5,
+    SDL_SANTROLLER_SUBTYPE_ROCK_BAND_DRUMS        = 6,
+    SDL_SANTROLLER_SUBTYPE_LIVE_GUITAR            = 7,
+    SDL_SANTROLLER_SUBTYPE_DJ_HERO_TURNTABLE      = 8,
+    SDL_SANTROLLER_SUBTYPE_STAGE_KIT              = 9,
+    SDL_SANTROLLER_SUBTYPE_PRO_KEYS               = 16,
+    SDL_SANTROLLER_SUBTYPE_PRO_GUITAR_MUSTANG     = 17,
+    SDL_SANTROLLER_SUBTYPE_PRO_GUITAR_SQUIER      = 18,
+    SDL_SANTROLLER_SUBTYPE_KEYBOARD_MOUSE         = 19,
+    SDL_SANTROLLER_SUBTYPE_FIGHT_STICK            = 20,
+    SDL_SANTROLLER_SUBTYPE_FLIGHT_STICK           = 21,
+    SDL_SANTROLLER_SUBTYPE_POP_N_MUSIC            = 22,
+    SDL_SANTROLLER_SUBTYPE_DJMAX                  = 23,
+    SDL_SANTROLLER_SUBTYPE_TAIKO                  = 24,
+    SDL_SANTROLLER_SUBTYPE_POWER_GIG_DRUM         = 25,
+    SDL_SANTROLLER_SUBTYPE_MICROPHONE             = 32,
+    SDL_SANTROLLER_SUBTYPE_DISNEY_INFINITY        = 33,
+    SDL_SANTROLLER_SUBTYPE_SKYLANDERS             = 34,
+    SDL_SANTROLLER_SUBTYPE_LEGO_DIMENSIONS        = 35,
+    SDL_SANTROLLER_SUBTYPE_PROJECT_DIVA           = 36,
+    SDL_SANTROLLER_SUBTYPE_GUITAR_FREAKS          = 37,
+    SDL_SANTROLLER_SUBTYPE_WHEEL                  = 38,
+    SDL_SANTROLLER_SUBTYPE_POWER_GIG_GUITAR       = 39,
+    SDL_SANTROLLER_SUBTYPE_ROCK_REVOLUTION_GUITAR = 40,
+    SDL_SANTROLLER_SUBTYPE_MIDI                   = 41,
+    SDL_SANTROLLER_SUBTYPE_BEATMANIA              = 48,
+    SDL_SANTROLLER_SUBTYPE_DRUMMANIA              = 49,
+    SDL_SANTROLLER_SUBTYPE_KEYBOARDMANIA          = 50,
+    SDL_SANTROLLER_SUBTYPE_UNKNOWN                = 255,
+} SDL_SantrollerSubType;
+
+// Function to return the joystick type for an Santroller device based on its santroller type
+extern SDL_JoystickType SDL_GetJoystickTypeForSantrollerSubType(SDL_SantrollerSubType santroller_type);
+
 typedef struct
 {
     const char *included_hint_name;
