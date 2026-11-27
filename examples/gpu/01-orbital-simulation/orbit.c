@@ -322,10 +322,17 @@ void InitBuffers(void)
 // You can also run a traditional main loop if you want to, but you'll have to do a bit of screwing around to get it working with Emscripten.
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
 {
-    SDL_Init(SDL_INIT_VIDEO);
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init failed (%s)", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 
     app.window =
-        SDL_CreateWindow("Orbit Simulation", RESOLUTION_X, RESOLUTION_Y, 0);
+        SDL_CreateWindow("Orbit Simulation", (int)RESOLUTION_X, (int)RESOLUTION_Y, 0);
+    if (app.window == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateWindow failed (%s)", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 
     // We'll create the SDL_GPUDevice here. This device will be used to interface with the GPU.
     // This function takes in three arguments: The shader format(s) you support, whether or not debug mode is enabled, and additional properties.
@@ -336,6 +343,11 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char **argv)
     // However, in this example we are only supporting WGSL, which is WebGPU's shading language.
     // (Quite frankly, I just didn't wanna rewrite the shader code in HLSL.)
     app.device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_WGSL, true, NULL);
+    if (app.device == NULL) {
+        SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "This example only supports SDL_GPU through webgpu");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_CreateGPUDevice failed (%s)", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
 
     app.numAsteroids = 100000;
     app.minDistance = 75000;
