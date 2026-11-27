@@ -54,15 +54,6 @@
    http://developer.apple.com/library/mac/#documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_texturedata/opengl_texturedata.html
 */
 
-typedef struct GL_FBOList GL_FBOList;
-
-struct GL_FBOList
-{
-    Uint32 w, h;
-    GLuint FBO;
-    GL_FBOList *next;
-};
-
 typedef struct
 {
     bool viewport_dirty;
@@ -107,7 +98,6 @@ typedef struct
     bool GL_ARB_texture_non_power_of_two_supported;
     bool GL_ARB_texture_rectangle_supported;
     bool GL_EXT_framebuffer_object_supported;
-    GL_FBOList *framebuffers;
 
     // OpenGL functions
 #define SDL_PROC(ret, func, params) ret (APIENTRY *func) params;
@@ -139,6 +129,7 @@ typedef struct
 typedef struct
 {
     GLuint texture;
+    GLuint fbo;  // framebuffer object; this is zero unless this texture is a render target.
     bool texture_external;
     GLfloat texw;
     GLfloat texh;
@@ -160,7 +151,6 @@ typedef struct
     SDL_ScaleMode texture_scale_mode;
     SDL_TextureAddressMode texture_address_mode_u;
     SDL_TextureAddressMode texture_address_mode_v;
-    GL_FBOList *fbo;
 } GL_TextureData;
 
 static const char *GL_TranslateError(GLenum error)
@@ -310,27 +300,6 @@ static void APIENTRY GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id
             SDL_LogDebug(SDL_LOG_CATEGORY_RENDER, "%s", message);
         }
     }
-}
-
-static GL_FBOList *GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
-{
-    GL_FBOList *result = data->framebuffers;
-
-    while (result && ((result->w != w) || (result->h != h))) {
-        result = result->next;
-    }
-
-    if (!result) {
-        result = (GL_FBOList *)SDL_malloc(sizeof(GL_FBOList));
-        if (result) {
-            result->w = w;
-            result->h = h;
-            data->glGenFramebuffersEXT(1, &result->FBO);
-            result->next = data->framebuffers;
-            data->framebuffers = result;
-        }
-    }
-    return result;
 }
 
 static void GL_WindowEvent(SDL_Renderer *renderer, const SDL_WindowEvent *event)
@@ -606,12 +575,6 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         }
     }
 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        data->fbo = GL_GetFBO(renderdata, texture->w, texture->h);
-    } else {
-        data->fbo = NULL;
-    }
-
     data->texture = (GLuint)SDL_GetNumberProperty(create_props, SDL_PROP_TEXTURE_CREATE_OPENGL_TEXTURE_NUMBER, 0);
     if (data->texture) {
         data->texture_external = true;
@@ -687,6 +650,11 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
                                  texture_h, 0, format, type, NULL);
     }
     if (!GL_CheckError("glTexImage2D()", renderer)) {
+        if (!data->texture_external) {
+            renderdata->glDeleteTextures(1, &data->texture);
+        }
+        SDL_free(data->pixels);
+        SDL_free(data);
         return false;
     }
     SetTextureScaleMode(renderdata, textype, texture->format, data->texture_scale_mode);
@@ -803,6 +771,23 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
         data->shader_params = SDL_GetYCbCRtoRGBConversionMatrix(texture->colorspace, texture->w, texture->h, 8);
         if (!data->shader_params) {
             return SDL_SetError("Unsupported YUV colorspace");
+        }
+    }
+
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+        renderdata->glGenFramebuffersEXT(1, &data->fbo);
+        renderdata->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, data->fbo);
+        renderdata->glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D /*renderdata->textype*/, data->texture, 0);
+        const GLenum status = renderdata->glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+        renderdata->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, renderer->target ? ((GL_TextureData *)renderer->target->internal)->fbo : 0);  // rebind previous fbo.
+        if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+            renderdata->glDeleteFramebuffersEXT(1, &data->fbo);
+            if (!data->texture_external) {
+                renderdata->glDeleteTextures(1, &data->texture);
+            }
+            SDL_free(data->pixels);
+            SDL_free(data);
+            return SDL_SetError("Texture framebuffer was incomplete (0x%X)", (unsigned int) status);
         }
     }
 
@@ -990,8 +975,6 @@ static void GL_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static bool GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GL_RenderData *data = (GL_RenderData *)renderer->internal;
-    GL_TextureData *texturedata;
-    GLenum status;
 
     GL_ActivateRenderer(renderer);
 
@@ -1001,20 +984,8 @@ static bool GL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     data->drawstate.viewport_dirty = true;
 
-    if (!texture) {
-        data->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-        return true;
-    }
+    data->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texture ? ((GL_TextureData *)texture->internal)->fbo : 0);
 
-    texturedata = (GL_TextureData *)texture->internal;
-    data->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, texturedata->fbo->FBO);
-    // TODO: check if texture pixel format allows this operation
-    data->glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, data->textype, texturedata->texture, 0);
-    // Check FBO status
-    status = data->glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-    if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
-        return SDL_SetError("glFramebufferTexture2DEXT() failed");
-    }
     return true;
 }
 
@@ -1768,14 +1739,6 @@ static void GL_DestroyRenderer(SDL_Renderer *renderer)
             GL_DestroyShaderContext(data->shaders);
         }
         if (data->context) {
-            while (data->framebuffers) {
-                GL_FBOList *nextnode = data->framebuffers->next;
-                // delete the framebuffer object
-                data->glDeleteFramebuffersEXT(1, &data->framebuffers->FBO);
-                GL_CheckError("", renderer);
-                SDL_free(data->framebuffers);
-                data->framebuffers = nextnode;
-            }
             SDL_GL_DestroyContext(data->context);
         }
         SDL_free(data);
