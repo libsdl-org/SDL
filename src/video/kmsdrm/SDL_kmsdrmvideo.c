@@ -1826,7 +1826,7 @@ bool KMSDRM_CreateSurfaces(SDL_VideoDevice *_this, SDL_Window *window)
     for (int i = 0; i < SDL_arraysize(gbm_formats); i++) {
         const uint32_t surface_fmt = gbm_formats[i].fmt;
 
-        SDL_Log("KMSDRM: Trying format GBM_FORMAT_%s", gbm_formats[i].name);
+        //SDL_Log("KMSDRM: Trying format GBM_FORMAT_%s", gbm_formats[i].name);
 
         if (!KMSDRM_gbm_device_is_format_supported(viddata->gbm_dev, surface_fmt, surface_flags)) {
             SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "KMSDRM: GBM_FORMAT_%s is not supported.", gbm_formats[i].name);
