@@ -159,6 +159,8 @@ void InitPipelines(void)
 
 void CreateAsteroids(SDL_GPUCopyPass *copyPass)
 {
+    Uint32 i;
+
     if (app.asteroidBuf != NULL) {
         // If we're recreating the asteroids, we'll have to release the previous asteroid buffer
         // since otherwise we'd waste a TON of GPU memory and eventually crash.
@@ -182,7 +184,7 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
     Asteroid *asteroidData = SDL_MapGPUTransferBuffer(app.device, asteroidTransferBuffer, false);
 
     // This loop will create all the asteroids and randomly spread them out in Earth's orbit.
-    for (int i = 0; i < app.numAsteroids; i++) {
+    for (i = 0; i < app.numAsteroids; i++) {
         Uint32 distance = SDL_max(SDL_rand(app.maxDistance), (Sint32)app.minDistance);
 
         float theta = (2.0f * SDL_PI_F * i) / app.numAsteroids;
