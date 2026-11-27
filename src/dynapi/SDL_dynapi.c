@@ -208,6 +208,26 @@ static void SDL_InitDynamicAPI(void);
         jump_table.SDL_LogMessageV(category, priority, fmt, ap);                                                                          \
         va_end(ap);                                                                                                                       \
     }                                                                                                                                     \
+    _static bool SDLCALL SDL_GetTrayMiscProperty##name(SDL_Tray *a, Uint32 b, ...)		                                                  \
+    {                                                                                                                                     \
+        va_list ap;                                                                                                                       \
+        bool retval;                                                                                                                      \
+        initcall;                                                                                                                         \
+        va_start(ap, b);                                                                                                                  \
+        retval = jump_table.SDL_GetTrayMiscPropertyV(a, b, ap);                                                                           \
+        va_end(ap);                                                                                                                       \
+        return retval;                                                                                                                    \
+    }                                                                                                                                     \
+    _static bool SDLCALL SDL_SetTrayMiscProperty##name(SDL_Tray *a, Uint32 b, ...)		                                                  \
+    {                                                                                                                                     \
+        va_list ap;                                                                                                                       \
+        bool retval;                                                                                                                      \
+        initcall;                                                                                                                         \
+        va_start(ap, b);                                                                                                                  \
+        retval = jump_table.SDL_SetTrayMiscPropertyV(a, b, ap);                                                                           \
+        va_end(ap);                                                                                                                       \
+        return retval;                                                                                                                    \
+    }                                                                                                                                     \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Trace, TRACE)                                                                       \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Verbose, VERBOSE)                                                                   \
     SDL_DYNAPI_VARARGS_LOGFN(_static, name, initcall, Debug, DEBUG)                                                                       \
@@ -367,6 +387,26 @@ static void SDLCALL SDL_LogMessage_LOGSDLCALLS(int category, SDL_LogPriority pri
     va_start(ap, fmt);
     SDL_LogMessageV_REAL(category, priority, fmt, ap);
     va_end(ap);
+}
+static bool SDLCALL SDL_SetTrayMiscProperty_LOGSDLCALLS(SDL_Tray *a, Uint32 b, ...)
+{
+    va_list ap;
+    bool retval;
+    SDL_Log_REAL("SDL3CALL SDL_SetTrayMiscProperty");
+    va_start(ap, b);
+    retval = SDL_SetTrayMiscPropertyV_REAL(a, b, ap);
+    va_end(ap);
+    return retval;
+}
+static bool SDLCALL SDL_GetTrayMiscProperty_LOGSDLCALLS(SDL_Tray *a, Uint32 b, ...)
+{
+    va_list ap;
+    bool retval;
+    SDL_Log_REAL("SDL3CALL SDL_GetTrayMiscProperty");
+    va_start(ap, b);
+    retval = SDL_GetTrayMiscPropertyV_REAL(a, b, ap);
+    va_end(ap);
+    return retval;
 }
 #define SDL_DYNAPI_VARARGS_LOGFN_LOGSDLCALLS(logname, prio)                                                         \
     static void SDLCALL SDL_Log##logname##_LOGSDLCALLS(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) \

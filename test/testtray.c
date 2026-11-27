@@ -52,22 +52,96 @@ static void SDLCALL tray_quit(void *ptr, SDL_TrayEntry *entry)
     SDL_PushEvent(&e);
 }
 
-static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray)
+static void print_click_info(Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities) 
 {
-    SDL_Log("Left click on example tray - menu shown");
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU) {
+    	SDL_Log("-Menu can be supressed");
+	}
+	
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU) {
+    	SDL_Log("-Menu can be requested to open");
+	}
+
+	if (capabilities & SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES) {
+    	SDL_Log("-Click coordinates: (%d %d)", x, y);
+	}
+}
+
+static bool SDLCALL tray2_leftclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
+{
+    SDL_Log("Left click on example tray (attempting to show menu):");
+    print_click_info(x, y, capabilities);
     return true;
 }
 
-static bool SDLCALL tray2_rightclick(void *userdata, SDL_Tray *tray)
+static bool SDLCALL tray2_rightclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
 {
-    SDL_Log("Right click on example tray - menu suppressed");
+    SDL_Log("Right click on example tray (attempting to suppress menu):");
+    print_click_info(x, y, capabilities);
     return false;
 }
 
-static bool SDLCALL tray2_middleclick(void *userdata, SDL_Tray *tray)
+static bool SDLCALL tray2_middleclick(void *userdata, SDL_Tray *tray, Sint32 x, Sint32 y, SDL_TrayCallbackCapabilities capabilities)
 {
-    SDL_Log("Middle click on example tray - menu doesn't show for middle click");
+    SDL_Log("Middle click on example tray (menu doesn't show for middle click):");
+    print_click_info(x, y, capabilities);
     return false;
+}
+
+static void tray_menu_shown(void *ptr, SDL_TrayMenu *menu, bool shown)
+{
+    SDL_Log(shown ? "Control tray menu shown" : "Control tray menu hidden");
+}
+
+static const char *status_to_str(SDL_TrayStatus status)
+{
+    switch (status) {
+        case SDL_TRAYSTATUS_VISIBLE:
+            return "visible";
+            break;
+        case SDL_TRAYSTATUS_HIDDEN:
+            return "hidden";
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            return "important";
+            break;
+        case SDL_TRAYSTATUS_INVALID:
+            return "invalid";
+            break;
+        default:
+            return "unknown";
+            break;
+    }
+}
+
+static void SDLCALL change_vis_show(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted visible, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_VISIBLE)));
+}
+
+static void SDLCALL change_vis_hide(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted hidden, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_HIDDEN)));
+}
+
+static void SDLCALL change_vis_imp(void *ptr, SDL_TrayEntry *entry)
+{
+    SDL_Log("Wanted important, got %s.", status_to_str(SDL_SetTrayStatus((SDL_Tray *)ptr, SDL_TRAYSTATUS_IMPORTANT)));
+}
+
+static void SDLCALL scroll_callback(void *userdata, SDL_Tray *tray, Sint32 delta, SDL_TrayScrollFlags flags)
+{
+    const char *axis_string;
+
+    if (flags & SDL_TRAYSCROLL_VERTICAL) {
+        axis_string = "vertical";
+    } else if (flags & SDL_TRAYSCROLL_HORIZONTAL) {
+        axis_string = "horizontal";
+    } else {
+        axis_string = "unknown";
+    }
+
+    SDL_Log("Got %s scroll event with delta %d on example tray.", axis_string, delta);
 }
 
 static bool trays_destroyed = false;
@@ -626,6 +700,7 @@ int main(int argc, char **argv)
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, tray2_leftclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, tray2_rightclick);
     SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, tray2_middleclick);
+    SDL_SetPointerProperty(tray2_props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, scroll_callback);
     SDL_Tray *tray2 = SDL_CreateTrayWithProperties(tray2_props);
     SDL_DestroyProperties(tray2_props);
 
@@ -634,6 +709,9 @@ int main(int argc, char **argv)
         goto clean_tray1;
     }
 
+    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_ICON_DESCRIPTION, "Icon description string (only supported on Linux SNI)");
+    SDL_SetTrayMiscProperty(tray2, SDL_TRAY_MISC_PROPERTY_TOOLTIP_DESCRIPTION, "Tooltip description (only supported on Linux SNI)");
+    
     SDL_DestroySurface(icon);
     SDL_DestroySurface(icon2);
 
@@ -666,7 +744,8 @@ int main(int argc, char **argv)
 
     SDL_SetTrayEntryCallback(entry_quit, tray_quit, NULL);
     SDL_SetTrayEntryCallback(entry_close, tray_close, trays);
-
+    SDL_SetTrayMenuShownCallback(menu, tray_menu_shown, NULL);
+    
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 
     entry_toggle = SDL_InsertTrayEntryAt(menu, -1, "Hide window", SDL_TRAYENTRY_BUTTON);
@@ -683,6 +762,26 @@ int main(int argc, char **argv)
 
     SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
 
+    SDL_TrayEntry *entry_show = SDL_InsertTrayEntryAt(menu, -1, "Show secondary tray icon", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_show);
+
+    SDL_SetTrayEntryCallback(entry_show, change_vis_show, tray2);
+
+    SDL_TrayEntry *entry_hide = SDL_InsertTrayEntryAt(menu, -1, "Hide secondary tray icon", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_hide);
+
+    SDL_SetTrayEntryCallback(entry_hide, change_vis_hide, tray2);
+
+    SDL_TrayEntry *entry_imp = SDL_InsertTrayEntryAt(menu, -1, "Make secondary tray icon important", SDL_TRAYENTRY_BUTTON);
+
+    CHECK(entry_imp);
+
+    SDL_SetTrayEntryCallback(entry_imp, change_vis_imp, tray2);
+
+    SDL_InsertTrayEntryAt(menu, -1, NULL, 0);
+    
     SDL_TrayEntry *entry_newbtn = SDL_InsertTrayEntryAt(menu, -1, "Create button", SDL_TRAYENTRY_BUTTON);
     CHECK(entry_newbtn);
 

@@ -318,6 +318,88 @@ SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
     return menu->parent_tray;
 }
 
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    return tray->driver->SetTrayStatus(tray, status);
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    return tray->driver->GetTrayStatus(tray);
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    va_list args;
+    bool ret;
+
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return false;
+    }
+
+    va_start(args, property);
+    ret = tray->driver->SetMiscProp(tray, property, args);
+    va_end(args);
+    return ret;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    va_list args;
+    bool ret;
+
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return false;
+    }
+
+    va_start(args, property);
+    ret = tray->driver->GetMiscProp(tray, property, args);
+    va_end(args);
+    return ret;
+}
+
+bool SDL_SetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return false;
+    }
+    
+    return tray->driver->SetMiscProp(tray, property, ap);
+}
+
+bool SDL_GetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return false;
+    }
+    
+    return tray->driver->GetMiscProp(tray, property, ap);
+}
+
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    if (!menu) {
+        return;
+    }
+
+    menu->parent_tray->driver->SetTrayMenuShownCallback(menu, callback, userdata);
+}
+
 void SDL_DestroyTray(SDL_Tray *tray)
 {
     if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {

@@ -142,6 +142,40 @@ SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
     return NULL;
 }
 
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+}
+
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    return SDL_TRAYSTATUS_VISIBLE;
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    return SDL_TRAYSTATUS_VISIBLE;
+}
+
+bool SDL_SetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
 void SDL_DestroyTray(SDL_Tray *tray)
 {
 }

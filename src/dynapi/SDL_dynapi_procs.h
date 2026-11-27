@@ -45,6 +45,8 @@ SDL_DYNAPI_PROC(int,SDL_asprintf,(char **a, SDL_PRINTF_FORMAT_STRING const char 
 SDL_DYNAPI_PROC(int,SDL_snprintf,(SDL_OUT_Z_CAP(b) char *a, size_t b, SDL_PRINTF_FORMAT_STRING const char *c, ...),(a,b,c),return)
 SDL_DYNAPI_PROC(int,SDL_sscanf,(const char *a, SDL_SCANF_FORMAT_STRING const char *b, ...),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_swprintf,(SDL_OUT_Z_CAP(b) wchar_t *a, size_t b, SDL_PRINTF_FORMAT_STRING const wchar_t *c, ...),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_GetTrayMiscProperty,(SDL_Tray *a, Uint32 b, ...),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_SetTrayMiscProperty,(SDL_Tray *a, Uint32 b, ...),(a,b),return)
 #endif
 
 /* New API symbols are added at the end */
@@ -1362,3 +1364,8 @@ SDL_DYNAPI_PROC(char*,SDL_GetCachePath,(const char *a,const char *b),(a,b),retur
 SDL_DYNAPI_PROC(bool,SDL_SetRenderLogicalPresentationRect,(SDL_Renderer *a,const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_IsGooglePlayOnPC,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowMousePassthrough,(SDL_Window *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(void,SDL_SetTrayMenuShownCallback,(SDL_TrayMenu *a,SDL_TrayMenuShownCallback b,void *c),(a,b,c),)
+SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_SetTrayStatus,(SDL_Tray *a, SDL_TrayStatus b),(a,b),return)
+SDL_DYNAPI_PROC(SDL_TrayStatus,SDL_GetTrayStatus,(SDL_Tray *a),(a),return)
+SDL_DYNAPI_PROC(bool,SDL_GetTrayMiscPropertyV,(SDL_Tray *a, Uint32 b, va_list c),(a,b,c),return)
+SDL_DYNAPI_PROC(bool,SDL_SetTrayMiscPropertyV,(SDL_Tray *a, Uint32 b, va_list c),(a,b,c),return)

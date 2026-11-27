@@ -32,12 +32,22 @@
 struct SDL_Tray;
 
 /* Objective-C helper class to handle status item button clicks */
-@interface SDLTrayClickHandler : NSObject
+@interface SDLTrayCallbackHandler : NSObject
 @property (nonatomic, assign) struct SDL_Tray *tray;
-@property (nonatomic, strong) id middleClickMonitor;
+@property (nonatomic, strong) id eventMonitor;
 - (void)handleClick:(id)sender;
-- (void)startMonitoringMiddleClicks;
-- (void)stopMonitoringMiddleClicks;
+- (void)menu:(id)sender;
+- (void)startMonitoringEvents;
+- (void)stopMonitoringEvents;
+@end
+
+@interface SDLMenuDelegate : NSObject<NSMenuDelegate>
+@property (nonatomic, assign) SDL_TrayMenuShownCallback callback;
+@property (nonatomic, assign) void *userdata;
+@property (nonatomic, assign) SDL_TrayMenu *tray_menu;
+- (instancetype)initWithCallback:(SDL_TrayMenuShownCallback) cb
+                        userdata:(void *)udata
+                            menu:(SDL_TrayMenu *)menu;
 @end
 
 struct SDL_TrayMenu {
@@ -46,8 +56,11 @@ struct SDL_TrayMenu {
     int nEntries;
     SDL_TrayEntry **entries;
 
+    SDL_Tray *tray;
     SDL_Tray *parent_tray;
     SDL_TrayEntry *parent_entry;
+
+    SDLMenuDelegate *delegate;
 };
 
 struct SDL_TrayEntry {
@@ -66,15 +79,26 @@ struct SDL_Tray {
     NSStatusItem *statusItem;
 
     SDL_TrayMenu *menu;
-    SDLTrayClickHandler *clickHandler;
+    SDLTrayCallbackHandler *cbHandler;
 
     void *userdata;
     SDL_TrayClickCallback left_click_callback;
     SDL_TrayClickCallback right_click_callback;
     SDL_TrayClickCallback middle_click_callback;
+    SDL_TrayScrollCallback scroll_callback;
 };
 
-@implementation SDLTrayClickHandler
+@implementation SDLTrayCallbackHandler
+
+static void ConvertScreenCoords(NSPoint p, Sint32 *x, Sint32 *y)
+{
+    if (x) {
+        *x = (Sint32)SDL_lround(p.x);
+    }
+    if (y) {
+        *y = (Sint32)SDL_lround((CGDisplayBounds(CGMainDisplayID()).size.height) - p.y);
+    }
+}
 
 - (void)handleClick:(id)sender
 {
@@ -83,28 +107,44 @@ struct SDL_Tray {
     }
 
     NSEvent *event = [NSApp currentEvent];
-    NSUInteger buttonNumber = [event buttonNumber];
-
+    NSPoint pointerCoords = [NSEvent mouseLocation];
+    NSInteger buttonNumber = 0;
+    Sint32 cbX = 0, cbY = 0;
     bool show_menu = false;
+
+    if (event) {
+        NSEventType type = [event type];
+        if (type == NSEventTypeLeftMouseDown || type == NSEventTypeLeftMouseUp ||
+            type == NSEventTypeRightMouseDown || type == NSEventTypeRightMouseUp ||
+            type == NSEventTypeOtherMouseDown || type == NSEventTypeOtherMouseUp) {
+            buttonNumber = [event buttonNumber];
+            pointerCoords = [event locationInWindow];
+            if ([event window]) {
+                pointerCoords = [[event window] convertPointToScreen:pointerCoords];
+            }
+        }
+    }
+
+    ConvertScreenCoords(pointerCoords, &cbX, &cbY);
 
     if (buttonNumber == 0) {
         /* Left click */
         if (self.tray->left_click_callback) {
-            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray);
+            show_menu = self.tray->left_click_callback(self.tray->userdata, self.tray, cbX, cbY, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES | SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU);
         } else {
             show_menu = true;
         }
     } else if (buttonNumber == 1) {
         /* Right click */
         if (self.tray->right_click_callback) {
-            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray);
+            show_menu = self.tray->right_click_callback(self.tray->userdata, self.tray, cbX, cbY, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES | SDL_TRAYCALLBACKCAPABILITIES_SUPPRESS_MENU | SDL_TRAYCALLBACKCAPABILITIES_REQUEST_MENU);
         } else {
             show_menu = true;
         }
     } else if (buttonNumber == 2) {
         /* Middle click */
         if (self.tray->middle_click_callback) {
-            self.tray->middle_click_callback(self.tray->userdata, self.tray);
+            self.tray->middle_click_callback(self.tray->userdata, self.tray, cbX, cbY, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
         }
     }
 
@@ -113,28 +153,77 @@ struct SDL_Tray {
     }
 }
 
-- (void)startMonitoringMiddleClicks
+- (void)menu:(id)sender
 {
-    if (self.middleClickMonitor) {
+    if ([sender isKindOfClass:[NSMenuItem class]]) {
+        NSValue *val = [(NSMenuItem *)sender representedObject];
+        if (val) {
+            SDL_TrayEntry *entry = (SDL_TrayEntry *)[val pointerValue];
+            SDL_ClickTrayEntry(entry);
+        }
+    }
+}
+
+- (void)startMonitoringEvents
+{
+    if (self.eventMonitor) {
         return;
     }
 
-    __weak SDLTrayClickHandler *weakSelf = self;
-    self.middleClickMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskOtherMouseUp handler:^NSEvent *(NSEvent *event) {
-        SDLTrayClickHandler *strongSelf = weakSelf;
-        if (!strongSelf || !strongSelf.tray || [event buttonNumber] != 2) {
+    __weak SDLTrayCallbackHandler *weakSelf = self;
+    NSEventMask mask = NSEventMaskOtherMouseUp | NSEventMaskScrollWheel;
+
+    self.eventMonitor = [NSEvent addLocalMonitorForEventsMatchingMask:mask handler:^NSEvent *(NSEvent *event) {
+        SDLTrayCallbackHandler *strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.tray) {
             return event;
         }
 
-        /* Check if the click is within the status item's button bounds */
-        NSPoint clickLocation = [event locationInWindow];
+        /* Verify the event occurred inside the status item's button bounds */
+        NSPoint eventLocation = [event locationInWindow];
         NSWindow *statusItemWindow = strongSelf.tray->statusItem.button.window;
 
-        if (statusItemWindow && event.window == statusItemWindow) {
-            NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:clickLocation fromView:nil];
-            if (NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
-                if (strongSelf.tray->middle_click_callback) {
-                    strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray);
+        if (!statusItemWindow || event.window != statusItemWindow) {
+            return event;
+        }
+
+        NSPoint localPoint = [strongSelf.tray->statusItem.button convertPoint:eventLocation fromView:nil];
+        if (!NSPointInRect(localPoint, strongSelf.tray->statusItem.button.bounds)) {
+            return event;
+        }
+
+        NSEventType type = [event type];
+        if (type == NSEventTypeOtherMouseUp) {
+            if ([event buttonNumber] == 2 && strongSelf.tray->middle_click_callback) {
+                NSPoint screenCoords = [statusItemWindow convertPointToScreen:eventLocation];
+                Sint32 cbX = 0, cbY = 0;
+                ConvertScreenCoords(screenCoords, &cbX, &cbY);
+
+                strongSelf.tray->middle_click_callback(strongSelf.tray->userdata, strongSelf.tray, cbX, cbY, SDL_TRAYCALLBACKCAPABILITIES_CLICK_COORDINATES);
+            }
+        } else if (type == NSEventTypeScrollWheel) {
+            if (strongSelf.tray->scroll_callback) {
+                CGFloat rawX = [event scrollingDeltaX];
+                CGFloat rawY = [event scrollingDeltaY];
+
+                if ([event hasPreciseScrollingDeltas]) {
+                    rawX /= 10.0;
+                    rawY /= 10.0;
+                }
+
+                if ([event isDirectionInvertedFromDevice]) {
+                    rawX = -rawX;
+                    rawY = -rawY;
+                }
+
+                Sint32 deltaY = (Sint32)SDL_lround(rawY);
+                Sint32 deltaX = (Sint32)SDL_lround(rawX);
+
+                if (deltaY != 0) {
+                    strongSelf.tray->scroll_callback(strongSelf.tray->userdata, strongSelf.tray, deltaY, SDL_TRAYSCROLL_VERTICAL);
+                }
+                if (deltaX != 0) {
+                    strongSelf.tray->scroll_callback(strongSelf.tray->userdata, strongSelf.tray, deltaX, SDL_TRAYSCROLL_HORIZONTAL);
                 }
             }
         }
@@ -143,12 +232,38 @@ struct SDL_Tray {
     }];
 }
 
-- (void)stopMonitoringMiddleClicks
+- (void)stopMonitoringEvents
 {
-    if (self.middleClickMonitor) {
-        [NSEvent removeMonitor:self.middleClickMonitor];
-        self.middleClickMonitor = nil;
+    if (self.eventMonitor) {
+        [NSEvent removeMonitor:self.eventMonitor];
+        self.eventMonitor = nil;
     }
+}
+@end
+
+@implementation SDLMenuDelegate
+
+- (instancetype)initWithCallback:(SDL_TrayMenuShownCallback) cb
+                        userdata:(void *)udata
+                            menu:(SDL_TrayMenu *)menu
+{
+    self = [super init];
+
+    self.callback = cb;
+    self.userdata = udata;
+    self.tray_menu = menu;
+
+    return self;
+}
+
+- (void)menuWillOpen:(NSMenu *)menu
+{
+    self.callback(self.userdata, self.tray_menu, true);
+}
+
+- (void)menuDidClose:(NSMenu *)menu
+{
+    self.callback(self.userdata, self.tray_menu, false);
 }
 
 @end
@@ -204,11 +319,14 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     tray->left_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_LEFTCLICK_CALLBACK_POINTER, NULL);
     tray->right_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_RIGHTCLICK_CALLBACK_POINTER, NULL);
     tray->middle_click_callback = (SDL_TrayClickCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_MIDDLECLICK_CALLBACK_POINTER, NULL);
+    tray->scroll_callback = (SDL_TrayScrollCallback)SDL_GetPointerProperty(props, SDL_PROP_TRAY_CREATE_SCROLL_CALLBACK_POINTER, NULL);
 
     tray->statusItem = nil;
     tray->statusBar = [NSStatusBar systemStatusBar];
     tray->statusItem = [tray->statusBar statusItemWithLength:NSVariableStatusItemLength];
     [[NSApplication sharedApplication] activateIgnoringOtherApps:TRUE];
+
+    tray->statusItem.visible = YES;
 
     if (tooltip) {
         tray->statusItem.button.toolTip = [NSString stringWithUTF8String:tooltip];
@@ -244,15 +362,15 @@ SDL_Tray *SDL_CreateTrayWithProperties(SDL_PropertiesID props)
     }
 
     /* Create click handler and set up button to receive clicks */
-    tray->clickHandler = [[SDLTrayClickHandler alloc] init];
-    tray->clickHandler.tray = tray;
+    tray->cbHandler = [[SDLTrayCallbackHandler alloc] init];
+    tray->cbHandler.tray = tray;
 
-    [tray->statusItem.button setTarget:tray->clickHandler];
+    [tray->statusItem.button setTarget:tray->cbHandler];
     [tray->statusItem.button setAction:@selector(handleClick:)];
     [tray->statusItem.button sendActionOn:(NSEventMaskLeftMouseUp | NSEventMaskRightMouseUp)];
 
     /* Start monitoring for middle clicks since status items don't receive them via the normal action mechanism */
-    [tray->clickHandler startMonitoringMiddleClicks];
+    [tray->cbHandler startMonitoringEvents];
 
     SDL_RegisterTray(tray);
 
@@ -356,6 +474,7 @@ SDL_TrayMenu *SDL_CreateTrayMenu(SDL_Tray *tray)
     menu->entries = NULL;
     menu->parent_tray = tray;
     menu->parent_entry = NULL;
+    menu->tray = tray;
 
     return menu;
 }
@@ -401,6 +520,7 @@ SDL_TrayMenu *SDL_CreateTraySubmenu(SDL_TrayEntry *entry)
     menu->entries = NULL;
     menu->parent_tray = NULL;
     menu->parent_entry = entry;
+    menu->tray = entry->parent->tray;
 
     [entry->parent->nsmenu setSubmenu:nsmenu forItem:entry->nsitem];
 
@@ -415,6 +535,25 @@ SDL_TrayMenu *SDL_GetTraySubmenu(SDL_TrayEntry *entry)
     }
 
     return entry->submenu;
+}
+
+void SDL_SetTrayMenuShownCallback(SDL_TrayMenu *menu, SDL_TrayMenuShownCallback callback, void *userdata)
+{
+    CHECK_PARAM(!menu) {
+        SDL_InvalidParamError("menu");
+        return;
+    }
+
+    if (!callback) {
+        menu->nsmenu.delegate = NULL;
+        menu->delegate = NULL;
+        return;
+    }
+
+    SDLMenuDelegate *delegate = [[SDLMenuDelegate alloc] initWithCallback:callback userdata:userdata menu:menu];
+
+    menu->delegate = delegate;
+    menu->nsmenu.delegate = delegate;
 }
 
 const SDL_TrayEntry **SDL_GetTrayEntries(SDL_TrayMenu *menu, int *count)
@@ -505,10 +644,13 @@ SDL_TrayEntry *SDL_InsertTrayEntryAt(SDL_TrayMenu *menu, int pos, const char *la
     new_entries[menu->nEntries] = NULL;
 
     NSMenuItem *nsitem;
-    if (label == NULL) {
+    if (!label) {
         nsitem = [NSMenuItem separatorItem];
     } else {
-        nsitem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:label] action:@selector(menu) keyEquivalent:@""];
+        nsitem = [[NSMenuItem alloc] initWithTitle:[NSString stringWithUTF8String:label] action:@selector(menu:) keyEquivalent:@""];
+        if (menu->tray && menu->tray->cbHandler) {
+            [nsitem setTarget:menu->tray->cbHandler];
+        }
         [nsitem setEnabled:((flags & SDL_TRAYENTRY_DISABLED) ? FALSE : TRUE)];
         [nsitem setState:((flags & SDL_TRAYENTRY_CHECKED) ? NSControlStateValueOn : NSControlStateValueOff)];
         [nsitem setRepresentedObject:[NSValue valueWithPointer:entry]];
@@ -636,6 +778,62 @@ SDL_Tray *SDL_GetTrayMenuParentTray(SDL_TrayMenu *menu)
     return menu->parent_tray;
 }
 
+SDL_TrayStatus SDL_SetTrayStatus(SDL_Tray *tray, SDL_TrayStatus status)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    switch (status) {
+        case SDL_TRAYSTATUS_VISIBLE:
+            tray->statusItem.visible = YES;
+            return SDL_TRAYSTATUS_VISIBLE;
+            break;
+        case SDL_TRAYSTATUS_HIDDEN:
+            tray->statusItem.visible = NO;
+            return SDL_TRAYSTATUS_HIDDEN;
+            break;
+        case SDL_TRAYSTATUS_IMPORTANT:
+            tray->statusItem.visible = YES;
+            return SDL_TRAYSTATUS_VISIBLE;
+            break;
+        default:
+            return tray->statusItem.visible ? SDL_TRAYSTATUS_VISIBLE : SDL_TRAYSTATUS_HIDDEN;
+            break;
+    }
+}
+
+SDL_TrayStatus SDL_GetTrayStatus(SDL_Tray *tray)
+{
+    CHECK_PARAM (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
+        SDL_InvalidParamError("tray");
+        return SDL_TRAYSTATUS_INVALID;
+    }
+
+    return tray->statusItem.visible ? SDL_TRAYSTATUS_VISIBLE : SDL_TRAYSTATUS_HIDDEN;
+}
+
+bool SDL_SetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscPropertyV(SDL_Tray *tray, Uint32 property, va_list ap)
+{
+    return false;
+}
+
+bool SDL_SetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
+bool SDL_GetTrayMiscProperty(SDL_Tray *tray, Uint32 property, ...)
+{
+    return false;
+}
+
 void SDL_DestroyTray(SDL_Tray *tray)
 {
     if (!SDL_ObjectValid(tray, SDL_OBJECT_TYPE_TRAY)) {
@@ -650,10 +848,10 @@ void SDL_DestroyTray(SDL_Tray *tray)
         DestroySDLMenu(tray->menu);
     }
 
-    if (tray->clickHandler) {
-        [tray->clickHandler stopMonitoringMiddleClicks];
-        tray->clickHandler.tray = NULL;
-        tray->clickHandler = nil;
+    if (tray->cbHandler) {
+        [tray->cbHandler stopMonitoringEvents];
+        tray->cbHandler.tray = nil;
+        tray->cbHandler = nil;
     }
 
     SDL_free(tray);

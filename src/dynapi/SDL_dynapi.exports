@@ -1327,3 +1327,10 @@ _SDL_GetCachePath
 _SDL_SetRenderLogicalPresentationRect
 _SDL_IsGooglePlayOnPC
 _SDL_SetWindowMousePassthrough
+_SDL_SetTrayMenuShownCallback
+_SDL_SetTrayStatus
+_SDL_GetTrayStatus
+_SDL_SetTrayMiscProperty
+_SDL_GetTrayMiscProperty
+_SDL_SetTrayMiscPropertyV
+_SDL_GetTrayMiscPropertyV
