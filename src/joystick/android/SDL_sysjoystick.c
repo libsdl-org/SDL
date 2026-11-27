@@ -424,6 +424,16 @@ void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp
     SDL_UnlockJoysticks();
 }
 
+void Android_OnJoyPowerInfo(int device_id, int state, int percent)
+{
+    SDL_LockJoysticks();
+    SDL_Joystick *joystick = GetJoystickByDeviceId(device_id);
+    if (joystick) {
+        SDL_SendJoystickPowerInfo(joystick, (SDL_PowerState)state, percent);
+    }
+    SDL_UnlockJoysticks();
+}
+
 void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
     bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope, bool is_usb)
 {

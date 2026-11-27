@@ -7,6 +7,7 @@ import java.util.List;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.hardware.BatteryState;
 import android.hardware.input.InputManager;
 import android.hardware.input.InputManager.InputDeviceListener;
 import android.hardware.lights.Light;
@@ -36,6 +37,11 @@ import android.view.View;
 
 public class SDLControllerManager
 {
+    public static final int SDL_POWERSTATE_UNKNOWN = 0;
+    public static final int SDL_POWERSTATE_ON_BATTERY = 1;
+    public static final int SDL_POWERSTATE_NO_BATTERY = 2;
+    public static final int SDL_POWERSTATE_CHARGING = 3;
+    public static final int SDL_POWERSTATE_CHARGED = 4;
 
     static native void nativeSetupJNI();
 
@@ -55,6 +61,7 @@ public class SDLControllerManager
     static native void onNativeHat(int device_id, int hat_id,
                                           int x, int y);
     static native void onNativeJoySensor(int device_id, int sensor_type, long sensor_timestamp, float x, float y, float z);
+    static public native void onNativePowerInfo(int device_id, int state, int percent);
 
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
@@ -433,6 +440,7 @@ class SDLJoystickHandler {
                 getVendorId(joystickDevice), getProductId(joystickDevice),
                 getButtonMask(joystickDevice), joystick.axes.size(), getAxisMask(joystick.axes), joystick.hats.size()/2, can_rumble, has_rgb_led,
                 has_accelerometer, has_gyroscope, isUSBDevice(joystickDevice));
+        sendPowerInfo(joystickDevice);
     }
 
     void deviceRemoved(int device_id) {
@@ -552,6 +560,20 @@ class SDLJoystickHandler {
             return true;
         }
 
+        if (Build.VERSION.SDK_INT >= 31 /* Android 12.0 (S) */) {
+            BatteryState batteryState = joystickDevice.getBatteryState();
+            switch (batteryState.getStatus()) {
+                case BatteryState.STATUS_DISCHARGING:
+                    return false;
+                case BatteryState.STATUS_CHARGING:
+                case BatteryState.STATUS_NOT_CHARGING:
+                case BatteryState.STATUS_FULL:
+                    return true;
+                default:
+                    break;
+            }
+        }
+
         int vendor_id = joystickDevice.getVendorId();
         int product_id = joystickDevice.getProductId();
         if (vendor_id == 0 && product_id == 0) {
@@ -592,6 +614,43 @@ class SDLJoystickHandler {
             }
         }
         return true;
+    }
+
+    void sendPowerInfo(InputDevice joystickDevice) {
+        if (Build.VERSION.SDK_INT < 31 /* Android 12.0 (S) */) {
+            return;
+        }
+
+        BatteryState batteryState = joystickDevice.getBatteryState();
+        int state = SDLControllerManager.SDL_POWERSTATE_UNKNOWN;
+        int percent = Float.isNaN(batteryState.getCapacity()) ? -1 : (int)Math.round(batteryState.getCapacity() * 100);
+        boolean is_usb = isUSBDevice(joystickDevice);
+
+        if (is_usb && !batteryState.isPresent()) {
+            state = SDLControllerManager.SDL_POWERSTATE_NO_BATTERY;
+        } else {
+            switch (batteryState.getStatus()) {
+                case BatteryState.STATUS_CHARGING:
+                    state = SDLControllerManager.SDL_POWERSTATE_CHARGING;
+                    break;
+                case BatteryState.STATUS_DISCHARGING:
+                    state = SDLControllerManager.SDL_POWERSTATE_ON_BATTERY;
+                    break;
+                case BatteryState.STATUS_NOT_CHARGING:
+                    state = SDLControllerManager.SDL_POWERSTATE_NO_BATTERY; // FIXME: is this the correct value?
+                    break;
+                case BatteryState.STATUS_FULL:
+                    state = SDLControllerManager.SDL_POWERSTATE_CHARGED;
+                    break;
+                default:
+                    // Keep the state as unknown
+                    break;
+            }
+        }
+
+        if (state != SDLControllerManager.SDL_POWERSTATE_UNKNOWN) {
+            SDLControllerManager.onNativePowerInfo(joystickDevice.getId(), state, percent);
+        }
     }
 
     int getAxisMask(List<InputDevice.MotionRange> ranges) {

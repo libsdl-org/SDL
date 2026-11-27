@@ -33,6 +33,7 @@ extern bool Android_OnPadUp(int device_id, int keycode, int scancode);
 extern bool Android_OnJoy(int device_id, int axisnum, float value);
 extern bool Android_OnHat(int device_id, int hat_id, int x, int y);
 extern void Android_OnJoySensor(int device_id, int sensor_type, Uint64 sensor_timestamp, float x, float y, float z);
+extern void Android_OnJoyPowerInfo(int device_id, int state, int percent);
 extern void Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, int button_mask, int naxes, int axis_mask, int nhats,
    bool can_rumble, bool has_rgb_led, bool has_accelerometer, bool has_gyroscope, bool is_usb);
 extern void Android_RemoveJoystick(int device_id);
