@@ -210,6 +210,15 @@ extern bool SDL_IsJoystickSteamTriton(Uint16 vendor_id, Uint16 product_id);
 // Function to return whether a joystick guid comes from the XInput driver
 extern bool SDL_IsJoystickXInput(SDL_GUID guid);
 
+// Function to return whether a joystick guid comes from a wired xbox 360 controller via xpad on linux
+extern bool SDL_IsJoystickXpad360(SDL_GUID guid);
+
+// Function to return whether a joystick guid comes from a Santroller controlller, via evdev on linux
+extern bool SDL_IsJoystickSantroller(SDL_GUID guid);
+
+// Function to return whether a joystick guid comes from the SysJoystick driver
+extern bool SDL_IsJoystickSysJoystick(SDL_GUID guid);
+
 // Function to return whether a joystick guid comes from the GameInput driver
 extern bool SDL_IsJoystickGameInput(SDL_GUID guid);
 
