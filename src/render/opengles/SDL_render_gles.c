@@ -182,10 +182,19 @@ static GLES_FBOList *GLES_GetFBO(GLES_RenderData *data, Uint32 w, Uint32 h)
         result = result->next;
     }
     if (!result) {
-        result = SDL_malloc(sizeof(GLES_FBOList));
+        result = (GLES_FBOList *)SDL_malloc(sizeof(GLES_FBOList));
+        if (!result) {
+            return NULL;
+        }
         result->w = w;
         result->h = h;
+        result->FBO = 0;
         data->glGenFramebuffersOES(1, &result->FBO);
+        if (!result->FBO) {
+            SDL_free(result);
+            SDL_SetError("glGenFramebuffersOES() failed");
+            return NULL;
+        }
         result->next = data->framebuffers;
         data->framebuffers = result;
     }
@@ -382,6 +391,10 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             return SDL_SetError("GL_OES_framebuffer_object not supported");
         }
         data->fbo = GLES_GetFBO(renderer->internal, texture->w, texture->h);
+        if (!data->fbo) {
+            SDL_free(data);
+            return false;
+        }
     } else {
         data->fbo = NULL;
     }
@@ -993,7 +1006,7 @@ static void GLES_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     GLES_TextureData *data = (GLES_TextureData *)texture->internal;
 
-    GLES_ActivateRenderer(renderer);
+    const bool active = GLES_ActivateRenderer(renderer);
 
     if (renderdata->drawstate.texture == texture) {
         renderdata->drawstate.texture = NULL;
@@ -1005,8 +1018,27 @@ static void GLES_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!data) {
         return;
     }
-    if (data->texture) {
-        renderdata->glDeleteTextures(1, &data->texture);
+    if (active) {
+        if (data->fbo && renderdata->glBindFramebufferOES && renderdata->glFramebufferTexture2DOES) {
+            // The FBO is shared by all render targets of the same size, so detach this
+            // texture, otherwise the FBO keeps its storage alive after it is deleted.
+            // If the FBO is currently bound, it belongs to another target of the same
+            // size and that texture is attached, so leave it alone.
+            GLint prev_fbo = -1;
+            renderdata->glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &prev_fbo);
+            if (prev_fbo >= 0 && (GLuint)prev_fbo != data->fbo->FBO) {
+                GLint bound_fbo = -1;
+                renderdata->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->fbo->FBO);
+                renderdata->glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &bound_fbo);
+                if (bound_fbo >= 0 && (GLuint)bound_fbo == data->fbo->FBO) {
+                    renderdata->glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, data->textype, 0, 0);
+                }
+                renderdata->glBindFramebufferOES(GL_FRAMEBUFFER_OES, (GLuint)prev_fbo);
+            }
+        }
+        if (data->texture) {
+            renderdata->glDeleteTextures(1, &data->texture);
+        }
     }
     SDL_free(data->pixels);
     SDL_free(data);
@@ -1136,7 +1168,10 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
     SDL_SetNumberProperty(SDL_GetRendererProperties(renderer), SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER, value);
 
     /* Android does not report GL_OES_framebuffer_object but the functionality seems to be there anyway */
-    if (SDL_GL_ExtensionSupported("GL_OES_framebuffer_object") || data->glGenFramebuffersOES) {
+    if ((SDL_GL_ExtensionSupported("GL_OES_framebuffer_object") || data->glGenFramebuffersOES) &&
+        data->glGenFramebuffersOES && data->glDeleteFramebuffersOES &&
+        data->glFramebufferTexture2DOES && data->glBindFramebufferOES &&
+        data->glCheckFramebufferStatusOES) {
         data->GL_OES_framebuffer_object_supported = true;
 
         value = 0;

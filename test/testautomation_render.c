@@ -2116,6 +2116,128 @@ static int SDLCALL render_testTextureState(void *arg)
     return TEST_COMPLETED;
 }
 
+static bool IsUnsupportedRenderTargetError(const char *err)
+{
+    return (err &&
+            (SDL_strcmp(err, "Render targets not supported by OpenGL") == 0 ||
+             SDL_strcmp(err, "GL_OES_framebuffer_object not supported") == 0 ||
+             SDL_strcmp(err, "That operation is not supported") == 0));
+}
+
+static bool CheckTargetPixels(const SDL_Rect *rect, const char *what)
+{
+    SDL_Surface *surface = SDL_RenderReadPixels(renderer, rect);
+    Uint8 r = 0, g = 0, b = 0, a = 0;
+    bool ok = true;
+
+    SDLTest_AssertCheck(surface != NULL, "Validate result from SDL_RenderReadPixels (%s), got %s", what, surface ? "surface" : SDL_GetError());
+    if (!surface) {
+        return false;
+    }
+
+    CHECK_FUNC(SDL_ReadSurfacePixel, (surface, 4, 8, &r, &g, &b, &a));
+    if (r != 0x00 || g != 0x00 || b != 0xFF) {
+        ok = false;
+    }
+    SDLTest_AssertCheck(r == 0x00 && g == 0x00 && b == 0xFF, "Validate %s preserved pixel, expected 0,0,255, got %d,%d,%d", what, r, g, b);
+
+    CHECK_FUNC(SDL_ReadSurfacePixel, (surface, 12, 8, &r, &g, &b, &a));
+    if (r != 0x00 || g != 0xFF || b != 0x00) {
+        ok = false;
+    }
+    SDLTest_AssertCheck(r == 0x00 && g == 0xFF && b == 0x00, "Validate %s updated pixel, expected 0,255,0, got %d,%d,%d", what, r, g, b);
+
+    SDL_DestroySurface(surface);
+    return ok;
+}
+
+/**
+ * Tests that destroying a render target texture doesn't disturb the
+ * current render target, whether or not the two textures have the same size.
+ */
+static int SDLCALL render_testDestroyRenderTarget(void *arg)
+{
+    static const int other_sizes[][2] = {
+        { 16, 16 }, // same size as the current target
+        { 32, 16 }  // different power-of-two size
+    };
+    SDL_Texture *probe_target;
+    SDL_Surface *probe_surface;
+    SDL_Rect probe_rect = { 0, 0, 1, 1 };
+    int i;
+
+    // Check capability before issuing any test assertions so skip never masks a failure
+    probe_target = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 16, 16);
+    if (!probe_target) {
+        if (IsUnsupportedRenderTargetError(SDL_GetError())) {
+            SDLTest_Log("Render targets not supported: %s", SDL_GetError());
+            return TEST_SKIPPED;
+        }
+        SDLTest_AssertCheck(probe_target != NULL, "Verify SDL_CreateTexture() result: %s", SDL_GetError());
+        return TEST_ABORTED;
+    }
+    SDL_DestroyTexture(probe_target);
+
+    probe_surface = SDL_RenderReadPixels(renderer, &probe_rect);
+    if (!probe_surface) {
+        if (SDL_strcmp(SDL_GetError(), "That operation is not supported") == 0) {
+            SDLTest_Log("SDL_RenderReadPixels not supported: %s", SDL_GetError());
+            return TEST_SKIPPED;
+        }
+        SDLTest_AssertCheck(probe_surface != NULL, "Verify SDL_RenderReadPixels() result: %s", SDL_GetError());
+        return TEST_ABORTED;
+    }
+    SDL_DestroySurface(probe_surface);
+
+    for (i = 0; i < SDL_arraysize(other_sizes); ++i) {
+        SDL_Texture *current, *other;
+        SDL_Rect rect = { 0, 0, 16, 16 };
+        SDL_FRect right_half = { 8.0f, 0.0f, 8.0f, 16.0f };
+        SDL_FRect dst = { 0.0f, 0.0f, 16.0f, 16.0f };
+
+        current = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, 16, 16);
+        SDLTest_AssertCheck(current != NULL, "Verify SDL_CreateTexture() result: %s", current ? "success" : SDL_GetError());
+        if (!current) {
+            return TEST_ABORTED;
+        }
+        other = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, other_sizes[i][0], other_sizes[i][1]);
+        SDLTest_AssertCheck(other != NULL, "Verify SDL_CreateTexture() result: %s", other ? "success" : SDL_GetError());
+        if (!other) {
+            SDL_DestroyTexture(current);
+            return TEST_ABORTED;
+        }
+
+        // Render to the other texture first, then make the current one the target and flush
+        CHECK_FUNC(SDL_SetRenderTarget, (renderer, other));
+        CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 255, 0, 0, SDL_ALPHA_OPAQUE));
+        CHECK_FUNC(SDL_RenderClear, (renderer));
+        CHECK_FUNC(SDL_SetRenderTarget, (renderer, current));
+        CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 255, SDL_ALPHA_OPAQUE));
+        CHECK_FUNC(SDL_RenderClear, (renderer));
+        CHECK_FUNC(SDL_FlushRenderer, (renderer));
+
+        // Destroying a texture that isn't the current target must leave the target and its contents alone
+        SDL_DestroyTexture(other);
+        SDLTest_AssertPass("SDL_DestroyTexture() on a %dx%d texture that isn't the current target", other_sizes[i][0], other_sizes[i][1]);
+        SDLTest_AssertCheck(SDL_GetRenderTarget(renderer) == current, "Verify SDL_GetRenderTarget() still returns the current target");
+
+        CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 255, 0, SDL_ALPHA_OPAQUE));
+        CHECK_FUNC(SDL_RenderFillRect, (renderer, &right_half));
+        CheckTargetPixels(NULL, "render target");
+
+        // Verify the target texture itself holds both the preserved and newly drawn pixels
+        CHECK_FUNC(SDL_SetRenderTarget, (renderer, NULL));
+        CHECK_FUNC(SDL_SetRenderDrawColor, (renderer, 0, 0, 0, SDL_ALPHA_OPAQUE));
+        CHECK_FUNC(SDL_RenderClear, (renderer));
+        CHECK_FUNC(SDL_RenderTexture, (renderer, current, NULL, &dst));
+        CheckTargetPixels(&rect, "window");
+
+        SDL_DestroyTexture(current);
+    }
+
+    return TEST_COMPLETED;
+}
+
 static void CheckUniformColor(float expected)
 {
     SDL_Surface *surface = SDL_RenderReadPixels(renderer, NULL);
@@ -2423,6 +2545,10 @@ static const SDLTest_TestCaseReference renderTestTextureState = {
     render_testTextureState, "render_testTextureState", "Tests texture state changes", TEST_ENABLED
 };
 
+static const SDLTest_TestCaseReference renderTestDestroyRenderTarget = {
+    render_testDestroyRenderTarget, "render_testDestroyRenderTarget", "Tests destroying a render target that isn't the current target", TEST_ENABLED
+};
+
 static const SDLTest_TestCaseReference renderTestGetSetTextureScaleMode = {
     render_testGetSetTextureScaleMode, "render_testGetSetTextureScaleMode", "Tests setting/getting texture scale mode", TEST_ENABLED
 };
@@ -2460,6 +2586,7 @@ static const SDLTest_TestCaseReference *renderTests[] = {
     &renderTestUVClamping,
     &renderTestUVWrapping,
     &renderTestTextureState,
+    &renderTestDestroyRenderTarget,
     &renderTestGetSetTextureScaleMode,
     &renderTestRGBSurfaceNoAlpha,
     &renderTestColorspaceLinear,

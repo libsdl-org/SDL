@@ -107,6 +107,7 @@ typedef struct
     bool GL_ARB_texture_non_power_of_two_supported;
     bool GL_ARB_texture_rectangle_supported;
     bool GL_EXT_framebuffer_object_supported;
+    bool GL_EXT_framebuffer_blit_supported;
     GL_FBOList *framebuffers;
 
     // OpenGL functions
@@ -325,7 +326,13 @@ static GL_FBOList *GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
         if (result) {
             result->w = w;
             result->h = h;
+            result->FBO = 0;
             data->glGenFramebuffersEXT(1, &result->FBO);
+            if (!result->FBO) {
+                SDL_free(result);
+                SDL_SetError("glGenFramebuffersEXT() failed");
+                return NULL;
+            }
             result->next = data->framebuffers;
             data->framebuffers = result;
         }
@@ -608,6 +615,10 @@ static bool GL_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL_P
 
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GL_GetFBO(renderdata, texture->w, texture->h);
+        if (!data->fbo) {
+            SDL_free(data);
+            return false;
+        }
     } else {
         data->fbo = NULL;
     }
@@ -1712,7 +1723,7 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     GL_RenderData *renderdata = (GL_RenderData *)renderer->internal;
     GL_TextureData *data = (GL_TextureData *)texture->internal;
 
-    GL_ActivateRenderer(renderer);
+    const bool active = GL_ActivateRenderer(renderer);
 
     if (renderdata->drawstate.texture == texture) {
         renderdata->drawstate.texture = NULL;
@@ -1725,20 +1736,40 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!data) {
         return;
     }
-    if (data->texture && !data->texture_external) {
-        renderdata->glDeleteTextures(1, &data->texture);
-    }
-    if (data->yuv) {
-        if (!data->utexture_external) {
-            renderdata->glDeleteTextures(1, &data->utexture);
+    if (active) {
+        if (data->fbo && renderdata->glBindFramebufferEXT && renderdata->glFramebufferTexture2DEXT) {
+            // The FBO is shared by all render targets of the same size, so detach this
+            // texture, otherwise the FBO keeps its storage alive after it is deleted.
+            // If the FBO is currently bound, it belongs to another target of the same
+            // size and that texture is attached, so leave it alone.
+            const GLenum fbo_target = renderdata->GL_EXT_framebuffer_blit_supported ? GL_DRAW_FRAMEBUFFER_EXT : GL_FRAMEBUFFER_EXT;
+            GLint prev_fbo = -1;
+            renderdata->glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &prev_fbo);
+            if (prev_fbo >= 0 && (GLuint)prev_fbo != data->fbo->FBO) {
+                GLint bound_fbo = -1;
+                renderdata->glBindFramebufferEXT(fbo_target, data->fbo->FBO);
+                renderdata->glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &bound_fbo);
+                if (bound_fbo >= 0 && (GLuint)bound_fbo == data->fbo->FBO) {
+                    renderdata->glFramebufferTexture2DEXT(fbo_target, GL_COLOR_ATTACHMENT0_EXT, renderdata->textype, 0, 0);
+                }
+                renderdata->glBindFramebufferEXT(fbo_target, (GLuint)prev_fbo);
+            }
         }
-        if (!data->vtexture_external) {
-            renderdata->glDeleteTextures(1, &data->vtexture);
+        if (data->texture && !data->texture_external) {
+            renderdata->glDeleteTextures(1, &data->texture);
         }
-    }
-    if (data->nv12) {
-        if (!data->utexture_external) {
-            renderdata->glDeleteTextures(1, &data->utexture);
+        if (data->yuv) {
+            if (!data->utexture_external) {
+                renderdata->glDeleteTextures(1, &data->utexture);
+            }
+            if (!data->vtexture_external) {
+                renderdata->glDeleteTextures(1, &data->vtexture);
+            }
+        }
+        if (data->nv12) {
+            if (!data->utexture_external) {
+                renderdata->glDeleteTextures(1, &data->utexture);
+            }
         }
     }
     SDL_free(data->pixels);
@@ -2032,7 +2063,6 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
     }
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
-        data->GL_EXT_framebuffer_object_supported = true;
         data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
             SDL_GL_GetProcAddress("glGenFramebuffersEXT");
         data->glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
@@ -2043,7 +2073,16 @@ static bool GL_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_Pr
             SDL_GL_GetProcAddress("glBindFramebufferEXT");
         data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
             SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
-    } else {
+        if (data->glGenFramebuffersEXT && data->glDeleteFramebuffersEXT &&
+            data->glFramebufferTexture2DEXT && data->glBindFramebufferEXT &&
+            data->glCheckFramebufferStatusEXT) {
+            data->GL_EXT_framebuffer_object_supported = true;
+            if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_blit")) {
+                data->GL_EXT_framebuffer_blit_supported = true;
+            }
+        }
+    }
+    if (!data->GL_EXT_framebuffer_object_supported) {
         SDL_SetError("Can't create render targets, GL_EXT_framebuffer_object not available");
         goto error;
     }
