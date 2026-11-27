@@ -3658,8 +3658,8 @@ static void WEBGPU_ReleaseGraphicsPipeline(SDL_GPURenderer *device, SDL_GPUGraph
 
     // We only free these when the pipeline's released, since it might be recreated.
 
-    SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.vertex_shader)->referenceCount);
-    SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.fragment_shader)->referenceCount);
+    (void)SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.vertex_shader)->referenceCount);
+    (void)SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.fragment_shader)->referenceCount);
 
     if (((WebGPUShader *)pipeline->createInfo.vertex_shader)->shouldFree) {
         WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)pipeline->createInfo.vertex_shader);
