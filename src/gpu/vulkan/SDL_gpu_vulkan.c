@@ -7588,7 +7588,7 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     framebufferInfo.pAttachments = imageViewAttachments;
     framebufferInfo.width = key.width;
     framebufferInfo.height = key.height;
-    framebufferInfo.layers = viewCount;
+    framebufferInfo.layers = viewCount == 0 ? 1 : viewCount;
 
     result = renderer->vkCreateFramebuffer(
         renderer->logicalDevice,
@@ -8355,29 +8355,32 @@ static void VULKAN_EndRenderPass(
         vulkanCommandBuffer->commandBuffer);
 
     for (i = 0; i < vulkanCommandBuffer->colorAttachmentSubresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
-            vulkanCommandBuffer->colorAttachmentSubresources[i]);
+            vulkanCommandBuffer->colorAttachmentSubresources[i]->parent);
     }
     vulkanCommandBuffer->colorAttachmentSubresourceCount = 0;
 
     for (i = 0; i < vulkanCommandBuffer->resolveAttachmentSubresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
-            vulkanCommandBuffer->resolveAttachmentSubresources[i]);
+            vulkanCommandBuffer->resolveAttachmentSubresources[i]->parent);
     }
     vulkanCommandBuffer->resolveAttachmentSubresourceCount = 0;
 
     if (vulkanCommandBuffer->depthStencilAttachmentSubresource != NULL) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT,
-            vulkanCommandBuffer->depthStencilAttachmentSubresource);
+            vulkanCommandBuffer->depthStencilAttachmentSubresource->parent);
         vulkanCommandBuffer->depthStencilAttachmentSubresource = NULL;
     }
 

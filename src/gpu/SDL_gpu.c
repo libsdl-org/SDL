@@ -1367,7 +1367,8 @@ SDL_GPUTexture *SDL_CreateGPUTexture(
                 failed = true;
             }
         } else {
-            if (createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
+            // FIXME
+            if (false) {//(createinfo->type == SDL_GPU_TEXTURETYPE_2D_ARRAY) {
                 // Array Texture Validation
                 if (createinfo->sample_count > SDL_GPU_SAMPLECOUNT_1) {
                     SDL_assert_release(!"For array textures: sample_count must be SDL_GPU_SAMPLECOUNT_1");

@@ -377,7 +377,7 @@ static void Render(SDL_Window *window, const int windownum)
     /* Pull the camera back from the cube */
     matrix_modelview[14] -= 2.5f;
 
-    perspective_matrix(45.0f, (float)drawablew/drawableh, 0.01f, 100.0f, matrix_perspective);
+    perspective_matrix(80.0f, (float)(drawablew / 2)/drawableh, 0.01f, 100.0f, matrix_perspective);
 
     /* Left view offset */
     matrix_modelview[12] = -0.1f;
