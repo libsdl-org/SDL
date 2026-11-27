@@ -175,6 +175,8 @@ struct SDL_WindowData
     EGLSurface egl_surface;
     bool egl_surface_dirty;
 
+    bool fullscreen;
+
     /* This dictates what approach we'll use for SwapBuffers. */
     bool (*swap_window)(SDL_VideoDevice *_this, SDL_Window *window);
 };
