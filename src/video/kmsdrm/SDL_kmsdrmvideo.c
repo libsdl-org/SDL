@@ -1740,9 +1740,13 @@ static void KMSDRM_GetModeToSet(SDL_Window *window, drmModeModeInfo *out_mode)
 {
     SDL_VideoDisplay *display = SDL_GetVideoDisplayForWindow(window);
     SDL_DisplayData *dispdata = display->internal;
+    SDL_WindowData *windata = window->internal;
 
     if (window->fullscreen_exclusive) {
         *out_mode = dispdata->fullscreen_mode;
+    } else if (windata->fullscreen) {
+        // Fullscreen desktop windows keep the desktop mode, whatever their windowed size is
+        *out_mode = dispdata->original_mode;
     } else {
         drmModeModeInfo *mode = KMSDRM_GetClosestDisplayMode(display, window->windowed.w, window->windowed.h);
         if (mode) {
@@ -2284,6 +2288,15 @@ void KMSDRM_SetWindowSize(SDL_VideoDevice *_this, SDL_Window *window)
 SDL_FullscreenResult KMSDRM_SetWindowFullscreen(SDL_VideoDevice *_this, SDL_Window *window, SDL_VideoDisplay *display, SDL_FullscreenOp fullscreen)
 {
     SDL_VideoData *viddata = _this->internal;
+    SDL_WindowData *windata = window->internal;
+
+    // The window flags aren't updated until this returns, so remember the state for KMSDRM_GetModeToSet()
+    if (fullscreen == SDL_FULLSCREEN_OP_LEAVE) {
+        windata->fullscreen = false;
+    } else {
+        windata->fullscreen = true;
+    }
+
     if (!viddata->vulkan_mode) {
         KMSDRM_DirtySurfaces(window);
     }
