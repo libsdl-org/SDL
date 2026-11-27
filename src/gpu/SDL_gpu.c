@@ -531,71 +531,84 @@ void SDL_GPU_BlitCommon(
     SDL_EndGPURenderPass(render_pass);
 }
 
-static void SDL_GPU_CheckGraphicsBindings(SDL_GPURenderPass *render_pass)
+static bool SDL_GPU_CheckGraphicsBindings(SDL_GPURenderPass *render_pass)
 {
     RenderPass *rp = (RenderPass *)render_pass;
     GraphicsPipelineCommonHeader *pipeline = (GraphicsPipelineCommonHeader *)RENDERPASS_BOUND_PIPELINE;
     for (Uint32 i = 0; i < pipeline->num_vertex_samplers; i += 1) {
         if (!rp->vertex_sampler_bound[i]) {
             SDL_assert_release(!"Missing vertex sampler binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->num_vertex_storage_textures; i += 1) {
         if (!rp->vertex_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing vertex storage texture binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->num_vertex_storage_buffers; i += 1) {
         if (!rp->vertex_storage_buffer_bound[i]) {
             SDL_assert_release(!"Missing vertex storage buffer binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->num_fragment_samplers; i += 1) {
         if (!rp->fragment_sampler_bound[i]) {
             SDL_assert_release(!"Missing fragment sampler binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->num_fragment_storage_textures; i += 1) {
         if (!rp->fragment_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing fragment storage texture binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->num_fragment_storage_buffers; i += 1) {
         if (!rp->fragment_storage_buffer_bound[i]) {
             SDL_assert_release(!"Missing fragment storage buffer binding!");
+            return false;
         }
     }
+    return true;
 }
 
-static void SDL_GPU_CheckComputeBindings(SDL_GPUComputePass *compute_pass)
+static bool SDL_GPU_CheckComputeBindings(SDL_GPUComputePass *compute_pass)
 {
     ComputePass *cp = (ComputePass *)compute_pass;
     ComputePipelineCommonHeader *pipeline = (ComputePipelineCommonHeader *)COMPUTEPASS_BOUND_PIPELINE;
     for (Uint32 i = 0; i < pipeline->numSamplers; i += 1) {
         if (!cp->sampler_bound[i]) {
             SDL_assert_release(!"Missing compute sampler binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->numReadonlyStorageTextures; i += 1) {
         if (!cp->read_only_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing compute readonly storage texture binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->numReadonlyStorageBuffers; i += 1) {
         if (!cp->read_only_storage_buffer_bound[i]) {
             SDL_assert_release(!"Missing compute readonly storage buffer binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->numReadWriteStorageTextures; i += 1) {
         if (!cp->read_write_storage_texture_bound[i]) {
             SDL_assert_release(!"Missing compute read-write storage texture binding!");
+            return false;
         }
     }
     for (Uint32 i = 0; i < pipeline->numReadWriteStorageBuffers; i += 1) {
         if (!cp->read_write_storage_buffer_bound[i]) {
-            SDL_assert_release(!"Missing compute read-write storage buffer bbinding!");
+            SDL_assert_release(!"Missing compute read-write storage buffer binding!");
+            return false;
         }
     }
+    return true;
 }
 
 // Driver Functions
@@ -989,7 +1002,7 @@ SDL_GPUComputePipeline *SDL_CreateGPUComputePipeline(
 {
     CHECK_DEVICE_MAGIC(device, NULL);
 
-    if (createinfo == NULL) {
+    CHECK_PARAM(createinfo == NULL) {
         SDL_InvalidParamError("createinfo");
         return NULL;
     }
@@ -1440,6 +1453,7 @@ SDL_GPUTransferBuffer *SDL_CreateGPUTransferBuffer(
         if (createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD &&
             createinfo->usage != SDL_GPU_TRANSFERBUFFERUSAGE_DOWNLOAD) {
             SDL_assert_release(!"Invalid transfer buffer usage!");
+            return NULL;
         }
 
         if (createinfo->size < 4) {
@@ -1476,6 +1490,7 @@ void SDL_SetGPUBufferName(
     }
     CHECK_PARAM(text == NULL) {
         SDL_InvalidParamError("text");
+        return;
     }
 
     device->SetBufferName(
@@ -1497,6 +1512,7 @@ void SDL_SetGPUTextureName(
     }
     CHECK_PARAM(text == NULL) {
         SDL_InvalidParamError("text");
+        return;
     }
 
     device->SetTextureName(
@@ -1846,6 +1862,11 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
         for (Uint32 i = 0; i < num_color_targets; i += 1) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)color_target_infos[i].texture;
 
+            if (textureHeader == NULL) {
+                SDL_assert_release(!"Color target texture cannot be NULL!");
+                return NULL;
+            }
+
             COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_width, textureHeader->info.width);
             COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_height, textureHeader->info.height);
 
@@ -1896,6 +1917,11 @@ SDL_GPURenderPass *SDL_BeginGPURenderPass(
 
         if (depth_stencil_target_info != NULL) {
             TextureCommonHeader *textureHeader = (TextureCommonHeader *)depth_stencil_target_info->texture;
+
+            if (textureHeader == NULL) {
+                SDL_assert_release(!"Depth-stencil target texture cannot be NULL!");
+                return NULL;
+            }
 
             COMMAND_BUFFER_DEVICE->max_viewport_width = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_width, textureHeader->info.width);
             COMMAND_BUFFER_DEVICE->max_viewport_height = SDL_min(COMMAND_BUFFER_DEVICE->max_viewport_height, textureHeader->info.height);
@@ -1960,6 +1986,10 @@ void SDL_BindGPUGraphicsPipeline(
     CHECK_PARAM(graphics_pipeline == NULL) {
         SDL_InvalidParamError("graphics_pipeline");
         return;
+    }
+
+    if (RENDERPASS_DEVICE->debug_mode) {
+        CHECK_RENDERPASS
     }
 
     RENDERPASS_DEVICE->BindGraphicsPipeline(
@@ -2074,7 +2104,7 @@ void SDL_BindGPUVertexBuffers(
         SDL_InvalidParamError("render_pass");
         return;
     }
-    if (bindings == NULL && num_bindings > 0) {
+    CHECK_PARAM(bindings == NULL && num_bindings > 0) {
         SDL_InvalidParamError("bindings");
         return;
     }
@@ -2103,7 +2133,7 @@ void SDL_BindGPUIndexBuffer(
         SDL_InvalidParamError("render_pass");
         return;
     }
-    if (binding == NULL) {
+    CHECK_PARAM(binding == NULL) {
         SDL_InvalidParamError("binding");
         return;
     }
@@ -2146,9 +2176,14 @@ void SDL_BindGPUVertexSamplers(
 
             for (Uint32 i = 0; i < num_bindings; i += 1) {
                 TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+                if (texture_header == NULL) {
+                    SDL_assert_release(!"Sampler binding texture cannot be NULL!");
+                    return;
+                }
                 if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
                 {
                     SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+                    return;
                 }
             }
         }
@@ -2266,9 +2301,14 @@ void SDL_BindGPUFragmentSamplers(
 
         for (Uint32 i = 0; i < num_bindings; i += 1) {
             TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+            if (texture_header == NULL) {
+                SDL_assert_release(!"Sampler binding texture cannot be NULL!");
+                return;
+            }
             if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
             {
                 SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+                return;
             }
         }
 
@@ -2373,7 +2413,9 @@ void SDL_DrawGPUIndexedPrimitives(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
-        SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (!SDL_GPU_CheckGraphicsBindings(render_pass)) {
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitives(
@@ -2400,7 +2442,9 @@ void SDL_DrawGPUPrimitives(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
-        SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (!SDL_GPU_CheckGraphicsBindings(render_pass)) {
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawPrimitives(
@@ -2429,7 +2473,9 @@ void SDL_DrawGPUPrimitivesIndirect(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
-        SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (!SDL_GPU_CheckGraphicsBindings(render_pass)) {
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawPrimitivesIndirect(
@@ -2457,7 +2503,9 @@ void SDL_DrawGPUIndexedPrimitivesIndirect(
     if (RENDERPASS_DEVICE->debug_mode) {
         CHECK_RENDERPASS
         CHECK_GRAPHICS_PIPELINE_BOUND
-        SDL_GPU_CheckGraphicsBindings(render_pass);
+        if (!SDL_GPU_CheckGraphicsBindings(render_pass)) {
+            return;
+        }
     }
 
     RENDERPASS_DEVICE->DrawIndexedPrimitivesIndirect(
@@ -2541,6 +2589,10 @@ SDL_GPUComputePass *SDL_BeginGPUComputePass(
 
         for (Uint32 i = 0; i < num_storage_texture_bindings; i += 1) {
             TextureCommonHeader *header = (TextureCommonHeader *)storage_texture_bindings[i].texture;
+            if (header == NULL) {
+                SDL_assert_release(!"Storage texture binding texture cannot be NULL!");
+                return NULL;
+            }
             if (!(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) && !(header->info.usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)) {
                 SDL_assert_release(!"Texture must be created with COMPUTE_STORAGE_WRITE or COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE flag");
                 return NULL;
@@ -2635,9 +2687,14 @@ void SDL_BindGPUComputeSamplers(
 
         for (Uint32 i = 0; i < num_bindings; i += 1) {
             TextureCommonHeader *texture_header = (TextureCommonHeader *)texture_sampler_bindings[i].texture;
+            if (texture_header == NULL) {
+                SDL_assert_release(!"Sampler binding texture cannot be NULL!");
+                return;
+            }
             if (texture_header->info.sample_count > SDL_GPU_SAMPLECOUNT_1)
             {
                 SDL_assert_release(!"Multisample textures cannot be bound as samplers!");
+                return;
             }
         }
 
@@ -2735,7 +2792,9 @@ void SDL_DispatchGPUCompute(
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
         CHECK_COMPUTE_PIPELINE_BOUND
-        SDL_GPU_CheckComputeBindings(compute_pass);
+        if (!SDL_GPU_CheckComputeBindings(compute_pass)) {
+            return;
+        }
     }
 
     COMPUTEPASS_DEVICE->DispatchCompute(
@@ -2758,7 +2817,9 @@ void SDL_DispatchGPUComputeIndirect(
     if (COMPUTEPASS_DEVICE->debug_mode) {
         CHECK_COMPUTEPASS
         CHECK_COMPUTE_PIPELINE_BOUND
-        SDL_GPU_CheckComputeBindings(compute_pass);
+        if (!SDL_GPU_CheckComputeBindings(compute_pass)) {
+            return;
+        }
     }
 
     COMPUTEPASS_DEVICE->DispatchComputeIndirect(
@@ -2875,7 +2936,7 @@ void SDL_UploadToGPUTexture(
         SDL_InvalidParamError("source");
         return;
     }
-    if (destination == NULL) {
+    CHECK_PARAM(destination == NULL) {
         SDL_InvalidParamError("destination");
         return;
     }
@@ -3521,6 +3582,7 @@ bool SDL_CancelGPUCommandBuffer(
     }
 
     if (COMMAND_BUFFER_DEVICE->debug_mode) {
+        CHECK_COMMAND_BUFFER_RETURN_FALSE
         if (commandBufferHeader->swapchain_texture_acquired) {
             SDL_assert_release(!"Cannot cancel command buffer after a swapchain texture has been acquired!");
             return false;
