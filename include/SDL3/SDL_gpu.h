@@ -4771,6 +4771,10 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * freed by the user. You MUST NOT call this function from any thread other
  * than the one that created the window.
  *
+ * **WARNING**: WebGPU has an edge case in which mapping a transfer buffer
+ * destroys any currently acquired swapchain textures! Always remember to
+ * acquire your swapchain texture AFTER you've mapped your transfer buffers!
+ *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
  * \param swapchain_texture a pointer filled in with a swapchain texture
@@ -4846,6 +4850,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  *
  * The swapchain texture is write-only and cannot be used as a sampler or for
  * another reading operation.
+ *
+ * **WARNING**: WebGPU has an edge case in which mapping a transfer buffer
+ * destroys any currently acquired swapchain textures! Always remember to
+ * acquire your swapchain texture AFTER you've mapped your transfer buffers!
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.

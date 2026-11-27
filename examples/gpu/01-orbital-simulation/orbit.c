@@ -1,6 +1,3 @@
-// TODO: More documentation here!
-// I got lazy and didn't bother finishing it
-
 #include <SDL3/SDL.h>
 
 #define SDL_MAIN_USE_CALLBACKS
@@ -64,6 +61,7 @@ static AppState app = { 0 };
 #define RESOLUTION_X  800.0f
 #define RESOLUTION_Y  600.0f
 
+// By pressing left or right arrow on your keyboard you can decrease/increase the time scale (how fast time goes)
 const float timescales[6] = { 1.0f, 10.0f, 100.0f, 1000.0f, 2500.0f, 5000.0f };
 
 void InitPipelines(void)
@@ -105,7 +103,7 @@ void InitPipelines(void)
                             .format = SDL_GetGPUSwapchainTextureFormat(
                                 app.device, app.window),
                         },
-                    },
+                    }, // Note: I couldn't be bothered to do depth testing. Sorry!
             },
             .vertex_input_state = (SDL_GPUVertexInputState){
                 .num_vertex_buffers = 1,
@@ -200,6 +198,7 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
     }
 
     SDL_UnmapGPUTransferBuffer(app.device, asteroidTransferBuffer);
+    // We'll upload the transfer buffer's data to the storage buffer with this SDL_UploadToGPUBuffer call.
     SDL_UploadToGPUBuffer(
         copyPass,
         &(SDL_GPUTransferBufferLocation){
@@ -212,6 +211,8 @@ void CreateAsteroids(SDL_GPUCopyPass *copyPass)
             .size = sizeof(Asteroid) * app.numAsteroids,
         },
         false);
+
+    // We don't need this transfer buffer any more, so we'll release it to free up GPU memory.
     SDL_ReleaseGPUTransferBuffer(app.device, asteroidTransferBuffer);
 }
 
@@ -394,6 +395,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     // If the asteroid count's changed we'll have to upload the new asteroids.
     if (app.shouldRecreateAsteroids) {
+        // Important note with the WebGPU backend: There's an edge case in WebGPU which makes it so that any swapchain texture you've
+        // previously acquired will instantly be destroyed if you map a transfer buffer. I have no idea why it does that, but it does.
+        // Keep that in mind!
         SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(cmdBuf);
 
         CreateAsteroids(copyPass);
@@ -413,60 +417,90 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     // (Note that we're binding the asteroid buffer here, since SDLGPU requires R/W compute storage buffers to be bound in SDL_BeginGPUComputePass.)
     SDL_GPUComputePass *computePass = SDL_BeginGPUComputePass(cmdBuf, NULL, 0, &(SDL_GPUStorageBufferReadWriteBinding){ .buffer = app.asteroidBuf, .cycle = false }, 1);
 
+    // We'll bind our compute pipeline here.
     SDL_BindGPUComputePipeline(computePass, app.computePipeline);
+
+    // We'll push our uniform data here. This doesn't include all that much, just the deltaTime, amount of asteroids, and the timescale.
     SDL_PushGPUComputeUniformData(cmdBuf, 0, &(UniformDataCompute){
                                                  .deltaTime = app.deltaTime,
                                                  .numAsteroids = (float)app.numAsteroids,
                                                  .timescale = app.timescale,
                                              },
                                   sizeof(UniformDataCompute));
-    SDL_DispatchGPUCompute(computePass, (Uint32)SDL_ceilf(app.numAsteroids / 64.0f), 1, 1);
 
+    // Finally, we'll dispatch our compute. This tells the GPU "hey, run this compute code please".
+    // Since we've previously set our X thread size to 64, we'll have to divide the asteroid count by 64 to get our thread dispatch size.
+    SDL_DispatchGPUCompute(computePass, app.numAsteroids / 64, 1, 1);
+
+    // Compute is finished, let's move on to the rendering!
     SDL_EndGPUComputePass(computePass);
 
     SDL_GPUTexture *swapchainTexture = NULL;
-    SDL_WaitAndAcquireGPUSwapchainTexture(cmdBuf, app.window, &swapchainTexture, NULL, NULL);
+    // As written about in the asteroid upload code above, WebGPU has a weird edge case where mapping a buffer will destroy any currently acquired swapchain textures.
+    // So, the swapchain acquisition is done as late as possible here, to prevent shenanigans.
+    SDL_WaitAndAcquireGPUSwapchainTexture(cmdBuf, app.window, &swapchainTexture, NULL, NULL); // We don't care about the texture's size since we already know it
 
-    Matrix4x4 proj = Matrix4x4_CreatePerspectiveFieldOfView(75.0f * SDL_PI_F / 180.0f, RESOLUTION_X / RESOLUTION_Y, 0.001f, 200.0f);
-    Matrix4x4 view = Matrix4x4_CreateLookAt(
-        (Vector3){
-            ((float)app.cameraDistance * 1000) * SDL_sinf(app.cameraRotation),
-            ((float)app.cameraDistance * 1000),
-            ((float)app.cameraDistance * 1000) * SDL_cosf(app.cameraRotation),
-        },
-        (Vector3){ 0, 0, 0 },
-        (Vector3){ 0, 1, 0 });
-    Matrix4x4 viewproj = Matrix4x4_Multiply(proj, view);
-
+    // If the swapchain texture's NULL, we won't bother doing anything.
+    // A NULL swapchain texture means that we can't render to the swapchain right now, for some reason.
+    // This is normal behaviour (for example: if the window's not visible this'll be NULL), so we'll just skip over the rendering code if that's the case.
     if (swapchainTexture != NULL) {
+        // This is some basic matrix math that creates perspective and also allows us to move the camera around.
+        Matrix4x4 proj = Matrix4x4_CreatePerspectiveFieldOfView(75.0f * SDL_PI_F / 180.0f, RESOLUTION_X / RESOLUTION_Y, 0.001f, 200.0f);
+        Matrix4x4 view = Matrix4x4_CreateLookAt(
+            (Vector3){
+                ((float)app.cameraDistance * 1000) * SDL_sinf(app.cameraRotation),
+                ((float)app.cameraDistance * 1000),
+                ((float)app.cameraDistance * 1000) * SDL_cosf(app.cameraRotation),
+            },
+            (Vector3){ 0, 0, 0 },
+            (Vector3){ 0, 1, 0 });
+        Matrix4x4 viewproj = Matrix4x4_Multiply(proj, view);
+
+        // In order to start a render pass in SDLGPU you have to provide your color targets.
+        // In this example there's only one color target (the swapchain), so that's all we care about.
         SDL_GPUColorTargetInfo colorTargetInfo = { 0 };
         colorTargetInfo.texture = swapchainTexture;
         colorTargetInfo.clear_color = (SDL_FColor){ 0.0f, 0.0f, 0.0f, 1.0f };
-        colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;
-        colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE;
+        colorTargetInfo.load_op = SDL_GPU_LOADOP_CLEAR;   // We'll tell the GPU to clear the color target to pure black here.
+        colorTargetInfo.store_op = SDL_GPU_STOREOP_STORE; // We'll want to keep the finished image so that we can display it to the user.
 
+        // Finally, we'll begin our render pass.
         SDL_GPURenderPass *renderPass =
             SDL_BeginGPURenderPass(cmdBuf, &colorTargetInfo, 1, NULL);
 
+        // We'll first bind our pipeline, vertex & index buffers.
         SDL_BindGPUGraphicsPipeline(renderPass, app.graphicsPipeline);
         SDL_BindGPUVertexBuffers(renderPass, 0, &(SDL_GPUBufferBinding){ .buffer = app.vtxBuffer, .offset = 0 }, 1);
         SDL_BindGPUIndexBuffer(renderPass, &(SDL_GPUBufferBinding){ .buffer = app.idxBuffer, .offset = 0 }, SDL_GPU_INDEXELEMENTSIZE_16BIT);
 
+        // We'll bind our asteroid storage buffer here (which was previously updated by the compute pass) so that the vertex shader can access the asteroid position.
         SDL_BindGPUVertexStorageBuffers(renderPass, 0, &app.asteroidBuf, 1);
+        // We'll push our combined view + projection matrix to the GPU here.
         SDL_PushGPUVertexUniformData(cmdBuf, 0, &viewproj, sizeof(Matrix4x4));
+
+        // Time to draw all of the asteroids. I wasn't very fancy with it, so the "asteroids" are in reality just cubes.
+        // This example is mostly a showcase of WebGPU's compute abilities.
+        // You can see here that we pass in app.numAsteroids here as our instance count.
+        // This tells the GPU "hey, you'll be rendering the exact same thing a billion times, no need for multiple draw calls."
+        // This greatly speeds up rendering since there's only one draw call for the GPU.
         SDL_DrawGPUIndexedPrimitives(renderPass, 36, app.numAsteroids, 0, 0, 0);
 
+        // We're done with our render pass, so we'll end it here.
         SDL_EndGPURenderPass(renderPass);
     }
 
+    // Finally, it's time to submit our command buffer.
+    // SDLGPU handles all of the swapchain stuff for you, so we don't need to bother with presentation and such.
     SDL_SubmitGPUCommandBuffer(cmdBuf);
 
     return SDL_APP_CONTINUE;
 }
 
+// This callback gets run whenever an event occurs (e.g keyboard input)
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
     if (event->type == SDL_EVENT_QUIT) {
+        // If the "quit" event's happened we'll return SDL_APP_SUCCESS, which tells SDL that we're done with our app.
         return SDL_APP_SUCCESS;
     }
 
@@ -518,6 +552,8 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     return SDL_APP_CONTINUE;
 }
 
+// This callback is called when the app is shutting down.
+// We'll free our GPU resources here.
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_ReleaseGPUBuffer(app.device, app.vtxBuffer);
