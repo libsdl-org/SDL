@@ -676,12 +676,8 @@ static bool SDL_EVDEV_init_touchscreen(SDL_evdevlist_item *item, int udev_class)
         return false;
     }
 
-    ret = ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
-    if (ret < 0) {
-        SDL_free(item->touchscreen_data);
-        SDL_LogError(SDL_LOG_CATEGORY_INPUT, "Failed to get evdev touchscreen name");
-        return false;
-    }
+    name[0] = '\0';
+    ioctl(item->fd, EVIOCGNAME(sizeof(name)), name);
 
     item->touchscreen_data->name = SDL_strdup(name);
     if (!item->touchscreen_data->name) {
