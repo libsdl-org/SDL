@@ -974,6 +974,10 @@ static void GLES_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!data) {
         return;
     }
+
+    if (data->fbo) {
+        renderdata->glDeleteFramebuffersOES(1, &data->fbo);
+    }
     if (data->texture) {
         renderdata->glDeleteTextures(1, &data->texture);
     }

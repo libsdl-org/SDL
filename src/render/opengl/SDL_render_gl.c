@@ -1696,6 +1696,10 @@ static void GL_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (!data) {
         return;
     }
+
+    if (data->fbo) {
+        renderdata->glDeleteFramebuffersEXT(1, &data->fbo);
+    }
     if (data->texture && !data->texture_external) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
