@@ -68,6 +68,8 @@ typedef struct VulkanExtensions
     Uint8 MSFT_layered_driver;
     // Only required for decoding HDR ASTC textures
     Uint8 EXT_texture_compression_astc_hdr;
+    // Core since 1.1, max views defaults to 1 if not available
+    Uint8 KHR_multiview;
 } VulkanExtensions;
 
 // Defines
@@ -918,6 +920,7 @@ typedef struct RenderPassHashTableKey
     Uint32 numResolveTargets;
     RenderPassDepthStencilTargetDescription depthStencilTargetDescription;
     VkSampleCountFlagBits sampleCount;
+    Uint32 viewCount;
 } RenderPassHashTableKey;
 
 typedef struct VulkanRenderPassHashTableValue
@@ -934,6 +937,7 @@ typedef struct FramebufferHashTableKey
     VkImageView depthStencilAttachmentView;
     Uint32 width;
     Uint32 height;
+    Uint32 viewCount;
 } FramebufferHashTableKey;
 
 // Command structures
@@ -1130,6 +1134,7 @@ struct VulkanRenderer
     VkPhysicalDevice physicalDevice;
     VkPhysicalDeviceProperties2KHR physicalDeviceProperties;
     VkPhysicalDeviceDriverPropertiesKHR physicalDeviceDriverProperties;
+    VkPhysicalDeviceMultiviewPropertiesKHR multiviewProperties;
     VkDevice logicalDevice;
     Uint8 integratedMemoryNotification;
     Uint8 outOfDeviceLocalMemoryWarning;
@@ -2574,9 +2579,9 @@ static void VULKAN_INTERNAL_TrackUniformBuffer(
  * These indicate the current usage of that resource on the command buffer.
  * The transition from one usage mode to another indicates how the barrier should be constructed.
  *
- * For buffer reads, read usage modes can be combined. 
+ * For buffer reads, read usage modes can be combined.
  * This can be a useful shortcut in certain cases, like when reading GLTF data.
- * 
+ *
  * Pipeline barriers cannot be inserted during a render pass, but they can be inserted
  * during a compute or copy pass.
  *
@@ -2879,13 +2884,13 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
 
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_VERTEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_VERTEX_READ;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDEX) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDEX_READ;
     }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_INDIRECT) {
         flags |= VULKAN_BUFFER_USAGE_MODE_INDIRECT;
-    } 
+    }
     if (buffer->usage & SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ) {
         flags |= VULKAN_BUFFER_USAGE_MODE_GRAPHICS_STORAGE_READ;
     }
@@ -2896,7 +2901,7 @@ static VulkanBufferUsageModeFlags VULKAN_INTERNAL_DefaultBufferUsageMode(
     // If no read flags are set, read-write can be the default.
     if (!flags && buffer->usage & SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE) {
         flags = VULKAN_BUFFER_USAGE_MODE_COMPUTE_STORAGE_READ_WRITE;
-    } 
+    }
 
     if (!flags) {
         SDL_LogError(SDL_LOG_CATEGORY_GPU, "Buffer has no default usage mode!");
@@ -4426,6 +4431,7 @@ static bool VULKAN_INTERNAL_CreateRenderTargetView(
     imageViewCreateInfo.subresourceRange.baseMipLevel = level;
     imageViewCreateInfo.subresourceRange.levelCount = 1;
     imageViewCreateInfo.subresourceRange.baseArrayLayer = layerOrDepth;
+    // TODO: it looks like these need to be set up for multiview too
     imageViewCreateInfo.subresourceRange.layerCount = 1;
     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
@@ -5846,7 +5852,8 @@ static VulkanTexture *VULKAN_INTERNAL_CreateTexture(
 
     texture->usedRegion->vulkanTexture = texture; // lol
 
-    if (createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)) {
+    // FIXME
+    if (true /*createinfo->usage & (SDL_GPU_TEXTUREUSAGE_SAMPLER | SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)*/) {
 
         imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         imageViewCreateInfo.pNext = NULL;
@@ -6139,7 +6146,8 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     VulkanRenderer *renderer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VkResult vulkanResult;
     VkAttachmentDescription attachmentDescriptions[2 * MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
@@ -6147,6 +6155,7 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     VkAttachmentReference resolveReferences[MAX_COLOR_TARGET_BINDINGS];
     VkAttachmentReference depthStencilAttachmentReference;
     VkRenderPassCreateInfo renderPassCreateInfo;
+    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
     VkSubpassDescription subpass;
     VkRenderPass renderPass;
     Uint32 i;
@@ -6154,6 +6163,7 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     Uint32 attachmentDescriptionCount = 0;
     Uint32 colorAttachmentReferenceCount = 0;
     Uint32 resolveReferenceCount = 0;
+    Uint32 viewMask = 0;
 
     for (i = 0; i < numColorTargets; i += 1) {
         VulkanTextureContainer *container = (VulkanTextureContainer *)colorTargetInfos[i].texture;
@@ -6246,6 +6256,21 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = NULL;
 
+    if (viewCount != 0) {
+        viewMask = (1u << viewCount) - 1;
+
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
+        multiViewInfo.pNext = NULL;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = &viewMask;
+        multiViewInfo.dependencyCount = 0;
+        multiViewInfo.pViewOffsets = NULL;
+        multiViewInfo.correlationMaskCount = 0;
+        multiViewInfo.pCorrelationMasks = NULL;
+
+        renderPassCreateInfo.pNext = &multiViewInfo;
+    }
+
     vulkanResult = renderer->vkCreateRenderPass(
         renderer->logicalDevice,
         &renderPassCreateInfo,
@@ -6260,7 +6285,8 @@ static VkRenderPass VULKAN_INTERNAL_CreateRenderPass(
 static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     VulkanRenderer *renderer,
     SDL_GPUGraphicsPipelineTargetInfo targetInfo,
-    VkSampleCountFlagBits sampleCount)
+    VkSampleCountFlagBits sampleCount,
+    Uint32 viewCount)
 {
     VkAttachmentDescription attachmentDescriptions[MAX_COLOR_TARGET_BINDINGS + 1 /* depth */];
     VkAttachmentReference colorAttachmentReferences[MAX_COLOR_TARGET_BINDINGS];
@@ -6268,9 +6294,11 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     SDL_GPUColorTargetDescription attachmentDescription;
     VkSubpassDescription subpass;
     VkRenderPassCreateInfo renderPassCreateInfo;
+    VkRenderPassMultiviewCreateInfoKHR multiViewInfo;
     VkRenderPass renderPass;
     VkResult result;
 
+    Uint32 viewMask = 0;
     Uint32 attachmentDescriptionCount = 0;
     Uint32 colorAttachmentReferenceCount = 0;
     Uint32 i;
@@ -6338,6 +6366,21 @@ static VkRenderPass VULKAN_INTERNAL_CreateTransientRenderPass(
     renderPassCreateInfo.dependencyCount = 0;
     renderPassCreateInfo.pDependencies = NULL;
 
+    if (viewCount != 0) {
+        viewMask = (1u << viewCount) - 1;
+
+        multiViewInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO_KHR;
+        multiViewInfo.pNext = NULL;
+        multiViewInfo.subpassCount = 1;
+        multiViewInfo.pViewMasks = &viewMask;
+        multiViewInfo.dependencyCount = 0;
+        multiViewInfo.pViewOffsets = NULL;
+        multiViewInfo.correlationMaskCount = 0;
+        multiViewInfo.pCorrelationMasks = NULL;
+
+        renderPassCreateInfo.pNext = &multiViewInfo;
+    }
+
     result = renderer->vkCreateRenderPass(
         renderer->logicalDevice,
         &renderPassCreateInfo,
@@ -6397,7 +6440,8 @@ static SDL_GPUGraphicsPipeline *VULKAN_CreateGraphicsPipeline(
     VkRenderPass transientRenderPass = VULKAN_INTERNAL_CreateTransientRenderPass(
         renderer,
         createinfo->target_info,
-        SDLToVK_SampleCount[createinfo->multisample_state.sample_count]);
+        SDLToVK_SampleCount[createinfo->multisample_state.sample_count],
+        createinfo->target_info.num_multiviews);
 
     // Dynamic state
 
@@ -7267,7 +7311,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     VulkanRenderer *renderer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VulkanRenderPassHashTableValue *renderPassWrapper = NULL;
     VkRenderPass renderPassHandle;
@@ -7293,6 +7338,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
     } else if (numColorTargets == 0 && depthStencilTargetInfo != NULL) {
         key.sampleCount = SDLToVK_SampleCount[((VulkanTextureContainer *)depthStencilTargetInfo->texture)->header.info.sample_count];
     }
+
+    key.viewCount = viewCount;
 
     key.numColorTargets = numColorTargets;
 
@@ -7326,7 +7373,8 @@ static VkRenderPass VULKAN_INTERNAL_FetchRenderPass(
         renderer,
         colorTargetInfos,
         numColorTargets,
-        depthStencilTargetInfo);
+        depthStencilTargetInfo,
+        viewCount);
 
     if (renderPassHandle == VK_NULL_HANDLE) {
         SDL_UnlockMutex(renderer->renderPassFetchLock);
@@ -7357,7 +7405,8 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     Uint32 numColorTargets,
     const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
     Uint32 width,
-    Uint32 height)
+    Uint32 height,
+    Uint32 viewCount)
 {
     VulkanFramebuffer *vulkanFramebuffer = NULL;
     VkFramebufferCreateInfo framebufferInfo;
@@ -7379,18 +7428,26 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
             colorTargetInfos[i].mip_level);
 
-        Uint32 rtvIndex =
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
-        key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
+        if (viewCount == 0) {
+            Uint32 rtvIndex =
+                container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
+            key.colorAttachmentViews[i] = subresource->renderTargetViews[rtvIndex];
+        } else {
+            key.colorAttachmentViews[i] = container->activeTexture->fullView;
+        }
 
         if (colorTargetInfos[i].resolve_texture != NULL) {
             VulkanTextureContainer *resolveTextureContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
-            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-                resolveTextureContainer,
-                colorTargetInfos[i].layer_or_depth_plane,
-                colorTargetInfos[i].mip_level);
+            if (viewCount == 0) {
+                VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                    resolveTextureContainer,
+                    colorTargetInfos[i].layer_or_depth_plane,
+                    colorTargetInfos[i].mip_level);
 
-            key.resolveAttachmentViews[key.numResolveAttachments] = resolveSubresource->renderTargetViews[0];
+                key.resolveAttachmentViews[key.numResolveAttachments] = resolveSubresource->renderTargetViews[0];
+            } else {
+                key.resolveAttachmentViews[key.numResolveAttachments] = resolveTextureContainer->activeTexture->fullView;
+            }
             key.numResolveAttachments += 1;
         }
     }
@@ -7398,15 +7455,22 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     if (depthStencilTargetInfo == NULL) {
         key.depthStencilAttachmentView = VK_NULL_HANDLE;
     } else {
-        VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            depthStencilTargetInfo->layer,
-            depthStencilTargetInfo->mip_level);
-        key.depthStencilAttachmentView = subresource->depthStencilView;
+        VulkanTextureContainer *texture = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
+
+        if (viewCount == 0) {
+            VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                texture,
+                depthStencilTargetInfo->layer,
+                depthStencilTargetInfo->mip_level);
+            key.depthStencilAttachmentView = subresource->depthStencilView;
+        } else {
+            key.depthStencilAttachmentView = texture->activeTexture->fullView;
+        }
     }
 
     key.width = width;
     key.height = height;
+    key.viewCount = viewCount;
 
     SDL_LockMutex(renderer->framebufferFetchLock);
 
@@ -7433,32 +7497,46 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
             container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? 0 : colorTargetInfos[i].layer_or_depth_plane,
             colorTargetInfos[i].mip_level);
 
-        Uint32 rtvIndex =
-            container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
+        if (viewCount == 0) {
+            Uint32 rtvIndex =
+                container->header.info.type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : 0;
 
-        imageViewAttachments[attachmentCount] = subresource->renderTargetViews[rtvIndex];
+            imageViewAttachments[attachmentCount] = subresource->renderTargetViews[rtvIndex];
+        } else {
+            imageViewAttachments[attachmentCount] = container->activeTexture->fullView;
+        }
 
         attachmentCount += 1;
 
         if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
             VulkanTextureContainer *resolveContainer = (VulkanTextureContainer *)colorTargetInfos[i].resolve_texture;
-            VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
-                resolveContainer,
-                colorTargetInfos[i].resolve_layer,
-                colorTargetInfos[i].resolve_mip_level);
 
-            imageViewAttachments[attachmentCount] = resolveSubresource->renderTargetViews[0];
+            if (viewCount == 0) {
+                VulkanTextureSubresource *resolveSubresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                    resolveContainer,
+                    colorTargetInfos[i].resolve_layer,
+                    colorTargetInfos[i].resolve_mip_level);
+
+                imageViewAttachments[attachmentCount] = resolveSubresource->renderTargetViews[0];
+            } else {
+                imageViewAttachments[attachmentCount] = resolveContainer->activeTexture->fullView;
+            }
 
             attachmentCount += 1;
         }
     }
 
     if (depthStencilTargetInfo != NULL) {
-        VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
-            (VulkanTextureContainer *)depthStencilTargetInfo->texture,
-            depthStencilTargetInfo->layer,
-            depthStencilTargetInfo->mip_level);
-        imageViewAttachments[attachmentCount] = subresource->depthStencilView;
+        VulkanTextureContainer *texture = (VulkanTextureContainer *)depthStencilTargetInfo->texture;
+        if (viewCount == 0) {
+            VulkanTextureSubresource *subresource = VULKAN_INTERNAL_FetchTextureSubresource(
+                texture,
+                depthStencilTargetInfo->layer,
+                depthStencilTargetInfo->mip_level);
+            imageViewAttachments[attachmentCount] = subresource->depthStencilView;
+        } else {
+            imageViewAttachments[attachmentCount] = texture->activeTexture->fullView;
+        }
 
         attachmentCount += 1;
     }
@@ -7471,7 +7549,7 @@ static VulkanFramebuffer *VULKAN_INTERNAL_FetchFramebuffer(
     framebufferInfo.pAttachments = imageViewAttachments;
     framebufferInfo.width = key.width;
     framebufferInfo.height = key.height;
-    framebufferInfo.layers = 1;
+    framebufferInfo.layers = viewCount == 0 ? 1 : viewCount;
 
     result = renderer->vkCreateFramebuffer(
         renderer->logicalDevice,
@@ -7899,7 +7977,8 @@ static void VULKAN_BeginRenderPass(
     SDL_GPUCommandBuffer *commandBuffer,
     const SDL_GPUColorTargetInfo *colorTargetInfos,
     Uint32 numColorTargets,
-    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+    const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo,
+    Uint32 viewCount)
 {
     VulkanCommandBuffer *vulkanCommandBuffer = (VulkanCommandBuffer *)commandBuffer;
     VulkanRenderer *renderer = vulkanCommandBuffer->renderer;
@@ -8009,7 +8088,8 @@ static void VULKAN_BeginRenderPass(
         renderer,
         colorTargetInfos,
         numColorTargets,
-        depthStencilTargetInfo);
+        depthStencilTargetInfo,
+        viewCount);
 
     if (renderPass == VK_NULL_HANDLE) {
         return;
@@ -8022,7 +8102,8 @@ static void VULKAN_BeginRenderPass(
         numColorTargets,
         depthStencilTargetInfo,
         framebufferWidth,
-        framebufferHeight);
+        framebufferHeight,
+        viewCount);
 
     if (framebuffer == NULL) {
         return;
@@ -8235,29 +8316,32 @@ static void VULKAN_EndRenderPass(
         vulkanCommandBuffer->commandBuffer);
 
     for (i = 0; i < vulkanCommandBuffer->colorAttachmentSubresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
-            vulkanCommandBuffer->colorAttachmentSubresources[i]);
+            vulkanCommandBuffer->colorAttachmentSubresources[i]->parent);
     }
     vulkanCommandBuffer->colorAttachmentSubresourceCount = 0;
 
     for (i = 0; i < vulkanCommandBuffer->resolveAttachmentSubresourceCount; i += 1) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_COLOR_ATTACHMENT,
-            vulkanCommandBuffer->resolveAttachmentSubresources[i]);
+            vulkanCommandBuffer->resolveAttachmentSubresources[i]->parent);
     }
     vulkanCommandBuffer->resolveAttachmentSubresourceCount = 0;
 
     if (vulkanCommandBuffer->depthStencilAttachmentSubresource != NULL) {
-        VULKAN_INTERNAL_TextureSubresourceTransitionToDefaultUsage(
+        // FIXME: this probably shouldn't transition the entire texture
+        VULKAN_INTERNAL_TextureTransitionToDefaultUsage(
             renderer,
             vulkanCommandBuffer,
             VULKAN_TEXTURE_USAGE_MODE_DEPTH_STENCIL_ATTACHMENT,
-            vulkanCommandBuffer->depthStencilAttachmentSubresource);
+            vulkanCommandBuffer->depthStencilAttachmentSubresource->parent);
         vulkanCommandBuffer->depthStencilAttachmentSubresource = NULL;
     }
 
@@ -9345,7 +9429,8 @@ static void VULKAN_Blit(
             commandBuffer,
             &targetInfo,
             1,
-            NULL);
+            NULL,
+            0);
         VULKAN_EndRenderPass(commandBuffer);
     }
 
@@ -11270,7 +11355,7 @@ static inline Uint8 CheckDeviceExtensions(
         supports->ext = 1;                   \
     }
         CHECK(KHR_swapchain)
-        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr)
+        else CHECK(KHR_maintenance1) else CHECK(KHR_driver_properties) else CHECK(KHR_portability_subset) else CHECK(MSFT_layered_driver) else CHECK(EXT_texture_compression_astc_hdr) else CHECK(KHR_multiview)
 #undef CHECK
     }
 
@@ -11286,7 +11371,8 @@ static inline Uint32 GetDeviceExtensionCount(VulkanExtensions *supports)
         supports->KHR_driver_properties +
         supports->KHR_portability_subset +
         supports->MSFT_layered_driver +
-        supports->EXT_texture_compression_astc_hdr);
+        supports->EXT_texture_compression_astc_hdr +
+        supports->KHR_multiview);
 }
 
 static inline void CreateDeviceExtensionArray(
@@ -11304,6 +11390,7 @@ static inline void CreateDeviceExtensionArray(
     CHECK(KHR_portability_subset)
     CHECK(MSFT_layered_driver)
     CHECK(EXT_texture_compression_astc_hdr)
+    CHECK(KHR_multiview)
 #undef CHECK
 }
 
@@ -12536,6 +12623,12 @@ static Uint8 VULKAN_INTERNAL_DeterminePhysicalDevice(VulkanRenderer *renderer, V
         renderer->physicalDeviceProperties.pNext =
             &renderer->physicalDeviceDriverProperties;
 
+        if (renderer->supports.KHR_multiview) {
+            renderer->physicalDeviceProperties.pNext = &renderer->multiviewProperties;
+            renderer->multiviewProperties.sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_PROPERTIES_KHR;
+        }
+
         renderer->vkGetPhysicalDeviceProperties2KHR(
             renderer->physicalDevice,
             &renderer->physicalDeviceProperties);
@@ -12596,6 +12689,10 @@ static Uint8 VULKAN_INTERNAL_CreateLogicalDevice(
     if (haveDeviceFeatures.multiDrawIndirect) {
         features->desiredVulkan10DeviceFeatures.multiDrawIndirect = VK_TRUE;
         renderer->supportsMultiDrawIndirect = true;
+    }
+
+    if (renderer->supports.KHR_multiview) {
+        features->desiredVulkan11DeviceFeatures.multiview = true;
     }
 
     // creating the logical device
@@ -13507,6 +13604,15 @@ static SDL_GPUDevice *VULKAN_CreateDevice(bool debugMode, bool preferLowPower, S
             SDL_LogInfo(SDL_LOG_CATEGORY_GPU, "Vulkan Driver: %s", driverVer);
         }
     }
+
+    if (!renderer->supports.KHR_multiview) {
+        renderer->multiviewProperties.maxMultiviewViewCount = 1;
+    }
+
+    SDL_SetNumberProperty(
+        renderer->props,
+        SDL_PROP_GPU_DEVICE_MAX_VIEW_COUNT_NUMBER,
+        renderer->multiviewProperties.maxMultiviewViewCount);
 
     if (!VULKAN_INTERNAL_CreateLogicalDevice(renderer, &features)) {
         SET_STRING_ERROR("Failed to create logical device!");

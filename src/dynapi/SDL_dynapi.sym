@@ -20,6 +20,7 @@ SDL3_0.0.0 {
     SDL_BeginGPUComputePass;
     SDL_BeginGPUCopyPass;
     SDL_BeginGPURenderPass;
+    SDL_BeginMultiViewGPURenderPass;
     SDL_BindAudioStream;
     SDL_BindAudioStreams;
     SDL_BindGPUComputePipeline;
