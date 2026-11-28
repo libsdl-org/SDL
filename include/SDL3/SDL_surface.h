@@ -757,7 +757,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SavePNG(SDL_Surface *surface, const char *f
  * This is designed as a convenience function for loading images from trusted
  * sources. Crashes or other issues with invalid content should not be
  * considered security issues. If you want to load arbitrary images you should
- * use libjpeg or another image loading library designed with security in mind.
+ * use libjpeg or another image loading library designed with security in
+ * mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -783,7 +784,8 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadJPG_IO(SDL_IOStream *src, bool
  * This is designed as a convenience function for loading images from trusted
  * sources. Crashes or other issues with invalid content should not be
  * considered security issues. If you want to load arbitrary images you should
- * use libjpeg or another image loading library designed with security in mind.
+ * use libjpeg or another image loading library designed with security in
+ * mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
