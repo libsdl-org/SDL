@@ -32,15 +32,6 @@
 
 /* OpenGL ES 1.1 renderer implementation, based on the OpenGL renderer */
 
-typedef struct GLES_FBOList GLES_FBOList;
-
-struct GLES_FBOList
-{
-    Uint32 w, h;
-    GLuint FBO;
-    GLES_FBOList *next;
-};
-
 typedef struct
 {
     SDL_Rect viewport;
@@ -71,7 +62,6 @@ typedef struct
 #undef SDL_PROC
 #undef SDL_PROC_OES
     bool GL_OES_framebuffer_object_supported;
-    GLES_FBOList *framebuffers;
     GLuint window_framebuffer;
 
     bool GL_OES_blend_func_separate_supported;
@@ -98,6 +88,7 @@ typedef struct
 typedef struct
 {
     GLuint texture;
+    GLuint fbo;  // framebuffer object; this is zero unless this texture is a render target.
     GLenum textype;
     GLfloat texw;
     GLfloat texh;
@@ -108,7 +99,6 @@ typedef struct
     GLenum texture_address_mode_v;
     void *pixels;
     int pitch;
-    GLES_FBOList *fbo;
 } GLES_TextureData;
 
 static bool GLES_SetError(const char *prefix, GLenum result)
@@ -173,23 +163,6 @@ static bool GLES_LoadFunctions(GLES_RenderData *data)
 #undef SDL_PROC
 #undef SDL_PROC_OES
     return true;
-}
-
-static GLES_FBOList *GLES_GetFBO(GLES_RenderData *data, Uint32 w, Uint32 h)
-{
-    GLES_FBOList *result = data->framebuffers;
-    while ((result) && ((result->w != w) || (result->h != h))) {
-        result = result->next;
-    }
-    if (!result) {
-        result = SDL_malloc(sizeof(GLES_FBOList));
-        result->w = w;
-        result->h = h;
-        data->glGenFramebuffersOES(1, &result->FBO);
-        result->next = data->framebuffers;
-        data->framebuffers = result;
-    }
-    return result;
 }
 
 static bool GLES_ActivateRenderer(SDL_Renderer *renderer)
@@ -352,6 +325,12 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
 
     GLES_ActivateRenderer(renderer);
 
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+        if (!renderdata->GL_OES_framebuffer_object_supported) {
+            return SDL_SetError("GL_OES_framebuffer_object not supported");
+        }
+    }
+
     switch (texture->format) {
     case SDL_PIXELFORMAT_RGBA32:
         internalFormat = GL_RGBA;
@@ -374,16 +353,6 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
             SDL_free(data);
             return SDL_OutOfMemory();
         }
-    }
-
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        if (!renderdata->GL_OES_framebuffer_object_supported) {
-            SDL_free(data);
-            return SDL_SetError("GL_OES_framebuffer_object not supported");
-        }
-        data->fbo = GLES_GetFBO(renderer->internal, texture->w, texture->h);
-    } else {
-        data->fbo = NULL;
     }
 
     renderdata->glGetError();
@@ -416,6 +385,20 @@ static bool GLES_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture, SDL
                              texture_h, 0, format, textype, NULL);
 
     SetTextureScaleMode(renderdata, data->textype, texture->format, texture->scaleMode);
+
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+        renderdata->glGenFramebuffersOES(1, &data->fbo);
+        renderdata->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->fbo);
+        renderdata->glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_TEXTURE_2D /*renderdata->textype*/, data->texture, 0);
+        const GLenum status = renderdata->glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
+        renderdata->glBindFramebufferOES(GL_FRAMEBUFFER_OES, renderer->target ? ((GLES_TextureData *)renderer->target->internal)->fbo : renderdata->window_framebuffer);  // rebind previous fbo.
+        if (status != GL_FRAMEBUFFER_COMPLETE_OES) {
+            renderdata->glDeleteFramebuffersOES(1, &data->fbo);
+            SDL_free(data->pixels);
+            SDL_free(data);
+            return SDL_SetError("Texture framebuffer was incomplete (0x%X)", (unsigned int) status);
+        }
+    }
 
     renderdata->glDisable(GL_TEXTURE_2D);
     renderdata->drawstate.texture = texture;
@@ -522,8 +505,6 @@ static void GLES_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 static bool GLES_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 {
     GLES_RenderData *data = (GLES_RenderData *)renderer->internal;
-    GLES_TextureData *texturedata = NULL;
-    GLenum status;
 
     if (!data->GL_OES_framebuffer_object_supported) {
         return SDL_SetError("Can't enable render target support in this renderer");
@@ -531,20 +512,8 @@ static bool GLES_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     data->drawstate.viewport_dirty = true;
 
-    if (!texture) {
-        data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->window_framebuffer);
-        return true;
-    }
+    data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, texture ? ((GLES_TextureData *)texture->internal)->fbo : data->window_framebuffer);
 
-    texturedata = (GLES_TextureData *)texture->internal;
-    data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, texturedata->fbo->FBO);
-    /* TODO: check if texture pixel format allows this operation */
-    data->glFramebufferTexture2DOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, texturedata->textype, texturedata->texture, 0);
-    /* Check FBO status */
-    status = data->glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES);
-    if (status != GL_FRAMEBUFFER_COMPLETE_OES) {
-        return SDL_SetError("glFramebufferTexture2DOES() failed");
-    }
     return true;
 }
 
@@ -1019,12 +988,6 @@ static void GLES_DestroyRenderer(SDL_Renderer *renderer)
 
     if (data) {
         if (data->context) {
-            while (data->framebuffers) {
-                GLES_FBOList *nextnode = data->framebuffers->next;
-                data->glDeleteFramebuffersOES(1, &data->framebuffers->FBO);
-                SDL_free(data->framebuffers);
-                data->framebuffers = nextnode;
-            }
             SDL_GL_DestroyContext(data->context);
         }
         SDL_free(data);
@@ -1143,7 +1106,6 @@ static bool GLES_CreateRenderer(SDL_Renderer *renderer, SDL_Window *window, SDL_
         data->glGetIntegerv(GL_FRAMEBUFFER_BINDING_OES, &value);
         data->window_framebuffer = (GLuint)value;
     }
-    data->framebuffers = NULL;
 
     if (SDL_GL_ExtensionSupported("GL_OES_blend_func_separate")) {
         data->GL_OES_blend_func_separate_supported = true;
