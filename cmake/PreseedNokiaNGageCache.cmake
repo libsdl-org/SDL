@@ -187,5 +187,6 @@ if(NGAGESDK)
 
     set(HAVE_SDL_FSOPS                                   "1"   CACHE INTERNAL "Enable SDL_FSOPS")
     set(HAVE_SDL_LOCALE                                  "1"   CACHE INTERNAL "Enable SDL_LOCALE")
+    set(SDL_ALREADY_PRESEEDED_CMAKE_CACHE TRUE)
   endfunction()
 endif()

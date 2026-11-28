@@ -73,9 +73,14 @@ include("${SDL3_SOURCE_DIR}/cmake/3rdparty.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedMSVCCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedEmscriptenCache.cmake")
 include("${SDL3_SOURCE_DIR}/cmake/PreseedOpenHarmonyCache.cmake")
-include("${SDL3_SOURCE_DIR}/cmake/PreseedHaikuCache.cmake")
-include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
-include("${SDL3_SOURCE_DIR}/cmake/PreseedDOSCache.cmake")
+
+option(SDL_NO_PRESEED_CMAKE_CACHE "Preseed CMake cache variables to speed up configuration")
+if(NOT SDL_NO_PRESEED_CMAKE_CACHE)
+  include("${SDL3_SOURCE_DIR}/cmake/PreseedHaikuCache.cmake")
+  include("${SDL3_SOURCE_DIR}/cmake/PreseedNokiaNGageCache.cmake")
+  include("${SDL3_SOURCE_DIR}/cmake/PreseedDOSCache.cmake")
+  include("${SDL3_SOURCE_DIR}/cmake/PreseedPOSIXCache.cmake")  # MUST BE LAST, IS ONLY CHOSEN IF NO OTHER PRESEED WAS ACCEPTED!
+endif()
 
 SDL_DetectCompiler()
 SDL_DetectTargetCPUArchitectures(SDL_CPUS)
