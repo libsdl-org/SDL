@@ -273,36 +273,27 @@
  *
  * SDL driver name: "webgpu"
  *
- * WebGPU support is complicated and rapidly updating, so there's no exact list.
- * Generally speaking, if you're using a modern browser you can use WebGPU.
+ * WebGPU support is complicated and rapidly updating, so there's no exact
+ * list. Generally speaking, if you're using a modern browser you can use
+ * WebGPU.
  *
- * The backend requires these WebGPU features to run:
- * - `BGRA8UnormStorage`
- * - `CoreFeaturesAndLimits`
- * - `Depth32FloatStencil8`
- * - `DepthClipControl`
- * - `Float32Filterable`
- * - `IndirectFirstInstance`
- * - `RG11B10UfloatRenderable`
+ * The backend requires these WebGPU features to run: - `BGRA8UnormStorage` -
+ * `CoreFeaturesAndLimits` - `Depth32FloatStencil8` - `DepthClipControl` -
+ * `Float32Filterable` - `IndirectFirstInstance` - `RG11B10UfloatRenderable`
  *
- * The backend also optionally supports some features. These features are not required
- * for the backend to run, but they are required for specific SDLGPU functionality:
- * - `Float32Blendable`
- *   Required for blending Float32 textures. The backend will safely disable blending
- *   if this is unsupported.
- * - `TextureCompressionASTC`
- * - `TextureCompressionASTCSliced3D`
- *   Required for ASTC texture format support.
- * - `TextureCompressionBC`
- * - `TextureCompressionBCSliced3D`
- *   Required for BC texture format support
- * - `TextureFormatsTier1`
- * - `TextureFormatsTier2`
- *   Required for a lot of stuff, mostly related to texture sampling & access. It's
- *   too much to list here.
+ * The backend also optionally supports some features. These features are not
+ * required for the backend to run, but they are required for specific SDLGPU
+ * functionality: - `Float32Blendable` Required for blending Float32 textures.
+ * The backend will safely disable blending if this is unsupported. -
+ * `TextureCompressionASTC` - `TextureCompressionASTCSliced3D` Required for
+ * ASTC texture format support. - `TextureCompressionBC` -
+ * `TextureCompressionBCSliced3D` Required for BC texture format support -
+ * `TextureFormatsTier1` - `TextureFormatsTier2` Required for a lot of stuff,
+ * mostly related to texture sampling & access. It's too much to list here.
  *
- * Both all required and optional features will be requested automatically during
- * device creation. If debug mode is enabled, any unsupported features will be logged.
+ * Both all required and optional features will be requested automatically
+ * during device creation. If debug mode is enabled, any unsupported features
+ * will be logged.
  *
  * ## Coordinate System
  *
@@ -2880,53 +2871,23 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * **WGSL (WebGPU Shading Language)**
  *
- * For WGSL, use the following order:
- * - 0: Sampled textures, followed by read-only storage textures, followed by
- *   read-only storage buffers
- * - 1: Read-write storage textures, followed by read-write storage buffers
- * - 2: Uniform buffers
+ * For WGSL, use the following order: - 0: Sampled textures, followed by
+ * read-only storage textures, followed by read-only storage buffers - 1:
+ * Read-write storage textures, followed by read-write storage buffers - 2:
+ * Uniform buffers
  *
- * Note that WebGPU does not differentiate between simultaneous read-write and non-simultaneous
- * read-write. This means that any storage bind with both READ & WRITE accesses will be treated
- * as if it were simultaneous. If simultaneous RW is unsupported, the backend will fall back
- * to write-only.
+ * Note that WebGPU does not differentiate between simultaneous read-write and
+ * non-simultaneous read-write. This means that any storage bind with both
+ * READ & WRITE accesses will be treated as if it were simultaneous. If
+ * simultaneous RW is unsupported, the backend will fall back to write-only.
  *
  * **Example**
  *
  * For a compute shader binding 2 of each resource type, the binds should look
  * like this:
  *
- * ```wgsl
- * // Sampled textures come first, followed by the sampler, in SDL slot order.
- * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
- * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
- * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
- * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
- * // Any read-only storage textures come next, in SDL slot order.
- * \@group(0) \@binding(4) var readOnlyStorageTextureBoundToSlot0: ...
- * \@group(0) \@binding(5) var readOnlyStorageTextureBoundToSlot1: ...
- * // Any read-only storage buffers come next, in SDL slot order.
- * \@group(0) \@binding(6) var<storage, ...> readOnlyStorageBufferBoundToSlot0: ...
- * \@group(0) \@binding(7) var<storage, ...> readOnlyStorageBufferBoundToSlot1: ...
- * // Read-write storage textures and buffers have their own bind group.
- * // Read-write storage textures go first, in SDL slot order.
- * \@group(1) \@binding(0) var readWriteStorageTextureBoundToSlot0: ...
- * \@group(1) \@binding(1) var readWriteStorageTextureBoundToSlot1: ...
- * // Any read-write storage textures come next, in SDL slot order.
- * \@group(1) \@binding(2) var<storage, ...> readWriteStorageBufferBoundToSlot0: ...
- * \@group(1) \@binding(3) var<storage, ...> readWriteStorageBufferBoundToSlot1: ...
- * // Any uniform buffers are in their own set, in SDL slot order.
- * \@group(2) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
- * \@group(2) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
- * ```
- *
- * ---
- *
- * There are optional properties that can be provided through `props`. These
- * are the supported properties:
- *
- * - `SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING`: a name that can be
- *   displayed in debugging tools.
+ * ```wgsl // Sampled textures come first, followed by the sampler, in SDL
+ * slot order.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the compute pipeline to
@@ -3174,59 +3135,29 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  * resources must appear at consecutive bindings (1, 2, etc), leaving no gaps
  * in the set.
  *
- * All sampled textures must come first in the binding order, followed by their
- * associated sampler, in order of how they are bound via `SDL_BindGPU*Samplers()`.
+ * All sampled textures must come first in the binding order, followed by
+ * their associated sampler, in order of how they are bound via
+ * `SDL_BindGPU*Samplers()`.
  *
- * All storage textures must come after all samplers and sampled textures
- * in the binding order, in order of how they are bound via `SDL_Bind*StorageTextures()`.
+ * All storage textures must come after all samplers and sampled textures in
+ * the binding order, in order of how they are bound via
+ * `SDL_Bind*StorageTextures()`.
  *
  * All storage buffers must come after all storage textures in the binding
  * order, in order of how they are bound via `SDL_Bind*StorageBuffers()`.
  *
- * Note that WebGPU has... odd alignment rules. All types must be aligned to a power of
- * two, but can be any size.
- * Consult the [WebGPU spec](https://www.w3.org/TR/WGSL/#alignment-and-size) for more.
+ * Note that WebGPU has... odd alignment rules. All types must be aligned to a
+ * power of two, but can be any size. Consult the
+ * [WebGPU spec](https://www.w3.org/TR/WGSL/#alignment-and-size)
+ * for more.
  *
  * **Example**
  *
  * If a vertex shader binds 2 samplers, 2 storage textures, 2 storage buffers,
  * and 2 uniform buffers, its binding layout should look like this:
  *
- * ```wgsl
- * // Sampled textures come first, followed by the sampler, in SDL slot order.
- * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
- * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
- * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
- * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
- * // Any storage textures come next, in SDL slot order.
- * \@group(0) \@binding(4) var storageTextureBoundToSlot0: ...
- * \@group(0) \@binding(5) var storageTextureBoundToSlot1: ...
- * // Any storage buffers come next, in SDL slot order.
- * \@group(0) \@binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
- * \@group(0) \@binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
- * // Any uniform buffers are in their own set, in SDL slot order.
- * \@group(1) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
- * \@group(1) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
- * ```
- *
- * ---
- *
- * Shader semantics other than system-value semantics do not matter in D3D12.
- * For ease of use, the SDL implementation assumes that non system-value
- * semantics will all be `TEXCOORD`. If you are using HLSL as the shader
- * source language, your vertex semantics should start at `TEXCOORD0` and
- * increment like so: `TEXCOORD1`, `TEXCOORD2`, etc.
- *
- * If you wish to change the semantic prefix to something other than
- * `TEXCOORD` you can use
- * SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING with
- * SDL_CreateGPUDeviceWithProperties().
- *
- * There are optional properties that can be provided through `props`. These
- * are the supported properties:
- *
- * - `SDL_PROP_GPU_SHADER_CREATE_NAME_STRING`: a name that can be displayed in
- *   debugging tools.
+ * ```wgsl // Sampled textures come first, followed by the sampler, in SDL
+ * slot order.
  *
  * \param device a GPU Context.
  * \param createinfo a struct describing the state of the shader to create.
@@ -4355,9 +4286,9 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  * SDL_UnmapGPUTransferBuffer. The memory is owned by the graphics driver - do
  * NOT call SDL_free() on the returned pointer.
  *
- * Note that for the WebGPU backend, mapping download buffers is a very expensive
- * procedure. Mapping download buffers with the WebGPU backend is strongly
- * discouraged.
+ * Note that for the WebGPU backend, mapping download buffers is a very
+ * expensive procedure. Mapping download buffers with the WebGPU backend is
+ * strongly discouraged.
  *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
@@ -4417,9 +4348,9 @@ extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
  * 512 bytes. If they are not, SDL will make a temporary copy of the data that
  * is properly aligned, but this adds overhead to the transfer process. Apps
  * can avoid this by aligning their data appropriately, or using a different
- * GPU backend than Direct3D 12.
- * Note that the WebGPU backend inherits Direct3D's 256-byte BPR alignment
- * rules, and therefore also presents the same behaviour.
+ * GPU backend than Direct3D 12. Note that the WebGPU backend inherits
+ * Direct3D's 256-byte BPR alignment rules, and therefore also presents the
+ * same behaviour.
  *
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with image layout information.

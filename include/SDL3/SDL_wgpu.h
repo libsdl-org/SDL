@@ -26,17 +26,18 @@ WGPU_OBJECT_ATTRIBUTE(WGPUInstance)
 
 /**
  * Create a new WebGPU surface.
+ *
  * This will not configure the surface.
  *
  * \param window the window which the surface will attach itself to.
  * \param instance a WebGPU instance.
  * \param surface a pointer to a WGPUSurface handle to output the newly
  *                created WebGPU surface.
- *
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
- * \since This is part of SDL PR #16020, and is therefore not available in regular SDL.
+ * \since This is part of SDL PR #16020, and is therefore not available in
+ *        regular SDL.
  *
  * \sa SDL_WGPU_DestroySurface
  */
@@ -47,7 +48,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WGPU_CreateSurface(SDL_Window *window, WGPU
  *
  * \param surface the surface to destroy.
  *
- * \since This is part of SDL PR #16020, and is therefore not available in regular SDL.
+ * \since This is part of SDL PR #16020, and is therefore not available in
+ *        regular SDL.
  *
  * \sa SDL_WGPU_CreateSurface
  */
