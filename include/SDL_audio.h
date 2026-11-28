@@ -798,6 +798,11 @@ extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
  * A-law and mu-law (8 bits). Other formats are currently unsupported and
  * cause an error.
  *
+ * This is designed as a convenience function for loading audio from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary audio you should
+ * use an audio loading library designed with security in mind.
+ *
  * If this function succeeds, the pointer returned by it is equal to `spec`
  * and the pointer to the audio data allocated by the function is written to
  * `audio_buf` and its length in bytes to `audio_len`. The SDL_AudioSpec
@@ -873,7 +878,10 @@ extern DECLSPEC SDL_AudioSpec *SDLCALL SDL_LoadWAV_RW(SDL_RWops * src,
 /**
  * Loads a WAV from a file.
  *
- * Compatibility convenience function.
+ * This is designed as a convenience function for loading audio from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary audio you should
+ * use an audio loading library designed with security in mind.
  */
 #define SDL_LoadWAV(file, spec, audio_buf, audio_len) \
     SDL_LoadWAV_RW(SDL_RWFromFile(file, "rb"),1, spec,audio_buf,audio_len)

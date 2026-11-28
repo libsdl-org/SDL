@@ -326,6 +326,11 @@ extern DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface * surface);
 /**
  * Load a BMP image from a seekable SDL data stream.
  *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
+ *
  * The new surface should be freed with SDL_FreeSurface(). Not doing so will
  * result in a memory leak.
  *
@@ -349,9 +354,12 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_LoadBMP_RW(SDL_RWops * src,
                                                     int freesrc);
 
 /**
- * Load a surface from a file.
+ * Load a BMP image from a file.
  *
- * Convenience macro.
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
  */
 #define SDL_LoadBMP(file)   SDL_LoadBMP_RW(SDL_RWFromFile(file, "rb"), 1)
 
