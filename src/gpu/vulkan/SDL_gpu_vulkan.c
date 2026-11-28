@@ -2830,6 +2830,8 @@ static void VULKAN_INTERNAL_FullTextureMemoryBarrier(
     VulkanTextureUsageMode destinationUsageMode,
     VulkanTexture *texture)
 {
+    Uint32 layerCount = (texture->type == SDL_GPU_TEXTURETYPE_3D) ? VK_REMAINING_ARRAY_LAYERS : texture->layerCount;
+
     VULKAN_INTERNAL_TextureMemoryBarrier(
         renderer,
         commandBuffer,
@@ -2838,7 +2840,7 @@ static void VULKAN_INTERNAL_FullTextureMemoryBarrier(
         0,
         texture->levelCount,
         0,
-        texture->layerCount,
+        layerCount,
         texture);
 }
 
