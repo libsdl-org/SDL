@@ -77,7 +77,7 @@
             /* Private platforms may have their own ideas about entry points. */
             #include "SDL_main_impl_private.h"
 
-        #elif defined(SDL_PLATFORM_WINDOWS)
+        #elif defined(SDL_PLATFORM_WINDOWS) && !defined(SDL_PLATFORM_CYGWIN)
 
             /* these defines/typedefs are needed for the WinMain() definition */
             #ifndef WINAPI
