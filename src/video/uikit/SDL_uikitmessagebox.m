@@ -106,7 +106,11 @@ static BOOL UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messag
         }
         if (!alertwindow) {
 #ifdef SDL_PLATFORM_VISIONOS
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            // Deprecated in visionOS 26.0 in favor of -initWithWindowScene:, which is tried first; this is the fallback when there is no active window scene.
             alertwindow = [[UIWindow alloc] init];
+#pragma clang diagnostic pop
 #else
             alertwindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 #endif

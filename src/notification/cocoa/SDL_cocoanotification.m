@@ -51,7 +51,11 @@
     if (@available(macOS 11, iOS 14, *)) {
         completionHandler(UNNotificationPresentationOptionBanner + UNNotificationPresentationOptionSound);
     } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 11.0 and iOS 14.0; its replacement, UNNotificationPresentationOptionBanner, doesn't exist before then.
         completionHandler(UNNotificationPresentationOptionAlert + UNNotificationPresentationOptionSound);
+#pragma clang diagnostic pop
     }
 }
 
@@ -114,10 +118,14 @@ static bool ShouldEnableNotifications(void)
         bool ret = false;
 
         CFStringRef uti = NULL;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Deprecated in macOS 12.0; the UTType replacement above doesn't exist before macOS 11.0.
         if (CFURLCopyResourcePropertyForKey(bundleUrl, kCFURLTypeIdentifierKey, &uti, NULL) && uti) {
             ret = UTTypeConformsTo(uti, kUTTypeApplicationBundle);
             CFRelease(uti);
         }
+#pragma clang diagnostic pop
 
         CFRelease(bundleUrl);
         return ret;
