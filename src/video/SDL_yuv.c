@@ -769,7 +769,8 @@ bool SDL_ConvertPixels_YUV_to_RGB(int width, int height,
     } else if (src_format == SDL_PIXELFORMAT_I0FL || src_format == SDL_PIXELFORMAT_I4FL) {
         tmp_format = SDL_PIXELFORMAT_RGB48;
     } else {
-        tmp_format = SDL_PIXELFORMAT_ARGB8888;
+        // TODO: Use RGB565 or RGB24 for smaller pixel formats?
+        tmp_format = SDL_PromotePixelFormatTo8888(dst_format);
     }
 
     // The fast paths don't do colorspace conversion

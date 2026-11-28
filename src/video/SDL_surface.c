@@ -1289,8 +1289,9 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
             return SDL_StretchSurface(src, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
             // Scaling bitmap not yet supported, convert to RGBA for blit
+            // TODO: Convert to SDL_PIXELFORMAT_INDEX8 instead?
             bool result = false;
-            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PromotePixelFormatTo8888(dst->format));
             if (tmp) {
                 result = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, SDL_SCALEMODE_NEAREST);
                 SDL_DestroySurface(tmp);
@@ -1308,7 +1309,7 @@ bool SDL_BlitSurfaceUncheckedScaled(SDL_Surface *src, const SDL_Rect *srcrect, S
         } else if (SDL_BITSPERPIXEL(src->format) < 8) {
             // Scaling bitmap not yet supported, convert to RGBA for blit
             bool result = false;
-            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PIXELFORMAT_ARGB8888);
+            SDL_Surface *tmp = SDL_ConvertSurface(src, SDL_PromotePixelFormatTo8888(dst->format));
             if (tmp) {
                 result = SDL_BlitSurfaceUncheckedScaled(tmp, srcrect, dst, dstrect, scaleMode);
                 SDL_DestroySurface(tmp);
@@ -2225,7 +2226,7 @@ SDL_Surface *SDL_RotateSurface(SDL_Surface *surface, float angle)
         (surface->format == SDL_PIXELFORMAT_INDEX8 && SDL_SurfaceHasColorKey(surface))) {
         rotated = SDLgfx_rotateSurface(surface, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
     } else {
-        SDL_Surface *convert = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
+        SDL_Surface *convert = SDL_ConvertSurface(surface, SDL_PromotePixelFormatTo8888(surface->format));
         if (convert) {
             SDL_Surface *tmp = SDLgfx_rotateSurface(convert, angle, 1, 0, 0, &rect_dest, cangle, sangle, &center);
             if (tmp) {
@@ -2625,7 +2626,7 @@ static bool SDL_PremultiplyAlphaPixelsAndColorspace(int width, int height, SDL_P
             src_format == SDL_PIXELFORMAT_BGRA8888) {
             format = src_format;
         } else {
-            format = SDL_PIXELFORMAT_ARGB8888;
+            format = SDL_PromotePixelFormatTo8888(dst_format);
         }
     }
     if (linear) {
