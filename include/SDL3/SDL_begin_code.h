@@ -64,7 +64,37 @@
  *
  * \since This macro is available since SDL 3.2.0.
  */
-#define SDL_DEPRECATED __attribute__((deprecated))
+#define SDL_DEPRECATED [[deprecated]]
+
+/**
+ * A macro to tag an enum value as deprecated.
+ *
+ * A value is marked deprecated by using this macro for its declaration:
+ *
+ * ```c
+ * enum
+ * {
+ *     VALUE_0 = 0,
+ *     SDL_ENUM_DEPRECATED(VALUE_1) = 1, // Don't use this anymore!
+ *     VALUE_2 = 2
+ * };
+ * ```
+ *
+ * Compilers with deprecation support can give a warning when a deprecated
+ * enum value is used. This macro may be used in SDL's headers, but apps are
+ * welcome to use it for their own interfaces as well.
+ *
+ * SDL, on occasion, might deprecate something for various reasons. However,
+ * SDL never removes symbols before major versions, so deprecated symbols
+ * in SDL3 will remain available until SDL4, where it would be expected an app
+ * would have to take steps to migrate anyhow.
+ *
+ * On compilers without a deprecation mechanism, this is defined to nothing,
+ * and using a deprecated value will not generate a warning.
+ *
+ * \since This macro is available since SDL 3.6.0.
+ */
+#define SDL_ENUM_DEPRECATED(value) value [[deprecated]]
 
 /**
  * A macro to tag a symbol as a public API.
@@ -369,12 +399,28 @@
 #endif
 
 #ifndef SDL_DEPRECATED
-#  if defined(__GNUC__) && (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
+#if (defined(__cplusplus) && __cplusplus >= 201402L) || \
+    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+#    define SDL_DEPRECATED [[deprecated]]
+#  elif defined(__GNUC__) && (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
 #    define SDL_DEPRECATED __attribute__((deprecated))
 #  elif defined(_MSC_VER)
 #    define SDL_DEPRECATED __declspec(deprecated)
 #  else
 #    define SDL_DEPRECATED
+#  endif
+#endif
+
+#ifndef SDL_ENUM_DEPRECATED
+#if (defined(__cplusplus) && __cplusplus >= 201402L) || \
+    (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L)
+#    define SDL_ENUM_DEPRECATED(value) value [[deprecated]]
+#  elif defined(__GNUC__) && (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
+#    define SDL_ENUM_DEPRECATED(value) value __attribute__((deprecated))
+#  elif defined(_MSC_VER)
+#    define SDL_ENUM_DEPRECATED(value) value __pragma(deprecated(value))
+#  else
+#    define SDL_ENUM_DEPRECATED(value) value
 #  endif
 #endif
 
