@@ -38,6 +38,7 @@
     <uses-feature android:name="android.hardware.camera" />
 
     <application
+        android:hasCode="true"
         android:allowBackup="true"
         android:icon="@mipmap/sdl-test"
         android:roundIcon="@mipmap/sdl-test_round"
@@ -47,7 +48,7 @@
         android:enableOnBackInvokedCallback="false"
         android:hardwareAccelerated="true">
         <activity
-            android:name="@ANDROID_MANIFEST_PACKAGE@.SDLTestActivity"
+            android:name="android.app.NativeActivity"
             android:exported="true"
             android:label="@string/label"
             android:alwaysRetainTaskState="true"
@@ -62,6 +63,10 @@
             <intent-filter>
                 <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
             </intent-filter>
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="SDL3" />
+
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
