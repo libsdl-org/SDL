@@ -450,6 +450,10 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
     JNIEnv *env, jclass jcls,
     jint device_id, jint sensor_type, jlong sensor_timestamp, jfloat x, jfloat y, jfloat z);
 
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePowerInfo)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint state, jint percent);
+
 JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
     JNIEnv *env, jclass jcls,
     jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
@@ -480,6 +484,7 @@ static JNINativeMethod SDLControllerManager_tab[] = {
     { "onNativeJoy", "(IIF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoy) },
     { "onNativeHat", "(IIII)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat) },
     { "onNativeJoySensor", "(IIJFFF)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor) },
+    { "onNativePowerInfo", "(III)V", SDL_JAVA_CONTROLLER_INTERFACE(onNativePowerInfo) },
     { "nativeAddJoystick", "(ILjava/lang/String;Ljava/lang/String;IIIIIIZZZZZ)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick) },
     { "nativeRemoveJoystick", "(I)V", SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick) },
 #ifndef SDL_HAPTIC_DISABLED
@@ -1094,6 +1099,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeJoySensor)(
 #ifdef SDL_JOYSTICK_ANDROID
     // In Java there's no Uint64 type, so pass Sint64 as if it was Uint64.
     Android_OnJoySensor(device_id, sensor_type, sensor_timestamp, x, y, z);
+#endif // SDL_JOYSTICK_ANDROID
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativePowerInfo)(
+    JNIEnv *env, jclass jcls,
+    jint device_id, jint state, jint percent)
+{
+#ifdef SDL_JOYSTICK_ANDROID
+    Android_OnJoyPowerInfo(device_id, state, percent);
 #endif // SDL_JOYSTICK_ANDROID
 }
 
