@@ -3241,6 +3241,11 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDefaultTextureScaleMode(SDL_Renderer *re
 /**
  * Load a BMP, PNG or JPEG image from a seekable SDL data stream.
  *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
+ *
  * The new texture should be freed with SDL_DestroyTexture(). Not doing so
  * will result in a memory leak.
  *
@@ -3262,6 +3267,11 @@ extern SDL_DECLSPEC SDL_Texture * SDLCALL SDL_LoadTexture_IO(SDL_Renderer *rende
 
 /**
  * Load a BMP, PNG or JPEG image from a file.
+ *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
  *
  * The new texture should be freed with SDL_DestroyTexture(). Not doing so
  * will result in a memory leak.
