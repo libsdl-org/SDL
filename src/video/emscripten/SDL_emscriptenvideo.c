@@ -32,6 +32,7 @@
 #include "SDL_emscriptenframebuffer.h"
 #include "SDL_emscriptenevents.h"
 #include "SDL_emscriptenmouse.h"
+#include "SDL_emscriptenwgpu.h"
 
 #define EMSCRIPTENVID_DRIVER_NAME "emscripten"
 
@@ -186,6 +187,11 @@ static SDL_VideoDevice *Emscripten_CreateDevice(void)
     device->GL_GetSwapInterval = Emscripten_GLES_GetSwapInterval;
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DestroyContext = Emscripten_GLES_DestroyContext;
+
+#ifdef SDL_VIDEO_WEBGPU
+    device->WGPU_CreateSurface = Emscripten_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = Emscripten_WGPU_DestroySurface;
+#endif
 
     device->free = Emscripten_DeleteDevice;
 

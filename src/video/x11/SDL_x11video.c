@@ -35,6 +35,7 @@
 #include "SDL_x11pen.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11video.h"
+#include "SDL_x11wgpu.h"
 #include "SDL_x11xfixes.h"
 #include "SDL_x11xinput2.h"
 #include "SDL_x11messagebox.h"
@@ -268,6 +269,11 @@ static SDL_VideoDevice *X11_CreateDevice(void)
     device->Vulkan_CreateSurface = X11_Vulkan_CreateSurface;
     device->Vulkan_DestroySurface = X11_Vulkan_DestroySurface;
     device->Vulkan_GetPresentationSupport = X11_Vulkan_GetPresentationSupport;
+#endif
+
+#ifdef SDL_VIDEO_WEBGPU
+    device->WGPU_CreateSurface = X11_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = X11_WGPU_DestroySurface;
 #endif
 
 #ifdef SDL_USE_LIBDBUS

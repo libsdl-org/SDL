@@ -133,6 +133,7 @@ class JobSpec:
     gdk: bool = False
     vita_gles: Optional[VitaGLES] = None
     more_hard_deps: bool = False
+    dawn_webgpu: bool = False
     allow_failure: bool = False
 
 
@@ -149,7 +150,7 @@ JOB_SPECS = {
     "msvc-clang-x86": JobSpec(name="Windows (MSVC, clang-cl x86)",          priority=False, os=JobOs.WindowsLatest,     platform=SdlPlatform.Msvc,        artifact="SDL-clang-cl-x86",       msvc_arch=MsvcArch.X86,   clang_cl=True, ),
     "msvc-gdk-x64": JobSpec(name="GDK (MSVC, x64)",                         priority=False, os=JobOs.Windows2022,       platform=SdlPlatform.Msvc,        artifact="SDL-VC-GDK",             msvc_arch=MsvcArch.X64,   msvc_project="VisualC-GDK/SDL.sln", gdk=True, no_cmake=True, ),
     "ubuntu-22.04": JobSpec(name="Ubuntu 22.04",                            priority=False, os=JobOs.Ubuntu22_04,       platform=SdlPlatform.Linux,       artifact="SDL-ubuntu22.04", ),
-    "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest", ),
+    "ubuntu-latest": JobSpec(name="Ubuntu (latest)",                        priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-ubuntu-latest",                                             dawn_webgpu=True, ),
     "ubuntu-24.04-arm64": JobSpec(name="Ubuntu 24.04 (ARM64)",              priority=False, os=JobOs.Ubuntu24_04_arm,   platform=SdlPlatform.Linux,       artifact="SDL-ubuntu24.04-arm64", ),
     "steamrt3": JobSpec(name="Steam Linux Runtime 3.0 (x86_64)",            priority=False, os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt3",           container="registry.gitlab.steamos.cloud/steamrt/sniper/sdk:latest" ),
     "steamrt4": JobSpec(name="Steam Linux Runtime 4.0 (x86_64)",            priority=True,  os=JobOs.UbuntuLatest,      platform=SdlPlatform.Linux,       artifact="SDL-steamrt4",           container="registry.gitlab.steamos.cloud/steamrt/steamrt4/sdk:latest", more_hard_deps = True, ),
@@ -274,6 +275,7 @@ class JobDetails:
     setup_gage_sdk_path: str = ""
     binutils_strings: str = "strings"
     ctest_args: str = ""
+    dawn_platform: bool = False
     allow_failure: bool = False
 
     def to_workflow(self, enable_artifacts: bool) -> dict[str, str|bool]:
@@ -348,6 +350,7 @@ class JobDetails:
             "setup-ngage-sdk-path": self.setup_gage_sdk_path,
             "binutils-strings": self.binutils_strings,
             "ctest-args": self.ctest_args,
+            "dawn-platform": self.dawn_platform,
             "allow-failure": self.allow_failure,
         }
         return {k: v for k, v in data.items() if v != ""}
@@ -544,6 +547,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.apt_packages.extend((
                     "libunwind-dev",  # For SDL_test memory tracking
                 ))
+                if spec.dawn_webgpu:
+                    job.cmake_arguments.append("-DDawn_DIR=${Dawn_DIR}")
+                    job.dawn_platform = "ubuntu-latest"
             job.ccache = True
             if trackmem_symbol_names:
                 # older libunwind is slow
@@ -830,6 +836,9 @@ def spec_to_job(spec: JobSpec, key: str, trackmem_symbol_names: bool, ctest_args
                 job.msys2_packages.append(f"{msys2_env}-ffmpeg")
             if job.ccache:
                 job.msys2_packages.append(f"{msys2_env}-ccache")
+            if spec.dawn_webgpu:
+                job.cmake_arguments.append("-DDawn_DIR=${Dawn_DIR}")
+                job.dawn_platform = "windows-latest"
         case SdlPlatform.Cygwin:
             job.ccache = False # Missing evict-older-than option
             job.clang_tidy = False # error finding files [clang-diagnostic-error] cause might be space in command path

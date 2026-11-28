@@ -24,6 +24,7 @@
 #define SDL_sysvideo_h_
 
 #include <SDL3/SDL_vulkan.h>
+#include <SDL3/SDL_wgpu.h>
 
 #include "SDL_surface_c.h"
 
@@ -370,6 +371,13 @@ struct SDL_VideoDevice
     SDL_MetalView (*Metal_CreateView)(SDL_VideoDevice *_this, SDL_Window *window);
     void (*Metal_DestroyView)(SDL_VideoDevice *_this, SDL_MetalView view);
     void *(*Metal_GetLayer)(SDL_VideoDevice *_this, SDL_MetalView view);
+
+    /* * * */
+    /*
+     * Experimental WebGPU support
+     */
+    bool (*WGPU_CreateSurface)(SDL_VideoDevice *_this, SDL_Window *window, WGPUInstance instance, WGPUSurface *surface);
+    void (*WGPU_DestroySurface)(WGPUSurface surface);
 
     /* * * */
     /*

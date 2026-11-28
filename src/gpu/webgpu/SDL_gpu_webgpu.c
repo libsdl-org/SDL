@@ -1,0 +1,5968 @@
+// TODO:
+// - Clean up this code base.
+//  - This code base is miserable to read through. I've placed functions in random places without care in the world.
+//    Searching for functions manually in this is a pain I wouldn't wish upon my worst enemy.
+// - Documentation, documentation.
+//  - I have documented practically NOTHING, simply because documenting something means that I expect other people
+//    to use it, and I am afraid of commitment.
+// - Allow pipelines to recreate themselves if bind layouts are invalid.
+
+// FIXME: I'm pretty sure 2D array mipmap generation is broken?
+// FIXME: Uniform buffers are constant and therefore will break if the user pushes more than 1MiB of data
+//        to one within a single command buffer. Why would you ever do that? I have no idea. But it might happen.
+// FIXME: We should seperate the swapchain fences from the submitted command buffer fences!
+// FIXME: Frame pacing is screwed up on Firefox. Don't really know why, probably has to do with their stupid 100ms polling
+
+#include "SDL_internal.h"
+
+#ifdef SDL_GPU_WEBGPU
+
+#include "../SDL_sysgpu.h"
+#include "webgpu.h"
+
+#include <SDL3/SDL_wgpu.h>
+
+#define WINDOW_PROPERTY_DATA                           "SDL.internal.gpu.webgpu.data"
+#define FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED 10000
+#define DEFAULT_BINDGROUP_EXPIRY                       10000
+#define DEFAULT_PSEUDOMAP_SIZE_THRESHOLD               (1 << 25) // 32MiB
+#define DEFAULT_UNIFORM_BUFFER_SIZE                    (1 << 20) // 1MiB
+#define WEBGPU_FEATURE_AT_END_OF_ENUM                  WGPUFeatureName_SubgroupSizeControl
+
+// previously public properties that were moved to be internal
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS "SDL.internal.gpu.device.create.webgpu.bindgroupexpiry"
+#define SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN   "SDL.internal.gpu.device.create.webgpu.pseudomapsizethreshold"
+
+// I hate manual memory management so much I'm just reinventing the dynamic array but worse
+#define WEBGPU_INTERNAL_InsertElementIntoArray(array, arrayCapacity, arrayElementCount, elementType, element)                                \
+    do {                                                                                                                                     \
+        EXPAND_ARRAY_IF_NEEDED(array, elementType, arrayElementCount + 1, arrayCapacity, SDL_max(arrayElementCount + 1, arrayCapacity * 2)); \
+        ((elementType *)array)[arrayElementCount++] = element;                                                                               \
+    } while (0)
+
+// Convert a regular char* to a WGPUStringView
+#define WEBGPU_INTERNAL_CharPtrToWebGPUStringView(str) (str ? (WGPUStringView){ str, SDL_strlen(str) } : (WGPUStringView){ NULL, 0 })
+
+/**
+ * This checks if a feature's enabled for this WebGPURenderer*.
+ * This also does some bounds checking, so you should use this instead of directly reading the features array.
+ */
+#define WEBGPU_INTERNAL_IsFeatureEnabled(renderer, feature) ((feature <= WEBGPU_FEATURE_AT_END_OF_ENUM) ? renderer->webgpuFeatureEnabled[feature] : false)
+
+/**
+ * Spin for 5000 nanoseconds.
+ * This allows Emscripten to catch up with browser events.
+ *
+ * Duration is fully arbitrary.
+ */
+#define WEBGPU_INTERNAL_Spin() SDL_DelayNS(5000)
+
+// WebGPU is bad and stinky
+#define ALIGN_VALUE(value, alignment) (value % alignment != 0 ? value + (alignment - (value % alignment)) : value)
+
+#define TRACK_RESOURCE(resource, type, array, count, capacity, refcountvar)                                                                       \
+    for (Sint32 totallyUniqueVariableName = commandBuffer->submitted.count - 1; totallyUniqueVariableName >= 0; totallyUniqueVariableName -= 1) { \
+        if (commandBuffer->submitted.array[totallyUniqueVariableName] == resource) {                                                              \
+            return;                                                                                                                               \
+        }                                                                                                                                         \
+    }                                                                                                                                             \
+                                                                                                                                                  \
+    WEBGPU_INTERNAL_InsertElementIntoArray(commandBuffer->submitted.array,                                                                        \
+                                           commandBuffer->submitted.capacity,                                                                     \
+                                           commandBuffer->submitted.count,                                                                        \
+                                           type, resource);                                                                                       \
+    SDL_AtomicIncRef(&refcountvar)
+
+// Bltting shaders kindly borrowed (stolen) from klukaszek's SDLGPU WebGPU implementation.
+// Thank you very much, I hate writing shaders. -- TheStickmahn
+// https://github.com/klukaszek/SDL/blob/main/src/gpu/webgpu/SDL_gpu_webgpu.c
+
+const char *blitVert = "\n\
+struct VertexOutput {\n\
+    @builtin(position) pos: vec4<f32>,\n\
+    @location(0) tex: vec2<f32>\n\
+};\n\
+@vertex\n\
+fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {\n\
+    var output: VertexOutput;\n\
+    let tex = vec2<f32>(\n\
+        f32((vertexIndex << 1u) & 2u),\n\
+        f32(vertexIndex & 2u)\n\
+    );\n\
+    output.tex = tex;\n\
+    output.pos = vec4<f32>(\n\
+        tex * vec2<f32>(2.0, -2.0) + vec2<f32>(-1.0, 1.0),\n\
+        0.0,\n\
+        1.0\n\
+    );\n\
+    return output;\n\
+}";
+
+const char *blit2DShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture2D: texture_2d<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    return textureSampleLevel(sourceTexture2D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blit2DArrayShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture2DArray: texture_2d_array<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = vec2<f32>(\n\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex\n\
+    );\n\
+    return textureSampleLevel(sourceTexture2DArray, sourceSampler, newCoord, u32(sourceRegion.layerOrDepth), f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blit3DShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTexture3D: texture_3d<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let newCoord = vec3<f32>(\n\
+        sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex,\n\
+        sourceRegion.layerOrDepth\n\
+    );\n\
+    return textureSampleLevel(sourceTexture3D, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blitCubeShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTextureCube: texture_cube<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    let u = 2.0 * scaledUV.x - 1.0;\n\
+    let v = 2.0 * scaledUV.y - 1.0;\n\
+    var newCoord: vec3<f32>;\n\
+    switch(u32(sourceRegion.layerOrDepth)) {\n\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
+    }\n\
+\n\
+    return textureSampleLevel(sourceTextureCube, sourceSampler, newCoord, f32(sourceRegion.mipLevel));\n\
+}";
+
+const char *blitCubeArrayShader = "\n\
+struct SourceRegionBuffer {\n\
+    uvLeftTop: vec2<f32>,\n\
+    uvDimensions: vec2<f32>,\n\
+    mipLevel: u32,\n\
+    layerOrDepth: f32\n\
+}\n\
+@group(2) @binding(0) var sourceTextureCubeArray: texture_cube_array<f32>;\n\
+@group(2) @binding(1) var sourceSampler: sampler;\n\
+@group(3) @binding(0) var<uniform> sourceRegion: SourceRegionBuffer;\n\
+@fragment\n\
+fn main(@location(0) tex: vec2<f32>) -> @location(0) vec4<f32> {\n\
+    let scaledUV = sourceRegion.uvLeftTop + sourceRegion.uvDimensions * tex;\n\
+    let u = 2.0 * scaledUV.x - 1.0;\n\
+    let v = 2.0 * scaledUV.y - 1.0;\n\
+    let arrayIndex = u32(sourceRegion.layerOrDepth) / 6u;\n\
+    var newCoord: vec3<f32>;\n\
+    \n\
+    switch(u32(sourceRegion.layerOrDepth) % 6u) {\n\
+        case 0u: { newCoord = vec3<f32>(1.0, -v, -u); }\n\
+        case 1u: { newCoord = vec3<f32>(-1.0, -v, u); }\n\
+        case 2u: { newCoord = vec3<f32>(u, 1.0, -v); }\n\
+        case 3u: { newCoord = vec3<f32>(u, -1.0, v); }\n\
+        case 4u: { newCoord = vec3<f32>(u, -v, 1.0); }\n\
+        case 5u: { newCoord = vec3<f32>(-u, -v, -1.0); }\n\
+        default: { newCoord = vec3<f32>(0.0, 0.0, 0.0); }\n\
+    }\n\
+    \n\
+    return textureSampleLevel(sourceTextureCubeArray, sourceSampler, newCoord, arrayIndex, f32(sourceRegion.mipLevel));\n\
+}";
+
+// NOTE: All of these required features are subject to change as we test it on different browsers and operating systems.
+// Also, note that while Firefox's documentation *claims* that a lot of features are unsupported,
+// I've been able to use a lot of them just fine (on Linux nonetheless), so I'm not sure what's up with that.
+
+const WGPUFeatureName WEBGPU_INTERNAL_RequiredFeatures[7] = {
+    // These three all have 99.98% coverage on WebGPU devices.
+    WGPUFeatureName_Depth32FloatStencil8,
+    WGPUFeatureName_RG11B10UfloatRenderable,
+    WGPUFeatureName_IndirectFirstInstance,
+    // This one has 99.02%.
+    WGPUFeatureName_CoreFeaturesAndLimits,
+    // This one has 98%, and only because of Samsung's weird browser.
+    WGPUFeatureName_DepthClipControl,
+    // This one has 95%, blame Samsung.
+    WGPUFeatureName_BGRA8UnormStorage,
+    // This one has 90%.
+    WGPUFeatureName_Float32Filterable,
+};
+
+// These are features which we don't *need*, but they'd be really nice to have.
+const WGPUFeatureName WEBGPU_INTERNAL_OptionalFeatures[7] = {
+    // This one has 85%.
+    WGPUFeatureName_Float32Blendable,
+
+    // ASTC has 44%, while BC has 86%.
+    WGPUFeatureName_TextureCompressionASTC,
+    WGPUFeatureName_TextureCompressionASTCSliced3D,
+    WGPUFeatureName_TextureCompressionBC,
+    WGPUFeatureName_TextureCompressionBCSliced3D,
+
+    // I have no idea what the support for these looks like.
+    WGPUFeatureName_TextureFormatsTier1,
+    WGPUFeatureName_TextureFormatsTier2,
+};
+
+static WGPUPresentMode SDLToWebGPU_PresentMode[] = {
+    [SDL_GPU_PRESENTMODE_VSYNC] = WGPUPresentMode_Fifo,
+    [SDL_GPU_PRESENTMODE_IMMEDIATE] = WGPUPresentMode_Immediate,
+    [SDL_GPU_PRESENTMODE_MAILBOX] = WGPUPresentMode_Mailbox,
+};
+
+static WGPUTextureFormat SDLToWebGPU_TextureFormat[] = {
+    [SDL_GPU_TEXTUREFORMAT_INVALID] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_A8_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_R8_UNORM] = WGPUTextureFormat_R8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_UNORM] = WGPUTextureFormat_RG8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM] = WGPUTextureFormat_RGBA8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_UNORM] = WGPUTextureFormat_R16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_UNORM] = WGPUTextureFormat_RG16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM] = WGPUTextureFormat_RGBA16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM] = WGPUTextureFormat_RGB10A2Unorm,
+    [SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM] = WGPUTextureFormat_BGRA8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM] = WGPUTextureFormat_BC1RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM] = WGPUTextureFormat_BC2RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM] = WGPUTextureFormat_BC3RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM] = WGPUTextureFormat_BC4RUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM] = WGPUTextureFormat_BC5RGUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM] = WGPUTextureFormat_BC7RGBAUnorm,
+    [SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT] = WGPUTextureFormat_BC6HRGBFloat,
+    [SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT] = WGPUTextureFormat_BC6HRGBUfloat,
+    [SDL_GPU_TEXTUREFORMAT_R8_SNORM] = WGPUTextureFormat_R8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_SNORM] = WGPUTextureFormat_RG8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM] = WGPUTextureFormat_RGBA8Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_SNORM] = WGPUTextureFormat_R16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_SNORM] = WGPUTextureFormat_RG16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM] = WGPUTextureFormat_RGBA16Snorm,
+    [SDL_GPU_TEXTUREFORMAT_R16_FLOAT] = WGPUTextureFormat_R16Float,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT] = WGPUTextureFormat_RG16Float,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_TEXTUREFORMAT_R32_FLOAT] = WGPUTextureFormat_R32Float,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT] = WGPUTextureFormat_RG32Float,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT] = WGPUTextureFormat_RGBA32Float,
+    [SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT] = WGPUTextureFormat_RG11B10Ufloat,
+    [SDL_GPU_TEXTUREFORMAT_R8_UINT] = WGPUTextureFormat_R8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_UINT] = WGPUTextureFormat_RG8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT] = WGPUTextureFormat_RGBA8Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16_UINT] = WGPUTextureFormat_R16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_UINT] = WGPUTextureFormat_RG16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT] = WGPUTextureFormat_RGBA16Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32_UINT] = WGPUTextureFormat_R32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_UINT] = WGPUTextureFormat_RG32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT] = WGPUTextureFormat_RGBA32Uint,
+    [SDL_GPU_TEXTUREFORMAT_R8_INT] = WGPUTextureFormat_R8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8_INT] = WGPUTextureFormat_RG8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT] = WGPUTextureFormat_RGBA8Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16_INT] = WGPUTextureFormat_R16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16_INT] = WGPUTextureFormat_RG16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT] = WGPUTextureFormat_RGBA16Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32_INT] = WGPUTextureFormat_R32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32_INT] = WGPUTextureFormat_RG32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT] = WGPUTextureFormat_RGBA32Sint,
+    [SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB] = WGPUTextureFormat_RGBA8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB] = WGPUTextureFormat_BGRA8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC1RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC2RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC3RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB] = WGPUTextureFormat_BC7RGBAUnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_D16_UNORM] = WGPUTextureFormat_Depth16Unorm,
+    [SDL_GPU_TEXTUREFORMAT_D24_UNORM] = WGPUTextureFormat_Depth24Plus,
+    [SDL_GPU_TEXTUREFORMAT_D32_FLOAT] = WGPUTextureFormat_Depth32Float,
+    [SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT] = WGPUTextureFormat_Depth24PlusStencil8,
+    [SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT] = WGPUTextureFormat_Depth32FloatStencil8,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM] = WGPUTextureFormat_ASTC4x4Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM] = WGPUTextureFormat_ASTC5x4Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM] = WGPUTextureFormat_ASTC5x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM] = WGPUTextureFormat_ASTC6x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM] = WGPUTextureFormat_ASTC6x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM] = WGPUTextureFormat_ASTC8x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM] = WGPUTextureFormat_ASTC8x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM] = WGPUTextureFormat_ASTC8x8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM] = WGPUTextureFormat_ASTC10x5Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM] = WGPUTextureFormat_ASTC10x6Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM] = WGPUTextureFormat_ASTC10x8Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM] = WGPUTextureFormat_ASTC10x10Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM] = WGPUTextureFormat_ASTC12x10Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM] = WGPUTextureFormat_ASTC12x12Unorm,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB] = WGPUTextureFormat_ASTC4x4UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB] = WGPUTextureFormat_ASTC5x4UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB] = WGPUTextureFormat_ASTC5x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB] = WGPUTextureFormat_ASTC6x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB] = WGPUTextureFormat_ASTC6x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB] = WGPUTextureFormat_ASTC8x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB] = WGPUTextureFormat_ASTC8x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB] = WGPUTextureFormat_ASTC8x8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB] = WGPUTextureFormat_ASTC10x5UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB] = WGPUTextureFormat_ASTC10x6UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB] = WGPUTextureFormat_ASTC10x8UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB] = WGPUTextureFormat_ASTC10x10UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB] = WGPUTextureFormat_ASTC12x10UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB] = WGPUTextureFormat_ASTC12x12UnormSrgb,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT] = WGPUTextureFormat_Undefined,
+    [SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT] = WGPUTextureFormat_Undefined,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_TextureFormat, SDL_arraysize(SDLToWebGPU_TextureFormat) == SDL_GPU_TEXTUREFORMAT_MAX_ENUM_VALUE);
+
+static WGPUTextureFormat SwapchainCompositionToFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = WGPUTextureFormat_RGBA8Unorm,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = WGPUTextureFormat_RGBA8UnormSrgb,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = WGPUTextureFormat_RGB10A2Unorm
+};
+
+static WGPUTextureFormat SwapchainCompositionToFallbackFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = WGPUTextureFormat_BGRA8Unorm,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = WGPUTextureFormat_BGRA8UnormSrgb,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = WGPUTextureFormat_RGBA16Float,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = WGPUTextureFormat_RGB10A2Unorm
+};
+
+static SDL_GPUTextureFormat SwapchainCompositionToSDLFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
+};
+
+static SDL_GPUTextureFormat SwapchainCompositionToFallbackSDLFormat[] = {
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_SDR_LINEAR] = SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR_EXTENDED_LINEAR] = SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT,
+    [SDL_GPU_SWAPCHAINCOMPOSITION_HDR10_ST2084] = SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM,
+};
+
+static WGPUVertexFormat SDLToWebGPU_VertexFormat[] = {
+    [SDL_GPU_VERTEXELEMENTFORMAT_INVALID] = 0,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT] = WGPUVertexFormat_Sint32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT2] = WGPUVertexFormat_Sint32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT3] = WGPUVertexFormat_Sint32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_INT4] = WGPUVertexFormat_Sint32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT] = WGPUVertexFormat_Uint32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT2] = WGPUVertexFormat_Uint32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT3] = WGPUVertexFormat_Uint32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UINT4] = WGPUVertexFormat_Uint32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT] = WGPUVertexFormat_Float32,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2] = WGPUVertexFormat_Float32x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3] = WGPUVertexFormat_Float32x3,
+    [SDL_GPU_VERTEXELEMENTFORMAT_FLOAT4] = WGPUVertexFormat_Float32x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE2] = WGPUVertexFormat_Sint8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE4] = WGPUVertexFormat_Sint8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE2] = WGPUVertexFormat_Uint8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4] = WGPUVertexFormat_Uint8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE2_NORM] = WGPUVertexFormat_Snorm8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_BYTE4_NORM] = WGPUVertexFormat_Snorm8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE2_NORM] = WGPUVertexFormat_Unorm8x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_UBYTE4_NORM] = WGPUVertexFormat_Unorm8x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT2] = WGPUVertexFormat_Sint16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT4] = WGPUVertexFormat_Sint16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT2] = WGPUVertexFormat_Uint16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT4] = WGPUVertexFormat_Uint16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT2_NORM] = WGPUVertexFormat_Snorm16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_SHORT4_NORM] = WGPUVertexFormat_Snorm16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT2_NORM] = WGPUVertexFormat_Unorm16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_USHORT4_NORM] = WGPUVertexFormat_Unorm16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_HALF2] = WGPUVertexFormat_Float16x2,
+    [SDL_GPU_VERTEXELEMENTFORMAT_HALF4] = WGPUVertexFormat_Float16x4,
+    [SDL_GPU_VERTEXELEMENTFORMAT_R10G10B10A2_UNORM] = WGPUVertexFormat_Unorm10_10_10_2,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_VertexFormat, SDL_arraysize(SDLToWebGPU_VertexFormat) == SDL_GPU_VERTEXELEMENTFORMAT_MAX_ENUM_VALUE);
+
+static WGPUIndexFormat SDLToWebGPU_IndexFormat[] = {
+    [SDL_GPU_INDEXELEMENTSIZE_16BIT] = WGPUIndexFormat_Uint16,
+    [SDL_GPU_INDEXELEMENTSIZE_32BIT] = WGPUIndexFormat_Uint32,
+};
+
+static WGPUVertexStepMode SDLToWebGPU_VertexInputRate[] = {
+    [SDL_GPU_VERTEXINPUTRATE_VERTEX] = WGPUVertexStepMode_Vertex,
+    [SDL_GPU_VERTEXINPUTRATE_INSTANCE] = WGPUVertexStepMode_Instance,
+};
+
+static WGPUPrimitiveTopology SDLToWebGPU_PrimitiveType[] = {
+    [SDL_GPU_PRIMITIVETYPE_TRIANGLELIST] = WGPUPrimitiveTopology_TriangleList,
+    [SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP] = WGPUPrimitiveTopology_TriangleStrip,
+    [SDL_GPU_PRIMITIVETYPE_LINELIST] = WGPUPrimitiveTopology_LineList,
+    [SDL_GPU_PRIMITIVETYPE_LINESTRIP] = WGPUPrimitiveTopology_LineStrip,
+    [SDL_GPU_PRIMITIVETYPE_POINTLIST] = WGPUPrimitiveTopology_PointList,
+};
+
+static WGPUCullMode SDLToWebGPU_CullMode[] = {
+    [SDL_GPU_CULLMODE_NONE] = WGPUCullMode_None,
+    [SDL_GPU_CULLMODE_FRONT] = WGPUCullMode_Front,
+    [SDL_GPU_CULLMODE_BACK] = WGPUCullMode_Back,
+};
+
+static WGPUFrontFace SDLToWebGPU_FrontFace[] = {
+    [SDL_GPU_FRONTFACE_COUNTER_CLOCKWISE] = WGPUFrontFace_CCW,
+    [SDL_GPU_FRONTFACE_CLOCKWISE] = WGPUFrontFace_CW
+};
+
+static WGPUBlendFactor SDLToWebGPU_BlendFactor[] = {
+    [SDL_GPU_BLENDFACTOR_INVALID] = WGPUBlendFactor_Undefined,
+    [SDL_GPU_BLENDFACTOR_ZERO] = WGPUBlendFactor_Zero,
+    [SDL_GPU_BLENDFACTOR_ONE] = WGPUBlendFactor_One,
+    [SDL_GPU_BLENDFACTOR_SRC_COLOR] = WGPUBlendFactor_Src,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_COLOR] = WGPUBlendFactor_OneMinusSrc,
+    [SDL_GPU_BLENDFACTOR_DST_COLOR] = WGPUBlendFactor_Dst,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_COLOR] = WGPUBlendFactor_OneMinusDst,
+    [SDL_GPU_BLENDFACTOR_SRC_ALPHA] = WGPUBlendFactor_SrcAlpha,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA] = WGPUBlendFactor_OneMinusSrcAlpha,
+    [SDL_GPU_BLENDFACTOR_DST_ALPHA] = WGPUBlendFactor_DstAlpha,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_DST_ALPHA] = WGPUBlendFactor_OneMinusDstAlpha,
+    [SDL_GPU_BLENDFACTOR_CONSTANT_COLOR] = WGPUBlendFactor_Constant,
+    [SDL_GPU_BLENDFACTOR_ONE_MINUS_CONSTANT_COLOR] = WGPUBlendFactor_OneMinusConstant,
+    [SDL_GPU_BLENDFACTOR_SRC_ALPHA_SATURATE] = WGPUBlendFactor_SrcAlphaSaturated,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendFactor, SDL_arraysize(SDLToWebGPU_BlendFactor) == SDL_GPU_BLENDFACTOR_MAX_ENUM_VALUE);
+
+static WGPUBlendOperation SDLToWebGPU_BlendOp[] = {
+    [SDL_GPU_BLENDOP_INVALID] = WGPUBlendOperation_Undefined,
+    [SDL_GPU_BLENDOP_ADD] = WGPUBlendOperation_Add,
+    [SDL_GPU_BLENDOP_SUBTRACT] = WGPUBlendOperation_Subtract,
+    [SDL_GPU_BLENDOP_REVERSE_SUBTRACT] = WGPUBlendOperation_ReverseSubtract,
+    [SDL_GPU_BLENDOP_MIN] = WGPUBlendOperation_Min,
+    [SDL_GPU_BLENDOP_MAX] = WGPUBlendOperation_Max,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_BlendOp, SDL_arraysize(SDLToWebGPU_BlendOp) == SDL_GPU_BLENDOP_MAX_ENUM_VALUE);
+
+static WGPUCompareFunction SDLToWebGPU_CompareFunc[] = {
+    [SDL_GPU_COMPAREOP_INVALID] = WGPUCompareFunction_Undefined,
+    [SDL_GPU_COMPAREOP_NEVER] = WGPUCompareFunction_Never,
+    [SDL_GPU_COMPAREOP_LESS] = WGPUCompareFunction_Less,
+    [SDL_GPU_COMPAREOP_EQUAL] = WGPUCompareFunction_Equal,
+    [SDL_GPU_COMPAREOP_LESS_OR_EQUAL] = WGPUCompareFunction_LessEqual,
+    [SDL_GPU_COMPAREOP_GREATER] = WGPUCompareFunction_Greater,
+    [SDL_GPU_COMPAREOP_NOT_EQUAL] = WGPUCompareFunction_NotEqual,
+    [SDL_GPU_COMPAREOP_GREATER_OR_EQUAL] = WGPUCompareFunction_GreaterEqual,
+    [SDL_GPU_COMPAREOP_ALWAYS] = WGPUCompareFunction_Always,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_CompareFunc, SDL_arraysize(SDLToWebGPU_CompareFunc) == SDL_GPU_COMPAREOP_MAX_ENUM_VALUE);
+
+static WGPUStencilOperation SDLToWebGPU_StencilOp[] = {
+    [SDL_GPU_STENCILOP_INVALID] = WGPUStencilOperation_Undefined, // INVALID
+    [SDL_GPU_STENCILOP_KEEP] = WGPUStencilOperation_Keep,
+    [SDL_GPU_STENCILOP_ZERO] = WGPUStencilOperation_Zero,
+    [SDL_GPU_STENCILOP_REPLACE] = WGPUStencilOperation_Replace,
+    [SDL_GPU_STENCILOP_INCREMENT_AND_CLAMP] = WGPUStencilOperation_IncrementClamp,
+    [SDL_GPU_STENCILOP_DECREMENT_AND_CLAMP] = WGPUStencilOperation_DecrementClamp,
+    [SDL_GPU_STENCILOP_INVERT] = WGPUStencilOperation_Invert,
+    [SDL_GPU_STENCILOP_INCREMENT_AND_WRAP] = WGPUStencilOperation_IncrementWrap,
+    [SDL_GPU_STENCILOP_DECREMENT_AND_WRAP] = WGPUStencilOperation_DecrementWrap,
+};
+SDL_COMPILE_TIME_ASSERT(SDLToWebGPU_StencilOp, SDL_arraysize(SDLToWebGPU_StencilOp) == SDL_GPU_STENCILOP_MAX_ENUM_VALUE);
+
+static WGPULoadOp SDLToWebGPU_LoadOp[] = {
+    [SDL_GPU_LOADOP_LOAD] = WGPULoadOp_Load,
+    [SDL_GPU_LOADOP_CLEAR] = WGPULoadOp_Clear,
+    [SDL_GPU_LOADOP_DONT_CARE] = WGPULoadOp_Clear,
+};
+
+static WGPUStoreOp SDLToWebGPU_StoreOp[] = {
+    [SDL_GPU_STOREOP_STORE] = WGPUStoreOp_Store,
+    [SDL_GPU_STOREOP_DONT_CARE] = WGPUStoreOp_Discard,
+    [SDL_GPU_STOREOP_RESOLVE] = WGPUStoreOp_Discard,
+    [SDL_GPU_STOREOP_RESOLVE_AND_STORE] = WGPUStoreOp_Store,
+};
+
+static WGPUFilterMode SDLToWebGPU_FilterMode[] = {
+    [SDL_GPU_FILTER_NEAREST] = WGPUFilterMode_Nearest,
+    [SDL_GPU_FILTER_LINEAR] = WGPUFilterMode_Linear
+};
+
+static WGPUMipmapFilterMode SDLToWebGPU_MipmapFilterMode[] = {
+    [SDL_GPU_SAMPLERMIPMAPMODE_NEAREST] = WGPUMipmapFilterMode_Nearest,
+    [SDL_GPU_SAMPLERMIPMAPMODE_LINEAR] = WGPUMipmapFilterMode_Linear,
+};
+
+static WGPUAddressMode SDLToWebGPU_AddressMode[] = {
+    [SDL_GPU_SAMPLERADDRESSMODE_REPEAT] = WGPUAddressMode_Repeat,
+    [SDL_GPU_SAMPLERADDRESSMODE_MIRRORED_REPEAT] = WGPUAddressMode_MirrorRepeat,
+    [SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE] = WGPUAddressMode_ClampToEdge,
+};
+
+static WGPUTextureViewDimension SDLToWebGPU_TextureTypeToViewDimension[] = {
+    [SDL_GPU_TEXTURETYPE_2D] = WGPUTextureViewDimension_2D,
+    [SDL_GPU_TEXTURETYPE_2D_ARRAY] = WGPUTextureViewDimension_2DArray,
+    [SDL_GPU_TEXTURETYPE_3D] = WGPUTextureViewDimension_3D,
+    [SDL_GPU_TEXTURETYPE_CUBE] = WGPUTextureViewDimension_Cube,
+    [SDL_GPU_TEXTURETYPE_CUBE_ARRAY] = WGPUTextureViewDimension_CubeArray,
+};
+
+static const char *WEBGPU_FeatureNameToString(WGPUFeatureName name)
+{
+    switch (name) {
+    case WGPUFeatureName_CoreFeaturesAndLimits:
+        return "WGPUFeatureName_CoreFeaturesAndLimits";
+    case WGPUFeatureName_DepthClipControl:
+        return "WGPUFeatureName_DepthClipControl";
+    case WGPUFeatureName_Depth32FloatStencil8:
+        return "WGPUFeatureName_Depth32FloatStencil8";
+    case WGPUFeatureName_TextureCompressionBC:
+        return "WGPUFeatureName_TextureCompressionBC";
+    case WGPUFeatureName_TextureCompressionBCSliced3D:
+        return "WGPUFeatureName_TextureCompressionBCSliced3D";
+    case WGPUFeatureName_TextureCompressionETC2:
+        return "WGPUFeatureName_TextureCompressionETC2";
+    case WGPUFeatureName_TextureCompressionASTC:
+        return "WGPUFeatureName_TextureCompressionASTC";
+    case WGPUFeatureName_TextureCompressionASTCSliced3D:
+        return "WGPUFeatureName_TextureCompressionASTCSliced3D";
+    case WGPUFeatureName_TimestampQuery:
+        return "WGPUFeatureName_TimestampQuery";
+    case WGPUFeatureName_IndirectFirstInstance:
+        return "WGPUFeatureName_IndirectFirstInstance";
+    case WGPUFeatureName_ShaderF16:
+        return "WGPUFeatureName_ShaderF16";
+    case WGPUFeatureName_RG11B10UfloatRenderable:
+        return "WGPUFeatureName_RG11B10UfloatRenderable";
+    case WGPUFeatureName_BGRA8UnormStorage:
+        return "WGPUFeatureName_BGRA8UnormStorage";
+    case WGPUFeatureName_Float32Filterable:
+        return "WGPUFeatureName_Float32Filterable";
+    case WGPUFeatureName_Float32Blendable:
+        return "WGPUFeatureName_Float32Blendable";
+    case WGPUFeatureName_ClipDistances:
+        return "WGPUFeatureName_ClipDistances";
+    case WGPUFeatureName_DualSourceBlending:
+        return "WGPUFeatureName_DualSourceBlending";
+    case WGPUFeatureName_Subgroups:
+        return "WGPUFeatureName_Subgroups";
+    case WGPUFeatureName_TextureFormatsTier1:
+        return "WGPUFeatureName_TextureFormatsTier1";
+    case WGPUFeatureName_TextureFormatsTier2:
+        return "WGPUFeatureName_TextureFormatsTier2";
+    case WGPUFeatureName_PrimitiveIndex:
+        return "WGPUFeatureName_PrimitiveIndex";
+    case WGPUFeatureName_TextureComponentSwizzle:
+        return "WGPUFeatureName_TextureComponentSwizzle";
+    case WGPUFeatureName_SubgroupSizeControl:
+        return "WGPUFeatureName_SubgroupSizeControl";
+    case WGPUFeatureName_Force32:
+        return "WGPUFeatureName_Force32";
+    default:
+        SDL_assert(!"Unsupported WGPUFeatureName");
+        return "Unknown WGPUFeatureName";
+    }
+}
+
+static WGPUTextureSampleType WebGPUTextureFormatToSampleType(WGPUTextureFormat format)
+{
+    switch (format) {
+    case WGPUTextureFormat_R8Uint:
+    case WGPUTextureFormat_RG8Uint:
+    case WGPUTextureFormat_RGBA8Uint:
+    case WGPUTextureFormat_R16Uint:
+    case WGPUTextureFormat_RG16Uint:
+    case WGPUTextureFormat_RGBA16Uint:
+    case WGPUTextureFormat_R32Uint:
+    case WGPUTextureFormat_RG32Uint:
+    case WGPUTextureFormat_RGBA32Uint:
+        return WGPUTextureSampleType_Uint;
+
+    case WGPUTextureFormat_R8Sint:
+    case WGPUTextureFormat_RG8Sint:
+    case WGPUTextureFormat_RGBA8Sint:
+    case WGPUTextureFormat_R16Sint:
+    case WGPUTextureFormat_RG16Sint:
+    case WGPUTextureFormat_RGBA16Sint:
+    case WGPUTextureFormat_R32Sint:
+    case WGPUTextureFormat_RG32Sint:
+    case WGPUTextureFormat_RGBA32Sint:
+        return WGPUTextureSampleType_Sint;
+
+    // While there *is* a depth sampling type, we don't use it at all since it kinda sucks.
+    // Unfilterable float's just better 99% of the time.
+    case WGPUTextureFormat_Depth16Unorm:
+    case WGPUTextureFormat_Depth24Plus:
+    case WGPUTextureFormat_Depth32Float:
+        // Note that since we moved Float32Filterable to the needed features array, we'll always assume that float32 is filterable.
+        return WGPUTextureSampleType_UnfilterableFloat;
+    default:
+        return WGPUTextureSampleType_Float;
+    }
+}
+
+typedef struct WebGPUTexture WebGPUTexture;
+typedef struct WebGPUTextureContainer WebGPUTextureContainer;
+typedef struct WebGPUBuffer WebGPUBuffer;
+typedef struct WebGPUBufferContainer WebGPUBufferContainer;
+typedef struct WebGPUWindowData WebGPUWindowData;
+typedef struct WebGPUFence WebGPUFence;
+typedef struct WebGPUSubmittedCommandBuffer WebGPUSubmittedCommandBuffer;
+typedef struct WebGPUQueuedDestroy WebGPUQueuedDestroy;
+
+typedef struct WebGPURenderer
+{
+    WGPUInstance instance;
+    WGPUAdapter adapter;
+    WGPUDevice device;
+    WGPUQueue queue;
+
+    // 0-3: Vertex
+    // 4-7: Fragment
+    // 8-11: Compute
+    WebGPUBufferContainer *uniformBuffers[MAX_UNIFORM_BUFFERS_PER_STAGE * 3];
+    // Pre-made bind groups for the uniforms.
+    // 0: Vertex, 1: Fragment, 2: Compute
+    WGPUBindGroup uniformBufferBindGroups[3];
+    // Pre-made bind group layouts for the uniforms.
+    // 0: Vertex, 1: Fragment, 2: Compute
+    WGPUBindGroupLayout uniformBufferBindGroupLayouts[3];
+
+    WebGPUSubmittedCommandBuffer **submittedCommandBuffers;
+    Uint32 submittedCommandBufferCapacity;
+    Uint32 submittedCommandBufferCount;
+
+    WebGPUQueuedDestroy **queuedDestroys;
+    Uint32 queuedDestroyCount;
+    Uint32 queuedDestroyCapacity;
+
+    BlitPipelineCacheEntry *blitPipelines;
+
+    struct blitResources
+    {
+        SDL_GPUShader *blitVertexShader;
+        SDL_GPUShader *blit2DShader;
+        SDL_GPUShader *blit2DArrayShader;
+        SDL_GPUShader *blit3DShader;
+        SDL_GPUShader *blitCubeShader;
+        SDL_GPUShader *blitCubeArrayShader;
+
+        SDL_GPUSampler *blitNearestSampler;
+        SDL_GPUSampler *blitLinearSampler;
+    } blitResources;
+
+    SDL_PropertiesID props;
+    SDL_HashTable *bindGroupHashTable; // A cache of the renderer's bind groups.
+
+    SDL_Mutex *destroyingSelfLock;
+    SDL_Mutex *submittingCommandBufferLock;
+
+    Uint32 maxFramesInFlight;
+    Uint32 blitPipelineCount;
+    Uint32 blitPipelineCapacity;
+
+    SDL_AtomicInt numSubmissions;
+    SDL_AtomicInt nextBindableResourceID;
+
+    /**
+     * How big can a buffer get until pseudo-mapping is disallowed due to memory usage concerns?
+     */
+    Uint64 pseudoMapBufferSizeThreshold;
+
+    // For how many submissions can a bind group be unused until it's automatically freed?
+    // Set to -1 to disable pruning, and 0 to instantly free it.
+    int bindGroupsExpireAfter;
+
+    // This is an array of booleans which state whether or not a feature is enabled for this WebGPU device.
+    // Do not access this directly! Use WEBGPU_INTERNAL_IsFeatureEnabled, which does bounds checking.
+    bool webgpuFeatureEnabled[WEBGPU_FEATURE_AT_END_OF_ENUM];
+
+    bool debugMode;
+    bool destroyingSelf;
+    bool preferLowPower;
+} WebGPURenderer;
+
+// TODO: Ooooh, I hate the windowing stuff in this backend.
+struct WebGPUWindowData
+{
+    SDL_Window *window;
+    WGPUSurface surface;
+
+    SDL_GPUSwapchainComposition swapchainComposition;
+    SDL_GPUPresentMode presentMode;
+
+    // The currently configured surface width
+    Uint32 surfaceWidth;
+    // The currently configured surface height
+    Uint32 surfaceHeight;
+
+    bool surfaceDirty;
+    bool shouldUseFallbackFormat;
+};
+
+typedef enum WebGPUBindGroupType
+{
+    // Vertex stage, sampler, sampled textures, and storage textures / buffers
+    // Corresponds to group 0 in WGSL.
+    WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE,
+    // Vertex stage, uniform buffers.
+    // Corresponds to group 1 in WGSL.
+    WEBGPU_BINDGROUP_VERTEXUNIFORMS,
+    // Fragment stage, samplers & storage textures / buffers
+    // Corresponds to group 2 in WGSL.
+    WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE,
+    // Fragment stage, uniform buffers.
+    // Corresponds to group 3 in WGSL.
+    WEBGPU_BINDGROUP_FRAGMENTUNIFORMS,
+    // Compute stage, samplers, sampled textures, and readonly storage textures / buffers
+    // Corresponds to group 0 in WGSL.
+    WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE,
+    // Compute stage, readwrite storage textures and buffers.
+    // Corresponds to group 1 in WGSL.
+    WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE,
+    // Compute stage, uniform buffers.
+    // Corresponds to group 2 in WGSL.
+    WEBGPU_BINDGROUP_COMPUTEUNIFORMS,
+} WebGPUBindGroupType;
+
+typedef enum WebGPUQueuedDestroyType
+{
+    WEBGPU_QUEUED_DESTROY_INVALID,
+    WEBGPU_QUEUED_DESTROY_TEXTURE_CONTAINER,
+    WEBGPU_QUEUED_DESTROY_TEXTURE,
+    WEBGPU_QUEUED_DESTROY_SAMPLER,
+    WEBGPU_QUEUED_DESTROY_BUFFER_CONTAINER,
+    WEBGPU_QUEUED_DESTROY_BUFFER,
+    WEBGPU_QUEUED_DESTROY_FENCE,
+    WEBGPU_QUEUED_DESTROY_SUBMITTED_COMMAND_BUFFER,
+    WEBGPU_QUEUED_DESTROY_BIND_GROUP,
+} WebGPUQueuedDestroyType;
+
+typedef struct WebGPUBindGroupCacheKey
+{
+    WGPUShaderStage stage;
+
+    Uint64 boundSamplersIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+    Uint64 boundTexturesIDs[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+
+    // Storage textures/buffers in a render pass are always read-only, so they don't need their own fields.
+    Uint64 boundReadWriteStorageTexturesIDs[MAX_STORAGE_TEXTURES_PER_STAGE];
+    Uint64 boundReadOnlyStorageTexturesIDs[MAX_STORAGE_TEXTURES_PER_STAGE];
+
+    Uint64 boundReadWriteStorageBuffersIDs[MAX_STORAGE_BUFFERS_PER_STAGE];
+    Uint64 boundReadOnlyStorageBuffersIDs[MAX_STORAGE_BUFFERS_PER_STAGE];
+} WebGPUBindGroupCacheKey;
+
+typedef enum WebGPUBindGroupEntryType
+{
+    WEBGPU_BIND_GROUP_ENTRY_TYPE_UNKNOWN,
+    WEBGPU_BIND_GROUP_ENTRY_TYPE_SAMPLER,
+    WEBGPU_BIND_GROUP_ENTRY_TYPE_TEXTURE,
+    WEBGPU_BIND_GROUP_ENTRY_TYPE_STORAGE_BUFFER,
+    WEBGPU_BIND_GROUP_ENTRY_TYPE_STORAGE_TEXTURE,
+} WebGPUBindGroupEntryType;
+
+/**
+ * This is pretty much an extended version of WebGPUBindGroupEntryType which includes
+ * extra values for different variations of the same type.
+ */
+typedef enum WebGPUBindGroupLayoutEntryType
+{
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_UNKNOWN,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER_NONFILTERING,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE_UNFILTERABLE,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER_READWRITE,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE,
+    WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE_READWRITE,
+} WebGPUBindGroupLayoutEntryType;
+
+typedef struct WebGPUInferredBindGroupLayoutEntry
+{
+    union
+    {
+        struct sampler
+        {
+            WGPUSamplerBindingType bindType;
+        } sampler;
+
+        struct texture
+        {
+            WGPUTextureFormat format;
+            WGPUTextureViewDimension dimension;
+
+            bool isDepth;                // Is the texture a depth type? (E.g: texture_depth_2d)
+            bool isMultisampled;         // Is the texture a multisampled type? (E.g: texture_multisampled_2d)
+            bool isForciblyUnfilterable; // Is this texture unfilterable?
+        } texture;
+
+        struct storageTexture
+        {
+            WGPUTextureFormat format;
+            WGPUTextureViewDimension dimension;
+            WGPUStorageTextureAccess access;
+        } storageTexture;
+
+        struct storageBuffer
+        {
+            bool canRead;
+            bool canWrite;
+        } storageBuffer;
+    };
+
+    WebGPUBindGroupEntryType type;
+
+    Uint32 group;   // The group this binding belongs to.
+    Uint32 binding; // The binding slot this binding.... binds to. (Take a shot each time I say "bind", and you'll be dead in a minute.)
+} WebGPUInferredBindGroupLayoutEntry;
+
+typedef struct WebGPUBindGroup
+{
+    WGPUBindGroup bindGroup;
+
+    WebGPUBindGroupCacheKey key;
+
+    // The renderer's numSubmissions when this bind groups was last bound.
+    // This is used to automatically send old, redunant bind groups to the shadow realm.
+    SDL_AtomicInt lastUsedAtSubmission;
+
+    // if this is true, nuke this bind group from orbit ASAP
+    bool invalid;
+} WebGPUBindGroup;
+
+typedef enum WebGPUBufferType
+{
+    WEBGPU_BUFFER_TYPE_GPU,
+    WEBGPU_BUFFER_TYPE_UNIFORM,
+    WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD,
+    WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD,
+    // A transfer buffer which can only be accessed on the GPU.
+    // This is used for texture copies where the user has not properly padded the data.
+    // The GPUOnly transfer buffer acts as an intermediate.
+    WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY,
+} WebGPUBufferType;
+
+struct WebGPUBuffer
+{
+    WebGPUBufferContainer *container;
+    WGPUBuffer buffer;
+
+    WebGPUBufferType type;
+    SDL_GPUBufferUsageFlags usage;
+
+    Uint64 size;
+
+    // The resource's identifier. (Excellent documentation by yours truly, give me that pulitzer now)
+    Uint64 identifier;
+    SDL_AtomicInt referenceCount;
+};
+
+typedef enum WebGPUBufferMapState
+{
+    // Buffer is unmapped.
+    MAP_STATE_UNMAPPED,
+    // Buffer is mapped from GPU.
+    MAP_STATE_MAPPED_GPU,
+    // Buffer is pseudo-mapped.
+    MAP_STATE_MAPPED_CPU,
+} WebGPUBufferMapState;
+
+struct WebGPUBufferContainer
+{
+    WebGPUBuffer *activeBuffer;
+
+    WebGPUBuffer **buffers;
+    Uint32 bufferCapacity;
+    Uint32 bufferCount;
+
+    SDL_GPUBufferUsageFlags usageFlags;
+    WebGPUBufferType bufferType;
+
+    // Actually mapping stuff in WebGPU's really slow. So, we don't. Instead we allocate some memory,
+    // say that's the mapped buffer, and then when you use it to copy something we call wgpuQueueWriteBuffer.
+    // Now, this is only a thing for upload buffers. We obviously can't do this trick with download buffers.
+    // However, this does increase performance SIGNIFIGANTLY if you're uploading data regularly.
+    void *pseudoMappedRange;
+
+    Uint32 size;
+
+    // The map state of this buffer.
+    // 0 = Not mapped.
+    // 1 = Mapped from GPU (Accessing GPU memory directly)
+    // 2 = Mapped on CPU (Pseudo-mapping, see above)
+    Uint16 mapState;
+
+    /**
+     * Should this buffer be pseudo-mapped?
+     */
+    bool shouldPseudomap;
+};
+
+typedef struct WebGPUTextureView
+{
+    WGPUTextureView view;
+    WebGPUTexture *parent;
+
+    Uint64 identifier;
+} WebGPUTextureView;
+
+struct WebGPUTexture
+{
+    WebGPUTextureContainer *container;
+
+    WGPUTexture texture;
+    WGPUTextureAspect aspect;
+    WebGPUTextureView *fullTextureView;
+    WebGPUTextureView **textureViews;
+
+    SDL_GPUTextureType type;
+    SDL_GPUTextureFormat format;
+    SDL_GPUTextureUsageFlags usage;
+    SDL_GPUSampleCount sampleCount;
+    SDL_AtomicInt referenceCount;
+
+    Uint32 textureViewCount;
+    Uint32 textureViewCapacity;
+};
+
+struct WebGPUTextureContainer
+{
+    TextureCommonHeader header;
+
+    WebGPUTexture *activeTexture;
+
+    Uint32 textureCapacity;
+    Uint32 textureCount;
+    WebGPUTexture **textures;
+};
+
+typedef struct WebGPUSampler
+{
+    WGPUSampler sampler;
+
+    // This is a fallback sampler for non-filterable texture formats.
+    // This sampler always defaults to NEAREST, and does not support anisotropy.
+    WGPUSampler fallbackSampler;
+    Uint64 identifier;
+} WebGPUSampler;
+
+typedef struct WebGPUFence
+{
+    WGPUFutureWaitInfo future;
+    bool signaled;
+} WebGPUFence;
+
+typedef struct WebGPUQueuedResourceBindSampler
+{
+    WGPUShaderStage visibleTo;
+    WebGPUSampler *sampler;
+    WebGPUTextureView *textureView;
+
+    Uint64 samplerIdentifier;
+    Uint64 textureIdentifier;
+
+    Uint16 slot;
+} WebGPUQueuedResourceBindSampler;
+
+typedef struct WebGPUQueuedResourceBindStorageTexture
+{
+    WGPUShaderStage visibleTo;
+    WebGPUTextureView *storageTextureView;
+
+    Uint64 identifier;
+    Uint16 slot;
+    // if false, storage texture is read-only
+    bool canWrite;
+} WebGPUQueuedResourceBindStorageTexture;
+
+typedef struct WebGPUQueuedResourceBindStorageBuffer
+{
+    WGPUShaderStage visibleTo;
+    WebGPUBuffer *storageBuffer;
+
+    Uint64 identifier;
+    Uint16 slot;
+    // if false, storage buffer is read-only
+    bool canWrite;
+} WebGPUQueuedResourceBindStorageBuffer;
+
+typedef struct WebGPUQueuedResourceBindUniformBuffer
+{
+    Uint32 length;
+    // Stage-relative
+    // (they're cousins)
+    Uint32 slot;
+} WebGPUQueuedResourceBindUniformBuffer;
+
+typedef struct WebGPUQueuedResourceBindVertexBuffer
+{
+    WebGPUBuffer *buffer;
+    Uint32 offset;
+
+    const char *identifier;
+    Uint16 slot;
+} WebGPUQueuedResourceBindVertexBuffer;
+
+typedef struct WebGPUQueuedResourceBindIndexBuffer
+{
+    WebGPUBuffer *buffer;
+
+    const char *identifier;
+    Uint32 offset;
+} WebGPUQueuedResourceBindIndexBuffer;
+
+typedef struct WebGPUQueuedUniformDataUpload
+{
+    void *data;
+
+    Uint64 offset;
+    Uint32 length;
+    // This doesn't care about stage visibility. It's the raw index of the uniform buffer it'll write to.
+    Uint32 slot;
+} WebGPUQueuedUniformDataUpload;
+
+typedef struct WebGPUQueuedDestroy
+{
+    WebGPUQueuedDestroyType type;
+    union
+    {
+        WebGPUTextureContainer *textureContainer;
+        WebGPUTexture *texture;
+        WebGPUSampler *sampler;
+
+        WebGPUBufferContainer *bufferContainer;
+        WebGPUBuffer *buffer;
+
+        WebGPUFence *fence;
+        WebGPUSubmittedCommandBuffer *submittedCommandBuffer;
+        WebGPUBindGroup *bindGroup;
+    } resource;
+
+    // Just used for debugging. If this is above 100 it'll log to the console that this resource is very stubborn.
+    Uint32 destroysAttempted;
+} WebGPUQueuedDestroy;
+
+typedef struct WebGPUShaderBindGroupLayouts
+{
+    WGPUBindGroupLayout samplerStorageBindGroupLayout;
+    WGPUBindGroupLayout uniformBindGroupLayout;
+} WebGPUShaderBindGroupLayouts;
+
+typedef struct WebGPUComputeShaderBindGroupLayouts
+{
+    WGPUBindGroupLayout samplerStorageBindGroupLayout;
+    WGPUBindGroupLayout readWriteStorageBindGroupLayout;
+    WGPUBindGroupLayout uniformBindGroupLayout;
+} WebGPUComputeShaderBindGroupLayouts;
+
+typedef struct WebGPUShader
+{
+    WGPUShaderModule shader;
+
+    char *entrypoint;
+    SDL_GPUShaderStage stage;
+
+    SDL_AtomicInt referenceCount;
+    bool shouldFree;
+} WebGPUShader;
+
+typedef struct WebGPUGraphicsPipeline
+{
+    // FIXME: This is never filled in.
+    GraphicsPipelineCommonHeader header;
+
+    WGPURenderPipeline pipeline;
+    WebGPUShaderBindGroupLayouts vertexBindGroupLayouts;
+    WebGPUShaderBindGroupLayouts fragmentBindGroupLayouts;
+
+    SDL_GPUGraphicsPipelineCreateInfo createInfo;
+
+    // FIXME: This is never even used. It was intended to be used for the edge-case where pipelines
+    // have been given entirely different binds than it was created with but I never bothered adding this
+    // We'll do it later™
+    Uint32 currentPipelineHash;
+    bool hasBeenCreated;
+} WebGPUGraphicsPipeline;
+
+typedef struct WebGPUComputePipeline
+{
+    // FIXME: This is also never filled in.
+    ComputePipelineCommonHeader header;
+
+    WGPUComputePipeline pipeline;
+    WebGPUComputeShaderBindGroupLayouts bindGroupLayouts;
+
+    SDL_GPUComputePipelineCreateInfo createInfo;
+
+    // FIXME: Same thing here, this is never used.
+    Uint32 currentPipelineHash;
+    bool hasBeenCreated;
+} WebGPUComputePipeline;
+
+typedef struct WebGPUOffsetBufferBinding
+{
+    WebGPUBuffer *buffer;
+    Uint32 offset;
+} WebGPUOffsetBufferBinding;
+
+struct WebGPUSubmittedCommandBuffer
+{
+    WebGPUFence *fence;
+
+    WebGPUBuffer **usedBuffers;
+    Uint32 usedBufferCount;
+    Uint32 usedBufferCapacity;
+
+    WebGPUTexture **usedTextures;
+    Uint32 usedTextureCount;
+    Uint32 usedTextureCapacity;
+};
+
+typedef struct WebGPUCommandBuffer
+{
+    CommandBufferCommonHeader common;
+
+    WebGPURenderer *renderer;
+
+    WGPUCommandEncoder encoder;
+    WGPUQueue queue;
+    WGPUDevice device;
+    WGPUInstance instance;
+
+    WGPURenderPassEncoder renderPassEncoder;
+    WGPUComputePassEncoder computePassEncoder;
+
+    WebGPUGraphicsPipeline *boundGraphicsPipeline;
+    WebGPUComputePipeline *boundComputePipeline;
+
+    WebGPUSubmittedCommandBuffer submitted;
+
+    // These'll run right before the command buffer is submitted.
+    WebGPUQueuedUniformDataUpload *queuedUniformUploads;
+
+    Uint32 numQueuedUniformUploads;
+    Uint32 queuedUniformUploadCapacity;
+
+    size_t totalUniformDataLen;
+
+    bool hasBoundGraphicsPipeline;
+    bool hasBoundComputePipeline;
+
+    struct vertexStageBinds
+    {
+        WebGPUSampler *boundSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
+        WebGPUBuffer *boundStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+        WebGPUOffsetBufferBinding boundVertexBuffers[MAX_VERTEX_BUFFERS];
+        WebGPUOffsetBufferBinding boundIndexBuffer;
+
+        WGPUIndexFormat indexFormat;
+
+        Uint32 currentUniformWriteOffsets[4];
+        Uint32 currentUniformReadOffsets[4];
+
+        bool shouldBindVertexBuffers;
+        bool shouldBindIndexBuffer;
+        bool samplerStorageBindGroupOutdated;
+        bool uniformBindGroupOutdated; // The bind group itself can never become outdated, but the read offsets can.
+    } vertexStageBinds;
+
+    struct fragmentStageBinds
+    {
+        WebGPUSampler *boundSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
+        WebGPUBuffer *boundStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+
+        Uint32 currentUniformWriteOffsets[4];
+        Uint32 currentUniformReadOffsets[4];
+
+        bool samplerStorageBindGroupOutdated;
+        bool uniformBindGroupOutdated; // The bind group itself can never become outdated, but the read offsets can.
+    } fragmentStageBinds;
+
+    struct computeStageBinds
+    {
+        WebGPUSampler *boundSamplers[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundTextures[MAX_TEXTURE_SAMPLERS_PER_STAGE];
+        WebGPUTextureView *boundReadOnlyStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
+        WebGPUTextureView *boundReadWriteStorageTextures[MAX_STORAGE_TEXTURES_PER_STAGE];
+        WebGPUBuffer *boundReadOnlyStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+        WebGPUBuffer *boundReadWriteStorageBuffers[MAX_STORAGE_BUFFERS_PER_STAGE];
+
+        Uint32 currentUniformWriteOffsets[4];
+        Uint32 currentUniformReadOffsets[4];
+
+        bool samplerStorageBindGroupOutdated;
+        bool readWriteStorageBindGroupOutdated;
+        bool uniformBindGroupOutdated;
+    } computeStageBinds;
+
+    Uint32 surfaceCount;
+    Uint32 surfaceCapacity;
+    WGPUSurface *surfaces;
+
+    Uint32 swapchainTextureCount;
+    Uint32 swapchainTextureCapacity;
+    WebGPUTextureContainer **acquiredSwapchainTextures;
+
+    // These are used to ensure that the end-user doesn't use a scissor
+    // that's larger than the smallest color target's, since WebGPU disallows
+    // that and will die a horrible, painful death from even considering it
+    Uint32 smallestColorTargetW;
+    Uint32 smallestColorTargetH;
+} WebGPUCommandBuffer;
+
+static void
+WEBGPU_INTERNAL_FenceCallback(WGPUQueueWorkDoneStatus status, WGPUStringView message, void *fence, void *unused)
+{
+    if (fence != NULL) {
+        // We're just gonna presume this never fails since that's easier
+        ((WebGPUFence *)fence)->signaled = true;
+    }
+}
+
+static void
+WEBGPU_INTERNAL_UncapturedErrorCallback(WGPUDevice const *device, WGPUErrorType type, WGPUStringView message, void *renderer, void *unused)
+{
+    SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU uncaptured error!\n%s", message.data);
+
+    if (((WebGPURenderer *)renderer)->debugMode) {
+        SDL_assert_release(!"Uncaptured WebGPU error, message has been logged to SDL_LOG_CATEGORY_GPU");
+    }
+}
+
+static inline Uint32 WEBGPU_INTERNAL_GetTextureViewIndex(Uint32 layer, Uint32 level, Uint32 numMips)
+{
+    return (layer * numMips) + level;
+}
+
+// oh my god these functions were so annoying to write out
+static bool WEBGPU_INTERNAL_TextureFormatSupportsBlending(WGPUTextureFormat format, WebGPURenderer *renderer)
+{
+    switch (format) {
+    // always blendable
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Unorm:
+    case WGPUTextureFormat_R16Snorm:
+    case WGPUTextureFormat_R16Float:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Unorm:
+    case WGPUTextureFormat_RG16Snorm:
+    case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_RGBA16Unorm:
+    case WGPUTextureFormat_RGBA16Snorm:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA8UnormSrgb:
+    case WGPUTextureFormat_BGRA8UnormSrgb:
+    case WGPUTextureFormat_RGB10A2Unorm:
+        return true;
+
+    // requires tier 1
+    case WGPUTextureFormat_R8Snorm:
+    case WGPUTextureFormat_RG8Snorm:
+    case WGPUTextureFormat_RGBA8Snorm:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
+
+    // these require float32-blendable
+    case WGPUTextureFormat_R32Float:
+    case WGPUTextureFormat_RG32Float:
+    case WGPUTextureFormat_RGBA32Float:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable);
+
+    // rg11b10ufloat is a special princess and requires its own feature
+    case WGPUTextureFormat_RG11B10Ufloat:
+        return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_RG11B10UfloatRenderable);
+
+    // never blendable
+    // NOTE: i struggled a bit wondering if I should explicitly define the unsupported ones,
+    // but I decided against it since it'd be a giant block of code (80 formats!)
+    // if the pros think it'd be better to have them explicit though, i'll add them back
+    default:
+        return false;
+    }
+}
+
+// there might be some inaccuracies here i've just been copying directly from the spec with my meaty, flawed eyes
+static bool WEBGPU_INTERNAL_TextureFormatSupportsStorageAccess(WebGPURenderer *renderer, WGPUTextureFormat format, WGPUStorageTextureAccess access)
+{
+    // Shortened names for convience
+    const bool t1 = WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
+    const bool t2 = WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier2);
+
+    switch (format) {
+    // always supports all accesses
+    case WGPUTextureFormat_R32Uint:
+    case WGPUTextureFormat_R32Sint:
+    case WGPUTextureFormat_R32Float:
+        return true;
+
+    // always supports write-only & read-only, read-write is supported with tier 2
+    case WGPUTextureFormat_RGBA8Uint:
+    case WGPUTextureFormat_RGBA8Sint:
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_RGBA16Uint:
+    case WGPUTextureFormat_RGBA16Sint:
+    case WGPUTextureFormat_RGBA32Uint:
+    case WGPUTextureFormat_RGBA32Sint:
+    case WGPUTextureFormat_RGBA16Float:
+    case WGPUTextureFormat_RGBA32Float:
+        return access != WGPUStorageTextureAccess_ReadWrite || t2;
+
+    // always supports write-only & read-only, read-write is not supported
+    case WGPUTextureFormat_R16Unorm:
+    case WGPUTextureFormat_R16Snorm:
+    // RG32 technically requires the "core-features-and-limits" feature so we could check for it,
+    // but since it's required for the WebGPU backend, we'll pretty safely assume that it's enabled.
+    case WGPUTextureFormat_RG32Uint:
+    case WGPUTextureFormat_RG32Sint:
+    case WGPUTextureFormat_RG32Float:
+    case WGPUTextureFormat_RG16Unorm:
+    case WGPUTextureFormat_RG16Snorm:
+    case WGPUTextureFormat_RGBA8Snorm:
+    case WGPUTextureFormat_RGBA16Unorm:
+    case WGPUTextureFormat_RGBA16Snorm:
+        return access != WGPUStorageTextureAccess_ReadWrite;
+
+    // supports write-only & read-only with t1, read-write with t2
+    case WGPUTextureFormat_R8Uint:
+    case WGPUTextureFormat_R8Sint:
+    case WGPUTextureFormat_R8Unorm:
+    case WGPUTextureFormat_R16Uint:
+    case WGPUTextureFormat_R16Sint:
+    case WGPUTextureFormat_R16Float:
+        return (access != WGPUStorageTextureAccess_ReadWrite && t1) || t2;
+
+    // supports write-only & read-only wtih t1, read-write is not supported
+    case WGPUTextureFormat_R8Snorm:
+    case WGPUTextureFormat_RG8Uint:
+    case WGPUTextureFormat_RG8Sint:
+    case WGPUTextureFormat_RG8Snorm:
+    case WGPUTextureFormat_RG8Unorm:
+    case WGPUTextureFormat_RG16Uint:
+    case WGPUTextureFormat_RG16Sint:
+    case WGPUTextureFormat_RG16Float:
+    case WGPUTextureFormat_RGB10A2Uint:
+    case WGPUTextureFormat_RGB10A2Unorm:
+    case WGPUTextureFormat_RG11B10Ufloat:
+        return access != WGPUStorageTextureAccess_ReadWrite && t1;
+
+    // supports write-only with bgra8unorm-storage feature
+    case WGPUTextureFormat_BGRA8Unorm:
+        return access == WGPUStorageTextureAccess_WriteOnly && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_BGRA8UnormStorage);
+
+    // if not explicitly said to be fine, a texture format will be treated as unsupported
+    // see WEBGPU_INTERNAL_TextureFormatSupportsBlending for my reasoning behind this
+    default:
+        return false;
+    }
+};
+
+static SDL_PropertiesID WEBGPU_GetDeviceProperties(
+    SDL_GPUDevice *device)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)device;
+    return renderer->props;
+}
+
+// forward decl
+static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *success);
+
+static void WEBGPU_INTERNAL_DeviceLostCallback(WGPUDevice const *device, WGPUDeviceLostReason reason, WGPUStringView message, void *renderer, void *unused)
+{
+    if (!((WebGPURenderer *)renderer)->destroyingSelf && ((WebGPURenderer *)renderer)->debugMode) {
+        // TODO: I couldn't really figure out how to write a good error message here?
+        SDL_assert_release(!"WebGPU device has been lost.");
+    }
+}
+
+static void WEBGPU_INTERNAL_RequestAdapterCallback(WGPURequestAdapterStatus status, WGPUAdapter adapter, WGPUStringView message, void *renderer, void *success)
+{
+    if (status == WGPURequestAdapterStatus_Success) {
+        ((WebGPURenderer *)renderer)->adapter = adapter;
+        if (((WebGPURenderer *)renderer)->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU adapter!");
+        }
+        if (success != NULL) {
+            *((bool *)success) = true;
+        }
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Requesting WebGPU adapter failed!\n'%s'", message.data);
+        if (success != NULL) {
+            *((bool *)success) = false;
+        }
+    }
+}
+
+// Generate an FNV-1a hash for this data.
+//
+// This hash function is based on Landon Curt Noll's hash_32a.c FNV-1a implementation.
+// https://github.com/lcn2/fnv/blob/master/hash_32a.c
+static Uint32 WEBGPU_INTERNAL_GenFNV1aHash(Uint32 initialHash, const void *data, Uint32 size)
+{
+    Uint32 hash = initialHash;
+
+    const unsigned char *slice = data;
+    const unsigned char *endOfData = data + size;
+
+    while (slice < endOfData) {
+        hash ^= (Uint32)*slice++;
+        hash *= 0x01000193;
+    }
+
+    return hash;
+}
+
+static Uint32 WEBGPU_INTERNAL_HashBindGroupKey(void *unused, const void *key)
+{
+    Uint32 bufferSize = sizeof(WebGPUBindGroupCacheKey);
+
+    return WEBGPU_INTERNAL_GenFNV1aHash(0, key, bufferSize);
+}
+
+static void WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey(void *unused, const void *key, const void *value)
+{
+    WebGPUBindGroup *bindGroup = (WebGPUBindGroup *)value; // "Bu-bu-but that's a const pointe-" shh my child, segmentation faults don't happen if you're pure of heart
+    if (bindGroup == NULL) {
+        return;
+    }
+
+    wgpuBindGroupRelease(bindGroup->bindGroup);
+    SDL_free(bindGroup);
+}
+
+static bool WEBGPU_INTERNAL_MatchHashedBindGroupKey(void *unused, const void *a, const void *b)
+{
+    return SDL_memcmp(a, b, sizeof(WebGPUBindGroupCacheKey)) == 0;
+}
+
+static void
+WEBGPU_INTERNAL_RequestDeviceCallback(WGPURequestDeviceStatus status, WGPUDevice device, WGPUStringView message, void *renderer, void *success)
+{
+    if (status == WGPURequestDeviceStatus_Success) {
+        ((WebGPURenderer *)renderer)->device = device;
+        if (((WebGPURenderer *)renderer)->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "Acquired WebGPU device!");
+        }
+        if (success != NULL) {
+            *((bool *)success) = true;
+        }
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Requesting WebGPU device failed!\n'%s'", message.data);
+        if (success != NULL) {
+            *((bool *)success) = false;
+        }
+    }
+}
+
+static inline void WEBGPU_INTERNAL_RegisterQueuedDestroy(WebGPURenderer *renderer, WebGPUQueuedDestroy *destroy)
+{
+    WEBGPU_INTERNAL_InsertElementIntoArray(renderer->queuedDestroys, renderer->queuedDestroyCapacity,
+                                           renderer->queuedDestroyCount, WebGPUQueuedDestroy *, destroy);
+}
+
+static void WEBGPU_INTERNAL_TrackBuffer(WebGPUCommandBuffer *commandBuffer, WebGPUBuffer *buffer)
+{
+    TRACK_RESOURCE(buffer, WebGPUBuffer *, usedBuffers, usedBufferCount, usedBufferCapacity, buffer->referenceCount);
+}
+
+static void WEBGPU_INTERNAL_TrackTexture(WebGPUCommandBuffer *commandBuffer, WebGPUTexture *texture)
+{
+    TRACK_RESOURCE(texture, WebGPUTexture *, usedTextures, usedTextureCount, usedTextureCapacity, texture->referenceCount);
+}
+
+static void WEBGPU_INTERNAL_QueueTextureContainerForRelease(WebGPURenderer *renderer, WebGPUTextureContainer *container)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (container == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_TEXTURE_CONTAINER;
+    destroy->resource.textureContainer = container;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_QueueSamplerForRelease(WebGPURenderer *renderer, WebGPUSampler *sampler)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (sampler == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_SAMPLER;
+    destroy->resource.sampler = sampler;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_QueueBufferContainerForRelease(WebGPURenderer *renderer, WebGPUBufferContainer *container)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (container == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_BUFFER_CONTAINER;
+    destroy->resource.bufferContainer = container;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_QueueFenceForRelease(WebGPURenderer *renderer, WebGPUFence *fence)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (fence == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_FENCE;
+    destroy->resource.fence = fence;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_QueueSubmittedCommandBufferForRelease(WebGPURenderer *renderer, WebGPUSubmittedCommandBuffer *commandBuffer)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (commandBuffer == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_SUBMITTED_COMMAND_BUFFER;
+    destroy->resource.submittedCommandBuffer = commandBuffer;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_QueueBindGroupForRelease(WebGPURenderer *renderer, WebGPUBindGroup *bindGroup)
+{
+    WebGPUQueuedDestroy *destroy = NULL;
+    if (bindGroup == NULL) {
+        return;
+    }
+
+    destroy = SDL_calloc(1, sizeof(*destroy));
+    destroy->type = WEBGPU_QUEUED_DESTROY_BIND_GROUP;
+    destroy->resource.bindGroup = bindGroup;
+
+    WEBGPU_INTERNAL_RegisterQueuedDestroy(renderer, destroy);
+}
+
+static void WEBGPU_INTERNAL_RequestAdapter(WebGPURenderer *renderer, bool *success)
+{
+    WGPURequestAdapterOptions adapterReqOptions = WGPU_REQUEST_ADAPTER_OPTIONS_INIT;
+
+    adapterReqOptions.powerPreference = renderer->preferLowPower ? WGPUPowerPreference_LowPower : WGPUPowerPreference_HighPerformance;
+
+    WGPUFuture future = wgpuInstanceRequestAdapter(renderer->instance, &adapterReqOptions, (WGPURequestAdapterCallbackInfo){
+                                                                                               .callback = WEBGPU_INTERNAL_RequestAdapterCallback,
+                                                                                               .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                                               .nextInChain = NULL,
+                                                                                               .userdata1 = renderer,
+                                                                                               .userdata2 = success,
+                                                                                           });
+
+    WGPUFutureWaitInfo waitInfo = {
+        future,
+        false,
+    };
+
+    while (!waitInfo.completed) {
+        wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
+        WEBGPU_INTERNAL_Spin();
+    }
+}
+
+static void WEBGPU_INTERNAL_RequestDevice(WebGPURenderer *renderer, bool *success)
+{
+    WGPUDeviceDescriptor deviceDesc = WGPU_DEVICE_DESCRIPTOR_INIT;
+
+    bool clipDistance = SDL_GetBooleanProperty(renderer->props, SDL_PROP_GPU_DEVICE_CREATE_FEATURE_CLIP_DISTANCE_BOOLEAN, false);
+    Uint32 numFeaturesEnabled = 0;
+    Uint32 featureCapacity = SDL_arraysize(WEBGPU_INTERNAL_RequiredFeatures) + SDL_arraysize(WEBGPU_INTERNAL_OptionalFeatures) + 1;
+
+    WGPUFeatureName *features = SDL_calloc(featureCapacity, sizeof(WGPUFeatureName));
+    WGPUSupportedFeatures supportedFeatures = { 0 };
+
+    wgpuAdapterGetFeatures(renderer->adapter, &supportedFeatures);
+
+    if (clipDistance) {
+        WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WGPUFeatureName_ClipDistances);
+    }
+
+    // This code is horrible.
+    for (int i = 0; i < SDL_arraysize(WEBGPU_INTERNAL_RequiredFeatures); i++) {
+        bool supported = false;
+        for (int j = 0; j < supportedFeatures.featureCount; j++) {
+            if (WEBGPU_INTERNAL_RequiredFeatures[i] == supportedFeatures.features[j]) {
+                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_RequiredFeatures[i]);
+                supported = true;
+                break;
+            }
+        }
+        if (!supported) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support required feature \"%s\"!", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_RequiredFeatures[i]));
+            SDL_assert_release(!"WebGPU adapter does not support all required features!");
+        }
+
+        SDL_assert_release(WEBGPU_INTERNAL_RequiredFeatures[i] <= WEBGPU_FEATURE_AT_END_OF_ENUM);
+        renderer->webgpuFeatureEnabled[WEBGPU_INTERNAL_RequiredFeatures[i]] = supported;
+    }
+
+    for (int i = 0; i < SDL_arraysize(WEBGPU_INTERNAL_OptionalFeatures); i++) {
+        bool supported = false;
+
+        for (int j = 0; j < supportedFeatures.featureCount; j++) {
+            if (WEBGPU_INTERNAL_OptionalFeatures[i] == supportedFeatures.features[j]) {
+                WEBGPU_INTERNAL_InsertElementIntoArray(features, featureCapacity, numFeaturesEnabled, WGPUFeatureName, WEBGPU_INTERNAL_OptionalFeatures[i]);
+                supported = true;
+                break;
+            }
+        }
+
+        if (!supported && renderer->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "WebGPU adapter does not support optional feature \"%s\".", WEBGPU_FeatureNameToString(WEBGPU_INTERNAL_OptionalFeatures[i]));
+        }
+
+        SDL_assert_release(WEBGPU_INTERNAL_OptionalFeatures[i] <= WEBGPU_FEATURE_AT_END_OF_ENUM);
+        renderer->webgpuFeatureEnabled[WEBGPU_INTERNAL_OptionalFeatures[i]] = supported;
+    }
+
+    deviceDesc.deviceLostCallbackInfo = (WGPUDeviceLostCallbackInfo){
+        .callback = WEBGPU_INTERNAL_DeviceLostCallback,
+        .mode = WGPUCallbackMode_AllowSpontaneous,
+        .nextInChain = NULL,
+        .userdata1 = renderer,
+        .userdata2 = NULL,
+    };
+
+    deviceDesc.uncapturedErrorCallbackInfo = (WGPUUncapturedErrorCallbackInfo){
+        .callback = WEBGPU_INTERNAL_UncapturedErrorCallback,
+        .nextInChain = NULL,
+        .userdata1 = renderer,
+        .userdata2 = NULL,
+    };
+
+    deviceDesc.requiredFeatureCount = numFeaturesEnabled;
+    deviceDesc.requiredFeatures = features;
+
+    WGPUFuture future = wgpuAdapterRequestDevice(renderer->adapter, &deviceDesc, (WGPURequestDeviceCallbackInfo){
+                                                                                     .callback = WEBGPU_INTERNAL_RequestDeviceCallback,
+                                                                                     .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                                     .nextInChain = NULL,
+                                                                                     .userdata1 = renderer,
+                                                                                     .userdata2 = success,
+                                                                                 });
+
+    WGPUFutureWaitInfo waitInfo = {
+        future,
+        false,
+    };
+
+    while (!waitInfo.completed) {
+        wgpuInstanceWaitAny(renderer->instance, 1, &waitInfo, 0);
+        WEBGPU_INTERNAL_Spin();
+    }
+
+    wgpuSupportedFeaturesFreeMembers(supportedFeatures);
+    SDL_free(features);
+}
+
+static void WEBGPU_BeginCopyPass(
+    SDL_GPUCommandBuffer *commandBuffer)
+{
+    // No-op.
+}
+
+static void WEBGPU_EndCopyPass(SDL_GPUCommandBuffer *copyPass)
+{
+    // Unfortunately, this function will never be implemented.
+    //
+    // We simply do not, as a human race, have enough compute on this Earth
+    // to do the incredibly computationally expensive task, called "doing nothing"
+}
+
+static SDL_GPUCommandBuffer *WEBGPU_AcquireCommandBuffer(SDL_GPURenderer *device)
+{
+    WebGPUCommandBuffer *wrapper;
+    wrapper = (WebGPUCommandBuffer *)SDL_calloc(1, sizeof(*wrapper));
+
+    wrapper->renderer = (WebGPURenderer *)device;
+
+    wrapper->encoder = wgpuDeviceCreateCommandEncoder(((WebGPURenderer *)device)->device, NULL);
+    wrapper->queue = ((WebGPURenderer *)device)->queue;
+    wrapper->device = ((WebGPURenderer *)device)->device;
+    wrapper->instance = ((WebGPURenderer *)device)->instance;
+
+    WGPUSurface *surfaces;
+    WebGPUTextureContainer **acquiredSwapchainTextures;
+    surfaces = SDL_calloc(2, sizeof(WGPUSurface));
+    acquiredSwapchainTextures = SDL_calloc(2, sizeof(*acquiredSwapchainTextures));
+
+    // Allocating enough space for two since XR and stuff
+    // It'll automatically resize if needed but that's slow so eeeh
+    wrapper->surfaces = surfaces;
+    wrapper->surfaceCount = 0;
+    wrapper->surfaceCapacity = 2;
+
+    wrapper->acquiredSwapchainTextures = acquiredSwapchainTextures;
+    wrapper->swapchainTextureCount = 0;
+    wrapper->swapchainTextureCapacity = 2;
+
+    return (SDL_GPUCommandBuffer *)wrapper;
+}
+
+/**
+ * Set all of the render pass's bound resources to NULL.
+ */
+static void WEBGPU_INTERNAL_ClearRenderPassBindings(WebGPUCommandBuffer *cmdBuf)
+{
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundTextures[i] = NULL;
+        cmdBuf->vertexStageBinds.boundSamplers[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundTextures[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundSamplers[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundStorageTextures[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundStorageTextures[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        cmdBuf->vertexStageBinds.boundStorageBuffers[i] = NULL;
+        cmdBuf->fragmentStageBinds.boundStorageBuffers[i] = NULL;
+    }
+
+    // for (int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
+    //     cmdBuf->vertexStageBinds.boundVertexBuffers[i].buffer = NULL;
+    //     cmdBuf->vertexStageBinds.boundVertexBuffers[i].offset = 0;
+    // }
+
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->vertexStageBinds.uniformBindGroupOutdated = true;
+
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->fragmentStageBinds.uniformBindGroupOutdated = true;
+
+    cmdBuf->vertexStageBinds.shouldBindVertexBuffers = true;
+    cmdBuf->vertexStageBinds.shouldBindIndexBuffer = true;
+}
+
+/**
+ * Set all of the compute pass's bound resources to NULL.
+ * clearReadWriteBindings prevents... clearing read write bindings. Since they're set at the beginning of the compute pass, clearing them when the pipeline's bound is A Bad Thing!
+ */
+static void WEBGPU_INTERNAL_ClearComputePassBindings(WebGPUCommandBuffer *cmdBuf, bool clearReadWriteBindings)
+{
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundSamplers[i] = NULL;
+        cmdBuf->computeStageBinds.boundTextures[i] = NULL;
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i] = NULL;
+        if (clearReadWriteBindings) {
+            cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = NULL;
+        }
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] = NULL;
+        if (clearReadWriteBindings) {
+            cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] = NULL;
+        }
+    }
+
+    cmdBuf->computeStageBinds.uniformBindGroupOutdated = true;
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_INTERNAL_FreeCommandBuffer(WebGPUCommandBuffer *cmdBuf)
+{
+    SDL_free(cmdBuf->surfaces);
+    SDL_free(cmdBuf->acquiredSwapchainTextures);
+    SDL_free(cmdBuf->queuedUniformUploads);
+    SDL_free(cmdBuf);
+}
+
+// Create a new fence which will be called by wgpuQueueOnSubmittedWorkDone
+static WebGPUFence *WEBGPU_INTERNAL_CreateFence(WGPUQueue queue)
+{
+    WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
+
+    fence->future.future = wgpuQueueOnSubmittedWorkDone(queue, (WGPUQueueWorkDoneCallbackInfo){
+                                                                   .callback = WEBGPU_INTERNAL_FenceCallback,
+                                                                   .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                   .nextInChain = NULL,
+                                                                   .userdata1 = fence,
+                                                                   .userdata2 = NULL,
+                                                               });
+
+    return fence;
+}
+
+static WebGPUFence *WEBGPU_INTERNAL_CreateFenceFromFuture(WGPUFuture future)
+{
+    WebGPUFence *fence = SDL_calloc(1, sizeof(*fence));
+
+    fence->future.future = future;
+
+    return fence;
+}
+
+static bool WEBGPU_INTERNAL_QueryFence(WebGPURenderer *renderer, WebGPUFence *fence)
+{
+    if (fence != NULL) {
+        if (!fence->signaled) {
+            // Despite its name, WaitAny isn't actually blocking unless the TimedWaitAny instance feature is enabled,
+            // and you give a value to the timeoutNS argument.
+            wgpuInstanceWaitAny(renderer->instance, 1, &fence->future, 0);
+
+            fence->signaled = fence->future.completed;
+        }
+        return fence->signaled;
+    } else {
+        return true;
+    }
+}
+
+static bool WEBGPU_QueryFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
+{
+    return WEBGPU_INTERNAL_QueryFence((WebGPURenderer *)device, (WebGPUFence *)fence);
+}
+
+static bool WEBGPU_INTERNAL_WaitForFences(WebGPURenderer *renderer, bool waitAll, WebGPUFence *const *fences, Uint32 num_fences)
+{
+    Uint32 triggeredFenceCount = 0;
+    Uint32 triggeredFenceThreshold = waitAll ? num_fences : 1;
+
+    while (triggeredFenceCount < triggeredFenceThreshold) {
+        triggeredFenceCount = 0;
+
+        for (int i = 0; i < num_fences; i++) {
+            if (WEBGPU_INTERNAL_QueryFence(renderer, fences[i])) {
+                triggeredFenceCount++;
+            }
+
+            // Spin to appease Emscripten.
+            WEBGPU_INTERNAL_Spin();
+        }
+    }
+
+    return true;
+}
+
+static bool WEBGPU_WaitForFences(SDL_GPURenderer *device, bool waitAll, SDL_GPUFence *const *fences, Uint32 num_fences)
+{
+    return WEBGPU_INTERNAL_WaitForFences((WebGPURenderer *)device, waitAll, (WebGPUFence *const *)fences, num_fences);
+}
+
+static bool WEBGPU_Wait(SDL_GPURenderer *driverData)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+    // We'll wait until all the submitted command buffer fences have been called.
+    WebGPUFence **fences = NULL;
+
+    Uint32 fenceCapacity = 0;
+    Uint32 fenceCount = 0;
+
+    for (int i = 0; i < renderer->submittedCommandBufferCount; i++) {
+        WEBGPU_INTERNAL_InsertElementIntoArray(fences, fenceCapacity, fenceCount, WebGPUFence *, renderer->submittedCommandBuffers[i]->fence);
+    }
+
+    if (fenceCount > 0) {
+        WEBGPU_INTERNAL_WaitForFences(renderer, true, fences, fenceCount);
+    }
+
+    if (fences) {
+        SDL_free(fences);
+    }
+
+    // I can't really think of a scenario in which this'd fail?
+    return true;
+}
+
+static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(WebGPUCommandBuffer *cmdBuf)
+{
+    WGPUBindGroupLayoutEntry *samplerEntriesVert = NULL;
+    WGPUBindGroupLayoutEntry *samplerEntriesFrag = NULL;
+    WGPUBindGroupLayoutDescriptor samplerLayoutVertDesc = { 0 };
+    WGPUBindGroupLayoutDescriptor samplerLayoutFragDesc = { 0 };
+
+    Uint32 samplerEntryCountVertex = 0;
+    Uint32 samplerEntryCountFragment = 0;
+    Uint32 samplerEntryVertCapacity = 0;
+    Uint32 samplerEntryFragCapacity = 0;
+
+    Uint32 offsetVert = 0;
+    Uint32 offsetFrag = 0;
+
+    // 48 is enough to store all textures (16), samplers (16), storage textures (8), and storage buffers (8)
+    WebGPUBindGroupLayoutEntryType entriesVert[48] = { 0 };
+    WebGPUBindGroupLayoutEntryType entriesFrag[48] = { 0 };
+    Uint32 entriesVertOffset = 0;
+    Uint32 entriesFragOffset = 0;
+
+    Uint32 hash = 0xAAAA1BEE;
+
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        // We don't actually care about the sampler.
+        WebGPUTextureView *textureViewVert = cmdBuf->vertexStageBinds.boundTextures[i];
+        WebGPUTextureView *textureViewFrag = cmdBuf->fragmentStageBinds.boundTextures[i];
+
+        if (textureViewVert) {
+            WGPUBindGroupLayoutEntry textureEntry = {
+                .binding = offsetVert++,
+                .texture = {
+                    .multisampled = textureViewVert->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
+                    .nextInChain = NULL,
+                    .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureViewVert->parent->format]),
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewVert->parent->type],
+                },
+                .visibility = WGPUShaderStage_Vertex,
+            };
+
+            WGPUBindGroupLayoutEntry samplerEntry = {
+                .binding = offsetVert++,
+                .sampler = {
+                    .type = textureEntry.texture.sampleType ==
+                                    WGPUTextureSampleType_UnfilterableFloat
+                                ? WGPUSamplerBindingType_NonFiltering
+                                : WGPUSamplerBindingType_Filtering,
+                },
+                .visibility = WGPUShaderStage_Vertex,
+            };
+
+            entriesVert[entriesVertOffset++] = textureEntry.texture.sampleType ==
+                                                       WGPUTextureSampleType_UnfilterableFloat
+                                                   ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE_UNFILTERABLE
+                                                   : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE;
+            entriesVert[entriesVertOffset++] = textureEntry.texture.sampleType ==
+                                                       WGPUTextureSampleType_UnfilterableFloat
+                                                   ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER_NONFILTERING
+                                                   : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesVert, samplerEntryVertCapacity, samplerEntryCountVertex, WGPUBindGroupLayoutEntry, textureEntry);
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesVert, samplerEntryVertCapacity, samplerEntryCountVertex, WGPUBindGroupLayoutEntry, samplerEntry);
+        }
+
+        if (textureViewFrag) {
+            WGPUBindGroupLayoutEntry textureEntry = {
+                .binding = offsetFrag++,
+                .texture = {
+                    .multisampled = textureViewFrag->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
+                    .nextInChain = NULL,
+                    .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureViewFrag->parent->format]),
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewFrag->parent->type],
+                },
+                .visibility = WGPUShaderStage_Fragment,
+            };
+
+            WGPUBindGroupLayoutEntry samplerEntry = {
+                .binding = offsetFrag++,
+                .sampler = {
+                    .type = textureEntry.texture.sampleType ==
+                                    WGPUTextureSampleType_UnfilterableFloat
+                                ? WGPUSamplerBindingType_NonFiltering
+                                : WGPUSamplerBindingType_Filtering,
+                },
+                .visibility = WGPUShaderStage_Fragment,
+            };
+
+            entriesFrag[entriesFragOffset++] = textureEntry.texture.sampleType ==
+                                                       WGPUTextureSampleType_UnfilterableFloat
+                                                   ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE_UNFILTERABLE
+                                                   : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE;
+            entriesFrag[entriesFragOffset++] = textureEntry.texture.sampleType ==
+                                                       WGPUTextureSampleType_UnfilterableFloat
+                                                   ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER_NONFILTERING
+                                                   : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesFrag, samplerEntryFragCapacity, samplerEntryCountFragment, WGPUBindGroupLayoutEntry, textureEntry);
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesFrag, samplerEntryFragCapacity, samplerEntryCountFragment, WGPUBindGroupLayoutEntry, samplerEntry);
+        }
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        WebGPUTextureView *textureViewVert = cmdBuf->vertexStageBinds.boundStorageTextures[i];
+        WebGPUTextureView *textureViewFrag = cmdBuf->fragmentStageBinds.boundStorageTextures[i];
+
+        if (textureViewVert) {
+            WGPUBindGroupLayoutEntry storageTextureEntry = {
+                .binding = offsetVert++,
+                .storageTexture = {
+                    .access = WGPUStorageTextureAccess_ReadOnly,
+                    .format = SDLToWebGPU_TextureFormat[textureViewVert->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewVert->parent->type],
+                },
+                .visibility = WGPUShaderStage_Vertex,
+            };
+
+            entriesVert[entriesVertOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesVert, samplerEntryVertCapacity, samplerEntryCountVertex, WGPUBindGroupLayoutEntry, storageTextureEntry);
+        }
+
+        if (textureViewFrag) {
+            WGPUBindGroupLayoutEntry storageTextureEntry = {
+                .binding = offsetFrag++,
+                .storageTexture = {
+                    .access = WGPUStorageTextureAccess_ReadOnly,
+                    .format = SDLToWebGPU_TextureFormat[textureViewFrag->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewFrag->parent->type],
+                },
+                .visibility = WGPUShaderStage_Fragment,
+            };
+
+            entriesFrag[entriesFragOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesFrag, samplerEntryFragCapacity, samplerEntryCountFragment, WGPUBindGroupLayoutEntry, storageTextureEntry);
+        }
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        WebGPUBuffer *storageBufferVert = cmdBuf->vertexStageBinds.boundStorageBuffers[i];
+        WebGPUBuffer *storageBufferFrag = cmdBuf->fragmentStageBinds.boundStorageBuffers[i];
+
+        if (storageBufferVert) {
+            WGPUBindGroupLayoutEntry storageBufferEntry = {
+                .binding = offsetVert++,
+                .buffer = {
+                    .hasDynamicOffset = false,
+                    .minBindingSize = 0,
+                    .nextInChain = 0,
+                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                },
+                .visibility = WGPUShaderStage_Vertex,
+            };
+
+            entriesVert[entriesVertOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesVert, samplerEntryVertCapacity, samplerEntryCountVertex, WGPUBindGroupLayoutEntry, storageBufferEntry);
+        }
+
+        if (storageBufferFrag) {
+            WGPUBindGroupLayoutEntry storageBufferEntry = {
+                .binding = offsetFrag++,
+                .buffer = {
+                    .hasDynamicOffset = false,
+                    .minBindingSize = 0,
+                    .nextInChain = 0,
+                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                },
+                .visibility = WGPUShaderStage_Fragment,
+            };
+
+            entriesFrag[entriesFragOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntriesFrag, samplerEntryFragCapacity, samplerEntryCountFragment, WGPUBindGroupLayoutEntry, storageBufferEntry);
+        }
+    }
+
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesVert, sizeof(WebGPUBindGroupLayoutEntryType) * 48);
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesFrag, sizeof(WebGPUBindGroupLayoutEntryType) * 48);
+
+    if (cmdBuf->boundGraphicsPipeline->currentPipelineHash == hash && hash != 0xAAAA1BEE) {
+        goto finish;
+    }
+
+    samplerLayoutVertDesc.entries = samplerEntriesVert;
+    samplerLayoutVertDesc.entryCount = samplerEntryCountVertex;
+    samplerLayoutVertDesc.label = (WGPUStringView){ NULL, 0 };
+    samplerLayoutVertDesc.nextInChain = NULL;
+
+    samplerLayoutFragDesc.entries = samplerEntriesFrag;
+    samplerLayoutFragDesc.entryCount = samplerEntryCountFragment;
+    samplerLayoutFragDesc.label = (WGPUStringView){ NULL, 0 };
+    samplerLayoutFragDesc.nextInChain = NULL;
+
+    if (cmdBuf->boundGraphicsPipeline->hasBeenCreated) {
+        // We'll need to free the previous layouts.
+        wgpuBindGroupLayoutRelease(cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout);
+    }
+
+    cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(cmdBuf->device, &samplerLayoutVertDesc);
+    cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.uniformBindGroupLayout = cmdBuf->renderer->uniformBufferBindGroupLayouts[0]; // vtx
+
+    cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(cmdBuf->device, &samplerLayoutFragDesc);
+    cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.uniformBindGroupLayout = cmdBuf->renderer->uniformBufferBindGroupLayouts[1]; // frg
+
+    cmdBuf->boundGraphicsPipeline->currentPipelineHash = hash;
+
+    goto finish;
+finish:
+    SDL_free(samplerEntriesVert);
+    SDL_free(samplerEntriesFrag);
+}
+
+static void WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(WebGPUCommandBuffer *cmdBuf)
+{
+    WGPUBindGroupLayoutEntry *samplerEntries = NULL;
+    WGPUBindGroupLayoutEntry *readWriteEntries = NULL;
+
+    WGPUBindGroupLayoutDescriptor samplerLayoutDesc = { 0 };
+    WGPUBindGroupLayoutDescriptor readWriteLayoutDesc = { 0 };
+
+    Uint32 samplerEntryCount = 0;
+    Uint32 samplerEntryCapacity = 0;
+
+    Uint32 readWriteEntryCount = 0;
+    Uint32 readWriteEntryCapacity = 0;
+
+    Uint32 offset = 0;
+    Uint32 offsetRW = 0;
+    Uint32 hash = 0xAAAA1BEE;
+
+    // 64 is enough to fit all of them (probably)
+    WebGPUBindGroupLayoutEntryType entriesHashStuff[64] = { 0 };
+    Uint32 entriesOffset = 0;
+
+    for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+        WebGPUTextureView *textureView = cmdBuf->computeStageBinds.boundTextures[i];
+
+        if (textureView) {
+            WGPUBindGroupLayoutEntry textureEntry = {
+                .binding = offset++,
+                .texture = {
+                    .multisampled = textureView->parent->sampleCount != SDL_GPU_SAMPLECOUNT_1,
+                    .nextInChain = NULL,
+                    .sampleType = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureView->parent->format]),
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureView->parent->type],
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WGPUBindGroupLayoutEntry samplerEntry = {
+                .binding = offset++,
+                .sampler = {
+                    .nextInChain = NULL,
+                    .type = textureEntry.texture.sampleType ==
+                                    WGPUTextureSampleType_UnfilterableFloat
+                                ? WGPUSamplerBindingType_NonFiltering
+                                : WGPUSamplerBindingType_Filtering,
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, textureEntry);
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, samplerEntry);
+
+            entriesHashStuff[entriesOffset++] = textureEntry.texture.sampleType ==
+                                                        WGPUTextureSampleType_UnfilterableFloat
+                                                    ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE_UNFILTERABLE
+                                                    : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_TEXTURE;
+            entriesHashStuff[entriesOffset++] = textureEntry.texture.sampleType ==
+                                                        WGPUTextureSampleType_UnfilterableFloat
+                                                    ? WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER_NONFILTERING
+                                                    : WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_SAMPLER;
+        };
+    }
+
+    for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+        WebGPUTextureView *textureViewRO = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i];
+        WebGPUTextureView *textureViewRW = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i];
+
+        if (textureViewRW) {
+            WGPUBindGroupLayoutEntry storageTextureEntry = {
+                .binding = offsetRW++,
+                .storageTexture = {
+                    .access = WGPUStorageTextureAccess_Undefined,
+                    .format = SDLToWebGPU_TextureFormat[textureViewRW->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewRW->parent->type],
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            // if the texture format doesn't support simu read-write, we'll fall back to write-only
+            storageTextureEntry.storageTexture.access =
+                WEBGPU_INTERNAL_TextureFormatSupportsStorageAccess(
+                    cmdBuf->renderer, storageTextureEntry.storageTexture.format, WGPUStorageTextureAccess_ReadWrite)
+                    ? WGPUStorageTextureAccess_ReadWrite
+                    : WGPUStorageTextureAccess_WriteOnly;
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(readWriteEntries, readWriteEntryCapacity, readWriteEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE_READWRITE;
+        }
+
+        if (textureViewRO) {
+            WGPUBindGroupLayoutEntry storageTextureEntry = {
+                .binding = offset++,
+                .storageTexture = {
+                    .access = WGPUStorageTextureAccess_ReadOnly,
+                    .format = SDLToWebGPU_TextureFormat[textureViewRO->parent->format],
+                    .viewDimension = SDLToWebGPU_TextureTypeToViewDimension[textureViewRO->parent->type],
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageTextureEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_TEXTURE;
+        }
+    }
+
+    for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+        WebGPUBuffer *storageBufferRO = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i];
+        WebGPUBuffer *storageBufferRW = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i];
+
+        if (storageBufferRW) {
+            WGPUBindGroupLayoutEntry storageBufferEntry = {
+                .binding = offsetRW++,
+                .buffer = {
+                    .hasDynamicOffset = false,
+                    .minBindingSize = 0,
+                    .nextInChain = 0,
+                    .type = WGPUBufferBindingType_Storage,
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(readWriteEntries, readWriteEntryCapacity, readWriteEntryCount, WGPUBindGroupLayoutEntry, storageBufferEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
+        }
+
+        if (storageBufferRO) {
+            WGPUBindGroupLayoutEntry storageBufferEntry = {
+                .binding = offset++,
+                .buffer = {
+                    .hasDynamicOffset = false,
+                    .minBindingSize = 0,
+                    .nextInChain = 0,
+                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                },
+                .visibility = WGPUShaderStage_Compute,
+            };
+
+            WEBGPU_INTERNAL_InsertElementIntoArray(samplerEntries, samplerEntryCapacity, samplerEntryCount, WGPUBindGroupLayoutEntry, storageBufferEntry);
+            entriesHashStuff[entriesOffset++] = WEBGPU_BIND_GROUP_LAYOUT_ENTRY_TYPE_STORAGE_BUFFER;
+        }
+    }
+
+    hash = WEBGPU_INTERNAL_GenFNV1aHash(hash, (void *)&entriesHashStuff, sizeof(WebGPUBindGroupLayoutEntryType) * 64);
+
+    if (cmdBuf->boundComputePipeline->currentPipelineHash == hash && hash != 0xAAA1ABEE) {
+        goto finish;
+    }
+
+    samplerLayoutDesc.entries = samplerEntries;
+    samplerLayoutDesc.entryCount = samplerEntryCount;
+    samplerLayoutDesc.label = (WGPUStringView){ NULL, 0 };
+    samplerLayoutDesc.nextInChain = NULL;
+
+    readWriteLayoutDesc.entries = readWriteEntries;
+    readWriteLayoutDesc.entryCount = readWriteEntryCount;
+    readWriteLayoutDesc.label = (WGPUStringView){ NULL, 0 };
+    readWriteLayoutDesc.nextInChain = NULL;
+
+    cmdBuf->boundComputePipeline->bindGroupLayouts.samplerStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(cmdBuf->device, &samplerLayoutDesc);
+    cmdBuf->boundComputePipeline->bindGroupLayouts.readWriteStorageBindGroupLayout = wgpuDeviceCreateBindGroupLayout(cmdBuf->device, &readWriteLayoutDesc);
+    cmdBuf->boundComputePipeline->bindGroupLayouts.uniformBindGroupLayout = cmdBuf->renderer->uniformBufferBindGroupLayouts[2];
+
+    cmdBuf->boundComputePipeline->currentPipelineHash = hash;
+
+    goto finish;
+finish:
+    SDL_free(samplerEntries);
+    SDL_free(readWriteEntries);
+}
+
+static WebGPUBindGroup *WEBGPU_INTERNAL_GetBindGroupFromIdentifier(WebGPURenderer *renderer, WebGPUBindGroupCacheKey key)
+{
+    WebGPUBindGroup *result = NULL;
+    SDL_FindInHashTable(renderer->bindGroupHashTable, &key, (const void **)&result);
+
+    return result;
+}
+
+static bool WEBGPU_INTERNAL_BindGroupCacheIteratorCallback(void *userdata, const SDL_HashTable *table, const void *key, const void *value)
+{
+    WebGPURenderer *renderer = userdata;
+    WebGPUBindGroup *bindGroup = (WebGPUBindGroup *)value;
+
+    if (bindGroup) {
+        if (SDL_GetAtomicInt(&renderer->numSubmissions) - SDL_GetAtomicInt(&bindGroup->lastUsedAtSubmission) > renderer->bindGroupsExpireAfter) {
+            WEBGPU_INTERNAL_QueueBindGroupForRelease(renderer, bindGroup);
+            bindGroup->invalid = true;
+        }
+    }
+
+    return true;
+}
+
+// This function checks all of the bind groups and releases any that haven't been used in a while.
+static void WEBGPU_INTERNAL_TrimBindGroupCache(WebGPURenderer *renderer)
+{
+    SDL_IterateHashTable(renderer->bindGroupHashTable, WEBGPU_INTERNAL_BindGroupCacheIteratorCallback, renderer);
+}
+
+static void WEBGPU_INTERNAL_CheckSubmittedCommandBuffers(WebGPURenderer *renderer)
+{
+    // We create a new buffer to store the non-completed command buffers.
+    // Unoptimized? Yes.
+    // Do I care? No.
+    WebGPUSubmittedCommandBuffer **notCompleted = NULL;
+    Uint32 notCompletedCapacity = 0;
+    Uint32 notCompletedCount = 0;
+
+    if (renderer->submittedCommandBufferCount == 0) {
+        return;
+    }
+
+    for (int i = renderer->submittedCommandBufferCount; i-- > 0;) {
+        WebGPUSubmittedCommandBuffer *current = renderer->submittedCommandBuffers[i];
+
+        if (current == NULL) {
+            SDL_LogError(SDL_LOG_CATEGORY_GPU, "Submitted command buffer is NULL!");
+            continue;
+        }
+
+        if (!WEBGPU_INTERNAL_QueryFence(renderer, current->fence)) {
+            // Still not done, let's shove it into notCompleted.
+            WEBGPU_INTERNAL_InsertElementIntoArray(notCompleted, notCompletedCapacity, notCompletedCount, WebGPUSubmittedCommandBuffer *, current);
+        } else {
+            WEBGPU_INTERNAL_QueueSubmittedCommandBufferForRelease(renderer, current);
+        }
+    }
+
+    // By now, all of the entries within submittedCommandBuffers should either have been queued for
+    // release, or moved to notCompleted. We'll free submittedCommandBuffers and replace it with notCompleted.
+    SDL_free(renderer->submittedCommandBuffers);
+    renderer->submittedCommandBufferCapacity = notCompletedCapacity;
+    renderer->submittedCommandBufferCount = notCompletedCount;
+    renderer->submittedCommandBuffers = notCompleted;
+}
+
+static void WEBGPU_INTERNAL_ReleaseTextureContainer(WebGPURenderer *renderer, WebGPUTextureContainer *container);
+static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTexture *texture);
+static void WEBGPU_INTERNAL_ReleaseSampler(WebGPURenderer *renderer, WebGPUSampler *sampler);
+static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPURenderer *renderer, WebGPUBuffer *buffer);
+static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPURenderer *renderer, WebGPUBufferContainer *container);
+
+static void WEBGPU_INTERNAL_HandlePendingDestroys(WebGPURenderer *renderer)
+{
+    WebGPUQueuedDestroy **newQueuedDestroys = NULL;
+    Uint32 newQueuedDestroysCapacity = 0;
+    Uint32 newQueuedDestroysCount = 0;
+
+    // This needs to be run before the destruction loop since this function
+    // is what queues the submitted command buffers for freeing.
+    WEBGPU_INTERNAL_CheckSubmittedCommandBuffers(renderer);
+    WEBGPU_INTERNAL_TrimBindGroupCache(renderer);
+
+    if (renderer->queuedDestroys != NULL && renderer->queuedDestroyCount > 0) {
+        for (int i = 0; i < renderer->queuedDestroyCount; i++) {
+            WebGPUQueuedDestroy *current = renderer->queuedDestroys[i];
+
+            int currentRefCount = 0;
+            bool forciblyDestroy = false;
+            bool wasReleased = false;
+
+            if (current == NULL) {
+                continue;
+            }
+
+            if (current->destroysAttempted >= FORCIBLY_DESTROY_QUEUED_DESTROY_AFTER_N_FAILED && renderer->debugMode) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "Queued destroy has been attempted %i times! Forcibly destroying.", current->destroysAttempted);
+                forciblyDestroy = true;
+            }
+
+            switch (current->type) {
+            case WEBGPU_QUEUED_DESTROY_INVALID:
+                break;
+            case WEBGPU_QUEUED_DESTROY_TEXTURE_CONTAINER:
+                // Texture containers don't have any direct references,
+                // so we'll loop over all of the textures and add up their counts.
+                for (int j = 0; j < current->resource.textureContainer->textureCount; j++) {
+                    int refCount = SDL_GetAtomicInt(&current->resource.textureContainer->textures[j]->referenceCount);
+                    currentRefCount += refCount;
+
+                    if (currentRefCount > 0) {
+                        break;
+                    }
+                }
+
+                if (currentRefCount == 0 || forciblyDestroy) {
+                    WEBGPU_INTERNAL_ReleaseTextureContainer(renderer, current->resource.textureContainer);
+                    wasReleased = true;
+                }
+                break;
+            case WEBGPU_QUEUED_DESTROY_TEXTURE:
+                currentRefCount = SDL_GetAtomicInt(&current->resource.texture->referenceCount);
+                if (currentRefCount == 0 || forciblyDestroy) {
+                    WEBGPU_INTERNAL_ReleaseTexture(renderer, current->resource.texture);
+                    wasReleased = true;
+                }
+                break;
+            case WEBGPU_QUEUED_DESTROY_SAMPLER:
+                WEBGPU_INTERNAL_ReleaseSampler(renderer, current->resource.sampler);
+                wasReleased = true;
+                break;
+            case WEBGPU_QUEUED_DESTROY_BUFFER_CONTAINER:
+                // Like with texture containers, the buffer container doesn't have any direct references.
+                for (int j = 0; j < current->resource.bufferContainer->bufferCount; j++) {
+                    int refCount = SDL_GetAtomicInt(&current->resource.bufferContainer->buffers[j]->referenceCount);
+                    currentRefCount += refCount;
+
+                    if (currentRefCount > 0) {
+                        break;
+                    }
+                }
+                if (currentRefCount == 0 || forciblyDestroy) {
+                    WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, current->resource.bufferContainer);
+                    wasReleased = true;
+                }
+                break;
+            case WEBGPU_QUEUED_DESTROY_BUFFER:
+                currentRefCount = SDL_GetAtomicInt(&current->resource.buffer->referenceCount);
+                if (currentRefCount == 0 || forciblyDestroy) {
+                    WEBGPU_INTERNAL_ReleaseBuffer(renderer, current->resource.buffer);
+                    wasReleased = true;
+                }
+                break;
+            case WEBGPU_QUEUED_DESTROY_FENCE:
+                if (!WEBGPU_INTERNAL_QueryFence(renderer, current->resource.fence)) {
+                    WEBGPU_INTERNAL_WaitForFences(renderer, true, &current->resource.fence, 1);
+                }
+
+                SDL_free(current->resource.fence);
+                wasReleased = true;
+
+                break;
+            case WEBGPU_QUEUED_DESTROY_SUBMITTED_COMMAND_BUFFER:
+                for (int j = 0; j < current->resource.submittedCommandBuffer->usedBufferCount; j++) {
+                    (void)SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedBuffers[j]->referenceCount);
+                }
+
+                for (int j = 0; j < current->resource.submittedCommandBuffer->usedTextureCount; j++) {
+                    (void)SDL_AtomicDecRef(&current->resource.submittedCommandBuffer->usedTextures[j]->referenceCount);
+                }
+
+                SDL_free(current->resource.submittedCommandBuffer->usedTextures);
+                SDL_free(current->resource.submittedCommandBuffer->usedBuffers);
+                SDL_free(current->resource.submittedCommandBuffer->fence);
+                SDL_free(current->resource.submittedCommandBuffer);
+
+                wasReleased = true;
+                break;
+            case WEBGPU_QUEUED_DESTROY_BIND_GROUP:
+                // FIXME: Bind groups don't have any reference counts, so there might be some issues with in-flight usages?
+                SDL_RemoveFromHashTable(renderer->bindGroupHashTable, &current->resource.bindGroup->key); // The key value destruction function also releases the bind group.
+                wasReleased = true;
+
+                break;
+            }
+
+            if (wasReleased) {
+                SDL_free(current);
+            } else {
+                WEBGPU_INTERNAL_InsertElementIntoArray(newQueuedDestroys, newQueuedDestroysCapacity,
+                                                       newQueuedDestroysCount, WebGPUQueuedDestroy *, current);
+                current->destroysAttempted++;
+            }
+        }
+
+        SDL_free(renderer->queuedDestroys);
+
+        renderer->queuedDestroyCapacity = newQueuedDestroysCapacity;
+        renderer->queuedDestroyCount = newQueuedDestroysCount;
+        renderer->queuedDestroys = newQueuedDestroys;
+    }
+}
+
+static WebGPUBindGroupCacheKey WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType desiredGroup)
+{
+    WebGPUBindGroupCacheKey result = { 0 };
+
+    switch (desiredGroup) {
+    case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            result.boundTexturesIDs[i] = cmdBuf->vertexStageBinds.boundTextures[i] ? cmdBuf->vertexStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->vertexStageBinds.boundSamplers[i] ? cmdBuf->vertexStageBinds.boundSamplers[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->vertexStageBinds.boundStorageTextures[i] ? cmdBuf->vertexStageBinds.boundStorageTextures[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->vertexStageBinds.boundStorageBuffers[i] ? cmdBuf->vertexStageBinds.boundStorageBuffers[i]->identifier : 0;
+        }
+
+        result.stage = WGPUShaderStage_Vertex;
+        break;
+    }
+    case WEBGPU_BINDGROUP_VERTEXUNIFORMS:
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to get hash of vertex uniform bind group! The uniform bind groups are currently pregenerated!");
+        break;
+    }
+    case WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            result.boundTexturesIDs[i] = cmdBuf->fragmentStageBinds.boundTextures[i] ? cmdBuf->fragmentStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->fragmentStageBinds.boundSamplers[i] ? cmdBuf->fragmentStageBinds.boundSamplers[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->fragmentStageBinds.boundStorageTextures[i] ? cmdBuf->fragmentStageBinds.boundStorageTextures[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->fragmentStageBinds.boundStorageBuffers[i] ? cmdBuf->fragmentStageBinds.boundStorageBuffers[i]->identifier : 0;
+        }
+
+        result.stage = WGPUShaderStage_Fragment;
+        break;
+    }
+    case WEBGPU_BINDGROUP_FRAGMENTUNIFORMS:
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to get hash of fragment uniform bind group! The uniform bind groups are currently pregenerated!");
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            result.boundTexturesIDs[i] = cmdBuf->computeStageBinds.boundTextures[i] ? cmdBuf->computeStageBinds.boundTextures[i]->identifier : 0;
+            result.boundSamplersIDs[i] = cmdBuf->computeStageBinds.boundSamplers[i] ? cmdBuf->computeStageBinds.boundSamplers[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            result.boundReadOnlyStorageTexturesIDs[i] = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i] ? cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            result.boundReadOnlyStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i]->identifier : 0;
+        }
+
+        result.stage = WGPUShaderStage_Compute;
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE:
+    {
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            result.boundReadWriteStorageTexturesIDs[i] = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] ? cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i]->identifier : 0;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            result.boundReadWriteStorageBuffersIDs[i] = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] ? cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i]->identifier : 0;
+        }
+
+        result.stage = WGPUShaderStage_Compute;
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTEUNIFORMS:
+    {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to get hash of compute uniform bind group! The uniform bind groups are currently pregenerated!");
+        break;
+    }
+    }
+
+    return result;
+}
+
+static WebGPUBindGroup *WEBGPU_INTERNAL_CreateBindGroup(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType type, WebGPUBindGroupCacheKey key)
+{
+    WebGPUBindGroup *result = NULL;
+
+    WGPUBindGroupEntry entries[(MAX_TEXTURE_SAMPLERS_PER_STAGE * 2) + MAX_STORAGE_BUFFERS_PER_STAGE + MAX_STORAGE_TEXTURES_PER_STAGE] = { 0 };
+    WGPUBindGroupDescriptor desc = { 0 };
+    WGPUBindGroup bindGroup = NULL;
+
+    Uint32 offset = 0;
+
+    switch (type) {
+    case WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            WebGPUSampler *samplerBind = cmdBuf->vertexStageBinds.boundSamplers[i];
+            WebGPUTextureView *textureBind = cmdBuf->vertexStageBinds.boundTextures[i];
+
+            if (samplerBind == NULL && textureBind != NULL) {
+                SDL_assert_release(!"(VSS) Texture binding without corresponding sampler binding!");
+            } else if (samplerBind != NULL && textureBind == NULL) {
+                SDL_assert_release(!"(VSS) Sampler binding without corresponding texture binding!");
+            } else if (samplerBind == NULL && textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+
+            entries[offset].sampler = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureBind->parent->format]) ==
+                                              WGPUTextureSampleType_Float
+                                          ? samplerBind->sampler
+                                          : samplerBind->fallbackSampler;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            WebGPUTextureView *textureBind = cmdBuf->vertexStageBinds.boundStorageTextures[i];
+            if (textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            WebGPUBuffer *bufferBind = cmdBuf->vertexStageBinds.boundStorageBuffers[i];
+            if (bufferBind == NULL) {
+                continue;
+            }
+
+            entries[offset].buffer = bufferBind->buffer;
+            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        desc.entryCount = offset;
+        desc.layout = cmdBuf->boundGraphicsPipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout;
+        break;
+    }
+    case WEBGPU_BINDGROUP_VERTEXUNIFORMS:
+    {
+        SDL_assert_release(!"Attempting to create vertex uniform bind group! They're currently only pre-generated!");
+        break;
+    }
+    case WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            WebGPUSampler *samplerBind = cmdBuf->fragmentStageBinds.boundSamplers[i];
+            WebGPUTextureView *textureBind = cmdBuf->fragmentStageBinds.boundTextures[i];
+
+            if (samplerBind == NULL && textureBind != NULL) {
+                SDL_assert_release(!"(VSS) Texture binding without corresponding sampler binding!");
+            } else if (samplerBind != NULL && textureBind == NULL) {
+                SDL_assert_release(!"(VSS) Sampler binding without corresponding texture binding!");
+            } else if (samplerBind == NULL && textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+
+            entries[offset].sampler = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureBind->parent->format]) ==
+                                              WGPUTextureSampleType_Float
+                                          ? samplerBind->sampler
+                                          : samplerBind->fallbackSampler;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            WebGPUTextureView *textureBind = cmdBuf->fragmentStageBinds.boundStorageTextures[i];
+            if (textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            WebGPUBuffer *bufferBind = cmdBuf->fragmentStageBinds.boundStorageBuffers[i];
+            if (bufferBind == NULL) {
+                continue;
+            }
+
+            entries[offset].buffer = bufferBind->buffer;
+            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        desc.entryCount = offset;
+        desc.layout = cmdBuf->boundGraphicsPipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout;
+
+        break;
+    }
+    case WEBGPU_BINDGROUP_FRAGMENTUNIFORMS:
+    {
+        SDL_assert_release(!"Attempting to create fragment uniform bind group! They're currently only pre-generated!");
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE:
+    {
+        for (int i = 0; i < MAX_TEXTURE_SAMPLERS_PER_STAGE; i++) {
+            WebGPUSampler *samplerBind = cmdBuf->computeStageBinds.boundSamplers[i];
+            WebGPUTextureView *textureBind = cmdBuf->computeStageBinds.boundTextures[i];
+
+            if (samplerBind == NULL && textureBind != NULL) {
+                SDL_assert_release(!"(CSS) Texture binding without corresponding sampler binding!");
+            } else if (samplerBind != NULL && textureBind == NULL) {
+                SDL_assert_release(!"(CSS) Sampler binding without corresponding texture binding!");
+            } else if (samplerBind == NULL && textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+
+            entries[offset].sampler = WebGPUTextureFormatToSampleType(SDLToWebGPU_TextureFormat[textureBind->parent->format]) ==
+                                              WGPUTextureSampleType_Float
+                                          ? samplerBind->sampler
+                                          : samplerBind->fallbackSampler;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            WebGPUTextureView *textureBind = cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i];
+            if (textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            WebGPUBuffer *bufferBind = cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i];
+            if (bufferBind == NULL) {
+                continue;
+            }
+
+            entries[offset].buffer = bufferBind->buffer;
+            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        desc.entryCount = offset;
+        desc.layout = cmdBuf->boundComputePipeline->bindGroupLayouts.samplerStorageBindGroupLayout;
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE:
+    {
+        for (int i = 0; i < MAX_STORAGE_TEXTURES_PER_STAGE; i++) {
+            WebGPUTextureView *textureBind = cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i];
+            if (textureBind == NULL) {
+                continue;
+            }
+
+            entries[offset].textureView = textureBind->view;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        for (int i = 0; i < MAX_STORAGE_BUFFERS_PER_STAGE; i++) {
+            WebGPUBuffer *bufferBind = cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i];
+            if (bufferBind == NULL) {
+                continue;
+            }
+
+            entries[offset].buffer = bufferBind->buffer;
+            entries[offset].size = WGPU_WHOLE_SIZE;
+            entries[offset].binding = offset;
+            offset++;
+        }
+
+        desc.entryCount = offset;
+        desc.layout = cmdBuf->boundComputePipeline->bindGroupLayouts.readWriteStorageBindGroupLayout;
+        break;
+    }
+    case WEBGPU_BINDGROUP_COMPUTEUNIFORMS:
+        SDL_assert_release(!"Attempting to create compute uniform bind group! They're currently only pre-generated!");
+        break;
+    }
+
+    desc.entries = entries;
+    desc.label = (WGPUStringView){ NULL, 0 };
+    desc.nextInChain = NULL;
+
+    bindGroup = wgpuDeviceCreateBindGroup(cmdBuf->device, &desc);
+
+    if (bindGroup == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create bind group!");
+    }
+
+    result = SDL_calloc(1, sizeof(*result));
+
+    result->bindGroup = bindGroup;
+    result->key = key;
+    result->invalid = false;
+
+    SDL_InsertIntoHashTable(cmdBuf->renderer->bindGroupHashTable, &result->key, result, true);
+
+    return result;
+}
+
+// Get a bind group for the currently queued bind resources.
+// Will create one if no bind group already exists.
+static WGPUBindGroup WEBGPU_INTERNAL_GetBindGroup(WebGPUCommandBuffer *cmdBuf, WebGPUBindGroupType type)
+{
+    if (type == WEBGPU_BINDGROUP_VERTEXUNIFORMS) {
+        return cmdBuf->renderer->uniformBufferBindGroups[0];
+    } else if (type == WEBGPU_BINDGROUP_FRAGMENTUNIFORMS) {
+        return cmdBuf->renderer->uniformBufferBindGroups[1];
+    } else if (type == WEBGPU_BINDGROUP_COMPUTEUNIFORMS) {
+        return cmdBuf->renderer->uniformBufferBindGroups[2];
+    }
+
+    WebGPUBindGroupCacheKey key = WEBGPU_INTERNAL_GenerateKeyForCurrentBinds(cmdBuf, type);
+    WebGPUBindGroup *result = WEBGPU_INTERNAL_GetBindGroupFromIdentifier(cmdBuf->renderer, key);
+
+    if (result == NULL) {
+        result = WEBGPU_INTERNAL_CreateBindGroup(cmdBuf, type, key);
+    }
+
+    SDL_SetAtomicInt(&result->lastUsedAtSubmission, SDL_GetAtomicInt(&cmdBuf->renderer->numSubmissions) + 1);
+
+    return result->bindGroup;
+}
+
+static WebGPUTextureView *WEBGPU_INTERNAL_CreateTextureView(WebGPURenderer *renderer, WebGPUTexture *texture, int depth, int mipLevel)
+{
+    WebGPUTextureView *result = NULL;
+
+    WGPUTextureFormat format = wgpuTextureGetFormat(texture->texture);
+    WGPUTextureUsage usages = wgpuTextureGetUsage(texture->texture);
+    WGPUTextureViewDimension dimension = WGPUTextureViewDimension_Undefined;
+
+    Uint32 mipLevelCount = wgpuTextureGetMipLevelCount(texture->texture);
+    Uint32 arrayLayerCount = wgpuTextureGetDepthOrArrayLayers(texture->texture);
+
+    switch (texture->type) {
+    case SDL_GPU_TEXTURETYPE_2D:
+        dimension = WGPUTextureViewDimension_2D;
+        break;
+    case SDL_GPU_TEXTURETYPE_2D_ARRAY:
+        dimension = WGPUTextureViewDimension_2DArray;
+        break;
+    case SDL_GPU_TEXTURETYPE_3D:
+        dimension = WGPUTextureViewDimension_3D;
+        break;
+    case SDL_GPU_TEXTURETYPE_CUBE:
+        // if we're only making a texture view slice, we can't use the cube argument
+        dimension = depth < 0 ? WGPUTextureViewDimension_Cube : WGPUTextureViewDimension_2D;
+        break;
+    case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
+        dimension = depth < 0 ? WGPUTextureViewDimension_CubeArray : WGPUTextureViewDimension_2D;
+        break;
+    }
+
+    WGPUTextureViewDescriptor desc = {
+        .aspect = texture->aspect,
+        .dimension = dimension,
+        .format = format,
+        .label = { 0 },
+        .usage = usages,
+    };
+
+    if (depth < 0) {
+        // create whole texture view
+        desc.arrayLayerCount = dimension == WGPUTextureViewDimension_2D || dimension == WGPUTextureViewDimension_3D ? 1 : arrayLayerCount;
+        desc.baseArrayLayer = 0;
+        desc.mipLevelCount = mipLevelCount;
+        desc.baseMipLevel = 0;
+    } else {
+        desc.arrayLayerCount = 1;
+        desc.baseArrayLayer = depth;
+        desc.mipLevelCount = 1;
+        desc.baseMipLevel = mipLevel;
+    }
+
+    result = SDL_calloc(1, sizeof(*result));
+
+    result->identifier = SDL_AtomicIncRef(&renderer->nextBindableResourceID);
+    result->view = wgpuTextureCreateView(texture->texture, &desc);
+    result->parent = texture;
+
+    return result;
+}
+
+// Forward decl
+static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage);
+static WebGPUTexture *WEBGPU_INTERNAL_CreateTexture(WebGPURenderer *renderer, const SDL_GPUTextureCreateInfo *createInfo)
+{
+    WebGPUTexture *texture;
+
+    texture = (WebGPUTexture *)SDL_calloc(1, sizeof(*texture));
+    WGPUTextureDescriptor desc = { 0 };
+
+    if (renderer->debugMode) {
+        if (!WEBGPU_SupportsTextureFormat((SDL_GPURenderer *)renderer, createInfo->format, createInfo->type, createInfo->usage)) {
+            SDL_assert_release(!"Texture format is not supported!");
+        }
+    }
+
+    switch (createInfo->type) {
+    case SDL_GPU_TEXTURETYPE_2D:
+    case SDL_GPU_TEXTURETYPE_2D_ARRAY:
+    case SDL_GPU_TEXTURETYPE_CUBE:
+    case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
+        desc.dimension = WGPUTextureDimension_2D;
+        break;
+
+    case SDL_GPU_TEXTURETYPE_3D:
+        desc.dimension = WGPUTextureDimension_3D;
+        break;
+    }
+
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_SAMPLER) {
+        desc.usage |= WGPUTextureUsage_TextureBinding;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET) {
+        desc.usage |= WGPUTextureUsage_RenderAttachment;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET) {
+        desc.usage |= WGPUTextureUsage_RenderAttachment;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ || createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) {
+        desc.usage |= WGPUTextureUsage_StorageBinding;
+        desc.usage |= WGPUTextureUsage_TextureBinding;
+    }
+    if (createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE || createInfo->usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE) {
+        desc.usage |= WGPUTextureUsage_StorageBinding;
+        desc.usage |= WGPUTextureUsage_TextureBinding;
+    }
+
+    desc.usage |= WGPUTextureUsage_CopyDst;
+    desc.usage |= WGPUTextureUsage_CopySrc;
+
+    const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_TEXTURE_CREATE_NAME_STRING, NULL);
+
+    Uint32 blockWidth = Texture_GetBlockWidth(createInfo->format);
+    Uint32 blockHeight = Texture_GetBlockHeight(createInfo->format);
+
+    desc.label = WEBGPU_INTERNAL_CharPtrToWebGPUStringView(debugName);
+    desc.format = SDLToWebGPU_TextureFormat[createInfo->format];
+    desc.mipLevelCount = createInfo->num_levels;
+    desc.size = (WGPUExtent3D){
+        .width = ALIGN_VALUE(createInfo->width, blockWidth),
+        .height = ALIGN_VALUE(createInfo->height, blockHeight),
+        .depthOrArrayLayers = createInfo->type == SDL_GPU_TEXTURETYPE_2D ? 1 : createInfo->layer_count_or_depth
+    };
+
+    switch (createInfo->sample_count) {
+    case SDL_GPU_SAMPLECOUNT_1:
+        desc.sampleCount = 1;
+        break;
+    case SDL_GPU_SAMPLECOUNT_2:
+    case SDL_GPU_SAMPLECOUNT_8:
+    case SDL_GPU_SAMPLECOUNT_4:
+        desc.sampleCount = 4;
+        break;
+    }
+
+    texture->type = createInfo->type;
+    texture->format = createInfo->format;
+    texture->usage = createInfo->usage;
+    texture->sampleCount = createInfo->sample_count;
+    SDL_SetAtomicInt(&texture->referenceCount, 0);
+    texture->texture = wgpuDeviceCreateTexture(renderer->device, &desc);
+    // -1 signals that we want a texture view for all of the layers
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, -1, 0);
+
+    if (createInfo->type == SDL_GPU_TEXTURETYPE_3D) {
+        // manually create view
+        WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, 0, 0);
+        WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
+                                               texture->textureViewCount, WebGPUTextureView *, textureView);
+    } else {
+        for (int i = 0; i < desc.size.depthOrArrayLayers; i++) {
+            for (int j = 0; j < desc.mipLevelCount; j++) {
+                WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(renderer, texture, i, j);
+
+                WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity,
+                                                       texture->textureViewCount, WebGPUTextureView *, textureView);
+            }
+        }
+    }
+
+    return texture;
+}
+
+static SDL_GPUTexture *WEBGPU_CreateTexture(
+    SDL_GPURenderer *driverData,
+    const SDL_GPUTextureCreateInfo *createInfo)
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+    WebGPUTexture *texture;
+    WebGPUTextureContainer *container;
+
+    texture = WEBGPU_INTERNAL_CreateTexture(
+        renderer,
+        createInfo);
+
+    if (texture == NULL) {
+        return NULL;
+    }
+
+    container = SDL_malloc(sizeof(WebGPUTextureContainer));
+
+    container->header.info = *createInfo;
+    container->header.info.props = SDL_CreateProperties();
+    if (createInfo->props) {
+        SDL_CopyProperties(createInfo->props, container->header.info.props);
+    }
+
+    container->activeTexture = texture;
+    container->textureCapacity = 1;
+    container->textureCount = 1;
+    container->textures = SDL_malloc(
+        container->textureCapacity * sizeof(WebGPUTexture *));
+    container->textures[0] = container->activeTexture;
+
+    texture->container = container;
+
+    return (SDL_GPUTexture *)container;
+}
+
+static WebGPUSampler *WEBGPU_INTERNAL_CreateSampler(WebGPURenderer *renderer, const SDL_GPUSamplerCreateInfo *createInfo)
+{
+    WebGPUSampler *sampler;
+    sampler = SDL_calloc(1, sizeof(*sampler));
+
+    WGPUSamplerDescriptor desc = { 0 };
+    WGPUSamplerDescriptor descFallback = { 0 };
+    const char *debugName = SDL_GetStringProperty(createInfo->props, SDL_PROP_GPU_SAMPLER_CREATE_NAME_STRING, NULL);
+
+    desc = (WGPUSamplerDescriptor){
+        .addressModeU = SDLToWebGPU_AddressMode[createInfo->address_mode_u],
+        .addressModeV = SDLToWebGPU_AddressMode[createInfo->address_mode_v],
+        .addressModeW = SDLToWebGPU_AddressMode[createInfo->address_mode_w],
+        .compare = createInfo->enable_compare ? SDLToWebGPU_CompareFunc[createInfo->compare_op] : WGPUCompareFunction_Undefined,
+        .label = WEBGPU_INTERNAL_CharPtrToWebGPUStringView(debugName),
+        .lodMaxClamp = createInfo->max_lod,
+        .lodMinClamp = createInfo->min_lod < 0 ? 0 : createInfo->min_lod,
+        .magFilter = SDLToWebGPU_FilterMode[createInfo->mag_filter],
+        .minFilter = SDLToWebGPU_FilterMode[createInfo->min_filter],
+        .mipmapFilter = SDLToWebGPU_MipmapFilterMode[createInfo->mipmap_mode],
+        // Again, gross float -> int cast, blame WebGPU.
+        .maxAnisotropy = (createInfo->enable_anisotropy && (createInfo->max_anisotropy >= 1)) ? (Uint16)createInfo->max_anisotropy : 1,
+    };
+
+    // HACK:: WebGPU doesn't support filtering on some texture formats. (looking at you, depth textures)
+    // As a workaround for this, the backend automatically disables filtering on unsupported textures.
+    //
+    // This works great, unless you try to filter an unfilterable texture!
+    // (note: you really shouldn't, it has very lackluster support even on Vulkan but alas)
+    // As you could probably guess, using a filtering sampler with an unfilterable texture... doesn't go well.
+    //
+    // Therefore, we have to create a second "fallback" sampler for those cases.
+    // This sampler always uses nearest-neighbor sampling and doesn't support any form of anisotropy.
+    // It looks like hot garbage, but it works™. Screw this API, it sucks.
+    descFallback = desc;
+    descFallback.maxAnisotropy = 1;
+    descFallback.magFilter = WGPUFilterMode_Nearest; // you'll get your filtering back once you learn to behave
+    descFallback.minFilter = WGPUFilterMode_Nearest;
+    descFallback.mipmapFilter = WGPUMipmapFilterMode_Nearest;
+
+    sampler->sampler = wgpuDeviceCreateSampler(renderer->device, &desc);
+    sampler->fallbackSampler = wgpuDeviceCreateSampler(renderer->device, &descFallback);
+    sampler->identifier = SDL_GetAtomicInt(&renderer->nextBindableResourceID);
+
+    SDL_AtomicIncRef(&renderer->nextBindableResourceID);
+
+    return sampler;
+}
+
+static SDL_GPUSampler *WEBGPU_CreateSampler(SDL_GPURenderer *device, const SDL_GPUSamplerCreateInfo *createInfo)
+{
+    return (SDL_GPUSampler *)WEBGPU_INTERNAL_CreateSampler((WebGPURenderer *)device, createInfo);
+}
+
+static void WEBGPU_INTERNAL_ReleaseSampler(WebGPURenderer *renderer, WebGPUSampler *sampler)
+{
+    wgpuSamplerRelease(sampler->sampler);
+    wgpuSamplerRelease(sampler->fallbackSampler);
+    SDL_free(sampler);
+}
+
+static void WEBGPU_ReleaseSampler(SDL_GPURenderer *device, SDL_GPUSampler *sampler)
+{
+    WEBGPU_INTERNAL_QueueSamplerForRelease((WebGPURenderer *)device, (WebGPUSampler *)sampler);
+}
+
+// forward decl
+static bool WEBGPU_SupportsSwapchainComposition(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUSwapchainComposition swapchainComposition);
+static SDL_GPUTextureFormat WEBGPU_GetSwapchainTextureFormat(SDL_GPURenderer *device, SDL_Window *window);
+
+static WGPUSurfaceConfiguration WEBGPU_INTERNAL_GetSurfaceConfigurationForWindow(WebGPURenderer *renderer, WebGPUWindowData *windowData)
+{
+    int windowWidth = 0;
+    int windowHeight = 0;
+
+    SDL_GetWindowSizeInPixels(windowData->window, &windowWidth, &windowHeight);
+
+    WGPUSurfaceConfiguration config = (WGPUSurfaceConfiguration){
+        .alphaMode = WGPUCompositeAlphaMode_Opaque, // SDLGPU does not support transparent windows. (Yet.)
+        .presentMode = SDLToWebGPU_PresentMode[windowData->presentMode],
+        .format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackFormat[windowData->swapchainComposition]
+                                                      : SwapchainCompositionToFormat[windowData->swapchainComposition],
+        .width = windowWidth,
+        .height = windowHeight,
+        .usage = WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_CopyDst,
+        .device = renderer->device,
+        .nextInChain = NULL,
+    };
+
+    if (windowWidth != windowData->surfaceWidth || windowHeight != windowData->surfaceHeight) {
+        // NOTE:
+        // I thought this made the WebGPU surface suboptimal, but turns out no it doesn't!
+        // I assume that we'd want to have the swapchain texture's size be the same as the window's size,
+        // so I made this mark the surface as "dirty" if the window dimensions don't match.
+        windowData->surfaceDirty = true;
+    }
+
+    return config;
+}
+
+static void WEBGPU_INTERNAL_ConfigureSurfaceIfNeeded(WebGPURenderer *renderer, WebGPUWindowData *windowData)
+{
+    WGPUSurfaceConfiguration config = WEBGPU_INTERNAL_GetSurfaceConfigurationForWindow(renderer, windowData);
+
+    if (!windowData->surfaceDirty) {
+        return;
+    }
+
+    wgpuSurfaceConfigure(windowData->surface, &config);
+    windowData->surfaceWidth = config.width;
+    windowData->surfaceHeight = config.height;
+    windowData->surfaceDirty = false;
+}
+
+static bool WEBGPU_ClaimWindow(SDL_GPURenderer *renderer, SDL_Window *window)
+{
+    SDL_PropertiesID props = SDL_GetWindowProperties(window);
+    WebGPUWindowData *windowData = NULL;
+
+    if (!props) {
+        SDL_SetError("Could not get window properties!");
+        return false;
+    }
+
+    windowData = SDL_calloc(1, sizeof(*windowData));
+
+    windowData->window = window;
+    windowData->presentMode = SDL_GPU_PRESENTMODE_VSYNC;                 // default
+    windowData->swapchainComposition = SDL_GPU_SWAPCHAINCOMPOSITION_SDR; // default
+    windowData->surfaceDirty = true;
+
+    if (!SDL_WGPU_CreateSurface(window, ((WebGPURenderer *)renderer)->instance, &windowData->surface)) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Could not create WebGPU surface: %s", SDL_GetError());
+        SDL_free(windowData);
+
+        return false;
+    }
+
+    SDL_SetPointerProperty(props, WINDOW_PROPERTY_DATA, windowData);
+
+    // We'll verify that the surface supports SDR surface composition.
+    // This is also the only function that checks to see if a fallback format is needed.
+    // Bit jank since the function expects the window data to be assigned to the window but meh
+    if (!WEBGPU_SupportsSwapchainComposition(renderer, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR)) {
+        SDL_SetError("Failed to configure surface for SDR!");
+
+        wgpuSurfaceRelease(windowData->surface);
+
+        SDL_SetPointerProperty(props, WINDOW_PROPERTY_DATA, NULL);
+        SDL_free(windowData);
+
+        return false;
+    }
+
+    // We'll configure the surface right away since creating a surface doesn't
+    // automatically configure it in WebGPU. (I think. Don't quote me on that.)
+    WEBGPU_INTERNAL_ConfigureSurfaceIfNeeded((WebGPURenderer *)renderer, windowData);
+    return true;
+}
+
+static bool WEBGPU_AcquireSwapchainTexture(SDL_GPUCommandBuffer *commandBuffer, SDL_Window *window, SDL_GPUTexture **swapchainTexture, Uint32 *width, Uint32 *height)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
+
+    WebGPUTexture *texture = NULL;
+    WebGPUTextureContainer *container = NULL;
+
+    WGPUSurfaceTexture surfaceTexture = { 0 };
+
+    // HACK:
+    // We have to handle pending destroys here since it's also the function
+    // responsible for querying submitted command buffers.
+    // I should really remake the "fence" system. It sucks so much.
+    WEBGPU_INTERNAL_HandlePendingDestroys(cmdBuf->renderer);
+
+    if (!windowData) {
+        SDL_SetError("WindowData is NULL! Did you call SDL_ClaimWindowForGPUDevice?");
+        goto fail;
+    }
+
+    if (cmdBuf->renderer->submittedCommandBufferCount >= cmdBuf->renderer->maxFramesInFlight) {
+        if (width) {
+            *width = 0;
+        }
+        if (height) {
+            *height = 0;
+        }
+        *swapchainTexture = NULL;
+
+        return true;
+    }
+
+    WEBGPU_INTERNAL_ConfigureSurfaceIfNeeded(cmdBuf->renderer, windowData);
+    wgpuSurfaceGetCurrentTexture(windowData->surface, &surfaceTexture);
+
+    switch (surfaceTexture.status) {
+    case WGPUSurfaceGetCurrentTextureStatus_SuccessOptimal:
+        break;
+    case WGPUSurfaceGetCurrentTextureStatus_SuccessSuboptimal:
+        // We'll reconfigure the surface the next time AcquireSwapchainTexture is called.
+        windowData->surfaceDirty = true;
+        break;
+    case WGPUSurfaceGetCurrentTextureStatus_Timeout:
+    case WGPUSurfaceGetCurrentTextureStatus_Outdated:
+    case WGPUSurfaceGetCurrentTextureStatus_Lost:
+    case WGPUSurfaceGetCurrentTextureStatus_Error:
+    case WGPUSurfaceGetCurrentTextureStatus_Force32:
+        SDL_SetError("Failed to acquire swapchain texture!");
+        goto fail;
+    }
+
+    texture = SDL_calloc(1, sizeof(WebGPUTexture));
+    container = SDL_calloc(1, sizeof(*container));
+
+    texture->container = container;
+    texture->texture = surfaceTexture.texture;
+    texture->aspect = WGPUTextureAspect_All;
+    texture->format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition]
+                                                          : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
+    texture->type = SDL_GPU_TEXTURETYPE_2D;
+    texture->usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    texture->fullTextureView = WEBGPU_INTERNAL_CreateTextureView(cmdBuf->renderer, texture, -1, 0);
+
+    SDL_SetAtomicInt(&texture->referenceCount, 0);
+
+    WebGPUTextureView *textureView = WEBGPU_INTERNAL_CreateTextureView(cmdBuf->renderer, texture, 0, 0);
+    WEBGPU_INTERNAL_InsertElementIntoArray(texture->textureViews, texture->textureViewCapacity, texture->textureViewCount, WebGPUTextureView *, textureView);
+    WEBGPU_INTERNAL_InsertElementIntoArray(container->textures, container->textureCapacity, container->textureCount, WebGPUTexture *, texture);
+
+    container->activeTexture = texture;
+    container->header.info.width = wgpuTextureGetWidth(texture->texture);
+    container->header.info.height = wgpuTextureGetHeight(texture->texture);
+    container->header.info.format = windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition]
+                                                                        : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
+    container->header.info.layer_count_or_depth = 1;
+    container->header.info.usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    container->header.info.num_levels = 1;
+    container->header.info.props = 0;
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->surfaces, cmdBuf->surfaceCapacity, cmdBuf->surfaceCount, WGPUSurface, windowData->surface);
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->acquiredSwapchainTextures, cmdBuf->swapchainTextureCapacity,
+                                           cmdBuf->swapchainTextureCount, WebGPUTextureContainer *, container);
+
+    *swapchainTexture = (SDL_GPUTexture *)container;
+
+    if (width) {
+        *width = wgpuTextureGetWidth(texture->texture);
+    }
+    if (height) {
+        *height = wgpuTextureGetHeight(texture->texture);
+    }
+
+    return true;
+fail:
+    if (width) {
+        *width = 0;
+    }
+    if (height) {
+        *height = 0;
+    }
+    *swapchainTexture = NULL;
+
+    return false;
+}
+
+static SDL_GPUShader *WEBGPU_CreateShader(
+    SDL_GPURenderer *driverData,
+    const SDL_GPUShaderCreateInfo *createinfo)
+{
+    WGPUShaderModuleDescriptor desc;
+
+    WebGPUShader *shader;
+    shader = SDL_calloc(1, sizeof(*shader));
+
+    const char *debugName = SDL_GetStringProperty(createinfo->props, SDL_PROP_GPU_SHADER_CREATE_NAME_STRING, NULL);
+    desc.label = WEBGPU_INTERNAL_CharPtrToWebGPUStringView(debugName);
+
+    WGPUShaderSourceWGSL source;
+
+    source.code = (WGPUStringView){ .data = (char *)createinfo->code, .length = createinfo->code_size };
+    source.chain.next = NULL;
+    source.chain.sType = WGPUSType_ShaderSourceWGSL;
+
+    desc.nextInChain = &source.chain;
+    shader->shader = wgpuDeviceCreateShaderModule(((WebGPURenderer *)driverData)->device, &desc);
+
+    shader->entrypoint = SDL_strdup(createinfo->entrypoint);
+
+    return (SDL_GPUShader *)shader;
+}
+
+static void WEBGPU_INTERNAL_ReleaseShader(WebGPUShader *shader)
+{
+    if (SDL_GetAtomicInt(&shader->referenceCount) == 0) {
+        wgpuShaderModuleRelease(shader->shader);
+
+        SDL_free(shader->entrypoint);
+        SDL_free(shader);
+    } else {
+        shader->shouldFree = true;
+    }
+}
+
+static void WEBGPU_ReleaseShader(SDL_GPURenderer *driverData, SDL_GPUShader *shader)
+{
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)shader);
+}
+
+static void WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(WebGPURenderer *renderer, WebGPUGraphicsPipeline *pipeline)
+{
+    if (pipeline->hasBeenCreated) {
+        return;
+    }
+
+    WGPURenderPipelineDescriptor pipelineDesc;
+
+    WebGPUShader *vertexShader = (WebGPUShader *)pipeline->createInfo.vertex_shader;
+    WebGPUShader *fragmentShader = (WebGPUShader *)pipeline->createInfo.fragment_shader;
+
+    WGPUDepthStencilState depthStencilState = {
+        // yucky wucky
+        .depthBias = (Uint32)pipeline->createInfo.rasterizer_state.depth_bias_constant_factor,
+        .depthBiasClamp = pipeline->createInfo.rasterizer_state.depth_bias_clamp,
+        .depthBiasSlopeScale = pipeline->createInfo.rasterizer_state.depth_bias_slope_factor,
+        .depthCompare = SDLToWebGPU_CompareFunc[pipeline->createInfo.depth_stencil_state.compare_op],
+        .depthWriteEnabled = pipeline->createInfo.depth_stencil_state.enable_depth_write,
+        .stencilBack = pipeline->createInfo.depth_stencil_state.enable_stencil_test ? (WGPUStencilFaceState){
+                                                                                          .compare = SDLToWebGPU_CompareFunc[pipeline->createInfo.depth_stencil_state.back_stencil_state.compare_op],
+                                                                                          .depthFailOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.back_stencil_state.depth_fail_op],
+                                                                                          .failOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.back_stencil_state.fail_op],
+                                                                                          .passOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.back_stencil_state.pass_op],
+                                                                                      }
+                                                                                    : (WGPUStencilFaceState){ 0 },
+        .stencilFront = pipeline->createInfo.depth_stencil_state.enable_stencil_test ? (WGPUStencilFaceState){
+                                                                                           .compare = SDLToWebGPU_CompareFunc[pipeline->createInfo.depth_stencil_state.front_stencil_state.compare_op],
+                                                                                           .depthFailOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.front_stencil_state.depth_fail_op],
+                                                                                           .failOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.front_stencil_state.fail_op],
+                                                                                           .passOp = SDLToWebGPU_StencilOp[pipeline->createInfo.depth_stencil_state.front_stencil_state.pass_op],
+                                                                                       }
+                                                                                     : (WGPUStencilFaceState){ 0 },
+        .stencilReadMask = pipeline->createInfo.depth_stencil_state.enable_stencil_test ? pipeline->createInfo.depth_stencil_state.compare_mask : 0,
+        .stencilWriteMask = pipeline->createInfo.depth_stencil_state.enable_stencil_test ? pipeline->createInfo.depth_stencil_state.write_mask : 0,
+        .format = SDLToWebGPU_TextureFormat[pipeline->createInfo.target_info.depth_stencil_format],
+        .nextInChain = NULL,
+    };
+
+    WGPUColorTargetState *colorTargets = SDL_calloc(pipeline->createInfo.target_info.num_color_targets, sizeof(WGPUColorTargetState));
+    WGPUBlendState *colorTargetBlendStates = SDL_calloc(pipeline->createInfo.target_info.num_color_targets, sizeof(WGPUBlendState));
+    for (int i = 0; i < pipeline->createInfo.target_info.num_color_targets; i++) {
+        const SDL_GPUColorTargetDescription *targetDesc = &pipeline->createInfo.target_info.color_target_descriptions[i];
+
+        if (WEBGPU_INTERNAL_TextureFormatSupportsBlending(SDLToWebGPU_TextureFormat[targetDesc->format], renderer)) {
+            colorTargetBlendStates[i].color = (WGPUBlendComponent){
+                .dstFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.dst_color_blendfactor],
+                .srcFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.src_color_blendfactor],
+                .operation = SDLToWebGPU_BlendOp[targetDesc->blend_state.color_blend_op],
+            };
+
+            colorTargetBlendStates[i].alpha = (WGPUBlendComponent){
+                .dstFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.dst_alpha_blendfactor],
+                .srcFactor = SDLToWebGPU_BlendFactor[targetDesc->blend_state.src_alpha_blendfactor],
+                .operation = SDLToWebGPU_BlendOp[targetDesc->blend_state.alpha_blend_op],
+            };
+
+            // WebGPU's strict about not allowing factors less than 1 for min & max so we'll set them here
+            if (colorTargetBlendStates[i].color.operation == WGPUBlendOperation_Min || colorTargetBlendStates[i].color.operation == WGPUBlendOperation_Max) {
+                colorTargetBlendStates[i].color.dstFactor = WGPUBlendFactor_One;
+                colorTargetBlendStates[i].color.srcFactor = WGPUBlendFactor_One;
+            }
+
+            if (colorTargetBlendStates[i].alpha.operation == WGPUBlendOperation_Min || colorTargetBlendStates[i].alpha.operation == WGPUBlendOperation_Max) {
+                colorTargetBlendStates[i].alpha.dstFactor = WGPUBlendFactor_One;
+                colorTargetBlendStates[i].alpha.srcFactor = WGPUBlendFactor_One;
+            }
+
+            colorTargets[i].blend = &colorTargetBlendStates[i];
+        } else {
+            colorTargets[i].blend = NULL;
+        }
+        colorTargets[i].format = SDLToWebGPU_TextureFormat[targetDesc->format];
+        colorTargets[i].nextInChain = NULL;
+
+        if (targetDesc->blend_state.enable_color_write_mask) {
+            if (targetDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_A) {
+                colorTargets[i].writeMask |= WGPUColorWriteMask_Alpha;
+            }
+            if (targetDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_R) {
+                colorTargets[i].writeMask |= WGPUColorWriteMask_Red;
+            }
+            if (targetDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_G) {
+                colorTargets[i].writeMask |= WGPUColorWriteMask_Green;
+            }
+            if (targetDesc->blend_state.color_write_mask & SDL_GPU_COLORCOMPONENT_B) {
+                colorTargets[i].writeMask |= WGPUColorWriteMask_Blue;
+            }
+        } else {
+            colorTargets[i].writeMask = WGPUColorWriteMask_All;
+        }
+    }
+
+    WGPUFragmentState fragmentState = {
+        .constantCount = 0,
+        .constants = NULL,
+        .targets = colorTargets,
+        .targetCount = pipeline->createInfo.target_info.num_color_targets,
+        .entryPoint = { fragmentShader->entrypoint, SDL_strlen(fragmentShader->entrypoint) },
+        .module = fragmentShader->shader,
+    };
+
+    WGPUVertexBufferLayout *vertexBufferLayouts = SDL_calloc(pipeline->createInfo.vertex_input_state.num_vertex_buffers, sizeof(WGPUVertexBufferLayout));
+
+    for (int i = 0; i < pipeline->createInfo.vertex_input_state.num_vertex_buffers; i++) {
+        vertexBufferLayouts[i].stepMode = SDLToWebGPU_VertexInputRate[pipeline->createInfo.vertex_input_state.vertex_buffer_descriptions[i].input_rate];
+        vertexBufferLayouts[i].arrayStride = pipeline->createInfo.vertex_input_state.vertex_buffer_descriptions[i].pitch;
+        vertexBufferLayouts[i].nextInChain = NULL;
+
+        WGPUVertexAttribute *attributes = SDL_calloc(MAX_VERTEX_ATTRIBUTES, sizeof(WGPUVertexAttribute));
+        Uint32 attributeCount = 0;
+        Uint32 currentOffset = 0;
+
+        for (int j = 0; j < pipeline->createInfo.vertex_input_state.num_vertex_attributes; j++) {
+            const SDL_GPUVertexAttribute *attr = &pipeline->createInfo.vertex_input_state.vertex_attributes[j];
+
+            if (pipeline->createInfo.vertex_input_state.vertex_attributes[j].buffer_slot == i) {
+                attributes[currentOffset].offset = attr->offset;
+                attributes[currentOffset].format = SDLToWebGPU_VertexFormat[attr->format];
+                attributes[currentOffset].nextInChain = NULL;
+                attributes[currentOffset].shaderLocation = attr->location;
+                attributeCount++;
+                currentOffset++;
+            }
+        }
+
+        vertexBufferLayouts[i].attributeCount = attributeCount;
+        vertexBufferLayouts[i].attributes = attributes;
+    }
+
+    WGPUVertexState vertexState = {
+        .bufferCount = pipeline->createInfo.vertex_input_state.num_vertex_buffers,
+        .buffers = vertexBufferLayouts,
+        .constantCount = 0,
+        .constants = NULL,
+        .entryPoint = { vertexShader->entrypoint, SDL_strlen(vertexShader->entrypoint) },
+        .module = vertexShader->shader,
+        .nextInChain = NULL,
+    };
+
+    WGPUMultisampleState multisampleState = {
+        .alphaToCoverageEnabled = pipeline->createInfo.multisample_state.enable_alpha_to_coverage,
+        .mask = 0xFFFFFFFF, // Unimplemented in SDL_GPU
+        .nextInChain = NULL,
+    };
+
+    switch (pipeline->createInfo.multisample_state.sample_count) {
+    case SDL_GPU_SAMPLECOUNT_1:
+        multisampleState.count = 1;
+        break;
+    case SDL_GPU_SAMPLECOUNT_2:
+    case SDL_GPU_SAMPLECOUNT_8:
+        if (renderer->debugMode) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_GPU, "WebGPU only supports 1x or 4x multisampling! Falling back to 4x.");
+        }
+        multisampleState.count = 4;
+        break;
+    case SDL_GPU_SAMPLECOUNT_4:
+        multisampleState.count = 4;
+        break;
+    }
+
+    WGPUPrimitiveState primitiveState = {
+        .cullMode = SDLToWebGPU_CullMode[pipeline->createInfo.rasterizer_state.cull_mode],
+        .frontFace = SDLToWebGPU_FrontFace[pipeline->createInfo.rasterizer_state.front_face],
+        .stripIndexFormat = (pipeline->createInfo.primitive_type == SDL_GPU_PRIMITIVETYPE_TRIANGLESTRIP) ? WGPUIndexFormat_Uint32 : WGPUIndexFormat_Undefined,
+        .topology = SDLToWebGPU_PrimitiveType[pipeline->createInfo.primitive_type],
+        .unclippedDepth = !pipeline->createInfo.rasterizer_state.enable_depth_clip,
+        .nextInChain = NULL,
+    };
+
+    WGPUBindGroupLayout *bindGroupLayouts = SDL_calloc(4, sizeof(WGPUBindGroupLayout));
+    bindGroupLayouts[0] = pipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout;
+    bindGroupLayouts[1] = pipeline->vertexBindGroupLayouts.uniformBindGroupLayout;
+    bindGroupLayouts[2] = pipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout;
+    bindGroupLayouts[3] = pipeline->fragmentBindGroupLayouts.uniformBindGroupLayout;
+
+    WGPUPipelineLayoutDescriptor pipelineLayoutDesc = {
+        .bindGroupLayoutCount = 4,
+        .bindGroupLayouts = bindGroupLayouts,
+        .immediateSize = 0,
+        .label = WGPU_STRING_VIEW_INIT,
+        .nextInChain = NULL,
+    };
+
+    WGPUPipelineLayout pipelineLayout = wgpuDeviceCreatePipelineLayout(renderer->device, &pipelineLayoutDesc);
+    const char *debugName = SDL_GetStringProperty(pipeline->createInfo.props, SDL_PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING, NULL);
+
+    pipelineDesc.label = WEBGPU_INTERNAL_CharPtrToWebGPUStringView(debugName);
+    pipelineDesc.vertex = vertexState;
+    pipelineDesc.fragment = &fragmentState;
+    pipelineDesc.multisample = multisampleState;
+    pipelineDesc.depthStencil = pipeline->createInfo.target_info.has_depth_stencil_target ? &depthStencilState : NULL;
+    pipelineDesc.primitive = primitiveState;
+    pipelineDesc.layout = pipelineLayout;
+    pipelineDesc.nextInChain = NULL;
+
+    pipeline->pipeline = wgpuDeviceCreateRenderPipeline(renderer->device, &pipelineDesc);
+    wgpuPipelineLayoutRelease(pipelineLayout);
+
+    for (int i = 0; i < pipeline->createInfo.vertex_input_state.num_vertex_buffers; i++) {
+        SDL_free((void *)vertexBufferLayouts[i].attributes);
+    }
+
+    SDL_free(colorTargetBlendStates);
+
+    SDL_free(vertexBufferLayouts);
+    SDL_free(colorTargets);
+
+    SDL_free(bindGroupLayouts);
+
+    pipeline->hasBeenCreated = true;
+}
+
+static SDL_GPUGraphicsPipeline *WEBGPU_CreateGraphicsPipeline(SDL_GPURenderer *driverData, const SDL_GPUGraphicsPipelineCreateInfo *createInfo)
+{
+    WebGPUGraphicsPipeline *pipeline;
+    pipeline = SDL_calloc(1, sizeof(*pipeline));
+
+    // Most of the time these pointers are given to memory in the stack,
+    // so we'll have to allocate heap memory and copy it over or else shit'll blow up
+    SDL_GPUColorTargetDescription *targets = NULL;
+    SDL_GPUVertexAttribute *vertexAttributes = NULL;
+    SDL_GPUVertexBufferDescription *vertexBufferDescriptions = NULL;
+    SDL_PropertiesID props = SDL_CreateProperties();
+
+    SDL_CopyProperties(createInfo->props, props);
+
+    targets = SDL_calloc(createInfo->target_info.num_color_targets, sizeof(*targets));
+    vertexAttributes = SDL_calloc(createInfo->vertex_input_state.num_vertex_attributes, sizeof(*vertexAttributes));
+    vertexBufferDescriptions = SDL_calloc(createInfo->vertex_input_state.num_vertex_buffers, sizeof(*vertexBufferDescriptions));
+
+    for (int i = 0; i < createInfo->vertex_input_state.num_vertex_attributes; i++) {
+        vertexAttributes[i] = createInfo->vertex_input_state.vertex_attributes[i];
+    }
+
+    for (int i = 0; i < createInfo->vertex_input_state.num_vertex_buffers; i++) {
+        vertexBufferDescriptions[i] = createInfo->vertex_input_state.vertex_buffer_descriptions[i];
+    }
+
+    for (int i = 0; i < createInfo->target_info.num_color_targets; i++) {
+        targets[i] = createInfo->target_info.color_target_descriptions[i];
+    }
+
+    pipeline->createInfo = (SDL_GPUGraphicsPipelineCreateInfo){
+        .vertex_shader = createInfo->vertex_shader,
+        .fragment_shader = createInfo->fragment_shader,
+        .vertex_input_state = {
+            .vertex_attributes = vertexAttributes,
+            .vertex_buffer_descriptions = vertexBufferDescriptions,
+            .num_vertex_buffers = createInfo->vertex_input_state.num_vertex_buffers,
+            .num_vertex_attributes = createInfo->vertex_input_state.num_vertex_attributes,
+        },
+        .primitive_type = createInfo->primitive_type,
+        .rasterizer_state = createInfo->rasterizer_state,
+        .multisample_state = createInfo->multisample_state,
+        .depth_stencil_state = createInfo->depth_stencil_state,
+        .target_info = {
+            .color_target_descriptions = targets,
+            .num_color_targets = createInfo->target_info.num_color_targets,
+            .has_depth_stencil_target = createInfo->target_info.has_depth_stencil_target,
+            .depth_stencil_format = createInfo->target_info.depth_stencil_format,
+        },
+        .props = props,
+    };
+
+    SDL_AtomicIncRef(&((WebGPUShader *)pipeline->createInfo.vertex_shader)->referenceCount);
+    SDL_AtomicIncRef(&((WebGPUShader *)pipeline->createInfo.fragment_shader)->referenceCount);
+
+    return (SDL_GPUGraphicsPipeline *)pipeline;
+}
+
+static void WEBGPU_ReleaseGraphicsPipeline(SDL_GPURenderer *device, SDL_GPUGraphicsPipeline *_pipeline)
+{
+    WebGPUGraphicsPipeline *pipeline = (WebGPUGraphicsPipeline *)_pipeline;
+
+    if (pipeline->hasBeenCreated) {
+        wgpuRenderPipelineRelease(pipeline->pipeline);
+
+        wgpuBindGroupLayoutRelease(pipeline->vertexBindGroupLayouts.samplerStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->fragmentBindGroupLayouts.samplerStorageBindGroupLayout);
+    }
+
+    // We only free these when the pipeline's released, since it might be recreated.
+
+    (void)SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.vertex_shader)->referenceCount);
+    (void)SDL_AtomicDecRef(&((WebGPUShader *)pipeline->createInfo.fragment_shader)->referenceCount);
+
+    if (((WebGPUShader *)pipeline->createInfo.vertex_shader)->shouldFree) {
+        WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)pipeline->createInfo.vertex_shader);
+    }
+    if (((WebGPUShader *)pipeline->createInfo.fragment_shader)->shouldFree) {
+        WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)pipeline->createInfo.fragment_shader);
+    }
+
+    SDL_free((SDL_GPUColorTargetDescription *)pipeline->createInfo.target_info.color_target_descriptions);
+    SDL_free((SDL_GPUVertexAttribute *)pipeline->createInfo.vertex_input_state.vertex_attributes);
+    SDL_free((SDL_GPUVertexBufferDescription *)pipeline->createInfo.vertex_input_state.vertex_buffer_descriptions);
+    SDL_DestroyProperties(pipeline->createInfo.props);
+
+    SDL_free(pipeline);
+}
+
+static void WEBGPU_INTERNAL_EnsureComputePipelineExists(WebGPURenderer *renderer, WebGPUComputePipeline *pipeline)
+{
+    if (pipeline->hasBeenCreated) {
+        return;
+    }
+
+    WGPUComputePipelineDescriptor pipelineDesc;
+
+    WGPUPipelineLayout pipelineLayout;
+    WGPUPipelineLayoutDescriptor pipelineLayoutDesc;
+    WGPUBindGroupLayout *pipelineLayoutEntries = NULL;
+
+    WGPUShaderModuleDescriptor shaderDesc;
+    WGPUShaderSourceWGSL shaderSource;
+    WGPUShaderModule shader;
+
+    const char *pipelineDebugName = SDL_GetStringProperty(pipeline->createInfo.props, SDL_PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING, NULL);
+
+    shaderSource.chain.next = NULL;
+    shaderSource.chain.sType = WGPUSType_ShaderSourceWGSL;
+    shaderSource.code = (WGPUStringView){ (char *)pipeline->createInfo.code, pipeline->createInfo.code_size };
+
+    shaderDesc.label = (WGPUStringView){ NULL, 0 };
+    shaderDesc.nextInChain = &shaderSource.chain;
+
+    shader = wgpuDeviceCreateShaderModule(renderer->device, &shaderDesc);
+
+    if (!shader) {
+        SDL_assert_release(!"Failed to create shader module for compute pipeline!");
+        return;
+    }
+
+    pipelineLayoutEntries = SDL_calloc(3, sizeof(*pipelineLayoutEntries));
+    pipelineLayoutEntries[0] = pipeline->bindGroupLayouts.samplerStorageBindGroupLayout;
+    pipelineLayoutEntries[1] = pipeline->bindGroupLayouts.readWriteStorageBindGroupLayout;
+    pipelineLayoutEntries[2] = pipeline->bindGroupLayouts.uniformBindGroupLayout;
+
+    pipelineLayoutDesc.bindGroupLayoutCount = 3;
+    pipelineLayoutDesc.immediateSize = 0;
+    pipelineLayoutDesc.label = (WGPUStringView){ NULL, 0 };
+    pipelineLayoutDesc.nextInChain = NULL;
+    pipelineLayoutDesc.bindGroupLayouts = pipelineLayoutEntries;
+
+    pipelineLayout = wgpuDeviceCreatePipelineLayout(renderer->device, &pipelineLayoutDesc);
+
+    if (!pipelineLayout) {
+        SDL_assert_release(!"Failed to create pipeline layout for compute pipeline!");
+    }
+
+    pipelineDesc.compute = (WGPUComputeState){
+        .constantCount = 0,
+        .constants = NULL,
+        .entryPoint = (WGPUStringView){ pipeline->createInfo.entrypoint, SDL_strlen(pipeline->createInfo.entrypoint) },
+        .module = shader,
+        .nextInChain = NULL,
+    };
+    pipelineDesc.label = pipelineDebugName != NULL ? (WGPUStringView){ pipelineDebugName, SDL_strlen(pipelineDebugName) } : (WGPUStringView){ NULL, 0 };
+    pipelineDesc.layout = pipelineLayout;
+    pipelineDesc.nextInChain = NULL;
+
+    pipeline->pipeline = wgpuDeviceCreateComputePipeline(renderer->device, &pipelineDesc);
+
+    SDL_free(pipelineLayoutEntries);
+
+    wgpuShaderModuleRelease(shader);
+    wgpuPipelineLayoutRelease(pipelineLayout);
+
+    if (pipeline->pipeline == NULL) {
+        SDL_assert_release(!"Failed to create compute pipeline!");
+    }
+
+    pipeline->hasBeenCreated = true;
+}
+
+static SDL_GPUComputePipeline *WEBGPU_CreateComputePipeline(SDL_GPURenderer *device, const SDL_GPUComputePipelineCreateInfo *createInfo)
+{
+    WebGPUComputePipeline *pipeline = NULL;
+    pipeline = SDL_calloc(1, sizeof(*pipeline));
+
+    // Like with the render pipeline, we can't be sure that the pointers we've been given in createInfo won't be freed before pipeline creation.
+    // So, we'll copy their data and hopefully remember to free them when we're done :P
+
+    char *code = NULL;
+    char *entrypoint = NULL;
+    SDL_PropertiesID props = SDL_CreateProperties();
+
+    code = SDL_strdup((char *)createInfo->code);
+    entrypoint = SDL_strdup((char *)createInfo->entrypoint);
+
+    SDL_CopyProperties(createInfo->props, props);
+
+    pipeline->createInfo = *createInfo;
+    pipeline->createInfo.code = (Uint8 *)code;
+    pipeline->createInfo.entrypoint = entrypoint;
+    pipeline->createInfo.props = props;
+
+    return (SDL_GPUComputePipeline *)pipeline;
+}
+
+static void WEBGPU_ReleaseComputePipeline(SDL_GPURenderer *driverData, SDL_GPUComputePipeline *computePipeline)
+{
+    WebGPUComputePipeline *pipeline = (WebGPUComputePipeline *)computePipeline;
+
+    if (pipeline->hasBeenCreated) {
+        wgpuComputePipelineRelease(pipeline->pipeline);
+
+        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.readWriteStorageBindGroupLayout);
+        wgpuBindGroupLayoutRelease(pipeline->bindGroupLayouts.samplerStorageBindGroupLayout);
+    }
+
+    // const pointers aren't real wake up sheeple
+    SDL_free((char *)pipeline->createInfo.code);
+    SDL_free((char *)pipeline->createInfo.entrypoint);
+    SDL_DestroyProperties(pipeline->createInfo.props);
+
+    SDL_free(computePipeline);
+}
+
+static void WEBGPU_ReleaseFence(SDL_GPURenderer *device, SDL_GPUFence *fence)
+{
+    WEBGPU_INTERNAL_QueueFenceForRelease((WebGPURenderer *)device, (WebGPUFence *)fence);
+}
+
+// Should out to klukaszek for writing the blit code because wow I hate blitting
+static void WEBGPU_INTERNAL_InitBlitResources(
+    WebGPURenderer *renderer)
+{
+    SDL_GPUShaderCreateInfo shaderCreateInfo;
+
+    renderer->blitPipelineCapacity = 2;
+    renderer->blitPipelineCount = 0;
+    renderer->blitPipelines = (BlitPipelineCacheEntry *)SDL_calloc(
+        renderer->blitPipelineCapacity, sizeof(BlitPipelineCacheEntry));
+
+    // Fullscreen vertex shader
+    SDL_zero(shaderCreateInfo);
+    shaderCreateInfo.code = (Uint8 *)blitVert;
+    shaderCreateInfo.code_size = SDL_strlen(blitVert);
+    shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_VERTEX;
+    shaderCreateInfo.format = SDL_GPU_SHADERFORMAT_WGSL;
+    shaderCreateInfo.entrypoint = "main";
+
+    renderer->blitResources.blitVertexShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blitVertexShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile vertex shader for blit!");
+    }
+
+    shaderCreateInfo.code = (Uint8 *)blit2DShader;
+    shaderCreateInfo.code_size = SDL_strlen(blit2DShader);
+    shaderCreateInfo.stage = SDL_GPU_SHADERSTAGE_FRAGMENT;
+    shaderCreateInfo.num_samplers = 1;
+    shaderCreateInfo.num_uniform_buffers = 1;
+    renderer->blitResources.blit2DShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blit2DShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile Blit2D pixel shader!");
+    }
+
+    shaderCreateInfo.code = (Uint8 *)blit2DArrayShader;
+    shaderCreateInfo.code_size = SDL_strlen(blit2DArrayShader);
+    shaderCreateInfo.entrypoint = "main";
+    renderer->blitResources.blit2DArrayShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blit2DArrayShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile Blit2DArray pixel shader!");
+    }
+
+    shaderCreateInfo.code = (Uint8 *)blit3DShader;
+    shaderCreateInfo.code_size = SDL_strlen(blit3DShader);
+    renderer->blitResources.blit3DShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blit3DShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile Blit3D pixel shader!");
+    }
+
+    shaderCreateInfo.code = (Uint8 *)blitCubeShader;
+    shaderCreateInfo.code_size = SDL_strlen(blitCubeShader);
+    renderer->blitResources.blitCubeShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blitCubeShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitCube pixel shader!");
+    }
+
+    shaderCreateInfo.code = (Uint8 *)blitCubeArrayShader;
+    shaderCreateInfo.code_size = SDL_strlen(blitCubeArrayShader);
+    renderer->blitResources.blitCubeArrayShader = WEBGPU_CreateShader(
+        (SDL_GPURenderer *)renderer,
+        &shaderCreateInfo);
+    if (renderer->blitResources.blitCubeArrayShader == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to compile BlitCubeArray pixel shader!");
+    }
+
+    SDL_GPUSamplerCreateInfo nearestCreateInfo = (SDL_GPUSamplerCreateInfo){
+        .min_filter = SDL_GPU_FILTER_NEAREST,
+        .mag_filter = SDL_GPU_FILTER_NEAREST,
+        .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+        .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+        .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+        .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+    };
+
+    renderer->blitResources.blitNearestSampler = WEBGPU_CreateSampler(
+        (SDL_GPURenderer *)renderer,
+        &nearestCreateInfo);
+
+    if (renderer->blitResources.blitNearestSampler == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create blit nearest sampler!");
+    }
+
+    SDL_GPUSamplerCreateInfo linearCreateInfo = (SDL_GPUSamplerCreateInfo){
+        .min_filter = SDL_GPU_FILTER_LINEAR,
+        .mag_filter = SDL_GPU_FILTER_LINEAR,
+        .mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_LINEAR,
+        .address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+        .address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+        .address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_CLAMP_TO_EDGE,
+    };
+
+    renderer->blitResources.blitLinearSampler = WEBGPU_CreateSampler(
+        (SDL_GPURenderer *)renderer,
+        &linearCreateInfo);
+
+    if (renderer->blitResources.blitLinearSampler == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to create blit linear sampler!");
+    }
+}
+
+static void WEBGPU_INTERNAL_ReleaseUniformResources(WebGPURenderer *renderer)
+{
+    for (int i = 0; i < 12; i++) {
+        WEBGPU_INTERNAL_ReleaseBufferContainer(renderer, renderer->uniformBuffers[i]);
+    }
+    for (int i = 0; i < 3; i++) {
+        wgpuBindGroupRelease(renderer->uniformBufferBindGroups[i]);
+        wgpuBindGroupLayoutRelease(renderer->uniformBufferBindGroupLayouts[i]);
+    }
+}
+
+static void WEBGPU_INTERNAL_ReleaseBlitResources(WebGPURenderer *renderer)
+{
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blit2DArrayShader);
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blit2DShader);
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blit3DShader);
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blitCubeShader);
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blitCubeArrayShader);
+    WEBGPU_INTERNAL_ReleaseShader((WebGPUShader *)renderer->blitResources.blitVertexShader);
+    WEBGPU_INTERNAL_ReleaseSampler(renderer, (WebGPUSampler *)renderer->blitResources.blitLinearSampler);
+    WEBGPU_INTERNAL_ReleaseSampler(renderer, (WebGPUSampler *)renderer->blitResources.blitNearestSampler);
+
+    for (int i = 0; i < renderer->blitPipelineCount; i++) {
+        WEBGPU_ReleaseGraphicsPipeline((SDL_GPURenderer *)renderer, renderer->blitPipelines[i].pipeline);
+    }
+}
+
+static WebGPUBuffer *WEBGPU_INTERNAL_CreateBuffer(WebGPURenderer *renderer, Uint64 size, SDL_GPUBufferUsageFlags usageFlags, WebGPUBufferType bufferType, const char *debugName)
+{
+    WGPUBufferUsage usages = 0;
+
+    if (bufferType == WEBGPU_BUFFER_TYPE_GPU) {
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) {
+            usages |= WGPUBufferUsage_Vertex;
+            usages |= WGPUBufferUsage_CopyDst;
+            usages |= WGPUBufferUsage_CopySrc;
+        }
+
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) {
+            usages |= WGPUBufferUsage_Index;
+            usages |= WGPUBufferUsage_CopyDst;
+            usages |= WGPUBufferUsage_CopySrc;
+        }
+
+        if (usageFlags & (SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ |
+                          SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ |
+                          SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)) {
+            usages |= WGPUBufferUsage_Storage;
+            usages |= WGPUBufferUsage_CopyDst;
+            usages |= WGPUBufferUsage_CopySrc;
+        }
+
+        if (usageFlags & SDL_GPU_BUFFERUSAGE_INDIRECT) {
+            usages |= WGPUBufferUsage_Indirect;
+            usages |= WGPUBufferUsage_CopyDst;
+            usages |= WGPUBufferUsage_CopySrc;
+        }
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD) {
+        // HACK:
+        // Anything with a MapWrite usage can't be copied to. This has the issue of making
+        // it impossible to upload pseudo-mapped data to a buffer which can also be mapped.
+        // God I hate this. Why do you do these things to me Firefox?
+        if (size <= renderer->pseudoMapBufferSizeThreshold) {
+            usages |= WGPUBufferUsage_CopyDst;
+        } else {
+            usages |= WGPUBufferUsage_MapWrite;
+        }
+        usages |= WGPUBufferUsage_CopySrc;
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
+        usages |= WGPUBufferUsage_MapRead;
+        usages |= WGPUBufferUsage_CopyDst;
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY) {
+        usages |= WGPUBufferUsage_CopyDst;
+        usages |= WGPUBufferUsage_CopySrc;
+    } else if (bufferType == WEBGPU_BUFFER_TYPE_UNIFORM) {
+        usages |= WGPUBufferUsage_Uniform;
+        usages |= WGPUBufferUsage_CopyDst;
+        usages |= WGPUBufferUsage_CopySrc;
+    }
+
+    WebGPUBuffer *buf = SDL_calloc(1, sizeof(*buf));
+
+    buf->size = ALIGN_VALUE(size, 4);
+    buf->usage = usages;
+    buf->type = bufferType;
+    buf->identifier = SDL_GetAtomicInt(&renderer->nextBindableResourceID);
+
+    SDL_AtomicIncRef(&renderer->nextBindableResourceID);
+
+    WGPUBufferDescriptor desc = {
+        .label = debugName != NULL ? (WGPUStringView){ debugName, SDL_strlen(debugName) } : (WGPUStringView){ NULL, 0 },
+        .size = ALIGN_VALUE(size, 4),
+        .usage = usages,
+        .mappedAtCreation = false,
+        .nextInChain = NULL,
+    };
+
+    buf->buffer = wgpuDeviceCreateBuffer(renderer->device, &desc);
+    SDL_SetAtomicInt(&buf->referenceCount, 0);
+
+    return buf;
+}
+
+static WebGPUBufferContainer *WEBGPU_INTERNAL_CreateBufferContainer(
+    WebGPURenderer *renderer,
+    Uint64 size,
+    SDL_GPUBufferUsageFlags usageFlags,
+    WebGPUBufferType bufferType,
+    bool dedicated,
+    const char *debugName)
+{
+    WebGPUBufferContainer *bufferContainer;
+    WebGPUBuffer *buffer;
+
+    buffer = WEBGPU_INTERNAL_CreateBuffer(
+        renderer,
+        size,
+        usageFlags,
+        bufferType,
+        debugName);
+
+    if (buffer == NULL) {
+        return NULL;
+    }
+
+    bufferContainer = SDL_calloc(1, sizeof(WebGPUBufferContainer));
+
+    bufferContainer->activeBuffer = buffer;
+    buffer->container = bufferContainer;
+
+    bufferContainer->bufferCapacity = 1;
+    bufferContainer->bufferCount = 1;
+    bufferContainer->buffers = SDL_calloc(bufferContainer->bufferCapacity, sizeof(WebGPUBuffer *));
+    bufferContainer->buffers[0] = bufferContainer->activeBuffer;
+    bufferContainer->bufferType = bufferType;
+    bufferContainer->usageFlags = usageFlags;
+    bufferContainer->size = ALIGN_VALUE(size, 4);
+
+    // The memory is allocated when the transfer buffer's first mapped.
+    bufferContainer->pseudoMappedRange = NULL;
+    bufferContainer->shouldPseudomap = size <= renderer->pseudoMapBufferSizeThreshold && bufferType == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD;
+
+    return bufferContainer;
+}
+
+static void WEBGPU_INTERNAL_ReleaseBuffer(WebGPURenderer *renderer, WebGPUBuffer *buffer)
+{
+    wgpuBufferRelease(buffer->buffer);
+    SDL_free(buffer);
+    buffer = NULL;
+}
+
+static void WEBGPU_INTERNAL_ReleaseTextureView(WebGPURenderer *renderer, WebGPUTextureView *view)
+{
+    wgpuTextureViewRelease(view->view);
+    SDL_free(view);
+    view = NULL;
+}
+
+static void WEBGPU_INTERNAL_ReleaseTexture(WebGPURenderer *renderer, WebGPUTexture *texture)
+{
+    for (int i = 0; i < texture->textureViewCount; i++) {
+        WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->textureViews[i]);
+    }
+
+    WEBGPU_INTERNAL_ReleaseTextureView(renderer, texture->fullTextureView);
+
+    wgpuTextureRelease(texture->texture);
+    SDL_free(texture->textureViews);
+    SDL_free(texture);
+    texture = NULL;
+}
+
+static void WEBGPU_INTERNAL_ReleaseTextureContainer(WebGPURenderer *renderer, WebGPUTextureContainer *container)
+{
+    for (int i = 0; i < container->textureCount; i++) {
+        WEBGPU_INTERNAL_ReleaseTexture(renderer, container->textures[i]);
+    }
+    SDL_free(container->textures);
+    SDL_free(container);
+    container = NULL;
+}
+
+static void WEBGPU_INTERNAL_ReleaseBufferContainer(WebGPURenderer *renderer, WebGPUBufferContainer *container)
+{
+    if (container == NULL) {
+        return;
+    }
+
+    for (int i = 0; i < container->bufferCount; i++) {
+        WEBGPU_INTERNAL_ReleaseBuffer(renderer, container->buffers[i]);
+    }
+
+    SDL_free(container->pseudoMappedRange);
+    SDL_free(container->buffers);
+    SDL_free(container);
+    container = NULL;
+}
+
+static void WEBGPU_INTERNAL_CycleBufferContainer(WebGPURenderer *renderer, WebGPUBufferContainer *container)
+{
+    if (SDL_GetAtomicInt(&container->activeBuffer->referenceCount) == 0) {
+        // The active buffer isn't being used by any command buffers, no need to cycle anything.
+        goto finish;
+    }
+
+    if (container->bufferCount > 1) {
+        for (int i = 0; i < container->bufferCount; i++) {
+            WebGPUBuffer *current = container->buffers[i];
+            SDL_assert_release(current != NULL);
+
+            if (SDL_GetAtomicInt(&current->referenceCount) != 0) {
+                continue;
+            } else {
+                container->activeBuffer = current;
+                goto finish;
+            }
+        }
+    }
+
+    WebGPUBuffer *newBuf =
+        WEBGPU_INTERNAL_CreateBuffer(renderer, container->size, container->usageFlags, container->bufferType, NULL);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(container->buffers, container->bufferCapacity, container->bufferCount, WebGPUBuffer *, newBuf);
+    container->activeBuffer = newBuf;
+
+finish:
+    return;
+}
+
+static void WEBGPU_INTERNAL_CycleTextureContainer(WebGPURenderer *renderer, WebGPUTextureContainer *container)
+{
+    if (SDL_GetAtomicInt(&container->activeTexture->referenceCount) == 0) {
+        goto finish;
+    }
+
+    if (container->textureCount > 1) {
+        for (int i = 0; i < container->textureCount; i++) {
+            WebGPUTexture *current = container->textures[i];
+            SDL_assert_release(current != NULL);
+
+            if (SDL_GetAtomicInt(&current->referenceCount) != 0) {
+                continue;
+            } else {
+                container->activeTexture = current;
+                goto finish;
+            }
+        }
+    }
+
+    WebGPUTexture *newTex = WEBGPU_INTERNAL_CreateTexture(renderer, &container->header.info);
+    WEBGPU_INTERNAL_InsertElementIntoArray(container->textures, container->textureCapacity, container->textureCount, WebGPUTexture *, newTex);
+    container->activeTexture = newTex;
+
+finish:
+    return;
+}
+static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info);
+static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureLocation *source, const SDL_GPUTextureLocation *destination, Uint32 w, Uint32 h, Uint32 d, bool cycle);
+static void WEBGPU_GenerateMipmaps(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUTexture *_texture)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WebGPUTexture *texture = ((WebGPUTextureContainer *)_texture)->activeTexture;
+
+    if (texture->type != SDL_GPU_TEXTURETYPE_2D) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "GenerateMipmaps currently only supports non-array 2D textures!");
+        return;
+    }
+
+    SDL_GPUTexture *renderTexture = WEBGPU_CreateTexture((SDL_GPURenderer *)cmdBuf->renderer, &(SDL_GPUTextureCreateInfo){
+                                                                                                  .format = texture->format,
+                                                                                                  .height = wgpuTextureGetHeight(texture->texture),
+                                                                                                  .width = wgpuTextureGetWidth(texture->texture),
+                                                                                                  .layer_count_or_depth = wgpuTextureGetDepthOrArrayLayers(texture->texture),
+                                                                                                  .type = texture->type,
+                                                                                                  .num_levels = wgpuTextureGetMipLevelCount(texture->texture),
+                                                                                                  .usage = SDL_GPU_TEXTUREUSAGE_COLOR_TARGET,
+                                                                                              });
+    Uint32 currentSizeX = wgpuTextureGetWidth(texture->texture);
+    Uint32 currentSizeY = wgpuTextureGetHeight(texture->texture);
+    for (int i = 0; i < wgpuTextureGetDepthOrArrayLayers(texture->texture); i++) {
+        for (int j = 1; j < wgpuTextureGetMipLevelCount(texture->texture); j++) {
+            SDL_GPUBlitRegion source = {
+                .texture = _texture,
+                .layer_or_depth_plane = i,
+                .mip_level = j - 1,
+                .w = currentSizeX,
+                .h = currentSizeY,
+            };
+
+            currentSizeX /= 2;
+            currentSizeY /= 2;
+
+            SDL_GPUBlitRegion destination = {
+                .texture = renderTexture,
+                .layer_or_depth_plane = i,
+                .mip_level = j,
+                .w = currentSizeX,
+                .h = currentSizeY,
+            };
+
+            WEBGPU_Blit(commandBuffer, &(SDL_GPUBlitInfo){
+                                           .filter = SDL_GPU_FILTER_LINEAR,
+                                           .load_op = SDL_GPU_LOADOP_DONT_CARE,
+                                           .source = source,
+                                           .destination = destination,
+                                       });
+
+            WEBGPU_BeginCopyPass(commandBuffer);
+            WEBGPU_CopyTextureToTexture(
+                commandBuffer,
+                &(SDL_GPUTextureLocation){
+                    .texture = renderTexture,
+                    .layer = i,
+                    .mip_level = j,
+                },
+                &(SDL_GPUTextureLocation){
+                    .texture = _texture,
+                    .layer = i,
+                    .mip_level = j,
+                },
+                currentSizeX, currentSizeY, 1, false);
+            WEBGPU_EndCopyPass(commandBuffer);
+        }
+    }
+
+    WEBGPU_INTERNAL_ReleaseTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)renderTexture);
+}
+
+static SDL_GPUBuffer *WEBGPU_CreateBuffer(
+    SDL_GPURenderer *driverData,
+    SDL_GPUBufferUsageFlags usageFlags,
+    Uint32 size,
+    const char *debugName)
+{
+    // #15981
+    if ((usageFlags & SDL_GPU_BUFFERUSAGE_VERTEX) && (usageFlags & SDL_GPU_BUFFERUSAGE_INDEX) && ((WebGPURenderer *)driverData)->debugMode) {
+        SDL_assert_release(!"Buffer cannot be created with both VERTEX and INDEX flags!");
+        return NULL;
+    }
+
+    return (SDL_GPUBuffer *)WEBGPU_INTERNAL_CreateBufferContainer(
+        (WebGPURenderer *)driverData,
+        size,
+        usageFlags,
+        WEBGPU_BUFFER_TYPE_GPU,
+        false,
+        debugName);
+}
+
+static SDL_GPUTransferBuffer *WEBGPU_CreateTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBufferUsage usage, Uint32 size, const char *debugName)
+{
+    return (SDL_GPUTransferBuffer *)WEBGPU_INTERNAL_CreateBufferContainer(
+        (WebGPURenderer *)device,
+        size,
+        usage,
+        usage == SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD ? WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD : WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD,
+        false,
+        debugName);
+}
+
+static void WEBGPU_ReleaseBuffer(SDL_GPURenderer *device, SDL_GPUBuffer *buffer)
+{
+    if (device != NULL && buffer != NULL) {
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease((WebGPURenderer *)device, (WebGPUBufferContainer *)buffer);
+    }
+}
+
+static void WEBGPU_ReleaseTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *buffer)
+{
+    if (device != NULL && buffer != NULL) {
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease((WebGPURenderer *)device, (WebGPUBufferContainer *)buffer);
+    }
+}
+
+static void WEBGPU_INTERNAL_MapBufferCallback(WGPUMapAsyncStatus status, WGPUStringView message, void *unused0, void *unused1)
+{
+    // If the callback's NULL it'll segfault since the PC jumps to 0x0 so we need to have something here.
+}
+
+static bool WEBGPU_INTERNAL_MapBuffer(WebGPURenderer *renderer, WebGPUBufferContainer *buffer)
+{
+    WGPUMapMode mapMode = WGPUMapMode_None;
+
+    if (buffer->activeBuffer->type == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
+        mapMode = WGPUMapMode_Read;
+    } else if (buffer->activeBuffer->type == WEBGPU_BUFFER_TYPE_TRANSFER_UPLOAD) {
+        mapMode = WGPUMapMode_Write;
+    } else {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to map non-transfer buffer!");
+        return false;
+    }
+
+    WebGPUFence *bufferMapFence =
+        WEBGPU_INTERNAL_CreateFenceFromFuture(wgpuBufferMapAsync(buffer->activeBuffer->buffer,
+                                                                 mapMode, 0,
+                                                                 buffer->activeBuffer->size,
+                                                                 (WGPUBufferMapCallbackInfo){
+                                                                     .callback = WEBGPU_INTERNAL_MapBufferCallback,
+                                                                     .mode = WGPUCallbackMode_WaitAnyOnly,
+                                                                     .nextInChain = NULL,
+                                                                     .userdata1 = NULL,
+                                                                     .userdata2 = NULL,
+                                                                 }));
+
+    WEBGPU_WaitForFences((SDL_GPURenderer *)renderer, true, (SDL_GPUFence **)&bufferMapFence, 1);
+
+    SDL_free(bufferMapFence);
+    return true;
+}
+
+static void *WEBGPU_INTERNAL_MapBufferRange(WebGPURenderer *renderer, WebGPUBufferContainer *buffer, size_t offset, size_t size)
+{
+    // If "size" is -1, then bind the entire buffer.
+    size_t bindSize = (size == -1) ? buffer->activeBuffer->size : size;
+
+    if (!WEBGPU_INTERNAL_MapBuffer(renderer, buffer)) {
+        SDL_SetError("Failed to map buffer!");
+        return NULL;
+    }
+
+    if (buffer->activeBuffer->type == WEBGPU_BUFFER_TYPE_TRANSFER_DOWNLOAD) {
+        return (void *)wgpuBufferGetConstMappedRange(buffer->activeBuffer->buffer, offset, bindSize);
+    } else {
+        return wgpuBufferGetMappedRange(buffer->activeBuffer->buffer, offset, bindSize);
+    }
+}
+
+static void *WEBGPU_MapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer, bool cycle)
+{
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleBufferContainer((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer);
+    }
+
+    if (((WebGPUBufferContainer *)transferBuffer)->shouldPseudomap) {
+        // Time to do our magic tricks.
+        if (((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange == NULL) {
+            ((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange = SDL_calloc(((WebGPUBufferContainer *)transferBuffer)->size, 1);
+        }
+
+        // Mapped on CPU.
+        ((WebGPUBufferContainer *)transferBuffer)->mapState = MAP_STATE_MAPPED_CPU;
+
+        return ((WebGPUBufferContainer *)transferBuffer)->pseudoMappedRange;
+    } else {
+        // Mapped on GPU.
+        ((WebGPUBufferContainer *)transferBuffer)->mapState = MAP_STATE_MAPPED_GPU;
+
+        return WEBGPU_INTERNAL_MapBufferRange((WebGPURenderer *)device, (WebGPUBufferContainer *)transferBuffer, 0, -1);
+    }
+}
+
+static void WEBGPU_UnmapTransferBuffer(SDL_GPURenderer *device, SDL_GPUTransferBuffer *transferBuffer)
+{
+    if (((WebGPUBufferContainer *)transferBuffer)->mapState == MAP_STATE_MAPPED_GPU) {
+        wgpuBufferUnmap(((WebGPUBufferContainer *)transferBuffer)->activeBuffer->buffer);
+    }
+
+    ((WebGPUBufferContainer *)transferBuffer)->mapState = MAP_STATE_UNMAPPED;
+}
+
+static void WEBGPU_INTERNAL_CopyBufferToBuffer(WGPUCommandEncoder encoder, WebGPUBufferContainer *sourceBuf,
+                                               Uint32 sourceBufOffset, WebGPUBufferContainer *destBuf,
+                                               Uint32 destBufOffset, uint32_t size)
+{
+    wgpuCommandEncoderCopyBufferToBuffer(encoder, sourceBuf->activeBuffer->buffer, sourceBufOffset, destBuf->activeBuffer->buffer, destBufOffset, size);
+}
+
+static void WEBGPU_CopyBufferToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUBufferLocation *destination, Uint32 size, bool cycle)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleBufferContainer(((WebGPUCommandBuffer *)copyPass)->renderer, (WebGPUBufferContainer *)destination->buffer);
+    }
+
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
+
+    WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->buffer, source->offset, (WebGPUBufferContainer *)destination->buffer, destination->offset, size);
+}
+
+static void WEBGPU_CopyTextureToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureLocation *source, const SDL_GPUTextureLocation *destination, Uint32 w, Uint32 h, Uint32 d, bool cycle)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+    WGPUTexelCopyTextureInfo sourceInfo, destInfo;
+
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
+    }
+
+    // ASTC support. We only care about the destination texture being aligned though.
+    Uint32 blockWidthDest = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 blockHeightDest = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+
+    sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
+    sourceInfo.aspect = ((WebGPUTextureContainer *)source->texture)->activeTexture->aspect;
+    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z + source->layer };
+    sourceInfo.mipLevel = source->mip_level;
+
+    destInfo.texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture;
+    destInfo.aspect = ((WebGPUTextureContainer *)destination->texture)->activeTexture->aspect;
+    destInfo.origin = (WGPUOrigin3D){ .x = destination->x, .y = destination->y, .z = destination->z + destination->layer };
+    destInfo.mipLevel = destination->mip_level;
+
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)source->texture)->activeTexture);
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
+
+    wgpuCommandEncoderCopyTextureToTexture(cmdBuf->encoder, &sourceInfo, &destInfo, &(WGPUExtent3D){ ALIGN_VALUE(w, blockWidthDest), ALIGN_VALUE(h, blockHeightDest), d });
+}
+
+// This was originally a full-blown public function but I decided against it, so that's why it has the opaque types as arguments.
+static void WEBGPU_INTERNAL_UploadToBufferFromCPU(SDL_GPUCommandBuffer *copy_pass, const SDL_GPUBufferRegion *region, const void *data, bool cycle)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copy_pass;
+
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleBufferContainer(cmdBuf->renderer, (WebGPUBufferContainer *)region->buffer);
+    }
+
+    // FIXME: This function is not thread-safe!
+    wgpuQueueWriteBuffer(cmdBuf->queue, ((WebGPUBufferContainer *)region->buffer)->activeBuffer->buffer,
+                         region->offset, data, ALIGN_VALUE(region->size, 4));
+}
+
+static void WEBGPU_UploadToBuffer(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTransferBufferLocation *source, const SDL_GPUBufferRegion *destination, bool cycle)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleBufferContainer(((WebGPUCommandBuffer *)copyPass)->renderer, (WebGPUBufferContainer *)destination->buffer);
+    }
+
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->transfer_buffer)->activeBuffer);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)destination->buffer)->activeBuffer);
+
+    // Spaghetti code here. Opaque pointers are terrifying.
+    if (((WebGPUBufferContainer *)source->transfer_buffer)->shouldPseudomap) {
+        WEBGPU_INTERNAL_UploadToBufferFromCPU(copyPass, destination, ((WebGPUBufferContainer *)source->transfer_buffer)->pseudoMappedRange + source->offset, false);
+    } else {
+        WEBGPU_INTERNAL_CopyBufferToBuffer(((WebGPUCommandBuffer *)copyPass)->encoder, (WebGPUBufferContainer *)source->transfer_buffer, source->offset,
+                                           (WebGPUBufferContainer *)destination->buffer, destination->offset, ALIGN_VALUE(destination->size, 4));
+    }
+}
+
+// This'll eventually become a public function, but until PR #16249 is merged it'll be internal.
+static void WEBGPU_INTERNAL_CopyBufferToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUBufferLocation *source, const SDL_GPUTextureRegion *destination, bool cycle)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)copyPass;
+    WGPUTexelCopyBufferInfo sourceInfo = { 0 };
+
+    // This should be NULL unless the user didn't pad their data correctly.
+    WebGPUBufferContainer *interimBuffer = NULL;
+
+    Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 bytesPerRowNotAligned = BytesPerRow(destination->w, ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+    Uint32 bytesPerRow = BytesPerRow(ALIGN_VALUE(destination->w, blockWidth), ((WebGPUTextureContainer *)destination->texture)->activeTexture->format);
+
+    if (cycle) {
+        WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)destination->texture);
+    }
+
+    if (((WebGPUBufferContainer *)source->buffer)->shouldPseudomap) {
+        WebGPUBufferContainer *sourceBuffer = (WebGPUBufferContainer *)source->buffer;
+
+        if (source->offset > sourceBuffer->size) {
+            SDL_assert_release(!"Offset is greater than buffer size!");
+        }
+
+        wgpuQueueWriteBuffer(cmdBuf->queue, sourceBuffer->activeBuffer->buffer, source->offset,
+                             sourceBuffer->pseudoMappedRange + source->offset, SDL_max((Uint64)bytesPerRowNotAligned * ((destination->h + blockHeight - 1) / blockHeight), 4));
+    }
+
+    sourceInfo = (WGPUTexelCopyBufferInfo){
+        .buffer = ((WebGPUBufferContainer *)source->buffer)->activeBuffer->buffer,
+        .layout = (WGPUTexelCopyBufferLayout){
+            .bytesPerRow = bytesPerRow,
+            .rowsPerImage = (destination->h + blockHeight - 1) / blockHeight,
+            .offset = source->offset,
+        },
+    };
+
+    if (bytesPerRow % 256 != 0) {
+        // BytesPerRow isn't a multiple of 256! This is a Bad Thing!
+        // WebGPU inherits D3D12's horrible 256-byte alignment requirement for BPR, so we'll need to do something about this.
+        // To do this, we'll create an interim buffer which'll be 256-byte aligned, and then we'll issue some GPU copies to put the user's data into said interim buffer.
+
+        // NOTE: Since the D3D12 backend doesn't bother with caching the interim buffer, I decided not to either.
+        // However, I'm not sure if that's a good idea? Since the Web is just one giant attack vector WebGPU's pretty strict when it comes to GPU memory.
+        // This means that not only is it a royal PITA to do anything, it's also really slow to do anything. It wants to make sure 100% that you can't do anything bad.
+        // It's possible that this'll have a more noticeable performance impact than in D3D12. We should run some tests to see if this'd be a potential concern.
+        Uint32 paddedBPR = ALIGN_VALUE(bytesPerRow, 256);
+
+        // HACK: We need to add blockWidth since for some reason 1x1 texture uploads require 260 bytes of data
+        // despite WebGPU's very strong insistance on 256-byte alignment? Am I tweaking?
+        interimBuffer = WEBGPU_INTERNAL_CreateBufferContainer(cmdBuf->renderer, (Uint64)paddedBPR * ALIGN_VALUE(destination->h, blockHeight) + blockWidth,
+                                                              0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false,
+                                                              "SDLGPU Automatic Texture Padding Buffer");
+
+        for (int i = 0; i < (destination->h + blockHeight - 1) / blockHeight; i++) {
+            WEBGPU_INTERNAL_CopyBufferToBuffer(cmdBuf->encoder, (WebGPUBufferContainer *)source->buffer,
+                                               source->offset + bytesPerRow * i, interimBuffer, paddedBPR * i, SDL_max(bytesPerRow, 4));
+        }
+
+        sourceInfo = (WGPUTexelCopyBufferInfo){
+            .buffer = interimBuffer->activeBuffer->buffer,
+            .layout = (WGPUTexelCopyBufferLayout){
+                .bytesPerRow = paddedBPR,
+                .rowsPerImage = (destination->h + blockHeight - 1) / blockHeight,
+                .offset = 0,
+            },
+        };
+    }
+
+    WGPUTexelCopyTextureInfo destInfo = {
+        .aspect = WGPUTextureAspect_All,
+        .texture = ((WebGPUTextureContainer *)destination->texture)->activeTexture->texture,
+        .mipLevel = destination->mip_level,
+        .origin = (WGPUOrigin3D){ destination->x, destination->y, destination->z + destination->layer },
+    };
+
+    wgpuCommandEncoderCopyBufferToTexture(cmdBuf->encoder,
+                                          &sourceInfo, &destInfo,
+                                          &(WGPUExtent3D){
+                                              ALIGN_VALUE(destination->w, blockWidth),
+                                              ALIGN_VALUE(destination->h, blockHeight),
+                                              destination->d,
+                                          });
+
+    WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)destination->texture)->activeTexture);
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)source->buffer)->activeBuffer);
+
+    if (interimBuffer) {
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, interimBuffer->activeBuffer);
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease(cmdBuf->renderer, interimBuffer);
+    }
+}
+
+static void WEBGPU_UploadToTexture(SDL_GPUCommandBuffer *copyPass, const SDL_GPUTextureTransferInfo *source, const SDL_GPUTextureRegion *destination, bool cycle)
+{
+    // Since a transfer buffer in the WebGPU backend is actually just a normal buffer in a trenchcoat we can just use CopyBufferToTexture.
+    WEBGPU_INTERNAL_CopyBufferToTexture(copyPass,
+                                        &(SDL_GPUBufferLocation){
+                                            .buffer = (SDL_GPUBuffer *)source->transfer_buffer,
+                                            .offset = source->offset,
+                                        },
+                                        destination, cycle);
+}
+
+static void WEBGPU_PushDebugGroup(SDL_GPUCommandBuffer *commandBuffer, const char *name)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    if (cmdBuf->common.render_pass.in_progress) {
+        wgpuRenderPassEncoderPushDebugGroup(cmdBuf->renderPassEncoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(name));
+    } else if (cmdBuf->common.compute_pass.in_progress) {
+        wgpuComputePassEncoderPushDebugGroup(cmdBuf->computePassEncoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(name));
+    } else {
+        // segfaults are lies made up by the woke left to distract you from the fact
+        // that memory access restrictions don't apply to the pure of heart
+        wgpuCommandEncoderPushDebugGroup(cmdBuf->encoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(name));
+    }
+}
+
+static void WEBGPU_PopDebugGroup(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    if (cmdBuf->common.render_pass.in_progress) {
+        wgpuRenderPassEncoderPopDebugGroup(cmdBuf->renderPassEncoder);
+    } else if (cmdBuf->common.compute_pass.in_progress) {
+        wgpuComputePassEncoderPopDebugGroup(cmdBuf->computePassEncoder);
+    } else {
+        wgpuCommandEncoderPopDebugGroup(cmdBuf->encoder);
+    }
+}
+
+static void WEBGPU_InsertDebugLabel(SDL_GPUCommandBuffer *commandBuffer, const char *text)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    // Each type of encoder has its own debug group functions for some reason
+    if (cmdBuf->common.render_pass.in_progress) {
+        wgpuRenderPassEncoderInsertDebugMarker(cmdBuf->renderPassEncoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(text));
+    } else if (cmdBuf->common.compute_pass.in_progress) {
+        wgpuComputePassEncoderInsertDebugMarker(cmdBuf->computePassEncoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(text));
+    } else {
+        wgpuCommandEncoderInsertDebugMarker(cmdBuf->encoder, WEBGPU_INTERNAL_CharPtrToWebGPUStringView(text));
+    }
+}
+
+static void WEBGPU_BeginRenderPass(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUColorTargetInfo *colorTargetInfos,
+                                   Uint32 numColorTargets, const SDL_GPUDepthStencilTargetInfo *depthStencilTargetInfo)
+{
+    WebGPUCommandBuffer *wrapper = (WebGPUCommandBuffer *)commandBuffer;
+
+    WGPURenderPassDescriptor desc = { 0 };
+
+    WGPURenderPassColorAttachment *colorAttachments;
+    WGPURenderPassDepthStencilAttachment *depthStencilAttachment = NULL;
+
+    colorAttachments = (WGPURenderPassColorAttachment *)SDL_calloc(numColorTargets, sizeof(*colorAttachments));
+
+    // these are by default 0, so SDL_min would always favour
+    // them over the texture's dimensions if we didn't do this
+    wrapper->smallestColorTargetW = SDL_MAX_UINT32;
+    wrapper->smallestColorTargetH = SDL_MAX_UINT32;
+
+    for (int i = 0; i < numColorTargets; i++) {
+        WebGPUTexture *texture = ((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture;
+        colorAttachments[i].clearValue.a = colorTargetInfos[i].clear_color.a;
+        colorAttachments[i].clearValue.r = colorTargetInfos[i].clear_color.r;
+        colorAttachments[i].clearValue.g = colorTargetInfos[i].clear_color.g;
+        colorAttachments[i].clearValue.b = colorTargetInfos[i].clear_color.b;
+        colorAttachments[i].loadOp = SDLToWebGPU_LoadOp[colorTargetInfos[i].load_op];
+        colorAttachments[i].storeOp = SDLToWebGPU_StoreOp[colorTargetInfos[i].store_op];
+        colorAttachments[i].depthSlice = texture->type == SDL_GPU_TEXTURETYPE_3D ? colorTargetInfos[i].layer_or_depth_plane : WGPU_DEPTH_SLICE_UNDEFINED;
+
+        wrapper->smallestColorTargetW = SDL_min(wrapper->smallestColorTargetW, wgpuTextureGetWidth(((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->texture));
+        wrapper->smallestColorTargetH = SDL_min(wrapper->smallestColorTargetH, wgpuTextureGetHeight(((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->texture));
+
+        switch (((WebGPUTextureContainer *)colorTargetInfos[i].texture)->activeTexture->type) {
+        case SDL_GPU_TEXTURETYPE_3D:
+            colorAttachments[i].view = texture->fullTextureView->view;
+            break;
+        case SDL_GPU_TEXTURETYPE_2D:
+        case SDL_GPU_TEXTURETYPE_2D_ARRAY:
+        case SDL_GPU_TEXTURETYPE_CUBE:
+        case SDL_GPU_TEXTURETYPE_CUBE_ARRAY:
+            colorAttachments[i].view = texture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
+                                                                 colorTargetInfos[i].layer_or_depth_plane,
+                                                                 colorTargetInfos[i].mip_level,
+                                                                 wgpuTextureGetMipLevelCount(texture->texture))]
+                                           ->view;
+            break;
+        }
+
+        if (colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE || colorTargetInfos[i].store_op == SDL_GPU_STOREOP_RESOLVE_AND_STORE) {
+            WebGPUTexture *resolveTexture = ((WebGPUTextureContainer *)colorTargetInfos[i].resolve_texture)->activeTexture;
+
+            colorAttachments[i].resolveTarget = resolveTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(
+                                                                                 colorTargetInfos[i].resolve_layer,
+                                                                                 colorTargetInfos[i].resolve_mip_level,
+                                                                                 wgpuTextureGetMipLevelCount(resolveTexture->texture))]
+                                                    ->view;
+        }
+    }
+
+    if (depthStencilTargetInfo != NULL) {
+        SDL_GPUTextureFormat textureFormat = ((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->header.info.format;
+        depthStencilAttachment = (WGPURenderPassDepthStencilAttachment *)SDL_calloc(1, sizeof(*depthStencilAttachment));
+
+        depthStencilAttachment->depthClearValue = depthStencilTargetInfo->clear_depth;
+        depthStencilAttachment->depthLoadOp = SDLToWebGPU_LoadOp[depthStencilTargetInfo->load_op];
+        depthStencilAttachment->depthStoreOp = SDLToWebGPU_StoreOp[depthStencilTargetInfo->store_op];
+        depthStencilAttachment->stencilClearValue = IsStencilFormat(textureFormat) ? depthStencilTargetInfo->clear_stencil : 0;
+        depthStencilAttachment->stencilLoadOp = IsStencilFormat(textureFormat) ? SDLToWebGPU_LoadOp[depthStencilTargetInfo->stencil_load_op] : WGPULoadOp_Undefined;
+        depthStencilAttachment->stencilStoreOp = IsStencilFormat(textureFormat) ? SDLToWebGPU_StoreOp[depthStencilTargetInfo->stencil_store_op] : WGPUStoreOp_Undefined;
+        depthStencilAttachment->view =
+            ((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->activeTexture->textureViews[WEBGPU_INTERNAL_GetTextureViewIndex(depthStencilTargetInfo->layer, depthStencilTargetInfo->mip_level, wgpuTextureGetMipLevelCount(((WebGPUTextureContainer *)depthStencilTargetInfo->texture)->activeTexture->texture))]->view;
+    }
+
+    desc.colorAttachments = colorAttachments;
+    desc.colorAttachmentCount = numColorTargets;
+    desc.depthStencilAttachment = depthStencilTargetInfo != NULL ? depthStencilAttachment : NULL;
+    desc.occlusionQuerySet = NULL; // Unimplemented in SDLGPU
+    desc.timestampWrites = NULL;   // Unimplemented in SDLGPU as of 2026-06-03, although, there is a proof of concept Query API in development right now.
+    desc.label = (WGPUStringView){ NULL, 0 };
+
+    wrapper->renderPassEncoder = wgpuCommandEncoderBeginRenderPass(wrapper->encoder, &desc);
+    wrapper->boundGraphicsPipeline = NULL;
+    wrapper->hasBoundGraphicsPipeline = false;
+
+    SDL_free(colorAttachments);
+    SDL_free(depthStencilAttachment);
+}
+
+static void WEBGPU_SetViewport(SDL_GPUCommandBuffer *renderPass, const SDL_GPUViewport *viewport)
+{
+    wgpuRenderPassEncoderSetViewport(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder, viewport->x, viewport->y, viewport->w, viewport->h, viewport->min_depth, viewport->max_depth);
+}
+
+static void WEBGPU_PushVertexUniformData(SDL_GPUCommandBuffer *commandBuffer, Uint32 slotIndex, const void *data, Uint32 length)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    if (cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex] + ALIGN_VALUE(length, 256) > DEFAULT_UNIFORM_BUFFER_SIZE) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot push vertex uniform data as UBO write offset + data length exceeds UBO size!");
+        return;
+    }
+
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(length),
+        .length = length,
+        .offset = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = slotIndex,
+    };
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    // jank and gross but it works
+    cmdBuf->vertexStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->vertexStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
+    cmdBuf->vertexStageBinds.uniformBindGroupOutdated = true;
+}
+
+static void WEBGPU_PushFragmentUniformData(SDL_GPUCommandBuffer *commandBuffer, Uint32 slotIndex, const void *data, Uint32 length)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    if (cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex] + ALIGN_VALUE(length, 256) > DEFAULT_UNIFORM_BUFFER_SIZE) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot push fragment uniform data as UBO write offset + data length exceeds UBO size!");
+        return;
+    }
+
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(length),
+        .length = length,
+        .offset = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = MAX_UNIFORM_BUFFERS_PER_STAGE + slotIndex,
+    };
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    cmdBuf->fragmentStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->fragmentStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
+    cmdBuf->fragmentStageBinds.uniformBindGroupOutdated = true;
+}
+
+static void WEBGPU_PushComputeUniformData(SDL_GPUCommandBuffer *commandBuffer, Uint32 slotIndex, const void *data, Uint32 length)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    if (cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex] + ALIGN_VALUE(length, 256) > DEFAULT_UNIFORM_BUFFER_SIZE) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Cannot push compute uniform data as UBO write offset + data length exceeds UBO size!");
+        return;
+    }
+
+    WebGPUQueuedUniformDataUpload upload = {
+        .data = SDL_malloc(length),
+        .length = length,
+        .offset = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex],
+        .slot = (MAX_UNIFORM_BUFFERS_PER_STAGE * 2) + slotIndex,
+    };
+
+    SDL_memcpy(upload.data, data, length);
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(cmdBuf->queuedUniformUploads, cmdBuf->queuedUniformUploadCapacity,
+                                           cmdBuf->numQueuedUniformUploads, WebGPUQueuedUniformDataUpload, upload);
+
+    cmdBuf->computeStageBinds.currentUniformReadOffsets[slotIndex] = cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex];
+    cmdBuf->computeStageBinds.currentUniformWriteOffsets[slotIndex] += ALIGN_VALUE(length, 256);
+    cmdBuf->computeStageBinds.uniformBindGroupOutdated = true;
+}
+
+static void WEBGPU_SetBlendConstants(SDL_GPUCommandBuffer *commandBuffer, SDL_FColor blendConstants)
+{
+    wgpuRenderPassEncoderSetBlendConstant(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, &(WGPUColor){ blendConstants.a, blendConstants.r, blendConstants.g, blendConstants.b });
+}
+
+static void WEBGPU_SetScissor(SDL_GPUCommandBuffer *commandBuffer, const SDL_Rect *scissor)
+{
+    if ((scissor->w <= ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetW) &&
+        (scissor->h <= ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetH)) {
+        wgpuRenderPassEncoderSetScissorRect(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, scissor->x, scissor->y, scissor->w, scissor->h);
+    } else if (((WebGPUCommandBuffer *)commandBuffer)->renderer->debugMode) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Attempting to use a scissor of size (%u, %u) with a "
+                                           "smaller render target of size (%u, %u)! This is disallowed by the WebGPU spec.",
+                     scissor->w, scissor->h, ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetW, ((WebGPUCommandBuffer *)commandBuffer)->smallestColorTargetH);
+    }
+}
+
+static bool WEBGPU_WaitAndAcquireSwapchainTexture(SDL_GPUCommandBuffer *command_buffer, SDL_Window *window, SDL_GPUTexture **swapchain_texture, Uint32 *swapchain_texture_width, Uint32 *swapchain_texture_height)
+{
+    bool result = WEBGPU_AcquireSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height);
+
+    while (*swapchain_texture == NULL) {
+        WEBGPU_INTERNAL_Spin();
+
+        result = WEBGPU_AcquireSwapchainTexture(command_buffer, window, swapchain_texture, swapchain_texture_width, swapchain_texture_height);
+
+        if (!result) {
+            break;
+        }
+    }
+
+    return result;
+}
+
+static void WEBGPU_ReleaseTexture(SDL_GPURenderer *renderer, SDL_GPUTexture *texture)
+{
+    WEBGPU_INTERNAL_QueueTextureContainerForRelease((WebGPURenderer *)renderer, (WebGPUTextureContainer *)texture);
+}
+
+// Will bind a deferred graphics pipeline if it hasn't already been bound
+static void WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound(WebGPUCommandBuffer *cmdBuf)
+{
+    if (cmdBuf->hasBoundGraphicsPipeline == false && cmdBuf->boundGraphicsPipeline) {
+        WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentGraphicsBinds(cmdBuf);
+        WEBGPU_INTERNAL_EnsureGraphicsPipelineExists(cmdBuf->renderer, cmdBuf->boundGraphicsPipeline);
+
+        wgpuRenderPassEncoderSetPipeline(cmdBuf->renderPassEncoder, cmdBuf->boundGraphicsPipeline->pipeline);
+
+        cmdBuf->hasBoundGraphicsPipeline = true;
+    }
+}
+
+// Will bind a deferred compute pipeline if it hasn't already been bound
+static void WEBGPU_INTERNAL_EnsureComputePipelineIsBound(WebGPUCommandBuffer *cmdBuf)
+{
+    if (cmdBuf->hasBoundComputePipeline == false && cmdBuf->boundComputePipeline) {
+        WEBGPU_INTERNAL_GenerateBindGroupLayoutsForCurrentComputeBinds(cmdBuf);
+        WEBGPU_INTERNAL_EnsureComputePipelineExists(cmdBuf->renderer, cmdBuf->boundComputePipeline);
+
+        wgpuComputePassEncoderSetPipeline(cmdBuf->computePassEncoder, cmdBuf->boundComputePipeline->pipeline);
+
+        cmdBuf->hasBoundComputePipeline = true;
+    }
+}
+
+static void WEBGPU_BindGraphicsPipeline(SDL_GPUCommandBuffer *renderPass, SDL_GPUGraphicsPipeline *graphicsPipeline)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    cmdBuf->boundGraphicsPipeline = (WebGPUGraphicsPipeline *)graphicsPipeline;
+    cmdBuf->hasBoundGraphicsPipeline = false;
+
+    WEBGPU_INTERNAL_ClearRenderPassBindings(cmdBuf);
+}
+
+static void WEBGPU_BindComputePipeline(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUComputePipeline *computePipeline)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    cmdBuf->boundComputePipeline = (WebGPUComputePipeline *)computePipeline;
+    cmdBuf->hasBoundComputePipeline = false;
+
+    WEBGPU_INTERNAL_ClearComputePassBindings(cmdBuf, false);
+}
+
+static void WEBGPU_BindVertexBuffers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, const SDL_GPUBufferBinding *binding, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].buffer = ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer;
+        cmdBuf->vertexStageBinds.boundVertexBuffers[i + firstSlot].offset = binding[i].offset;
+
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)binding[i].buffer)->activeBuffer);
+    }
+
+    cmdBuf->vertexStageBinds.shouldBindVertexBuffers = true;
+}
+
+static void WEBGPU_BindIndexBuffer(SDL_GPUCommandBuffer *renderPass, const SDL_GPUBufferBinding *binding, SDL_GPUIndexElementSize elementSize)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    cmdBuf->vertexStageBinds.boundIndexBuffer.buffer = ((WebGPUBufferContainer *)binding->buffer)->activeBuffer;
+    cmdBuf->vertexStageBinds.boundIndexBuffer.offset = binding->offset;
+
+    cmdBuf->vertexStageBinds.indexFormat = SDLToWebGPU_IndexFormat[elementSize];
+    cmdBuf->vertexStageBinds.shouldBindIndexBuffer = true;
+
+    WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)binding->buffer)->activeBuffer);
+}
+
+static void WEBGPU_BindVertexSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, const SDL_GPUTextureSamplerBinding *textureSamplerBindings, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->vertexStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
+        cmdBuf->vertexStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+    }
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindVertexStorageBuffers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, SDL_GPUBuffer *const *storageBuffers, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->vertexStageBinds.boundStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
+
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+    }
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindVertexStorageTextures(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, SDL_GPUTexture *const *storageTextures, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->vertexStageBinds.boundStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+    }
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindFragmentSamplers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, const SDL_GPUTextureSamplerBinding *textureSamplerBindings, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        // Bounds-checking is for cowards too afraid to accept the inherent randomness of the universe, and the innate beauty that it creates.
+        cmdBuf->fragmentStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
+        cmdBuf->fragmentStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+    }
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindFragmentStorageBuffers(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, SDL_GPUBuffer *const *storageBuffers, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->fragmentStageBinds.boundStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
+
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+    }
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindFragmentStorageTextures(SDL_GPUCommandBuffer *renderPass, Uint32 firstSlot, SDL_GPUTexture *const *storageTextures, uint32_t numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)renderPass;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->fragmentStageBinds.boundStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+    }
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindComputeSamplers(SDL_GPUCommandBuffer *commandBuffer, Uint32 firstSlot, const SDL_GPUTextureSamplerBinding *textureSamplerBindings, Uint32 numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->computeStageBinds.boundSamplers[i + firstSlot] = (WebGPUSampler *)textureSamplerBindings[i].sampler;
+        cmdBuf->computeStageBinds.boundTextures[i + firstSlot] = ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)textureSamplerBindings[i].texture)->activeTexture);
+    }
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindComputeStorageBuffers(SDL_GPUCommandBuffer *commandBuffer, Uint32 firstSlot, SDL_GPUBuffer *const *storageBuffers, Uint32 numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageBuffers[i + firstSlot] = ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer;
+
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)storageBuffers[i])->activeBuffer);
+    }
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BindComputeStorageTextures(SDL_GPUCommandBuffer *commandBuffer, Uint32 firstSlot, SDL_GPUTexture *const *storageTextures, Uint32 numBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    for (int i = 0; i < numBindings; i++) {
+        cmdBuf->computeStageBinds.boundReadOnlyStorageTextures[i + firstSlot] = ((WebGPUTextureContainer *)storageTextures[i])->activeTexture->fullTextureView;
+
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, ((WebGPUTextureContainer *)storageTextures[i])->activeTexture);
+    }
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_INTERNAL_BindQueuedGraphicsResources(WebGPUCommandBuffer *cmdBuf)
+{
+    WGPUBindGroup bindGroups[4] = {
+        cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_VERTEXSAMPLERSTORAGE) : NULL,
+        cmdBuf->vertexStageBinds.uniformBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_VERTEXUNIFORMS) : NULL,
+        cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_FRAGMENTSAMPLERSTORAGE) : NULL,
+        cmdBuf->fragmentStageBinds.uniformBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_FRAGMENTUNIFORMS) : NULL,
+    };
+
+    for (int i = 0; i < 4; i++) {
+        if (bindGroups[i] != NULL) {
+            if (i == 1) {
+                // vert uniform
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i], 4,
+                                                  cmdBuf->vertexStageBinds.currentUniformReadOffsets);
+            } else if (i == 3) {
+                // frag uniform
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i], 4,
+                                                  cmdBuf->fragmentStageBinds.currentUniformReadOffsets);
+            } else {
+                wgpuRenderPassEncoderSetBindGroup(cmdBuf->renderPassEncoder, i, bindGroups[i], 0, NULL);
+            }
+        }
+    }
+
+    if (cmdBuf->vertexStageBinds.shouldBindVertexBuffers) {
+        for (int i = 0; i < MAX_VERTEX_BUFFERS; i++) {
+            if (cmdBuf->vertexStageBinds.boundVertexBuffers[i].buffer == NULL) {
+                continue;
+            }
+
+            wgpuRenderPassEncoderSetVertexBuffer(cmdBuf->renderPassEncoder,
+                                                 i, cmdBuf->vertexStageBinds.boundVertexBuffers[i].buffer->buffer,
+                                                 cmdBuf->vertexStageBinds.boundVertexBuffers[i].offset, WGPU_WHOLE_SIZE);
+        }
+    }
+
+    if (cmdBuf->vertexStageBinds.shouldBindIndexBuffer) {
+        if (cmdBuf->vertexStageBinds.boundIndexBuffer.buffer) {
+            wgpuRenderPassEncoderSetIndexBuffer(cmdBuf->renderPassEncoder,
+                                                cmdBuf->vertexStageBinds.boundIndexBuffer.buffer->buffer,
+                                                cmdBuf->vertexStageBinds.indexFormat,
+                                                cmdBuf->vertexStageBinds.boundIndexBuffer.offset,
+                                                cmdBuf->vertexStageBinds.boundIndexBuffer.buffer->size);
+        }
+    }
+
+    cmdBuf->vertexStageBinds.shouldBindIndexBuffer = false;
+    cmdBuf->vertexStageBinds.shouldBindVertexBuffers = false;
+    cmdBuf->vertexStageBinds.uniformBindGroupOutdated = false;
+    cmdBuf->fragmentStageBinds.uniformBindGroupOutdated = false;
+    cmdBuf->vertexStageBinds.samplerStorageBindGroupOutdated = false;
+    cmdBuf->fragmentStageBinds.samplerStorageBindGroupOutdated = false;
+}
+
+static void WEBGPU_INTERNAL_BindQueuedComputeResources(WebGPUCommandBuffer *cmdBuf)
+{
+    WGPUBindGroup bindGroups[3] = {
+        cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_COMPUTESAMPLERSTORAGE) : NULL,
+        cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_COMPUTEREADWRITESTORAGE) : NULL,
+        cmdBuf->computeStageBinds.uniformBindGroupOutdated ? WEBGPU_INTERNAL_GetBindGroup(cmdBuf, WEBGPU_BINDGROUP_COMPUTEUNIFORMS) : NULL,
+    };
+
+    for (int i = 0; i < 3; i++) {
+        if (bindGroups[i] != NULL) {
+            if (i == 2) {
+                wgpuComputePassEncoderSetBindGroup(cmdBuf->computePassEncoder, i, bindGroups[i],
+                                                   4, cmdBuf->computeStageBinds.currentUniformReadOffsets);
+            } else {
+                wgpuComputePassEncoderSetBindGroup(cmdBuf->computePassEncoder, i, bindGroups[i], 0, NULL);
+            }
+        }
+    }
+
+    cmdBuf->computeStageBinds.uniformBindGroupOutdated = false;
+    cmdBuf->computeStageBinds.samplerStorageBindGroupOutdated = false;
+    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = false;
+}
+
+static void WEBGPU_EndRenderPass(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    wgpuRenderPassEncoderEnd(cmdBuf->renderPassEncoder);
+    wgpuRenderPassEncoderRelease(cmdBuf->renderPassEncoder);
+}
+
+static void WEBGPU_DrawPrimitives(SDL_GPUCommandBuffer *renderPass, Uint32 numVertices, uint32_t numInstances, uint32_t firstVertex, uint32_t firstInstance)
+{
+    WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound((WebGPUCommandBuffer *)renderPass);
+
+    WEBGPU_INTERNAL_BindQueuedGraphicsResources((WebGPUCommandBuffer *)renderPass);
+    wgpuRenderPassEncoderDraw(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder, numVertices, numInstances, firstVertex, firstInstance);
+}
+
+static void WEBGPU_DrawPrimitivesIndirect(SDL_GPUCommandBuffer *renderPass, SDL_GPUBuffer *buffer, Uint32 offset, uint32_t drawCount)
+{
+    WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound((WebGPUCommandBuffer *)renderPass);
+
+    WEBGPU_INTERNAL_BindQueuedGraphicsResources((WebGPUCommandBuffer *)renderPass);
+
+    for (int i = 0; i < drawCount; i++) {
+        // ZEUS!
+        // WebGPU, unlike other (cough cough good) API's, doesn't support multi-draw indirect rendering.
+        // So, we have to do this.
+        // NOTE: Dawn actually supports multi-draw indirect. Maybe we should add conditional support for it?
+        wgpuRenderPassEncoderDrawIndirect(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder,
+                                          ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer,
+                                          (size_t)offset + (i * 16));
+    }
+}
+
+static void WEBGPU_DrawIndexedPrimitives(SDL_GPUCommandBuffer *renderPass, Uint32 numIndices, uint32_t numInstances, uint32_t firstIndex, Sint32 vertexOffset, uint32_t firstInstance)
+{
+    WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound((WebGPUCommandBuffer *)renderPass);
+
+    WEBGPU_INTERNAL_BindQueuedGraphicsResources((WebGPUCommandBuffer *)renderPass);
+    wgpuRenderPassEncoderDrawIndexed(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder, numIndices, numInstances, firstIndex, vertexOffset, firstInstance);
+}
+
+static void WEBGPU_DrawIndexedPrimitivesIndirect(SDL_GPUCommandBuffer *renderPass, SDL_GPUBuffer *buffer, Uint32 offset, uint32_t drawCount)
+{
+    WEBGPU_INTERNAL_EnsureGraphicsPipelineIsBound((WebGPUCommandBuffer *)renderPass);
+
+    WEBGPU_INTERNAL_BindQueuedGraphicsResources((WebGPUCommandBuffer *)renderPass);
+
+    for (int i = 0; i < drawCount; i++) {
+        wgpuRenderPassEncoderDrawIndexedIndirect(((WebGPUCommandBuffer *)renderPass)->renderPassEncoder,
+                                                 ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer,
+                                                 (size_t)offset + (i * 20));
+    }
+}
+
+static void WEBGPU_SetStencilReference(SDL_GPUCommandBuffer *commandBuffer, Uint8 reference)
+{
+    wgpuRenderPassEncoderSetStencilReference(((WebGPUCommandBuffer *)commandBuffer)->renderPassEncoder, reference);
+}
+
+static void WEBGPU_INTERNAL_BindComputeReadWriteStorageTextures(WebGPUCommandBuffer *cmdBuf,
+                                                                const SDL_GPUStorageTextureReadWriteBinding *bindings, Uint32 numBindings)
+{
+    for (int i = 0; i < numBindings; i++) {
+        if (bindings[i].cycle) {
+            WEBGPU_INTERNAL_CycleTextureContainer(cmdBuf->renderer, (WebGPUTextureContainer *)bindings[i].texture);
+        }
+
+        WebGPUTextureContainer *texture = (WebGPUTextureContainer *)bindings[i].texture;
+        Uint32 index = WEBGPU_INTERNAL_GetTextureViewIndex(bindings[i].layer, bindings[i].mip_level, texture->header.info.num_levels);
+
+        cmdBuf->computeStageBinds.boundReadWriteStorageTextures[i] = texture->activeTexture->textureViews[index];
+        WEBGPU_INTERNAL_TrackTexture(cmdBuf, texture->activeTexture);
+    }
+    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_INTERNAL_BindComputeReadWriteStorageBuffers(WebGPUCommandBuffer *cmdBuf,
+                                                               const SDL_GPUStorageBufferReadWriteBinding *bindings, Uint32 numBindings)
+{
+    for (int i = 0; i < numBindings; i++) {
+        if (bindings[i].cycle) {
+            WEBGPU_INTERNAL_CycleBufferContainer(cmdBuf->renderer, (WebGPUBufferContainer *)bindings[i].buffer);
+        }
+
+        cmdBuf->computeStageBinds.boundReadWriteStorageBuffers[i] = ((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer;
+
+        WEBGPU_INTERNAL_TrackBuffer(cmdBuf, ((WebGPUBufferContainer *)bindings[i].buffer)->activeBuffer);
+    }
+    cmdBuf->computeStageBinds.readWriteStorageBindGroupOutdated = true;
+}
+
+static void WEBGPU_BeginComputePass(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUStorageTextureReadWriteBinding *storageTextureBindings, Uint32 numStorageTextureBindings,
+                                    const SDL_GPUStorageBufferReadWriteBinding *storageBufferBindings, Uint32 numStorageBufferBindings)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WGPUComputePassDescriptor passDesc;
+
+    passDesc.label = (WGPUStringView){ NULL, 0 };
+    passDesc.nextInChain = NULL;
+    // Timestamps are unsupported in SDLGPU.
+    // 'erm acktually Cosmonaut made a PoC query API hghehgehg' Biden Blast!!!
+    passDesc.timestampWrites = NULL;
+
+    cmdBuf->computePassEncoder = wgpuCommandEncoderBeginComputePass(cmdBuf->encoder, &passDesc);
+    if (cmdBuf->computePassEncoder == NULL) {
+        SDL_SetError("Could not begin compute pass!");
+        return;
+    }
+
+    WEBGPU_INTERNAL_ClearComputePassBindings(cmdBuf, true);
+
+    WEBGPU_INTERNAL_BindComputeReadWriteStorageTextures(cmdBuf, storageTextureBindings, numStorageTextureBindings);
+    WEBGPU_INTERNAL_BindComputeReadWriteStorageBuffers(cmdBuf, storageBufferBindings, numStorageBufferBindings);
+    cmdBuf->hasBoundComputePipeline = false;
+}
+
+static void WEBGPU_EndComputePass(SDL_GPUCommandBuffer *computePass)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)computePass;
+    wgpuComputePassEncoderEnd(cmdBuf->computePassEncoder);
+
+    wgpuComputePassEncoderRelease(cmdBuf->computePassEncoder);
+}
+
+static void WEBGPU_DispatchCompute(SDL_GPUCommandBuffer *commandBuffer, Uint32 groupcountX, Uint32 groupcountY, Uint32 groupcountZ)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    WEBGPU_INTERNAL_EnsureComputePipelineIsBound(cmdBuf);
+
+    WEBGPU_INTERNAL_BindQueuedComputeResources(cmdBuf);
+    wgpuComputePassEncoderDispatchWorkgroups(cmdBuf->computePassEncoder, groupcountX, groupcountY, groupcountZ);
+}
+
+static void WEBGPU_DispatchComputeIndirect(SDL_GPUCommandBuffer *commandBuffer, SDL_GPUBuffer *buffer, Uint32 offset)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+
+    WEBGPU_INTERNAL_EnsureComputePipelineIsBound(cmdBuf);
+
+    WEBGPU_INTERNAL_BindQueuedComputeResources(cmdBuf);
+    wgpuComputePassEncoderDispatchWorkgroupsIndirect(cmdBuf->computePassEncoder, ((WebGPUBufferContainer *)buffer)->activeBuffer->buffer, offset);
+}
+
+static void WEBGPU_INTERNAL_UploadQueuedUniformData(WebGPUCommandBuffer *cmdBuf)
+{
+    for (int i = 0; i < cmdBuf->numQueuedUniformUploads; i++) {
+        WebGPUQueuedUniformDataUpload upload = cmdBuf->queuedUniformUploads[i];
+
+        wgpuQueueWriteBuffer(cmdBuf->queue, cmdBuf->renderer->uniformBuffers[upload.slot]->activeBuffer->buffer, upload.offset, upload.data, upload.length);
+        SDL_free(upload.data);
+    }
+}
+
+static bool WEBGPU_Submit(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WebGPUCommandBuffer *wrapper = (WebGPUCommandBuffer *)commandBuffer;
+    WebGPUSubmittedCommandBuffer *submitted = NULL;
+    WebGPURenderer *renderer = wrapper->renderer;
+
+    SDL_LockMutex(renderer->submittingCommandBufferLock);
+
+    WEBGPU_INTERNAL_UploadQueuedUniformData(wrapper);
+
+#ifdef _MSC_VER
+    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &(WGPUCommandBufferDescriptor)WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
+#else
+    WGPUCommandBuffer cmdBuf = wgpuCommandEncoderFinish((((WebGPUCommandBuffer *)commandBuffer)->encoder), &WGPU_COMMAND_BUFFER_DESCRIPTOR_INIT);
+#endif
+
+    if (!cmdBuf) {
+        SDL_free(commandBuffer);
+        SDL_UnlockMutex(renderer->submittingCommandBufferLock);
+        return false;
+    }
+
+    wgpuQueueSubmit(wrapper->queue, 1, &cmdBuf);
+
+    wrapper->submitted.fence = WEBGPU_INTERNAL_CreateFence(wrapper->queue);
+
+    submitted = SDL_calloc(1, sizeof(*submitted));
+    *submitted = wrapper->submitted;
+
+    WEBGPU_INTERNAL_InsertElementIntoArray(wrapper->renderer->submittedCommandBuffers, wrapper->renderer->submittedCommandBufferCapacity,
+                                           wrapper->renderer->submittedCommandBufferCount, WebGPUSubmittedCommandBuffer *, submitted);
+
+#ifndef __EMSCRIPTEN__
+    for (int i = 0; i < wrapper->surfaceCount; i++) {
+        wgpuSurfacePresent(wrapper->surfaces[i]);
+    }
+#endif
+    for (int i = 0; i < wrapper->swapchainTextureCount; i++) {
+        WebGPUTextureContainer *container = wrapper->acquiredSwapchainTextures[i];
+
+        WEBGPU_INTERNAL_QueueTextureContainerForRelease(renderer, container);
+    }
+    wgpuCommandEncoderRelease(wrapper->encoder);
+    wgpuCommandBufferRelease(cmdBuf);
+
+    SDL_AtomicIncRef(&renderer->numSubmissions);
+
+    // We'll be freeing the "command buffer", so any usage of it will be undefined behaviour.
+    // Don't. The docs tell you not to.
+
+    WEBGPU_INTERNAL_FreeCommandBuffer(wrapper);
+
+    SDL_UnlockMutex(renderer->submittingCommandBufferLock);
+
+    return true;
+}
+
+static SDL_GPUFence *WEBGPU_SubmitAndAcquireFence(SDL_GPUCommandBuffer *commandBuffer)
+{
+    WGPUQueue queue = ((WebGPUCommandBuffer *)commandBuffer)->queue;
+    WEBGPU_Submit(commandBuffer);
+
+    // I hate this. I'm not sure why I do, but I do. -- TheStickmahn
+    return (SDL_GPUFence *)WEBGPU_INTERNAL_CreateFence(queue);
+}
+
+static void WEBGPU_DestroyDevice(SDL_GPUDevice *device)
+
+{
+    WebGPURenderer *renderer = (WebGPURenderer *)device->driverData;
+    WEBGPU_Wait(device->driverData);
+
+    renderer->destroyingSelf = true;
+
+    SDL_LockMutex(renderer->destroyingSelfLock);
+
+    WEBGPU_INTERNAL_ReleaseUniformResources(renderer);
+    WEBGPU_INTERNAL_ReleaseBlitResources(renderer);
+
+    while (renderer->queuedDestroyCount > 0 || renderer->submittedCommandBufferCount > 0) {
+        WEBGPU_INTERNAL_HandlePendingDestroys(renderer);
+        WEBGPU_INTERNAL_Spin();
+    }
+
+    SDL_DestroyHashTable(renderer->bindGroupHashTable);
+
+    // Destroying mutexes
+    SDL_DestroyMutex(renderer->submittingCommandBufferLock);
+
+    wgpuQueueRelease(renderer->queue);
+    // FIXME: Releasing the device here causes memory leaks (according to ASan).
+    // Those memory leaks are also entirely illegible. I have NO idea why they happen since
+    // ASan straight up just blames them on random BS. We're releasing the device here since
+    // Emscripten doesn't like it if we don't, but I have NO way of knowing what's wrong here.
+    wgpuDeviceRelease(renderer->device);
+    wgpuAdapterRelease(renderer->adapter);
+    wgpuInstanceRelease(renderer->instance);
+
+    SDL_DestroyProperties(renderer->props);
+    SDL_UnlockMutex(renderer->destroyingSelfLock);
+    SDL_DestroyMutex(renderer->destroyingSelfLock);
+    SDL_free(renderer->blitPipelines);
+    SDL_free(renderer->submittedCommandBuffers);
+    SDL_free(renderer);
+    SDL_free(device);
+}
+
+static void WEBGPU_ReleaseWindow(SDL_GPURenderer *driverData, SDL_Window *window)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(window->props, WINDOW_PROPERTY_DATA, NULL);
+    if (windowData == NULL) {
+        return;
+    }
+
+    SDL_WGPU_DestroySurface(windowData->surface);
+    SDL_ClearProperty(window->props, WINDOW_PROPERTY_DATA);
+
+    SDL_free(windowData);
+}
+
+static void WEBGPU_DownloadFromTexture(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUTextureRegion *source, const SDL_GPUTextureTransferInfo *destination)
+{
+    WGPUTexelCopyTextureInfo sourceInfo;
+    WGPUTexelCopyBufferInfo destinationInfo;
+
+    // If the user's given us an explicit pixels_per_row we'll use that
+    Uint32 unpaddedBPR = BytesPerRow(destination->pixels_per_row != 0 ? destination->pixels_per_row : source->w, ((WebGPUTextureContainer *)source->texture)->header.info.format);
+    Uint32 paddedBPR = ALIGN_VALUE(unpaddedBPR, 256);
+    bool bprMismatch = unpaddedBPR != paddedBPR;
+
+    // This buffer is used to turn the stinky padded image data into non-stinky good image data
+    WebGPUBufferContainer *interimDownloadBuffer = NULL;
+
+    if (bprMismatch) {
+        interimDownloadBuffer = WEBGPU_INTERNAL_CreateBufferContainer(((WebGPUCommandBuffer *)commandBuffer)->renderer, ((Uint64)paddedBPR * source->h) * SDL_min(source->d, 1), 0, WEBGPU_BUFFER_TYPE_TRANSFER_GPUONLY, false, "Interim Download Buffer");
+    }
+
+    sourceInfo.aspect = WGPUTextureAspect_All;
+    sourceInfo.texture = ((WebGPUTextureContainer *)source->texture)->activeTexture->texture;
+    sourceInfo.mipLevel = source->mip_level;
+    sourceInfo.origin = (WGPUOrigin3D){ .x = source->x, .y = source->y, .z = source->z + source->layer };
+
+    destinationInfo.buffer = bprMismatch ? interimDownloadBuffer->activeBuffer->buffer : ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer;
+    destinationInfo.layout = (WGPUTexelCopyBufferLayout){
+        .bytesPerRow = paddedBPR,
+        .offset = bprMismatch ? 0 : destination->offset,
+        .rowsPerImage = destination->rows_per_layer != 0 ? destination->rows_per_layer : source->h,
+    };
+
+    Uint32 blockWidth = Texture_GetBlockWidth(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
+    Uint32 blockHeight = Texture_GetBlockHeight(((WebGPUTextureContainer *)source->texture)->activeTexture->format);
+
+    // FIXME: 3D texture layers will almost certainly also have to be unpadded!
+    // Kill me, please.
+    wgpuCommandEncoderCopyTextureToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, &sourceInfo, &destinationInfo, &(WGPUExtent3D){ ALIGN_VALUE(source->w, blockWidth), ALIGN_VALUE(source->h, blockHeight), source->d });
+
+    if (bprMismatch) {
+        // Since WebGPU sucks and inherits D3D12's horrid 256-byte BPR alignment rule we can't just copy the data 1 to 1.
+        // So, we need to do this unpadding nonsense. We first copy the texture to an interim buffer and then for each row
+        // we copy the unpadded data from it into the user-given transfer buffer.
+        //
+        // Why do you do these things to me WebGPU?
+        for (int i = 0; i < (destination->rows_per_layer != 0 ? destination->rows_per_layer : source->h); i++) {
+            wgpuCommandEncoderCopyBufferToBuffer(((WebGPUCommandBuffer *)commandBuffer)->encoder, interimDownloadBuffer->activeBuffer->buffer, (Uint64)i * paddedBPR, ((WebGPUBufferContainer *)destination->transfer_buffer)->activeBuffer->buffer, destination->offset + (Uint64)i * unpaddedBPR, unpaddedBPR);
+        }
+
+        WEBGPU_INTERNAL_QueueBufferContainerForRelease(((WebGPUCommandBuffer *)commandBuffer)->renderer, interimDownloadBuffer);
+    }
+}
+
+static void WEBGPU_Blit(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBlitInfo *info)
+{
+    WebGPURenderer *renderer = ((WebGPUCommandBuffer *)commandBuffer)->renderer;
+
+    SDL_GPU_BlitCommon(
+        commandBuffer,
+        info,
+        renderer->blitResources.blitLinearSampler,
+        renderer->blitResources.blitNearestSampler,
+        renderer->blitResources.blitVertexShader,
+        renderer->blitResources.blit2DShader,
+        renderer->blitResources.blit2DArrayShader,
+        renderer->blitResources.blit3DShader,
+        renderer->blitResources.blitCubeShader,
+        renderer->blitResources.blitCubeArrayShader,
+        &renderer->blitPipelines,
+        &renderer->blitPipelineCount,
+        &renderer->blitPipelineCapacity);
+}
+
+static SDL_GPUTextureFormat WEBGPU_GetSwapchainTextureFormat(SDL_GPURenderer *device, SDL_Window *window)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
+
+    if (windowData != NULL) {
+        return windowData->shouldUseFallbackFormat ? SwapchainCompositionToFallbackSDLFormat[windowData->swapchainComposition] : SwapchainCompositionToSDLFormat[windowData->swapchainComposition];
+    } else {
+        SDL_SetError("Window pointer is NULL!");
+        return SDL_GPU_TEXTUREFORMAT_INVALID;
+    }
+}
+
+static bool WEBGPU_SupportsSwapchainComposition(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUSwapchainComposition swapchainComposition)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
+    WGPUSurfaceCapabilities caps = { 0 };
+    bool supportsComposition = false;
+
+    if (windowData == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WindowData pointer is NULL!");
+        SDL_SetError("WindowData pointer is NULL! Did you call SDL_ClaimWindowForGPUDevice?");
+        return false;
+    }
+
+    WGPUStatus getCapsStatus = wgpuSurfaceGetCapabilities(windowData->surface, ((WebGPURenderer *)driverData)->adapter, &caps);
+
+    if (getCapsStatus == WGPUStatus_Error) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get surface capabilities!");
+        SDL_SetError("Failed to get surface capabilities!");
+        return false;
+    }
+
+    for (int i = 0; i < caps.formatCount; i++) {
+        if (caps.formats[i] == SwapchainCompositionToFormat[swapchainComposition]) {
+            supportsComposition = true;
+            windowData->shouldUseFallbackFormat = false;
+
+            break;
+        } else if (caps.formats[i] == SwapchainCompositionToFallbackFormat[swapchainComposition]) {
+            supportsComposition = true;
+            windowData->shouldUseFallbackFormat = true;
+
+            break;
+        }
+    }
+
+    wgpuSurfaceCapabilitiesFreeMembers(caps);
+    return supportsComposition;
+}
+
+static bool WEBGPU_SupportsPresentMode(SDL_GPURenderer *driverData, SDL_Window *window, SDL_GPUPresentMode presentMode)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
+    WGPUSurfaceCapabilities caps = { 0 };
+    bool supportsPresentMode = false;
+
+    if (windowData == NULL) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "WindowData pointer is NULL!");
+        SDL_SetError("WindowData pointer is NULL! Did you call SDL_ClaimWindowForGPUDevice?");
+        return false;
+    }
+
+    WGPUStatus getCapsStatus = wgpuSurfaceGetCapabilities(windowData->surface, ((WebGPURenderer *)driverData)->adapter, &caps);
+
+    if (getCapsStatus == WGPUStatus_Error) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to get surface capabilities!");
+        SDL_SetError("Failed to get surface capabilities!");
+        return false;
+    }
+
+    for (int i = 0; i < caps.presentModeCount; i++) {
+        if (caps.presentModes[i] == SDLToWebGPU_PresentMode[presentMode]) {
+            supportsPresentMode = true;
+            goto finish;
+        }
+    }
+
+    goto finish;
+
+finish:
+    wgpuSurfaceCapabilitiesFreeMembers(caps);
+    return supportsPresentMode;
+}
+
+static bool WEBGPU_SetSwapchainParameters(SDL_GPURenderer *driverData, SDL_Window *window,
+                                          SDL_GPUSwapchainComposition swapchainComposition, SDL_GPUPresentMode presentMode)
+{
+    WebGPUWindowData *windowData = SDL_GetPointerProperty(SDL_GetWindowProperties(window), WINDOW_PROPERTY_DATA, NULL);
+
+    if (!WEBGPU_SupportsSwapchainComposition(driverData, window, swapchainComposition)) {
+        SDL_SetError("Window does not support swapchainComposition!");
+        return false;
+    }
+
+    if (!WEBGPU_SupportsPresentMode(driverData, window, presentMode)) {
+        SDL_SetError("Window does not support presentMode!");
+        return false;
+    }
+
+    windowData->presentMode = presentMode;
+    windowData->swapchainComposition = swapchainComposition;
+    windowData->surfaceDirty = true;
+
+    return true;
+}
+
+static bool WEBGPU_SupportsSampleCount(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUSampleCount sampleCount)
+{
+    // TODO: Check format. I really don't wanna write another one of those damn functions 🥀
+    if (sampleCount == SDL_GPU_SAMPLECOUNT_2 || sampleCount == SDL_GPU_SAMPLECOUNT_8) {
+        SDL_SetError("WebGPU only supports sample counts 1 and 4.");
+        return false;
+    }
+
+    return true;
+}
+
+static void WEBGPU_DownloadFromBuffer(SDL_GPUCommandBuffer *commandBuffer, const SDL_GPUBufferRegion *source, const SDL_GPUTransferBufferLocation *destination)
+{
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WEBGPU_INTERNAL_CopyBufferToBuffer(cmdBuf->encoder, (WebGPUBufferContainer *)source->buffer, source->offset,
+                                       (WebGPUBufferContainer *)destination->transfer_buffer, destination->offset,
+                                       ALIGN_VALUE(source->size, 4));
+}
+
+static bool WEBGPU_SetAllowedFramesInFlight(SDL_GPURenderer *driverData, Uint32 allowedFramesInFlight)
+{
+    // NOTE: Not entirely sure this is correct? Should we do something if
+    // allowedFramesInFlight < renderer->maxFramesInFlight & swapchain texture has been acquired?
+
+    if (allowedFramesInFlight < 1 || allowedFramesInFlight > 3) {
+        SDL_SetError(allowedFramesInFlight < 1 ? "allowedFramesInFlight must be >= 1!" : "allowedFramesInFlight must be <= 3!");
+        return false;
+    }
+
+    ((WebGPURenderer *)driverData)->maxFramesInFlight = allowedFramesInFlight;
+    return true;
+};
+
+static void WEBGPU_INTERNAL_InitUniformResources(WebGPURenderer *renderer)
+{
+    for (int i = 0; i < (MAX_UNIFORM_BUFFERS_PER_STAGE * 3); i++) {
+        // 1048576 == 1MiB == 2²⁰
+        renderer->uniformBuffers[i] = WEBGPU_INTERNAL_CreateBufferContainer(renderer, DEFAULT_UNIFORM_BUFFER_SIZE, 0, WEBGPU_BUFFER_TYPE_UNIFORM, false, NULL);
+    }
+
+    for (int i = 0; i < 3; i++) {
+        WGPUBindGroupLayoutEntry *layoutEntries;
+        WGPUBindGroupEntry *entries;
+
+        WGPUBindGroupLayoutDescriptor layoutDesc = { 0 };
+        WGPUBindGroupDescriptor desc = { 0 };
+
+        WGPUBindGroupLayout layout;
+
+        layoutEntries = SDL_calloc(MAX_UNIFORM_BUFFERS_PER_STAGE, sizeof(*layoutEntries));
+        entries = SDL_calloc(MAX_UNIFORM_BUFFERS_PER_STAGE, sizeof(*entries));
+
+        for (int j = 0; j < MAX_UNIFORM_BUFFERS_PER_STAGE; j++) {
+            layoutEntries[j] = (WGPUBindGroupLayoutEntry){ 0 };
+            layoutEntries[j].nextInChain = NULL;
+            layoutEntries[j].binding = j;
+            layoutEntries[j].buffer = (WGPUBufferBindingLayout){
+                .minBindingSize = 0,
+                .nextInChain = NULL,
+                .hasDynamicOffset = true,
+                .type = WGPUBufferBindingType_Uniform,
+            };
+
+            if (i == 0) {
+                layoutEntries[j].visibility = WGPUShaderStage_Vertex;
+            } else if (i == 1) {
+                layoutEntries[j].visibility = WGPUShaderStage_Fragment;
+            } else if (i == 2) {
+                layoutEntries[j].visibility = WGPUShaderStage_Compute;
+            }
+
+            entries[j] = (WGPUBindGroupEntry){
+                .buffer = renderer->uniformBuffers[j + (i * MAX_UNIFORM_BUFFERS_PER_STAGE)]->activeBuffer->buffer,
+                .size = UNIFORM_BUFFER_SIZE,
+                .nextInChain = NULL,
+                .binding = j,
+                .offset = 0,
+            };
+        }
+
+        layoutDesc.entries = layoutEntries;
+        layoutDesc.entryCount = MAX_UNIFORM_BUFFERS_PER_STAGE;
+
+        layout = wgpuDeviceCreateBindGroupLayout(renderer->device, &layoutDesc);
+
+        desc.layout = layout;
+        desc.entries = entries;
+        desc.entryCount = MAX_UNIFORM_BUFFERS_PER_STAGE;
+
+        renderer->uniformBufferBindGroups[i] = wgpuDeviceCreateBindGroup(renderer->device, &desc);
+        renderer->uniformBufferBindGroupLayouts[i] = layout;
+
+        SDL_free(layoutEntries);
+        SDL_free(entries);
+    }
+}
+
+static bool WEBGPU_Cancel(SDL_GPUCommandBuffer *commandBuffer)
+{
+    // this function sucks but it's better than nothing
+
+    WebGPUCommandBuffer *cmdBuf = (WebGPUCommandBuffer *)commandBuffer;
+    WGPUCommandBuffer finishedCmdBuf = NULL;
+
+    if (cmdBuf->common.render_pass.in_progress) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unresolved render pass, cannot cancel!");
+        return false;
+    } else if (cmdBuf->common.compute_pass.in_progress) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unresolved compute pass, cannot cancel!");
+        return false;
+    } else if (cmdBuf->common.copy_pass.in_progress) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Unresolved copy pass, cannot cancel!");
+        return false;
+    }
+
+    // Since WebGPU sucks, we can't just "cancel" a command encoder.
+    // We'll have to finish the command encoder and then just drop it.
+    finishedCmdBuf = wgpuCommandEncoderFinish(cmdBuf->encoder, NULL);
+
+    if (!finishedCmdBuf) {
+        SDL_LogError(SDL_LOG_CATEGORY_GPU, "Failed to finish command encoder, cannot cancel!");
+        return false;
+    }
+
+    wgpuCommandBufferRelease(finishedCmdBuf);
+    wgpuCommandEncoderRelease(cmdBuf->encoder);
+
+    for (int i = 0; i < cmdBuf->numQueuedUniformUploads; i++) {
+        WebGPUQueuedUniformDataUpload upload = cmdBuf->queuedUniformUploads[i];
+        SDL_free(upload.data);
+    }
+
+    WEBGPU_INTERNAL_FreeCommandBuffer(cmdBuf);
+
+    return true;
+}
+
+// -- UNIMPLEMENTED FUNCTIONS --
+static bool WEBGPU_WaitForSwapchain(SDL_GPURenderer *driverData, SDL_Window *window)
+{
+    // WEBGPU_WaitForSwapchain is unimplemented since WebGPU abstracts away the swapchain from the user.
+    return true;
+}
+
+// NOTE: A lot of this is guesswork at best. WebGPU really has no proper documentation.
+static bool WEBGPU_SupportsTextureFormat(SDL_GPURenderer *driverData, SDL_GPUTextureFormat format, SDL_GPUTextureType type, SDL_GPUTextureUsageFlags usage)
+{
+    // this is horrible garbage code and I hate it so much
+
+    bool hasStorageUsage = usage & (SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ |
+                                    SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE | SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE);
+    bool hasReadWriteStorageUsage = (usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ) || usage & SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE;
+    bool hasDepthUsage = usage & SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET;
+    bool hasColorTargetUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    bool hasRenderUsage = usage & SDL_GPU_TEXTUREUSAGE_COLOR_TARGET;
+    bool hasSamplerUsage = usage & SDL_GPU_TEXTUREUSAGE_SAMPLER;
+    // TODO: Check the type
+
+    WebGPURenderer *renderer = (WebGPURenderer *)driverData;
+
+    if (SDLToWebGPU_TextureFormat[format] == WGPUTextureFormat_Undefined) {
+        return false;
+    }
+
+    switch (format) {
+    case SDL_GPU_TEXTUREFORMAT_INVALID:
+    case SDL_GPU_TEXTUREFORMAT_A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B5G6R5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B5G5R5A1_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B4G4R4A4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_FLOAT:
+        return false;
+    case SDL_GPU_TEXTUREFORMAT_R16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R10G10B10A2_UNORM:
+        return !hasDepthUsage && !hasReadWriteStorageUsage && !hasSamplerUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureFormatsTier1);
+    case SDL_GPU_TEXTUREFORMAT_R8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_SNORM:
+    case SDL_GPU_TEXTUREFORMAT_R16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R16G16B16A16_INT:
+    case SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32_INT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_INT:
+        return !hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM_SRGB:
+        if (hasStorageUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_BGRA8UnormStorage)) {
+            return true;
+        } else if (!hasDepthUsage && !hasReadWriteStorageUsage) {
+            return true;
+        } else {
+            return false;
+        }
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC4_R_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC5_RG_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_BC6H_RGB_UFLOAT:
+    case SDL_GPU_TEXTUREFORMAT_BC1_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC2_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC3_RGBA_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_BC7_RGBA_UNORM_SRGB:
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureCompressionBC);
+    case SDL_GPU_TEXTUREFORMAT_R32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_R32_UINT:
+    case SDL_GPU_TEXTUREFORMAT_R32_INT:
+        return !hasDepthUsage;
+    case SDL_GPU_TEXTUREFORMAT_R32G32B32A32_FLOAT:
+        if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Filterable)) {
+            if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable)) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                                  "they're not filterable nor blendable as neither feature is supported on this device.");
+            } else {
+                SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                                  "they're not filterable as the required WebGPU feature is not supported on this device.");
+            }
+        } else if (!WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Float32Blendable)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_GPU, "While Float32 textures are supported, "
+                                              "they're not blendable as the required WebGPU feature is not supported on this device.");
+        }
+
+        return !hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_R11G11B10_UFLOAT:
+        if (hasColorTargetUsage) {
+            return WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_RG11B10UfloatRenderable) && !hasDepthUsage && !hasReadWriteStorageUsage;
+        } else {
+            return false;
+        }
+    case SDL_GPU_TEXTUREFORMAT_D16_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT:
+    case SDL_GPU_TEXTUREFORMAT_D24_UNORM_S8_UINT:
+        return hasDepthUsage && !hasReadWriteStorageUsage;
+    case SDL_GPU_TEXTUREFORMAT_D32_FLOAT_S8_UINT:
+        return hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_Depth32FloatStencil8);
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_4x4_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x4_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_5x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_6x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_8x8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x5_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x6_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x8_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_10x10_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x10_UNORM_SRGB:
+    case SDL_GPU_TEXTUREFORMAT_ASTC_12x12_UNORM_SRGB:
+        return !hasRenderUsage && !hasDepthUsage && !hasReadWriteStorageUsage && WEBGPU_INTERNAL_IsFeatureEnabled(renderer, WGPUFeatureName_TextureCompressionASTC);
+    default:
+        SDL_assert(!"Unsupported SDL_GPUTextureFormat");
+        return false;
+    }
+}
+
+// -- UNSUPPORTED FUNCTIONS --
+static void WEBGPU_SetBufferName(SDL_GPURenderer *device, SDL_GPUBuffer *buffer, const char *text)
+{
+    // No-op.
+}
+
+static void WEBGPU_SetTextureName(SDL_GPURenderer *device, SDL_GPUTexture *texture, const char *text)
+{
+    // No-op.
+}
+
+static XrResult WEBGPU_DestroyXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSwapchain swapchain,
+    SDL_GPUTexture **swapchainImages)
+{
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static SDL_GPUTextureFormat *WEBGPU_GetXRSwapchainFormats(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    int *num_formats)
+{
+    return NULL;
+}
+
+static XrResult WEBGPU_CreateXRSwapchain(
+    SDL_GPURenderer *driverData,
+    XrSession session,
+    const XrSwapchainCreateInfo *oldCreateInfo,
+    SDL_GPUTextureFormat format,
+    XrSwapchain *swapchain,
+    SDL_GPUTexture ***textures)
+{
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static XrResult WEBGPU_CreateXRSession(
+    SDL_GPURenderer *driverData,
+    const XrSessionCreateInfo *createinfo,
+    XrSession *session)
+{
+    return XR_ERROR_FUNCTION_UNSUPPORTED;
+}
+
+static bool WEBGPU_PrepareDriver(SDL_VideoDevice *this, SDL_PropertiesID props)
+{
+    // TODO: This.
+    // There used to be code here, but it hadn't been updated in a while.
+    // (Quite frankly, I just got annoyed that it clogged the console with debug device creation information since it uses the same functions)
+    return true;
+}
+
+static SDL_GPUDevice *WEBGPU_CreateDevice(bool debugMode, bool preferLowPower, SDL_PropertiesID props)
+{
+    WebGPURenderer *renderer;
+    SDL_GPUDevice *result;
+
+    Sint64 bindGroupsExpireAfter = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_BINDGROUP_EXPIRE_AFTER_N_SUBMITS, DEFAULT_BINDGROUP_EXPIRY);
+    Sint64 pseudoMapThreshold = SDL_GetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_WEBGPU_PSEUDOMAP_BUFFERS_SMALLER_THAN, DEFAULT_PSEUDOMAP_SIZE_THRESHOLD);
+
+    bool getAdapterSucceeded = false;
+    bool getDeviceSucceeded = false;
+
+    renderer = SDL_calloc(1, sizeof(*renderer));
+
+    if (renderer == NULL) {
+        return NULL;
+    }
+
+    renderer->debugMode = debugMode;
+    renderer->preferLowPower = preferLowPower;
+    renderer->props = props;
+    renderer->bindGroupsExpireAfter = bindGroupsExpireAfter;
+    renderer->pseudoMapBufferSizeThreshold = pseudoMapThreshold;
+    renderer->maxFramesInFlight = 2; // Default
+
+    renderer->bindGroupHashTable = SDL_CreateHashTable(512, true, WEBGPU_INTERNAL_HashBindGroupKey, WEBGPU_INTERNAL_MatchHashedBindGroupKey, WEBGPU_INTERNAL_DestroyCachedBindGroupAndKey, NULL);
+
+    renderer->destroyingSelfLock = SDL_CreateMutex();
+    renderer->submittingCommandBufferLock = SDL_CreateMutex();
+
+// I do not like MSVC.
+#ifdef _MSC_VER
+    renderer->instance = wgpuCreateInstance(&(WGPUInstanceDescriptor)WGPU_INSTANCE_DESCRIPTOR_INIT);
+#else
+    renderer->instance = wgpuCreateInstance(&WGPU_INSTANCE_DESCRIPTOR_INIT);
+#endif
+
+    if (!renderer->instance) {
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    WEBGPU_INTERNAL_RequestAdapter(renderer, &getAdapterSucceeded);
+
+    if (!renderer->adapter) {
+        wgpuInstanceRelease(renderer->instance);
+
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    WEBGPU_INTERNAL_RequestDevice(renderer, &getDeviceSucceeded);
+
+    if (!renderer->device) {
+        wgpuAdapterRelease(renderer->adapter);
+        wgpuInstanceRelease(renderer->instance);
+
+        SDL_free(renderer);
+        return NULL;
+    }
+
+    renderer->queue = wgpuDeviceGetQueue(renderer->device);
+
+    WEBGPU_INTERNAL_InitUniformResources(renderer);
+    WEBGPU_INTERNAL_InitBlitResources(renderer);
+
+    result = SDL_calloc(1, sizeof(SDL_GPUDevice));
+
+    result->driverData = (SDL_GPURenderer *)renderer;
+    result->shader_formats = SDL_GPU_SHADERFORMAT_WGSL;
+
+    ASSIGN_DRIVER(WEBGPU)
+    return result;
+}
+
+SDL_GPUBootstrap WebGPUDriver = {
+    "webgpu",
+    WEBGPU_PrepareDriver,
+    WEBGPU_CreateDevice
+};
+
+#endif

@@ -269,6 +269,41 @@
  * - iOS/tvOS requires an A9 GPU or newer
  * - iOS Simulator and tvOS Simulator are unsupported
  *
+ * ### WebGPU
+ *
+ * SDL driver name: "webgpu"
+ *
+ * WebGPU support is complicated and rapidly updating, so there's no exact list.
+ * Generally speaking, if you're using a modern browser you can use WebGPU.
+ *
+ * The backend requires these WebGPU features to run:
+ * - `BGRA8UnormStorage`
+ * - `CoreFeaturesAndLimits`
+ * - `Depth32FloatStencil8`
+ * - `DepthClipControl`
+ * - `Float32Filterable`
+ * - `IndirectFirstInstance`
+ * - `RG11B10UfloatRenderable`
+ *
+ * The backend also optionally supports some features. These features are not required
+ * for the backend to run, but they are required for specific SDLGPU functionality:
+ * - `Float32Blendable`
+ *   Required for blending Float32 textures. The backend will safely disable blending
+ *   if this is unsupported.
+ * - `TextureCompressionASTC`
+ * - `TextureCompressionASTCSliced3D`
+ *   Required for ASTC texture format support.
+ * - `TextureCompressionBC`
+ * - `TextureCompressionBCSliced3D`
+ *   Required for BC texture format support
+ * - `TextureFormatsTier1`
+ * - `TextureFormatsTier2`
+ *   Required for a lot of stuff, mostly related to texture sampling & access. It's
+ *   too much to list here.
+ *
+ * Both all required and optional features will be requested automatically during
+ * device creation. If debug mode is enabled, any unsupported features will be logged.
+ *
  * ## Coordinate System
  *
  * The GPU API uses a left-handed coordinate system, following the convention
@@ -371,6 +406,7 @@
  *   Debug Executable..., select your application, set "GPU Frame Capture" to
  *   "Metal" in scheme "Options" window, run your app, and click the small
  *   Metal icon on the bottom to capture a frame)
+ * * For WebGPU, check your browser's developer console.
  *
  * Aside from that, you may want to enable additional debug layers to receive
  * more detailed error messages, based on your GPU backend:
@@ -383,6 +419,9 @@
  *   that should be installed.
  * * For Metal, it should be enough just to run the application from XCode to
  *   receive detailed errors or warnings in the output.
+ * * For WebGPU, you usually don't need to do anything, as the browser will
+ *   report detailed errors. However, some browsers may only provide error
+ *   messages in beta / preview builds, so keep that in mind.
  *
  * Don't hesitate to use tools as RenderDoc when encountering runtime issues
  * or unexpected output on screen, quick GPU frame inspection can usually help
@@ -906,6 +945,9 @@ typedef enum SDL_GPUTextureFormat
  * within a compute pass. Note that SIMULTANEOUS usage is only supported by a
  * limited number of texture formats.
  *
+ * Note that WebGPU does not distinguish between READ | WRITE and SIMULTANEOUS
+ * read-write.
+ *
  * \since This datatype is available since SDL 3.2.0.
  *
  * \sa SDL_CreateGPUTexture
@@ -1049,6 +1091,7 @@ typedef Uint32 SDL_GPUShaderFormat;
 #define SDL_GPU_SHADERFORMAT_DXIL     (1u << 3) /**< DXIL SM6_0 shaders for D3D12. */
 #define SDL_GPU_SHADERFORMAT_MSL      (1u << 4) /**< MSL shaders for Metal. */
 #define SDL_GPU_SHADERFORMAT_METALLIB (1u << 5) /**< Precompiled metallib shaders for Metal. */
+#define SDL_GPU_SHADERFORMAT_WGSL     (1u << 6) /**< WGSL shaders for WebGPU. */
 
 /**
  * Specifies the format of a vertex attribute.
@@ -2259,6 +2302,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GPUSupportsProperties(
  * - "vulkan": [Vulkan](CategoryGPU#vulkan)
  * - "direct3d12": [D3D12](CategoryGPU#d3d12)
  * - "metal": [Metal](CategoryGPU#metal)
+ * - "webgpu": [WebGPU](CategoryGPU#webgpu)
  * - NULL: let SDL pick the optimal driver
  *
  * \param format_flags a bitflag indicating which shader formats the app is
@@ -2411,6 +2455,7 @@ extern SDL_DECLSPEC SDL_GPUDevice * SDLCALL SDL_CreateGPUDeviceWithProperties(
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN                         "SDL.gpu.device.create.shaders.dxil"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN                          "SDL.gpu.device.create.shaders.msl"
 #define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN                     "SDL.gpu.device.create.shaders.metallib"
+#define SDL_PROP_GPU_DEVICE_CREATE_SHADERS_WGSL_BOOLEAN                         "SDL.gpu.device.create.shaders.wgsl"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_ALLOW_FEWER_RESOURCE_SLOTS_BOOLEAN     "SDL.gpu.device.create.d3d12.allowtier1resourcebinding"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING                   "SDL.gpu.device.create.d3d12.semantic"
 #define SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER             "SDL.gpu.device.create.d3d12.agility_sdk_version"
@@ -2490,8 +2535,8 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumGPUDrivers(void);
  * checked during initialization.
  *
  * The names of drivers are all simple, low-ASCII identifiers, like "vulkan",
- * "metal" or "direct3d12". These never have Unicode characters, and are not
- * meant to be proper names.
+ * "metal", "direct3d12", or "webgpu". These never have Unicode characters,
+ * and are not meant to be proper names.
  *
  * \param index the index of a GPU driver.
  * \returns the name of the GPU driver with the given **index** or NULL when
@@ -2833,6 +2878,50 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetGPUDeviceProperties(SDL_GPUD
  *
  * ---
  *
+ * **WGSL (WebGPU Shading Language)**
+ *
+ * For WGSL, use the following order:
+ * - 0: Sampled textures, followed by read-only storage textures, followed by
+ *   read-only storage buffers
+ * - 1: Read-write storage textures, followed by read-write storage buffers
+ * - 2: Uniform buffers
+ *
+ * Note that WebGPU does not differentiate between simultaneous read-write and non-simultaneous
+ * read-write. This means that any storage bind with both READ & WRITE accesses will be treated
+ * as if it were simultaneous. If simultaneous RW is unsupported, the backend will fall back
+ * to write-only.
+ *
+ * **Example**
+ *
+ * For a compute shader binding 2 of each resource type, the binds should look
+ * like this:
+ *
+ * ```wgsl
+ * // Sampled textures come first, followed by the sampler, in SDL slot order.
+ * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
+ * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
+ * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
+ * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
+ * // Any read-only storage textures come next, in SDL slot order.
+ * \@group(0) \@binding(4) var readOnlyStorageTextureBoundToSlot0: ...
+ * \@group(0) \@binding(5) var readOnlyStorageTextureBoundToSlot1: ...
+ * // Any read-only storage buffers come next, in SDL slot order.
+ * \@group(0) \@binding(6) var<storage, ...> readOnlyStorageBufferBoundToSlot0: ...
+ * \@group(0) \@binding(7) var<storage, ...> readOnlyStorageBufferBoundToSlot1: ...
+ * // Read-write storage textures and buffers have their own bind group.
+ * // Read-write storage textures go first, in SDL slot order.
+ * \@group(1) \@binding(0) var readWriteStorageTextureBoundToSlot0: ...
+ * \@group(1) \@binding(1) var readWriteStorageTextureBoundToSlot1: ...
+ * // Any read-write storage textures come next, in SDL slot order.
+ * \@group(1) \@binding(2) var<storage, ...> readWriteStorageBufferBoundToSlot0: ...
+ * \@group(1) \@binding(3) var<storage, ...> readWriteStorageBufferBoundToSlot1: ...
+ * // Any uniform buffers are in their own set, in SDL slot order.
+ * \@group(2) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * \@group(2) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
+ * ```
+ *
+ * ---
+ *
  * There are optional properties that can be provided through `props`. These
  * are the supported properties:
  *
@@ -3069,6 +3158,55 @@ extern SDL_DECLSPEC SDL_GPUSampler * SDLCALL SDL_CreateGPUSampler(
  *     device SomeBufferStruct& storageBufferBoundToSlot0 [[buffer(2)]],
  *     device SomeBufferStruct& storageBufferBoundToSlot1 [[buffer(3)]]);
  *
+ * ```
+ *
+ * ---
+ *
+ * **WGSL (WebGPU Shading Language)**
+ *
+ * For vertex shaders, use: - Group 0 for samplers, storage textures, and
+ * storage buffers - Group 1 for uniform data
+ *
+ * For fragment shaders, use: - Group 2 for samplers, storage textures, and
+ * storage buffers - Group 3 for uniform data
+ *
+ * The first resource in a given set must have a `binding` of 0. Additional
+ * resources must appear at consecutive bindings (1, 2, etc), leaving no gaps
+ * in the set.
+ *
+ * All sampled textures must come first in the binding order, followed by their
+ * associated sampler, in order of how they are bound via `SDL_BindGPU*Samplers()`.
+ *
+ * All storage textures must come after all samplers and sampled textures
+ * in the binding order, in order of how they are bound via `SDL_Bind*StorageTextures()`.
+ *
+ * All storage buffers must come after all storage textures in the binding
+ * order, in order of how they are bound via `SDL_Bind*StorageBuffers()`.
+ *
+ * Note that WebGPU has... odd alignment rules. All types must be aligned to a power of
+ * two, but can be any size.
+ * Consult the [WebGPU spec](https://www.w3.org/TR/WGSL/#alignment-and-size) for more.
+ *
+ * **Example**
+ *
+ * If a vertex shader binds 2 samplers, 2 storage textures, 2 storage buffers,
+ * and 2 uniform buffers, its binding layout should look like this:
+ *
+ * ```wgsl
+ * // Sampled textures come first, followed by the sampler, in SDL slot order.
+ * \@group(0) \@binding(0) var sampledTextureBoundToSlot0: ...
+ * \@group(0) \@binding(1) var samplerBoundToSlot0: sampler
+ * \@group(0) \@binding(2) var sampledTextureBoundToSlot1: ...
+ * \@group(0) \@binding(3) var samplerBoundToSlot1: sampler
+ * // Any storage textures come next, in SDL slot order.
+ * \@group(0) \@binding(4) var storageTextureBoundToSlot0: ...
+ * \@group(0) \@binding(5) var storageTextureBoundToSlot1: ...
+ * // Any storage buffers come next, in SDL slot order.
+ * \@group(0) \@binding(6) var<storage, ...> storageBufferBoundToSlot0: ...
+ * \@group(0) \@binding(7) var<storage, ...> storageBufferBoundToSlot1: ...
+ * // Any uniform buffers are in their own set, in SDL slot order.
+ * \@group(1) \@binding(0) var<uniform> uniformBufferBoundToSlot0: ...
+ * \@group(1) \@binding(1) var<uniform> uniformBufferBoundToSlot1: ...
  * ```
  *
  * ---
@@ -4217,6 +4355,10 @@ extern SDL_DECLSPEC void SDLCALL SDL_EndGPUComputePass(
  * SDL_UnmapGPUTransferBuffer. The memory is owned by the graphics driver - do
  * NOT call SDL_free() on the returned pointer.
  *
+ * Note that for the WebGPU backend, mapping download buffers is a very expensive
+ * procedure. Mapping download buffers with the WebGPU backend is strongly
+ * discouraged.
+ *
  * \param device a GPU context.
  * \param transfer_buffer a transfer buffer.
  * \param cycle if true, cycles the transfer buffer if it is already bound.
@@ -4276,6 +4418,8 @@ extern SDL_DECLSPEC SDL_GPUCopyPass * SDLCALL SDL_BeginGPUCopyPass(
  * is properly aligned, but this adds overhead to the transfer process. Apps
  * can avoid this by aligning their data appropriately, or using a different
  * GPU backend than Direct3D 12.
+ * Note that the WebGPU backend inherits Direct3D's 256-byte BPR alignment
+ * rules, and therefore also presents the same behaviour.
  *
  * \param copy_pass a copy pass handle.
  * \param source the source transfer buffer with image layout information.
@@ -4627,6 +4771,10 @@ extern SDL_DECLSPEC SDL_GPUTextureFormat SDLCALL SDL_GetGPUSwapchainTextureForma
  * freed by the user. You MUST NOT call this function from any thread other
  * than the one that created the window.
  *
+ * **WARNING**: WebGPU has an edge case in which mapping a transfer buffer
+ * destroys any currently acquired swapchain textures! Always remember to
+ * acquire your swapchain texture AFTER you've mapped your transfer buffers!
+ *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.
  * \param swapchain_texture a pointer filled in with a swapchain texture
@@ -4702,6 +4850,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WaitForGPUSwapchain(
  *
  * The swapchain texture is write-only and cannot be used as a sampler or for
  * another reading operation.
+ *
+ * **WARNING**: WebGPU has an edge case in which mapping a transfer buffer
+ * destroys any currently acquired swapchain textures! Always remember to
+ * acquire your swapchain texture AFTER you've mapped your transfer buffers!
  *
  * \param command_buffer a command buffer.
  * \param window a window that has been claimed.

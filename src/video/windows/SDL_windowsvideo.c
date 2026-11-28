@@ -35,6 +35,7 @@
 #include "SDL_windowsmessagebox.h"
 #include "SDL_windowsrawinput.h"
 #include "SDL_windowsvulkan.h"
+#include "SDL_windowswgpu.h"
 
 #if !(defined(SDL_PLATFORM_XBOXONE) || defined(SDL_PLATFORM_XBOXSERIES))
 #include <shobjidl.h>
@@ -424,6 +425,10 @@ static SDL_VideoDevice *WIN_CreateDevice(void)
     device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
     device->Vulkan_DestroySurface = WIN_Vulkan_DestroySurface;
     device->Vulkan_GetPresentationSupport = WIN_Vulkan_GetPresentationSupport;
+#endif
+#ifdef SDL_VIDEO_WEBGPU
+    device->WGPU_CreateSurface = WIN_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = WIN_WGPU_DestroySurface;
 #endif
 
 #if !defined(SDL_PLATFORM_XBOXONE) && !defined(SDL_PLATFORM_XBOXSERIES)

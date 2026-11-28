@@ -1362,3 +1362,5 @@ SDL_DYNAPI_PROC(char*,SDL_GetCachePath,(const char *a,const char *b),(a,b),retur
 SDL_DYNAPI_PROC(bool,SDL_SetRenderLogicalPresentationRect,(SDL_Renderer *a,const SDL_FRect *b),(a,b),return)
 SDL_DYNAPI_PROC(bool,SDL_IsGooglePlayOnPC,(void),(),return)
 SDL_DYNAPI_PROC(bool,SDL_SetWindowMousePassthrough,(SDL_Window *a,bool b),(a,b),return)
+SDL_DYNAPI_PROC(bool,SDL_WGPU_CreateSurface,(SDL_Window *a,WGPUInstance b,WGPUSurface *c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_WGPU_DestroySurface,(WGPUSurface a),(a),)

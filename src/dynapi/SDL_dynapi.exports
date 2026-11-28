@@ -1327,3 +1327,5 @@ _SDL_GetCachePath
 _SDL_SetRenderLogicalPresentationRect
 _SDL_IsGooglePlayOnPC
 _SDL_SetWindowMousePassthrough
+_SDL_WGPU_CreateSurface
+_SDL_WGPU_DestroySurface

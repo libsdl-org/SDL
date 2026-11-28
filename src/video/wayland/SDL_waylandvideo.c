@@ -38,6 +38,7 @@
 
 #include "SDL_waylandframebuffer.h"
 #include "SDL_waylandvulkan.h"
+#include "SDL_waylandwgpu.h"
 #include "SDL_waylandwindow.h"
 
 #include <fcntl.h>
@@ -776,6 +777,11 @@ static SDL_VideoDevice *CreateWaylandDevice(bool require_preferred_protocols)
     device->Vulkan_CreateSurface = Wayland_Vulkan_CreateSurface;
     device->Vulkan_DestroySurface = Wayland_Vulkan_DestroySurface;
     device->Vulkan_GetPresentationSupport = Wayland_Vulkan_GetPresentationSupport;
+#endif
+
+#ifdef SDL_VIDEO_WEBGPU
+    device->WGPU_CreateSurface = Wayland_WGPU_CreateSurface;
+    device->WGPU_DestroySurface = Wayland_WGPU_DestroySurface;
 #endif
 
     device->free = Wayland_DeleteDevice;
