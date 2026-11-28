@@ -149,6 +149,10 @@ SDL_EventCategory SDL_GetEventCategory(Uint32 type)
     case SDL_EVENT_PINCH_END:
         return SDL_EVENTCATEGORY_PINCH;
 
+    case SDL_EVENT_HOLD_BEGIN:
+    case SDL_EVENT_HOLD_END:
+        return SDL_EVENTCATEGORY_HOLD;
+
     case SDL_EVENT_CLIPBOARD_UPDATE:
         return SDL_EVENTCATEGORY_CLIPBOARD;
 
