@@ -512,6 +512,11 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnlockSurface(SDL_Surface *surface);
 /**
  * Load a BMP or PNG image from a seekable SDL data stream.
  *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
+ *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
  *
@@ -533,6 +538,11 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface_IO(SDL_IOStream *src, 
 /**
  * Load a BMP or PNG image from a file.
  *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
+ *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
  *
@@ -551,6 +561,11 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadSurface(const char *file);
 
 /**
  * Load a BMP image from a seekable SDL data stream.
+ *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -573,6 +588,11 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadBMP_IO(SDL_IOStream *src, bool
 
 /**
  * Load a BMP image from a file.
+ *
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use an image loading library designed with security in mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -644,9 +664,10 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SaveBMP(SDL_Surface *surface, const char *f
 /**
  * Load a PNG image from a seekable SDL data stream.
  *
- * This is intended as a convenience function for loading images from trusted
- * sources. If you want to load arbitrary images you should use libpng or
- * another image loading library designed with security in mind.
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use libpng or another image loading library designed with security in mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
@@ -670,9 +691,10 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_LoadPNG_IO(SDL_IOStream *src, bool
 /**
  * Load a PNG image from a file.
  *
- * This is intended as a convenience function for loading images from trusted
- * sources. If you want to load arbitrary images you should use libpng or
- * another image loading library designed with security in mind.
+ * This is designed as a convenience function for loading images from trusted
+ * sources. Crashes or other issues with invalid content should not be
+ * considered security issues. If you want to load arbitrary images you should
+ * use libpng or another image loading library designed with security in mind.
  *
  * The new surface should be freed with SDL_DestroySurface(). Not doing so
  * will result in a memory leak.
